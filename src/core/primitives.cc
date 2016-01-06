@@ -1571,7 +1571,8 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
 #define ARGS_InvocationHistoryFrameIterator_O_make ""
 #define DECL_InvocationHistoryFrameIterator_O_make ""
 #define DOCS_InvocationHistoryFrameIterator_O_make "Return the InvocationHistoryFrameIterator for the frame that is the (first) that satisfies (test)"
-InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
+CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
+CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
   InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
   iterator->setFrame(cur);
@@ -1636,6 +1637,8 @@ CL_DEFMETHOD Vector_sp InvocationHistoryFrameIterator_O::arguments() {
   return frame->arguments();
 }
 
+SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
+
 void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<InvocationHistoryFrameIterator_O>()
       .def("frameIteratorFunctionName", &InvocationHistoryFrameIterator_O::functionName)
@@ -1645,8 +1648,7 @@ void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
       .def("frameIteratorPreviousFrame", &InvocationHistoryFrameIterator_O::prev)
       //	.initArgs("(self)")
       ;
-  SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
-  Defun_maker(CorePkg, InvocationHistoryFrameIterator);
+//  Defun_maker(CorePkg, InvocationHistoryFrameIterator);
 };
 
 void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {

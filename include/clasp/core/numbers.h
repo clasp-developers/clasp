@@ -1033,9 +1033,6 @@ Integer_sp cl__logand(List_sp integers);
 
 gctools::Fixnum fixint(T_sp x);
 
-/*! Initialize all math functions here */
-void initialize_numbers();
-
 }; // namespace core
 
 TRANSLATE(core::Number_O);   // superclass T_O

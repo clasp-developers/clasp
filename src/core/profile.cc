@@ -168,10 +168,9 @@ void profiler_print(boost::format &fmt) {
   printf("+CPROF+ %s", fmt_str.c_str());
 }
 
-void initialize_profile() {
   SYMBOL_SC_(CorePkg, clock_gettime_nanoseconds);
   SYMBOL_SC_(CorePkg, testProfileTimer);
-}
+
 
 void restart_profile() {
   _globalProfiler.start();

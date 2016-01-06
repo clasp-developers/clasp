@@ -370,14 +370,10 @@ CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
     void List_O::exposeCando(Lisp_sp lisp)
     {
 	class_<List_O>()
-	    //	    .def("revappend",&List_O::revappend)    I need to wrap this
-	    //	    .def("nreconc",&List_O::nreconc)	I need to wrap this
-	    //	.initArgs("(self)")
 	    ;
     }
 #endif
 
-void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, revappend);
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
@@ -388,7 +384,6 @@ void initialize_list() {
   SYMBOL_EXPORT_SC_(ClPkg, nthcdr);
   SYMBOL_EXPORT_SC_(ClPkg, copyList);
   SYMBOL_EXPORT_SC_(ClPkg, last);
-}
 
 #if 0
     void List_O::exposePython(::core::Lisp_sp lisp)

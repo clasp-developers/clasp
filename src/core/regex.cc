@@ -48,13 +48,14 @@ CL_DEFUN Regex_sp core__make_regex(const string &str) {
 
 EXPOSE_CLASS(core, Regex_O);
 
+  SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
+
 void Regex_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Regex_O>()
       .def("regexMatches", &Regex_O::regexMatches)
       .def("regexMatch", &Regex_O::regexMatch)
       .def("regexSedReplace", &Regex_O::regexSedReplace) // Need to rethink exposing this function so result is returned
       ;
-  SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
 }
 
 void Regex_O::exposePython(core::Lisp_sp lisp) {

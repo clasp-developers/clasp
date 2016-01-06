@@ -5875,7 +5875,7 @@ void StringOutputStream_O::exposePython(Lisp_sp lisp) {
 };
 
 void StringOutputStream_O::fill(const string &data) {
-  this->_Contents->pushString(data.c_str());
+  this->_Contents->pushStringCharStar(data.c_str());
 }
 
 /*! Get the contents and reset them */
@@ -6396,7 +6396,6 @@ T_sp clasp_openWrite(T_sp path) {
   return strm;
 }
 
-void initialize_lispStream() {
   SYMBOL_EXPORT_SC_(ClPkg, filePosition);
   SYMBOL_EXPORT_SC_(ClPkg, readSequence);
   SYMBOL_EXPORT_SC_(ClPkg, read_from_string);
@@ -6430,5 +6429,4 @@ void initialize_lispStream() {
   SYMBOL_EXPORT_SC_(CorePkg, streamLinenumber);
   SYMBOL_EXPORT_SC_(CorePkg, streamColumn);
   SYMBOL_EXPORT_SC_(ClPkg, synonymStreamSymbol);
-}
 };

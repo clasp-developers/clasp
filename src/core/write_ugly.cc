@@ -490,6 +490,4 @@ CL_DEFUN T_sp core__write_ugly_object(T_sp obj, T_sp ostrm) {
   return write_ugly_object(obj, strm);
 };
 
-void initialize_write_ugly_object() {
-}
 };

@@ -630,7 +630,6 @@ void writestr_stream(const char *str, T_sp strm);
 void clasp_write_addr(T_sp x, T_sp strm);
 claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
-void initialize_lispStream();
 
 T_sp cl__open(T_sp filename,
              T_sp direction,

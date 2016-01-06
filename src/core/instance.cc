@@ -190,13 +190,13 @@ T_sp Instance_O::instanceSig() const {
 
 EXPOSE_CLASS(core, Instance_O);
 
+  SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
+  SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 void Instance_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Instance_O>();
 
 //  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
-  SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
 //  ClosDefun(setFuncallableInstanceFunction);
-  SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
 }
 
 void Instance_O::exposePython(core::Lisp_sp lisp) {

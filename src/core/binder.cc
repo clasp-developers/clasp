@@ -50,10 +50,6 @@ EXPOSE_CLASS(core, Binder_O);
 
 void Binder_O::exposeCando(Lisp_sp lisp) {
   class_<Binder_O>()
-      //	    .def("contains",&Binder_O::contains)
-      //	    .def("extend",&Binder_O::extend)
-      //	    .def("lookup",&Binder_O::lookupSymbol)
-      //	    .def("keysAsCons",&Binder_O::allKeysAsCons)
       ;
 }
 

@@ -191,21 +191,6 @@ CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp su
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-#if 0
-    EXPOSE_CLASS(core,Sequence_O);
-
-    void Sequence_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<Sequence_O>()
-//	.initArgs("(self)")
-	      .def("elt",&Sequence_O::elt)
-	      .def("core:setf-elt",&Sequence_O::setf_elt,ARGS_Sequence_O_setf_elt,DECL_Sequence_O_setf_elt,DOCS_Sequence_O_setf_elt)
-	      .def("core:elt-set",&Sequence_O::setf_elt,ARGS_Sequence_O_setf_elt,DECL_Sequence_O_setf_elt,DOCS_Sequence_O_setf_elt)
-	      .def("core:setf_subseq",&Sequence_O::setf_subseq)
-	      ;
-    };
-#endif
-
   SYMBOL_EXPORT_SC_(CorePkg, setfElt);
   SYMBOL_EXPORT_SC_(CorePkg, eltSet);
   SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);

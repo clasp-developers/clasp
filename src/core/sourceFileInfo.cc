@@ -368,6 +368,8 @@ const char *SourceFileInfo_O::permanentFileName() {
 
 EXPOSE_CLASS(core, SourceFileInfo_O);
 
+  SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
+
 void SourceFileInfo_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<SourceFileInfo_O>()
       .def("SourceFileInfo-pathname", &SourceFileInfo_O::pathname)
@@ -377,7 +379,6 @@ void SourceFileInfo_O::exposeCando(core::Lisp_sp lisp) {
   //	SYMBOL_SC_(CorePkg,SourceFileInfoGetOrCreate);
   //	Defun(SourceFileInfoGetOrCreate);
 
-  SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
 }
 
 void SourceFileInfo_O::exposePython(core::Lisp_sp lisp) {
@@ -434,10 +435,11 @@ CL_DEFUN SourceManager_sp core__make_source_manager() {
   return sm;
 };
 
+  SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);
+
 void SourceManager_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<SourceManager_O>();
 
-  SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);
 }
 
 void SourceManager_O::exposePython(core::Lisp_sp lisp) {

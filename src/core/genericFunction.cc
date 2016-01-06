@@ -346,7 +346,6 @@ CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   _lisp->slotCachePtr()->removeOne(what);
 };
 
-void initialize_genericFunction() {
   SYMBOL_SC_(ClosPkg, clearGfunHash);
-}
+
 };

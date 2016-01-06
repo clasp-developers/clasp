@@ -1171,13 +1171,6 @@ Symbol_sp lisp_intern(const string &name, const string &pkg) {
   return _lisp->internWithPackageName(pkg, name);
 }
 
-#if 0
-    Symbol_sp lisp_lookupSymbol(Lisp_sp lisp, Symbol_sp name)
-    {
-	return lisp->lookupPredefinedSymbol(name);
-    }
-#endif
-
 string symbol_fullName(Symbol_sp s) {
   return s->fullName();
 }
@@ -1785,47 +1778,6 @@ void throwIfClassesNotInitialized(const Lisp_sp &lisp) {
 #include <core_initScripting_inc.h>
     }
 #endif
-#endif
-
-#if 0
-    void initializeExposeClasses(bool exposeCando, bool exposePython )
-    {_errorF();
-      ClassManager::iterator	it;
-      int			passes = 0;
-      bool			exposedOne = true;
-      while ( exposedOne )
-	{
-	  LOG(BF("initializeExposeClasses passes=%d") % passes  );
-	  exposedOne = false;
-	  for ( it=rootClassManager().begin(); it!=rootClassManager().end(); it++ )
-	    {
-	      // If we have an Exposer defined then check if our BaseClass has
-	      // been exposed
-	      exposedOne = it->exposeYourself(exposeCando,exposePython);
-	    }
-	  passes++;
-	  ASSERTP(passes<10, "There were more than 10 passes carried out when exposing classes");
-	}
-    }
-#endif
-
-void initializeCandoScript(Lisp_sp lisp) {
-  DEPRECIATED();
-}
-
-void initializePythonScript(Lisp_sp lisp) {
-  DEPRECIATED();
-  //    initializeExposeClasses(false,true);
-}
-
-#ifdef USEBOOSTPYTHON
-__INITIALIZE_PYTHON(InitPython_Foundation)
-void InitPython_Foundation() {
-  boost::python::def("print", &print);
-  boost::python::def("println", &println);
-  boost::python::def("printvPushPrefix", &printvPushPrefix);
-  boost::python::def("printvPopPrefix", &printvPopPrefix);
-}
 #endif
 
 };

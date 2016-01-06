@@ -86,11 +86,10 @@ CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   return _Nil<T_O>();
 }
 
-void initialize_sysprop() {
   SYMBOL_SC_(CorePkg, put_sysprop);
 
   SYMBOL_SC_(CorePkg, get_sysprop);
 
   SYMBOL_SC_(CorePkg, rem_sysprop);
-}
+
 };

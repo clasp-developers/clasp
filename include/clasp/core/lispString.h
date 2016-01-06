@@ -100,7 +100,6 @@ Str_sp cl__string_right_trim(T_sp charbag, T_sp str);
  T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1 = make_fixnum(0), T_sp end1 = _Nil<T_O>(), Fixnum_sp start2 = make_fixnum(0), T_sp end2 = _Nil<T_O>());
 
 
- void initialize_string();
 
 };
 #endif /* _core_String_H */

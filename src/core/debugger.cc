@@ -532,7 +532,6 @@ void dbg_controlC() {
 
 namespace core {
 
-void initialize_debugging() {
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
-}
+
 };

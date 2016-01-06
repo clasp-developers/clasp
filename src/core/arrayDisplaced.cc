@@ -45,7 +45,8 @@ T_mv ArrayDisplaced_O::arrayDisplacement() const {
 #define ARGS_ArrayDisplaced_O_make "(dimensions element-type displaced-to displaced-index-offset)"
 #define DECL_ArrayDisplaced_O_make ""
 #define DOCS_ArrayDisplaced_O_make "make ArrayDisplaced args: dimensions element-type displaced-to displaced-index-offset"
-ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp displacedTo, int displacedIndexOffset) {
+CL_LISPIFY_NAME(make-array-displaced);
+CL_DEFUN ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp displacedTo, int displacedIndexOffset) {
   GC_ALLOCATE(ArrayDisplaced_O, array);
   array->_ElementType = elementType;
   array->_Array = displacedTo;
@@ -63,7 +64,6 @@ ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp 
 
 void ArrayDisplaced_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<ArrayDisplaced_O>();
-  Defun_maker(CorePkg, ArrayDisplaced);
 }
 
 void ArrayDisplaced_O::exposePython(Lisp_sp lisp) {

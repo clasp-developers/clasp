@@ -1,3 +1,5 @@
+(declaim #+sbcl(sb-ext:muffle-conditions style-warning))
+
 (let ((lt (or *compile-file-truename* *load-truename*)))
   (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
 
@@ -10,9 +12,9 @@
 (load "foundation.lisp")
 (load "serialize.lisp")
 (load "parse.lisp")
-(load "conditions.lisp")
-(load "tags.lisp")
 (load "compile-commands.lisp")
+(load "tags.lisp")
+(load "conditions.lisp")
 (load "sourcepos.lisp")
 (load "interpret-tags.lisp")
 (load "format.lisp")

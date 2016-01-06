@@ -515,19 +515,20 @@ CL_DEFUN T_sp core__deep_copy(T_sp obj) {
   return obj->deepCopy();
 }
 
+SYMBOL_SC_(CorePkg, slBoundp);
+SYMBOL_SC_(CorePkg, isNil);
+SYMBOL_SC_(CorePkg, instanceRef);
+SYMBOL_SC_(CorePkg, instanceSet);
+SYMBOL_SC_(CorePkg, instancep);
+SYMBOL_SC_(CorePkg, instanceSigSet);
+SYMBOL_SC_(CorePkg, instanceSig);
+SYMBOL_EXPORT_SC_(CorePkg, instanceClass);
+SYMBOL_EXPORT_SC_(CorePkg, implementationClass);
+SYMBOL_EXPORT_SC_(CorePkg, classNameAsString);
+SYMBOL_EXPORT_SC_(ClPkg, copyTree);
+
 void T_O::exposeCando(core::Lisp_sp lisp) {
   class_<T_O> ot;
-  SYMBOL_SC_(CorePkg, slBoundp);
-  SYMBOL_SC_(CorePkg, isNil);
-  SYMBOL_SC_(CorePkg, instanceRef);
-  SYMBOL_SC_(CorePkg, instanceSet);
-  SYMBOL_SC_(CorePkg, instancep);
-  SYMBOL_SC_(CorePkg, instanceSigSet);
-  SYMBOL_SC_(CorePkg, instanceSig);
-  SYMBOL_EXPORT_SC_(CorePkg, instanceClass);
-  SYMBOL_EXPORT_SC_(CorePkg, implementationClass);
-  SYMBOL_EXPORT_SC_(CorePkg, classNameAsString);
-  SYMBOL_EXPORT_SC_(ClPkg, copyTree);
 };
 
 void T_O::exposePython(Lisp_sp lisp) { // lisp will be undefined - don't use it

@@ -1043,9 +1043,6 @@ ReadTable_sp ReadTable_O::copyReadTable(gc::Nilable<ReadTable_sp> tdest) {
   return dest;
 }
 
-void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ReadTable_O>()
-      ;
   SYMBOL_EXPORT_SC_(ClPkg, setMacroCharacter);
   SYMBOL_SC_(CorePkg, reader_backquoted_expression);
   SYMBOL_SC_(CorePkg, sharp_backslash);
@@ -1062,12 +1059,6 @@ void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, sharp_a);
   SYMBOL_SC_(CorePkg, sharp_s);
   SYMBOL_SC_(CorePkg, sharp_p);
-#if 0
-	SYMBOL_SC_(CorePkg,sharp_equal);
-	Defun(sharp_equal);
-	SYMBOL_SC_(CorePkg,sharp_sharp);
-	Defun(sharp_sharp);
-#endif
   SYMBOL_SC_(CorePkg, sharp_plus);
   SYMBOL_SC_(CorePkg, sharp_minus);
   SYMBOL_SC_(CorePkg, sharp_vertical_bar);
@@ -1081,6 +1072,10 @@ void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, reader_feature_p);
   SYMBOL_EXPORT_SC_(ClPkg, setDispatchMacroCharacter);
   SYMBOL_EXPORT_SC_(ClPkg, getDispatchMacroCharacter);
+
+void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<ReadTable_O>()
+      ;
 }
 
 void ReadTable_O::exposePython(::core::Lisp_sp lisp) {

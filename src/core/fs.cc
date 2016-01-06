@@ -119,11 +119,6 @@ class Path_Exposer : public Exposer {
         .def("stem", &Path_O::stem)
         .def("extension", &Path_O::extension)
         .def("exists", &Path_O::exists);
-//    af_def(CorePkg, "directory", &directory);
-//    af_def(CorePkg, "delete-file", &delete_file);
-//    af_def(CorePkg, "rename", &rename);
-//    af_def(CorePkg, "delete-file-all", &removeAll);
-//    af_def(CorePkg, "createDirectory", &createDirectory);
   }
 
   void exposePython() {

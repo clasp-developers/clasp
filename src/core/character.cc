@@ -592,8 +592,6 @@ claspChar clasp_charCode(T_sp c) {
 
 EXPOSE_CLASS(core, Character_dummy_O);
 
-void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<Character_dummy_O>();
   SYMBOL_EXPORT_SC_(ClPkg, char_code);
   SYMBOL_EXPORT_SC_(ClPkg, code_char);
   SYMBOL_EXPORT_SC_(ClPkg, char_int);
@@ -618,6 +616,9 @@ void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, charNotEqual);
   SYMBOL_EXPORT_SC_(ClPkg, charEqual);
   SYMBOL_EXPORT_SC_(ClPkg, digitCharP);
+
+void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
+  ::core::class_<Character_dummy_O>();
 }
 
 void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {

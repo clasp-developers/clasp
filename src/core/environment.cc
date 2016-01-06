@@ -255,6 +255,13 @@ T_sp Environment_O::getActivationFrame() const {
 
 EXPOSE_CLASS(core, Environment_O);
 
+  SYMBOL_SC_(CorePkg, environmentActivationFrame);
+  SYMBOL_SC_(CorePkg, currentVisibleEnvironment);
+  SYMBOL_SC_(CorePkg, runtimeEnvironment);
+  SYMBOL_SC_(CorePkg, environmentList);
+  SYMBOL_SC_(CorePkg, environmentTypeList);
+  SYMBOL_SC_(CorePkg, environmentId);
+
 void Environment_O::exposeCando(Lisp_sp lisp) {
   class_<Environment_O>()
       .def("environmentStackAsString", &Environment_O::environmentStackAsString)
@@ -277,13 +284,6 @@ void Environment_O::exposeCando(Lisp_sp lisp) {
       .def("classifyTag", &Environment_O::classifyTag)
       .def("countFunctionContainerEnvironments", &Environment_O::countFunctionContainerEnvironments)
     ;
-  SYMBOL_SC_(CorePkg, environmentActivationFrame);
-  SYMBOL_SC_(CorePkg, currentVisibleEnvironment);
-//  af_def(CorePkg, "currentVisibleEnvironment", &Environment_O::clasp_currentVisibleEnvironment);
-  SYMBOL_SC_(CorePkg, runtimeEnvironment);
-  SYMBOL_SC_(CorePkg, environmentList);
-  SYMBOL_SC_(CorePkg, environmentTypeList);
-  SYMBOL_SC_(CorePkg, environmentId);
 }
 
 void Environment_O::exposePython(Lisp_sp lisp) {
@@ -1159,9 +1159,6 @@ void ValueEnvironment_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<ValueEnvironment_O>()
       .def("valueEnvironment_defineSpecialBinding", &ValueEnvironment_O::defineSpecialBinding)
       .def("valueEnvironment_defineLexicalBinding", &ValueEnvironment_O::defineLexicalBinding);
-//  af_def(CorePkg, "makeValueEnvironment", &ValueEnvironment_O::createForLambdaListHandler);
-//  af_def(CorePkg, "makeValueEnvironmentForNumberOfEntries", &ValueEnvironment_O::createForNumberOfEntries);
-//  af_def(CorePkg, "makeValueEnvironmentForLocallySpecialEntries", &ValueEnvironment_O::createForLocallySpecialEntries);
 }
 
 void ValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
@@ -1175,7 +1172,6 @@ EXPOSE_CLASS(core, FunctionValueEnvironment_O);
 void FunctionValueEnvironment_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<FunctionValueEnvironment_O>()
       .def("bindFunction", &FunctionValueEnvironment_O::bind_function);
-//  af_def(CorePkg, "makeFunctionValueEnvironment", &FunctionValueEnvironment_O::createForEntries);
 }
 
 void FunctionValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
@@ -1308,7 +1304,7 @@ bool CompileTimeEnvironment_O::_findValue(T_sp sym, int &depth, int &index, Valu
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
 }
 
-CL_LISPIFY_NAME(makeUnwindUnwindProtectEnvironment);
+CL_LISPIFY_NAME(makeUnwindProtectEnvironment);
 CL_DEFUN UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cleanupForm, T_sp parent) {
   UnwindProtectEnvironment_sp environ = UnwindProtectEnvironment_O::create();
   environ->_CleanupForm = cleanupForm;
@@ -1321,7 +1317,6 @@ EXPOSE_CLASS(core, UnwindProtectEnvironment_O);
 void UnwindProtectEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<UnwindProtectEnvironment_O>()
       .def("UnwindProtectEnvironment-cleanupForm", &UnwindProtectEnvironment_O::cleanupForm);
-//  af_def(CorePkg, "makeUnwindProtectEnvironment", &UnwindProtectEnvironment_O::make);
 }
 
 void UnwindProtectEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1370,7 +1365,6 @@ EXPOSE_CLASS(core, BlockEnvironment_O);
 
 void BlockEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<BlockEnvironment_O>();
-//  af_def(CorePkg, "makeBlockEnvironment", &BlockEnvironment_O::make);
 }
 
 void BlockEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1433,7 +1427,6 @@ EXPOSE_CLASS(core, CatchEnvironment_O);
 
 void CatchEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<CatchEnvironment_O>();
-//  af_def(CorePkg, "makeCatchEnvironment", &CatchEnvironment_O::make);
 }
 
 void CatchEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1475,7 +1468,6 @@ EXPOSE_CLASS(core, FunctionContainerEnvironment_O);
 
 void FunctionContainerEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<FunctionContainerEnvironment_O>();
-//  af_def(CorePkg, "makeFunctionContainerEnvironment", &FunctionContainerEnvironment_O::make);
 }
 
 void FunctionContainerEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1540,7 +1532,6 @@ EXPOSE_CLASS(core, TagbodyEnvironment_O);
 void TagbodyEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<TagbodyEnvironment_O>()
       .def("addTag", &TagbodyEnvironment_O::addTag);
-//  af_def(CorePkg, "makeTagbodyEnvironment", &TagbodyEnvironment_O::make);
 }
 
 void TagbodyEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1656,7 +1647,6 @@ EXPOSE_CLASS(core, MacroletEnvironment_O);
 void MacroletEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<MacroletEnvironment_O>()
       .def("addMacro", &MacroletEnvironment_O::addMacro);
-//  af_def(CorePkg, "makeMacroletEnvironment", &MacroletEnvironment_O::make);
 }
 
 void MacroletEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1727,7 +1717,6 @@ EXPOSE_CLASS(core, SymbolMacroletEnvironment_O);
 void SymbolMacroletEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<SymbolMacroletEnvironment_O>()
       .def("addSymbolMacro", &SymbolMacroletEnvironment_O::addSymbolMacro);
-//  af_def(CorePkg, "makeSymbolMacroletEnvironment", &SymbolMacroletEnvironment_O::make);
 }
 
 void SymbolMacroletEnvironment_O::exposePython(Lisp_sp lisp) {
@@ -1782,9 +1771,7 @@ EXPOSE_CLASS(core, StackValueEnvironment_O);
 
 void StackValueEnvironment_O::exposeCando(Lisp_sp lisp) {
   class_<StackValueEnvironment_O>()
-      //	    .def("addValue",&StackValueEnvironment_O::addValue)
       ;
-//  af_def(CorePkg, "makeStackValueEnvironment", &StackValueEnvironment_O::make);
 }
 
 void StackValueEnvironment_O::exposePython(Lisp_sp lisp) {

@@ -322,22 +322,23 @@ CL_DEFUN T_sp cl__package_name(T_sp pkgDesig) {
   return Str_O::create(name);
 };
 
+SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
+SYMBOL_EXPORT_SC_(ClPkg, gentemp);
+SYMBOL_EXPORT_SC_(ClPkg, makePackage);
+SYMBOL_EXPORT_SC_(ClPkg, listAllPackages);
+SYMBOL_EXPORT_SC_(ClPkg, use_package);
+SYMBOL_EXPORT_SC_(ClPkg, unuse_package);
+SYMBOL_EXPORT_SC_(ClPkg, package_shadowing_symbols);
+SYMBOL_EXPORT_SC_(ClPkg, import);
+SYMBOL_EXPORT_SC_(ClPkg, shadow);
+SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
+SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
+SYMBOL_EXPORT_SC_(ClPkg, unintern);
+
 void Package_O::exposeCando(Lisp_sp lisp) {
   class_<Package_O>()
       //	    .def("allSymbols",&Package_O::allSymbols)
       .def("core:PackageHashTables", &Package_O::hashTables);
-  SYMBOL_EXPORT_SC_(ClPkg, package_use_list);
-  SYMBOL_EXPORT_SC_(ClPkg, gentemp);
-  SYMBOL_EXPORT_SC_(ClPkg, makePackage);
-  SYMBOL_EXPORT_SC_(ClPkg, listAllPackages);
-  SYMBOL_EXPORT_SC_(ClPkg, use_package);
-  SYMBOL_EXPORT_SC_(ClPkg, unuse_package);
-  SYMBOL_EXPORT_SC_(ClPkg, package_shadowing_symbols);
-  SYMBOL_EXPORT_SC_(ClPkg, import);
-  SYMBOL_EXPORT_SC_(ClPkg, shadow);
-  SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
-  SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
-  SYMBOL_EXPORT_SC_(ClPkg, unintern);
 }
 
 void Package_O::exposePython(Lisp_sp lisp) {
@@ -669,8 +670,8 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
     }
   }
 #if 0
-  if ( strcmp(symName,"YES-OR-NO-P") == 0 ) {
-    printf("%s:%d Interning YES-OR-NO-P\n", __FILE__, __LINE__ );
+  if ( strcmp(symName,"POINTER") == 0 ) {
+    printf("%s:%d Interning POINTER@%p in %s exportp: %d\n", __FILE__, __LINE__, sym.raw_(), this->_Name.c_str(), exportp );
   }
 #endif
 //  printf("%s:%d Interning symbol %s@%p into %s exportp: %d\n", __FILE__, __LINE__, _rep_(sym).c_str(), sym.raw_(), this->_Name.c_str(), exportp);

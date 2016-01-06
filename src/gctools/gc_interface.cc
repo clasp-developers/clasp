@@ -618,9 +618,13 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
   package_part = core::lispify_symbol_name(package_part);
   symbol_part = core::lispify_symbol_name(symbol_part);
 //  printf("%s:%d set_one_static_class_symbol --> %s:%s\n", __FILE__, __LINE__, package_part.c_str(), symbol_part.c_str() );
-  core::Symbol_sp sym = symbols->lookupSymbol(package_part,symbol_part);
-//  printf("%s:%d set_one_static_class_symbol symbol@%p\n", __FILE__, __LINE__,  sym.raw_());
-  TheClass::___set_static_ClassSymbol(sym);
+  core::SymbolStorage store;
+  bool found =  symbols->lookupSymbol(package_part,symbol_part, store );
+  if ( !found ) {
+    printf("%s:%d ERROR!!!! The static class symbol %s was not found!\n", __FILE__, __LINE__, full_name.c_str() );
+    abort();
+  }
+  TheClass::___set_static_ClassSymbol(store._Symbol);
 }
 
 void set_static_class_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
@@ -722,6 +726,8 @@ void initialize_classes_and_methods()
 
 void initialize_clasp()
 {
+  // The bootStrapCoreSymbolMap keeps track of packages and symbols while they
+  // are half-way initialized.
   core::BootStrapCoreSymbolMap bootStrapCoreSymbolMap;
   setup_bootstrap_packages(&bootStrapCoreSymbolMap);
     

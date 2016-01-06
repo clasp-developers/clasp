@@ -1996,7 +1996,6 @@ void LogicalPathname_O::exposePython(Lisp_sp lisp) {
 #endif
 };
 
-void initialize_pathname() {
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilename);
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilePathname);
   SYMBOL_EXPORT_SC_(CorePkg, pathnameTranslations);
@@ -2022,5 +2021,5 @@ void initialize_pathname() {
   SYMBOL_EXPORT_SC_(ClPkg, directoryNamestring);
   SYMBOL_EXPORT_SC_(ClPkg, hostNamestring);
   SYMBOL_EXPORT_SC_(ClPkg, enoughNamestring);
-};
+
 };

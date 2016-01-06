@@ -1188,12 +1188,12 @@ void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
       .def("namesOfLexicalVariables", &LambdaListHandler_O::namesOfLexicalVariables)
       .def("namesOfLexicalVariablesForDebugging", &LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
       .def("LambdaListHandler-lambdaList", &LambdaListHandler_O::lambdaList);
+}
+
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
-//  af_def(CorePkg, "makeLambdaListHandler", &LambdaListHandler_O::makeLambdaListHandler, ARGS_LambdaListHandler_O_makeLambdaListHandler, DECL_LambdaListHandler_O_makeLambdaListHandler, DOCS_LambdaListHandler_O_makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
-}
 
 void LambdaListHandler_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON

@@ -75,7 +75,6 @@ Pathname_sp core__coerce_to_physical_pathname(T_sp x);
 Str_sp core__coerce_to_filename(T_sp pathname_orig);
 Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 
-void initialize_pathname();
 };
 
 namespace core {

@@ -68,9 +68,4 @@ public: // Functions here
 
 }; // cffi namespace
 TRANSLATE(cffi::Pointer_O);
-
-namespace cffi {
-
-void initialize_cffi();
-};
 #endif /* _core_ffi_H_ */

@@ -80,7 +80,9 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
 
   virtual cl_index fillPointer() const { SUBIMP(); };
-  virtual void setFillPointer(size_t idx) { SUBIMP(); };
+
+  CL_NAME("FILL-POINTER-SET");
+  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { SUBIMP(); };
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 

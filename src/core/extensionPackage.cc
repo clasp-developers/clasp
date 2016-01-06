@@ -41,7 +41,6 @@ using namespace core;
 
 SYMBOL_EXPORT_SC_(ExtPkg, STARloadHooksSTAR);
 SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
-SYMBOL_SC_(ExtPkg, lambda_block);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvokeDebuggerHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
 SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
@@ -49,7 +48,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"
-T_sp af_maybeQuote(T_sp form) {
+CL_DEFUN core::T_sp ext__maybeQuote(core::T_sp form) {
   if (cl__atom(form)) {
     if (form.nilp())
       goto DONTQUOTEIT; // nil
@@ -72,15 +71,6 @@ DONTQUOTEIT:
   return form;
 }
 
-void initialize_extension_functions() {
-  SYMBOL_EXPORT_SC_(ExtPkg, maybeQuote);
-  Defun(maybeQuote);
-};
+SYMBOL_EXPORT_SC_(ExtPkg, maybeQuote);
 
-void initialize_extensionPackage() {
-  list<string> lnicknames;
-  list<string> luse = {"COMMON-LISP"};
-  _lisp->makePackage("EXT", lnicknames, luse);
-  // We don't have to create the EXTENSION symbols here - it's done in bootStrapCoreSymbolMap
-}
 };

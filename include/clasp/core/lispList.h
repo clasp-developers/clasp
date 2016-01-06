@@ -47,7 +47,6 @@ T_sp clasp_nconc(T_sp l, T_sp y);
 T_sp cl__last(T_sp list, int n = 1);
 List_sp cl__nbutlast(List_sp list, Integer_sp n);
 
-void initialize_list();
 };
 
 namespace core {

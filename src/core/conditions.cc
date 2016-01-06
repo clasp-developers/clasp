@@ -144,11 +144,7 @@ CL_DEFUN     void core__set_throw_position(T_sp cond, Str_sp file, Str_sp functi
     };
 #endif
 
-void initialize_conditions() {
   SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
-
   SYMBOL_SC_(CorePkg, conditionMessage);
 
-  //	SYMBOL_SC_(CorePkg,setThrowPosition);
-};
 };

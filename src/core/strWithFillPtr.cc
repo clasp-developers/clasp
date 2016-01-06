@@ -165,11 +165,12 @@ void StrWithFillPtr_O::pushSubString(T_sp tstr, size_t start, size_t end) {
   }
 }
 
-void StrWithFillPtr_O::pushString(T_sp str) {
+CL_LISPIFY_NAME(push-string);
+CL_DEFMETHOD void StrWithFillPtr_O::pushString(T_sp str) {
   this->pushSubString(str, 0, cl__length(str));
 }
 
-void StrWithFillPtr_O::pushString(const char *cPtr) {
+void StrWithFillPtr_O::pushStringCharStar(const char *cPtr) {
   while (*cPtr) {
     this->pushCharExtend(*cPtr, this->length());
     cPtr++;

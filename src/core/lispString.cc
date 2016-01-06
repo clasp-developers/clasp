@@ -188,20 +188,20 @@ bool clasp_memberChar(claspChar c, T_sp charBag) {
 //
 
 EXPOSE_CLASS(core, String_O);
+SYMBOL_EXPORT_SC_(ClPkg, string);
+SYMBOL_EXPORT_SC_(ClPkg, string_upcase);
+SYMBOL_EXPORT_SC_(ClPkg, string_downcase);
+SYMBOL_EXPORT_SC_(ClPkg, nstring_upcase);
+SYMBOL_EXPORT_SC_(ClPkg, nstring_downcase);
+SYMBOL_EXPORT_SC_(ClPkg, stringTrim);
+SYMBOL_EXPORT_SC_(ClPkg, stringLeftTrim);
+SYMBOL_EXPORT_SC_(ClPkg, stringRightTrim);
+SYMBOL_EXPORT_SC_(ClPkg, char);
 
 void String_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<String_O>()
       //	.initArgs("(self)")
       ;
-  SYMBOL_EXPORT_SC_(ClPkg, string);
-  SYMBOL_EXPORT_SC_(ClPkg, string_upcase);
-  SYMBOL_EXPORT_SC_(ClPkg, string_downcase);
-  SYMBOL_EXPORT_SC_(ClPkg, nstring_upcase);
-  SYMBOL_EXPORT_SC_(ClPkg, nstring_downcase);
-  SYMBOL_EXPORT_SC_(ClPkg, stringTrim);
-  SYMBOL_EXPORT_SC_(ClPkg, stringLeftTrim);
-  SYMBOL_EXPORT_SC_(ClPkg, stringRightTrim);
-  SYMBOL_EXPORT_SC_(ClPkg, char);
 }
 
 void String_O::exposePython(::core::Lisp_sp lisp) {
@@ -994,28 +994,19 @@ CL_DEFUN T_mv cl__parse_integer(Str_sp str, Fixnum start, T_sp end, uint radix, 
 };
 
 
-
-
-void initialize_string()
-{
-  SYMBOL_EXPORT_SC_(ClPkg, string_EQ_);
-  SYMBOL_EXPORT_SC_(ClPkg, string_NE_);
-  SYMBOL_EXPORT_SC_(ClPkg, string_LT_);
-  SYMBOL_EXPORT_SC_(ClPkg, string_GT_);
-  SYMBOL_EXPORT_SC_(ClPkg, string_LE_);
-  SYMBOL_EXPORT_SC_(ClPkg, string_GE_);
-
-  SYMBOL_EXPORT_SC_(ClPkg, string_equal);
-  SYMBOL_EXPORT_SC_(ClPkg, string_not_equal);
-  SYMBOL_EXPORT_SC_(ClPkg, string_lessp);
-  SYMBOL_EXPORT_SC_(ClPkg, string_greaterp);
-  SYMBOL_EXPORT_SC_(ClPkg, string_not_greaterp);
-  SYMBOL_EXPORT_SC_(ClPkg, string_not_lessp);
-
-
-
-  SYMBOL_EXPORT_SC_(ClPkg, make_string);
-  SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
-};
+SYMBOL_EXPORT_SC_(ClPkg, string_EQ_);
+SYMBOL_EXPORT_SC_(ClPkg, string_NE_);
+SYMBOL_EXPORT_SC_(ClPkg, string_LT_);
+SYMBOL_EXPORT_SC_(ClPkg, string_GT_);
+SYMBOL_EXPORT_SC_(ClPkg, string_LE_);
+SYMBOL_EXPORT_SC_(ClPkg, string_GE_);
+SYMBOL_EXPORT_SC_(ClPkg, string_equal);
+SYMBOL_EXPORT_SC_(ClPkg, string_not_equal);
+SYMBOL_EXPORT_SC_(ClPkg, string_lessp);
+SYMBOL_EXPORT_SC_(ClPkg, string_greaterp);
+SYMBOL_EXPORT_SC_(ClPkg, string_not_greaterp);
+SYMBOL_EXPORT_SC_(ClPkg, string_not_lessp);
+SYMBOL_EXPORT_SC_(ClPkg, make_string);
+SYMBOL_EXPORT_SC_(ClPkg, parseInteger);
 
 }; /* core */

@@ -57,7 +57,7 @@ insert_char(StrWithFillPtr_sp buffer, cl_index where, gc::Fixnum c) {
 static T_sp
 push_base_string(T_sp buffer, StrWithFillPtr_sp s) {
   buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
-  gc::As<StrWithFillPtr_sp>(buffer)->pushString(s->c_str());
+  gc::As<StrWithFillPtr_sp>(buffer)->pushStringCharStar(s->c_str());
   return buffer;
 }
 

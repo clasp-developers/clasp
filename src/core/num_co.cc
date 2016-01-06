@@ -1211,7 +1211,6 @@ CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   return gc::As<Real_sp>(x);
 }
 
-void initialize_num_co() {
   SYMBOL_EXPORT_SC_(ClPkg, float);
   SYMBOL_EXPORT_SC_(ClPkg, numerator);
   SYMBOL_EXPORT_SC_(ClPkg, denominator);
@@ -1230,5 +1229,5 @@ void initialize_num_co() {
   SYMBOL_EXPORT_SC_(ClPkg, complex);
   SYMBOL_EXPORT_SC_(ClPkg, realpart);
   SYMBOL_EXPORT_SC_(ClPkg, imagpart);
-};
+
 };

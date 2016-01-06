@@ -147,8 +147,7 @@ CL_DEFUN Integer_sp cl__lcm(List_sp nums) {
   return clasp_minusp(lcm) ? gc::As<Integer_sp>(clasp_negate(lcm)) : gc::As<Integer_sp>(lcm);
 };
 
-void initialize_num_arith() {
   SYMBOL_EXPORT_SC_(ClPkg, gcd);
   SYMBOL_EXPORT_SC_(ClPkg, lcm);
-};
+
 };

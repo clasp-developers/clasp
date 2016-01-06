@@ -44,7 +44,6 @@ T_sp cl__load(T_sp source,
              T_sp external_format = kw::_sym_default,
              T_sp search_list = _Nil<T_O>());
 
-void initialize_load();
 };
 
 #endif

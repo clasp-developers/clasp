@@ -257,12 +257,9 @@ CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   return obj;
 }
 
-void initialize_print() {
-  //        SYMBOL_EXPORT_SC_(CorePkg,writeAddr);
-  //        Defun(writeAddr);
   SYMBOL_EXPORT_SC_(CorePkg, printUnreadableObjectFunction);
   SYMBOL_EXPORT_SC_(ClPkg, print);
   SYMBOL_EXPORT_SC_(ClPkg, prin1);
   SYMBOL_EXPORT_SC_(ClPkg, princ);
-}
+
 };

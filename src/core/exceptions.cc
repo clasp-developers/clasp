@@ -829,9 +829,8 @@ void clasp_internal_error(const char *msg) {
   SIMPLE_ERROR(BF("Internal error: %s\n") % msg);
 }
 
-void initialize_exceptions() {
-  SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);
-  SYMBOL_EXPORT_SC_(CorePkg, wrongTypeNthArg);
-      SYMBOL_EXPORT_SC_(CorePkg, wrongIndex);
-};
+SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);
+SYMBOL_EXPORT_SC_(CorePkg, wrongTypeNthArg);
+SYMBOL_EXPORT_SC_(CorePkg, wrongIndex);
+
 };

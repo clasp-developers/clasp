@@ -220,7 +220,6 @@ NOT_A_FILENAME:
   return _lisp->_true();
 }
 
-void initialize_load() {
   SYMBOL_EXPORT_SC_(CorePkg, loadSource);
-}
+
 };

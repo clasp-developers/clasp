@@ -198,8 +198,4 @@ T_sp outputStreamDesignator(T_sp obj) {
 
 }; /* desig */
 
-void initialize_designators() {
-//  af_def(CorePkg, "pathDesignator", &coerce::pathDesignator);
-//  af_def(CorePkg, "coerce-to-package", &coerce::packageDesignator);
-}
 }; /* core */

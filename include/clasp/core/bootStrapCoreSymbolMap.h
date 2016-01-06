@@ -73,8 +73,7 @@ public:
   
   Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false, bool shadowp = false);
 
-  /*! Throw an exception if symbol not found */
-  Symbol_sp lookupSymbol(string const &packageName, string const &symbolName, bool inherited=false) const;
+  bool lookupSymbol(string const &packageName, string const &symbolName, SymbolStorage& symbolStorage, bool recursivep=false) const;
 
   void dump();
 };

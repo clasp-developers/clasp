@@ -38,53 +38,6 @@ THE SOFTWARE.
 
 namespace core {
 
-#if 0
-    EXPOSE_CLASS(core,ExternalObjectManager_O);
-    void ExternalObjectManager_O::exposeCando(Lisp_sp env)
-    {
-        class_<ExternalObjectManager_O>()
-            ;
-    }
-
-    void ExternalObjectManager_O::exposePython(Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,ExternalObjectManager,"","",_lisp)
-            ;
-#endif
-    }
-    void ExternalObjectManager_O::initialize()
-    {
-        this->Base::initialize();
-        this->_ExternalPointersToObjects.clear();
-    }
-
-
-    void ExternalObjectManager_O::registerExternal(void* ptr, ExternalObject_sp obj,Lisp_sp lisp)
-    {
-        LOG(BF("Registering external ptr@%p to correspond to object(%s)") % ptr % _rep_(obj) );
-        this->_ExternalPointersToObjects[ptr] = obj;
-    }
-
-    bool ExternalObjectManager_O::recognizesExternal(void* ptr)
-    {
-        return this->_ExternalPointersToObjects.count(ptr)>0;
-    }
-
-    ExternalObject_sp ExternalObjectManager_O::objectForExternal(void* ptr)
-    {_OF();
-        if ( !this->recognizesExternal(ptr) )
-        {
-            SIMPLE_ERROR(BF("The external pointer@%p is not recognized") % ptr );
-        }
-        if ( !this->_ExternalPointersToObjects[ptr] )
-        {
-            SIMPLE_ERROR(BF("Object for external ptr@p was deleted") % ptr );
-        }
-        return this->_ExternalPointersToObjects[ptr];
-    }
-#endif
-
 void ExternalObject_O::exposeCando(Lisp_sp e) {
   class_<ExternalObject_O>()
       .def("isUndefined", &ExternalObject_O::isUndefined);
@@ -133,7 +86,6 @@ CL_DEFUN ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind) {
 void ForeignData_O::exposeCando(Lisp_sp lisp) {
   class_<ForeignData_O>()
       .def("freeForeignObject", &ForeignData_O::freeForeignObject);
-// af_def(CurrentPkg, "allocateForeignObject", &ForeignData_O::allocateForeignObject, ARGS_ForeignData_O_allocateForeignObject, DECL_ForeignData_O_allocateForeignObject, DOCS_ForeignData_O_allocateForeignObject);
 }
 
 void ForeignData_O::exposePython(Lisp_sp lisp) {

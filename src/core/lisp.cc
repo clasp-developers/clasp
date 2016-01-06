@@ -369,7 +369,6 @@ void testStrings() {
 }
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
-
   { // Trap symbols as they are interned
     char* trapInterncP = getenv("CLASP_TRAP_INTERN");
     if ( trapInterncP ) {
@@ -386,11 +385,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       this->_TrapInternName = trapIntern.substr(nameStart, 9999999);
     }
   }
-
   this->_Mode = FLAG_EXECUTE;
-
   ::_lisp = gctools::tagged_pointer<Lisp_O>(this); // this->sharedThis<Lisp_O>();
-
   //	initializeProfiler(this->profiler(),_lisp);
   this->_TraceLevel = 0;
   this->_DebuggerLevel = 0;
@@ -432,21 +428,12 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 //    rootClassManager().debugDump();
 #endif
   }
-
-  //	LOG(BF("Package(%s) symbols: %s")% this->_CorePackage->getName() % this->_CorePackage->allSymbols() );
-  //	LOG(BF("Package(%s) symbols: %s")% keywordPackage->getName() % keywordPackage->allSymbols() );
-
   //
   // Finish initializing Lisp object
   //
   this->_Roots._CommandLineArguments = _Nil<T_O>();
   {
     _BLOCK_TRACE("Initialize other code"); // needs _TrueObject
-#define Use_CorePkg
-//#include "core_initScripting_inc.h"
-#undef Use_CorePkg
-
-    //            testStrings();
     initialize_Lisp_O();
     core::HashTableEql_sp ht = core::HashTableEql_O::create_default();
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
@@ -457,61 +444,27 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     initialize_cache();
     initialize_backquote();
     initialize_compiler_primitives(_lisp);
-
+    initialize_bits();
     // Rest may be unnecessary after new boot-strapping approach is developed
-//    initialize_primitives();
 #ifdef DEBUG_CL_SYMBOLS
     initializeAllClSymbolsFunctions();
 #endif
-    initialize_list();
-    initialize_bits();
-    initialize_predicates();
-    initialize_bformat(_lisp);
-    initialize_sysprop();
-    initialize_testing();
-    initialize_profile();
-    initialize_designators();
-    initialize_debugging();
-    initialize_math();
-    initialize_string();
-    initialize_unixfsys();
-    initialize_lispStream();
-    initialize_pathname();
-    initialize_numberToString();
-    initialize_print();
-    initialize_load();
-    initialize_num_arith();
-    initialize_num_co();
-    initialize_float_to_digits();
-    initialize_write_object();
-    initialize_write_ugly_object();
-
-    // initialize math routines - all are initialized in initialize_numbers
-    initialize_numbers();
-
-    ext::initialize_extension_functions();
-#ifdef CLOS
-    initialize_genericFunction();
-#endif
-    initialize_conditions();
-    initialize_exceptions();
-
     coreExposerPtr->expose(_lisp, Exposer::candoClasses);
     //	    initializeCandoClos(_lisp);
   }
   {
     // Run some tests to make sure that lisp calling convention is ok.
     run_quick_tests();
-
     // setup the SYS logical-pathname-translations
     {
-      Cons_sp pts = Cons_O::createList(
-                                       Cons_O::createList(Str_O::create("sys:**;*.*"), bundle->getSysPathname())
+      Cons_sp pts =
+        Cons_O::createList(
+                           Cons_O::createList(Str_O::create("sys:**;*.*"),
+                                              bundle->getSysPathname())
         /* ,  more here */
-                                       );
+                           );
       core__pathname_translations(Str_O::create("sys"), _lisp->_true(), pts);
     }
-
     // setup the TMP logical-pathname-translations
     Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),
                                           cl__pathname(Str_O::create("/tmp/**/*.*")));
@@ -522,77 +475,77 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 
     // setup the APP-CONTENTS logical-pathname-translations
     Cons_sp appc = Cons_O::createList(
-        Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
+                                      Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
         /* , more here */
-        );
+                                      );
     core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
 
     // setup the APP-RESOURCES logical-pathname-translations
     Cons_sp app = Cons_O::createList(
-        Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
+                                     Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
         /* , more here */
-        );
+                                     );
     core__pathname_translations(Str_O::create("app-resources"), _lisp->_true(), app);
 
     // setup the build;system pathnames
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
       core__pathname_translations(Str_O::create("min-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-bitcode;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-bitcode;**;*.*"))));
       core__pathname_translations(Str_O::create("full-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-bitcode;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-bitcode;**;*.*"))));
       core__pathname_translations(Str_O::create("cclasp-bitcode"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
       core__pathname_translations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
       core__pathname_translations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
       core__pathname_translations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
       core__pathname_translations(Str_O::create("min-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehm;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehm;**;*.*"))));
       core__pathname_translations(Str_O::create("full-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehm;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehm;**;*.*"))));
       core__pathname_translations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
       core__pathname_translations(Str_O::create("min-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
       core__pathname_translations(Str_O::create("full-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
-          Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
       core__pathname_translations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
     /* Call the function defined in main.cc that creates the source-main: host */
@@ -600,11 +553,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     create_source_main_host();
 #endif
   }
-  //
-  //
-  //
-  this->exposeCando();
-  Lisp_O::initializeGlobals(_lisp);
   coreExposerPtr->expose(_lisp, Exposer::candoFunctions);
   coreExposerPtr->expose(_lisp, Exposer::candoGlobals);
   {
@@ -614,13 +562,10 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       (*ic)(_lisp);
     }
   }
-
   Path_sp startupWorkingDir = Path_O::create(bundle->getStartupWorkingDir());
   this->defconstant(_sym_STARcurrent_working_directorySTAR, _Nil<Path_O>());
   this->setCurrentWorkingDirectory(startupWorkingDir);
-
   this->switchToClassNameHashTable();
-
   {
     _BLOCK_TRACE("Setup system values");
     FILE *null_out = fopen("/dev/null", "w");
@@ -2826,9 +2771,9 @@ string Lisp_O::__repr__() const {
   return ss.str();
 };
 
+SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
+
 void Lisp_O::initializeGlobals(Lisp_sp lisp) {
-  LOG(BF("Lisp_O::initializeGlobals"));
-  SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
 }
 
 void Lisp_O::exposeCando() {
@@ -2992,133 +2937,57 @@ ChangePackage::~ChangePackage() {
   _lisp->selectPackage(this->_SavedPackage);
 }
 
+SYMBOL_SC_(CorePkg, find_single_dispatch_generic_function);
+SYMBOL_SC_(CorePkg, setf_find_single_dispatch_generic_function);
+SYMBOL_SC_(CorePkg, forget_all_single_dispatch_generic_functions);
+SYMBOL_SC_(CorePkg, stackMonitor);
+SYMBOL_SC_(CorePkg, setupStackMonitor);
+SYMBOL_SC_(CorePkg, invokeInternalDebugger);
+SYMBOL_SC_(CorePkg, invokeInternalDebuggerFromGdb);
+SYMBOL_SC_(CorePkg, universalErrorHandler);
+SYMBOL_SC_(CorePkg, stackUsed);
+SYMBOL_SC_(CorePkg, exit);
+SYMBOL_SC_(CorePkg, quit);
+SYMBOL_SC_(CorePkg, getline);
+SYMBOL_SC_(ExtPkg, system);
+SYMBOL_EXPORT_SC_(ClPkg, apropos);
+SYMBOL_EXPORT_SC_(ClPkg, export);
+SYMBOL_EXPORT_SC_(ClPkg, intern);
+SYMBOL_SC_(CorePkg, isTopLevelScript);
+SYMBOL_SC_(CorePkg, sourceFileName);
+SYMBOL_SC_(CorePkg, sourceLineColumn);
+SYMBOL_SC_(CorePkg, findFileInLispPath);
+SYMBOL_EXPORT_SC_(ClPkg, findClass);
+SYMBOL_SC_(CorePkg, setf_findClass);
+SYMBOL_SC_(CorePkg, isAssignableTo);
+SYMBOL_SC_(CorePkg, isSubClassOf);
+SYMBOL_SC_(CorePkg, repr);
+SYMBOL_EXPORT_SC_(ClPkg, error);
+SYMBOL_EXPORT_SC_(ClPkg, cerror);
+SYMBOL_EXPORT_SC_(ExtPkg, setenv);
+SYMBOL_EXPORT_SC_(ExtPkg, getenv);
+SYMBOL_EXPORT_SC_(ClPkg, not);
+SYMBOL_SC_(CorePkg, debugLogOn);
+SYMBOL_SC_(CorePkg, debugLogOff);
+SYMBOL_SC_(CorePkg, mpi_enabled);
+SYMBOL_SC_(CorePkg, mpi_rank);
+SYMBOL_SC_(CorePkg, mpi_size);
+SYMBOL_SC_(CorePkg, sorted);
+SYMBOL_EXPORT_SC_(ClPkg, sort);
+SYMBOL_EXPORT_SC_(ClPkg, macroexpand_1);
+SYMBOL_EXPORT_SC_(ClPkg, macroexpand);
+SYMBOL_SC_(CorePkg, database_dir);
+SYMBOL_SC_(CorePkg, script_dir);
+SYMBOL_SC_(CorePkg, libraryPath);
+SYMBOL_SC_(CorePkg, lispCodePath);
+SYMBOL_SC_(CorePkg, setCurrentWorkingDirectory);
+SYMBOL_EXPORT_SC_(ClPkg, acons);
+SYMBOL_EXPORT_SC_(ClPkg, assoc);
+SYMBOL_EXPORT_SC_(ClPkg, member);
+SYMBOL_SC_(CorePkg, member1);
+SYMBOL_SC_(CorePkg, exportToPython);
+SYMBOL_EXPORT_SC_(ClPkg, find_package);
 
 void initialize_Lisp_O() {
-  //	printf("%s:%d in core::Lisp_O::exposeCando\n", __FILE__, __LINE__ );
-  SYMBOL_SC_(CorePkg, find_single_dispatch_generic_function);
-  SYMBOL_SC_(CorePkg, setf_find_single_dispatch_generic_function);
-  SYMBOL_SC_(CorePkg, forget_all_single_dispatch_generic_functions);
-//  af_def(CorePkg, "find-single-dispatch-generic-function",
-//         &Lisp_O::find_single_dispatch_generic_function,
-//         ARGS_Lisp_O_find_single_dispatch_generic_function,
-//         DECL_Lisp_O_find_single_dispatch_generic_function,
-//         DOCS_Lisp_O_find_single_dispatch_generic_function);
-//  af_def(CorePkg, "setf-find-single-dispatch-generic-function",
-//         &Lisp_O::setf_find_single_dispatch_generic_function,
-//         ARGS_Lisp_O_setf_find_single_dispatch_generic_function,
-//         DECL_Lisp_O_setf_find_single_dispatch_generic_function,
-//         DOCS_Lisp_O_setf_find_single_dispatch_generic_function);
-//  af_def(CorePkg, "forget-all-single-dispatch-generic-functions",
-//         &Lisp_O::forget_all_single_dispatch_generic_functions,
-//         ARGS_Lisp_O_forget_all_single_dispatch_generic_functions,
-//         DECL_Lisp_O_forget_all_single_dispatch_generic_functions,
-//         DOCS_Lisp_O_forget_all_single_dispatch_generic_functions);
-//
-  SYMBOL_SC_(CorePkg, stackMonitor);
-  SYMBOL_SC_(CorePkg, setupStackMonitor);
-
-  SYMBOL_SC_(CorePkg, invokeInternalDebugger);
-  SYMBOL_SC_(CorePkg, invokeInternalDebuggerFromGdb);
-  SYMBOL_SC_(CorePkg, universalErrorHandler);
-  SYMBOL_SC_(CorePkg, stackUsed);
-
-  SYMBOL_SC_(CorePkg, exit);
-  SYMBOL_SC_(CorePkg, quit);
-#if defined(XML_ARCHIVE)
-  SYMBOL_SC_(CorePkg, serialize_xml);
-  Defun(serialize_xml);
-  SYMBOL_SC_(CorePkg, deserialize_xml);
-  Defun(deserialize_xml);
-  SYMBOL_SC_(CorePkg, render);
-  Defun(render);
-  SYMBOL_SC_(CorePkg, saveCando);
-  Defun(saveCando);
-  SYMBOL_SC_(CorePkg, loadCando);
-  Defun(loadCando);
-#endif // defined(XML_ARCHIVE)
-  SYMBOL_SC_(CorePkg, getline);
-
-  SYMBOL_SC_(ExtPkg, system);
-  SYMBOL_EXPORT_SC_(ClPkg, apropos);
-  SYMBOL_EXPORT_SC_(ClPkg, export);
-  SYMBOL_EXPORT_SC_(ClPkg, intern);
-  //	defNoWrapPackage(CorePkg,"apply", &prim_apply,_LISP);
-  SYMBOL_SC_(CorePkg, isTopLevelScript);
-
-  //	defNoWrapPackage(CorePkg,"allGlobalNames", &prim_allGlobalNames ,_LISP);
-  //	defNoWrapPackage(CorePkg,"locals", &prim_locals,_LISP);
-  SYMBOL_SC_(CorePkg, sourceFileName);
-  SYMBOL_SC_(CorePkg, sourceLineColumn);
-  //	SYMBOL_SC_(CorePkg,backtrace);
-  //	Defun(backtrace);
-  //	defNoWrapPackage(CorePkg,"globals", &prim_globals,_LISP);
-  SYMBOL_SC_(CorePkg, findFileInLispPath);
-
-  SYMBOL_EXPORT_SC_(ClPkg, findClass);
-  SYMBOL_SC_(CorePkg, setf_findClass);
-
-  //	defNoWrapPackage(CorePkg,"print", &prim_print ,_LISP);
-
-  SYMBOL_SC_(CorePkg, isAssignableTo);
-  SYMBOL_SC_(CorePkg, isSubClassOf);
-
-  //	defNoWrapPackage(CorePkg,"derive", &prim_derive ,_LISP);
-  //	defNoWrapPackage(CorePkg,"isA", &prim_isA ,_LISP);
-
-  //	defNoWrapPackage(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,_LISP);
-
-  //	defNoWrapPackage(CorePkg,"sub", &prim_sub ,_LISP);
-  //	defNoWrapPackage(CorePkg,"-", &prim_sub ,_LISP);
-  //	defNoWrapPackage(CorePkg,"div", &prim_div ,_LISP);
-  //    defNoWrapPackage(CorePkg,"mod", &prim_mod ,_LISP);
-  //	defNoWrapPackage(CorePkg,"/", &prim_div ,_LISP);
-  //	defNoWrapPackage(CorePkg,"mul", &prim_mul ,_LISP);
-  //	defNoWrapPackage(CorePkg,"*", &prim_mul ,_LISP);
-  //	defNoWrapPackage(CorePkg,"className", &prim_className ,_LISP);
-
-  SYMBOL_SC_(CorePkg, repr);
-
-  SYMBOL_EXPORT_SC_(ClPkg, error);
-  SYMBOL_EXPORT_SC_(ClPkg, cerror);
-  SYMBOL_EXPORT_SC_(ExtPkg, setenv);
-  SYMBOL_EXPORT_SC_(ExtPkg, getenv);
-  SYMBOL_EXPORT_SC_(ClPkg, not);
-
-  SYMBOL_SC_(CorePkg, debugLogOn);
-  SYMBOL_SC_(CorePkg, debugLogOff);
-
-  // mpi commands that are always built in
-  SYMBOL_SC_(CorePkg, mpi_enabled);
-  SYMBOL_SC_(CorePkg, mpi_rank);
-  SYMBOL_SC_(CorePkg, mpi_size);
-  // Basic tests
-  //	defNoWrapPackage(CorePkg,"consp",&prim_consp,_LISP);
-  //	defNoWrapPackage(CorePkg,"symbolp",&prim_symbolp,_LISP);
-
-  // aliases for "list" command
-
-  SYMBOL_SC_(CorePkg, sorted);
-  SYMBOL_EXPORT_SC_(ClPkg, sort);
-  SYMBOL_EXPORT_SC_(ClPkg, macroexpand_1);
-  SYMBOL_EXPORT_SC_(ClPkg, macroexpand);
-
-  // information functions
-  SYMBOL_SC_(CorePkg, database_dir);
-  SYMBOL_SC_(CorePkg, script_dir);
-  SYMBOL_SC_(CorePkg, libraryPath);
-  SYMBOL_SC_(CorePkg, lispCodePath);
-  //	defNoWrapPackage(CorePkg,"dumpHidden", &prim_dumpHidden,_LISP);
-
-  SYMBOL_SC_(CorePkg, setCurrentWorkingDirectory);
-
-  SYMBOL_EXPORT_SC_(ClPkg, acons);
-  SYMBOL_EXPORT_SC_(ClPkg, assoc);
-  SYMBOL_EXPORT_SC_(ClPkg, member);
-
-  SYMBOL_SC_(CorePkg, member1);
-
-  SYMBOL_SC_(CorePkg, exportToPython);
-
-  SYMBOL_EXPORT_SC_(ClPkg, find_package);
 };
 };

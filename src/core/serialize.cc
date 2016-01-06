@@ -84,6 +84,10 @@ void SNode_O::exposeCando(Lisp_sp lisp) {
 void SNode_O::exposePython(Lisp_sp lisp) {
 }
 
+CL_DEFUN BranchSNode_sp core__make_branch_snode() {
+  return BranchSNode_O::create();
+}
+
 SNode_sp SNode_O::createBranchSNode(Symbol_sp kind) {
   SNode_sp snode = BranchSNode_O::create(kind, _Nil<T_O>(), _Nil<T_O>());
   return snode;

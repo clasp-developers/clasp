@@ -280,6 +280,9 @@ string Array_O::__repr__() const {
   return ((rp.ss.str()));
 }
 
+SYMBOL_SC_(CorePkg, copy_subarray);
+SYMBOL_SC_(CorePkg, aset);
+
 void Array_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<Array_O>()
       .def("cl:aref", &Array_O::aref,
@@ -303,8 +306,6 @@ void Array_O::exposeCando(::core::Lisp_sp lisp) {
       .def("cl:arrayHasFillPointerP", &Array_O::arrayHasFillPointerP)
 
       ;
-  SYMBOL_SC_(CorePkg, copy_subarray);
-  SYMBOL_SC_(CorePkg, aset);
 }
 
 void Array_O::exposePython(Lisp_sp lisp) {

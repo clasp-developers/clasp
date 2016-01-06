@@ -1491,13 +1491,12 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   return filename;
 }
 
-void initialize_unixfsys() {
-  SYMBOL_EXPORT_SC_(CorePkg, currentDir);
+   SYMBOL_EXPORT_SC_(CorePkg, currentDir);
   SYMBOL_EXPORT_SC_(CorePkg, file_kind);
   SYMBOL_EXPORT_SC_(ClPkg, truename);
   SYMBOL_EXPORT_SC_(ClPkg, probe_file);
   SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
   SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
   SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
-};
+
 };

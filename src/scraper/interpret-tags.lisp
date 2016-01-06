@@ -4,11 +4,12 @@
   ((tag :initarg :tag :accessor tag)
    (other-tag :initarg :other-tag :accessor other-tag))
   (:report (lambda (condition stream)
-             (format stream "Error at ~a interpreting tag ~a ~a the tag ~a is too far away"
+             (format stream "Error at ~a interpreting tag ~a ~a the tag ~a at ~a is too far away"
                      (tags:source-pos (tag condition))
                      (tags:tag-code (tag condition))
                      (tags:identifier (tag condition))
-                     (tags:tag-code (other-tag condition))))))
+                     (tags:tag-code (other-tag condition))
+                     (tags:source-pos (other-tag condition))))))
 
 
 
@@ -153,6 +154,18 @@ If override-name-tag is not nil then return its value, otherwise return name"
                       problem-packages)
                     (reverse sorted)))))))
 
+
+(defun check-symbol-against-previous (symbol previous-symbols)
+  (let* ((key (format nil "~a/~a" (package% symbol) (lisp-name% symbol)))
+         (previous (gethash key previous-symbols)))
+    (if previous
+        (progn
+          (when (not (eq (exported% symbol) (exported% previous)))
+            (warn "The symbol ~a in package ~a was declared twice with different export status - c++-names ~a ~a" (lisp-name% symbol) (package% symbol) (c++-name% symbol) (c++-name% previous)))
+          (when (not (eq (shadow% symbol) (shadow% previous)))
+            (warn "The symbol ~a in package ~a was declared twice with different shadow status - c++-names ~a ~a" (lisp-name% symbol) (package% symbol) (c++-name% symbol) (c++-name% previous))))
+        (setf (gethash key previous-symbols) symbol))))
+
 (defun interpret-tags (tags)
   (declare (optimize (debug 3)))
   (let ((source-info (gather-source-files tags)))
@@ -174,7 +187,8 @@ If override-name-tag is not nil then return its value, otherwise return name"
         (packages (make-hash-table :test #'equal)) ; map ns/package to package string
         (packages-to-create nil)
         (classes (make-hash-table :test #'equal))
-        functions symbols)
+        functions symbols
+        (previous-symbols (make-hash-table :test #'equal)))
     (declare (special namespace-to-assoc package-to-assoc packages))
     (dolist (tag tags)
       (etypecase tag
@@ -445,23 +459,29 @@ If override-name-tag is not nil then return its value, otherwise return name"
            (setf cur-begin-enum nil
                  cur-values nil)))
         (tags:symbol-tag
-         (let ((c++-name (if (tags:c++-name% tag)
-                             (tags:c++-name% tag)
-                             (tags:lisp-name% tag)))
-               (namespace (if (tags:namespace% tag)
-                              (tags:namespace% tag)
-                              (tags:namespace% (gethash (tags:package% tag) package-to-assoc))))
-               (package (if (tags:package% tag)
-                            (tags:package% tag)
-                            (tags:package% (gethash (tags:namespace% tag) namespace-to-assoc)))))
-           (push (make-instance 'expose-symbol
-                                :lisp-name% (tags:lisp-name% tag)
-                                :c++-name% c++-name
-                                :namespace% namespace
-                                :package% package
-                                :package-str% (gethash package packages)
-                                :exported% (typep tag 'tags:symbol-external-tag)
-                                :shadow% (typep tag 'tags:symbol-shadow-external-tag))
-                 symbols)))))
+         (let* ((c++-name (if (tags:c++-name% tag)
+                              (tags:c++-name% tag)
+                              (tags:lisp-name% tag)))
+                (namespace (if (tags:namespace% tag)
+                               (tags:namespace% tag)
+                               (tags:namespace% (gethash (tags:package% tag) package-to-assoc))))
+                (package (if (tags:package% tag)
+                             (tags:package% tag)
+                             (tags:package% (gethash (tags:namespace% tag) namespace-to-assoc))))
+                (lisp-name (tags:lisp-name% tag))
+                (exported (typep tag 'tags:symbol-external-tag))
+                (shadow (typep tag 'tags:symbol-shadow-external-tag))
+                (symbol (make-instance 'expose-symbol
+                                       :lisp-name% lisp-name
+                                       :c++-name% c++-name
+                                       :namespace% namespace
+                                       :package% package
+                                       :package-str% (gethash package packages)
+                                       :exported% exported
+                                       :shadow% shadow)))
+           (check-symbol-against-previous symbol previous-symbols)
+           (push symbol symbols)))))
     (values (order-packages-by-use packages-to-create) functions symbols classes enums)))
+                                                                                         
+                                                                                         
 

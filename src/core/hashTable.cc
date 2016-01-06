@@ -942,6 +942,15 @@ string HashTable_O::keysAsString() {
   return ss.str();
 }
 
+  SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
+  SYMBOL_EXPORT_SC_(ClPkg, maphash);
+  SYMBOL_EXPORT_SC_(ClPkg, clrhash);
+  SYMBOL_SC_(CorePkg, hash_eql);
+  SYMBOL_SC_(CorePkg, hash_equal);
+  SYMBOL_SC_(CorePkg, hash_equalp);
+  SYMBOL_EXPORT_SC_(ClPkg, remhash);
+  SYMBOL_EXPORT_SC_(ClPkg, gethash);
+
 void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<HashTable_O> ht;
   ht
@@ -957,14 +966,6 @@ void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
   ht
       .def("core:hashTableSetfGethash", &HashTable_O::hash_table_setf_gethash)
       .def("core:hashTableDump", &HashTable_O::hash_table_dump);
-  SYMBOL_EXPORT_SC_(ClPkg, make_hash_table);
-  SYMBOL_EXPORT_SC_(ClPkg, maphash);
-  SYMBOL_EXPORT_SC_(ClPkg, clrhash);
-  SYMBOL_SC_(CorePkg, hash_eql);
-  SYMBOL_SC_(CorePkg, hash_equal);
-  SYMBOL_SC_(CorePkg, hash_equalp);
-  SYMBOL_EXPORT_SC_(ClPkg, remhash);
-  SYMBOL_EXPORT_SC_(ClPkg, gethash);
 
 }
 

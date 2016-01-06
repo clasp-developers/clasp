@@ -177,6 +177,4 @@ CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   return write_object(obj, strm);
 };
 
-void initialize_write_object() {
-}
 };

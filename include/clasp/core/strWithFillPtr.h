@@ -109,7 +109,7 @@ public:
   void pushString(T_sp str);
 
   /*! Push the entire contents of the string in (str) */
-  void pushString(const char *str);
+  void pushStringCharStar(const char *str);
 
   string __repr__() const;
 

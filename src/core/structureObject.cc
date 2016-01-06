@@ -315,14 +315,6 @@ string StructureObject_O::__repr__() const {
     }
 #endif
 
-void StructureObject_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureObject_O>()
-      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
-      ;
-#if 0
-	    SYMBOL_SC_(CorePkg,make_structure);
-	    Defun(make_structure);
-#endif
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
   SYMBOL_EXPORT_SC_(CorePkg, structureSet);
   SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
@@ -332,6 +324,15 @@ void StructureObject_O::exposeCando(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
 
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
+
+void StructureObject_O::exposeCando(Lisp_sp lisp) {
+  class_<StructureObject_O>()
+      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
+      ;
+#if 0
+	    SYMBOL_SC_(CorePkg,make_structure);
+	    Defun(make_structure);
+#endif
 }
 
 void StructureObject_O::exposePython(Lisp_sp lisp) {

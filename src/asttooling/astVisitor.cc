@@ -41,10 +41,10 @@ THE SOFTWARE.
 
 namespace asttooling {
 
-#define ARGS_af_makeAstVisitor "(target)"
-#define DECL_af_makeAstVisitor ""
-#define DOCS_af_makeAstVisitor "makeAstVisitor"
-AstVisitor_sp af_makeAstVisitor(core::T_sp target) {
+#define ARGS_ast_tooling__makeAstVisitor "(target)"
+#define DECL_ast_tooling__makeAstVisitor ""
+#define DOCS_ast_tooling__makeAstVisitor "makeAstVisitor"
+CL_DEFUN AstVisitor_sp ast_tooling__makeAstVisitor(core::T_sp target) {
   return AstVisitor_O::create(target);
 };
 
@@ -1448,7 +1448,7 @@ bool AstVisitor_O::VisitStmt(clang::Stmt *node) {
 #endif
 
 void initialize_astVisitor() {
-  Defun(makeAstVisitor);
+//  Defun(makeAstVisitor);
 
   {
     using namespace clbind;

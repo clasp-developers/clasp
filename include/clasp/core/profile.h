@@ -136,8 +136,6 @@ extern Profiler _globalProfiler;
 /*! Provide the time in nanoseconds since a system defined epoch */
 Bignum profilerTimeNs();
 
-void initialize_profile();
-
 /*! Reset the clocks on all functions to start profiling from the current time */
 void restart_profile();
 

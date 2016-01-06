@@ -700,7 +700,6 @@ CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
   return clasp_boole(unbox_fixnum(fnop), arg1, arg2);
 };
 
-void initialize_bits() {
   SYMBOL_EXPORT_SC_(ClPkg, boole_1);
   SYMBOL_EXPORT_SC_(ClPkg, boole_2);
   SYMBOL_EXPORT_SC_(ClPkg, boole_and);
@@ -718,6 +717,8 @@ void initialize_bits() {
   SYMBOL_EXPORT_SC_(ClPkg, boole_set);
   SYMBOL_EXPORT_SC_(ClPkg, boole_xor);
 
+
+void initialize_bits() {
   cl::_sym_boole_1->defconstant(make_fixnum(boole_1));
   cl::_sym_boole_2->defconstant(make_fixnum(boole_2));
   cl::_sym_boole_and->defconstant(make_fixnum(boole_and));

@@ -230,11 +230,12 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) 
 
 EXPOSE_CLASS(core, SingleDispatchGenericFunction_O);
 
+  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
+  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
+
 void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<SingleDispatchGenericFunction_O>()
     .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
-  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
-  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
 }
 
 void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {

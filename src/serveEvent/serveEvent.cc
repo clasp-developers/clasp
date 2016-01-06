@@ -38,46 +38,46 @@ namespace serveEvent {
 
 using namespace core;
 
-#define ARGS_af_ll_fd_zero "(fdset)"
-#define DECL_af_ll_fd_zero ""
-#define DOCS_af_ll_fd_zero "ll_fd_zero"
-void af_ll_fd_zero(core::ForeignData_sp fdset) {
+#define ARGS_serve_event_internal__ll_fd_zero "(fdset)"
+#define DECL_serve_event_internal__ll_fd_zero ""
+#define DOCS_serve_event_internal__ll_fd_zero "ll_fd_zero"
+CL_DEFUN void serve_event_internal__ll_fd_zero(core::ForeignData_sp fdset) {
   FD_ZERO(fdset->data<fd_set *>());
 }
 
-#define ARGS_af_ll_fd_set "(fd fdset)"
-#define DECL_af_ll_fd_set ""
-#define DOCS_af_ll_fd_set "ll_fd_set"
-void af_ll_fd_set(int fd, core::ForeignData_sp fdset) {
+#define ARGS_serve_event_internal__ll_fd_set "(fd fdset)"
+#define DECL_serve_event_internal__ll_fd_set ""
+#define DOCS_serve_event_internal__ll_fd_set "ll_fd_set"
+CL_DEFUN void serve_event_internal__ll_fd_set(int fd, core::ForeignData_sp fdset) {
   FD_SET(fd, fdset->data<fd_set *>());
 }
 
-#define ARGS_af_ll_fd_isset "(fd fdset)"
-#define DECL_af_ll_fd_isset ""
-#define DOCS_af_ll_fd_isset "ll_fd_isset"
-int af_ll_fd_isset(int fd, core::ForeignData_sp fdset) {
+#define ARGS_serve_event_internal__ll_fd_isset "(fd fdset)"
+#define DECL_serve_event_internal__ll_fd_isset ""
+#define DOCS_serve_event_internal__ll_fd_isset "ll_fd_isset"
+CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, core::ForeignData_sp fdset) {
   return FD_ISSET(fd, fdset->data<fd_set *>());
 }
 
-#define ARGS_af_ll_fdset_size "()"
-#define DECL_af_ll_fdset_size ""
-#define DOCS_af_ll_fdset_size "ll_fdset_size"
-int af_ll_fdset_size() {
+#define ARGS_serve_event_internal__ll_fdset_size "()"
+#define DECL_serve_event_internal__ll_fdset_size ""
+#define DOCS_serve_event_internal__ll_fdset_size "ll_fdset_size"
+CL_DEFUN int serve_event_internal__ll_fdset_size() {
   return sizeof(fd_set);
 }
 
-#define ARGS_af_ll_serveEventNoTimeout "(rfd wfd maxfdp1)"
-#define DECL_af_ll_serveEventNoTimeout ""
-#define DOCS_af_ll_serveEventNoTimeout "ll_serveEventNoTimeout"
-core::Integer_mv af_ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1) {
+#define ARGS_serve_event_internal__ll_serveEventNoTimeout "(rfd wfd maxfdp1)"
+#define DECL_serve_event_internal__ll_serveEventNoTimeout ""
+#define DOCS_serve_event_internal__ll_serveEventNoTimeout "ll_serveEventNoTimeout"
+CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1) {
   gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
-#define ARGS_af_ll_serveEventWithTimeout "(rfd wfd maxfdp1 seconds)"
-#define DECL_af_ll_serveEventWithTimeout ""
-#define DOCS_af_ll_serveEventWithTimeout "ll_serveEventWithTimeout"
-Integer_mv af_ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1, double seconds) {
+#define ARGS_serve_event_internal__ll_serveEventWithTimeout "(rfd wfd maxfdp1 seconds)"
+#define DECL_serve_event_internal__ll_serveEventWithTimeout ""
+#define DOCS_serve_event_internal__ll_serveEventWithTimeout "ll_serveEventWithTimeout"
+CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1, double seconds) {
   if (seconds < 0.0) {
     SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);
   }
@@ -93,19 +93,12 @@ void initialize_serveEvent_globals() {
   _sym__PLUS_EINTR_PLUS_->defconstant(Integer_O::create((gc::Fixnum)EINTR));
 };
 
-void initialize_serveEvent_functions() {
 
   SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_zero);
-  Defun(ll_fd_zero);
   SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_set);
-  Defun(ll_fd_set);
   SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fd_isset);
-  Defun(ll_fd_isset);
   SYMBOL_EXPORT_SC_(ServeEventPkg, ll_fdset_size);
-  Defun(ll_fdset_size);
   SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventNoTimeout);
-  Defun(ll_serveEventNoTimeout);
   SYMBOL_EXPORT_SC_(ServeEventPkg, ll_serveEventWithTimeout);
-  Defun(ll_serveEventWithTimeout);
-};
+
 };

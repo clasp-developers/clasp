@@ -34,6 +34,5 @@ namespace core {
 StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Integer_sp integer,
                                        Fixnum_sp base, bool radix, bool decimalp);
 
-void initialize_numberToString();
 };
 #endif

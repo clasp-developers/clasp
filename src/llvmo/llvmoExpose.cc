@@ -92,10 +92,10 @@ core::T_sp CompiledClosure::lambdaList() const {
   return this->_lambdaList;
 }
 
-#define ARGS_comp_setAssociatedFuncs "(func associated-funcs)"
-#define DECL_comp_setAssociatedFuncs ""
-#define DOCS_comp_setAssociatedFuncs "setAssociatedFuncs"
-CL_DEFUN void comp_setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs) {
+#define ARGS_compiler__setAssociatedFuncs "(func associated-funcs)"
+#define DECL_compiler__setAssociatedFuncs ""
+#define DOCS_compiler__setAssociatedFuncs "setAssociatedFuncs"
+CL_DEFUN void compiler__setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs) {
   auto closure = cf->closure.as<CompiledClosure>();
   closure->setAssociatedFunctions(associatedFuncs);
 };
@@ -3541,10 +3541,9 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   return Values(targeto, _Nil<core::T_O>());
 }
 
-void initialize_llvmo_expose() {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmPrinter();
-  llvm::InitializeNativeTargetAsmParser();
+
+
+
 
   SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
@@ -3596,8 +3595,6 @@ void initialize_llvmo_expose() {
   CL_VALUE_ENUM(_sym_LocalExecTLSModel, llvm::GlobalValue::LocalExecTLSModel);;
   CL_END_ENUM(_sym_STARglobal_ThreadLocalModesSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyFunction);
-//  Defun(verifyFunction);
-
   //
   // Compiler optimization passes
   //
@@ -3787,7 +3784,6 @@ void initialize_llvmo_expose() {
   CL_VALUE_ENUM(_sym_Or, llvm::Instruction::Or);
   CL_VALUE_ENUM(_sym_Xor, llvm::Instruction::Xor);;
   CL_END_ENUM(_sym_STARBinaryOpsSTAR);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, Trunc);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ZExt);
   SYMBOL_EXPORT_SC_(LlvmoPkg, SExt);
@@ -3815,7 +3811,6 @@ void initialize_llvmo_expose() {
   CL_VALUE_ENUM(_sym_IntToPtr, llvm::Instruction::IntToPtr);
   CL_VALUE_ENUM(_sym_BitCast, llvm::Instruction::BitCast);;
   CL_END_ENUM(_sym_STARInstructionCastOpsSTAR);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_FALSE);
   SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OEQ);
   SYMBOL_EXPORT_SC_(LlvmoPkg, FCMP_OGT);
@@ -3875,42 +3870,25 @@ void initialize_llvmo_expose() {
   CL_VALUE_ENUM(_sym_ICMP_SLE, llvm::CmpInst::ICMP_SLE);;
   CL_END_ENUM(_sym_STARCmpInstPredicateSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, valid);
-//  Defun(valid);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, makeStringGlobal);
-//  Defun(makeStringGlobal);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, valuep);
-//  Defun(valuep);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, parseBitcodeFile);
-//  Defun(parseBitcodeFile);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, writeBitcodeToFile);
-//  Defun(writeBitcodeToFile);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, writeIrToFile);
-//  Defun(writeIrToFile);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, llvm_value_p);
-//  Defun(llvm_value_p);
-
-  CompDefun(setAssociatedFuncs);
-
-//  core::af_def(LlvmoPkg, "finalizeEngineAndRegisterWithGcAndGetCompiledFunction", &finalizeEngineAndRegisterWithGcAndGetCompiledFunction);
-  //        core::af_def(LlvmoPkg,"finalizeEngineAndRegisterWithGcAndRunFunction",&finalizeEngineAndRegisterWithGcAndRunFunction);
-
-//  core::af_def(LlvmoPkg, "finalizeClosure", &finalizeClosure);
-
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARmostRecentLlvmFinalizationTimeSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARaccumulatedLlvmFinalizationTimeSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARnumberOfLlvmFinalizationsSTAR);
+
+
+
+void initialize_llvmo_expose() {
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmPrinter();
+  llvm::InitializeNativeTargetAsmParser();
   _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
   _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
   _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
-
-//  core::af_def(LlvmoPkg, "TargetRegistryLookupTarget", &TargetRegistryLookupTarget);
-
   llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
 }
 

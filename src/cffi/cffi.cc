@@ -43,50 +43,50 @@ namespace cffi {
 // ----------------------------------------------------------------------
 //
 
-SYMBOL_SC_(CffiPkg, char);
-SYMBOL_SC_(CffiPkg, unsigned_char);
-SYMBOL_SC_(CffiPkg, short);
-SYMBOL_SC_(CffiPkg, unsigned_short);
-SYMBOL_SC_(CffiPkg, int);
-SYMBOL_SC_(CffiPkg, unsigned_int);
-SYMBOL_SC_(CffiPkg, long);
-SYMBOL_SC_(CffiPkg, unsigned_long);
-SYMBOL_SC_(CffiPkg, long_long);
-SYMBOL_SC_(CffiPkg, unsigned_long_long);
-SYMBOL_SC_(CffiPkg, int8);
-SYMBOL_SC_(CffiPkg, uint8);
-SYMBOL_SC_(CffiPkg, int16);
-SYMBOL_SC_(CffiPkg, uint16);
-SYMBOL_SC_(CffiPkg, int32);
-SYMBOL_SC_(CffiPkg, uint32);
-SYMBOL_SC_(CffiPkg, int64);
-SYMBOL_SC_(CffiPkg, uint64);
-SYMBOL_SC_(CffiPkg, size);
-SYMBOL_SC_(CffiPkg, ssize);
-SYMBOL_SC_(CffiPkg, ptrdiff);
-SYMBOL_SC_(CffiPkg, time);
-SYMBOL_SC_(CffiPkg, float);
-SYMBOL_SC_(CffiPkg, double);
-SYMBOL_SC_(CffiPkg, pointer);
-SYMBOL_SC_(CffiPkg, void);
+SYMBOL_EXPORT_SC_(CffiPkg, char);
+SYMBOL_EXPORT_SC_(CffiPkg, unsigned_char);
+SYMBOL_EXPORT_SC_(CffiPkg, short);
+SYMBOL_EXPORT_SC_(CffiPkg, unsigned_short);
+SYMBOL_EXPORT_SC_(CffiPkg, int);
+SYMBOL_EXPORT_SC_(CffiPkg, unsigned_int);
+SYMBOL_EXPORT_SC_(CffiPkg, long);
+SYMBOL_EXPORT_SC_(CffiPkg, unsigned_long);
+SYMBOL_EXPORT_SC_(CffiPkg, long_long);
+SYMBOL_EXPORT_SC_(CffiPkg, unsigned_long_long);
+SYMBOL_EXPORT_SC_(CffiPkg, int8);
+SYMBOL_EXPORT_SC_(CffiPkg, uint8);
+SYMBOL_EXPORT_SC_(CffiPkg, int16);
+SYMBOL_EXPORT_SC_(CffiPkg, uint16);
+SYMBOL_EXPORT_SC_(CffiPkg, int32);
+SYMBOL_EXPORT_SC_(CffiPkg, uint32);
+SYMBOL_EXPORT_SC_(CffiPkg, int64);
+SYMBOL_EXPORT_SC_(CffiPkg, uint64);
+SYMBOL_EXPORT_SC_(CffiPkg, size);
+SYMBOL_EXPORT_SC_(CffiPkg, ssize);
+SYMBOL_EXPORT_SC_(CffiPkg, ptrdiff);
+SYMBOL_EXPORT_SC_(CffiPkg, time);
+SYMBOL_EXPORT_SC_(CffiPkg, float);
+SYMBOL_EXPORT_SC_(CffiPkg, double);
+SYMBOL_EXPORT_SC_(CffiPkg, pointer);
+SYMBOL_EXPORT_SC_(CffiPkg, void);
 
 /*! These don't need garbage collections */
 static vector<void *> _library_handles;
 
-#define ARGS_af_PERCENTload_foreign_library "(name)"
-#define DECL_af_PERCENTload_foreign_library ""
-#define DOCS_af_PERCENTload_foreign_library "PERCENTload_foreign_library"
-Pointer_sp af_PERCENTload_foreign_library(core::Str_sp name) {
+#define ARGS_cffi_sys__PERCENTload_foreign_library "(name)"
+#define DECL_cffi_sys__PERCENTload_foreign_library ""
+#define DOCS_cffi_sys__PERCENTload_foreign_library "PERCENTload_foreign_library"
+CL_DEFUN Pointer_sp cffi_sys__PERCENTload_foreign_library(core::Str_sp name) {
   const char *cname = name->get().c_str();
   void *handle = dlopen(cname, RTLD_LAZY);
   _library_handles.push_back(handle);
   return Pointer_O::create(handle);
 };
 
-#define ARGS_af_foreign_symbol_pointer "(name)"
-#define DECL_af_foreign_symbol_pointer ""
-#define DOCS_af_foreign_symbol_pointer "foreign_symbol_pointer"
-Pointer_sp af_foreign_symbol_pointer(core::Str_sp name) {
+#define ARGS_cffi_sys__foreign_symbol_pointer "(name)"
+#define DECL_cffi_sys__foreign_symbol_pointer ""
+#define DOCS_cffi_sys__foreign_symbol_pointer "foreign_symbol_pointer"
+CL_DEFUN Pointer_sp cffi_sys__foreign_symbol_pointer(core::Str_sp name) {
   const char *cname = name->get().c_str();
   void *ptr = NULL;
   for (vector<void *>::iterator it = _library_handles.begin(); it != _library_handles.end(); it++) {
@@ -99,10 +99,10 @@ GOT_IT:
   return Pointer_O::create(ptr);
 };
 
-#define ARGS_af_PERCENTforeign_type_alignment "(atype)"
-#define DECL_af_PERCENTforeign_type_alignment ""
-#define DOCS_af_PERCENTforeign_type_alignment "PERCENTforeign_type_alignment"
-core::Fixnum_sp af_PERCENTforeign_type_alignment(core::Symbol_sp atype) {
+#define ARGS_cffi_sys__PERCENTforeign_type_alignment "(atype)"
+#define DECL_cffi_sys__PERCENTforeign_type_alignment ""
+#define DOCS_cffi_sys__PERCENTforeign_type_alignment "PERCENTforeign_type_alignment"
+CL_DEFUN core::Fixnum_sp cffi_sys__PERCENTforeign_type_alignment(core::Symbol_sp atype) {
   uint align;
   if (atype == _sym_char) {
     align = boost::alignment_of<char>();
@@ -162,10 +162,10 @@ core::Fixnum_sp af_PERCENTforeign_type_alignment(core::Symbol_sp atype) {
   return core::make_fixnum(align);
 };
 
-#define ARGS_af_PERCENTforeign_type_size "(atype)"
-#define DECL_af_PERCENTforeign_type_size ""
-#define DOCS_af_PERCENTforeign_type_size "PERCENTforeign_type_size"
-core::Fixnum_sp af_PERCENTforeign_type_size(core::Symbol_sp atype) {
+#define ARGS_cffi_sys__PERCENTforeign_type_size "(atype)"
+#define DECL_cffi_sys__PERCENTforeign_type_size ""
+#define DOCS_cffi_sys__PERCENTforeign_type_size "PERCENTforeign_type_size"
+CL_DEFUN core::Fixnum_sp cffi_sys__PERCENTforeign_type_size(core::Symbol_sp atype) {
   uint align;
   if (atype == _sym_char) {
     align = sizeof(char);
@@ -226,10 +226,10 @@ core::Fixnum_sp af_PERCENTforeign_type_size(core::Symbol_sp atype) {
   return core::make_fixnum(align);
 };
 
-#define ARGS_af_foreign_alloc "(size)"
-#define DECL_af_foreign_alloc ""
-#define DOCS_af_foreign_alloc "foreign_alloc"
-Pointer_sp af_foreign_alloc(core::Integer_sp size) {
+#define ARGS_cffi_sys__foreign_alloc "(size)"
+#define DECL_cffi_sys__foreign_alloc ""
+#define DOCS_cffi_sys__foreign_alloc "foreign_alloc"
+CL_DEFUN Pointer_sp cffi_sys__foreign_alloc(core::Integer_sp size) {
   int sz = clasp_to_int(size);
   void *ptr = malloc(sz);
   if (ptr == NULL) {
@@ -488,6 +488,9 @@ string Pointer_O::__repr__() const {
 
 EXPOSE_CLASS(cffi, Pointer_O);
 
+SYMBOL_EXPORT_SC_(CffiPkg, PERCENTmem_ref);
+SYMBOL_EXPORT_SC_(CffiPkg, PERCENTsetf_mem_ref);
+
 void Pointer_O::exposeCando(core::Lisp_sp lisp) {
   core::class_<Pointer_O>()
       .def("CFFI-SYS:foreign_free", &Pointer_O::foreign_free)
@@ -503,8 +506,6 @@ void Pointer_O::exposeCando(core::Lisp_sp lisp) {
 //  core::af_def(CffiPkg, "make-pointer", &Pointer_O::make, ARGS_Pointer_O_make, DECL_Pointer_O_make, DOCS_Pointer_O_make);
 //  core::af_def(CffiPkg, "null-pointer", &Pointer_O::null_pointer, ARGS_Pointer_O_null_pointer, DECL_Pointer_O_null_pointer, DOCS_Pointer_O_null_pointer);
 
-  SYMBOL_SC_(CffiPkg, PERCENTmem_ref);
-  SYMBOL_SC_(CffiPkg, PERCENTsetf_mem_ref);
   core::add_defsetf_access_update(_sym_PERCENTmem_ref, _sym_PERCENTsetf_mem_ref);
 }
 
@@ -514,17 +515,11 @@ void Pointer_O::exposePython(core::Lisp_sp lisp) {
 #endif
 }
 
-void initialize_cffi() {
-  SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_alignment);
-  Defun(PERCENTforeign_type_alignment);
-  SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_size);
-  Defun(PERCENTforeign_type_size);
-  SYMBOL_EXPORT_SC_(CffiPkg, foreign_alloc);
-  Defun(foreign_alloc);
-  SYMBOL_EXPORT_SC_(CffiPkg, foreign_symbol_pointer);
-  Defun(foreign_symbol_pointer);
-  SYMBOL_EXPORT_SC_(CffiPkg, PERCENTload_foreign_library);
-  Defun(PERCENTload_foreign_library);
-}
+SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_alignment);
+SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_size);
+SYMBOL_EXPORT_SC_(CffiPkg, foreign_alloc);
+SYMBOL_EXPORT_SC_(CffiPkg, foreign_symbol_pointer);
+SYMBOL_EXPORT_SC_(CffiPkg, PERCENTload_foreign_library);
+
 
 }; // cffi

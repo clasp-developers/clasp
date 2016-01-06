@@ -863,6 +863,8 @@ void Str_O::__write__(T_sp stream) const {
 
 EXPOSE_CLASS(core, Str_O);
 
+  SYMBOL_SC_(CorePkg, base_string_concatenate);
+
 void Str_O::exposeCando(Lisp_sp lisp) {
   class_<Str_O>()
       //	.def("valueAsStr", &Str_O::valueAsString )
@@ -884,7 +886,6 @@ void Str_O::exposeCando(Lisp_sp lisp) {
       .def("core:splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
       ;
 
-  SYMBOL_SC_(CorePkg, base_string_concatenate);
 //  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
 
 }

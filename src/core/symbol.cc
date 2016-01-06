@@ -480,10 +480,17 @@ void Symbol_O::setPackage(T_sp p) {
   this->_HomePackage = p;
 }
 
+SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
+SYMBOL_EXPORT_SC_(ClPkg, symbolName);
+SYMBOL_EXPORT_SC_(ClPkg, symbolValue);
+SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
+SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
+SYMBOL_EXPORT_SC_(ClPkg, boundp);
+
 void Symbol_O::exposeCando(Lisp_sp lisp) {
   // TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
   class_<Symbol_O>()
-      .def("core:specialp", &Symbol_O::specialP)
+    .def("core:specialp", &Symbol_O::specialP)
       .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
       .def("core:STARmakeConstant", &Symbol_O::makeConstant)
       .def("core:fullName", &Symbol_O::fullName)
@@ -494,12 +501,7 @@ void Symbol_O::exposeCando(Lisp_sp lisp) {
            ARGS_Symbol_O_copy_symbol,
            DECL_Symbol_O_copy_symbol,
            DOCS_Symbol_O_copy_symbol)
-      SYMBOL_EXPORT_SC_(ClPkg, make_symbol);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolName);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolValue);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
-  SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
-  SYMBOL_EXPORT_SC_(ClPkg, boundp);
+    ;
 }
 
 void Symbol_O::exposePython(Lisp_sp lisp) {

@@ -170,24 +170,26 @@ EXPOSE_CLASS(core, LoadTimeValues_O);
 #define ARGS_LoadTimeValues_O_make "(dimension)"
 #define DECL_LoadTimeValues_O_make ""
 #define DOCS_LoadTimeValues_O_make "This is a thin wrapper around VectorObjectsWithFillPtr - it creates a place to store LoadTimeValues"
-LoadTimeValues_sp LoadTimeValues_O::make(int dataDimension, int symbolsDimension) {
+CL_LISPIFY_NAME(make-load-time-values);
+CL_DEFUN LoadTimeValues_sp LoadTimeValues_O::make(int dataDimension, int symbolsDimension) {
   GC_ALLOCATE(LoadTimeValues_O, vo);
   vo->_Objects.resize(dataDimension, _Nil<T_O>());
   vo->_Symbols.resize(symbolsDimension, _Nil<Symbol_O>());
   return vo;
 }
 
+SYMBOL_SC_(CorePkg, loadTimeValuesIds);
+SYMBOL_SC_(CorePkg, loadTimeValueArray);
+SYMBOL_SC_(CorePkg, lookupLoadTimeValue);
+SYMBOL_SC_(CorePkg, lookupLoadTimeSymbol);
+SYMBOL_EXPORT_SC_(CorePkg, setRunTimeValuesVector);
+
+
 void LoadTimeValues_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<LoadTimeValues_O>()
       .def("data_vectorPushExtend", &LoadTimeValues_O::data_vectorPushExtend)
       .def("symbols_vectorPushExtend", &LoadTimeValues_O::symbols_vectorPushExtend);
-  Defun_maker(CorePkg, LoadTimeValues);
-  SYMBOL_SC_(CorePkg, loadTimeValuesIds);
-  SYMBOL_SC_(CorePkg, loadTimeValueArray);
-
-  SYMBOL_SC_(CorePkg, lookupLoadTimeValue);
-  SYMBOL_SC_(CorePkg, lookupLoadTimeSymbol);
-  SYMBOL_EXPORT_SC_(CorePkg, setRunTimeValuesVector);
+//  Defun_maker(CorePkg, LoadTimeValues);
 }
 
 void LoadTimeValues_O::exposePython(::core::Lisp_sp lisp) {

@@ -1283,6 +1283,12 @@ CL_DEFUN string core__alist_asString(List_sp alist) {
   return ss.str();
 }
 
+  SYMBOL_EXPORT_SC_(ClPkg, make_list);
+  SYMBOL_EXPORT_SC_(ClPkg, cons);
+  SYMBOL_EXPORT_SC_(ClPkg, getf);
+  SYMBOL_EXPORT_SC_(CorePkg, rem_f);
+  SYMBOL_SC_(CorePkg, put_f);
+
 void Cons_O::exposeCando(Lisp_sp lisp) {
   class_<Cons_O>()
       .def("core:exactlyMatches", &Cons_O::exactlyMatches)
@@ -1293,59 +1299,6 @@ void Cons_O::exposeCando(Lisp_sp lisp) {
       .def("core:cons-setf-car", &Cons_O::setf_car)
       .def("core:cons-setf-cdr", &Cons_O::setf_cdr)
       ;
-  SYMBOL_EXPORT_SC_(ClPkg, make_list);
-  SYMBOL_EXPORT_SC_(ClPkg, cons);
-  SYMBOL_EXPORT_SC_(ClPkg, getf);
-  SYMBOL_EXPORT_SC_(CorePkg, rem_f);
-  SYMBOL_SC_(CorePkg, put_f);
-//  af_def(ClPkg, "rplaca", &cl__rplaca);
-//  af_def(ClPkg, "rplacd", &cl__rplacd);
-//  af_def(ClPkg, "rest", &oCdr);
-//  af_def(ClPkg, "car", &oCar);
-//  af_def(ClPkg, "cdr", &oCdr);
-//  af_def(ClPkg, "caar", &oCaar);
-//  af_def(ClPkg, "cadr", &oCadr);
-//  af_def(ClPkg, "cdar", &oCdar);
-//  af_def(ClPkg, "cddr", &oCddr);
-//  af_def(ClPkg, "caaar", &oCaaar);
-//  af_def(ClPkg, "caadr", &oCaadr);
-//  af_def(ClPkg, "cadar", &oCadar);
-//  af_def(ClPkg, "caddr", &oCaddr);
-//  af_def(ClPkg, "cdaar", &oCdaar);
-//  af_def(ClPkg, "cdadr", &oCdadr);
-//  af_def(ClPkg, "cddar", &oCddar);
-//  af_def(ClPkg, "cdddr", &oCdddr);
-//  af_def(ClPkg, "caaaar", &oCaaaar);
-//  af_def(ClPkg, "caadar", &oCaadar);
-//  af_def(ClPkg, "cadaar", &oCadaar);
-//  af_def(ClPkg, "caddar", &oCaddar);
-//  af_def(ClPkg, "cdaaar", &oCdaaar);
-//  af_def(ClPkg, "cdadar", &oCdadar);
-//  af_def(ClPkg, "cddaar", &oCddaar);
-//  af_def(ClPkg, "cdddar", &oCdddar);
-//  af_def(ClPkg, "caaadr", &oCaaadr);
-//  af_def(ClPkg, "caaddr", &oCaaddr);
-//  af_def(ClPkg, "cadadr", &oCadadr);
-//  af_def(ClPkg, "cadddr", &oCadddr);
-//  af_def(ClPkg, "cdaadr", &oCdaadr);
-//  af_def(ClPkg, "cdaddr", &oCdaddr);
-//  af_def(ClPkg, "cddadr", &oCddadr);
-//  af_def(ClPkg, "cddddr", &oCddddr);
-//  af_def(ClPkg, "First", &oFirst);
-//  af_def(ClPkg, "Second", &oSecond);
-//  af_def(ClPkg, "Third", &oThird);
-//  af_def(ClPkg, "Fourth", &oFourth);
-//  af_def(ClPkg, "Fifth", &oFifth);
-//  af_def(ClPkg, "Sixth", &oSixth);
-//  af_def(ClPkg, "Seventh", &oSeventh);
-//  af_def(ClPkg, "Eighth", &oEighth);
-//  af_def(ClPkg, "Ninth", &oNinth);
-//  af_def(ClPkg, "Tenth", &oTenth);
-
-//  af_def(CorePkg, "alist_erase", &alist_erase);
-//  af_def(CorePkg, "alist_push", &alist_push);
-//  af_def(CorePkg, "alist_get", &alist_get);
-//  af_def(CorePkg, "alist_asString", &alist_asString);
 }
 
 void Cons_O::exposePython(Lisp_sp lisp) {

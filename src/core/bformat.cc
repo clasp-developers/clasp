@@ -165,9 +165,8 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   return core__bformat(destination, tf.str(), args);
 };
 
-void initialize_bformat(Lisp_sp lisp) {
   SYMBOL_SC_(CorePkg, bformat);
   SYMBOL_EXPORT_SC_(ClPkg, format);
-}
+
 
 }; /* (>>>namespace<<<) */

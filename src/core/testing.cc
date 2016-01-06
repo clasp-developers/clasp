@@ -105,10 +105,8 @@ CL_DEFUN T_sp core__test_val(T_sp v) {
   return Str_O::create("arg didn't match");
 };
 
-void initialize_testing() {
   SYMBOL_EXPORT_SC_(CorePkg, isString);
   SYMBOL_EXPORT_SC_(CorePkg, isArray);
   SYMBOL_EXPORT_SC_(CorePkg, testVal);
-}
 
 }; /* core */

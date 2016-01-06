@@ -223,9 +223,9 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
      *read-suppress*
      *readtable*
      si::*print-package*
-     si::*print-structure*
+     si:*print-structure*
      si::*sharp-eq-context*
-     si::*circle-counter*)
+     si:*circle-counter*)
    nil                              ;;  *pprint-dispatch-table*
    t                                ;;  *print-array*
    10                               ;;  *print-base*

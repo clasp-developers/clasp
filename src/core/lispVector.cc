@@ -237,15 +237,15 @@ CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, int ex
 
 EXPOSE_CLASS(core, Vector_O);
 
+SYMBOL_SC_(CorePkg, make_vector);
+SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
+SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
+SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 void Vector_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<Vector_O>()
       .def("adjustableArrayP", &Vector_O::adjustableArrayP)
       //	.initArgs("(self)")
       ;
-  SYMBOL_SC_(CorePkg, make_vector);
-  SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
-  SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
-  SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
 }
 
 void Vector_O::exposePython(::core::Lisp_sp lisp) {

@@ -397,24 +397,5 @@ CL_DEFUN bool core__logical_pathname_p(T_sp obj) {
   return gc::IsA<LogicalPathname_sp>(obj);
 };
 
-void initialize_predicates() {
-//  af_def(ClPkg, "endp", &cl__endp);
-#define newNameDefun(pkg, myname, lispname) af_def(pkg, #lispname, &myname, ARGS_##myname, DECL_##myname, DOCS_##myname)
-//  af_def(ClPkg, "symbolp", &cl__symbolp);
-//  af_def(ClPkg, "consp", &cl__consp);
-//  af_def(ClPkg, "listp", &cl__listp);
-// clang-format off
-//  newNameDefun(CorePkg, af_integerP, cl:integerp);
-//  newNameDefun(CorePkg, af_rationalP, cl:rationalp);
-//  newNameDefun(CorePkg, cl__floatp, cl:floatp);
-//  newNameDefun(CorePkg, af_realP, cl:realp);
-//  newNameDefun(CorePkg, af_complexP, cl:complexp);
-//  newNameDefun(CorePkg, cl__characterp, cl:characterp);
-//  newNameDefun(CorePkg, cl__stringp, cl:stringp);
-//  newNameDefun(CorePkg, af_vectorP, cl:vectorp);
-//  newNameDefun(CorePkg, af_arrayP, cl:arrayp);
-//  newNameDefun(CorePkg, cl__keywordp, cl:keywordp);
-//  af_def(ClosPkg, "classp", &af_classp, ARGS_af_classp, DECL_af_classp, DOCS_af_classp);
   SYMBOL_EXPORT_SC_(ClosPkg, classp);
-};
 };

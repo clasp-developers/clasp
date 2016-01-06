@@ -51,14 +51,25 @@ void BootStrapCoreSymbolMap::add_package_info(std::string const& pkg, list<std::
 Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp, bool shadowp) {
   string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName, symbolName);
   if ( !shadowp ) {
-    Symbol_sp found = this->lookupSymbol(pkgName,symbolName);
-    if ( found ) return found;
+    core::SymbolStorage other;
+    bool found = this->lookupSymbol(pkgName,symbolName,other,false);
+    if ( found ) {
+      if ((exportp != other._Export)) {
+        printf("%s:%d WARNING   The symbol %s in package %s has been declared twice with different export setting\n", __FILE__, __LINE__, symbolName.c_str(), pkgName.c_str());
+      }
+      return other._Symbol;
+    }
     map<string, int>::iterator it = this->_SymbolNamesToIndex.find(name);
     if (it != this->_SymbolNamesToIndex.end()) {
       return ((this->_IndexToSymbol[it->second]._Symbol));
     }
   }
   Symbol_sp sym = Symbol_O::create(symbolName);
+#if 0
+  if ( symbolName == "POINTER" ) {
+    printf("%s:%d BootStrapCoreSymbolMap --> adding symbol %s to package: %s export: %d\n", __FILE__, __LINE__, symbolName.c_str(), pkgName.c_str(), exportp );
+  }
+#endif
   SymbolStorage store(pkgName, symbolName, sym, exportp,shadowp);
   int index = this->_IndexToSymbol.size();
   this->_IndexToSymbol.push_back(store);
@@ -66,25 +77,24 @@ Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkg
   return (sym);
 }
 
-Symbol_sp BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string const &rawSymbolName, bool inherited) const {
+bool BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string const &rawSymbolName, SymbolStorage& symbolStorage, bool recursivep) const {
   map<string,list<string>>::const_iterator found = this->_PackageUseInfo.find(packageName);
   for ( auto used_pkg : found->second ) {
-      Symbol_sp found = this->lookupSymbol(used_pkg,rawSymbolName,true);
-      if (found) return found;
+    bool found = this->lookupSymbol(used_pkg,rawSymbolName,symbolStorage,true);
+    if (found) return found;
   }
   string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName, rawSymbolName);
   map<string, int>::const_iterator it = this->_SymbolNamesToIndex.find(fullName);
   if (it == this->_SymbolNamesToIndex.end()) {
-    Symbol_sp null;
-    return null;
+    return false;
   }
-  if ( inherited ) {
+  if ( recursivep ) {
     if (this->_IndexToSymbol[it->second]._Export == false) {
-      Symbol_sp null;
-      return null;
+      return false;
     }
   }
-  return ((this->_IndexToSymbol[it->second]._Symbol));
+  symbolStorage = this->_IndexToSymbol[it->second];
+  return true;
 }
 
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {

@@ -55,8 +55,6 @@ void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) c
 #endif
   } break;
   case candoFunctions: {
-    //nothing
-    initialize_cffi();
   };
       break;
   case candoGlobals: {

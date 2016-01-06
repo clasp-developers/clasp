@@ -1,7 +1,5 @@
 (in-package :cscrape)
 
-(defconstant +virtual-length+ (length "virtual"))
-(defconstant +inline-length+ (length "inline"))
 (defun maybe-remove-one-prefix-from-start (instr prefixes)
   (let ((str (string-trim '(#\newline #\space #\tab) instr)))
     (block done
@@ -24,7 +22,7 @@ return the (values function-name function-name T).
 If the name has the form: class::name then it's a static class method 
 and not a simple-function so return (values name class::name nil)"
   (declare (optimize (debug 3)) (ignore tag))
-  (let* ((sig (maybe-remove-one-prefix-from-start raw-sig '("inline")))
+  (let* ((sig (maybe-remove-one-prefix-from-start raw-sig '("inline" "static")))
 	 (tsig (string-trim '(#\newline #\space #\tab) sig))
          (first-space (position-if
                        (lambda (c) (or (char= c #\newline)

@@ -65,7 +65,6 @@ void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose w
   } break;
   case candoFunctions: {
     //nothing
-    initialize_serveEvent_functions();
   };
       break;
   case candoGlobals: {

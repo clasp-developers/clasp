@@ -120,8 +120,6 @@ bool core__special_form_p(T_sp obj);
 bool core__standardObjectP(T_sp obj);
 bool llvmo__llvm_sys_value_p(T_sp obj);
 
- 
-void initialize_predicates();
 }
 
 #endif // _core_predicates_H

@@ -38,7 +38,8 @@ namespace core {
 #define ARGS_WeakKeyMapping_O_make "(key val)"
 #define DECL_WeakKeyMapping_O_make ""
 #define DOCS_WeakKeyMapping_O_make "make WeakKeyMapping args: obj"
-WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval) {
+CL_LISPIFY_NAME(make-weak-key-mapping);
+CL_DEFUN WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval) {
   T_sp val(tval);
   if (key == tval) {
     val = gctools::smart_ptr<T_O>(gctools::tag_sameAsKey<T_O *>());
@@ -53,7 +54,7 @@ void WeakKeyMapping_O::exposeCando(Lisp_sp lisp) {
   class_<WeakKeyMapping_O>()
       .def("weakKeyMappingValid", &WeakKeyMapping_O::valid)
       .def("weakKeyMappingKeyValue", &WeakKeyMapping_O::keyValue);
-  Defun_maker(CorePkg, WeakKeyMapping);
+//  Defun_maker(CorePkg, WeakKeyMapping);
 }
 
 void WeakKeyMapping_O::exposePython(Lisp_sp lisp) {

@@ -288,18 +288,18 @@ INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableFrontendActionF
 
 namespace asttooling {
 
-#define ARGS_af_clangVersionString "()"
-#define DECL_af_clangVersionString ""
-#define DOCS_af_clangVersionString "clangVersionString"
-core::Str_sp af_clangVersionString() {
+#define ARGS_ast_tooling__clangVersionString "()"
+#define DECL_ast_tooling__clangVersionString ""
+#define DOCS_ast_tooling__clangVersionString "clangVersionString"
+CL_DEFUN core::Str_sp ast_tooling__clangVersionString() {
   core::Str_sp version = core::Str_O::create(CLANG_VERSION_STRING);
   return version;
 };
 
-#define ARGS_af_getSingleMatcher "(variant-matcher)"
-#define DECL_af_getSingleMatcher ""
-#define DOCS_af_getSingleMatcher "getSingleMatcher"
-core::T_sp af_getSingleMatcher(core::T_sp variantMatcher) {
+#define ARGS_ast_tooling__getSingleMatcher "(variant-matcher)"
+#define DECL_ast_tooling__getSingleMatcher ""
+#define DOCS_ast_tooling__getSingleMatcher "getSingleMatcher"
+core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   clang::ast_matchers::dynamic::VariantMatcher *vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
   if (dtm.hasValue()) {
@@ -308,10 +308,10 @@ core::T_sp af_getSingleMatcher(core::T_sp variantMatcher) {
   return _Nil<core::T_O>();
 };
 
-#define ARGS_af_IDToNodeMap "(bound-nodes)"
-#define DECL_af_IDToNodeMap ""
-#define DOCS_af_IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
-core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
+#define ARGS_ast_tooling__IDToNodeMap "(bound-nodes)"
+#define DECL_ast_tooling__IDToNodeMap ""
+#define DOCS_ast_tooling__IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
+core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
   if (const clang::ast_matchers::BoundNodes *boundNodes = gc::As<core::WrappedPointer_sp>(bn)->cast<const clang::ast_matchers::BoundNodes>()) {
     core::HashTable_sp ht = core::HashTable_O::create(::cl::_sym_eq);
     const clang::ast_matchers::BoundNodes::IDToNodeMap &nodemap = boundNodes->getMap();
@@ -331,7 +331,7 @@ core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
       } else if (const clang::TypeLoc *typeLocType = dtn.get<clang::TypeLoc>()) {
         value = translate::to_object<clang::TypeLoc>::convert(*typeLocType);
       } else {
-        SIMPLE_ERROR(BF("%s:%d Handle boxing of other node types in af_IDToNodeMap") % __FILE__ % __LINE__);
+        SIMPLE_ERROR(BF("%s:%d Handle boxing of other node types in ast_tooling__IDToNodeMap") % __FILE__ % __LINE__);
       }
       ht->hash_table_setf_gethash(_lisp->internKeyword(key), value);
     }
@@ -340,10 +340,10 @@ core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
   SIMPLE_ERROR(BF("Wrong argument type for IDToNodeMap"));
 }
 
-#define ARGS_af_match "(match-finder node ast-context)"
-#define DECL_af_match ""
-#define DOCS_af_match "Run the MATCH-FINDER on the NODE. This will handle any kind of clang ast node."
-void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
+#define ARGS_ast_tooling__match "(match-finder node ast-context)"
+#define DECL_ast_tooling__match ""
+#define DOCS_ast_tooling__match "Run the MATCH-FINDER on the NODE. This will handle any kind of clang ast node."
+void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
   clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(tmatchFinder)->cast<clang::ast_matchers::MatchFinder>();
   clang::ASTContext *astContext = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(tnode);
@@ -358,14 +358,14 @@ void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext)
   } else if (clang::TypeLoc *typeloc = wp_node->castOrNull<clang::TypeLoc>()) {
     matchFinder->match(*typeloc, *astContext);
   } else {
-    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in af_match") % __FILE__ % __LINE__);
+    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in ast_tooling__match") % __FILE__ % __LINE__);
   }
 };
 
-#define ARGS_af_newFrontendActionFactory "(consumer-factory)"
-#define DECL_af_newFrontendActionFactory ""
-#define DOCS_af_newFrontendActionFactory "newFrontendActionFactory"
-core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory) {
+#define ARGS_ast_tooling__newFrontendActionFactory "(consumer-factory)"
+#define DECL_ast_tooling__newFrontendActionFactory ""
+#define DOCS_ast_tooling__newFrontendActionFactory "newFrontendActionFactory"
+core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
   if (clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(consumerFactory)->cast<clang::ast_matchers::MatchFinder>()) {
     typedef clbind::Wrapper<clang::tooling::FrontendActionFactory, std::unique_ptr<clang::tooling::FrontendActionFactory>> wrapped_type;
     std::unique_ptr<clang::tooling::FrontendActionFactory> val = clang::tooling::newFrontendActionFactory(matchFinder);
@@ -380,18 +380,18 @@ core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory) {
   SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory));
 };
 
-#define ARGS_af_Replacements_insert "(replacement)"
-#define DECL_af_Replacements_insert ""
-#define DOCS_af_Replacements_insert "Replacements_insert - try to insert the Replacement, return true if successful"
-bool af_Replacements_insert(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
+#define ARGS_ast_tooling__Replacements_insert "(replacement)"
+#define DECL_ast_tooling__Replacements_insert ""
+#define DOCS_ast_tooling__Replacements_insert "Replacements_insert - try to insert the Replacement, return true if successful"
+bool ast_tooling__Replacements_insert(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
   pair<clang::tooling::Replacements::iterator, bool> res = replacements.insert(one);
   return res.second;
 };
 
-#define ARGS_af_deduplicate "(replacements)"
-#define DECL_af_deduplicate ""
-#define DOCS_af_deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
-core::T_mv af_deduplicate(core::List_sp replacements) {
+#define ARGS_ast_tooling__deduplicate "(replacements)"
+#define DECL_ast_tooling__deduplicate ""
+#define DOCS_ast_tooling__deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
+CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   core::List_sp creps = replacements;
   vector<clang::tooling::Replacement> vreps;
   for (; creps.notnilp(); creps = oCdr(creps)) {
@@ -423,10 +423,10 @@ core::T_mv af_deduplicate(core::List_sp replacements) {
   return Values(oCdr(firstRep), oCdr(firstRang));
 }
 
-#define ARGS_af_testDerivable "(obj)"
-#define DECL_af_testDerivable ""
-#define DOCS_af_testDerivable "testDerivable"
-void af_testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
+#define ARGS_ast_tooling__testDerivable "(obj)"
+#define DECL_ast_tooling__testDerivable ""
+#define DOCS_ast_tooling__testDerivable "testDerivable"
+CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
   printf("%s:%d - got DerivableMatchCallback object --> %p\n", __FILE__, __LINE__, ptr);
   ptr->onEndOfTranslationUnit();
 };
@@ -516,7 +516,7 @@ void initialize_clangTooling() {
         .def("apply", &clang::tooling::Replacement::apply),
     class_<clang::tooling::Range>("Range", no_default_constructor),
     class_<clang::tooling::Replacements>("Replacements", no_default_constructor),
-    def("Replacements-insert", &af_Replacements_insert) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
+    def("Replacements-insert", &ast_tooling__Replacements_insert) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
     ,
     class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool>("RefactoringTool", no_default_constructor)
         .def_constructor("newRefactoringTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
@@ -532,7 +532,7 @@ void initialize_clangTooling() {
         .def("CreateASTConsumer", &DerivableSyntaxOnlyAction::CreateASTConsumer),
     class_<clang::tooling::ToolAction>("ToolAction", no_default_constructor),
     class_<clang::tooling::FrontendActionFactory, clang::tooling::ToolAction>("Clang-FrontendActionFactory", no_default_constructor),
-    def("newFrontendActionFactory", &af_newFrontendActionFactory),
+    def("newFrontendActionFactory", &ast_tooling__newFrontendActionFactory),
     derivable_class_<DerivableFrontendActionFactory, clang::tooling::FrontendActionFactory>("FrontendActionFactory")
         .def("create", &DerivableFrontendActionFactory::default_create),
     class_<clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster", no_default_constructor),
@@ -556,7 +556,7 @@ void initialize_clangTooling() {
         .def("getTypeAsString", &clang::ast_matchers::dynamic::VariantMatcher::getTypeAsString)
     //            .def("getSingleMatcher",&clang::ast_matchers::dynamic::VariantMatcher::getSingleMatcher,policies<pureOutValue<1> >())
     ,
-    def("getSingleMatcher", &af_getSingleMatcher),
+    def("getSingleMatcher", &ast_tooling__getSingleMatcher),
     class_<Diagnostics>("Diagnostics", no_default_constructor)
         .def("toStringFull", &Diagnostics::toStringFull)
         .def_constructor("newDiagnostics", constructor<>()),
@@ -566,7 +566,7 @@ void initialize_clangTooling() {
         .def_constructor("newMatchFinder", constructor<>())
         .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
         .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST),
-    def("match", &af_match, policies<>(), ARGS_af_match, DECL_af_match, DOCS_af_match),
+    def("match", &ast_tooling__match, policies<>(), ARGS_ast_tooling__match, DECL_ast_tooling__match, DOCS_ast_tooling__match),
     def("runToolOnCode", &clang::tooling::runToolOnCode),
     class_<clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback-abstract", no_default_constructor),
     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback")
@@ -582,7 +582,7 @@ void initialize_clangTooling() {
     //            .  property("SourceManager",&clang::ast_matchers::MatchFinderMatchResult::SourceManager)
     ,
     class_<clang::ast_matchers::BoundNodes>("BoundNodes", no_default_constructor),
-    def("IDToNodeMap", &af_IDToNodeMap, policies<>(), ARGS_af_IDToNodeMap, DECL_af_IDToNodeMap, DOCS_af_IDToNodeMap),
+    def("IDToNodeMap", &ast_tooling__IDToNodeMap, policies<>(), ARGS_ast_tooling__IDToNodeMap, DECL_ast_tooling__IDToNodeMap, DOCS_ast_tooling__IDToNodeMap),
     def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken),
     def("Lexer-getSourceText", &clang::Lexer::getSourceText, policies<pureOutValue<4>>()),
     class_<clang::tooling::CompileCommand>("CompileCommand", no_default_constructor)
@@ -590,10 +590,9 @@ void initialize_clangTooling() {
         .property("CompileCommandCommandLine", &clang::tooling::CompileCommand::CommandLine)
     //            ,def("buildASTFromCodeWithArgs",&clang::tooling::buildASTFromCodeWithArgs)
   ];
-  Defun(deduplicate);
-  Defun(clangVersionString);
-
-  Defun(testDerivable);
+//  Defun(deduplicate);
+//  Defun(clangVersionString);
+//  Defun(testDerivable);
 
   package("CLANG-COMMENTS", {}, {})[
     class_<clang::comments::Comment>("Comment", no_default_constructor)

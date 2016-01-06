@@ -1117,8 +1117,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
- SYMBOL_SC_(CorePkg, loadBundle);
- SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
+  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
 void initialize_compiler_primitives(Lisp_sp lisp) {
   //	SYMBOL_SC_(CorePkg,processDeclarations);

@@ -240,8 +240,8 @@ SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_SC_(CorePkg, printf);
 
 SYMBOL_EXPORT_SC_(CorePkg, asin);
-SYMBOL_EXPORT_SC_(CorePkg, acos);
 SYMBOL_EXPORT_SC_(CorePkg, asinh);
+SYMBOL_EXPORT_SC_(CorePkg, acos);
 SYMBOL_EXPORT_SC_(CorePkg, acosh);
 SYMBOL_EXPORT_SC_(CorePkg, atanh);
 
@@ -425,9 +425,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, operands);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_ecl_syntax_progv_list_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_io_syntax_progv_list_PLUS_);
 SYMBOL_SC_(CorePkg, STARprintPackageSTAR);
-SYMBOL_SC_(CorePkg, STARprintStructureSTAR);
 SYMBOL_SC_(CorePkg, STARsharpEqContextSTAR);
-SYMBOL_SC_(CorePkg, STARcircleCounterSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARcircleCounterSTAR);
 
 SYMBOL_EXPORT_SC_(ClPkg, typep);
 SYMBOL_EXPORT_SC_(ClPkg, type);
@@ -709,11 +708,11 @@ SYMBOL_SC_(CorePkg, key);
 SYMBOL_SC_(CorePkg, test_not);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
-SYMBOL_SC_(CorePkg, forward_referenced_class);
+SYMBOL_EXPORT_SC_(CorePkg, forward_referenced_class);
 SYMBOL_EXPORT_SC_(ClPkg, standard_class);
 SYMBOL_EXPORT_SC_(ClPkg, rest);
 
-SYMBOL_SC_(CorePkg, instance);
+SYMBOL_EXPORT_SC_(CorePkg, instance);
 SYMBOL_SC_(CorePkg, all_keys);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, changed);
@@ -1077,7 +1076,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
   _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
-  _sym_STARprintStructureSTAR->defparameter(_Nil<T_O>());
+  _sym_STARprint_structureSTAR->defparameter(_Nil<T_O>());
   _sym_STARprintPackageSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_counterSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_stackSTAR->defparameter(_Nil<T_O>());

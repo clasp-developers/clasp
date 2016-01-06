@@ -660,13 +660,4 @@ CL_DEFUN T_sp cl__rem(Real_sp x, Real_sp y)
     };
 
 #endif
-void initialize_math() {
-#if 0
-	SYMBOL_EXPORT_SC_(ClPkg,floor);
-	SYMBOL_EXPORT_SC_(ClPkg,mod);
-	SYMBOL_EXPORT_SC_(ClPkg,ceiling);
-	SYMBOL_EXPORT_SC_(ClPkg,truncate);
-	SYMBOL_EXPORT_SC_(ClPkg,rem);
-#endif
-}
 };

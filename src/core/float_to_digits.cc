@@ -255,7 +255,6 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<R
   return Values(clasp_make_fixnum(k), digits);
 }
 
-void initialize_float_to_digits() {
   SYMBOL_EXPORT_SC_(CorePkg, float_to_digits);
-}
+
 };
