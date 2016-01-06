@@ -5,6 +5,12 @@
 ;;; cpp-name - namestring to write/read the preprocessed file to/from
 ;;; input - the original source input name
 
+(defun fork-is-available ()
+  (when (find-package "SB-POSIX")
+    (and (find-symbol "FORK" "SB-POSIX")
+         (find-symbol "GETENV" "SB-POSIX")
+         (find-symbol "WAIT" "SB-POSIX"))))
+
 (defclass compile-command ()
   ((original :initarg :original :accessor original)
    (parts :initarg :parts :accessor parts)
@@ -110,21 +116,34 @@ Split the list of ccs into a number of lists."
       (when (>= i num) (setf i 0)))
     (coerce lists 'list)))
 
-(defun update-cpps (ccs)
+(defun serial-update-cpps (ccs)
   "Run the c-preprocessor on the commands"
-  (when (> 0 (length ccs))
-    (let* ((pjobs (min (length ccs) (parse-integer (sb-posix:getenv "PJOBS"))))
+  (format t "Using serial-update-cpps to update ~d preprocessor files~%" (length ccs))
+  (when (> (length ccs) 0)
+    (format t "Running ~d preprocessor jobs~%" (length ccs))
+    (loop for job in ccs
+       do (run-cpp job 0))))
+
+(defun parallel-update-cpps (ccs)
+  "Run the c-preprocessor on the commands"
+  (when (> (length ccs) 0)
+    (let* ((pjobs (min (length ccs) (parse-integer (funcall (find-symbol "GETENV" "SB-POSIX") "PJOBS"))))
            (jobs (split-cpps ccs pjobs))
            (forki 0))
       (format t "Running ~d preprocessor jobs in ~d forks~%" (length ccs) pjobs)
       (loop for job in jobs
          for forki from 0 upto (length jobs)
-         do (when (= (sb-posix:fork) 0)
+         do (when (= (funcall (find-symbol "FORK" "SB-POSIX")) 0)
               (loop for cc in job
                  do (run-cpp cc forki))
               (format t "Child done~%")
               (sb-ext:exit))))
-    (sb-posix:wait)))
+    (funcall (find-symbol "WAIT" "SB-POSIX"))))
+
+(defun update-cpps (ccs)
+    (if (fork-is-available)
+        (parallel-update-cpps ccs)
+        (serial-update-cpps ccs)))
 
 (defclass buffer-stream ()
   ((buffer :initarg :buffer :accessor buffer)
