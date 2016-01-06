@@ -71,7 +71,7 @@ public:
 
   void add_package_info(std::string const& pkgName, list<std::string> const& packages_used);
   
-  Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false, bool shadowp = false);
+  NOINLINE Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false, bool shadowp = false);
 
   bool lookupSymbol(string const &packageName, string const &symbolName, SymbolStorage& symbolStorage, bool recursivep=false) const;
 

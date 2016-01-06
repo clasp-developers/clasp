@@ -178,7 +178,7 @@ typedef bool _Bool;
  */
 
 template <typename RT, typename...ARGS>
-void expose_function(const std::string& pkg_sym,
+NOINLINE void expose_function(const std::string& pkg_sym,
                      bool exported,
                      RT (*fp)(ARGS...),
                      const std::string& lambdaList)
@@ -195,6 +195,13 @@ void expose_function(const std::string& pkg_sym,
   #undef EXPOSE_FUNCTION_SIGNATURES
 #endif
 
+#ifndef SCRAPING
+  #define EXPOSE_FUNCTION_BINDINGS_HELPERS
+  #undef EXPOSE_FUNCTION_BINDINGS
+  #include <generated/initFunctions_inc.h>
+  #undef EXPOSE_FUNCTION_BINDINGS_HELPERS
+#endif
+
 void initialize_functions()
 {
 //  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
@@ -206,7 +213,7 @@ void initialize_functions()
 };
 
 typedef enum { code_kind, method_kind, class_kind, unknown_kind } source_info_kind;
-void define_source_info(source_info_kind kind,
+NOINLINE void define_source_info(source_info_kind kind,
                         const string& lisp_name,
                         const string& file, size_t character_offset,
                         size_t line, const string& docstring ) {
@@ -223,6 +230,13 @@ void define_source_info(source_info_kind kind,
   } else if ( kind == class_kind ) {
   }
 }
+
+#define SOURCE_INFO_HELPERS
+#undef SOURCE_INFO
+#ifndef SCRAPING
+#include <generated/sourceInfo_inc.h>
+#endif
+#undef SOURCE_INFO_HELPERS
 
 void initialize_source_info() {
 #define SOURCE_INFO
@@ -636,7 +650,14 @@ void set_static_class_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
 #undef SET_CLASS_SYMBOLS
 }
 
-void allocate_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
+#define ALLOCATE_ALL_SYMBOLS_HELPERS
+#undef ALLOCATE_ALL_SYMBOLS
+#ifndef SCRAPING
+#include <generated/symbols_scraped_inc.h>
+#endif
+#undef ALLOCATE_ALL_SYMBOLS_HELPERS
+
+void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 {
 #define ALLOCATE_ALL_SYMBOLS
   #ifndef SCRAPING
@@ -646,7 +667,7 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
 };
 
 template <class TheClass, class Metaclass>
-  gc::smart_ptr<Metaclass> allocate_one_class()
+NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
 {
   gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable();
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());

@@ -45,36 +45,43 @@
       ll))
 (defun generate-expose-function-bindings (sout ns-grouped-expose-functions)
   (declare (optimize (debug 3)))
-  (flet ((expose-one (f ns)
-           (etypecase f
-             (expose-internal-function
-              (format sout "  expose_function(~a,~a,&~a::~a,~s);~%"
-                      (lisp-name% f)
-                      "true"
-                      ns
-                      (function-name% f)
-                      (maybe-wrap-lambda-list (lambda-list% f))))
-             (expose-external-function
-              (format sout "  expose_function(~a,~a,~a,~s);~%"
-                      (lisp-name% f)
-                      "true"
-                      (pointer% f)
-                      (maybe-wrap-lambda-list (lambda-list% f)))))))
-    (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
-    (maphash (lambda (ns funcs-ht)
-               (maphash (lambda (name f)
-                          (declare (ignore name))
-                          (handler-case
-                              (expose-one f ns)
-                            (serious-condition (condition)
-                              (error "There was an error while exposing a function in ~a at line ~d~%~a~%" (file% f) (line% f) condition))))
-                        funcs-ht))
-             ns-grouped-expose-functions)
-    (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%")))
+  (flet ((expose-one (f ns index)
+           (let ((name (format nil "expose_function_~d_helper" index)))
+             (format sout "NOINLINE void ~a() {~%" name)
+             (etypecase f
+               (expose-internal-function
+                (format sout "  expose_function(~a,~a,&~a::~a,~s);~%"
+                        (lisp-name% f)
+                        "true"
+                        ns
+                        (function-name% f)
+                        (maybe-wrap-lambda-list (lambda-list% f))))
+               (expose-external-function
+                (format sout "  expose_function(~a,~a,~a,~s);~%"
+                        (lisp-name% f)
+                        "true"
+                        (pointer% f)
+                        (maybe-wrap-lambda-list (lambda-list% f)))))
+             (format sout "}~%")
+             name)))
+    (let (helpers (index 0))
+      (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS_HELPERS~%")
+      (maphash (lambda (ns funcs-ht)
+                 (maphash (lambda (name f)
+                            (declare (ignore name))
+                            (handler-case
+                                (push (expose-one f ns (incf index)) helpers)
+                              (serious-condition (condition)
+                                (error "There was an error while exposing a function in ~a at line ~d~%~a~%" (file% f) (line% f) condition))))
+                          funcs-ht))
+               ns-grouped-expose-functions)
+      (format sout "#endif // EXPOSE_FUNCTION_BINDINGS_HELPERS~%")
+      (format sout "#ifdef EXPOSE_FUNCTION_BINDINGS~%")
+      (dolist (helper (nreverse helpers))
+        (format sout "  ~a();~%" helper))
+      (format sout "#endif // EXPOSE_FUNCTION_BINDINGS~%"))))
 
-
-
-(defun generate-expose-one-source-info (sout obj)
+(defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
          (file (file% obj))
          (line (line% obj))
@@ -84,24 +91,35 @@
                  ((typep obj 'function-mixin) "code_kind")
                  ((typep obj 'method-mixin) "method_kind")
                  ((typep obj 'exposed-class) "class_kind")
-                 (t "unknown_kind"))))
+                 (t "unknown_kind")))
+         (helper-name (format nil "source_info_~d_helper" idx)))
+    (format sout "NOINLINE void source_info_~d_helper() {~%" idx)
     (format sout " define_source_info( ~a, ~a, ~s, ~d, ~d, ~a );~%"
-            kind lisp-name file char-offset line docstring )))
+            kind lisp-name file char-offset line docstring )
+    (format sout "}~%")
+    helper-name))
 
-(defun generate-expose-source-info (sout functions classes cppdefine)
-  (format sout "#ifdef ~a~%" cppdefine)
-  (dolist (f functions)
-    (generate-expose-one-source-info sout f))
-  (maphash (lambda (k class)
-             (generate-expose-one-source-info sout class)
-             (dolist (method (methods% class))
-               (generate-expose-one-source-info sout method)))
+(defun generate-expose-source-info (sout functions classes)
+  (declare (optimize debug))
+  (let (helpers
+        (index 0))
+    (format sout "#ifdef SOURCE_INFO_HELPERS~%")
+    (dolist (f functions)
+      (push (generate-expose-one-source-info-helper sout f (incf index)) helpers))
+    (maphash (lambda (k class)
+               (push (generate-expose-one-source-info-helper sout class (incf index)) helpers)
+               (dolist (method (methods% class))
+                 (push (generate-expose-one-source-info-helper sout method (incf index)) helpers)))
            classes)
-  (format sout "#endif // ~a~%" cppdefine))
+    (format sout "#endif // SOURCE_INFO_HELPERS~%")
+    (format sout "#ifdef SOURCE_INFO~%")
+    (dolist (helper (nreverse helpers))
+      (format sout "  ~a();~%" helper))
+    (format sout "#endif SOURCE_INFO~%")))
 
 (defun generate-code-for-source-info (functions classes)
   (with-output-to-string (sout)
-    (generate-expose-source-info sout functions classes "SOURCE_INFO")))
+    (generate-expose-source-info sout functions classes)))
 
 
 #+(or)(defun generate-tags-file (tags-file-name tags)
@@ -355,21 +373,32 @@
                    (format sout "} // namespace ~a~%" namespace))
                  symbols-by-namespace)
         (format sout "#endif~%"))
-      (progn
-        (format sout "#if defined(ALLOCATE_ALL_SYMBOLS)~%")
+      (let ((helpers (make-hash-table :test #'equal))
+            (index 0))
+        (format sout "#if defined(ALLOCATE_ALL_SYMBOLS_HELPERS)~%")
         (dolist (p packages-to-create)
           (maphash (lambda (namespace namespace-symbols)
                      (dolist (symbol namespace-symbols)
                        (when (string= (name% p) (package-str% symbol))
-                         (format sout " ~a::_sym_~a = bootStrapSymbolMap->maybe_allocate_unique_symbol(\"~a\",core::lispify_symbol_name(~s), ~a,~a);~%"
-                                 namespace
-                                 (c++-name% symbol)
-                                 (package-str% symbol)
-                                 (lisp-name% symbol)
-                                 (if (exported% symbol) "true" "false")
-                                 (if (shadow% symbol) "true" "false")))))
+                         (let ((helper-name (format nil "maybe_allocate_one_symbol_~d_helper" (incf index)))
+                               (symbol-name (format nil "~a::_sym_~a" namespace (c++-name% symbol))))
+                           (setf (gethash symbol-name helpers) helper-name)
+                           (format sout "NOINLINE void ~a(core::BootStrapCoreSymbolMap* symbols) {~%" helper-name)
+                           (format sout " ~a = symbols->maybe_allocate_unique_symbol(\"~a\",core::lispify_symbol_name(~s), ~a,~a);~%"
+                                   symbol-name
+                                   (package-str% symbol)
+                                   (lisp-name% symbol)
+                                   (if (exported% symbol) "true" "false")
+                                   (if (shadow% symbol) "true" "false"))
+                           (format sout "}~%")))))
                    symbols-by-namespace))
-        (format sout "#endif~%"))
+        (format sout "#endif // ALLOCATE_ALL_SYMBOLS_HELPERS~%")
+        (format sout "#if defined(ALLOCATE_ALL_SYMBOLS)~%")
+        (maphash (lambda (symbol-name helper-name)
+                   (declare (ignore symbol-name))
+                   (format sout " ~a(symbols);~%" helper-name))
+                 helpers)
+        (format sout "#endif // ALLOCATE_ALL_SYMBOLS~%"))
       (progn
         (format sout "#if defined(GARBAGE_COLLECT_ALL_SYMBOLS)~%")
         (maphash (lambda (namespace namespace-symbols)
