@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/llvmo/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/asttooling/translators.h>
 #include <clasp/asttooling/astVisitor.h>
 

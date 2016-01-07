@@ -22,7 +22,7 @@ extern "C" {
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/str.h>
-#include <clasp/gctools/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/wrappers.h>
 

@@ -56,7 +56,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispVector.h>
 #include <clasp/sockets/socketsPackage.h>
-#include <clasp/sockets/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 
 namespace sockets {

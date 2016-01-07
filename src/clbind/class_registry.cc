@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include <clasp/clbind/cl_include.h>
 
 #include <clasp/clbind/clbind.h>
-#include <clasp/clbind/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/clbind/class_rep.h>
 //#include <clasp/clbind/detail/operator_id.h>

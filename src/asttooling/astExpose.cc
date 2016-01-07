@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include <clasp/asttooling/astExpose.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/asttooling/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 
 //

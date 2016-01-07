@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/llvmo/llvmoDwarf.h>
-#include <clasp/llvmo/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 namespace llvmo {
 

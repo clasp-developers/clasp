@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/lispString.h>
 
 namespace cl {
-  extern core::Symbol_sp _sym_simple_vector;
+  extern core::Symbol_sp& _sym_simple_vector;
 };
 
 namespace core {

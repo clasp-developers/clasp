@@ -77,7 +77,7 @@ namespace core {
 // ----------------------------------------
 // ----------------------------------------
 // ----------------------------------------
-extern Symbol_sp _sym_STARallCxxClassesSTAR;
+extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
 template <typename OT>
 class externalClass_ {

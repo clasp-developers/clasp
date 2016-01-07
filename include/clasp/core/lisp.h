@@ -53,7 +53,7 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 
 namespace cl {
-extern core::Symbol_sp _sym_eq;
+extern core::Symbol_sp& _sym_eq;
 };
 
 namespace core {

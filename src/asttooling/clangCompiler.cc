@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <clasp/asttooling/astExpose.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/asttooling/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/asttooling/Diagnostics.h>
 #include <clasp/asttooling/Registry.h>

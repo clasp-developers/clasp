@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/clbind/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/clbind/clbind.h>
 #include <clasp/core/wrappers.h>
 

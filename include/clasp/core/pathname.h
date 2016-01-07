@@ -37,13 +37,13 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 
 namespace kw {
-extern core::Symbol_sp _sym_unspecific;
-extern core::Symbol_sp _sym_local;
-extern core::Symbol_sp _sym_newest;
+extern core::Symbol_sp& _sym_unspecific;
+extern core::Symbol_sp& _sym_local;
+extern core::Symbol_sp& _sym_newest;
 }
 
 namespace cl {
-extern core::Symbol_sp _sym_STARdefaultPathnameDefaultsSTAR;
+extern core::Symbol_sp& _sym_STARdefaultPathnameDefaultsSTAR;
 };
 
 namespace core {

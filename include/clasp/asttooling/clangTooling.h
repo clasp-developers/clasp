@@ -46,7 +46,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/clbind/clbind.h>
 
 namespace clang {

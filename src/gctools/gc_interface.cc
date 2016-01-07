@@ -81,10 +81,10 @@ typedef bool _Bool;
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
 #include <clasp/gctools/telemetry.h>
-#include <clasp/gctools/symbolTable.h>
-#include <clasp/sockets/symbolTable.h>
-#include <clasp/serveEvent/symbolTable.h>
-#include <clasp/clbind/symbolTable.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
 
@@ -569,6 +569,11 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #undef GC_GLOBALS
 #endif
 
+#if 1
+    for ( int i=0; i<global_symbol_count; ++i ) {
+      SMART_PTR_FIX(global_symbols[i]);
+    }
+#else
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
   #ifndef RUNNING_GC_BUILDER
   #define GC_GLOBAL_SYMBOLS
@@ -590,6 +595,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   #endif // ifndef RUNNING_GC_BUILDER
   #undef GARBAGE_COLLECT_ALL_SYMBOLS
 #endif // else ifndef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+#endif
   }
   MPS_SCAN_END(GC_SCAN_STATE);
   GC_TELEMETRY0(telemetry::label_root_scan_stop);

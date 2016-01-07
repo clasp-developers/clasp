@@ -53,7 +53,7 @@ THE SOFTWARE.
 #define CLASP_PI2_L 1.57079632679489661923132169163975144l
 
 namespace cl {
-extern core::Symbol_sp _sym_Integer_O; // CL:INTEGER
+extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
 };
 
 namespace core {

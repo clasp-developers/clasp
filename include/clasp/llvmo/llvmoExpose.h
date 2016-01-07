@@ -71,7 +71,7 @@ THE SOFTWARE.
 #include <clasp/core/externalObject.h>
 #include <clasp/core/lispVector.h>
 #include <clasp/llvmo/llvmoExpose.fwd.h>
-#include <clasp/llvmo/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/vectorObjectsWithFillPtr.fwd.h>

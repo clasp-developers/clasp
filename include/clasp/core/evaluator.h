@@ -34,11 +34,11 @@ THE SOFTWARE.
 #include <clasp/core/activationFrame.h>
 
 namespace cl {
-extern core::Symbol_sp _sym_findClass;
-extern core::Symbol_sp _sym_undefinedFunction;
+extern core::Symbol_sp& _sym_findClass;
+extern core::Symbol_sp& _sym_undefinedFunction;
 };
 namespace kw {
-extern core::Symbol_sp _sym_name;
+extern core::Symbol_sp& _sym_name;
 };
 
 namespace core {

@@ -49,10 +49,10 @@ THE SOFTWARE.
 #include <clasp/core/primitives.fwd.h>
 
 namespace cl {
-extern core::Symbol_sp _sym_cellError;
+extern core::Symbol_sp& _sym_cellError;
 };
 namespace kw {
-extern core::Symbol_sp _sym_name;
+extern core::Symbol_sp& _sym_name;
 };
 
 struct _TRACE {

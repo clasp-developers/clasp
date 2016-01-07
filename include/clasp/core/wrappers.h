@@ -155,7 +155,7 @@ struct MethodDefinition {
 
 //    typedef	enum { no_init,class_name_init, make_class_name_init } maker_enum;
 
-extern Symbol_sp _sym_STARallCxxClassesSTAR;
+extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
 
 template <typename OT>

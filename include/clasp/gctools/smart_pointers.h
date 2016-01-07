@@ -870,13 +870,13 @@ public:
 };
 
 namespace cl {
-extern gctools::smart_ptr<core::Symbol_O> _sym_list;
-extern gctools::smart_ptr<core::Symbol_O> _sym_typeError;
+extern gctools::smart_ptr<core::Symbol_O>& _sym_list;
+extern gctools::smart_ptr<core::Symbol_O>& _sym_typeError;
 }
 
 namespace kw {
-extern gctools::smart_ptr<core::Symbol_O> _sym_datum;
-extern gctools::smart_ptr<core::Symbol_O> _sym_expectedType;
+extern gctools::smart_ptr<core::Symbol_O>& _sym_datum;
+extern gctools::smart_ptr<core::Symbol_O>& _sym_expectedType;
 }
 namespace core {
 extern gctools::smart_ptr<core::T_O> lisp_createList(gctools::smart_ptr<core::T_O> a1, gctools::smart_ptr<core::T_O> a2, gctools::smart_ptr<core::T_O> a3, gctools::smart_ptr<core::T_O> a4);

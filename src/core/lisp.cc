@@ -162,6 +162,10 @@ const int Lisp_O::SingleDispatchMethodCacheSize = 1024 * 8;
 extern void lispScannerDebug(std::istream &sin);
 extern string getLispError();
 
+int intArray[10];
+int& _int_0 = intArray[0];
+int& _int_1 = intArray[1];
+
 SMART(BuiltInClass);
 
 struct FindApropos : public KeyValueMapper //, public gctools::StackRoot

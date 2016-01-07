@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 
 namespace kw {
-extern core::Symbol_sp _sym_default;
+extern core::Symbol_sp& _sym_default;
 }
 
 namespace core {

@@ -749,10 +749,10 @@ class Package_O;
 typedef gctools::smart_ptr<Package_O> Package_sp;
 
 /* A few symbols associated with error handling that everything needs */
-extern Symbol_sp _sym_error;
-extern Symbol_sp _sym_setThrowPosition;
-extern Symbol_sp _sym_makeCondition;
-extern Symbol_sp _sym_simpleError;
+extern Symbol_sp& _sym_error;
+extern Symbol_sp& _sym_setThrowPosition;
+extern Symbol_sp& _sym_makeCondition;
+extern Symbol_sp& _sym_simpleError;
 /*! Search for multiple occurances of a string and replace it
  * \param str The string that is modified
  * \param search The string to search for
@@ -769,8 +769,8 @@ typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_s
 #include <clasp/core/core_globals.h>
 
 namespace kw {
-extern core::Symbol_sp _sym_formatControl;
-extern core::Symbol_sp _sym_formatArguments;
+extern core::Symbol_sp& _sym_formatControl;
+extern core::Symbol_sp& _sym_formatArguments;
 };
 
 // Can I get rid of this?
@@ -778,7 +778,7 @@ extern core::Symbol_sp _sym_formatArguments;
 #define IS_SYMBOL_UNDEFINED(x) (!x)
 #define UNDEFINED_SYMBOL (_Unbound<core::Symbol_O>())
 //#define UNDEFINED_SYMBOL _global_undefined_symbol
-//extern core::Symbol_sp _global_undefined_symbol;
+//extern core::Symbol_sp& _global_undefined_symbol;
 
 namespace core {
 
@@ -1111,8 +1111,8 @@ public:
   void *operator new(size_t s, void *ptr) { return ptr; };
 
 namespace kw {
-extern core::Symbol_sp _sym_function;
-extern core::Symbol_sp _sym_macro;
+extern core::Symbol_sp& _sym_function;
+extern core::Symbol_sp& _sym_macro;
 };
 
 namespace core {

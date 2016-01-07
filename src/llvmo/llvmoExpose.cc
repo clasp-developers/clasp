@@ -84,7 +84,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/llvmo/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 
 namespace llvmo {
 

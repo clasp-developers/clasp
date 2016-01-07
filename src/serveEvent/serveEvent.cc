@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/externalObject.h>
-#include <clasp/serveEvent/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/core/wrappers.h>
 
