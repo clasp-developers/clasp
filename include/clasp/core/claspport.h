@@ -557,19 +557,19 @@ extern "C" {
 /* get and set x87 control word for gcc/x86 */
 #ifdef HAVE_GCC_ASM_FOR_X87
 #define HAVE_CLASP_SET_53BIT_PRECISION 1
-/* _Brcl_get/set_387controlword functions are defined in BridgeCommonLisp/pymath.c */
+/* _Brcl__get/set_387controlword functions are defined in BridgeCommonLisp/pymath.c */
 #define _Brcl_SET_53BIT_PRECISION_HEADER \
   unsigned short old_387controlword, new_387controlword
 #define _Brcl_SET_53BIT_PRECISION_START                           \
   do {                                                            \
-    old_387controlword = _Brcl_get_387controlword();              \
+    old_387controlword = _Brcl__get_387controlword();              \
     new_387controlword = (old_387controlword & ~0x0f00) | 0x0200; \
     if (new_387controlword != old_387controlword)                 \
-      _Brcl_set_387controlword(new_387controlword);               \
+      _Brcl__set_387controlword(new_387controlword);               \
   } while (0)
 #define _Brcl_SET_53BIT_PRECISION_END           \
   if (new_387controlword != old_387controlword) \
-  _Brcl_set_387controlword(old_387controlword)
+  _Brcl__set_387controlword(old_387controlword)
 #endif
 
 /* default definitions are empty */

@@ -40,7 +40,6 @@ namespace core {
 extern T_sp python_convertObject(PyObject *value, core::Lisp_sp lisp);
 
 Cons_sp python_convertTupleToCons(PyObject *pargs, Lisp_sp lisp) {
-  _G();
   core::Cons_sp first = core::Cons_O::create(_Nil<T_O>(), _Nil<T_O>(), lisp);
   if (pargs != NULL) {
     core::Cons_sp cur = first;
@@ -65,7 +64,6 @@ Cons_sp python_convertTupleToCons(PyObject *pargs, Lisp_sp lisp) {
 }
 
 Cons_sp python_convertKeywordDictToAssocList(PyObject *pargs, Lisp_sp lisp) {
-  _G();
   core::Cons_sp first = core::Cons_O::create(_Nil<T_O>(), _Nil<T_O>(), lisp);
   if (pargs != NULL) {
     LOG(BF("Parsing dict"));
@@ -104,7 +102,6 @@ Cons_sp python_convertKeywordDictToAssocList(PyObject *pargs, Lisp_sp lisp) {
 }
 
 Cons_sp python_convertDictToAssocList(PyObject *pargs, Lisp_sp lisp) {
-  _G();
   core::Cons_sp first = core::Cons_O::create(_Nil<T_O>(), _Nil<T_O>(), lisp);
   core::Cons_sp cur = first;
   ASSERTF(PyDict_Check(pargs), BF("Argument isn't a dict"));
@@ -133,7 +130,6 @@ Cons_sp python_convertDictToAssocList(PyObject *pargs, Lisp_sp lisp) {
 }
 
 Cons_sp python_convertListToCons(PyObject *pargs, Lisp_sp lisp) {
-  _G();
   core::Cons_sp first;
   first = core::Cons_O::create(_Nil<T_O>(), _Nil<T_O>(), lisp);
   core::Cons_sp cur = first;
@@ -157,7 +153,6 @@ Cons_sp python_convertListToCons(PyObject *pargs, Lisp_sp lisp) {
 }
 
 T_sp python_convertObject(PyObject *value, core::Lisp_sp lisp) {
-  _G();
   T_sp result = _Nil<T_O>();
   if (PyString_Check(value)) {
     result = core::Str_O::create(PyString_AsString(value));
@@ -196,7 +191,6 @@ T_sp python_convertObject(PyObject *value, core::Lisp_sp lisp) {
 }
 
 core::Cons_sp python_convertArgumentsToCons(PyObject *argTuple, PyObject *keywordDict, Lisp_sp lisp) {
-  _G();
   core::Cons_sp fixedArgs = python_convertTupleToCons(argTuple, lisp);
   core::Cons_sp keywordAList = python_convertKeywordDictToAssocList(keywordDict, lisp);
   core::Cons_sp first = core::Cons_O::create(_Nil<T_O>(), lisp);
@@ -217,7 +211,6 @@ core::Cons_sp python_convertArgumentsToCons(PyObject *argTuple, PyObject *keywor
 }
 
 PyObject *python_convertObject(T_sp obj, Lisp_sp lisp) {
-  _G();
   if (obj == lisp->_true()) {
     Py_RETURN_TRUE;
   } else if (obj.nilp()) {

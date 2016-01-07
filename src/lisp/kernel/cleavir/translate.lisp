@@ -138,13 +138,13 @@
 	 (lambda-name (get-or-create-lambda-name initial-instruction)))
     ;; HYPOTHESIS: This builds a function with no arguments
     ;; that will enclose and set up other functions with arguments
-    (let* ((main-fn-name (format nil "cl->~a" lambda-name))
-	   (cmp:*current-function-name* main-fn-name)
+    (let* ((main-fn-name lambda-name) ;;(format nil "cl->~a" lambda-name))
+	   (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string-ptr cmp:*current-function-name* "fn-name"))
 	   (fn (llvm-sys:function-create
 		cmp:+fn-prototype+
 		'llvm-sys:internal-linkage
-		(cmp:jit-function-name cmp:*current-function-name*)
+		(cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
 		cmp:*the-module*))
 	   (cmp:*current-function* fn)
 	   (entry-block (cmp:irc-basic-block-create "entry" fn))
@@ -186,6 +186,10 @@
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
         (setq return-value (alloca-return_type))
+        ;; In case of a non-local exit, zero out the number of returned
+        ;; values
+        (with-return-values (return-values return-value abi)
+          (%store (%size_t 0) (number-of-return-values return-values)))
         (cmp:with-dbg-function ("repl-FIX"
                                 :linkage-name (llvm-sys:get-name fn)
                                 :function fn
@@ -511,7 +515,7 @@
                       "cc_enclose"
                       (list* ltv-lambda-name
                              enclosed-function
-                             cmp:*gv-source-pathname*
+                             cmp:*gv-source-file-info-handle*
                              (cmp:irc-size_t-*current-source-pos-info*-filepos)
                              (cmp:irc-size_t-*current-source-pos-info*-lineno)
                              (cmp:irc-size_t-*current-source-pos-info*-column)
@@ -933,12 +937,12 @@ nil)
           ((cleavir-env:no-variable-info
             (lambda (condition)
 ;;;	  (declare (ignore condition))
-              (warn "Condition: ~a" condition)
+              #+silence-cclasp-compile-warnings(warn "Condition: ~a" condition)
               (invoke-restart 'cleavir-generate-ast::consider-special)))
            (cleavir-env:no-function-info
             (lambda (condition)
 ;;;	  (declare (ignore condition))
-              (warn "Condition: ~a" condition)
+              #+silence-cclasp-compile-warnings(warn "Condition: ~a" condition)
               (invoke-restart 'cleavir-generate-ast::consider-global))))
         (when *compile-print* (describe-form form))
         (cc-dbg-when *debug-log*
@@ -1062,7 +1066,7 @@ nil)
           (unless (compiled-function-p setup-function)
             (format t "cleavir-clasp compiled code but it didn't result in a compiled-function - eval --> ~s~%" setup-function)
             (return-from cleavir-compile-t1expr (values nil t)))
-          (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
+          (let ((enclosed-function (funcall setup-function)))
             ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
             ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
             (values enclosed-function warnp failp)))))))
@@ -1078,9 +1082,9 @@ nil)
 			   (cmp:irc-renv ltv-env)
 			   (cmp:jit-constant-unique-string-ptr "top-level")
 			   cmp:*gv-source-file-info-handle*
-			   (cmp:irc-i64-*current-source-pos-info*-filepos)
-			   (cmp:irc-i32-*current-source-pos-info*-lineno)
-			   (cmp:irc-i32-*current-source-pos-info*-column)
+			   (cmp:irc-size_t-*current-source-pos-info*-filepos)
+			   (cmp:irc-size_t-*current-source-pos-info*-lineno)
+			   (cmp:irc-size_t-*current-source-pos-info*-column)
 			   cmp:*load-time-value-holder-global-var*)))))
 
 (defun cclasp-compile-in-env (name form &optional env)

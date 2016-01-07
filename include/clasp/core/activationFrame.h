@@ -50,8 +50,7 @@ namespace core {
 // TODO: and it should inherit from Environment_O not RuntimeVisibleEnvironment_O
 class ActivationFrame_O : public Environment_O // RuntimeVisibleEnvironment_O
                           {
-  LISP_BASE1(Environment_O); // RuntimeVisibleEnvironment_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame");
+  LISP_VIRTUAL_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
 
 protected:
 public:
@@ -133,17 +132,15 @@ template <>
 struct gctools::GCInfo<core::ValueFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
-//  static bool const InlineScan = true;
-//  static bool const Roo
+  static GCInfo_policy constexpr Policy = normal;
+  //  static bool const InlineScan = true;
+  //  static bool const Roo
 };
 TRANSLATE(core::ActivationFrame_O);
 
 namespace core {
 class ValueFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame");
+  LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame",ActivationFrame_O);
 GCPROTECTED:
   T_sp _ParentFrame;
   gctools::Frame0<T_sp> _Objects;
@@ -292,14 +289,12 @@ template <>
 struct gctools::GCInfo<core::FunctionFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 class FunctionFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, FunctionFrame_O, "FunctionFrame");
+  LISP_CLASS(core, CorePkg, FunctionFrame_O, "FunctionFrame",ActivationFrame_O);
 GCPRIVATE:
   T_sp _ParentFrame;
   gctools::Frame0<T_sp> _Objects;
@@ -335,7 +330,7 @@ public:
 
   static FunctionFrame_sp create(List_sp args, T_sp parent) {
     _G();
-    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args), parent));
+    FunctionFrame_sp vf(FunctionFrame_O::create(cl__length(args), parent));
     //	    vf->allocateStorage(args->length());
     int idx = 0;
     for (auto cur : args) {
@@ -396,8 +391,7 @@ public:
 
 namespace core {
 class TagbodyFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame");
+  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame",ActivationFrame_O);
 GCPRIVATE:
   T_sp _ParentFrame;
 
@@ -421,8 +415,7 @@ template <>
 struct gctools::GCInfo<core::TagbodyFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #if 0

@@ -46,9 +46,9 @@ public:
 };
 };
 
-#define THROW_HARD_ERROR(fmt)                                      \
-  {                                                                \
-    dbg_hook((fmt).str().c_str());                                 \
+#define THROW_HARD_ERROR(fmt)                                        \
+  {                                                                  \
+    dbg_hook((fmt).str().c_str());                                   \
     ::core::errorFormatted(fmt);                                     \
     throw(::core::HardError(__FILE__, __FUNCTION__, __LINE__, fmt)); \
   }

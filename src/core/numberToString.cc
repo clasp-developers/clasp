@@ -49,11 +49,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_bignumToString "(buffer x base)"
-#define DECL_core_bignumToString ""
-#define DOCS_core_bignumToString "bignumToString"
-StrWithFillPtr_sp core_bignumToString(StrWithFillPtr_sp buffer, const Bignum &bn, Fixnum_sp base) {
-  _G();
+CL_LAMBDA(buffer x base);
+CL_DECLARE();
+CL_DOCSTRING("bignumToString");
+CL_DEFUN StrWithFillPtr_sp core__bignum_to_string(StrWithFillPtr_sp buffer, const Bignum &bn, Fixnum_sp base) {
   if (unbox_fixnum(base) < 2 || unbox_fixnum(base) > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
   }
@@ -75,34 +74,34 @@ StrWithFillPtr_sp core_bignumToString(StrWithFillPtr_sp buffer, const Bignum &bn
 
 static void write_base_prefix(StrWithFillPtr_sp buffer, int base) {
   if (base == 2) {
-    buffer->pushString("#b");
+    buffer->pushStringCharStar("#b");
   } else if (base == 8) {
-    buffer->pushString("#o");
+    buffer->pushStringCharStar("#o");
   } else if (base == 16) {
-    buffer->pushString("#x");
+    buffer->pushStringCharStar("#x");
   } else if (base >= 10) {
     string prefix = "#00r";
     prefix[1] = base / 10 + '0';
     prefix[2] = base % 10 + '0';
-    buffer->pushString(prefix.c_str());
+    buffer->pushStringCharStar(prefix.c_str());
   } else {
     string prefix = "#0r";
     prefix[1] = base + '0';
-    buffer->pushString(prefix.c_str());
+    buffer->pushStringCharStar(prefix.c_str());
   }
 }
 
-#define ARGS_core_integerToString "(buffer integer base radix decimalp)"
-#define DECL_core_integerToString ""
-#define DOCS_core_integerToString "integerToString"
-StrWithFillPtr_sp core_integerToString(StrWithFillPtr_sp buffer, Integer_sp integer,
+CL_LAMBDA(buffer integer base radix decimalp);
+CL_DECLARE();
+CL_DOCSTRING("integerToString");
+CL_DEFUN StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Integer_sp integer,
                                        Fixnum_sp base, bool radix, bool decimalp) {
   if (radix) {
     if (!decimalp || unbox_fixnum(base) != 10) {
       buffer->ensureSpaceAfterFillPointer(10);
       write_base_prefix(buffer, unbox_fixnum(base));
     }
-    buffer = core_integerToString(buffer, integer, base, false, false);
+    buffer = core__integer_to_string(buffer, integer, base, false, false);
     if (decimalp && unbox_fixnum(base) == 10) {
       buffer->pushCharExtend('.');
     }
@@ -114,32 +113,30 @@ StrWithFillPtr_sp core_integerToString(StrWithFillPtr_sp buffer, Integer_sp inte
     switch (unbox_fixnum(base)) {
     case 8:
       sprintf(txt, "%lo", fn);
-      buffer->pushString(txt);
+      buffer->pushStringCharStar(txt);
       break;
     case 10:
       sprintf(txt, "%ld", fn);
-      buffer->pushString(txt);
+      buffer->pushStringCharStar(txt);
       break;
     case 16:
       sprintf(txt, "%lX", fn);
-      buffer->pushString(txt);
+      buffer->pushStringCharStar(txt);
       break;
     default:
       Bignum bn(fn);
-      core_bignumToString(buffer, bn, base);
+      core__bignum_to_string(buffer, bn, base);
       break;
     }
     return buffer;
   } else if (Bignum_sp bi = integer.asOrNull<Bignum_O>()) {
-    core_bignumToString(buffer, bi->get(), base);
+    core__bignum_to_string(buffer, bi->get(), base);
   } else {
     QERROR_WRONG_TYPE_NTH_ARG(2, base, cl::_sym_integer);
   }
   return buffer;
 }
 
-void initialize_numberToString() {
   SYMBOL_EXPORT_SC_(CorePkg, integerToString);
-  CoreDefun(integerToString);
-}
+
 };

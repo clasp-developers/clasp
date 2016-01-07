@@ -45,6 +45,9 @@ namespace gctools {
 GCStack _ThreadLocalStack;
 
 void *_global_stack_marker;
+size_t _global_stack_max_size;
+/*! Keeps track of the next available header KIND value */
+kind_t global_next_header_kind = (kind_t)KIND_max+1;
 
 #if 0
     HeapRoot* 	rooted_HeapRoots = NULL;
@@ -63,11 +66,15 @@ void *_global_stack_marker;
 namespace gctools {
 
 size_t global_alignup_sizeof_header;
-bool _global_monitor_allocations = false;
 
-void monitorAllocation(GCKindEnum k,size_t sz)
-{
+MonitorAllocations global_monitorAllocations;
+
+void monitorAllocation(kind_t k, size_t sz) {
   printf("%s:%d monitor allocation of %s with %zu bytes\n", __FILE__, __LINE__, obj_name(k), sz);
+  if (global_monitorAllocations.counter >= global_monitorAllocations.start && global_monitorAllocations.counter < global_monitorAllocations.end) {
+    core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
+  }
+  global_monitorAllocations.counter++;
 }
 
 void handle_signals(int signo) {
@@ -109,14 +116,9 @@ void setupSignals() {
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
-
-gc::GCStack* threadLocalStack()
-{
+gc::GCStack *threadLocalStack() {
   return &_ThreadLocalStack;
 }
-
-
-
 
 int handleFatalCondition() {
   int exitCode = 0;
@@ -149,25 +151,50 @@ int handleFatalCondition() {
   return exitCode;
 }
 
+kind_t next_header_kind()
+{
+    kind_t next = global_next_header_kind;
+    ++global_next_header_kind;
+    return next;
+}
 
-int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+core::Fixnum ensure_fixnum(kind_t val)
+{
+  if ( val > most_positive_fixnum || val < most_negative_fixnum ) {
+    SIMPLE_ERROR(BF("The value %lz cannot be converted into a FIXNUM") % val );
+  }
+  return (core::Fixnum)val;
+}
+
+CL_LAMBDA();
+CL_DOCSTRING(R"doc(Return the next available header KIND value and increment the global variable global_next_header_kind)doc");
+CL_DEFUN core::Fixnum gctools__next_header_kind()
+{
+    kind_t next = global_next_header_kind;
+    ++global_next_header_kind;
+    return ensure_fixnum(next);
+}
+
+
+int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
   gctools::_global_stack_marker = &stackMarker;
+  gctools::_global_stack_max_size = stackMax;
 
   setupSignals();
 
   telemetry::global_telemetry = new telemetry::Telemetry();
-  
-  char* clasp_telemetry_mask_string = getenv("CLASP_TELEMETRY_MASK");
+
+  char *clasp_telemetry_mask_string = getenv("CLASP_TELEMETRY_MASK");
   telemetry::global_clasp_telemetry_file = getenv("CLASP_TELEMETRY_FILE");
 
-  if ( clasp_telemetry_mask_string ) {
-      printf("CLASP_TELEMETRY_MASK= %s\n", clasp_telemetry_mask_string);
+  if (clasp_telemetry_mask_string) {
+    printf("CLASP_TELEMETRY_MASK= %s\n", clasp_telemetry_mask_string);
     size_t mask = std::stoi(clasp_telemetry_mask_string);
     telemetry::global_telemetry->set_mask(mask);
   }
-  if ( telemetry::global_clasp_telemetry_file ) {
-      printf("CLASP_TELEMETRY_FILE= %s\n", telemetry::global_clasp_telemetry_file);
+  if (telemetry::global_clasp_telemetry_file) {
+    printf("CLASP_TELEMETRY_FILE= %s\n", telemetry::global_clasp_telemetry_file);
     telemetry::global_telemetry->open_write(telemetry::global_clasp_telemetry_file);
   }
 
@@ -180,7 +207,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
   GC_set_warn_proc(clasp_warn_proc);
-//  GC_enable_incremental();
+  //  GC_enable_incremental();
   GC_init();
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);

@@ -53,7 +53,7 @@ THE SOFTWARE.
 #define CLASP_PI2_L 1.57079632679489661923132169163975144l
 
 namespace cl {
-extern core::Symbol_sp _sym_Integer_O; // CL:INTEGER
+extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
 };
 
 namespace core {
@@ -124,9 +124,10 @@ bool clasp_float_nan_p(Float_sp num);
 bool clasp_float_infinity_p(Float_sp num);
 NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift(Integer_sp num, int bits);
- gc::Fixnum clasp_integer_length(Integer_sp x);
+gc::Fixnum clasp_integer_length(Integer_sp x);
 mpz_class clasp_to_mpz(Integer_sp x);
 cl_index clasp_to_size(Integer_sp x);
+uint32_t clasp_to_uint32_t(Integer_sp x);
 Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
 SingleFloat_sp clasp_make_single_float(float d);
 DoubleFloat_sp clasp_make_double_float(double d);
@@ -145,8 +146,7 @@ int basic_compare(Number_sp na, Number_sp nb);
 
 SMART(Number);
 class Number_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Number_O, "number");
+  LISP_CLASS(core, ClPkg, Number_O, "number",T_O);
 
 public:
   static Number_sp create(double val);
@@ -224,8 +224,7 @@ public:
 
 SMART(Real);
 class Real_O : public Number_O {
-  LISP_BASE1(Number_O);
-  LISP_CLASS(core, ClPkg, Real_O, "real");
+  LISP_CLASS(core, ClPkg, Real_O, "real",Number_O);
 
 public:
   virtual double as_double_() const { SUBIMP(); };
@@ -241,8 +240,7 @@ public:
 
 SMART(Rational);
 class Rational_O : public Real_O {
-  LISP_BASE1(Real_O);
-  LISP_CLASS(core, ClPkg, Rational_O, "rational");
+  LISP_CLASS(core, ClPkg, Rational_O, "rational",Real_O);
 
 public:
   static Rational_sp create(mpz_class const &num, mpz_class const &denom);
@@ -267,8 +265,7 @@ public:
 
 SMART(Integer);
 class Integer_O : public Rational_O {
-  LISP_BASE1(Rational_O);
-  LISP_CLASS(core, ClPkg, Integer_O, "integer");
+  LISP_CLASS(core, ClPkg, Integer_O, "integer",Rational_O);
 
 public:
   /*! Return a Cons (integer low high) */
@@ -276,10 +273,14 @@ public:
   static Integer_sp create(const mpz_class &v);
   static Integer_sp create(gctools::Fixnum v);
   static Integer_sp create(const string &v) {
-    mpz_class zv(v);
-    return create(zv);
+    return Integer_O::create(v.c_str());
   };
   static Integer_sp create(const char *v) {
+    if (v[0] == '+') {
+      // Skip leading +
+      mpz_class zv(&v[1]);
+      return create(zv);
+    }
     mpz_class zv(v);
     return create(zv);
   };
@@ -291,6 +292,7 @@ public:
   static Integer_sp create(float f);
   static Integer_sp create(double f);
   static Integer_sp createLongFloat(LongFloat f);
+
 public:
   virtual bool evenp_() const { SUBIMP(); };
   virtual bool oddp_() const { SUBIMP(); };
@@ -305,17 +307,10 @@ public:
   virtual unsigned long long as_unsigned_long_long_() const { SUBIMP(); };
   virtual void __write__(T_sp strm) const;
   Integer_O(){};
-  virtual ~Integer_O() {};
+  virtual ~Integer_O(){};
 };
 };
 
-template <>
-struct gctools::GCInfo<core::Fixnum_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = true;
-};
 
 namespace core {
 
@@ -323,8 +318,7 @@ Fixnum_sp make_fixnum(gc::Fixnum x);
 gc::Fixnum get_fixnum(Fixnum_sp x);
 
 class Fixnum_dummy_O : public Integer_O {
-  LISP_BASE1(Integer_O);
-  LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum");
+  LISP_CLASS(core, ClPkg, Fixnum_dummy_O, "fixnum",Integer_O);
 #if 0
 
     public:
@@ -407,7 +401,7 @@ class Fixnum_dummy_O : public Integer_O {
     Fixnum_dummy_O() : _Value(0) {};
 #endif
 };
- inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
+inline Fixnum_sp make_fixnum(gc::Fixnum x) { return gc::make_tagged_fixnum<core::Fixnum_I>(x); };
 inline gc::Fixnum unbox_fixnum(Fixnum_sp x) { return x.unsafe_fixnum(); };
 };
 
@@ -415,11 +409,11 @@ namespace core {
 
 SMART(Float);
 class Float_O : public Real_O {
-  LISP_BASE1(Real_O);
-  LISP_CLASS(core, ClPkg, Float_O, "float");
+  LISP_CLASS(core, ClPkg, Float_O, "float",Real_O);
 
 public:
-  virtual Integer_sp castToInteger() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:castToInteger");
+CL_DEFMETHOD   virtual Integer_sp castToInteger() const { SUBIMP(); };
 
   virtual bool isnan_() const { SUBIMP(); };
   virtual bool isinf_() const { SUBIMP(); };
@@ -429,8 +423,7 @@ public:
 
 SMART(ShortFloat);
 class ShortFloat_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat");
+  LISP_CLASS(core, ClPkg, ShortFloat_O, "ShortFloat",Float_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -460,6 +453,7 @@ public:
   Number_sp abs_() const;
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!
   bool isinf_() const { return isinf(this->_Value); };
+
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -488,8 +482,7 @@ public:
 };
 
 class SingleFloat_dummy_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat");
+  LISP_CLASS(core, ClPkg, SingleFloat_dummy_O, "SingleFloat",Float_O);
 
 public:
 #if 0
@@ -559,15 +552,14 @@ public:
 #endif
 };
 
- inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
+inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single_float<core::SingleFloat_I>(x); };
 inline float unbox_single_float(SingleFloat_sp x) { return x.unsafe_single_float(); };
 };
 
 namespace core {
 SMART(DoubleFloat);
 class DoubleFloat_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float");
+  LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float",Float_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -598,6 +590,7 @@ public:
   Number_sp abs_() const { return DoubleFloat_O::create(fabs(this->_Value)); };
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
   bool isinf_() const { return isinf(this->_Value); };
+
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -642,19 +635,17 @@ template <>
 struct gctools::GCInfo<core::DoubleFloat_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = true;
+  static GCInfo_policy constexpr Policy = atomic;
 };
 
 namespace core {
 SMART(LongFloat);
 class LongFloat_O : public Float_O {
-  LISP_BASE1(Float_O);
-  LISP_CLASS(core, ClPkg, LongFloat_O, "LongFloat");
+  LISP_CLASS(core, ClPkg, LongFloat_O, "LongFloat",Float_O);
 
 public:
 private:
-//  LongFloat _Value;
+  //  LongFloat _Value;
 public:
   static DoubleFloat_sp create(LongFloat nm) {
     return DoubleFloat_O::create(nm);
@@ -727,8 +718,7 @@ public:
 namespace core {
 SMART(Complex);
 class Complex_O : public Number_O {
-  LISP_BASE1(Number_O);
-  LISP_CLASS(core, ClPkg, Complex_O, "complex");
+  LISP_CLASS(core, ClPkg, Complex_O, "complex",Number_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -763,12 +753,16 @@ public:
   Real_sp real() const { return this->_real; };
   Real_sp imaginary() const { return this->_imaginary; };
 
+  void setf_realpart(Real_sp r) { this->_real = r; };
+  void setf_imagpart(Real_sp i) { this->_imaginary = i; };
+
   void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;
   string __repr__() const;
   Number_sp signum_() const;
   Number_sp abs_() const;
   bool isnan_() const;
+
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& str);
@@ -807,8 +801,7 @@ public:
 
 SMART(Ratio);
 class Ratio_O : public Rational_O {
-  LISP_BASE1(Rational_O);
-  LISP_CLASS(core, ClPkg, Ratio_O, "ratio");
+  LISP_CLASS(core, ClPkg, Ratio_O, "ratio",Rational_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -851,8 +844,8 @@ public:
 public:
   NumberType number_type_() const { return number_Ratio; };
 
-    virtual bool zerop_() const { return clasp_zerop(this->_numerator);};
-    virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator),this->_denominator); };
+  virtual bool zerop_() const { return clasp_zerop(this->_numerator); };
+  virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator), this->_denominator); };
 
   Integer_sp numerator() const { return this->_numerator; };
   Integer_sp denominator() const { return this->_denominator; };
@@ -946,7 +939,7 @@ inline Number_sp clasp_log1p(Number_sp x) {
   return x->log1p_();
 };
 
-Number_sp cl_expt(Number_sp x, Number_sp y);
+Number_sp cl__expt(Number_sp x, Number_sp y);
 
 Integer_sp clasp_ash(Integer_sp x, int bits);
 
@@ -1035,13 +1028,10 @@ unsigned char clasp_toUint8(T_sp n);
 signed char clasp_toSignedInt8(T_sp n);
 cl_index clasp_toSize(T_sp f);
 
-Integer_sp cl_logior(List_sp integers);
-Integer_sp cl_logand(List_sp integers);
+Integer_sp cl__logior(List_sp integers);
+Integer_sp cl__logand(List_sp integers);
 
 gctools::Fixnum fixint(T_sp x);
-
-/*! Initialize all math functions here */
-void initialize_numbers();
 
 }; // namespace core
 
@@ -1067,7 +1057,8 @@ TRANSLATE(core::Complex_O); // superclass Number_O
 
 namespace core {
 
-inline bool clasp_plusp(Real_sp num) {
+  CL_PKG_NAME(ClPkg,plusp);
+  CL_DEFUN inline bool clasp_plusp(Real_sp num) {
   if (num.fixnump()) {
     return num.unsafe_fixnum() > 0;
   } else if (num.single_floatp()) {
@@ -1076,7 +1067,8 @@ inline bool clasp_plusp(Real_sp num) {
   return num->plusp_();
 }
 
-inline bool clasp_minusp(Real_sp num) {
+  CL_PKG_NAME(ClPkg,minusp);
+ CL_DEFUN inline bool clasp_minusp(Real_sp num) {
   if (num.fixnump()) {
     return num.unsafe_fixnum() < 0;
   } else if (num.single_floatp()) {
@@ -1085,21 +1077,24 @@ inline bool clasp_minusp(Real_sp num) {
   return num->minusp_();
 }
 
-inline bool clasp_evenp(Integer_sp num) {
+ CL_PKG_NAME(ClPkg,evenp);
+ CL_DEFUN inline bool clasp_evenp(Integer_sp num) {
   if (num.fixnump()) {
     return (num.unsafe_fixnum() % 2) == 0;
   }
   return num->evenp_();
 }
 
-inline bool clasp_oddp(Integer_sp num) {
+ CL_PKG_NAME(ClPkg,oddp);
+ CL_DEFUN inline bool clasp_oddp(Integer_sp num) {
   if (num.fixnump()) {
     return (num.unsafe_fixnum() % 2) == 1;
   }
   return num->oddp_();
 }
 
-inline Number_sp clasp_abs(Number_sp num) {
+ CL_PKG_NAME(ClPkg,abs);
+ CL_DEFUN inline Number_sp clasp_abs(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(std::abs(num.unsafe_fixnum()));
   } else if (num.single_floatp()) {
@@ -1108,7 +1103,8 @@ inline Number_sp clasp_abs(Number_sp num) {
   return num->abs_();
 }
 
-inline Number_sp clasp_signum(Number_sp num) {
+ CL_PKG_NAME(ClPkg,signum);
+CL_DEFUN inline Number_sp clasp_signum(Number_sp num) {
   if (num.fixnump()) {
     Fixnum fn = num.unsafe_fixnum();
     if (fn == 0)
@@ -1127,7 +1123,8 @@ inline Number_sp clasp_signum(Number_sp num) {
   return num->signum_();
 }
 
-inline Number_sp clasp_one_plus(Number_sp num) {
+ CL_LISPIFY_NAME(onePlus);
+ CL_DEFUN inline Number_sp clasp_one_plus(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(num.unsafe_fixnum() + 1);
   } else if (num.single_floatp()) {
@@ -1138,7 +1135,8 @@ inline Number_sp clasp_one_plus(Number_sp num) {
   return num->onePlus_();
 }
 
-inline Number_sp clasp_one_minus(Number_sp num) {
+ CL_LISPIFY_NAME(oneMinus);
+ CL_DEFUN inline Number_sp clasp_one_minus(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(num.unsafe_fixnum() - 1);
   } else if (num.single_floatp()) {
@@ -1159,7 +1157,8 @@ inline bool clasp_zerop(Number_sp num) {
   return num->zerop_();
 }
 
-inline Number_sp clasp_negate(Number_sp num) {
+ CL_LISPIFY_NAME(negate);
+ CL_DEFUN inline Number_sp clasp_negate(Number_sp num) {
   if (num.fixnump()) {
     return immediate_fixnum<Number_O>(-num.unsafe_fixnum());
   } else if (num.single_floatp()) {
@@ -1200,7 +1199,7 @@ inline Integer_sp clasp_shift(Integer_sp n, int bits) {
   return n->shift_(bits);
 }
 
- inline gc::Fixnum clasp_integer_length(Integer_sp x) {
+inline gc::Fixnum clasp_integer_length(Integer_sp x) {
   if (x.fixnump()) {
     Fixnum i(x.unsafe_fixnum());
     Fixnum count = 0;
@@ -1268,7 +1267,7 @@ inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
   }
   return i->as_unsigned_long_long_();
 };
- 
+
 inline Fixnum clasp_to_fixnum(Integer_sp i) {
   if (i.fixnump()) {
     gc::Fixnum f = i.unsafe_fixnum();
@@ -1289,8 +1288,20 @@ inline cl_index clasp_to_size(Integer_sp i) {
     TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
   }
   gc::Fixnum f = i->as_int_();
-  if (f >= 0 ) return f;
+  if (f >= 0)
+    return f;
   TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
+};
+
+inline uint32_t clasp_to_uint32_t(Integer_sp i) {
+  if (i.fixnump()) {
+    gc::Fixnum f = i.unsafe_fixnum();
+    if (f >= 0 && f <= gc::most_positive_uint32) {
+      return f;
+    }
+    TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
+  }
+  TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
 };
 
 inline float clasp_to_float(Number_sp x) {
@@ -1383,26 +1394,21 @@ inline Number_sp clasp_conjugate(Number_sp x) {
   return x->conjugate_();
 }
 
+inline bool clasp_float_nan_p(Float_sp num) {
+  if (num.single_floatp()) {
+    float f = num.unsafe_single_float();
+    return f != f;
+  }
+  return num->isnan_();
+}
 
-inline bool clasp_float_nan_p(Float_sp num)
- {
-   if ( num.single_floatp() ) {
-     float f = num.unsafe_single_float();
-     return f!=f;
-   }
-   return num->isnan_();
- }
- 
-inline bool clasp_float_infinity_p(Float_sp num)
- {
-   if ( num.single_floatp() ) {
-     float f = num.unsafe_single_float();
-     return isinf(f);
-   }
-   return num->isnan_();
- }
-   
-
+inline bool clasp_float_infinity_p(Float_sp num) {
+  if (num.single_floatp()) {
+    float f = num.unsafe_single_float();
+    return isinf(f);
+  }
+  return num->isnan_();
+}
 };
 
 #endif //]

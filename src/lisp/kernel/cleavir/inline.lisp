@@ -1,5 +1,7 @@
 (in-package :clasp-cleavir)
 
+#+(or)(eval-when (:compile-toplevel :load-toplevel :execute)
+        (setq core::*echo-repl-read* t))
 
 ;;; Stubs to keep the already compiled code working
 
@@ -154,19 +156,26 @@
 
 (progn
   (define-compiler-macro + (&rest numbers)
-    (core::expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
-  (define-compiler-macro - (&rest numbers)
-    (core::expand-associative '- 'primop:inlined-two-arg-- numbers 0))
+    (core:expand-associative '+ 'primop:inlined-two-arg-+ numbers 0))
+#+(or)(define-compiler-macro - (&rest numbers)
+        (core:expand-associative '- 'primop:inlined-two-arg-- numbers 0))
+(define-compiler-macro - (minuend &rest subtrahends)
+  (if (core:proper-list-p subtrahends)
+      (if subtrahends
+          `(primop:inlined-two-arg-- ,minuend ,(core:expand-associative '+ 'primop:inlined-two-arg-+ subtrahends 0))
+          `(core:negate ,minuend))
+      (error "The - operator can not be part of a form that is a dotted list.")))
+
   (define-compiler-macro < (&rest numbers)
-    (core::expand-compare 'primop:inlined-two-arg-< numbers))
+    (core:expand-compare 'primop:inlined-two-arg-< numbers))
   (define-compiler-macro <= (&rest numbers)
-    (core::expand-compare 'primop:inlined-two-arg-<= numbers))
+    (core:expand-compare 'primop:inlined-two-arg-<= numbers))
   (define-compiler-macro = (&rest numbers)
-    (core::expand-compare 'primop:inlined-two-arg-= numbers))
+    (core:expand-compare 'primop:inlined-two-arg-= numbers))
   (define-compiler-macro > (&rest numbers)
-    (core::expand-compare 'primop:inlined-two-arg-> numbers))
+    (core:expand-compare 'primop:inlined-two-arg-> numbers))
   (define-compiler-macro >= (&rest numbers)
-    (core::expand-compare 'primop:inlined-two-arg->= numbers))
+    (core:expand-compare 'primop:inlined-two-arg->= numbers))
   (define-compiler-macro 1+ (x)
     `(primop:inlined-two-arg-+ ,x 1))
   (define-compiler-macro 1- (x)

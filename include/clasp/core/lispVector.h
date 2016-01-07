@@ -39,8 +39,7 @@ FORWARD(Vector);
 /*! A one dimensional vector of objects */
 // class Vector_O : public Array_O, public T_O
 class Vector_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, ClPkg, Vector_O, "vector");
+  LISP_CLASS(core, ClPkg, Vector_O, "vector",Array_O);
 
 public:
   void archiveBase(core::ArchiveP node);
@@ -55,7 +54,8 @@ public:
 private: // instance variables here
 public:  // Functions here
   bool equalp(T_sp o) const;
-  bool adjustableArrayP() const { return false; };
+CL_LISPIFY_NAME("adjustableArrayP");
+CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   gc::Fixnum vector_length() const { return this->dimension(); };
   virtual gc::Fixnum dimension() const { SUBIMP(); };
 
@@ -64,7 +64,7 @@ public:  // Functions here
   virtual void swapElements(uint idx1, uint idx2) { SUBIMP(); };
 
   /*! For write_array */
-  virtual std::vector<cl_index> dimensions() const {SUBIMP();};
+  virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
 
   virtual size_t elementSizeInBytes() const { SUBIMP(); }
   virtual T_sp elementType() const { SUBIMP(); }
@@ -76,11 +76,13 @@ public:  // Functions here
   virtual T_sp vectorPush(T_sp newElement) { SUBIMP(); };
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 1) { SUBIMP(); };
 
-  virtual T_sp aset_unsafe(int j, T_sp val) {SUBIMP();};
-  virtual T_sp aref_unsafe(cl_index index) const { SUBIMP();};
+  virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
+  virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
 
   virtual cl_index fillPointer() const { SUBIMP(); };
-  virtual void setFillPointer(size_t idx) { SUBIMP(); };
+
+  CL_NAME("FILL-POINTER-SET");
+  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { SUBIMP(); };
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
@@ -104,17 +106,21 @@ public:  // Functions here
 };
 TRANSLATE(core::Vector_O);
 
+namespace cl {
+  extern core::Symbol_sp& _sym_T_O;
+};
+
 namespace core {
-// Like ecl_vector_start_end
+// Like ecl__vector_start_end
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
- Vector_sp core_make_vector(T_sp element_type,
-                            int dimension,
-                            bool adjustable = false,
-                            T_sp fill_pointer = cl::_sym_T_O,
-                            T_sp displaced_to = _Nil<T_O>(),
-                            T_sp displaced_index_offset = _Nil<T_O>(),
-                            T_sp initial_element = _Nil<T_O>(),
-                            T_sp initial_contents = _Nil<T_O>());
+Vector_sp core__make_vector(T_sp element_type,
+                           int dimension,
+                           bool adjustable = false,
+                           T_sp fill_pointer = cl::_sym_T_O,
+                           T_sp displaced_to = _Nil<T_O>(),
+                           T_sp displaced_index_offset = _Nil<T_O>(),
+                           T_sp initial_element = _Nil<T_O>(),
+                           T_sp initial_contents = _Nil<T_O>());
 };
 #endif /* _core_Vector_H */

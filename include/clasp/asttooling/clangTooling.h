@@ -46,7 +46,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/clbind/clbind.h>
 
 namespace clang {
@@ -202,23 +202,25 @@ public:
       printf("_Slots[%d]: %s\n", i, _rep_(this->_Slots[i]).c_str());
     }
   }
+  virtual ~DerivableMatchCallback() {
+    printf("%s:%d ~DerivableMatchCallback dtor\n", __FILE__, __LINE__ );
+  }
 };
 };
-
 template <>
 struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = false;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
 };
+DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
+
+
 
 namespace asttooling {
-
 void initialize_clangTooling();
 };
 //DERIVABLE_TRANSLATE(asttooling::DerivableArgumentsAdjuster);
-DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
 DERIVABLE_TRANSLATE(asttooling::DerivableASTFrontendAction);
 DERIVABLE_TRANSLATE(asttooling::DerivableSyntaxOnlyAction);
 DERIVABLE_TRANSLATE(asttooling::DerivableFrontendActionFactory);

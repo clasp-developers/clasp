@@ -43,9 +43,8 @@ SMART(StringSet);
 
 SMART(StructureClass);
 class StructureClass_O : public Class_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, ClPkg, StructureClass_O, "structure-class");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, ClPkg, StructureClass_O, "structure-class",Class_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -111,8 +110,7 @@ template <>
 struct gctools::GCInfo<core::StructureClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {

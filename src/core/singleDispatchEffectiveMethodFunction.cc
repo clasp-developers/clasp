@@ -74,7 +74,6 @@ void SingleDispatchEffectiveMethodFunction_O::exposePython(::core::Lisp_sp lisp)
 #endif
 
 SingleDispatchEffectiveMethodFunction_sp SingleDispatchEffectiveMethodFunction_O::create(List_sp methods) {
-  _G();
   GC_ALLOCATE(SingleDispatchEffectiveMethodFunction_O, emf);
   emf->_Methods = methods;
   return emf;

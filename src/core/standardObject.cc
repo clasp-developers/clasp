@@ -39,7 +39,7 @@ namespace core {
 void StandardObject_O::initialize() {
   LOG(BF("Initializing StandardObject"));
   this->Base::initialize();
-  //	Class_mv sc = cl_findClass(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());
+  //	Class_mv sc = cl__find_class(cl::_sym_StandardClass_O,true,_Nil<Environment_O>());
   //	this->_InstanceClass = sc.as<StandardClass_O>();
 }
 
@@ -111,7 +111,7 @@ string StandardObject_O::__repr__() const {
 
 #if 0
     void StandardObject_O::allocate_slot_storage(uint numSlots, T_sp initialValue )
-    {_G();
+    {
 	this->_Slots.resize(numSlots,initialValue);
     }
 #endif
@@ -121,7 +121,6 @@ void StandardObject_O::exposeCando(Lisp_sp lisp) {
 }
 
 void StandardObject_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, StandardObject, "", "", _lisp);
 #endif

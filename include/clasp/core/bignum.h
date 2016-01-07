@@ -33,10 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>
 
-
 namespace core {
-
-
 
 struct BignumExportBuffer {
   BignumExportBuffer() : buffer(NULL), bufferSize(0){};
@@ -50,8 +47,7 @@ struct BignumExportBuffer {
 };
 
 class Bignum_O : public Integer_O {
-  LISP_BASE1(Integer_O);
-  LISP_CLASS(core, ClPkg, Bignum_O, "Bignum");
+  LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
   //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -124,6 +120,7 @@ public:
 
   //	virtual	bool	eqn(T_sp obj) const;
   virtual bool eql_(T_sp obj) const;
+
 public:
   virtual string valueAsString() const {
     stringstream ss;

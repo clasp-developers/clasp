@@ -1,5 +1,0 @@
-digraph "CFG for '__cxx_global_var_init' function" {
-	label="CFG for '__cxx_global_var_init' function";
-
-	Node0x7fd441764d80 [shape=record,label="{entry:\l  call void @_ZNSt8ios_base4InitC1Ev(%\"class.std::ios_base::Init\"* @_ZStL8__ioinit), !dbg !20515\l  %0 = call i32 @__cxa_atexit(void (i8*)* bitcast (void (%\"class.std::ios_base::Init\"*)* @_ZNSt8ios_base4InitD1Ev to void (i8*)*), i8* getelementptr inbounds (%\"class.std::ios_base::Init\"* @_ZStL8__ioinit, i32 0, i32 0), i8* @__dso_handle) nounwind, !dbg !20515\l  ret void, !dbg !20515\l}"];
-}

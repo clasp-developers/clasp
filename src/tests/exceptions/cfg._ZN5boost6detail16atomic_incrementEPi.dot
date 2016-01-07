@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN5boost6detail16atomic_incrementEPi' function" {
-	label="CFG for '_ZN5boost6detail16atomic_incrementEPi' function";
-
-	Node0x7fd441777780 [shape=record,label="{entry:\l  %pw.addr = alloca i32*, align 8\l  store i32* %pw, i32** %pw.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{i32** %pw.addr\}, metadata !20515), !dbg !20516\l  %0 = load i32** %pw.addr, align 8, !dbg !20517\l  %1 = load i32** %pw.addr, align 8, !dbg !20517\l  call void asm \"lock\\0A\\09incl $0\", \"=*m,*m,~\{cc\},~\{dirflag\},~\{fpsr\},~\{flags\}\"(i32* %0, i32* %1) nounwind, !dbg !20517, !srcloc !20519\l  ret void, !dbg !20520\l}"];
-}

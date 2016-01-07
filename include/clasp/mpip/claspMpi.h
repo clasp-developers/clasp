@@ -43,8 +43,7 @@ namespace mpip {
 
 FORWARD(Mpi);
 class Mpi_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(mpip, MpiPkg, Mpi_O, "Mpi");
+  LISP_CLASS(mpip, MpiPkg, Mpi_O, "Mpi",core::T_O);
   DECLARE_INIT_GLOBALS();
 
 private:

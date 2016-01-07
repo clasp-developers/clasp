@@ -391,7 +391,7 @@
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
-	(irc-intrinsic "clasp_terminate" *gv-source-pathname* 
+	(irc-intrinsic "clasp_terminate" *gv-source-namestring* 
 		       (irc-i32-*current-source-pos-info*-lineno) 
 		       (irc-i32-*current-source-pos-info*-column) 
 		       *gv-current-function-name* )
@@ -547,6 +547,8 @@
 (defun irc-icmp-slt (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-slt *irbuilder* lhs rhs name))
 
+(defun irc-icmp-sgt (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-sgt *irbuilder* lhs rhs name))
 
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))

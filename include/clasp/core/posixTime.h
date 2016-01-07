@@ -50,8 +50,7 @@ SMART(PosixTimeDuration);
 
 SMART(PosixTime);
 class PosixTime_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, PosixTime_O, "PosixTime");
+  LISP_CLASS(core, CorePkg, PosixTime_O, "PosixTime",T_O);
   DECLARE_INIT();
 
 public: // virtual functions inherited from Object
@@ -59,7 +58,7 @@ public: // virtual functions inherited from Object
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-  //	string	__repr__() const;
+       //	string	__repr__() const;
 
 private: // instance variables
   boost::posix_time::ptime _Time;
@@ -82,8 +81,7 @@ public:
 
 SMART(PosixTimeDuration);
 class PosixTimeDuration_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, PosixTimeDuration_O, "PosixTimeDuration");
+  LISP_CLASS(core, CorePkg, PosixTimeDuration_O, "PosixTimeDuration",T_O);
   DECLARE_INIT();
   friend class PosixTime_O;
 
@@ -92,7 +90,7 @@ public: // virtual functions inherited from Object
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-  //	string	__repr__() const;
+       //	string	__repr__() const;
 
 public:
   static PosixTimeDuration_sp createDurationSince(PosixTime_sp past);
@@ -122,7 +120,7 @@ TRANSLATE(core::PosixTimeDuration_O);
 
 namespace core {
 
-T_sp cl_getInternalRealTime();
-T_sp cl_getInternalRunTime();
+T_sp cl__get_internal_real_time();
+T_sp cl__get_internal_run_time();
 };
 #endif //]

@@ -179,6 +179,16 @@ Return the ltv index of the value."
 
 
 
+(defun walk-structure-complex (cur env)
+  "If the COMPLEX cur is not in the *node-table* then create
+an ltv for it, put it in the *node-table*
+and walk the realpart and imagpart"
+  (with-walk-structure (cur)
+    :maker (make-ltv-complex cur env)
+    :walker (progn
+	      (walk-structure (realpart cur) env)
+	      (walk-structure (imagpart cur) env))))
+
 (defun walk-structure-cons (cur env)
   "If the CONS cur is not in the *node-table* then create
 an ltv for it, put it in the *node-table*
@@ -211,6 +221,21 @@ and walk the car and cdr"
 (defun make-ltv-cons (val env)
   (with-next-load-time-value (ltv-ref val env)
     (irc-intrinsic "ltv_makeCons" ltv-ref)))
+
+(defun make-ltv-complex (val env)
+  (with-next-load-time-value (ltv-ref val env)
+    (irc-intrinsic "ltv_makeComplex" ltv-ref)))
+
+
+
+(defun initialize-ltv-complex (obj ltv-idx env)
+  (with-initialize-load-time-value (ltv-ref ltv-idx env)
+    (let ((real-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+			     (jit-constant-i32 (gethash (realpart obj) *node-table*))))
+	  (imag-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+			     (jit-constant-i32 (gethash (imagpart obj) *node-table*)))))
+      (irc-intrinsic "ltv_setRealpart" ltv-ref real-ref)
+      (irc-intrinsic "ltv_setImagpart" ltv-ref imag-ref))))
 
 
 (defun initialize-ltv-cons (obj ltv-idx env)
@@ -300,6 +325,7 @@ and walk the car and cdr"
 (defun walk-structure (cur env)
   (cond
     ((consp cur)   (walk-structure-cons cur env))
+    ((complexp cur) (walk-structure-complex cur env))
     ((stringp cur) (walk-structure-simple cur env))
     ((vectorp cur) (walk-structure-array-objects cur env))
     ((arrayp cur)  (walk-structure-array-objects cur env))
@@ -318,6 +344,7 @@ and walk the car and cdr"
   (maphash #'(lambda (key val)
 	       (cond
 		 ((consp key)   (initialize-ltv-cons key val env))
+		 ((complexp key)   (initialize-ltv-complex key val env))
 		 ((stringp key) nil)
 		 ((vectorp key)  (initialize-ltv-array-objects key val env))
 		 ((arrayp key)  (initialize-ltv-array-objects key val env))
@@ -490,17 +517,6 @@ and walk the car and cdr"
 		  (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
 	     (irc-create-call "makeDoubleFloat" (list ltv-ref constant-ap-arg)))))
 
-(defvar *complex-coalesce* nil)
-(defun codegen-ltv-complex (result complex)
-  "Return IR code that generates a complex number"
-  (with-coalesce-load-time-value (ltv-ref result complex)
-    :coalesce-hash-table *complex-coalesce*
-    :maker (let* ((constant-r (llvm-sys:make-apfloat-double (realpart complex)))
-                  (constant-i (llvm-sys:make-apfloat-double (imagpart complex)))
-		  (constant-ap-arg-r (llvm-sys:constant-fp-get *llvm-context* constant-r))
-		  (constant-ap-arg-i (llvm-sys:constant-fp-get *llvm-context* constant-i)))
-	     (irc-create-call "makeComplex" (list ltv-ref constant-ap-arg-r constant-ap-arg-i)))))
-
 
 #+long-float(defvar *long-float-coalesce* nil)
 #+long-float(defun codegen-ltv-long-float (result val env)
@@ -519,11 +535,6 @@ and walk the car and cdr"
     ((double-float-p arg) (codegen-ltv-double-float result arg))
     #+long-float((long-float-p arg)   (codegen-ltv-long-float result arg))
     (t (error "Illegal argument ~a for codegen-float" arg))))
-
-(defun codegen-ltv/complex (result arg)
-  (codegen-ltv-complex result arg))
-
-
 
 
 (defvar *nil-coalesce* nil)
@@ -736,7 +747,7 @@ marshaling of compiled quoted data"
         (result (gensym "result")))
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
 					,irbuilder-alloca ,irbuilder-body ,result )
-	 (irc-function-create "runAll" nil nil
+	 (irc-function-create 'run-all nil nil
 			      :function-type +fn-prototype+
 			      :argument-names +fn-prototype-argument-names+)
        (let ((*load-time-value-initialization-function* ,ltv-init-fn)
@@ -749,7 +760,7 @@ marshaling of compiled quoted data"
                                  :linkage-name (llvm-sys:get-name ,ltv-init-fn)
                                  :function ,ltv-init-fn
                                  :function-type +fn-prototype+
-                                 :form nil) ;; No form for runAll
+                                 :form nil) ;; No form for run-all
            ;; Set up dummy debug info for these irbuilders
            (cmp:with-irbuilder (*irbuilder-ltv-function-alloca*)
              (cmp:dbg-set-current-source-pos nil))
@@ -775,7 +786,6 @@ marshaling of compiled quoted data"
                  #+short-float(*short-float-coalesce* (make-hash-table :test #'eql))
                  (*single-float-coalesce* (make-hash-table :test #'eql))
                  (*double-float-coalesce* (make-hash-table :test #'eql))
-                 (*complex-coalesce* (make-hash-table :test #'eql))
                  #+long-float(*long-float-coalesce* (make-hash-table :test #'eql))
                  (*string-coalesce* (make-hash-table :test #'equal))
                  (*pathname-coalesce* (make-hash-table :test #'equal))
@@ -799,11 +809,11 @@ marshaling of compiled quoted data"
                                 (cmp-log "Setting up getOrCreateLoadTimeValueArray\n")
                                 (irc-intrinsic "getOrCreateLoadTimeValueArray"
                                                *load-time-value-holder-global-var*
-                                               *gv-source-pathname*
+                                               *gv-source-namestring*
                                                (jit-constant-i32 ltv-value-counter)
                                                (jit-constant-i32 ltv-symbol-counter))
                                 (irc-intrinsic "assignSourceFileInfoHandle"
-                                               *gv-source-pathname*
+                                               *gv-source-namestring*
                                                *gv-source-debug-namestring*
                                                (jit-constant-i64 *source-debug-offset*)
                                                (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
@@ -842,7 +852,6 @@ marshaling of compiled quoted data"
 (defun compile-ltv-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (or (stringp name) (error "name must be a string"))
   (let* ((ltv-index (get-next-available-ltv-entry))
 	 (fn (with-new-function (fn fn-env fn-result
 				    :function-name name
@@ -898,7 +907,7 @@ marshaling of compiled quoted data"
 	((packagep obj) (codegen-ltv/package result obj))
 	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env #|necessary|#))
 	((floatp obj) (codegen-ltv/float result obj))
-	((complexp obj) (codegen-ltv/complex result obj))
+	((complexp obj) (codegen-ltv/container result obj env #|necessary|#))
 	((symbolp obj) (codegen-ltv/symbol result obj))
 	((characterp obj) (codegen-ltv/character result obj))
 	((arrayp obj) (codegen-ltv/array result obj env #|necessary|#))

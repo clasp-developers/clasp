@@ -126,6 +126,20 @@
     (irc-begin-block cont-block)
     ))
 
+(defun compile-error-if-too-many-arguments (nargs maximum-number-of-arguments)
+  "If nargs > lv-maximum-number-of-arguments then throw an exception - no cleanup needed/nothing was created"
+  (let* ((error-block (irc-basic-block-create "error"))
+	 (cont-block (irc-basic-block-create "continue"))
+	 (given-number-of-arguments nargs )
+	 (maximum-number-of-arguments (jit-constant-size_t maximum-number-of-arguments))
+	 (cmp (irc-icmp-sgt given-number-of-arguments maximum-number-of-arguments "max-num-args")))
+    (irc-cond-br cmp error-block cont-block)
+    (irc-begin-block error-block)
+    (irc-intrinsic "va_tooManyArgumentsException" *gv-current-function-name* given-number-of-arguments maximum-number-of-arguments)
+    (irc-unreachable)
+    (irc-begin-block cont-block)
+    ))
+
 (defun compile-save-if-special (env target &key make-unbound)
   (when (eq (car target) 'ext:special-var)
     (cmp-log "compile-save-if-special - the target: %s is special - so I'm saving it\n" target)
@@ -535,8 +549,7 @@ will put a value into target-ref."
 
 
 
-(defun compile-throw-if-excess-keyword-arguments (env
-                                                  args ;; nargs va-list
+(defun compile-throw-if-excess-keyword-arguments ( args ;; nargs va-list
                                                   arg-idx)
   (irc-intrinsic "va_ifExcessKeywordArgumentsException" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-va-list args) arg-idx))
 
@@ -608,9 +621,9 @@ lambda-list-handler/env/argument-activation-frame"
 						    rest/key-arg-idx)
 			     rest/key-arg-idx)))
       (unless rest-var
-	(compile-throw-if-excess-keyword-arguments old-env
-                                                   args ; nargs va-list
-                                                   last-arg-idx))
+        (if key-flag
+            (compile-throw-if-excess-keyword-arguments args last-arg-idx)
+            (compile-error-if-too-many-arguments (calling-convention-nargs args) (+ (car reqargs) (car optargs)))))
       (when (/= 0 (car auxargs))
 	(compile-aux-arguments auxargs old-env new-env))
       )

@@ -27,6 +27,8 @@ THE SOFTWARE.
 #ifndef compilerPackage_fwd_H
 #define compilerPackage_fwd_H
 
+PACKAGE_NICKNAME("CMP");
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(comp, CompPkg, "COMPILER")
 
 #endif

@@ -1,5 +1,0 @@
-digraph "CFG for '__cxx_global_var_init5' function" {
-	label="CFG for '__cxx_global_var_init5' function";
-
-	Node0x7fd441767f70 [shape=record,label="{entry:\l  call void @_ZN5boost6detail35make_property_map_from_arg_pack_genINS_5graph8keywords3tag9color_mapENS_18default_color_typeEEC1ES6_(%\"class.boost::detail::make_property_map_from_arg_pack_gen\"* @_ZN5boost6detailL28make_color_map_from_arg_packE, i32 0), !dbg !20515\l  ret void, !dbg !20515\l}"];
-}

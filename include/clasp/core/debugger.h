@@ -42,8 +42,11 @@ namespace core {
   the single step state to what it was.
 */
 
-  FORWARD(InvocationHistoryFrameIterator);
-  
+void core__low_level_backtrace();
+void core__clib_backtrace(int depth = 999999999);
+
+FORWARD(InvocationHistoryFrameIterator);
+
 class LispDebugger {
 private:
   bool _CanContinue;
@@ -78,7 +81,6 @@ public:
 
 void af_backtrace();
 
-void initialize_debugging();
 
 extern "C" {
 void af_gotoIhsTop();

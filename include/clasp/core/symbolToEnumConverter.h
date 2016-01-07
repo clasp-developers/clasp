@@ -40,12 +40,11 @@ SMART(Symbol);
 
 SMART(SymbolToEnumConverter);
 class SymbolToEnumConverter_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter");
+  LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter",T_O);
 
 public:
   static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent);
-  static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[],bool expose=false);
+  static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent, string const &packageName, NullTerminatedEnumAssociation assoc[], bool expose = false);
 
 public: // virtual functions inherited from Object
   void initialize();

@@ -37,7 +37,7 @@
     (with-compilation-unit ()
       (with-module ( :module module
                              :optimize nil
-                             :source-pathname "code-walk-using-compiler")
+                             :source-namestring "code-walk-using-compiler")
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)

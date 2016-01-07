@@ -35,7 +35,7 @@ $for template_ [[
         Type fptr;
         public:
         enum { NumParams = $numArgs };
-        VariadicFunctoid(T_sp name, T_sp spi, Symbol_sp funcType, Type ptr) : BuiltinClosure(name,spi,funcType), fptr(ptr) {};
+        VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual void* functionAddress() const { return (void*)this->fptr; };

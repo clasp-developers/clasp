@@ -44,7 +44,6 @@ THE SOFTWARE.
 namespace core {
 
 StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, int fill_ptr, bool adjustable, T_sp initialContents) {
-  _G();
   GC_ALLOCATE(StrWithFillPtr_O, str);
   str->_Contents = string(dimension, initial_element);
   str->_FillPointer = fill_ptr;
@@ -58,13 +57,11 @@ StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, 
 EXPOSE_CLASS(core, StrWithFillPtr_O);
 
 void StrWithFillPtr_O::exposeCando(Lisp_sp lisp) {
-  _G();
   class_<StrWithFillPtr_O>()
       .def("core:pushString", (void (StrWithFillPtr_O::*)(T_sp)) & StrWithFillPtr_O::pushString);
 }
 
 void StrWithFillPtr_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, Str, "", "", _lisp);
 #endif
@@ -161,18 +158,19 @@ string StrWithFillPtr_O::__repr__() const {
 }
 
 void StrWithFillPtr_O::pushSubString(T_sp tstr, size_t start, size_t end) {
-  Str_sp str = af_string(tstr);
+  Str_sp str = cl__string(tstr);
   while (start < end) {
-    this->vectorPushExtend(clasp_make_character(af_char(str, start)));
+    this->vectorPushExtend(clasp_make_character(cl__char(str, start)));
     start++;
   }
 }
 
-void StrWithFillPtr_O::pushString(T_sp str) {
-  this->pushSubString(str, 0, cl_length(str));
+CL_LISPIFY_NAME(push-string);
+CL_DEFMETHOD void StrWithFillPtr_O::pushString(T_sp str) {
+  this->pushSubString(str, 0, cl__length(str));
 }
 
-void StrWithFillPtr_O::pushString(const char *cPtr) {
+void StrWithFillPtr_O::pushStringCharStar(const char *cPtr) {
   while (*cPtr) {
     this->pushCharExtend(*cPtr, this->length());
     cPtr++;

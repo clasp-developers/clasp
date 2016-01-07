@@ -47,7 +47,8 @@ public:
 
 class Cache {
   FRIEND_GC_SCANNER(core::CacheRecord);
- public:
+
+public:
   size_t _searches;
   size_t _misses;
   size_t _total_depth;
@@ -55,7 +56,8 @@ class Cache {
   gctools::Vec0<CacheRecord> _table;
   int _generation;
 
- Cache() : _misses(0), _searches(0), _total_depth(0) {};
+  Cache() : _misses(0), _searches(0), _total_depth(0){};
+
 private:
   void clearOneFromCache(T_sp target);
 

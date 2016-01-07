@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN5boost6detail12shared_countD1Ev' function" {
-	label="CFG for '_ZN5boost6detail12shared_countD1Ev' function";
-
-	Node0x7fd441771a70 [shape=record,label="{entry:\l  %this.addr = alloca %\"class.boost::detail::shared_count\"*, align 8\l  store %\"class.boost::detail::shared_count\"* %this, %\"class.boost::detail::shared_count\"** %this.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{%\"class.boost::detail::shared_count\"** %this.addr\}, metadata !20515), !dbg !20517\l  %this1 = load %\"class.boost::detail::shared_count\"** %this.addr\l  call void @_ZN5boost6detail12shared_countD2Ev(%\"class.boost::detail::shared_count\"* %this1), !dbg !20518\l  ret void, !dbg !20519\l}"];
-}

@@ -149,7 +149,7 @@ Returns the arc sine of NUMBER."
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+(or)(c-num-op "asin" xr) (core:asin xr) x)
+	    (float #+ecl(c-num-op "asin" xr) #+clasp(core:num-op-asin xr) x)
 	    (complex-asin x)))))
 
 ;; Ported from CMUCL
@@ -172,7 +172,7 @@ Returns the arc cosine of NUMBER."
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+(or)(c-num-op "acos" xr) (core:acos xr) (float x))
+	    (float #+ecl(c-num-op "acos" xr) #+clasp(core:num-op-acos xr) (float x))
 	    (complex-acos x)))))
 
 ;; Ported from CMUCL
@@ -211,7 +211,7 @@ Returns the hyperbolic arc sine of NUMBER."
 	(complex (imagpart result)
 		 (- (realpart result))))
       #-(or ecl-min)
-      (float #+(or)(c-num-op "asinh" x) (core:asinh x) (float x))))
+      (float #+ecl(c-num-op "asinh" x) #+clasp(core:num-op-asinh x) (float x))))
 
 ;; Ported from CMUCL
 (defun acosh (x)
@@ -225,7 +225,7 @@ Returns the hyperbolic arc cosine of NUMBER."
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (<= 1.0 xr)
-	    (float #+(or)(c-num-op "acosh" xr) (core:acosh xr) (float x))
+	    (float #+ecl(c-num-op "acosh" xr) #+clasp(core:num-op-acosh xr) (float x))
 	    (complex-acosh x)))))
 
 (defun complex-acosh (z)
@@ -247,7 +247,7 @@ Returns the hyperbolic arc tangent of NUMBER."
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+(or)(c-num-op "atanh" xr) (core:atanh xr) (float x))
+	    (float #+ecl(c-num-op "atanh" xr) #+clasp(core:num-op-atanh xr) (float x))
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)

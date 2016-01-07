@@ -107,7 +107,7 @@ public:
     return retval;
   }
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    gc::tagged_pointer<Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
+    gc::tagged_pointer<Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocate_class(className, this->_Kind, this->_duplicationLevel + 1);
     return allocator;
   }
 };
@@ -169,17 +169,11 @@ public:
     printf("%s", ss.str().c_str());
   }
   core::T_sp allocate() {
-    //            printf("%s:%d Allocating instance of Derivable class: %s\n", __FILE__, __LINE__, _rep_(this->_mostDerivedClassSymbol).c_str());
     GC_ALLOCATE(T, obj);
-    //            printf("%s:%d obj.px_ref() = %p\n", __FILE__, __LINE__, obj.px_ref());
-    //            printf("%s:%d obj.px_ref()->pointerToAlienWithin() = %p\n", __FILE__, __LINE__, obj.px_ref()->pointerToAlienWithin());
-    //            printf("%s:%d typeid(obj.px_ref())@%p  typeid(obj.px_ref()).name=%s\n", __FILE__, __LINE__, &typeid(obj.px_ref()),typeid(obj.px_ref()).name());
-
-    //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
     return obj;
   }
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocateClass(className, this->_Kind, this->_duplicationLevel + 1);
+    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocate_class(className, this->_Kind, this->_duplicationLevel + 1);
   }
 };
 };
@@ -231,9 +225,9 @@ public:
 namespace clbind {
 
 template <typename Pols, typename Pointer, typename T, typename Sig>
-class VariadicConstructorFunctoid : public core::Functoid {
+class VariadicConstructorFunctoid : public core::BuiltinClosure {
 public:
-  typedef core::Functoid TemplatedBase;
+  typedef core::BuiltinClosure TemplatedBase;
 
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };

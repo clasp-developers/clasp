@@ -35,8 +35,7 @@ namespace core {
 
 FORWARD(VectorObjectsWithFillPtr);
 class VectorObjectsWithFillPtr_O : public VectorObjects_O {
-  LISP_BASE1(VectorObjects_O);
-  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr");
+  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr",VectorObjects_O);
   void archiveBase(SNode_sp node);
 
 public:

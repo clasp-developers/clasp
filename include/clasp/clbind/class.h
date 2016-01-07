@@ -179,7 +179,7 @@ public:
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
+    return gctools::ClassAllocator<DummyCreator>::allocate_class_kind(gctools::GCKind<Creator>::Kind,core::lisp_symbolNameAsString(className));
   }
 };
 
@@ -305,11 +305,11 @@ struct cast_entry {
 } // namespace unnamed
 
 struct class_registration : registration {
-  class_registration(char const *name);
+  class_registration(const string &name);
 
   void register_() const;
 
-  const char *m_name;
+  std::string m_name;
 
   mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
@@ -331,7 +331,7 @@ struct class_registration : registration {
 
 struct CLBIND_API class_base : scope {
 public:
-  class_base(char const *name);
+  class_base(const string &name);
 
   struct base_desc {
     type_id type;
@@ -347,7 +347,7 @@ public:
   void add_member(registration *member);
   void add_default_member(registration *member);
 
-  const char *name() const;
+  string name() const;
 
   void add_static_constant(const char *name, int val);
   void add_inner_scope(scope &s);
@@ -386,13 +386,13 @@ struct CountMethodArguments<RT (OT::*)(ARGS...) const> {
 
 template <class Class, class MethodPointerType, class Policies>
 struct memfun_registration : registration {
-  memfun_registration(char const *name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
+  memfun_registration(const std::string &name, MethodPointerType f, Policies const &policies, string const &arguments, string const &declares, string const &docstring)
       : name(name), methodPtr(f), policies(policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocateClass(sym, methodPtr);
+    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate_class(sym, methodPtr);
     lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, m_arguments, m_declares, m_docstring, true, CountMethodArguments<MethodPointerType>::value + 1 // +1 for the self argument
                                     ,
                                     GatherPureOutValues<Policies, 0>::gather());
@@ -411,7 +411,7 @@ struct memfun_registration : registration {
 #endif
   }
 
-  char const *name;
+  std::string name;
   MethodPointerType methodPtr;
   Policies policies;
   string m_arguments;
@@ -427,7 +427,7 @@ struct iterator_registration : registration {
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IteratorMethoid<Policies, Class, Begin, End>>::allocateClass(sym, beginPtr, endPtr);
+    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IteratorMethoid<Policies, Class, Begin, End>>::allocate_class(sym, beginPtr, endPtr);
 
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -479,7 +479,7 @@ struct constructor_registration_base : public registration {
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
-    gctools::tagged_pointer<core::BuiltinClosure> f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocateClass(sym);
+    gctools::tagged_pointer<core::BuiltinClosure> f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocate_class(sym);
     lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, true, CountConstructorArguments<Signature>::value);
   }
 
@@ -500,7 +500,7 @@ template <class Class, class Pointer, class Policies>
 struct constructor_registration<Class, Pointer, default_constructor, Policies> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const {
-    gc::tagged_pointer<core::Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<Class, Pointer>>::allocateClass();
+    gc::tagged_pointer<core::Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<Class, Pointer>>::allocate_class();
     return allocator;
   }
 };
@@ -541,7 +541,7 @@ struct constructor_registration<Class, reg::null_type, default_constructor, Poli
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocateClass();
+    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocate_class();
   }
 };
 
@@ -571,7 +571,7 @@ template <
     class Class, class Get, class GetPolicies, class Set = reg::null_type, class SetPolicies = reg::null_type>
 struct property_registration : registration {
   property_registration(
-      char const *name,
+      const string &name,
       Get const &get,
       GetPolicies const &get_policies,
       Set const &set = Set(),
@@ -579,14 +579,7 @@ struct property_registration : registration {
       string const &arguments = "",
       string const &declares = "",
       string const &docstring = "")
-      : name(name)
-  , get(get)
-  , get_policies(get_policies)
-  , set(set)
-  , set_policies(set_policies)
-  , m_arguments(arguments)
-  , m_declares(declares)
-  , m_docstring(docstring) {}
+      : name(name), get(get), get_policies(get_policies), set(set), set_policies(set_policies), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
   void register_() const {
     const string n(name);
@@ -594,7 +587,7 @@ struct property_registration : registration {
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-    gctools::tagged_pointer<core::BuiltinClosure> getter = gctools::ClassAllocator<GetterMethoid<reg::null_type, Class, Get>>::allocateClass(sym, get);
+    gctools::tagged_pointer<core::BuiltinClosure> getter = gctools::ClassAllocator<GetterMethoid<reg::null_type, Class, Get>>::allocate_class(sym, get);
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, m_arguments, m_declares, m_docstring, true, 1);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
@@ -666,7 +659,7 @@ struct property_registration : registration {
                 context[name] = property(get_);
             }
 #endif
-  char const *name;
+  std::string name;
   Get get;
   GetPolicies get_policies;
   Set set;
@@ -739,7 +732,7 @@ public:
 
 #undef CLBIND_GEN_BASE_INFO
 
-  class_(const char *name) : class_base(name), scope(*this) {
+  class_(const std::string &name) : class_base(name), scope(*this) {
 #ifndef NDEBUG
     detail::check_link_compatibility();
 #endif
@@ -774,7 +767,7 @@ public:
   }
 
   template <class F>
-  class_ &def(const char *name, F f)
+  class_ &def(const std::string &name, F f)
   //                        string const& arguments="",
   //                        string const& declares="",
   //                        string const& docstring="")
@@ -787,7 +780,7 @@ public:
 
   // virtual functions
   template <class F, class DefaultOrPolicies>
-  class_ &def(char const *name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
+  class_ &def(const std::string &name, F fn, DefaultOrPolicies default_or_policies, string const &arguments = "", string const &declares = "", string const &docstring = "") {
     return this->virtual_def(
         name, fn, default_or_policies, reg::null_type(), CLBIND_MSVC_TYPENAME is_policy_list<DefaultOrPolicies>::type(), arguments, declares, docstring);
   }
@@ -861,7 +854,7 @@ public:
         }
 #endif // meister disabled
   template <class C, class D>
-  class_ &def_readonly(const char *name, D C::*mem_ptr) {
+  class_ &def_readonly(const string &name, D C::*mem_ptr) {
     typedef detail::property_registration<T, D C::*, detail::null_type>
         registration_type;
 
@@ -871,7 +864,7 @@ public:
   }
 
   template <class C, class D, class Policies>
-  class_ &def_readonly(const char *name, D C::*mem_ptr, Policies const &policies) {
+  class_ &def_readonly(const string &name, D C::*mem_ptr, Policies const &policies) {
     typedef detail::property_registration<T, D C::*, Policies>
         registration_type;
 
@@ -1000,7 +993,7 @@ private:
         }
 
         template<class F, class Default, class Policies>
-        class_& virtual_def(char const* name, F const& fn
+          class_& virtual_def(const std::string& name, F const& fn
                             , Default const& default_, Policies const&, boost::mpl::false_)
         {
             this->add_member(
@@ -1018,7 +1011,7 @@ private:
 
   // these handle default implementation of virtual functions
   template <class F, class Policies>
-  class_ &virtual_def(char const *name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
+  class_ &virtual_def(const std::string &name, F const &fn, Policies const &, reg::null_type, boost::mpl::true_,
                       string const &arguments, string const &declares, string const &docstring) {
     this->add_member(
         new detail::memfun_registration<T, F, Policies>(

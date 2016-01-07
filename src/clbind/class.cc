@@ -74,7 +74,7 @@ default_constructor globalDefaultConstructorSignature;
 namespace clbind {
 namespace detail {
 
-class_registration::class_registration(char const *name) : m_default_constructor(NULL) {
+class_registration::class_registration(const std::string &name) : m_default_constructor(NULL) {
   m_name = name;
 }
 
@@ -94,7 +94,7 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     allocator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    allocator = gctools::ClassAllocator<DummyCreator>::allocateClass(classNameString);
+    allocator = gctools::ClassAllocator<DummyCreator>::allocate_class(classNameString);
   }
   _lisp->addClass(className, crep, allocator);
   registry->add_class(m_type, crep);
@@ -146,7 +146,7 @@ void class_registration::register_() const {
 
 // -- interface ---------------------------------------------------------
 
-class_base::class_base(char const *name)
+class_base::class_base(const string &name)
     : scope(std::auto_ptr<registration>(
           m_registration = new class_registration(name))) {
 }
@@ -179,7 +179,7 @@ void class_base::add_default_member(registration *member) {
   m_registration->m_default_members.operator, (scope(ptr));
 }
 
-const char *class_base::name() const {
+string class_base::name() const {
   return m_registration->m_name;
 }
 

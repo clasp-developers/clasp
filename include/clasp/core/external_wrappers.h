@@ -77,7 +77,7 @@ namespace core {
 // ----------------------------------------
 // ----------------------------------------
 // ----------------------------------------
-extern Symbol_sp _sym_STARallCxxClassesSTAR;
+extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
 template <typename OT>
 class externalClass_ {
@@ -138,8 +138,8 @@ public:
   externalClass_ &def(string const &name, RT (OT::*mp)(ARGS...), string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gctools::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    gctools::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate_class(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -148,8 +148,8 @@ public:
                       string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate_class(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -158,8 +158,8 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate_class(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -168,8 +168,8 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate_class(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -177,7 +177,7 @@ public:
   externalClass_ &def_readonly(string const &name, D C::*mem_ptr) {
 #if 0
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<GetterMethoid<D, C>>::allocateClass(symbol, mem_ptr);
+    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<GetterMethoid<D, C>>::allocate_class(symbol, mem_ptr);
             lisp_defineSingleDispatchMethod(symbol
                                             ,this->_ClassSymbol
                                             ,m

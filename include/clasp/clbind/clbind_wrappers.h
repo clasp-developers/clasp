@@ -236,8 +236,7 @@ template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 /*! Wrappers of unique_ptr need to be finalized */
@@ -250,8 +249,7 @@ template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace translate {
@@ -495,7 +493,7 @@ struct from_object<std::unique_ptr<T>> {
       this->_v = std::unique_ptr<T>(static_cast<T *>(NULL));
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = std::unique_ptr<T>(/*gc::As<core::WrappedPointer_sp>(o)*/wp->cast<T>());
+      this->_v = std::unique_ptr<T>(/*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>());
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = std::unique_ptr<T>(static_cast<T *>(pp->ptr()));
@@ -531,7 +529,7 @@ struct from_object<T *> {
       this->_v = static_cast<T *>(NULL);
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/wp->cast<T>();
+      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>();
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = static_cast<T *>(pp->ptr());
@@ -567,7 +565,7 @@ struct from_object<const T *&> {
       this->_v = static_cast<T *>(NULL);
       return;
     } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/wp->cast<T>();
+      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>();
       return;
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = static_cast<T *>(pp->ptr());

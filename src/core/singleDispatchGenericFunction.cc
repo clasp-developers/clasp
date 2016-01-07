@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/str.h>
 #include <clasp/core/executables.h>
+#include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/singleDispatchEffectiveMethodFunction.h>
@@ -47,11 +48,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define DOCS_af_ensureSingleDispatchGenericFunction "ensureSingleDispatchGenericFunction"
-#define ARGS_af_ensureSingleDispatchGenericFunction "(gfname llhandler)"
-#define DECL_af_ensureSingleDispatchGenericFunction ""
-T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler) {
-  _G();
+CL_LAMBDA(gfname llhandler);
+CL_DECLARE();
+CL_DOCSTRING("ensureSingleDispatchGenericFunction");
+CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler) {
   T_sp gfn = Lisp_O::find_single_dispatch_generic_function(gfname, false);
   //        printf("%s:%d find_single_dispatch_generic_function(%s) --> %p\n", __FILE__, __LINE__, _rep_(gfname).c_str(), gfn.raw_() );
   if (gfn.nilp()) {
@@ -72,11 +72,10 @@ T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_
   return gfn;
 };
 
-#define DOCS_af_ensureSingleDispatchMethod "ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function"
-#define LOCK_af_ensureSingleDispatchMethod 0
-#define ARGS_af_ensureSingleDispatchMethod "(gfname receiver-class &key lambda-list-handler declares (docstring \"\") body )"
-#define DECL_af_ensureSingleDispatchMethod ""
-void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
+CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
+CL_DECLARE();
+CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
+CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
   //	string docstr = docstring->get();
   if (!gfname->fboundp()) {
     SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
@@ -97,9 +96,12 @@ void af_ensureSingleDispatchMethod(Symbol_sp gfname, Class_sp receiver_class, La
                     " --> The solution is to give the most recent Common Lisp method you defined\n"
                     " a new name by prefixing it with the class name\n"
                     " eg: getFilename -> PresumedLoc-getFilename") %
-                 _rep_(gfname)  % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
+                 _rep_(gfname) % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
   gfc->addMethod(method);
+  if (docstring.notnilp()) {
+    core::ext__annotate(method,cl::_sym_documentation,core::_sym_single_dispatch_method, docstring );
+  }
 };
 
 // ----------------------------------------------------------------------
@@ -228,16 +230,12 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) 
 
 EXPOSE_CLASS(core, SingleDispatchGenericFunction_O);
 
+  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
+  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
+
 void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<SingleDispatchGenericFunction_O>()
-      //	    .def_readonly("single_dispatch_generic_function_methods",&SingleDispatchGenericFunction_O::_Methods,"Access the methods of the single-dispatch-generic-function")
-      //	.initArgs("(self)")
-      //	    .def("single-dispatch-generic-function-dispatch-on-index",&SingleDispatchGenericFunction_O::dispatch_on_index)
-      .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
-  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
-  Defun(ensureSingleDispatchGenericFunction);
-  SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
-  Defun(ensureSingleDispatchMethod);
+    .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
 }
 
 void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
@@ -249,9 +247,8 @@ void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
 }
 
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
-  _G();
   GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);
-  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocateClass(name);
+  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocate_class(name);
   gfc->finishSetup(llh, kw::_sym_function);
   gf->closure = gfc;
   return gf;
@@ -330,7 +327,7 @@ SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp na
                    Symbol_sp emf_name,
                    SingleDispatchMethod_sp cur_method,
                    Cons_sp next_methods) : Functoid("Lambda_emf->"+name)
-        {_G();
+        {
             this->_name = emf_name;
             this->_method_function = cur_method->_chainable_method_function;
             ASSERTF(this->_method_function->getLambdaListHandler().notnilp()
@@ -378,7 +375,7 @@ SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp na
             Symbol_sp receiverClassNameSymbol = receiverClass->className();
             string receiverClassName = receiverClassNameSymbol->symbolNameAsString();
             emf_name_ss << gfname << "->" << receiverClassName;
-            Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_functionBlockName(this->getFunctionName())->getPackage());
+            Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_!functionBlockName(this->getFunctionName())->getPackage());
             Lambda_emf* l_emf = _NEW_(Lambda_emf(emf_name_ss.str(),this->sharedThis<SingleDispatchGenericFunction_O>(),
                                                  emf_name, cur_method,cCdr(applicable_methods)));
             CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf,_Nil<T_O>(),_lisp);

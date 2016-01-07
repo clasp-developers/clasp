@@ -52,7 +52,6 @@ void HashTableEq_O::exposePython(::core::Lisp_sp lisp) {
 }
 
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  _G();
   GC_ALLOCATE(HashTableEq_O, hashTable);
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
@@ -106,7 +105,7 @@ void HashTableEq_O::archiveBase(::core::ArchiveP node) {
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   _OF();
-  return cl_eq(entryKey, searchKey);
+  return cl__eq(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {

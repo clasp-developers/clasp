@@ -277,7 +277,7 @@ inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
 }
 
 #ifdef ECL_UNICODE
-static cl_intptr_t hash_full_string(const ecl_character *s, int len, int h) {
+static cl_intptr_t hash_full_string(const ecl__character *s, int len, int h) {
   cl_intptr_t a = GOLDEN_RATIO, b = GOLDEN_RATIO, i;
   for (i = len; i >= 3; i -= 3) {
     a += (*s);

@@ -45,14 +45,14 @@ T_mv ArrayDisplaced_O::arrayDisplacement() const {
 #define ARGS_ArrayDisplaced_O_make "(dimensions element-type displaced-to displaced-index-offset)"
 #define DECL_ArrayDisplaced_O_make ""
 #define DOCS_ArrayDisplaced_O_make "make ArrayDisplaced args: dimensions element-type displaced-to displaced-index-offset"
-ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp displacedTo, int displacedIndexOffset) {
-  _G();
+CL_LISPIFY_NAME(make-array-displaced);
+CL_DEFUN ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp displacedTo, int displacedIndexOffset) {
   GC_ALLOCATE(ArrayDisplaced_O, array);
   array->_ElementType = elementType;
   array->_Array = displacedTo;
   array->_DisplacedIndexOffset = displacedIndexOffset;
   List_sp dim;
-  if (cl_atom(dim_desig)) {
+  if (cl__atom(dim_desig)) {
     int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
     dim = Cons_O::create(make_fixnum(idim));
   } else {
@@ -64,11 +64,9 @@ ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp 
 
 void ArrayDisplaced_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<ArrayDisplaced_O>();
-  Defun_maker(CorePkg, ArrayDisplaced);
 }
 
 void ArrayDisplaced_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, ArrayDisplaced, "", "", _lisp);
 #endif
@@ -100,18 +98,15 @@ void ArrayDisplaced_O::initialize() {
 }
 
 void ArrayDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   this->_Array->rowMajorAset(this->_DisplacedIndexOffset + idx, value);
 }
 
 T_sp ArrayDisplaced_O::aset_unsafe(int idx, T_sp value) {
-  _G();
   this->_Array->aset_unsafe(this->_DisplacedIndexOffset + idx, value);
   return value;
 }
 
 T_sp ArrayDisplaced_O::rowMajorAref(cl_index idx) const {
-  _G();
   return ((this->_Array->rowMajorAref(idx + this->_DisplacedIndexOffset)));
 };
 
@@ -151,7 +146,6 @@ T_sp ArrayDisplaced_O::deepCopy() const {
 }
 
 T_sp ArrayDisplaced_O::svref(int index) const {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     return ((this->rowMajorAref(index)));
@@ -160,7 +154,6 @@ T_sp ArrayDisplaced_O::svref(int index) const {
 }
 
 T_sp ArrayDisplaced_O::setf_svref(int index, T_sp value) {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     this->rowMajorAset(index, value);
@@ -172,7 +165,7 @@ T_sp ArrayDisplaced_O::setf_svref(int index, T_sp value) {
 LongLongInt ArrayDisplaced_O::setDimensions(List_sp ldim, T_sp displacedTo) {
   _OF();
   LongLongInt elements = 1;
-  this->_Dimensions.resize(cl_length(ldim));
+  this->_Dimensions.resize(cl__length(ldim));
   int idx = 0;
   for (auto dim : ldim) {
     int oneDim = clasp_to_int(gc::As<Rational_sp>(oCar(dim)));

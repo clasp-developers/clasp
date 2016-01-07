@@ -33,13 +33,11 @@ THE SOFTWARE.
 
 namespace core {
 
-
-
 //
 // Constructor
 //
 BitVector_O::BitVector_O(size_t sz) {
-  this->bits.resize(((sz-1)/CHAR_BIT) + 1, 0);
+  this->bits.resize(((sz - 1) / CHAR_BIT) + 1, 0);
 }
 
 BitVector_O::BitVector_O(const BitVector_O &bv) {
@@ -55,28 +53,26 @@ BitVector_O::BitVector_O(const BitVector_O &bv) {
 //
 
 void BitVector_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   Fixnum_sp fn = gc::As<Fixnum_sp>(value);
   this->setBit(idx, fn.unsafe_fixnum());
 }
 
 T_sp BitVector_O::rowMajorAref(cl_index idx) const {
-  _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
   uint val = this->testBit(idx);
   return (val != 0) ? clasp_make_fixnum(1) : clasp_make_fixnum(0);
 }
 
 void BitVector_O::do_subseq(BitVector_sp result, int start, int iend) const {
- int idest = 0;
-  for ( int i(start); i<iend; ++i ) {
-    result->setBit(idest++,this->testBit(i));
+  int idest = 0;
+  for (int i(start); i < iend; ++i) {
+    result->setBit(idest++, this->testBit(i));
   }
 }
 
 T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
-  if ( start < 0 ) {
+  if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
   int iend;
@@ -85,20 +81,20 @@ T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend < start) {
+  if (iend < start) {
     SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
   }
-  if ( iend > this->dimension() ) {
+  if (iend > this->dimension()) {
     iend = this->dimension();
   }
-  int ilen = iend-start;
-  SimpleBitVector_sp result = SimpleBitVector_O::create(ilen);
-  this->do_subseq(result,start,iend);
+  int ilen = iend - start;
+  SimpleBitVector_sp result = SimpleBitVector_O::make(ilen);
+  this->do_subseq(result, start, iend);
   return result;
 }
 
 T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
-  if ( start < 0 ) {
+  if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
   int iend;
@@ -107,21 +103,19 @@ T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
-  if ( iend < start) {
-      SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
+  if (iend < start) {
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
   }
-  if ( iend > this->dimension() ) {
+  if (iend > this->dimension()) {
     iend = this->dimension();
   }
-  int ilen = iend-start;
-  BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::create(ilen,ilen,this->_adjustable);
-  this->do_subseq(result,start,iend);
+  int ilen = iend - start;
+  BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::make(ilen, ilen, this->_adjustable);
+  this->do_subseq(result, start, iend);
   return result;
 }
 
-
 void BitVector_O::getOnIndices(vector<uint> &res) {
-  _G();
   uint i;
   res.clear();
   for (i = 0; i != this->vector_length(); i++) {
@@ -153,7 +147,8 @@ void BitVector_O::erase() {
   }
 }
 
-void BitVector_O::setBit(uint i, uint v) {
+CL_LISPIFY_NAME("core:setBit");
+CL_DEFMETHOD void BitVector_O::setBit(uint i, uint v) {
   _OF();
   uint block;
   uint offset;
@@ -171,7 +166,8 @@ void BitVector_O::setBit(uint i, uint v) {
   this->bits[block] = (this->bits[block] & mask) | packedVal;
 }
 
-uint BitVector_O::testBit(uint i) const {
+CL_LISPIFY_NAME("core:testBit");
+CL_DEFMETHOD uint BitVector_O::testBit(uint i) const {
   _OF();
   uint block;
   uint offset;
@@ -188,7 +184,8 @@ uint BitVector_O::testBit(uint i) const {
   return ((result ? 1 : 0));
 }
 
-void BitVector_O::inPlaceOr(BitVector_sp bv) {
+CL_LISPIFY_NAME("core:inPlaceOr");
+CL_DEFMETHOD void BitVector_O::inPlaceOr(BitVector_sp bv) {
   _OF();
   uint i;
   if (this->vector_length() != bv->vector_length()) {
@@ -199,7 +196,8 @@ void BitVector_O::inPlaceOr(BitVector_sp bv) {
   }
 }
 
-void BitVector_O::inPlaceAnd(BitVector_sp bv) {
+CL_LISPIFY_NAME("core:inPlaceAnd");
+CL_DEFMETHOD void BitVector_O::inPlaceAnd(BitVector_sp bv) {
   _OF();
   uint i;
   if (this->vector_length() != bv->vector_length()) {
@@ -210,7 +208,8 @@ void BitVector_O::inPlaceAnd(BitVector_sp bv) {
   }
 }
 
-void BitVector_O::inPlaceXor(BitVector_sp bv) {
+CL_LISPIFY_NAME("core:inPlaceXor");
+CL_DEFMETHOD void BitVector_O::inPlaceXor(BitVector_sp bv) {
   _OF();
   uint i;
   if (this->vector_length() != bv->vector_length()) {
@@ -221,25 +220,29 @@ void BitVector_O::inPlaceXor(BitVector_sp bv) {
   }
 }
 
-BitVector_sp BitVector_O::bitOr(BitVector_sp bv) {
+CL_LISPIFY_NAME("core:bitOr");
+CL_DEFMETHOD BitVector_sp BitVector_O::bitOr(BitVector_sp bv) {
   BitVector_sp res = gc::As<BitVector_sp>(this->deepCopy());
   res->inPlaceOr(bv);
   return ((res));
 }
 
-BitVector_sp BitVector_O::bitAnd(BitVector_sp bv) {
+CL_LISPIFY_NAME("core:bitAnd");
+CL_DEFMETHOD BitVector_sp BitVector_O::bitAnd(BitVector_sp bv) {
   BitVector_sp res = gc::As<BitVector_sp>(this->deepCopy());
   res->inPlaceAnd(bv);
   return ((res));
 }
 
-BitVector_sp BitVector_O::bitXor(BitVector_sp bv) {
+CL_LISPIFY_NAME("core:bitXor");
+CL_DEFMETHOD BitVector_sp BitVector_O::bitXor(BitVector_sp bv) {
   BitVector_sp res = gc::As<BitVector_sp>(this->deepCopy());
   res->inPlaceXor(bv);
   return ((res));
 }
 
-uint BitVector_O::countSet() {
+CL_LISPIFY_NAME("core:countSet");
+CL_DEFMETHOD uint BitVector_O::countSet() {
   uint i;
   uint c;
   c = 0;
@@ -250,7 +253,8 @@ uint BitVector_O::countSet() {
   return ((c));
 }
 
-string BitVector_O::asString() {
+CL_LISPIFY_NAME("core:BitVector-asString");
+CL_DEFMETHOD string BitVector_O::asString() {
   uint i;
   stringstream s;
 
@@ -261,10 +265,13 @@ string BitVector_O::asString() {
   return ((s.str()));
 }
 
-T_sp BitVector_O::deepCopy() const {
-  _OF();
-  LOG(BF("About to copy BitVector@%p") % this);
-  GC_COPY(BitVector_O, n, *this);
+T_sp SimpleBitVector_O::deepCopy() const {
+  GC_COPY(SimpleBitVector_O, n, *this);
+  return (n);
+}
+
+T_sp BitVectorWithFillPtr_O::deepCopy() const {
+  GC_COPY(BitVectorWithFillPtr_O, n, *this);
   return (n);
 }
 
@@ -287,7 +294,8 @@ std::ostream &BitVector_O::dumpToStream(std::ostream &out) {
 //
 //	Dump the BitVector to a stream
 //
-void BitVector_O::dump() {
+CL_LISPIFY_NAME("core:dump");
+CL_DEFMETHOD void BitVector_O::dump() {
   this->dumpToStream(std::cout);
 }
 
@@ -301,7 +309,8 @@ void BitVector_O::sxhash_(HashGenerator &hg) const {
   hg.addPart(bn);
 }
 
-uint BitVector_O::lowestIndex() {
+CL_LISPIFY_NAME("core:lowestIndex");
+CL_DEFMETHOD uint BitVector_O::lowestIndex() {
   uint i;
   for (i = 0; i < this->vector_length(); i++) {
     if (this->testBit(i)) {
@@ -329,7 +338,6 @@ void BitVector_O::exposeCando(Lisp_sp lisp) {
       .def("core:BitVector-asString", &BitVector_O::asString);
 }
 void BitVector_O::exposePython(Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
       //	.def("equal",&BitVector_O::equal)
@@ -352,87 +360,76 @@ void BitVector_O::exposePython(Lisp_sp lisp) {
 
 EXPOSE_CLASS(core, BitVector_O);
 
-
-SimpleBitVector_sp SimpleBitVector_O::create(size_t size) {
-  GC_ALLOCATE_VARIADIC(SimpleBitVector_O, sbv ,size);
+CL_PKG_NAME(CorePkg,make-simple-bit-vector);
+CL_DEFUN SimpleBitVector_sp SimpleBitVector_O::make(size_t size) {
+  GC_ALLOCATE_VARIADIC(SimpleBitVector_O, sbv, size);
   return sbv;
 }
 
 void SimpleBitVector_O::exposeCando(Lisp_sp lisp) {
-  class_<SimpleBitVector_O>()
-    ;
-  af_def(CorePkg,"make-simple-bit-vector",(SimpleBitVector_sp(*)(size_t)) &SimpleBitVector_O::create);
+  class_<SimpleBitVector_O>();
+//  af_def(CorePkg, "make-simple-bit-vector", (SimpleBitVector_sp (*)(size_t)) & SimpleBitVector_O::create);
 }
 void SimpleBitVector_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
-    ;
+  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp);
 #endif
 }
 
 EXPOSE_CLASS(core, SimpleBitVector_O);
 
-
-
-BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::create(size_t size, size_t fill_ptr, bool adjust )
-{
-  GC_ALLOCATE_VARIADIC(BitVectorWithFillPtr_O, sbv ,size, fill_ptr, adjust);
+CL_PKG_NAME(CorePkg,make-bit-vector-with-fill-ptr);
+CL_DEFUN BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::make(size_t size, size_t fill_ptr, bool adjust) {
+  GC_ALLOCATE_VARIADIC(BitVectorWithFillPtr_O, sbv, size, fill_ptr, adjust);
   return sbv;
 }
 
-
 T_sp BitVectorWithFillPtr_O::vectorPush(T_sp newElement) {
-  if ( !newElement.fixnump() ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (!newElement.fixnump()) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
   Fixnum b = newElement.unsafe_fixnum();
-  if ( b !=0 && b != 1 ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (b != 0 && b != 1) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
-  if ( !this->_adjustable ) {
-    if ( this->_fill_ptr>= this->BitVector_O::dimension() ) {
+  if (!this->_adjustable) {
+    if (this->_fill_ptr >= this->BitVector_O::dimension()) {
       return _Nil<T_O>();
     }
   }
-  this->setBit(this->_fill_ptr,b);
+  this->setBit(this->_fill_ptr, b);
   ++this->_fill_ptr;
-  return clasp_make_fixnum(this->_fill_ptr-1);
+  return clasp_make_fixnum(this->_fill_ptr - 1);
 }
 
 Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extension) {
-  if ( !this->_adjustable ) {
+  if (!this->_adjustable) {
     SIMPLE_ERROR(BF("This bit-vector is not extensible"));
   }
-  if ( !newElement.fixnump() ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (!newElement.fixnump()) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
   Fixnum b = newElement.unsafe_fixnum();
-  if ( b !=0 && b != 1 ) {
-    TYPE_ERROR(newElement,cl::_sym_bit);
+  if (b != 0 && b != 1) {
+    TYPE_ERROR(newElement, cl::_sym_bit);
   }
-  this->setBit(this->_fill_ptr,b);
+  this->setBit(this->_fill_ptr, b);
   ++this->_fill_ptr;
-  if ( this->_fill_ptr > this->BitVector_O::dimension() ) {
-    this->bits.resize((this->_fill_ptr-1+extension)/CHAR_BIT+1,0);
+  if (this->_fill_ptr > this->BitVector_O::dimension()) {
+    this->bits.resize((this->_fill_ptr - 1 + extension) / CHAR_BIT + 1, 0);
   }
-  return clasp_make_fixnum(this->_fill_ptr-1);
+  return clasp_make_fixnum(this->_fill_ptr - 1);
 }
 
-  
-
 void BitVectorWithFillPtr_O::exposeCando(Lisp_sp lisp) {
-  class_<BitVectorWithFillPtr_O>()
-    ;
-  af_def(CorePkg,"make-bit-vector-with-fill-ptr",(BitVectorWithFillPtr_sp(*)(size_t,size_t,bool))&BitVectorWithFillPtr_O::create);
+  class_<BitVectorWithFillPtr_O>();
+//  af_def(CorePkg, "make-bit-vector-with-fill-ptr", (BitVectorWithFillPtr_sp (*)(size_t, size_t, bool)) & BitVectorWithFillPtr_O::create);
 }
 void BitVectorWithFillPtr_O::exposePython(Lisp_sp lisp) {
 #ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
-    ;
+  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp);
 #endif
 }
 
 EXPOSE_CLASS(core, BitVectorWithFillPtr_O);
-
-
 };

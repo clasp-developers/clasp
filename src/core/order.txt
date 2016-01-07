@@ -1,4 +1,0 @@
-Vector Array
-Vector Sequence
-Array Object
-Sequence Object

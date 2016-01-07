@@ -46,10 +46,10 @@ void throwIfNotValidClSymbol(const string &name) {
   ++it->second;
 }
 
-#define ARGS_af_calculateMissingCommonLispSymbols "()"
-#define DECL_af_calculateMissingCommonLispSymbols ""
-#define DOCS_af_calculateMissingCommonLispSymbols "calculateMissingCommonLispSymbols"
-T_sp af_calculateMissingCommonLispSymbols() {
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("calculateMissingCommonLispSymbols");
+CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   Package_sp commonLispPackage = _lisp->commonLispPackage();
   List_sp missing = _Nil<T_O>();
   for (auto it : globalAllClSymbols) {
@@ -63,9 +63,10 @@ T_sp af_calculateMissingCommonLispSymbols() {
 }
 
 void initializeAllClSymbols(Package_sp commonLispPkg) {
-#define AddClSymbol(name) { \
+#define AddClSymbol(name)                        \
+  {                                              \
     Symbol_sp sym = commonLispPkg->intern(name); \
-    commonLispPkg->_export2(sym); \
+    commonLispPkg->_export2(sym);                \
   }
   AddClSymbol("&ALLOW-OTHER-KEYS");
   AddClSymbol("&AUX");
@@ -1049,7 +1050,6 @@ void initializeAllClSymbols(Package_sp commonLispPkg) {
 
 void initializeAllClSymbolsFunctions() {
   SYMBOL_EXPORT_SC_(CorePkg, calculateMissingCommonLispSymbols);
-  Defun(calculateMissingCommonLispSymbols);
 };
 };
 #endif

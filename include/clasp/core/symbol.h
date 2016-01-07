@@ -66,8 +66,7 @@ private:
   friend class Class_O;
   friend class Package_O;
   friend class CoreExposer;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol");
+  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",T_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -89,8 +88,8 @@ public:
   string formattedName(bool prefixAlways) const;
 
 public:
-//  T_sp apply();
-//  T_sp funcall();
+  //  T_sp apply();
+  //  T_sp funcall();
 
   // Include the apply function for symbols up to some high arity
   //#include "symbol_apply_inc.h"
@@ -117,7 +116,8 @@ public:
   bool getReadOnlyFunction() const { return this->_ReadOnlyFunction; };
 
   /*! Return true if the symbol is dynamic/special */
-  bool specialP() const { return this->_IsSpecial; };
+CL_LISPIFY_NAME("core:specialp");
+CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
@@ -158,7 +158,7 @@ public:
 
   /*! Return the global bound function */
   inline T_sp symbolFunction() { return this->_Function; };
-  
+
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const { return !this->_Function.unboundp(); };
 
@@ -198,12 +198,12 @@ public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
   explicit Symbol_O(bool dummy); // string const &name);
   /*! Used to finish setting up symbol when created with the above constructor */
-  void finish_setup(Package_sp pkg, bool exportp);
+  void finish_setup(Package_sp pkg, bool exportp, bool shadowp);
 
   /*! Return -1, 0, 1 if this is <, ==, > other by name */
   inline int order(core::Symbol_O other) {
-    if ( this->symbolNameAsString() <= other.symbolNameAsString() ) {
-      if ( this->symbolNameAsString() == other.symbolNameAsString() ) {
+    if (this->symbolNameAsString() <= other.symbolNameAsString()) {
+      if (this->symbolNameAsString() == other.symbolNameAsString()) {
         return 0;
       }
       return -1;
@@ -211,45 +211,42 @@ public: // ctor/dtor for classes with shared virtual base
     return 1;
   }
 
-   bool operator<(core::Symbol_O other) {
+  bool operator<(core::Symbol_O other) {
     return this->symbolNameAsString() < other.symbolNameAsString();
   }
+
 public:
   explicit Symbol_O();
-  virtual ~Symbol_O() {};
+  virtual ~Symbol_O(){};
 };
 
-T_sp af_symbolValue(const Symbol_sp sym);
-Str_sp af_symbolName(Symbol_sp sym);
-T_sp af_symbolPackage(Symbol_sp sym);
-Function_sp af_symbolFunction(Symbol_sp sym);
-bool af_boundp(Symbol_sp sym);
+T_sp cl__symbol_value(const Symbol_sp sym);
+Str_sp cl__symbol_name(Symbol_sp sym);
+T_sp cl__symbol_package(Symbol_sp sym);
+Function_sp cl__symbol_function(Symbol_sp sym);
+bool cl__boundp(Symbol_sp sym);
 };
-
 
 namespace core {
-  /*! This is used for SmallMultiMap<core::Symbol_sp,XXXX> */
-    struct SymbolComparer {
-    static int order(Symbol_sp a, Symbol_sp b) {
-      if ( a->symbolNameAsString() <= b->symbolNameAsString() ) {
-        if ( a->symbolNameAsString() == b->symbolNameAsString() ) return 0;
-        return -1;
-      }
-      return 1;
+/*! This is used for SmallMultiMap<core::Symbol_sp,XXXX> */
+struct SymbolComparer {
+  static int order(Symbol_sp a, Symbol_sp b) {
+    if (a->symbolNameAsString() <= b->symbolNameAsString()) {
+      if (a->symbolNameAsString() == b->symbolNameAsString())
+        return 0;
+      return -1;
     }
-  };
+    return 1;
+  }
 };
-
-
-
+};
 
 TRANSLATE(core::Symbol_O);
 template <>
 struct gctools::GCInfo<core::Symbol_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]

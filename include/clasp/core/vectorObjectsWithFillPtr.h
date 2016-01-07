@@ -34,8 +34,7 @@ THE SOFTWARE.
 namespace core {
 FORWARD(VectorObjectsWithFillPtr);
 class VectorObjectsWithFillPtr_O : public VectorObjects_O {
-  LISP_BASE1(VectorObjects_O);
-  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr");
+  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr",VectorObjects_O);
   void archiveBase(SNode_sp node);
 
 public:
@@ -46,7 +45,7 @@ private: // instance variables here
   cl_index _FillPtr;
 
 public:
-  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, cl_index fillPtr, bool adjustable);
+  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, cl_index fillPtr, bool adjustable, T_sp elementType);
 
 public: // Functions here
   gc::Fixnum length() const { return this->_FillPtr; };
@@ -56,7 +55,6 @@ public: // Functions here
 
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);
-
 
   string __repr__() const;
 
@@ -75,8 +73,7 @@ template <>
 struct gctools::GCInfo<core::VectorObjectsWithFillPtr_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorObjectsWithFillPtr_H */

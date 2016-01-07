@@ -37,8 +37,7 @@ namespace core {
 FORWARD(Array);
 class Array_O : public T_O {
   friend class ArrayObjects_O;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Array_O, "array");
+  LISP_CLASS(core, ClPkg, Array_O, "array",T_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -58,15 +57,18 @@ public:
   static int checkedIndex(const string &filename, int lineno, const string &function, Array_sp array, int which, T_sp index, int nonincl_index);
 
 public: // Functions here
-  virtual bool equalp(T_sp other) const {SUBIMP();};
+  virtual bool equalp(T_sp other) const { SUBIMP(); };
   virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
-  virtual bool arrayHasFillPointerP() const { return false; };
+CL_LISPIFY_NAME("cl:arrayHasFillPointerP");
+CL_DEFMETHOD   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
   /*! For write_array */
-  virtual std::vector<cl_index> dimensions() const {SUBIMP();};
-  virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
-  virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
+  virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:rowMajorAset");
+CL_DEFMETHOD   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
+CL_LISPIFY_NAME("cl:rowMajorAref");
+CL_DEFMETHOD   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
   virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
 
   //! Don't support adjustable arrays yet
@@ -79,7 +81,8 @@ public: // Functions here
   virtual LongLongInt setDimensions(List_sp dimensions, T_sp initialElement) { SUBIMP(); };
 
   /*! Return the rank of the array */
-  virtual gc::Fixnum rank() const { SUBIMP(); };
+CL_LISPIFY_NAME("cl:array-rank");
+CL_DEFMETHOD   virtual gc::Fixnum rank() const { SUBIMP(); };
 
   /*! Return the offset into a one-dimensional vector for the multidimensional index
       in the vector<int>s.  This is in rowMajor order.*/
@@ -95,17 +98,19 @@ public: // Functions here
   gc::Fixnum index(List_sp indices) const;
 
   /*! Return the type returned by this array */
-  virtual T_sp elementType() const {
+CL_LISPIFY_NAME("cl:array-elementType");
+CL_DEFMETHOD   virtual T_sp elementType() const {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
 
-  /*! This replicates ECL ecl_elttype_to_symbol in array.d */
+  /*! This replicates ECL ecl__elttype_to_symbol in array.d */
 
   Symbol_sp element_type_as_symbol() const;
 
   /*! Return the array dimension along the axis-number */
-  virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { SUBIMP(); };
+CL_LISPIFY_NAME("cl:array-dimension");
+CL_DEFMETHOD   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { SUBIMP(); };
 
   /*! Return the array dimensions as a list of integers */
   virtual List_sp arrayDimensions() const;
@@ -122,18 +127,22 @@ public: // Functions here
   /*! Setf the value at the indices - the val is at the end of the list of indices */
   virtual T_sp setf_aref(List_sp indices_val);
 
-  virtual T_sp svref(int idx) const { SUBIMP(); };
-  virtual T_sp setf_svref(int idx, T_sp val) { SUBIMP(); };
+CL_LISPIFY_NAME("cl:svref");
+CL_DEFMETHOD   virtual T_sp svref(int idx) const { SUBIMP(); };
+CL_LISPIFY_NAME("core:setf-svref");
+CL_DEFMETHOD   virtual T_sp setf_svref(int idx, T_sp val) { SUBIMP(); };
 
   /*! Return the value at the indices */
-  virtual void arrayFill(T_sp val) {
+CL_LISPIFY_NAME("core:array-fill");
+CL_DEFMETHOD   virtual void arrayFill(T_sp val) {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };
 
   /*! Fill the range of elements of the array,
      if end is nil then fill to the end of the array*/
-  virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
+CL_LISPIFY_NAME("core:fill-array-with-elt");
+CL_DEFMETHOD   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
     _OF();
     SUBCLASS_MUST_IMPLEMENT();
   };

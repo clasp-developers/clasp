@@ -44,8 +44,8 @@ public:
   //	HashTable_sp	classesToClosures;
 public:
   DISABLE_NEW();
-  SingleDispatchGenericFunctionClosure(T_sp name, SourcePosInfo_sp sp, Symbol_sp k)
-      : FunctionClosure(name, sp, k, _Nil<T_O>() /*Env*/), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
+  SingleDispatchGenericFunctionClosure(T_sp name, Symbol_sp k, SOURCE_INFO)
+      : FunctionClosure(name, k, _Nil<T_O>() /*Env*/, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   SingleDispatchGenericFunctionClosure(T_sp name)
       : FunctionClosure(name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
@@ -70,8 +70,7 @@ public:
 };
 
 class SingleDispatchGenericFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function");
+  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function",Function_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
   friend class SingleDispatchGenericFunctoid;
@@ -87,7 +86,8 @@ public:
 
 public: // Functions here
   /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
-  List_sp methods() const {
+CL_LISPIFY_NAME("SingleDispatchGenericFunction-methods");
+CL_DEFMETHOD   List_sp methods() const {
     gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> cl = this->closure.as<SingleDispatchGenericFunctionClosure>();
     return cl->_Methods;
   };
@@ -142,7 +142,7 @@ public:
   }
 };
 
-T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler);
+T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler);
 };
 
 #endif /* _SINGLEDISPATCHGENERICFUNCTION_H_ */

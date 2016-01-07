@@ -49,8 +49,7 @@ SMART(ObjectDictionary);
 SMART(Name);
 
 class Environment_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Environment_O, "Environment");
+  LISP_CLASS(core, CorePkg, Environment_O, "Environment",T_O);
 
 public:
   typedef enum { undeterminedValue,
@@ -91,10 +90,13 @@ public:
   void dump();
   uint environmentId() const { return this->_EnvId; };
   void setEnvironmentId(uint id) { this->_EnvId = id; };
-  virtual bool environmentp() const { return true;}
-  virtual bool lexicalEnvironmentP() const { return false; };
-  virtual bool functionContainerEnvironmentP() const { return false; };
-  virtual bool unwindProtectEnvironmentP() const { return false; };
+  virtual bool environmentp() const { return true; }
+CL_LISPIFY_NAME("lexicalEnvironmentP");
+CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
+CL_LISPIFY_NAME("functionContainerEnvironmentP");
+CL_DEFMETHOD   virtual bool functionContainerEnvironmentP() const { return false; };
+CL_LISPIFY_NAME("unwindProtectEnvironmentP");
+CL_DEFMETHOD   virtual bool unwindProtectEnvironmentP() const { return false; };
   virtual bool catchEnvironmentP() const { return false; };
 
   virtual void setupParent(T_sp environ);
@@ -108,14 +110,16 @@ public:
   virtual bool lexicalSpecialP(Symbol_sp sym) const;
 
   /*! Associate a symbol in the current environment to some meta-data */
-  virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
+CL_LISPIFY_NAME("setf_metadata");
+CL_DEFMETHOD   virtual T_sp setf_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Gather a list of all metadata with the key ordered from outermost environment
 	  to the innermost one */
   virtual List_sp gather_metadata(Symbol_sp key) const;
 
   /*! Push metadata into a Cons associated with the symbol */
-  virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
+CL_LISPIFY_NAME("push_metadata");
+CL_DEFMETHOD   virtual List_sp push_metadata(Symbol_sp key, T_sp val) { SUBIMP(); };
 
   /*! Lookup metadata - return two values
 	  The first is the value found or nil and the second is t if a value is found or nil if not */
@@ -237,8 +241,7 @@ TRANSLATE(core::Environment_O);
 
 namespace core {
 class LexicalEnvironment_O : public Environment_O {
-  LISP_BASE1(Environment_O);
-  LISP_CLASS(core, CorePkg, LexicalEnvironment_O, "LexicalEnvironment");
+  LISP_CLASS(core, CorePkg, LexicalEnvironment_O, "LexicalEnvironment",Environment_O);
 GCPROTECTED:
   //! Use setupParent to update this
   T_sp _ParentEnvironment;
@@ -281,16 +284,14 @@ template <>
 struct gctools::GCInfo<core::LexicalEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::LexicalEnvironment_O);
 
 namespace core {
 class RuntimeVisibleEnvironment_O : public LexicalEnvironment_O {
-  LISP_BASE1(LexicalEnvironment_O);
-  LISP_CLASS(core, CorePkg, RuntimeVisibleEnvironment_O, "RuntimeVisibleEnvironment");
+  LISP_CLASS(core, CorePkg, RuntimeVisibleEnvironment_O, "RuntimeVisibleEnvironment",LexicalEnvironment_O);
 GCPROTECTED:
   T_sp _RuntimeEnvironment;
 
@@ -312,16 +313,14 @@ template <>
 struct gctools::GCInfo<core::RuntimeVisibleEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::RuntimeVisibleEnvironment_O);
 
 namespace core {
 class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
-  LISP_BASE1(RuntimeVisibleEnvironment_O);
-  LISP_CLASS(core, CorePkg, ValueEnvironment_O, "ValueEnvironment");
+  LISP_CLASS(core, CorePkg, ValueEnvironment_O, "ValueEnvironment",RuntimeVisibleEnvironment_O);
   void initialize();
 GCPROTECTED:
   /*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
@@ -400,16 +399,15 @@ public:
 
 #endif
 
- ValueEnvironment_O() : Base() {};
-  virtual ~ValueEnvironment_O() {};
+  ValueEnvironment_O() : Base(){};
+  virtual ~ValueEnvironment_O(){};
 };
 };
 template <>
 struct gctools::GCInfo<core::ValueEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::ValueEnvironment_O);
@@ -417,8 +415,7 @@ TRANSLATE(core::ValueEnvironment_O);
 namespace core {
 SMART(FunctionValueEnvironment);
 class FunctionValueEnvironment_O : public RuntimeVisibleEnvironment_O {
-  LISP_BASE1(RuntimeVisibleEnvironment_O);
-  LISP_CLASS(core, CorePkg, FunctionValueEnvironment_O, "FunctionValueEnvironment");
+  LISP_CLASS(core, CorePkg, FunctionValueEnvironment_O, "FunctionValueEnvironment",RuntimeVisibleEnvironment_O);
 
 public:
   void initialize();
@@ -457,8 +454,7 @@ template <>
 struct gctools::GCInfo<core::FunctionValueEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::FunctionValueEnvironment_O);
@@ -484,8 +480,7 @@ namespace core {
 #endif
 
 class CompileTimeEnvironment_O : public LexicalEnvironment_O {
-  LISP_BASE1(LexicalEnvironment_O);
-  LISP_CLASS(core, CorePkg, CompileTimeEnvironment_O, "CompileTimeEnvironment");
+  LISP_CLASS(core, CorePkg, CompileTimeEnvironment_O, "CompileTimeEnvironment",LexicalEnvironment_O);
 
 public:
   virtual T_sp getActivationFrame() const;
@@ -503,8 +498,7 @@ TRANSLATE(core::CompileTimeEnvironment_O);
 namespace core {
 SMART(UnwindProtectEnvironment);
 class UnwindProtectEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, UnwindProtectEnvironment_O, "UnwindProtectEnvironment");
+  LISP_CLASS(core, CorePkg, UnwindProtectEnvironment_O, "UnwindProtectEnvironment",CompileTimeEnvironment_O);
 
 public:
   void initialize();
@@ -519,7 +513,8 @@ public:
 
 public:
   virtual string summaryOfContents() const;
-  List_sp cleanupForm() const { return this->_CleanupForm; };
+CL_LISPIFY_NAME("UnwindProtectEnvironment-cleanupForm");
+CL_DEFMETHOD   List_sp cleanupForm() const { return this->_CleanupForm; };
 
 public:
   DEFAULT_CTOR_DTOR(UnwindProtectEnvironment_O);
@@ -535,16 +530,14 @@ template <>
 struct gctools::GCInfo<core::UnwindProtectEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::UnwindProtectEnvironment_O);
 
 namespace core {
 SMART(BlockEnvironment);
 class BlockEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, BlockEnvironment_O, "BlockEnvironment");
+  LISP_CLASS(core, CorePkg, BlockEnvironment_O, "BlockEnvironment",CompileTimeEnvironment_O);
 
 public:
   void initialize();
@@ -581,16 +574,14 @@ template <>
 struct gctools::GCInfo<core::BlockEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::BlockEnvironment_O);
 
 namespace core {
 SMART(CatchEnvironment);
 class CatchEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, CatchEnvironment_O, "CatchEnvironment");
+  LISP_CLASS(core, CorePkg, CatchEnvironment_O, "CatchEnvironment",CompileTimeEnvironment_O);
 
 public:
   void initialize();
@@ -611,8 +602,7 @@ template <>
 struct gctools::GCInfo<core::CatchEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::CatchEnvironment_O);
 
@@ -620,8 +610,7 @@ namespace core {
 
 SMART(FunctionContainerEnvironment);
 class FunctionContainerEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, FunctionContainerEnvironment_O, "FunctionContainerEnvironment");
+  LISP_CLASS(core, CorePkg, FunctionContainerEnvironment_O, "FunctionContainerEnvironment",CompileTimeEnvironment_O);
 
 public:
   void initialize();
@@ -650,8 +639,7 @@ template <>
 struct gctools::GCInfo<core::FunctionContainerEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::FunctionContainerEnvironment_O);
 
@@ -659,8 +647,7 @@ namespace core {
 
 FORWARD(TagbodyEnvironment);
 class TagbodyEnvironment_O : public RuntimeVisibleEnvironment_O {
-  LISP_BASE1(RuntimeVisibleEnvironment_O);
-  LISP_CLASS(core, CorePkg, TagbodyEnvironment_O, "TagbodyEnvironment");
+  LISP_CLASS(core, CorePkg, TagbodyEnvironment_O, "TagbodyEnvironment",RuntimeVisibleEnvironment_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -710,8 +697,7 @@ template <>
 struct gctools::GCInfo<core::TagbodyEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::TagbodyEnvironment_O);
 
@@ -719,8 +705,7 @@ namespace core {
 
 FORWARD(MacroletEnvironment);
 class MacroletEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, MacroletEnvironment_O, "MacroletEnvironment");
+  LISP_CLASS(core, CorePkg, MacroletEnvironment_O, "MacroletEnvironment",CompileTimeEnvironment_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -751,8 +736,7 @@ template <>
 struct gctools::GCInfo<core::MacroletEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::MacroletEnvironment_O);
 
@@ -760,8 +744,7 @@ namespace core {
 
 FORWARD(SymbolMacroletEnvironment);
 class SymbolMacroletEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, SymbolMacroletEnvironment_O, "SymbolMacroletEnvironment");
+  LISP_CLASS(core, CorePkg, SymbolMacroletEnvironment_O, "SymbolMacroletEnvironment",CompileTimeEnvironment_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -794,8 +777,7 @@ template <>
 struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::SymbolMacroletEnvironment_O);
@@ -804,8 +786,7 @@ namespace core {
 
 FORWARD(StackValueEnvironment);
 class StackValueEnvironment_O : public CompileTimeEnvironment_O {
-  LISP_BASE1(CompileTimeEnvironment_O);
-  LISP_CLASS(core, CorePkg, StackValueEnvironment_O, "StackValueEnvironment");
+  LISP_CLASS(core, CorePkg, StackValueEnvironment_O, "StackValueEnvironment",CompileTimeEnvironment_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -838,8 +819,7 @@ template <>
 struct gctools::GCInfo<core::StackValueEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::StackValueEnvironment_O);
@@ -848,8 +828,7 @@ namespace core {
 // A simple environment that maps symbols to objects to allow me to
 // call old style make_init functions
 class GlueEnvironment_O : public Environment_O {
-  LISP_BASE1(Environment_O);
-  LISP_CLASS(core, CorePkg, GlueEnvironment_O, "GlueEnvironment");
+  LISP_CLASS(core, CorePkg, GlueEnvironment_O, "GlueEnvironment",Environment_O);
   void initialize();
 GCPROTECTED:
   /*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
@@ -875,12 +854,12 @@ public:
 TRANSLATE(core::GlueEnvironment_O);
 
 namespace core {
-T_sp af_environmentActivationFrame(T_sp env);
+T_sp core__environment_activation_frame(T_sp env);
 
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val);
 
-T_mv core_lexicalFunction(T_sp sym, T_sp env);
-T_mv core_lexicalMacroFunction(T_sp sym, T_sp env);
+T_mv core__lexical_function(T_sp sym, T_sp env);
+T_mv core__lexical_macro_function(T_sp sym, T_sp env);
 };
 
 #endif //]

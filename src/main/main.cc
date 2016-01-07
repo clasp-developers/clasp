@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
+#include <sys/resource.h>
 #endif
 
 #ifdef USE_MPI
@@ -51,6 +52,7 @@ THE SOFTWARE.
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/core/pathname.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
 #include <clasp/mpip/claspMpi.h>
@@ -65,8 +67,26 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     core::ThreadInfo mainThreadInfo;
     core::lisp_setThreadLocalInfoPtr(&mainThreadInfo);
 
-    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
+#if 1
 
+    gctools::GcToolsExposer GcToolsPkg(_lisp);
+    clbind::ClbindExposer ClbindPkg(_lisp);
+    llvmo::LlvmoExposer llvmopkg(_lisp);
+    cffi::CffiExposer cffipkg(_lisp);
+    sockets::SocketsExposer SocketsPkg(_lisp);
+    serveEvent::ServeEventExposer ServeEventPkg(_lisp);
+    asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
+    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
+    _lisp->installPackage(&GcToolsPkg);
+    _lisp->installPackage(&ClbindPkg);
+    _lisp->installPackage(&llvmopkg);
+    _lisp->installPackage(&cffipkg);
+    _lisp->installPackage(&SocketsPkg);
+    _lisp->installPackage(&ServeEventPkg);
+    _lisp->installPackage(&AsttoolingPkg);
+
+#else
+    lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
     gctools::GcToolsExposer GcToolsPkg(_lisp);
     _lisp->installPackage(&GcToolsPkg);
 
@@ -87,7 +107,11 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 
     asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
     _lisp->installPackage(&AsttoolingPkg);
+#endif
 
+
+
+    
 #ifdef USE_MPI
     mpip::MpiExposer TheMpiPkg(_lisp);
     _lisp->installPackage(&TheMpiPkg);
@@ -113,7 +137,26 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
   return exitCode;
 }
 
+
+void create_source_main_host()
+{
+  core::Cons_sp pts =
+    core::Cons_O::createList(core::Cons_O::createList(core::Str_O::create("source-main:**;*.*"),
+                                                      cl__pathname(core::Str_O::create("app-resources:clasp;src;main;**;*.*")))
+        /* ,  more here */
+                       );
+core__pathname_translations(core::Str_O::create("source-main"), _lisp->_true(), pts);
+}
+
+
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
+                                   // Set the stack size
+  rlimit rl;
+  rl.rlim_max = 16 * 1024 * 1024;
+  rl.rlim_cur = 15 * 1024 * 1024;
+  setrlimit(RLIMIT_STACK, &rl);
+  getrlimit(RLIMIT_STACK, &rl);
+
   bool mpiEnabled = false;
   int mpiRank = 0;
   int mpiSize = 1;
@@ -133,7 +176,7 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
   }
 
   core::CommandLineOptions options(argc, argv);
-  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, mpiEnabled, mpiRank, mpiSize);
+  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
 
 #ifdef USE_MPI
   mpip::Mpi_O::Finalize();

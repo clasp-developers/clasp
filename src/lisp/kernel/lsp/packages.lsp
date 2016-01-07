@@ -27,6 +27,9 @@
             run-repl
             *defun-inline-hook*
             *proclaim-hook*
+            proper-list-p
+            expand-associative
+            expand-compare
             ))
 
   (export '( ;;;;MISSING SYMBOLS!!!!!

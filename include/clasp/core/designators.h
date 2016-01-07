@@ -77,7 +77,6 @@ T_sp outputStreamDesignator(T_sp obj);
 
 }; /* designators */
 
-extern void initialize_designators();
 }; /* core */
 
 #endif /* _core_Designators_H */

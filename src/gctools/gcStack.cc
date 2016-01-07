@@ -29,7 +29,7 @@ namespace gctools {
 namespace frame {
 
 #ifdef USE_ALLOCA_FOR_FRAME
-Frame::Frame(ElementType* buffer, size_t numArguments) : _frameBlock(buffer), _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
+Frame::Frame(ElementType *buffer, size_t numArguments) : _frameBlock(buffer), _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
   this->lowLevelElementRef(IdxNumElements) = reinterpret_cast<ElementType>(numArguments);
   for (size_t i(0), iEnd(numArguments); i < iEnd; ++i) {
     this->operator[](i) = gctools::tag_unbound<core::T_O *>();
@@ -38,8 +38,8 @@ Frame::Frame(ElementType* buffer, size_t numArguments) : _frameBlock(buffer), _E
 #else
 Frame::Frame(size_t numArguments) : _ElementCapacity(FrameElements(numArguments)), _ArrayLength(numArguments) {
   size_t sz = FrameBytes(numArguments);
-  this->_frameBlock = reinterpret_cast<ElementType*>(threadLocalStack()->pushFrameImpl(sz));
-//  printf("%s:%d Pushing frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
+  this->_frameBlock = reinterpret_cast<ElementType *>(threadLocalStack()->pushFrameImpl(sz));
+  //  printf("%s:%d Pushing frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
   // I can't use a FIXNUM here - it has to be a raw size_t
   this->lowLevelElementRef(IdxNumElements) = reinterpret_cast<ElementType>(numArguments);
   for (size_t i(0), iEnd(numArguments); i < iEnd; ++i) {
@@ -48,36 +48,36 @@ Frame::Frame(size_t numArguments) : _ElementCapacity(FrameElements(numArguments)
 }
 #endif
 void Frame::dump() const {
-  void* frameImplHeaderAddress = threadLocalStack()->frameImplHeaderAddress(this->_frameBlock);
+  void *frameImplHeaderAddress = threadLocalStack()->frameImplHeaderAddress(this->_frameBlock);
   GCStack::frameType frameImplHeaderType = threadLocalStack()->frameImplHeaderType(this->_frameBlock);
   int frameImplHeaderSize = threadLocalStack()->frameImplHeaderSize(this->_frameBlock);
   printf("Frame info\n");
-  printf("    Frame._ArrayLength = %d    Frame._ElementCapacity = %d\n", this->_ArrayLength, this->_ElementCapacity );
-  printf("    Frame._frameImpl = %p\n", this->_frameBlock );
-  printf("    frameImplHeaderAddress(Frame._frameImpl) = %p\n", frameImplHeaderAddress );
-  void* frameImplEnd = (char*)frameImplHeaderAddress + frameImplHeaderSize;
-  printf("    frameImplEnd                             = %p\n", frameImplEnd );
-  printf("    frameImplHeaderType(Frame._frameImpl)    = %d\n", frameImplHeaderType );
-  printf("    frameImplHeaderSize(Frame._frameImpl)    = %d\n", frameImplHeaderSize );
+  printf("    Frame._ArrayLength = %d    Frame._ElementCapacity = %d\n", this->_ArrayLength, this->_ElementCapacity);
+  printf("    Frame._frameImpl = %p\n", this->_frameBlock);
+  printf("    frameImplHeaderAddress(Frame._frameImpl) = %p\n", frameImplHeaderAddress);
+  void *frameImplEnd = (char *)frameImplHeaderAddress + frameImplHeaderSize;
+  printf("    frameImplEnd                             = %p\n", frameImplEnd);
+  printf("    frameImplHeaderType(Frame._frameImpl)    = %d\n", frameImplHeaderType);
+  printf("    frameImplHeaderSize(Frame._frameImpl)    = %d\n", frameImplHeaderSize);
   int frameImplBodySize = threadLocalStack()->frameImplBodySize(this->_frameBlock);
-  printf("    frameImplBodySize(Frame._frameImpl)      = %d\n", frameImplBodySize );
-  int numEntries = frameImplBodySize/sizeof(ElementType);
-  printf("    numEntries in Frame._frameImpl           = %d\n", numEntries );
-  for ( int i(0); i<numEntries; ++i ) {
+  printf("    frameImplBodySize(Frame._frameImpl)      = %d\n", frameImplBodySize);
+  int numEntries = frameImplBodySize / sizeof(ElementType);
+  printf("    numEntries in Frame._frameImpl           = %d\n", numEntries);
+  for (int i(0); i < numEntries; ++i) {
     ElementType val = this->lowLevelElementRef(i);
     stringstream desc;
     desc << "entry[" << i << "] ";
-    if ( i >= IdxRegisterSaveArea && i < IdxOverflowArgs ) {
-      desc << "reg" << (i-IdxRegisterSaveArea);
+    if (i >= IdxRegisterSaveArea && i < IdxOverflowArgs) {
+      desc << "reg" << (i - IdxRegisterSaveArea);
     };
-    if ( i >= IdxRegisterArgumentsStart && i < IdxOverflowArgs ) {
+    if (i >= IdxRegisterArgumentsStart && i < IdxOverflowArgs) {
       desc << " reg_arg" << (i - IdxRegisterArgumentsStart);
     }
-    if ( i >= IdxOverflowArgs ) {
-      desc << "  overflow[" << (i-IdxOverflowArgs) << "] ";
+    if (i >= IdxOverflowArgs) {
+      desc << "  overflow[" << (i - IdxOverflowArgs) << "] ";
     }
     printf("%p %30s --> %p\n", &this->lowLevelElementRef(i), desc.str().c_str(), val);
-    if ((char*)&this->lowLevelElementRef(i) >= frameImplEnd ) {
+    if ((char *)&this->lowLevelElementRef(i) >= frameImplEnd) {
       printf("PROBLEM!  This frame entry indexes past the end of the frameImpl\n");
     }
   }
@@ -86,11 +86,10 @@ void Frame::dump() const {
 Frame::~Frame() {
 //  printf("%s:%d Popping frame@%p\n", __FILE__, __LINE__, this->_frameImpl);
 #ifdef USE_ALLOCA_FOR_FRAME
-  // Nothing
+// Nothing
 #else
-  threadLocalStack()->popFrameImpl(reinterpret_cast<void*>(this->_frameBlock));
+  threadLocalStack()->popFrameImpl(reinterpret_cast<void *>(this->_frameBlock));
 #endif
 }
-
 };
 };

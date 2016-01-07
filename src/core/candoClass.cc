@@ -44,7 +44,6 @@ void CandoClass_O::initialize() {
 }
 
 CandoClass_sp CandoClass_O::create(Lisp_sp lisp, Symbol_sp name) {
-  _G();
   GC_ALLOCATE(CandoClass_O);
   oclass->_Name = name;
   // Lets create a predefined symbol here for the class name
@@ -63,24 +62,20 @@ void CandoClass_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 Class_sp CandoClass_O::getCoreObjectClass() {
-  _G();
   return this->_CoreObjectClass;
 }
 
 void CandoClass_O::setCoreObjectClass(Class_sp mc) {
-  _G();
   this->_CoreObjectClass = mc;
 }
 
 void CandoClass_O::describe() {
-  _G();
   _lisp->print(BF("------------  CandoClass name: %s    instanceClassSymbol: %d") % this->_Name->__repr__() % this->_InstanceClassSymbol);
   //    _lisp->print(BF("Instance variables: %s") % this->_InstanceVariableNames->__repr__().c_str() );
   _lisp->print(BF("%s") % this->dumpInfo());
 }
 
 string CandoClass_O::dumpInfo() {
-  _G();
   stringstream ss;
   ss << this->Base::dumpInfo();
   ss << "CoreObjectClass: " << this->_CoreObjectClass->getPackagedName() << std::endl;
@@ -92,7 +87,6 @@ string CandoClass_O::dumpMethods() {
 }
 
 Cons_sp CandoClass_O::find(Symbol_sp sym) {
-  _G();
   IMPLEMENT_MEF(BF("Handle find slot by name"));
 #if 0
 	ASSERTNOTNULL(sym);
@@ -103,7 +97,6 @@ Cons_sp CandoClass_O::find(Symbol_sp sym) {
 }
 
 void CandoClass_O::setupAccessors(List_sp slotNames) {
-  _G();
   IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
 	this->_InstanceVariableNames = slotNames;
@@ -127,7 +120,6 @@ void CandoClass_O::exposeCando(Lisp_sp lisp) {
   class_<CandoClass_O>();
 }
 void CandoClass_O::exposePython(Lisp_sp lisp) {
-  _G();
   PYTHON_CLASS(CorePkg, CandoClass, "", "", _lisp);
 }
 

@@ -43,6 +43,7 @@ THE SOFTWARE.
 
 extern "C" {
 #include "clasp/mps/code/mpscawl.h" // MVFF pool
+#include "clasp/mps/code/mpscmvff.h" // MVFF pool
 #include "clasp/mps/code/mpscamc.h" // AMC pool
 #include "clasp/mps/code/mpscsnc.h" // SNC pool
 };
@@ -88,62 +89,56 @@ mps_ap_t _global_strong_link_allocation_point;
 mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 
 mps_pool_t global_non_moving_pool;
+mps_pool_t global_unmanaged_pool;
 mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
 
-
-void rawHeaderDescribe(uintptr_t* headerP)
-{
-  uintptr_t headerTag = (*headerP)&Header_s::tag_mask;
+void rawHeaderDescribe(uintptr_t *headerP) {
+  uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
-      printf(" Not an object header!\n");
-      break;
-  case Header_s::kind_tag:
-    {
-      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X <--- Valid objects have 0xDEADBEEF01234567 \n", headerP, *headerP, *(headerP+1));
-      gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP)>>2);
-      printf(" Kind tag - kind: %d", kind );
-      fflush(stdout);
-      printf("     %s\n", obj_name(kind));
+    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
+    printf(" Not an object header!\n");
+    break;
+  case Header_s::kind_tag: {
+    printf("  0x%16l0X : 0x%16l0X 0x%16l0X <--- Valid objects have 0xDEADBEEF01234567 \n", headerP, *headerP, *(headerP + 1));
+    gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
+    printf(" Kind tag - kind: %d", kind);
+    fflush(stdout);
+    printf("     %s\n", obj_name(kind));
+  } break;
+  case Header_s::fwd_tag: {
+    Header_s *hdr = (Header_s *)headerP;
+    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
+    printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf("     fwdSize = %d/0x%16l0X\n", hdr->fwdSize(), hdr->fwdSize());
+  } break;
+  case Header_s::pad_tag:
+    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
+    if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
+      printf("   pad1_tag\n");
+    } else {
+      printf("   pad_tag\n");
     }
     break;
-  case Header_s::fwd_tag:
-    {
-      Header_s* hdr = (Header_s*)headerP;
-      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
-      printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP)&Header_s::fwd_ptr_mask);
-      printf("     fwdSize = %d/0x%16l0X\n", hdr->fwdSize(), hdr->fwdSize());
-    }
-      break;
-  case Header_s::pad_tag:
-      printf( "  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP+1));
-      if ( ((*headerP)&Header_s::pad1_tag) == Header_s::pad1_tag ) {
-        printf("   pad1_tag\n");
-      } else {
-        printf("   pad_tag\n");
-      }
-      break;
   }
 };
 
-void headerDescribe(core::T_O* taggedClient)
-{
-  if ( tagged_generalp(taggedClient) || tagged_consp(taggedClient) ) {
+void headerDescribe(core::T_O *taggedClient) {
+  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
-    uintptr_t* headerP;
-    if ( tagged_generalp(taggedClient) ) {
-      headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_general(taggedClient)));
+    uintptr_t *headerP;
+    if (tagged_generalp(taggedClient)) {
+      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(untag_cons(taggedClient)));
+      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
     }
     rawHeaderDescribe(headerP);
   } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__ );
+    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
 #if 0
     printf("    Trying to interpret as client pointer\n");
     uintptr_t* headerP;
@@ -229,17 +224,18 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
   Header_s *header = reinterpret_cast<Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_TELEMETRY
   if (header->fwdP()) {
-      GC_TELEMETRY3(telemetry::label_obj_isfwd_true,
-                    (uintptr_t)client,
-                    (uintptr_t)header,
-                    (uintptr_t)header->fwdPointer());
+    GC_TELEMETRY3(telemetry::label_obj_isfwd_true,
+                  (uintptr_t)client,
+                  (uintptr_t)header,
+                  (uintptr_t)header->fwdPointer());
   } else {
-      GC_TELEMETRY2(telemetry::label_obj_isfwd_false,
-                    (uintptr_t)client,
-                    (uintptr_t)header);
+    GC_TELEMETRY2(telemetry::label_obj_isfwd_false,
+                  (uintptr_t)client,
+                  (uintptr_t)header);
   }
 #endif
-  if (header->fwdP()) return header->fwdPointer();
+  if (header->fwdP())
+    return header->fwdPointer();
   return NULL;
 }
 
@@ -258,8 +254,6 @@ static void obj_pad(mps_addr_t base, size_t size) {
   }
 }
 
-
-
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 //
@@ -267,83 +261,78 @@ static void obj_pad(mps_addr_t base, size_t size) {
 //
 //
 
-static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit ) {
-    STACK_TELEMETRY2(telemetry::label_stack_frame_scan_start,
-                     (uintptr_t)base,
-                     (uintptr_t)limit);
-    MPS_SCAN_BEGIN(ss) {
-        while (base<limit) {
-            mps_addr_t original_base = base;
-            uintptr_t* headerAndFrame = (uintptr_t*)base;
-            GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
-            size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
-            switch (ftype) {
-            case GCStack::frame_t: {
-                uintptr_t* frameStart = FRAME_START(headerAndFrame);
-                size_t elements = frameStart[gc::frame::IdxNumElements];
-                uintptr_t* taggedPtr = &frameStart[gc::frame::IdxValuesArray];
-                for ( size_t i=0; i<elements; ++i ) {
-                    taggedPtrFix(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,reinterpret_cast<gctools::Tagged*>(taggedPtr));
-                    ++taggedPtr;
-                }
-                base = (char*)base + sz;
-            }
-                break;
-            case GCStack::pad_t:
-                base = (char*)base + sz;
-                break;
-            default:
-                THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-                break;
-            }
-            STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
-                             (uintptr_t)original_base,
-                             (uintptr_t)base,
-                             (uintptr_t)ftype);
+static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
+  STACK_TELEMETRY2(telemetry::label_stack_frame_scan_start,
+                   (uintptr_t)base,
+                   (uintptr_t)limit);
+  MPS_SCAN_BEGIN(ss) {
+    while (base < limit) {
+      mps_addr_t original_base = base;
+      uintptr_t *headerAndFrame = (uintptr_t *)base;
+      GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
+      size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
+      switch (ftype) {
+      case GCStack::frame_t: {
+        uintptr_t *frameStart = FRAME_START(headerAndFrame);
+        size_t elements = frameStart[gc::frame::IdxNumElements];
+        uintptr_t *taggedPtr = &frameStart[gc::frame::IdxValuesArray];
+        for (size_t i = 0; i < elements; ++i) {
+          taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(taggedPtr));
+          ++taggedPtr;
         }
-    } MPS_SCAN_END(ss);
-    return MPS_RES_OK;
+        base = (char *)base + sz;
+      } break;
+      case GCStack::pad_t:
+        base = (char *)base + sz;
+        break;
+      default:
+        THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
+        break;
+      }
+      STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
+                       (uintptr_t)original_base,
+                       (uintptr_t)base,
+                       (uintptr_t)ftype);
+    }
+  }
+  MPS_SCAN_END(ss);
+  return MPS_RES_OK;
 };
 
-
-static mps_addr_t stack_frame_skip(mps_addr_t base)
-{
-  uintptr_t* headerAndFrame = (uintptr_t*)base;
+static mps_addr_t stack_frame_skip(mps_addr_t base) {
+  uintptr_t *headerAndFrame = (uintptr_t *)base;
   mps_addr_t original_base = base;
   GCStack::frameType ftype = (GCStack::frameType)FRAME_HEADER_TYPE_FIELD(headerAndFrame);
   size_t sz = FRAME_HEADER_SIZE_FIELD(headerAndFrame);
   switch (ftype) {
   case GCStack::frame_t:
-      base = (char*)base + sz;
-      break;
+    base = (char *)base + sz;
+    break;
   case GCStack::pad_t:
-      base = (char*)base + sz;
-      break;
+    base = (char *)base + sz;
+    break;
   default:
-      THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-      break;
+    THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
+    break;
   }
   STACK_TELEMETRY3(telemetry::label_stack_frame_skip,
                    (uintptr_t)original_base,
                    (uintptr_t)base,
-                   (uintptr_t)((char*)original_base - (char*)base));
+                   (uintptr_t)((char *)original_base - (char *)base));
   return base;
 }
 
-
-static void stack_frame_pad(mps_addr_t addr, size_t size)
-{
+static void stack_frame_pad(mps_addr_t addr, size_t size) {
   STACK_TELEMETRY2(telemetry::label_stack_frame_pad,
                    (uintptr_t)addr,
                    (uintptr_t)size);
-  uintptr_t* obj = reinterpret_cast<uintptr_t*>(addr);
-  GCTOOLS_ASSERT(size>=STACK_ALIGN_UP(sizeof(uintptr_t)));
+  uintptr_t *obj = reinterpret_cast<uintptr_t *>(addr);
+  GCTOOLS_ASSERT(size >= STACK_ALIGN_UP(sizeof(uintptr_t)));
   FRAME_HEADER_TYPE_FIELD(obj) = (int)GCStack::frameType::pad_t;
   FRAME_HEADER_SIZE_FIELD(obj) = size;
 }
 
-void mpsAllocateStack(gctools::GCStack* stack)
-{
+void mpsAllocateStack(gctools::GCStack *stack) {
   mps_res_t res;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, STACK_ALIGNMENT);
@@ -351,26 +340,31 @@ void mpsAllocateStack(gctools::GCStack* stack)
     MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, stack_frame_skip);
     MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, stack_frame_pad);
     res = mps_fmt_create_k(&stack->_ObjectFormat, _global_arena, args);
-    if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame format"));
-  } MPS_ARGS_END(args);
- 
+    if (res != MPS_RES_OK)
+      THROW_HARD_ERROR(BF("Couldn't create stack frame format"));
+  }
+  MPS_ARGS_END(args);
+
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, stack->_ObjectFormat);
     res = mps_pool_create_k(&stack->_Pool, _global_arena, mps_class_snc(), args);
-    if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame pool"));
-  } MPS_ARGS_END(args);
+    if (res != MPS_RES_OK)
+      THROW_HARD_ERROR(BF("Couldn't create stack frame pool"));
+  }
+  MPS_ARGS_END(args);
 
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
     res = mps_ap_create_k(&stack->_AllocationPoint, stack->_Pool, args);
-    if (res != MPS_RES_OK) THROW_HARD_ERROR(BF("Couldn't create stack frame allocation point"));
-  } MPS_ARGS_END(args);
+    if (res != MPS_RES_OK)
+      THROW_HARD_ERROR(BF("Couldn't create stack frame allocation point"));
+  }
+  MPS_ARGS_END(args);
   stack->_IsActive = true;
 };
 
-void mpsDeallocateStack(gctools::GCStack* stack)
-{
-  if ( stack->_TotalSize != 0 ) {
+void mpsDeallocateStack(gctools::GCStack *stack) {
+  if (stack->_TotalSize != 0) {
     THROW_HARD_ERROR(BF("mpsDeallocateStack called on a stack that is not completely empty - it contains %u bytes") % stack->_TotalSize);
   }
   stack->_IsActive = false;
@@ -379,7 +373,7 @@ void mpsDeallocateStack(gctools::GCStack* stack)
   mps_fmt_destroy(stack->_ObjectFormat);
   mps_pool_destroy(stack->_Pool);
   mps_arena_release(_global_arena);
-//  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
+  //  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
 };
 
 // -----------------------------------------------------------
@@ -394,7 +388,7 @@ int processMpsMessages(void) {
   int mFinalize(0);
   int mGcStart(0);
   int mGc(0);
-  core::Number_sp startTime = gc::As<core::Number_sp>(core::cl_getInternalRunTime());
+  core::Number_sp startTime = gc::As<core::Number_sp>(core::cl__get_internal_run_time());
   mps_message_type_t type;
   while (mps_message_queue_type(&type, gctools::_global_arena)) {
     mps_message_t message;
@@ -430,7 +424,7 @@ int processMpsMessages(void) {
   }
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
-        core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
+        core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
         core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
         printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
@@ -479,7 +473,7 @@ bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nu
   size_t values[20];
   int numValues = 0;
   if (cur) {
-      printf("CLASP_MPS_CONFIG = %s\n", cur );
+    printf("CLASP_MPS_CONFIG = %s\n", cur);
     while (*cur && numValues < 20) {
       values[numValues] = strtol(cur, &cur, 10);
       ++numValues;
@@ -516,7 +510,6 @@ bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nu
 }
 
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
-
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
   if (Alignment() == 16) {
@@ -597,7 +590,29 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create amc pool");
 
-  /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
+  /* Objects that can not move but are managed by the garbage collector
+     go in the global_non_moving_pool.  
+     Use an AWL pool rather than an AMS pool until the AMS bug gets fixed */
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create awl pool");
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+
+
+/* ------------------------------------------------------------------------
+   Create a pool for objects that aren't moved and arent managed by the GC.
+*/
+#if 0   
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
@@ -614,7 +629,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+#endif
 
+  
   // Create the AMCZ pool
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
@@ -689,24 +706,23 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_root_t global_stack_root;
 #ifdef MPS_LOVEMORE
   res = mps_root_create_reg(&global_stack_root,
-                                   _global_arena,
-                                   mps_rank_ambig(),
-                                   0,
-                                   global_thread,
-                                   mps_stack_scan_ambig,
-                                   _global_stack_marker,
-                                   0);
+                            _global_arena,
+                            mps_rank_ambig(),
+                            0,
+                            global_thread,
+                            mps_stack_scan_ambig,
+                            _global_stack_marker,
+                            0);
 #else
   // use mask
   res = mps_root_create_stack(&global_stack_root,
-                                  _global_arena,
-                                  mps_rank_ambig(),
-                                  0,
-                                  global_thread,
-                                  gctools::pointer_tag_mask,
-                                  gctools::pointer_tag_eq,
-                                  _global_stack_marker
-                                  );
+                              _global_arena,
+                              mps_rank_ambig(),
+                              0,
+                              global_thread,
+                              gctools::pointer_tag_mask,
+                              gctools::pointer_tag_eq,
+                              _global_stack_marker);
 #endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
@@ -743,12 +759,18 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
   exit_code = 0;
 #else
+  #if 1
   exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  #else
+  printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
+  test_mps_allocation();
+  exit_code = 0;
+  #endif
 #endif
   processMpsMessages();
 
   _ThreadLocalStack.deallocateStack();
-  
+
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);

@@ -1,4 +1,0 @@
-#!/bin/bash
-llvm-link -o kernel.bc `cat kernel-main.lnk` kernel-main.bc
-llc -filetype=obj kernel.bc -o=kernel.o
-ld kernel.o -L"/Library/Frameworks/EPD64.framework/Versions/current/lib" -L"/Users/meister/Development/cando/build/cando.app/Contents/Resources/lib" -L"/Users/meister/Development/cando/build/cando.app/Contents/Resources/lib/opt"  "/Users/meister/Development/cando/build/cando.app/Contents/Resources/lib/libllvmoPackage_opt.dylib" "/Users/meister/Development/cando/build/cando.app/Contents/Resources/lib/libcffiPackage_opt.dylib" "/Users/meister/Development/cando/build/cando.app/Contents/Resources/lib/libcore_opt.dylib"  -lpython2.7 -lpython2.7 -lgmpxx -lgmp -lncurses -lreadline -lz -lexpat -lboost_python -lboost_iostreams -lboost_system -lboost_program_options -lboost_serialization -lboost_date_time -lboost_thread -lboost_regex -lboost_filesystem -lLLVM-3.3svn -dylib -o "kernel.dylib"

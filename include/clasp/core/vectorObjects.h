@@ -40,8 +40,7 @@ namespace core {
 FORWARD(VectorObjects);
 class VectorObjects_O : public Vector_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects");
+  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
   DECLARE_INIT();
 
   void archiveBase(SNode_sp node);
@@ -68,11 +67,11 @@ public:
 
 public:
   static VectorObjects_sp create(T_sp initial_element, int dimension, T_sp elementType);
-  static VectorObjects_sp make(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable);
+  static VectorObjects_sp make(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable, T_sp elementType);
   static VectorObjects_sp create(const gctools::Vec0<T_sp> &objs);
 
 public:
-  void setup(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable);
+  void setup(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable, T_sp elementType);
   void adjust(T_sp initial_element, T_sp initialContents, int dimension);
 
   void setElementType(T_sp elementType) { this->_ElementType = elementType; };
@@ -82,9 +81,13 @@ public: // Functions here
   bool adjustableArrayP() const { return this->_Adjustable; };
 
   virtual T_sp aset_unsafe(int j, T_sp val);
-  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };
 
-  virtual std::vector<cl_index> dimensions() const { std::vector<cl_index> dims; dims.push_back(this->length()); return dims;};
+  virtual std::vector<cl_index> dimensions() const {
+    std::vector<cl_index> dims;
+    dims.push_back(this->length());
+    return dims;
+  };
   virtual gc::Fixnum dimension() const { return this->_Values.size(); };
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
@@ -127,8 +130,7 @@ template <>
 struct gctools::GCInfo<core::VectorObjects_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorObjects_H */

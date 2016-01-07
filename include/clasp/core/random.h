@@ -32,15 +32,12 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 
-
 namespace core {
 
-
-  SMART(RandomState);
+SMART(RandomState);
 
 class RandomState_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, RandomState_O, "random-state");
+  LISP_CLASS(core, ClPkg, RandomState_O, "random-state",T_O);
   //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -58,10 +55,11 @@ public: // ctor/dtor for classes with shared virtual base
     tt = currentTime % 32768;
     this->_Producer.seed(static_cast<uint>(tt));
   };
-  explicit RandomState_O( const RandomState_O& state) {
+  explicit RandomState_O(const RandomState_O &state) {
     this->_Producer = state._Producer;
   };
   virtual ~RandomState_O() {}
+
 public: // Functions here
   static RandomState_sp make(T_sp state);
   static RandomState_sp create(RandomState_sp other) {
@@ -73,7 +71,5 @@ public: // Functions here
 
 }; // core namespace
 TRANSLATE(core::RandomState_O);
-
-
 
 #endif /* _random_H_ */

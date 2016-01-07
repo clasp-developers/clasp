@@ -45,22 +45,15 @@ THE SOFTWARE.
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/evaluator.fwd.h>
-//#i n c l u d e "f u n c t ionptr.h"
 #include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
-//#include <clasp/core/stringSet.fwd.h>
-//#i n c l u d e "setfExpander.fwd.h"
-//#i n c l u d e "environment.h"
 #include <clasp/core/executables.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
-//#i n c l u d e "genericFunction.fwd.h"
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
-//#i n c l u d e "executableEnvironment.h"
-//#i n c l u d e "lispDefinitions.h"
 
 namespace cl {
-extern core::Symbol_sp _sym_eq;
+extern core::Symbol_sp& _sym_eq;
 };
 
 namespace core {
@@ -81,12 +74,11 @@ SMART(SpecialForm);
 SMART(Hierarchy);
 SMART(Environment);
 
- void af_stackMonitor();
- void af_stackSizeWarning(size_t size);
+void core__stack_monitor();
+void af_stackSizeWarning(size_t size);
 
-
-List_sp cl_member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
-void af_invokeInternalDebugger(T_sp condition);
+List_sp cl__member(T_sp item, T_sp list, T_sp key = _Nil<T_O>(), T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+void core__invoke_internal_debugger(T_sp condition);
 
 class SymbolClassPair {
 public:
@@ -211,16 +203,16 @@ struct ThreadInfo {
   MultipleValues multipleValues;
   size_t _lambda_list_handler_create_bindings_count;
 
-ThreadInfo() : _lambda_list_handler_create_bindings_count(0) {};
+  ThreadInfo() : _lambda_list_handler_create_bindings_count(0){};
 };
 
 extern __thread ThreadInfo *threadLocalInfoPtr;
 
 class Lisp_O {
-  friend T_mv core_sourceFileInfo(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
   struct GCRoots //: public gctools::HeapRoot
-  {
-        //! A pool of strings for string manipulation - must be per thread
+      {
+    //! A pool of strings for string manipulation - must be per thread
     List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
     InvocationHistoryStack _InvocationHistoryStack;
@@ -301,17 +293,16 @@ class Lisp_O {
   friend class ConditionHandlerManager;
   friend class BootStrapCoreSymbolMap;
   friend T_sp sp_eval_when(List_sp args, T_sp env);
-  friend List_sp core_allSourceFiles();
+  friend List_sp core__all_source_files();
   template <class oclass>
   friend void define_base_class(Class_sp co, Class_sp cob, uint &classesUpdated);
   template <class oclass>
   friend BuiltInClass_sp hand_initialize_allocatable_class(uint &classesHandInitialized, Lisp_sp lisp, BuiltInClass_sp _class);
-  friend T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
-  friend T_mv af_get_sysprop(T_sp key, T_sp area);
+  friend T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
+  friend T_mv core__get_sysprop(T_sp key, T_sp area);
 
-  friend void af_clearGfunHash(T_sp what);
-  //	/* disable scrape */ LISP_BASE1(T_O);
-  //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp");
+  friend void core__clear_gfun_hash(T_sp what);
+  //	/* disable scrape */ LISP_CLASS(core,CorePkg,Lisp_O,"Lisp",T_O);
 public:
   static void initializeGlobals(Lisp_sp lisp);
 
@@ -439,18 +430,20 @@ public:
 	    this->_Roots._MultipleValuesCur = mv;
 	};
 #endif
- public:
-        StringOutputStream_sp& bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
- public:
-        /*! Signal a problem if the stack gets too full*/
-        inline void stack_monitor() {
-          int x;
-          char *xaddr = (char*)(&x);
-          size_t stack = (size_t)(_lisp->_StackTop - xaddr);
-          if ( stack > _lisp->_StackWarnSize ) {
-            af_stackSizeWarning(stack);
-          }
-        }
+public:
+  StringOutputStream_sp &bformatStringOutputStream() { return this->_Roots._BformatStringOutputStream; };
+
+public:
+  /*! Signal a problem if the stack gets too full*/
+  inline void stack_monitor() {
+    int x;
+    char *xaddr = (char *)(&x);
+    size_t stack = (size_t)(_lisp->_StackTop - xaddr);
+    if (stack > _lisp->_StackWarnSize) {
+      af_stackSizeWarning(stack);
+    }
+  }
+
 public:
   DebugStream &debugLog() {
     HARD_ASSERT(this->_DebugStream != NULL);
@@ -468,9 +461,11 @@ public:
   bool mpiEnabled() { return this->_MpiEnabled; }
   int mpiRank() { return this->_MpiRank; }
   int mpiSize() { return this->_MpiSize; }
- public:
+
+public:
   StrWithFillPtr_sp get_buffer_string();
   void put_buffer_string(StrWithFillPtr_sp str);
+
 public:
   IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
 
@@ -596,6 +591,7 @@ public:
   Bignum_sp bigRegister1() { return this->_Roots._BignumRegister1; };
   Bignum_sp bigRegister2() { return this->_Roots._BignumRegister2; };
   Integer_sp integerOverflowAdjust() { return this->_Roots._IntegerOverflowAdjust; };
+
 public:
   bool isEnvironmentInitialized() { return this->_EnvironmentInitialized; };
   uint nextEnvironmentId();
@@ -876,7 +872,6 @@ public:
 
   Symbol_sp getClassSymbolForClassName(const string &symbolName);
 
-
   //	void setGlobal(Symbol_sp sym, T_sp obj);
   //	void setGlobalIfNotDefined(Symbol_sp sym, T_sp obj);
   //	T_sp valueGlobal(Symbol_sp sym);
@@ -993,8 +988,7 @@ public:
   void exposePython();
 
   explicit Lisp_O();
-  virtual ~Lisp_O() {};
-
+  virtual ~Lisp_O(){};
 };
 
 /*! Scoped change of lisp mode */
@@ -1038,20 +1032,24 @@ public:
 
 namespace core {
 
-T_mv cl_macroexpand_1(T_sp form, T_sp env);
-T_mv cl_macroexpand(T_sp form, T_sp env);
+T_mv cl__macroexpand_1(T_sp form, T_sp env);
+T_mv cl__macroexpand(T_sp form, T_sp env);
 
-List_sp cl_assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
+List_sp cl__assoc(T_sp item, List_sp alist, T_sp key, T_sp test = cl::_sym_eq, T_sp test_not = _Nil<T_O>());
 
-Class_mv cl_findClass(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
-Class_mv af_setf_findClass(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
+Class_mv cl__find_class(Symbol_sp symbol, bool errorp = true, T_sp env = _Nil<T_O>());
+Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env);
 
-void cl_error(T_sp err, List_sp initializers);
-
+void cl__error(T_sp err, List_sp initializers);
 };
 
 //TRANSLATE(core::Lisp_O);
 
 #define INTERN(x) _lisp->internWithPackageName(x, CurrentPkg)
+
+namespace core {
+  void initialize_Lisp_O();
+};
+
 
 #endif //]

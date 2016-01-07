@@ -46,21 +46,9 @@ SYMBOL_EXPORT_SC_(ClPkg, remove);
 SYMBOL_EXPORT_SC_(ClPkg, pprint_dispatch);
 SYMBOL_EXPORT_SC_(ClPkg, fileStream);
 
-#pragma GCC visibility push(default)
 
 #define ClPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef ClPkg_SYMBOLS
-
-#pragma GCC visibility pop
 
 //    SYMBOL_EXPORT_SC_(ClPkg,defaultPathnameDefaults);
 
-core::Package_sp initialize_commonLispPackage() {
-  list<string> lnicknames = {"CL"};
-  list<string> luse;
-  return _lisp->makePackage("COMMON-LISP", lnicknames, luse);
-}
 };

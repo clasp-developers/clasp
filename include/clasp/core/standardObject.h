@@ -44,9 +44,8 @@ SMART(StandardClass);
 
 SMART(StandardObject);
 class StandardObject_O : public T_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",T_O);
   DECLARE_INIT();
 
 public:
@@ -75,9 +74,8 @@ public:
   //	void setInstanceVariableValue(Symbol_sp sym, T_sp obj);
   //	T_sp getInstanceVariableValue(Symbol_sp sym);
 
-  explicit StandardObject_O() : Base() {};
-  virtual ~StandardObject_O() {};
-
+  explicit StandardObject_O() : Base(){};
+  virtual ~StandardObject_O(){};
 };
 };
 TRANSLATE(core::StandardObject_O);

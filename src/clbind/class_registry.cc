@@ -55,7 +55,7 @@ THE SOFTWARE.
 #include <clasp/clbind/cl_include.h>
 
 #include <clasp/clbind/clbind.h>
-#include <clasp/clbind/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/clbind/class_rep.h>
 //#include <clasp/clbind/detail/operator_id.h>
@@ -66,11 +66,9 @@ CLBIND_API void push_instance_metatable();
 EXPOSE_CLASS(clbind, ClassRegistry_O);
 
 void ClassRegistry_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
   core::class_<ClassRegistry_O>();
 }
 void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
-  _G();
 #ifdef USEBOOSTPYTHON
   PYTHON_CLASS(CorePkg, ClassRegistry, "", "", _lisp);
 #endif
@@ -112,7 +110,7 @@ void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
             cl_rawset(L, -3);
 
             cl_pushstring(L, "__newindex");
-            cl_pushcclosure(L, &class_rep::cl_settable_dispatcher, 0);
+            cl_pushcclosure(L, &class_rep::cl__settable_dispatcher, 0);
             cl_rawset(L, -3);
 
             return clL_ref(L, CL_REGISTRYINDEX);
@@ -140,7 +138,7 @@ void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
             cl_rawset(L, -3);
 
             cl_pushstring(L, "__newindex");
-            cl_pushcclosure(L, &class_rep::cl_settable_dispatcher, 0);
+            cl_pushcclosure(L, &class_rep::cl__settable_dispatcher, 0);
             cl_rawset(L, -3);
 
             cl_pushstring(L, "__call");

@@ -1,95 +1,93 @@
-Clasp (Common Lisp and C++ and LLVM)
-===============
+# Clasp — Bringing Common Lisp and C++ Together
 
-# Clasp is getting ready for a major new release (As of Oct 6, 2015)
+## What Is This?
+Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seamlessly interoperates with C++ libraries and programs using [LLVM](http://llvm.org/) for compilation to native code. This allows Clasp to take advantage of a vast array of preexisting libraries and programs, such as out of the scientific computing ecosystem. Embedding them in a Common Lisp environment allows you to make use of rapid prototyping, incremental development, and other capabilities that make it a powerful language.
 
-**If you have questions come ask them on IRC at freenode #clasp**
+## New Features
+* Clasp has a completely new, <a href="https://drmeister.wordpress.com/2015/07/30/timing-data-comparing-cclasp-to-c-sbcl-and-python/">optimizing/inlining compiler called cclasp!</a>
+* Fixnum, character and single-float types are immediate values.
+* General object pointers and cons pointers are tagged for speed.
+* Clbind library allows programmers to expose external C++ libraries.
+* Lots of bug fixes and stability improvements.
 
-Clasp is a Common Lisp implementation that interoperates with C++ and uses LLVM for just-in-time (JIT) compilation to native code.
-See http://drmeister.wordpress.com/2014/09/18/announcing-clasp/ for the initial announcement.
+## Getting Clasp
+Precompiled and prepackaged versions of Clasp will be available for a limited number of distributions. Check the [releases](https://github.com/drmeister/clasp/releases) to see if there is something available for you.
 
-Clasp is not yet a full ANSI compliant Common Lisp - if you find differences between Clasp and the Common Lisp standard they are considered bugs in Clasp and please feel free to report them.
+At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source if a pre-made package is not available or workable for you. In case you cannot get it to compile even with the instructions below, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
-## Systems Clasp has built on
+Building on most systems will take around 4GB of RAM and ~2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done.
 
-Clasp requires clang 3.6 or higher to compile
+### Building on Linux
+For most distributions that have the listed [dependencies](#external-dependencies) available as packages, the compilation should be straightforward. Simply clone Clasp and run `make` from the root of it.
 
-|  Systems that Clasp is known to build on  |
-| ----------------------------------------- |
-| OS X 10.10 using Xcode 6.4  [IMPORTANT - see (https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang)          |
-|  Debian Testing(Jessie) - [see issue #22](https://github.com/drmeister/clasp/issues/22)   |
-|  Debian Unstable(Sid)                     |
-|  Gentoo Linux - [see issue #20](https://github.com/drmeister/clasp/issues/20)             |
-|  Arch Linux                               |
-|  OpenSuse 13.1 - [see issue #19](https://github.com/drmeister/clasp/issues/19)            |
-|  Debian Stable (Wheezy) - [see issue #21](https://github.com/drmeister/clasp/issues/21)   |
-|  Ubuntu 14.04 - [see issue #26](https://github.com/drmeister/clasp/issues/26)             |
+If the system is too dumb to find some of the dependencies or fails for other reasons, you might have to manually adjust configuration variables. For this, copy `local.config.template` to `local.config` and edit it as appropriate. If you lack the required dependencies, try [compiling with externals-clasp](#building-with-externals-clasp).
 
-If you experience problems with the systems above please submit an issue here or come see us on **#clasp on irc.freenode.net**
+The compilation output will be in the `build/clasp` directory. To launch Clasp, run `build/clasp/bin/clasp_boehm_o`.
 
-## Building Clasp
+Clasp has been successfully built on
 
-To build Clasp from within the top level directory do the following.
+* **Ubuntu 14.04**, see [this wiki entry](https://github.com/drmeister/clasp/wiki/Building-Clasp-0.4-on-Ubuntu)
+* **Debian Jessie**
+* **Debian Sid**
+* **Debian Wheezy**
+* **OpenSuse 13.1**
+* **Gentoo**
+* **Arch**, currently requires downgrading Clang and LLVM to 3.6 .
 
-1) Clasp has a list of dependencies that we are working on - see below
+### Building on OS X
+First you will need what is listed for OS X under the [dependencies](#external-dependencies). Next you need an additional step that is documented [on the wiki](https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang). The rest of the procedure is the same as for [building with externals-clasp](#building-with-externals-clasp).
 
-2) Copy local.config.darwin or local.config.linux to local.config depending on your system
+The compilation output will be in the `build/clasp` directory. To launch Clasp, run `build/clasp/MacOS/clasp_boehm_o`.
 
-3) Edit local.config and configure it for your system. The following configuration variables affect the build process.
+### Building With Externals-Clasp
+If your system does not provide the [external dependencies](#external-dependencies) as required by Clasp, you can use this approach instead, which will compile them for you.
 
-| Variable                                   |   Description                                                           |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| **TARGET_OS**                              | Currently either _Linux_ or _Darwin_                                    |
-| **PJOBS**                                  | The number of processors you have available to build with.              |
-|                                            | Set PJOBS <= the number of cores you have.                              |
-|                                            | Also if you have less than 8GB memory you should set PJOBS to 2 or 1,   |
-|                                            | otherwise your system will swap like crazy                              |
-| **CLASP_CXXFLAGS**                         | For instance, adding -v  it will print more debugging info              |
-|                                            | during the build                                                        |
-| **CLASP_LINKFLAGS**                        | Add your local library dependencies here using -L and -l linker options |
-| **PYTHON2**                                | Path to python 2.7                                                      |
-4) Make both the MPS and Boehm versions of Clasp (Currently only Boehm version is built).
-<pre># <b>make</b></pre>
+Clone [externals-clasp](https://github.com/drmeister/externals-clasp) to a directory on your system. Next, create a `local.config` containing `export GCC_TOOLCHAIN = /usr` if you are on Linux and `export TOOLSET = clang` if you are on OS X. Next, simply run `make` from the root of it. This will take some time to complete; maybe play a round of pinball or [chat on IRC for a bit](#irc).
 
-5) Add the directory in $**CLASP_BUILD_TARGET_DIR**/MacOS (OS X) or $**CLASP_BUILD_TARGET_DIR**/bin (Linux) (from local.config) to your PATH<br>
+The next step is building Clasp itself. For this, clone it to a different folder and copy the `local.config.template` file within it to `local.config`. Next, open it up and make sure to uncomment and adapt the `EXTERNALS_CLASP_DIR` line to point to the location where you compiled externals-clasp. Something like `export EXTERNALS_CLASP_DIR = /opt/externals-clasp`. Finally it's time to kick off the build process. Simply run `make` from the Clasp root.
 
-6) To run the Boehm version of Clasp use
-<pre># <b>clasp_boehm_o</b></pre>
+### External Dependencies
+#### Linux
+Simply install the appropriate packages with your package manager.
 
-and to run the Boehm version of Clasp use
-<pre># <b>clasp_boehm_o</b></pre>
+* **llvm** 3.6
+* **clang** 3.6, including headers.
+* **boost**
+* **autoreconf** (dh-autoreconf on Ubuntu)
+* **gmp** 6.0.0, compiled with --enable-cxx
+* **expat** 2.0.1
+* **zlib** 1.2.8
+* **readline** 6.2
 
-7) When the Clasp REPL prompt appears you can type Common Lisp commands.
-<pre>Starting Clasp xxxxx   loading image... it takes a few seconds
-Loading .clasprc
-Top level.
-&gt; <b>(defun hello-world () (print "Clasp is running.  Huzzah!!!"))</b>
+#### OS X
+Use either [brew](http://brew.sh/) or [ports](https://www.macports.org/) to install the dependencies besides Xcode. Make sure the binaries are in your `PATH`.
 
-HELLO-WORLD
-&gt; <b>(hello-world)</b>
+* **Xcode** 6.4
+* **Xcode command-line tools**
+* **automake**
+* **autoconf**
+* **libtool**
+* **pkg-config**
 
-"Clasp is running.  Huzzah!!!"
-"Clasp is running.  Huzzah!!!"
-&gt; <b>(quit)</b>
-</pre>
+## Common Lisp Ecosystem Support
+Clasp supports [SLIME](https://common-lisp.net/project/slime/), [ASDF](https://common-lisp.net/project/asdf/), and [Quicklisp](https://www.quicklisp.org/beta/). As such, development as in other Common Lisp implementations should be rather straight forward.
 
-The recommended way to run Clasp is using Slime and the latest Slime supports Clasp.
+Note that Clasp does not currently support several of the staple features such as [CFFI](https://github.com/drmeister/clasp/issues/162), [Bordeaux-Threads](https://github.com/drmeister/clasp/issues/163), and [Unicode](https://github.com/drmeister/clasp/issues/164).
 
-Clasp also runs ASDF and Quicklisp.
+## Reporting Problems
+Generally you can report problems in two fashions, either by [opening an issue ticket](https://github.com/drmeister/clasp/issues/new) or by [chatting with us directly](#irc). In both cases, though, you should have the following pieces handy in order for us to be able to help you out as quickly and painlessly as possible.
 
-## External libraries
+* Your operating system name and version.
+* The versions of the [external libraries](#external-dependencies) that you have installed.
+* A paste of the build log or failure point that you reached.
+* Patience.
 
-These are the requirements as of Oct, 2015.
+## IRC
+Clasp has an IRC channel on [Freenode](https://freenode.net/) called [#clasp](irc://irc.freenode.net/#clasp). If you have questions, problems, suggestions, or generally would like to just hang out with us devs, come and stop by!
 
-1. llvm-3.6
-1. clang-3.6 (needs clang header files)
-1. boost libraries
-2. autoreconf  (dh-autoreconf on Ubuntu)
-1. gmp-6.0.0 (compile with --enable-cxx)
-1. expat-2.0.1
-1. zlib-1.2.8
-1. readline-6.2
+## My Blog
+
+<a href="https://drmeister.wordpress.com">More details on Clasp.</a>
 
 ## Acknowledgments
-
-Clasp was supported by the Defense Threat Reduction Agency (DOD-DTRA) (HDTRA1-09-1-0009) the National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) and the National Science Foundation (Grant number: 1300231)
+Clasp was supported by the Defense Threat Reduction Agency (DOD-DTRA) (HDTRA1-09-1-0009) the National Institutes of Health (NIH/NIGMS Grant number: 2R01GM067866-07A2) and the National Science Foundation (Grant number: 1300231).

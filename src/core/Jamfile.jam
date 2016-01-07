@@ -27,6 +27,7 @@ project internals/core : requirements
 #
 
 local sources =
+      vectorDisplaced.cc
       stacks.cc
       weakKeyMapping.cc
       weakHashTable.cc

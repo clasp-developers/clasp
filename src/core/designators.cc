@@ -52,17 +52,27 @@ Function_sp functionDesignator(T_sp obj) {
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(obj));
 }
 
-Path_sp pathDesignator(T_sp obj) {
-  _G();
-  if (af_strP(obj)) {
+core::Path_sp pathDesignator(core::T_sp obj) {
+  if (core__simple_string_p(obj)) {
     return Path_O::create(gc::As<Str_sp>(obj)->get());
   } else if (gc::IsA<Path_sp>(obj)) {
     return gc::As<Path_sp>(obj);
   }
   SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));
 }
+};
+};
 
-Package_sp packageDesignator(T_sp obj) {
+namespace core {
+CL_PKG_NAME(CorePkg,path-designator);
+CL_DEFUN core::Path_sp core__path_designator(core::T_sp obj) {
+  return coerce::pathDesignator(obj);
+}
+};
+
+namespace core {
+namespace coerce {
+core::Package_sp packageDesignator(core::T_sp obj) {
   // TODO: Add support for Unicode package names
   Str_sp packageName;
   if (Package_sp apkg = obj.asOrNull<Package_O>()) {
@@ -71,7 +81,7 @@ Package_sp packageDesignator(T_sp obj) {
     packageName = str;
     goto PACKAGE_NAME;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
-    packageName = af_symbolName(sym);
+    packageName = cl__symbol_name(sym);
     goto PACKAGE_NAME;
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     stringstream ss;
@@ -79,15 +89,25 @@ Package_sp packageDesignator(T_sp obj) {
     packageName = Str_O::create(ss.str());
     goto PACKAGE_NAME;
   }
-  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_String_O,cl::_sym_Symbol_O,cl::_sym_character));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_String_O, cl::_sym_Symbol_O, cl::_sym_character));
  PACKAGE_NAME:
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(), true));
   return pkg;
 }
+};
+};
 
+namespace core {
+CL_PKG_NAME(CorePkg,coerce-to-package);
+CL_DEFUN core::Package_sp coerce_to_package(core::T_sp obj) {
+  return coerce::packageDesignator(obj);
+}
+};
+
+namespace core {
+namespace coerce {
 string packageNameDesignator(T_sp obj) {
-  _G();
-  if (cl_packagep(obj)) {
+  if (cl__packagep(obj)) {
     return gc::As<Package_sp>(obj)->getName();
   }
   Str_sp packageName = stringDesignator(obj);
@@ -95,7 +115,6 @@ string packageNameDesignator(T_sp obj) {
 }
 
 List_sp listOfPackageDesignators(T_sp obj) {
-  _G();
   if (obj.nilp())
     return _Nil<T_O>();
   if (obj.consp()) {
@@ -112,11 +131,10 @@ List_sp listOfPackageDesignators(T_sp obj) {
 }
 
 List_sp listOfSymbols(T_sp syms) {
-  _G();
   if (syms.nilp())
     return _Nil<List_V>();
   List_sp symbols;
-  if (cl_symbolp(syms)) {
+  if (cl__symbolp(syms)) {
     symbols = Cons_O::create(syms);
   } else {
     symbols = syms;
@@ -128,17 +146,16 @@ Str_sp stringDesignator(T_sp obj) {
   if (Str_sp str = obj.asOrNull<Str_O>()) {
     return str;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
-    return af_symbolName(sym);
+    return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     stringstream ss;
     ss << clasp_as_char(chr);
     return Str_O::create(ss.str());
   }
-  TYPE_ERROR(obj,Cons_O::createList(cl::_sym_or,cl::_sym_String_O,cl::_sym_Symbol_O,cl::_sym_character));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_String_O, cl::_sym_Symbol_O, cl::_sym_character));
 }
 
 List_sp listOfStringDesignators(T_sp obj) {
-  _G();
   if (obj.nilp())
     return _Nil<List_V>();
   if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
@@ -158,24 +175,22 @@ List_sp listOfStringDesignators(T_sp obj) {
 }
 
 T_sp inputStreamDesignator(T_sp obj) {
-  _G();
   if (obj.nilp()) {
     return cl::_sym_STARstandard_inputSTAR->symbolValue();
   } else if (obj == _lisp->_true()) {
     return cl::_sym_STARterminal_ioSTAR->symbolValue();
-  } else if (cl_streamp(obj)) {
+  } else if (cl__streamp(obj)) {
     return obj;
   }
   SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
 }
 
 T_sp outputStreamDesignator(T_sp obj) {
-  _G();
   if (obj.nilp()) {
     return cl::_sym_STARstandard_outputSTAR->symbolValue();
   } else if (obj == _lisp->_true()) {
     return cl::_sym_STARterminal_ioSTAR->symbolValue();
-  } else if (cl_streamp(obj)) {
+  } else if (cl__streamp(obj)) {
     return obj;
   }
   SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
@@ -183,9 +198,4 @@ T_sp outputStreamDesignator(T_sp obj) {
 
 }; /* desig */
 
-void initialize_designators() {
-  _G();
-  af_def(CorePkg, "pathDesignator", &coerce::pathDesignator);
-  af_def(CorePkg, "coerce-to-package", &coerce::packageDesignator);
-}
 }; /* core */

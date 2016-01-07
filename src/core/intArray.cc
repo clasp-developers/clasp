@@ -57,12 +57,10 @@ IntArray_sp IntArray_O::create(uint sz) {
 }
 
 void IntArray_O::clear() {
-  _G();
   this->_Ints.clear();
 }
 
 void IntArray_O::resize(uint sz) {
-  _G();
   ASSERT(sz > 0);
   this->_Ints.resize(sz);
 }
@@ -72,13 +70,11 @@ void IntArray_O::append(int val) {
 }
 
 void IntArray_O::put(uint idx, int val) {
-  _G();
   ASSERT_lessThan(idx, this->_Ints.size());
   this->_Ints[idx] = val;
 }
 
 int IntArray_O::get(uint idx) {
-  _G();
   ASSERT_lessThan(idx, this->_Ints.size());
   return this->_Ints[idx];
 }

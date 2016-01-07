@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/clbind/derivable.h>
 #include <clasp/clbind/derivable_class.h>
 #include <clasp/clbind/clbind_wrappers.h>
+#include <clasp/clbind/clbind_taggedCast.h>
 
 namespace clbind {
 

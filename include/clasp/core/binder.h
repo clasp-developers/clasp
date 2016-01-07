@@ -49,8 +49,7 @@ SMART(Name);
 
 SMART(Binder);
 class Binder_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Binder_O, "Binder");
+  LISP_CLASS(core, CorePkg, Binder_O, "Binder",T_O);
   void initialize();
 
 #if defined(OLD_SERIALIZE)

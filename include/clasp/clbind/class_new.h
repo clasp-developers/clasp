@@ -173,7 +173,7 @@ public:
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
+    return gctools::ClassAllocator<DummyCreator>::allocate_class(core::lisp_symbolNameAsString(className));
   }
 };
 
@@ -497,7 +497,7 @@ struct constructor_registration_base : public registration {
     if (m_name == "") {
       tname = "default-ctor";
     };
-    core::Functoid *f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocateClass(tname);
+    core::Functoid *f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocate_class(tname);
     return f;
   }
 

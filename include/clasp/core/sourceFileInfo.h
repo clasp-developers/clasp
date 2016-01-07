@@ -27,8 +27,8 @@ THE SOFTWARE.
 
 #define USE_WEAK_HASH_TABLE_FOR_SOURCE_POS_INFO 1
 
-#ifndef _core_sourceFileInfo_H_
-#define _core_sourceFileInfo_H_
+#ifndef _core__source_file_info_H_
+#define _core__source_file_info_H_
 
 #include <boost/filesystem.hpp>
 #include <clasp/core/foundation.h>
@@ -40,8 +40,7 @@ THE SOFTWARE.
 
 namespace core {
 class SourceFileInfo_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo");
+  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",T_O);
   DECLARE_INIT();
 
 public:
@@ -69,22 +68,24 @@ public: // Functions here
   string fileName() const;
   string parentPathName() const;
   string namestring() const;
-  Pathname_sp pathname() const { return this->_pathname; };
+CL_LISPIFY_NAME("SourceFileInfo-pathname");
+CL_DEFMETHOD   Pathname_sp pathname() const { return this->_pathname; };
   const char *permanentPathName();
   const char *permanentFileName();
 
-  bool useLineno() const { return this->_TrackLineno; };
-  size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
+CL_LISPIFY_NAME("SourceFileInfo-useLineno");
+CL_DEFMETHOD   bool useLineno() const { return this->_TrackLineno; };
+CL_LISPIFY_NAME("SourceFileInfo-sourceDebugOffset");
+CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffset; };
   string __repr__() const;
 }; // SourceFileInfo class
 
 FORWARD(SourcePosInfo);
 class SourcePosInfo_O : public T_O {
   friend class SourceManager_O;
-  friend T_mv core_sourceFileInfo(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo");
+  LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",T_O);
 
 public:
 public:                                                                                    // ctor/dtor for classes with shared virtual base
@@ -120,19 +121,42 @@ public:
   uint _Column;
   //	Function_sp 	_Expander;
 };
+inline core::Fixnum safe_fileId(T_sp spi) {
+  if (spi.nilp())
+    return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
+}
+
+inline core::Fixnum safe_filepos(T_sp spi) {
+  if (spi.nilp())
+    return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_FileId;
+}
+
+inline core::Fixnum safe_lineno(T_sp spi) {
+  if (spi.nilp())
+    return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_Lineno;
+}
+
+inline core::Fixnum safe_column(T_sp spi) {
+  if (spi.nilp())
+    return 0;
+  return gc::As<SourcePosInfo_sp>(spi)->_Column;
+}
+// Pass all arguments to a FunctionClosure
+#define SOURCE_POS_INFO_FIELDS(spi) safe_fileId(spi), safe_filepos(spi), safe_lineno(spi), safe_column(spi)
 };
 template <>
 struct gctools::GCInfo<core::SourcePosInfo_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 class SourceManager_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager");
+  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager",T_O);
   DECLARE_INIT();
   void initialize();
 
@@ -171,11 +195,11 @@ public: // Functions here
 
 }; // SourceManager class
 
-T_mv core_walkToFindSourceInfo(T_sp obj);
-T_sp core_walkToFindSourcePosInfo(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
+T_mv core__walk_to_find_source_info(T_sp obj);
+T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
 
-T_mv core_sourceFileInfo(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
+T_mv core__source_file_info(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
 
 }; // core namespace
 TRANSLATE(core::SourceFileInfo_O);
@@ -186,4 +210,4 @@ extern "C" {
 void dumpSourceInfo(core::T_sp exp);
 };
 
-#endif /* _core_sourceFileInfo_H_ */
+#endif /* _core__source_file_info_H_ */

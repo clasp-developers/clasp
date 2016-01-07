@@ -71,15 +71,14 @@ public:
 
 SMART(MultiStringBuffer);
 class MultiStringBuffer_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, MultiStringBuffer_O, "MultiStringBuffer");
+  LISP_CLASS(core, CorePkg, MultiStringBuffer_O, "MultiStringBuffer",T_O);
 
 public: // virtual functions inherited from Object
   void initialize();
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-  //	string	__repr__() const;
+       //	string	__repr__() const;
 
 private: // instance variables
   vector<MultiStringBlock *> _Blocks;

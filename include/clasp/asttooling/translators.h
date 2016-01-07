@@ -144,7 +144,7 @@ template <>
 struct to_object<std::vector<std::unique_ptr<clang::ASTUnit>> &> {
   typedef std::vector<std::unique_ptr<clang::ASTUnit>> GivenType;
   static core::T_sp convert(std::vector<std::unique_ptr<clang::ASTUnit>> &vals) {
-    core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(), _Nil<core::T_O>(), vals.size(), 0, true);
+    core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(), _Nil<core::T_O>(), vals.size(), 0, true, cl::_sym_T_O);
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::ASTUnit, std::unique_ptr<clang::ASTUnit>>::create(std::move(vals[i]), reg::registered_class<clang::ASTUnit>::id));
     }
@@ -156,7 +156,7 @@ template <>
 struct to_object<std::vector<clang::tooling::CompileCommand>> {
   typedef std::vector<clang::tooling::CompileCommand> GivenType;
   static core::T_sp convert(GivenType vals) {
-    core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(), _Nil<core::T_O>(), vals.size(), 0, true);
+    core::VectorObjectsWithFillPtr_sp vo = core::VectorObjectsWithFillPtr_O::make(_Nil<core::T_O>(), _Nil<core::T_O>(), vals.size(), 0, true, cl::_sym_T_O);
     for (int i(0), iEnd(vals.size()); i < iEnd; ++i) {
       vo->vectorPushExtend(clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>>::create(vals[i], reg::registered_class<clang::tooling::CompileCommand>::id));
     }

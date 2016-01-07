@@ -84,4 +84,14 @@ public:
   };                                                                        \
   };
 
+/*! Every Derivable class needs to have the unmanaged GCInfo<T>::Policy
+*/
+
+template <class T>
+struct gctools::GCInfo<clbind::Derivable<T>> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+
 #endif

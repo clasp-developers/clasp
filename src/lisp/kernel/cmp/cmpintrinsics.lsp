@@ -250,9 +250,9 @@ Boehm and MPS use a single pointer"
 (defun parse-function-arguments (arguments)
   (let ((closed-env (first arguments))
         (cc (make-calling-convention-impl
-           :valist (second arguments)
-           :nargs (third arguments) ;; The number of arguments
-           :register-args (nthcdr 3 arguments))))
+             :valist (second arguments)
+             :nargs (third arguments) ;; The number of arguments
+             :register-args (nthcdr 3 arguments))))
     (values closed-env cc)))
 
 (defun calling-convention-nargs (cc)
@@ -596,11 +596,11 @@ Boehm and MPS use a single pointer"
   #+short-float (primitive-nounwind module "makeShortFloat" +void+ (list +tsp*+ +double+))
   (primitive-nounwind module "makeSingleFloat" +void+ (list +tsp*+ +float+))
   (primitive-nounwind module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
-  (primitive-nounwind module "makeComplex" +void+ (list +tsp*+ +double+ +double+))
+  
   #+long-float (primitive-nounwind module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-nounwind module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
-  (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i8*+ +i64+ +i32+ +i32+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
+  (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
   (primitive module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
   (primitive-nounwind module "symbolValueReference" +tsp*+ (list +symsp*+))
@@ -627,7 +627,7 @@ Boehm and MPS use a single pointer"
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
   (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
-  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +i64+ +i32+ +i32+ +ltv**+))
+  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
   (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+))
 ;;  (primitive module "invokeLlvmFunctionVoid" +void+ (list +i8*+ +fn-prototype*+))
 
@@ -734,12 +734,15 @@ Boehm and MPS use a single pointer"
 
   (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "ltv_makeCons" +void+ (list +tsp*+))
+  (primitive-nounwind module "ltv_makeComplex" +void+ (list +tsp*+))
   (primitive-nounwind module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
   (primitive-nounwind module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
   (primitive-nounwind module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_findBuiltInClass" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "rplaca" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "rplacd" +void+ (list +tsp*+ +tsp*+))
+  (primitive-nounwind module "ltv_setRealpart" +void+ (list +tsp*+ +tsp*+))
+  (primitive-nounwind module "ltv_setImagpart" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
   (primitive-nounwind module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
@@ -771,7 +774,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
-  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i8*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
+  (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive          module "cc_call_multipleValueOneFormCall" +return_type+ (list +t*+))
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
@@ -815,7 +818,7 @@ Boehm and MPS use a single pointer"
 (defvar *compile-file-source-file-info* nil "Store the SourceFileInfo object for the compile-file target")
 
 
-(defvar *gv-source-pathname* nil
+(defvar *gv-source-namestring* nil
   "Store a global value that defines the filename of the current compilation")
 (defvar *gv-source-debug-namestring* nil
   "A global value that defines the spoofed name of the current compilation - used by SLIME")

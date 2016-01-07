@@ -235,7 +235,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     if ((forced_package = forced_print_package(package)))
       print_package = true;
     if (!print_package) {
-      T_mv symbol_mv = cl_findSymbol(name->get(), _lisp->getCurrentPackage());
+      T_mv symbol_mv = cl__find_symbol(name->get(), _lisp->getCurrentPackage());
       Symbol_sp sym = symbol_mv;
       Symbol_sp intern_flag = gc::As<Symbol_sp>(symbol_mv.valueGet(1));
       if ((sym != x) || intern_flag.nilp())
@@ -247,27 +247,28 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
                           print_case, stream,
                           needs_to_be_escaped(name, readtable, print_case));
       if (!x.nilp()) {
-        Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(), package);
+        Symbol_mv sym2_mv = cl__find_symbol(x->symbolName()->get(), package);
         Symbol_sp sym2 = sym2_mv;
         Symbol_sp intern_flag2 = gc::As<Symbol_sp>(sym2_mv.valueGet(1));
         if (sym2 != x) {
-          clasp_write_string("<UNPRINTABLE-SYMBOL@",stream);
+          clasp_write_string("<UNPRINTABLE-SYMBOL@", stream);
           stringstream ss;
-          ss << (void*)x.raw_();
-          clasp_write_string(ss.str(),stream);
-          clasp_write_string(">",stream);
+          ss << (void *)x.raw_();
+          clasp_write_string(ss.str(), stream);
+          clasp_write_string(">", stream);
           return;
           SIMPLE_ERROR(BF("Can't print symbol"));
-        } if (intern_flag2 == kw::_sym_internal || forced_package) {
+        }
+        if (intern_flag2 == kw::_sym_internal || forced_package) {
           clasp_write_string("::", stream);
         } else if (intern_flag2 == kw::_sym_external) {
           clasp_write_char(':', stream);
         } else {
-          clasp_write_string("<PATHOLOGICAL-SYMBOL@",stream);
+          clasp_write_string("<PATHOLOGICAL-SYMBOL@", stream);
           stringstream ss;
-          ss << (void*)x.raw_();
-          clasp_write_string(ss.str(),stream);
-          clasp_write_string(">",stream);
+          ss << (void *)x.raw_();
+          clasp_write_string(ss.str(), stream);
+          clasp_write_string(">", stream);
           return;
           SIMPLE_ERROR(BF("Pathological symbol --- cannot print"));
         }

@@ -37,74 +37,72 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 
 namespace kw {
-extern core::Symbol_sp _sym_unspecific;
-extern core::Symbol_sp _sym_local;
-extern core::Symbol_sp _sym_newest;
+extern core::Symbol_sp& _sym_unspecific;
+extern core::Symbol_sp& _sym_local;
+extern core::Symbol_sp& _sym_newest;
 }
 
 namespace cl {
-extern core::Symbol_sp _sym_STARdefaultPathnameDefaultsSTAR;
+extern core::Symbol_sp& _sym_STARdefaultPathnameDefaultsSTAR;
 };
 
 namespace core {
 
 FORWARD(Pathname);
-Pathname_sp cl_pathname(T_sp x);
+Pathname_sp cl__pathname(T_sp x);
 
-Pathname_sp af_mergePathnames(T_sp arg, T_sp defaultPathname = _Nil<T_O>(), T_sp defaultVersion = kw::_sym_newest); // = af_symbolValue(cl::_sym_STARdefaultPathnameDefaultsSTAR), T_sp defaultVersion = kw::_sym_newest);
+Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = _Nil<T_O>(), T_sp defaultVersion = kw::_sym_newest); // = cl__symbol_value(cl::_sym_STARdefaultPathnameDefaultsSTAR), T_sp defaultVersion = kw::_sym_newest);
 
-T_mv af_parseNamestring(T_sp thing,
+T_mv cl__parse_namestring(T_sp thing,
                         T_sp host = _Nil<T_O>(),
                         T_sp defaultPathname = _Nil<T_O>(),
                         Fixnum_sp start = make_fixnum(0),
                         T_sp end = _Nil<T_O>(),
                         bool junkAllowed = false);
 
-T_sp af_pathnameHost(T_sp pathname, Symbol_sp acase);
-T_sp af_pathnameDevice(T_sp pathname, Symbol_sp acase);
-T_sp af_pathnameDirectory(T_sp pathname, Symbol_sp acase = kw::_sym_local);
-T_sp af_pathnameName(T_sp pathname, Symbol_sp acase);
-T_sp af_pathnameType(T_sp pathname, Symbol_sp acase);
-T_sp af_pathnameVersion(T_sp pathname);
+T_sp cl__pathname_host(T_sp pathname, Symbol_sp acase);
+T_sp cl__pathname_device(T_sp pathname, Symbol_sp acase);
+T_sp cl__pathname_directory(T_sp pathname, Symbol_sp acase = kw::_sym_local);
+T_sp cl__pathname_name(T_sp pathname, Symbol_sp acase);
+T_sp cl__pathname_type(T_sp pathname, Symbol_sp acase);
+T_sp cl__pathname_version(T_sp pathname);
 
-Pathname_sp af_translateLogicalPathname(T_sp x);
+Pathname_sp cl__translate_logical_pathname(T_sp x);
 
-bool af_wildPathnameP(T_sp pathname, T_sp component);
+bool cl__wild_pathname_p(T_sp pathname, T_sp component);
 
-Pathname_sp af_coerceToPhysicalPathname(T_sp x);
-Str_sp af_coerceToFilename(T_sp pathname_orig);
-Pathname_sp af_coerceToFilePathname(T_sp tpathname);
+Pathname_sp core__coerce_to_physical_pathname(T_sp x);
+Str_sp core__coerce_to_filename(T_sp pathname_orig);
+Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 
-void initialize_pathname();
 };
 
 namespace core {
 
 SMART(Pathname);
 class Pathname_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Pathname_O, "pathname");
+  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",T_O);
 
-  friend bool af_wildPathnameP(T_sp tpathname, T_sp component);
-  friend Pathname_sp af_coerceToPhysicalPathname(T_sp x);
-  friend Pathname_sp af_coerceToFilePathname(T_sp x);
-  friend Str_sp af_coerceToFilename(T_sp pathname);
+  friend bool cl__wild_pathname_p(T_sp tpathname, T_sp component);
+  friend Pathname_sp core__coerce_to_physical_pathname(T_sp x);
+  friend Pathname_sp core__coerce_to_file_pathname(T_sp x);
+  friend Str_sp core__coerce_to_filename(T_sp pathname);
   friend T_sp clasp_namestring(T_sp tx, int flags);
-  friend Pathname_mv af_parseNamestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
-  friend Pathname_sp af_makePathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
-  friend T_sp af_pathnameHost(T_sp tpname, Symbol_sp scase);
-  friend T_sp af_pathnameDevice(T_sp tpname, Symbol_sp scase);
-  friend T_sp af_pathnameDirectory(T_sp tpname, Symbol_sp scase);
-  friend T_sp af_pathnameName(T_sp tpname, Symbol_sp scase);
-  friend T_sp af_pathnameType(T_sp tpname, Symbol_sp scase);
-  friend T_sp af_pathnameVersion(T_sp tpname);
-  friend Str_sp af_fileNamestring(T_sp tpname);
-  friend Str_sp af_directoryNamestring(T_sp tpname);
-  friend Str_sp af_hostNamestring(T_sp tpname);
-  friend Str_sp af_enoughNamestring(T_sp tpath, T_sp tdefaults);
-  friend bool af_pathnameMatchP(T_sp tpath, T_sp tmask);
-  friend Pathname_sp af_translatePathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase);
-  friend Pathname_sp af_translateLogicalPathname(T_sp tsource);
+  friend Pathname_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp defaults, Fixnum_sp start, Fixnum_sp end, bool junk_allowed);
+  friend Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp defaults);
+  friend T_sp cl__pathname_host(T_sp tpname, Symbol_sp scase);
+  friend T_sp cl__pathname_device(T_sp tpname, Symbol_sp scase);
+  friend T_sp cl__pathname_directory(T_sp tpname, Symbol_sp scase);
+  friend T_sp cl__pathname_name(T_sp tpname, Symbol_sp scase);
+  friend T_sp cl__pathname_type(T_sp tpname, Symbol_sp scase);
+  friend T_sp cl__pathname_version(T_sp tpname);
+  friend Str_sp cl__file_namestring(T_sp tpname);
+  friend Str_sp cl__directory_namestring(T_sp tpname);
+  friend Str_sp cl__host_namestring(T_sp tpname);
+  friend Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
+  friend bool cl__pathname_match_p(T_sp tpath, T_sp tmask);
+  friend Pathname_sp cl__translate_pathname(T_sp tsource, T_sp tfrom, T_sp tto, T_sp scase);
+  friend Pathname_sp cl__translate_logical_pathname(T_sp tsource);
 
 public:
   T_sp _Host;
@@ -150,8 +148,7 @@ TRANSLATE(core::Pathname_O);
 namespace core {
 SMART(LogicalPathname);
 class LogicalPathname_O : public Pathname_O {
-  LISP_BASE1(Pathname_O);
-  LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname");
+  LISP_CLASS(core, ClPkg, LogicalPathname_O, "logical-pathname",Pathname_O);
 
 public:
   LogicalPathname_O(const LogicalPathname_O &ss); //!< Copy constructor
@@ -169,14 +166,14 @@ bool clasp_wild_string_p(T_sp item);
 T_sp clasp_namestring(T_sp x, int flags);
 Pathname_sp clasp_mergePathnames(T_sp path, T_sp def, T_sp defaultVersion);
 
-bool af_pathnameMatchP(T_sp path, T_sp mask);
-T_sp cl_namestring(T_sp x);
-Str_sp af_fileNamestring(T_sp tpname);
-Str_sp af_directoryNamestring(T_sp tpname);
-Str_sp af_hostNamestring(T_sp tpname);
-Str_sp af_enoughNamestring(T_sp tpath, T_sp tdefaults);
+bool cl__pathname_match_p(T_sp path, T_sp mask);
+T_sp cl__namestring(T_sp x);
+Str_sp cl__file_namestring(T_sp tpname);
+Str_sp cl__directory_namestring(T_sp tpname);
+Str_sp cl__host_namestring(T_sp tpname);
+Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults);
 
-T_sp af_pathnameTranslations(T_sp host, T_sp hostp, T_sp set);
+T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set);
 
 /* If you want to call makePathname use:
 		Pathname_sp backupPathname = af_makePathname(_Nil<T_O>(), // host 
@@ -195,7 +192,7 @@ T_sp af_pathnameTranslations(T_sp host, T_sp hostp, T_sp set);
 							     this->_OriginalPathname, // defaults 
 							     )
     */
-Pathname_sp af_makePathname(T_sp host, bool hostp,
+Pathname_sp cl__make_pathname(T_sp host, bool hostp,
                             T_sp device, bool devicep,
                             T_sp directory, bool directoryp,
                             T_sp name, bool namep,

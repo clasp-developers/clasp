@@ -112,7 +112,7 @@ Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
   (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
 	 (fn (with-new-function (fn fn-env result
-				    :function-name (bformat nil "%s" name)
+				    :function-name name
 				    :parent-env env-around-lambda
 				    :function-form code)
 	       (cmp-log "Starting new function name: %s\n" name)
@@ -228,10 +228,10 @@ then compile it and return (values compiled-llvm-function lambda-name)"
             (irc-intrinsic "makeCompiledFunction" 
                            result 
                            compiled-fn 
-                           *gv-source-pathname* 
-                           (jit-constant-i64 file-pos)
-                           (jit-constant-i32 lineno)
-                           (jit-constant-i32 column)
+                           *gv-source-file-info-handle* 
+                           (jit-constant-size_t file-pos)
+                           (jit-constant-size_t lineno)
+                           (jit-constant-size_t column)
                            (compile-reference-to-literal lambda-name env)
                            funcs 
                            (irc-renv env)
@@ -1041,7 +1041,7 @@ jump to blocks within this tagbody."
 	 (read-only-p (cadr rest)))
     (if *generate-compile-file-load-time-values*
 	(multiple-value-bind (index fn)
-	    (compile-ltv-thunk "load-time-value-func" form nil)
+	    (compile-ltv-thunk 'load-time-value-func form nil)
 	  ;; Invoke the repl function here
           (multiple-value-bind (source-dir source-file file-pos lineno column)
               (walk-form-for-source-info form)
@@ -1052,9 +1052,9 @@ jump to blocks within this tagbody."
                              (irc-renv ltv-env)
 			     (jit-constant-unique-string-ptr "load-time-value")
                              *gv-source-file-info-handle*
-			     (jit-constant-i64 file-pos)
-                             (jit-constant-i32 lineno)
-                             (jit-constant-i32 column)
+			     (jit-constant-size_t file-pos)
+                             (jit-constant-size_t lineno)
+                             (jit-constant-size_t column)
 			     *load-time-value-holder-global-var*
                              )))
 	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))
@@ -1167,7 +1167,7 @@ jump to blocks within this tagbody."
         ((packagep obj) (codegen-ltv/package result obj))
         ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
         ((floatp obj) (codegen-ltv/float result obj))
-        ((complexp obj) (codegen-ltv/complex result obj))
+        ((complexp obj) (codegen-ltv/container result obj env))
         ;; symbol would be here
         ((characterp obj) (codegen-ltv/character result obj))
         ((arrayp obj) (codegen-ltv/array result obj env))
@@ -1232,7 +1232,6 @@ jump to blocks within this tagbody."
 (defun compile-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (or (stringp name) (error "Name must be a string"))
   (let ((fn (with-new-function (fn
                                 fn-env
                                 result
@@ -1287,17 +1286,17 @@ be wrapped with to make a closure"
 
 (defmacro with-module (( &key module
                               (optimize t)
-                              source-pathname
+                              source-namestring
                               source-file-info-handle
                               source-debug-namestring
                               (source-debug-offset 0)
                               (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
  	  #+(or)(*generate-load-time-values* t)
-	  (*gv-source-pathname* (jit-make-global-string-ptr ,source-pathname "source-pathname"))
+	  (*gv-source-namestring* (jit-make-global-string-ptr ,source-namestring "source-namestring"))
 	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
 									,source-debug-namestring
-									,source-pathname) "source-debug-namestring"))
+									,source-namestring) "source-debug-namestring"))
 	  (*source-debug-offset* ,source-debug-offset)
 	  (*source-debug-use-lineno* ,source-debug-use-lineno)
 	  (*gv-source-file-info-handle* (make-gv-source-file-info-handle ,module ,source-file-info-handle)))
@@ -1399,7 +1398,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 			 (core:source-file-info pathname)
 		       the-handle)))
 	(with-module (:module *the-module*
-                      :source-pathname pathname
+                      :source-namestring (namestring pathname)
                       :source-file-info-handle handle)
 	  (multiple-value-bind (compiled-function warnp failp)
 	      (compile-with-hook compile-hook bind-to-name definition env pathname)

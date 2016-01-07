@@ -26,24 +26,24 @@ def accumulate_symbols(symbols,lambda_list):
     for x in lambda_list:
         if ( x.__class__ == Symbol ):
             if ( x.lispName()[0] == '&' ):
-                if ( x.lispName() == "&OPTIONAL" ):
+                if ( x.lispName() == "&optional" ):
                     mode = "optional"
                     continue
-                elif ( x.lispName() == "&REST"):
+                elif ( x.lispName() == "&rest"):
                     mode = "rest"
                     continue
-                elif ( x.lispName() == "&VA-REST"):
+                elif ( x.lispName() == "&va-rest"):
                     mode = "va-rest"
                     continue
-                elif ( x.lispName() == "&BODY"):
+                elif ( x.lispName() == "&body"):
                     mode = "rest"
                     continue
-                elif ( x.lispName() == "&KEY"):
+                elif ( x.lispName() == "&key"):
                     mode = "key"
                     continue
-                elif ( x.lispName() == "&ALLOW-OTHER-KEYS" ):
+                elif ( x.lispName() == "&allow-other-keys" ):
                     continue
-                elif ( x.lispName() == "&AUX" ):
+                elif ( x.lispName() == "&aux" ):
                     m
                 else:
                     raise Exception, "Unknown amp symbol[%s]" % x.lispName() 
@@ -255,9 +255,11 @@ class SymbolBase:
 class Symbol(SymbolBase):
     def __init__(self,fn,ln,package,name=None,lispName=None,rsid=None,export=False):
         if ( lispName == None ):
-            lispName = toLispName(name).upper()
-        else:
-            lispName = lispName.upper()
+            lispName = toLispName(name)
+#        if ( lispName == None ):
+#            lispName = toLispName(name).upper()
+#        else:
+#            lispName = lispName.upper()
 #           print("Read symbol with lisp-name=%s"%gr[2])
         SymbolBase.__init__(self,package,name,toCSymbolName(name),lispName,fn,ln,rsid=rsid,export=export)
 
@@ -308,22 +310,12 @@ conversions = [
     ("_","-") ]
 
 def toLispName(s):
+    return s
     for i in conversions:
         news = s.replace(i[0],i[1])
         s = news
     str = s
     output = StringIO.StringIO()
-    # for c in s:
-    #     if ( c=='S'):
-            
-    #         output.write("STAR")
-    #     elif ( c=="_"):
-    #         output.write("-")
-    #     else:
-    #         output.write(c)
-    # contents = output.getvalue()
-    # output.close()
-
     for x in range(0,len(str)-1):
         if ( str[x].islower() and str[x+1].isupper() ):
             output.write("%c-" % str[x].upper())

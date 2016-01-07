@@ -1,9 +1,0 @@
-#include "foundation.h"
-#include "multipleValues.h"
-
-namespace core
-{
-
-
-
-};

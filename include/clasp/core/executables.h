@@ -43,7 +43,6 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.fwd.h>
 #include <clasp/core/lispDefinitions.h>
 
-
 namespace core {
 
 #if 0
@@ -81,8 +80,7 @@ namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
 class Function_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Function_O, "Function");
+  LISP_CLASS(core, ClPkg, Function_O, "Function",T_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -125,8 +123,7 @@ template <>
 struct gctools::GCInfo<core::Function_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::Function_O);
 
@@ -140,7 +137,7 @@ public:
 
 public:
   DISABLE_NEW();
-  InterpretedClosure(T_sp fn, T_sp sp, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c);
+  InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InterpretedClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
@@ -181,8 +178,7 @@ namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
 class CompiledFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction");
+  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Function_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -206,8 +202,7 @@ template <>
 struct gctools::GCInfo<core::CompiledFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::CompiledFunction_O);
 

@@ -26,10 +26,10 @@
 #include <clasp/core/str.h>
 #include <clasp/core/bitVector.h>
 
-
 namespace core {
 static void
 write_array_inner(bool vector, T_sp x, T_sp stream) {
+  //	printf("%s:%d write_array_inner\n", __FILE__, __LINE__ );
   //cl_env_ptr env = ecl_process_env();
   std::vector<cl_index> adims;
   cl_index subscripts[CLASP_ARRAY_RANK_LIMIT];
@@ -52,7 +52,7 @@ write_array_inner(bool vector, T_sp x, T_sp stream) {
   } else {
     if (!clasp_print_array()) {
       writestr_stream(vector ? "#<vector " : "#<array ", stream);
-      clasp_write_addr(x,stream);
+      clasp_write_addr(x, stream);
       clasp_write_char('>', stream);
       return;
     }
@@ -87,7 +87,7 @@ write_array_inner(bool vector, T_sp x, T_sp stream) {
   if (print_level >= n) {
     /* We can write the elements of the array */
     print_level -= n;
-    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR,clasp_make_fixnum(print_level));
+    scope.pushSpecialVariableAndSet(cl::_sym_STARprint_levelSTAR, clasp_make_fixnum(print_level));
   } else {
     /* The elements of the array are not printed */
     n = print_level;
@@ -139,9 +139,9 @@ write_array_inner(bool vector, T_sp x, T_sp stream) {
     m += k;
   }
 #if 0
-  if (print_level >= 0) {
-    clasp_bds_unwind1(env);
-  }
+	if (print_level >= 0) {
+	    clasp_bds_unwind1(env);
+	}
 #endif
   if (readably) {
     clasp_write_char(')', stream);
@@ -149,13 +149,14 @@ write_array_inner(bool vector, T_sp x, T_sp stream) {
 }
 
 void Array_O::__write__(T_sp stream) const {
-  if ( this->rank() == 0 ) {
-    writestr_stream("#0A0",stream);
+  if (this->rank() == 0) {
+    writestr_stream("#0A0", stream);
+  } else if (this->rank() == 1) {
+    write_array_inner(true, this->asSmartPtr(), stream);
   } else {
     write_array_inner(0, this->asSmartPtr(), stream);
   }
 }
-
 
 void Vector_O::__write__(T_sp stream) const {
   write_array_inner(1, this->asSmartPtr(), stream);
@@ -180,7 +181,6 @@ void _clasp_write_string(T_sp x, T_sp stream) {
 }
 #endif
 
-
 void BitVector_O::__write__(T_sp stream) const {
   if (!clasp_print_array() && !clasp_print_readably()) {
     writestr_stream("#<bit-vector ", stream);
@@ -190,7 +190,7 @@ void BitVector_O::__write__(T_sp stream) const {
     cl_index ndx;
     writestr_stream("#*", stream);
     for (ndx = 0; ndx < this->dimension(); ndx++)
-//      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
+      //      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
       if (this->testBit(ndx))
         clasp_write_char('1', stream);
       else

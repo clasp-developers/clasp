@@ -34,11 +34,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_af_put_sysprop "(key area value)"
-#define DECL_af_put_sysprop ""
-#define DOCS_af_put_sysprop "put_sysprop - returns value"
-T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value) {
-  _G();
+CL_LAMBDA(key area value);
+CL_DECLARE();
+CL_DOCSTRING("put_sysprop - returns value");
+CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   ASSERT(_lisp->_Roots._SystemProperties);
   if (_lisp->_Roots._SystemProperties.nilp()) {
     _lisp->_Roots._SystemProperties = HashTableEql_O::create_default();
@@ -58,11 +57,10 @@ T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value) {
   return (retval);
 }
 
-#define ARGS_af_get_sysprop "(key area)"
-#define DECL_af_get_sysprop ""
-#define DOCS_af_get_sysprop "get_sysprop - returns (values val foundp)"
-T_mv af_get_sysprop(T_sp key, T_sp area) {
-  _G();
+CL_LAMBDA(key area);
+CL_DECLARE();
+CL_DOCSTRING("get_sysprop - returns (values val foundp)");
+CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   if (_lisp->_Roots._SystemProperties.notnilp()) {
     T_mv values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
     T_sp hashTable = values;
@@ -74,11 +72,10 @@ T_mv af_get_sysprop(T_sp key, T_sp area) {
   return (Values(_Nil<T_O>(), _Nil<T_O>()));
 }
 
-#define ARGS_af_rem_sysprop "(key area)"
-#define DECL_af_rem_sysprop ""
-#define DOCS_af_rem_sysprop "rem_sysprop"
-T_sp af_rem_sysprop(T_sp key, T_sp area) {
-  _G();
+CL_LAMBDA(key area);
+CL_DECLARE();
+CL_DOCSTRING("rem_sysprop");
+CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   T_mv mv_values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
   HashTable_sp hashTable = gc::As<HashTable_sp>(mv_values);
   bool foundHashTable = gc::As<T_sp>(mv_values.valueGet(1)).isTrue();
@@ -89,15 +86,10 @@ T_sp af_rem_sysprop(T_sp key, T_sp area) {
   return _Nil<T_O>();
 }
 
-void initialize_sysprop() {
-  _G();
   SYMBOL_SC_(CorePkg, put_sysprop);
-  Defun(put_sysprop);
 
   SYMBOL_SC_(CorePkg, get_sysprop);
-  Defun(get_sysprop);
 
   SYMBOL_SC_(CorePkg, rem_sysprop);
-  Defun(rem_sysprop);
-}
+
 };

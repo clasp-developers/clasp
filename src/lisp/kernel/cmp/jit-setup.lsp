@@ -42,7 +42,7 @@ using features defined in corePackage.cc"
   (cond
     ((and (member :target-os-darwin *features*)
           (member :address-model-64 *features*))
-     "x86_64-apple-macosx10.9.4")
+     "x86_64-apple-macosx10.7.0")
     ((and (member :target-os-linux *features*)
           (member :address-model-64 *features*))
      "x86_64-pc-linux-gnu")
@@ -53,17 +53,9 @@ using features defined in corePackage.cc"
 
 
 (defun llvm-create-module (name)
-  (let ((m (llvm-sys:make-module name *llvm-context*)))
+  (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
     (llvm-sys:set-target-triple m *default-target-triple*)
     m))
-
-
-
-
-
-
-
-
 
 (defun create-llvm-module-for-compile-file (module-name)
   "Return a new module"
@@ -253,9 +245,31 @@ No DIBuilder is defined for the default module")
   "Depending on the type of LNAME an actual LLVM name is generated"
   (cond
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
-    ((symbolp lname) (bformat nil "FN-SYMB.%s" (symbol-name lname)))
-    ((stringp lname) lname)
-    ((and (consp lname) (eq (car lname) 'setf)) (bformat nil "FN-SETF.%s" (symbol-name (cadr lname))))
+    ((stringp lname)
+     (cond
+       ((string= lname llvm-sys:+clasp-main-function-name+) lname) ; CANDO_MAIN
+       ((string= lname "IMPLICIT-REPL") lname) ; this one is ok
+       ((string= lname "TOP-LEVEL") lname) ; this one is ok
+       ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
+       ((string= lname "lambda") lname) ; this one is ok
+       ((string= lname "ltv-literal") lname) ; this one is ok
+       (t (bformat t "jit-function-name lname = %s\n" lname)
+          (break "Always pass symbol as name") lname)))
+    ((symbolp lname)
+     (let* ((sym-pkg (symbol-package lname))
+            (sym-name (symbol-name lname))
+            (pkg-name (if sym-pkg
+                          (string (package-name sym-pkg))
+                          "NIL")))
+       (bformat nil "FN/%s::%s" pkg-name sym-name)))
+    ((and (consp lname) (eq (car lname) 'setf))
+     (let* ((sn (cadr lname))
+            (sym-pkg (symbol-package sn))
+            (sym-name (symbol-name sn))
+            (pkg-name (if sym-pkg
+                          (string (package-name sym-pkg))
+                          "NIL")))
+       (bformat nil "FN-SETF/%s::%s" pkg-name sym-name)))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export 'jit-function-name)
 

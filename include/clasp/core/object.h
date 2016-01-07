@@ -83,10 +83,10 @@ typedef gctools::smart_ptr<SNode_O> ArchiveP;
 class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 
-bool cl_eq(T_sp x, T_sp y);
-bool cl_eql(T_sp x, T_sp y);
-bool cl_equal(T_sp x, T_sp y);
-bool cl_equalp(T_sp x, T_sp y);
+bool cl__eq(T_sp x, T_sp y);
+bool cl__eql(T_sp x, T_sp y);
+bool cl__equal(T_sp x, T_sp y);
+bool cl__equalp(T_sp x, T_sp y);
 bool clasp_charEqual2(T_sp, T_sp);
 };
 
@@ -136,7 +136,7 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 namespace core {
 SMART(Class);
- SMART(Record);
+SMART(Record);
 SMART(BuiltInClass);
 SMART(StandardClass);
 SMART(Model);
@@ -330,12 +330,12 @@ private:
   bool _debug;
 #endif
 public:
- HashGenerator(bool debug=false) :  _NextPartIndex(0)
+  HashGenerator(bool debug = false) : _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
-    , _debug(debug)
+                                      ,
+                                      _debug(debug)
 #endif
-    {};
-
+                                      {};
 
   bool addPart(Fixnum part) {
     if (this->_NextPartIndex >= MaxParts)
@@ -343,7 +343,7 @@ public:
     this->_Parts[this->_NextPartIndex] = part;
 #ifdef DEBUG_HASH_GENERATOR
     if (this->_debug) {
-      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part );
+      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
     }
 #endif
     ++this->_NextPartIndex;
@@ -366,7 +366,7 @@ public:
   gc::Fixnum hash(gc::Fixnum bound = 0) const {
     gc::Fixnum hash = 5381;
     for (int i = 0; i < this->_NextPartIndex; i++) {
-      hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t)this->_Parts[i]);
+      hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t) this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
         printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
@@ -377,9 +377,9 @@ public:
     if (bound)
       return ((cl_intptr_t)hash) % bound;
 #ifdef DEBUG_HASH_GENERATOR
-      if (this->_debug) {
-        printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash );
-      }
+    if (this->_debug) {
+      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+    }
 #endif
     return hash;
   }
@@ -409,6 +409,7 @@ private:
 
 #define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
   FRIEND_GC_SCANNER(oNamespace::oClass);                                                                               \
+                                                                                                                       \
 public:                                                                                                                \
   template <class DestClass> gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const {                \
     oClass *not_const_this_gc_safe = const_cast<oClass *>(this); /* Should be GC-safe because this should be a root */ \
@@ -428,15 +429,15 @@ public:                                                                         
 public:                                                                                                                \
   static core::Symbol_sp ___staticClassSymbol;                                                                         \
   static core::Class_sp ___staticClass;                                                                                \
-  static gctools::tagged_pointer<core::Creator> static_creator;                                                                                \
+  static gctools::tagged_pointer<core::Creator> static_creator;                                                        \
   static int static_Kind;                                                                                              \
   /* static gctools::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */                            \
   /* static gctools::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */                    \
-  /*    static oClass* ___staticDereferencedNilInstance;	*/                                                            \
+  /*    static oClass* ___staticDereferencedNilInstance;	*/                                                     \
   /*    static oClass* ___staticDereferencedUnboundInstance; */                                                        \
 public:                                                                                                                \
   static void ___set_static_ClassSymbol(core::Symbol_sp i) { oClass::___staticClassSymbol = i; };                      \
-  static void ___set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };                               \
+  static void ___set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };       \
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
   static core::Symbol_sp static_classSymbol() { return oClass::___staticClassSymbol; };                                \
@@ -446,6 +447,7 @@ public:                                                                         
   }                                                                                                                    \
   static string Package() { return oClass::static_packageName(); };                                                    \
   static string Pkg() { return Package(); };                                                                           \
+  static void expose_to_clasp();                                                                                       \
   static void exposeCando(core::Lisp_sp);                                                                              \
   static void exposePython(core::Lisp_sp);
 
@@ -459,32 +461,23 @@ public:                                                                         
 #define LISP_TEMPLATE_CLASS(oClass) \
   __COMMON_VIRTUAL_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
 
+#ifndef SCRAPING
 #define LISP_META_CLASS(x) // nothing
 
-#define LISP_BASE1(b1) \
-public:                \
-  typedef b1 Base;     \
-  typedef LispBases1<b1> Bases;
-
-#define LISP_VIRTUAL_BASE2(v0, b1, b2) \
-public:                                \
-  typedef LispVirtualBases2<v0, b1, b2> Bases;
-
-#define LISP_BASE2(b1, b2) \
-public:                    \
-  typedef LispBases2<b1, b2> Bases;
-
-#define LISP_TEMPLATE_BASE1(b1) \
-  /*no-scrape*/ LISP_BASE1(b1);
-
-#define LISP_CLASS(aNamespace, aPackage, aClass, aClassName) \
+#define LISP_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
+  public: \
+    typedef b1 Base; \
+  typedef LispBases1<Base> Bases; \
   __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
 
-#define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName) \
+#define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
+  public: \
+    typedef b1 Base; \
+  typedef LispBases1<Base> Bases; \
   __COMMON_VIRTUAL_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
+#endif
 
-  LISP_BASE1(_RootDummyClass);
-  LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T");
+  LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
 
 #define DECLARE_INIT_GLOBALS() \
 public:                        \
@@ -641,14 +634,15 @@ public: // Description stuff
   virtual void describe(T_sp stream);
   virtual void dump() { this->describe(lisp_true()); };
 
- public:
+public:
   //! Encode this object as an a-list
   virtual core::List_sp encode();
   //! Decode this object from an a-list
   virtual void decode(core::List_sp);
   virtual void initialize(core::List_sp alist);
   virtual bool fieldsp() const { return false; };
-  virtual void fields(Record_sp record) {SUBIMP();};
+  virtual void fields(Record_sp record) { SUBIMP(); };
+
 public:
   string descriptionNonConst();
 
@@ -714,7 +708,7 @@ public:
     SUBCLASS_MUST_IMPLEMENT();
   }; // This is the only one that absolutely has to be defined in a subclass
   virtual bool operator<=(T_sp obj) const {
-    if (cl_eql(this->asSmartPtr(), obj))
+    if (cl__eql(this->asSmartPtr(), obj))
       return true;
     return this->operator<(obj);
   };
@@ -746,7 +740,7 @@ public: // Instance protocol
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
   bool instancep() const { return oinstancep().isTrue(); };
-  virtual bool environmentp() const { return false;};
+  virtual bool environmentp() const { return false; };
   virtual bool genericFunctionP() const { return false; };
   /*! Return number of slots if instance of Instance_O otherwise return nil */
   virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
@@ -755,7 +749,7 @@ public: // Instance protocol
 public:
   /*! Some objects can return contained objects references by class and name
 	 */
-//  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
+  //  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
 };
 
 inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
@@ -775,17 +769,17 @@ inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
 
 namespace core {
 
-#define ARGS_cl_eq "(x y)"
-#define DECL_cl_eq ""
-#define DOCS_cl_eq "eq"
-inline bool cl_eq(T_sp x, T_sp y) {
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("eq");
+inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
   return (x == y);
 };
 
-#define ARGS_cl_eql "(x y)"
-#define DECL_cl_eql ""
-#define DOCS_cl_eql "eql"
-inline bool cl_eql(T_sp x, T_sp y) {
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("eql");
+inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
@@ -802,10 +796,10 @@ inline bool cl_eql(T_sp x, T_sp y) {
   return x->eql_(y);
 };
 
-#define ARGS_cl_equal "(x y)"
-#define DECL_cl_equal ""
-#define DOCS_cl_equal "equal"
-inline bool cl_equal(T_sp x, T_sp y) {
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("equal");
+inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
@@ -822,29 +816,28 @@ inline bool cl_equal(T_sp x, T_sp y) {
   return x->equal(y);
 };
 
- 
 extern int basic_compare(Number_sp na, Number_sp nb);
 
-#define ARGS_cl_equalp "(x y)"
-#define DECL_cl_equalp ""
-#define DOCS_cl_equalp "equalp"
-inline bool cl_equalp(T_sp x, T_sp y) {
+ CL_LAMBDA(x y);
+ CL_DECLARE();
+ CL_DOCSTRING("equalp");
+inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
   if (x.fixnump()) {
-    if ( y.fixnump() ) {
+    if (y.fixnump()) {
       return x.raw_() == y.raw_();
-    } else if ( y.single_floatp() ) {
-      return ( x.unsafe_fixnum() == y.unsafe_single_float() );
-    } else if ( Number_sp ny = y.asOrNull<Number_O>() ) {
-      return basic_compare(x,y) == 0;
+    } else if (y.single_floatp()) {
+      return (x.unsafe_fixnum() == y.unsafe_single_float());
+    } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+      return basic_compare(x, y) == 0;
     }
     return false;
   } else if (x.single_floatp()) {
     if (y.single_floatp()) {
       return x.unsafe_single_float() == y.unsafe_single_float();
-    } else if ( y.fixnump() ) {
+    } else if (y.fixnump()) {
       return x.unsafe_single_float() == y.unsafe_fixnum();
-    } else if ( Number_sp ny = y.asOrNull<Number_O>() ) {
-      return basic_compare(x,y);
+    } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+      return basic_compare(x, y);
     }
     return false;
   } else if (x.characterp()) {
@@ -960,16 +953,11 @@ public:                                                      \
 /*! Register all classes with this method
  */
 template <class oClass>
-inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
-                          core::ExposePythonFunction exposePythonFunction,
-                          core::InitializationCallback initGlobalCallback,
-                          core::Lisp_sp lisp) {
-  _G();
+inline void registerClass() {
   string nobase;
   core::Symbol_sp classSymbol;
   if (oClass::static_classSymbol() != core::T_O::static_classSymbol()) {
     if (!oClass::Bases::baseClassSymbolsDefined()) {
-      _G();
       THROW_HARD_ERROR(boost::format("You are trying to register class(%s) "
                                      "but you have not registered its baseClass") %
                        oClass::static_className());
@@ -979,21 +967,13 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
   //    if ( oClass::static_classSymbol() == UndefinedUnsignedInt )
   if (!IS_SYMBOL_DEFINED(oClass::static_classSymbol())) {
     core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_className(), oClass::static_packageName());
-    LOG(BF("Setting staticClassSymbol for class to: %d") % classSymbol);
     oClass::___set_static_ClassSymbol(classSymbol);
     if (!oClass::static_creator) {
-      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocateClass();
+      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocate_class_kind(gctools::GCKind<core::LispObjectCreator<oClass>>::Kind);
       oClass::___set_static_creator(lispObjectCreator);
     }
   }
-  LOG(BF("REGISTERING class(%s::%s)  classSymbol(%2d)") % oClass::static_packageName() % oClass::static_className() % oClass::static_classSymbol());
-  if (exposeCandoFunction != NULL) {
-    (exposeCandoFunction)(lisp);
-  }
-  // Sometimes we need to initialize globals - a callback can be setup by exposeCandoFunction
-  if (initGlobalCallback) {
-    initGlobalCallback(_lisp); // lisp_installGlobalInitializationCallback(initGlobalCallback);
-  }
+  oClass::expose_to_clasp();
 };
 
 // ^^^^^^^^^^^^
@@ -1024,26 +1004,30 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
   }                                                             \
   void Register_##ns##__##oClass(core::Lisp_sp lisp)
 
+#if 0
 #define _REGISTER_CLASS_HEADER_ROOT_NAMESPACE(oClass)   \
   _REGISTER_CLASS_HEADER_COMMON(oClass);                \
   void Call_exposePython_##oClass(core::Lisp_sp lisp) { \
     oClass::exposePython(lisp);                         \
   }                                                     \
   void Register_##oClass(core::Lisp_sp lisp)
-
+#endif
 /*! Register a class.
  * Return True if it could be registered otherwise False.
  * If this class depends on other classes being registered
  * then return False and classes will be repeatedly registered until they
  * are all registered.
  */
-#define REGISTER_CLASS(ns, oClass)                                              \
+#if 1
+#define REGISTER_CLASS(ns,oClass)  _REGISTER_CLASS_HEADER_COMMON(oClass);
+#else
+#define REGISTER_CLASS(ns,oClass)                                               \
   _REGISTER_CLASS_HEADER(ns, oClass) {                                          \
     _G();                                                                       \
     registerClass<oClass>(&core::defaultExposeCando<oClass>, NULL, NULL, lisp); \
   };                                                                            \
   void oClass::exposePython(core::Lisp_sp lisp) {}
-
+#endif
 /*end*/
 
 /*!
@@ -1051,37 +1035,52 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
  * 1) Assumes "c" namespace
  * 2) Exposers are static functions within the class (exposeCando,exposePython)
  */
+#if 0
 #define EXPOSE_CLASS_ROOT_NAMESPACE(oClass)                                         \
   _REGISTER_CLASS_HEADER_ROOT_NAMESPACE(oClass) {                                   \
     _G();                                                                           \
     registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, NULL, lisp); \
   };
+#endif
 
+#if 1
+#define EXPOSE_CLASS(ns,oClass) REGISTER_CLASS(ns,oClass)
+#else
 #define EXPOSE_CLASS(ns, oClass)                                                    \
   _REGISTER_CLASS_HEADER(ns, oClass) {                                              \
     _G();                                                                           \
     registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, NULL, lisp); \
   };
+#endif
 
+
+
+#if 0
 #define EXPOSE_CLASS_AND_GLOBALS(ns, oClass)                                                               \
   _REGISTER_CLASS_HEADER(ns, oClass) {                                                                     \
     _G();                                                                                                  \
     ::registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, &oClass::lisp_initGlobals, lisp); \
   };
+#endif
 
+
+#if 0
 #define EXPOSE_CLASS_NO_PYTHON(ns, oClass)                                          \
   void oClass::exposePython(core::Lisp_sp lisp) {}                                  \
   _REGISTER_CLASS_HEADER(ns, oClass) {                                              \
     _G();                                                                           \
     registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, NULL, lisp); \
   };
+#endif
 
+#if 0
 #define EXPOSE_CLASS_AND_GLOBALS_NO_PYTHON(ns, oClass)                                                     \
   void oClass::exposePython(core::Lisp_sp lisp) {}                                                         \
   _REGISTER_CLASS_HEADER(ns, oClass) {                                                                     \
     _G();                                                                                                  \
     ::registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, &oClass::lisp_initGlobals, lisp); \
   };
+#endif
 
 /*!
  * Create a default python interface
@@ -1116,11 +1115,11 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
                         boost::noncopyable>(#className, init<core::Lisp_sp>)
 
 namespace core {
-Class_sp af_classOf(T_sp obj);
-bool cl_eq(T_sp x, T_sp y);
-bool cl_eql(T_sp x, T_sp y);
-bool cl_equal(T_sp x, T_sp y);
-bool cl_equalp(T_sp x, T_sp y);
+Class_sp cl__class_of(T_sp obj);
+bool cl__eq(T_sp x, T_sp y);
+bool cl__eql(T_sp x, T_sp y);
+bool cl__equal(T_sp x, T_sp y);
+bool cl__equalp(T_sp x, T_sp y);
 };
 
 #include <clasp/core/glue.h>
@@ -1137,8 +1136,4 @@ TRANSLATE(core::T_O);
 #include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 
-namespace core {
-  void initialize_object();
-
-};
 #endif //]

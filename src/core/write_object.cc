@@ -93,7 +93,7 @@ Fixnum search_print_circle(T_sp x) {
     code = circle_stack->gethash(x, _Unbound<T_O>());
     if (code.unboundp() || code.nilp()) {
       /* Is not referenced or was not found before */
-      /* _ecl_sethash(x, circle_stack, ECL_NIL); */
+      /* _ecl__sethash(x, circle_stack, ECL_NIL); */
       return 0;
     } else if (code == _lisp->_true()) {
       /* This object is referenced twice, but has no code yet */
@@ -123,17 +123,12 @@ T_sp write_object(T_sp x, T_sp stream) {
   }
 #endif /* ECL_CMU_FORMAT */
   bool circle = clasp_print_circle();
-  if (circle && (x) 
-      && !x.fixnump() 
-      && !x.valistp() 
-      && !x.characterp() 
-      && !cl_symbolp(x)
-      && !cl_numberp(x) // && !x.single_floatp() 
-      && (cl_listp(x) || !cl_symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
+  if (circle && (x) && !x.fixnump() && !x.valistp() && !x.characterp() && !cl__symbolp(x) && !cl__numberp(x) // && !x.single_floatp()
+      && (cl__listp(x) || !cl__symbolp(x) || !gc::As<Symbol_sp>(x)->homePackage().nilp())) {
     Fixnum code;
     T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
     if (circle_counter.nilp()) {
-      HashTable_sp hash = cl_make_hash_table(cl::_sym_eq,
+      HashTable_sp hash = cl__make_hash_table(cl::_sym_eq,
                                              make_fixnum(1024),
                                              _lisp->rehashSize(),
                                              _lisp->rehashThreshold());
@@ -174,16 +169,12 @@ OUTPUT:
   return x;
 }
 
-#define ARGS_af_writeObject "(obj &optional strm)"
-#define DECL_af_writeObject ""
-#define DOCS_af_writeObject "writeObject"
-T_sp af_writeObject(T_sp obj, T_sp ostrm) {
-  _G();
+CL_LAMBDA(obj &optional strm);
+CL_DECLARE();
+CL_DOCSTRING("writeObject");
+CL_DEFUN T_sp core__write_object(T_sp obj, T_sp ostrm) {
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_object(obj, strm);
 };
 
-void initialize_write_object() {
-  Defun(writeObject);
-}
 };

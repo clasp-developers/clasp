@@ -31,6 +31,6 @@
                             ;; auto-compile must preceed inline because the Cleavir compiler
                             ;; needs to be the default compiler before inlining is used to
                             ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
-                            #P"kernel/cleavir/auto-compile"
-                            #P"kernel/cleavir/inline"))
+                            #P"sys:kernel/cleavir/auto-compile"
+                            #P"sys:kernel/cleavir/inline"))
 (format t "Done~%")

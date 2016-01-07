@@ -47,9 +47,11 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/package.h>
 
+#include <clasp/asttooling/astExpose.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/asttooling/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/asttooling/asttoolingPackage.h>
 
 //
 // This needs to be before clbind is included
@@ -370,8 +372,6 @@ TYPE(Atomic, Type);
 
 using namespace clbind;
 using namespace clang;
-
-SYMBOL_EXPORT_SC_(ClangAstPkg, type);
 
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl>);
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl const>);
@@ -1024,7 +1024,6 @@ core::T_sp mostDerivedType(const clang::Type *x) {
 #define DECL_af_getTypePtrOrNull ""
 #define DOCS_af_getTypePtrOrNull "getTypePtrOrNull - returns the most derived Type* ptr or NIL"
 core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
-  _G();
   const clang::Type *tp = qt.getTypePtrOrNull();
   if (tp) {
     return mostDerivedType(tp);
@@ -1036,7 +1035,6 @@ core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
 #define DECL_af_getAsCXXRecordDecl ""
 #define DOCS_af_getAsCXXRecordDecl "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL"
 core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
-  _G();
   const clang::CXXRecordDecl *declp = tp->getAsCXXRecordDecl();
   if (declp) {
     return mostDerivedDecl(declp);
@@ -1048,7 +1046,6 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
 #define DECL_af_getNameForDiagnostic ""
 #define DOCS_af_getNameForDiagnostic "getNameForDiagnostic"
 void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, LangOptions &langOps, bool qualified) {
-  _G();
   string str;
   llvm::raw_string_ostream ostr(str);
   decl->getNameForDiagnostic(ostr, langOps, qualified);
@@ -1060,7 +1057,6 @@ void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core:
 #define DECL_af_makeQualType ""
 #define DOCS_af_makeQualType "makeQualType"
 clang::QualType af_makeQualType(clang::Type *ty) {
-  _G();
   clang::QualType qt(ty, 0);
   return qt;
 };
@@ -1071,12 +1067,11 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateSpecializationKind, asttooling::_
 
 namespace asttooling {
 
-#define ClangAstPkg "CLANG-AST"
 
 void initialize_astExpose() {
   SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
   SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
-  core::Package_sp pkg = _lisp->makePackage(ClangAstPkg, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
+  core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::Str_O::create("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)
@@ -1087,7 +1082,7 @@ void initialize_astExpose() {
         .def("getLocStart", &clang::Decl::getLocStart)
         .def("getLocEnd", &clang::Decl::getLocEnd)
 #define CLASS_DECL(_Class_, _Base_) class_<_Class_##Decl, _Base_>(#_Class_ "Decl", no_default_constructor)
-        ,
+    ,
     CLASS_DECL(AccessSpec, Decl),
     CLASS_DECL(Block, Decl),
     CLASS_DECL(Captured, Decl),
@@ -1143,12 +1138,12 @@ void initialize_astExpose() {
         .def("getSpecializedTemplate", &clang::ClassTemplateSpecializationDecl::getSpecializedTemplate)
         .def("getSpecializationKind", &clang::ClassTemplateSpecializationDecl::getSpecializationKind)
         .enum_<clang::TemplateSpecializationKind>(asttooling::_sym_STARclangTemplateSpecializationKindSTAR)[
-          value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
-          value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
-          value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
-          value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
-          value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
-        ],
+      value("TSK_Undeclared", clang::TemplateSpecializationKind::TSK_Undeclared),
+      value("TSK_ImplicitInstantiation", clang::TemplateSpecializationKind::TSK_ImplicitInstantiation),
+      value("TSK_ExplicitSpecialization", clang::TemplateSpecializationKind::TSK_ExplicitSpecialization),
+      value("TSK_ExplicitInstantiationDeclaration", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDeclaration),
+      value("TSK_ExplicitInstantiationDefinition", clang::TemplateSpecializationKind::TSK_ExplicitInstantiationDefinition)
+    ],
     /* af_fn */ def("getNameForDiagnostic", &af_getNameForDiagnostic, policies<>(),
                     ARGS_af_getNameForDiagnostic,
                     DECL_af_getNameForDiagnostic,
@@ -1197,13 +1192,13 @@ void initialize_astExpose() {
     CLASS_DECL(StaticAssert, Decl),
     CLASS_DECL(TranslationUnit, Decl)
 #undef DECL
-        ,
+    ,
     class_<Stmt>("Stmt", no_default_constructor)
         .def("dump", (void (clang::Stmt::*)() const) & clang::Stmt::dump)
         .def("getLocStart", &clang::Stmt::getLocStart)
         .def("getLocEnd", &clang::Stmt::getLocEnd)
 #define CLASS_STMT(_Class_, _Base_) class_<_Class_, _Base_>(#_Class_, no_default_constructor)
-        ,
+    ,
     CLASS_STMT(AsmStmt, Stmt),
     CLASS_STMT(GCCAsmStmt, AsmStmt),
     CLASS_STMT(MSAsmStmt, AsmStmt),
@@ -1318,7 +1313,9 @@ void initialize_astExpose() {
     CLASS_STMT(ShuffleVectorExpr, Expr),
     CLASS_STMT(SizeOfPackExpr, Expr),
     CLASS_STMT(StmtExpr, Expr),
-    CLASS_STMT(StringLiteral, Expr),
+    CLASS_STMT(StringLiteral, Expr)
+    .def("getString",&clang::StringLiteral::getString)
+    ,
     CLASS_STMT(SubstNonTypeTemplateParmExpr, Expr),
     CLASS_STMT(SubstNonTypeTemplateParmPackExpr, Expr),
     CLASS_STMT(TypeTraitExpr, Expr),
@@ -1356,7 +1353,7 @@ void initialize_astExpose() {
     CLASS_STMT(SwitchStmt, Stmt),
     CLASS_STMT(WhileStmt, Stmt)
 
-        ,
+    ,
     class_<Type>("Type", no_default_constructor)
         .def("dump", &clang::Type::dump)
         //            .  def("getAsCXXRecordDecl",&clang::Type::getAsCXXRecordDecl)
@@ -1367,7 +1364,7 @@ void initialize_astExpose() {
     /* regular function bug first arg is Type*/ def("getAsCXXRecordDecl", &af_getAsCXXRecordDecl, policies<>(), ARGS_af_getAsCXXRecordDecl, DECL_af_getAsCXXRecordDecl, DOCS_af_getAsCXXRecordDecl)
 
 #define CLASS_TYPE(_Class_, _Base_) class_<_Class_##Type, _Base_>(#_Class_ "Type", no_default_constructor)
-        ,
+    ,
     CLASS_TYPE(Builtin, Type)
         .def("desugar", &clang::BuiltinType::desugar),
     CLASS_TYPE(Complex, Type),
@@ -1474,16 +1471,16 @@ void initialize_astExpose() {
         .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
         .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)[
-          value("Type", clang::TemplateArgument::ArgKind::Type),
-          value("Null", clang::TemplateArgument::ArgKind::Null),
-          value("Declaration", clang::TemplateArgument::ArgKind::Declaration),
-          value("NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
-          value("Integral", clang::TemplateArgument::ArgKind::Integral),
-          value("Template", clang::TemplateArgument::ArgKind::Template),
-          value("TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
-          value("Expression", clang::TemplateArgument::ArgKind::Expression),
-          value("Pack", clang::TemplateArgument::ArgKind::Pack)
-        ],
+      value("Type", clang::TemplateArgument::ArgKind::Type),
+      value("Null", clang::TemplateArgument::ArgKind::Null),
+      value("Declaration", clang::TemplateArgument::ArgKind::Declaration),
+      value("NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
+      value("Integral", clang::TemplateArgument::ArgKind::Integral),
+      value("Template", clang::TemplateArgument::ArgKind::Template),
+      value("TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
+      value("Expression", clang::TemplateArgument::ArgKind::Expression),
+      value("Pack", clang::TemplateArgument::ArgKind::Pack)
+    ],
     class_<clang::TemplateName>("TemplateName", no_default_constructor)
         .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl),
     class_<clang::TypeSourceInfo>("TypeSourceInfo", no_default_constructor)

@@ -20,13 +20,10 @@
 ;;;;  Reworked for CLOS November 1988, by Giuseppe Attardi.
 ;;;;  Updated May 2009, by Jean-Claude Beaudoin
 
-
 (in-package "SYSTEM")
 
 (export '(*break-readtable* *break-on-warnings*
 	  *tpl-evalhook* *tpl-prompt-hook*))
-
-
 
 #+clasp(defvar sys:*echo-repl-tpl-read* nil "Set to t if you want to echo what was typed at the REPL top-level")
 (defparameter *quit-tag* (cons nil nil))
@@ -1117,7 +1114,10 @@ Use special code 0 to cancel this operation.")
          ((or (= icur 0) (>= i n)))
       (let ((arg-str (with-output-to-string (sout)
                        (dotimes (i (length args))
-                         (handler-case (format sout "~s " (elt args i))
+                         (handler-case (let ((arg (elt args i)))
+                                         (if (symbolp arg)
+                                             (format sout "'~s " arg)
+                                             (format sout "~s " arg)))
                            (error (c)
                              (format sout "#<UNPRINTABLE> ")))))))
         (let* ((fun (core:ihs-fun icur))
@@ -1126,7 +1126,7 @@ Use special code 0 to cancel this operation.")
                (source-pos-info (core:function-source-pos-info fun))
                (lineno (if source-pos-info (core:source-pos-info-lineno source-pos-info))))
           (push (if (eq (function-name fun) 'cl:lambda)
-                    (format nil "~4a ~20a ~5d LAMBDA(~a)" icur filename lineno (subseq arg-str 0 160))
+                    (format nil "~4a ~20a ~5d LAMBDA(~s)" icur filename lineno (subseq arg-str 0 160))
                     (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 160)))
                 backtrace))))
     (dolist (bl backtrace)
