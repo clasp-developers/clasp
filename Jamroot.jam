@@ -145,7 +145,7 @@ project clasp : requirements
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
 ##### This really, really slows things down
 #        <define>DEBUG_MPS_UNDERSCANNING
-#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded
          <define>USE_CLASP_DYNAMIC_CAST

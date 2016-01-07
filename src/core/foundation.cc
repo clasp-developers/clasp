@@ -317,7 +317,7 @@ void lisp_pollSignals() {
   }
 #ifdef USE_MPS
   ++_global_pollTicksGC;
-  if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && _global_pollTicksGC >= unbox_fixnum(gc::As<Fixnum_sp>(core::_sym_STARpollTicksPerGcSTAR->symbolValue()))) {
+  if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && _global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue())) {
     _global_pollTicksGC = 0;
     gctools::gctools__cleanup();
   }
