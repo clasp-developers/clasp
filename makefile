@@ -196,15 +196,9 @@ fixup:
 	make executable-symlinks
 	echo Fixed-up Clasp is now built
 
-mps-build-debug:
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install )
-
-mps-build-release:
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
-
 mps-build:
-	make mps-build-debug
-	make mps-build-release
+	make -C src/main mps-debug-cxx
+	make -C src/main mps-release-cxx
 
 
 boot:
