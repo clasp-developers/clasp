@@ -38,9 +38,9 @@ extern const char *CorePkg_nicknames[];
 class CoreExposer : public core::Exposer {
 public:
   CoreExposer(Lisp_sp lisp);
+ public:
   DISABLE_NEW();
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
-
 public:
   /*! Lisp_O::startupLispEnvironment calls this to create the core classes */
   static gctools::tagged_pointer<CoreExposer> create_core_packages_and_classes();

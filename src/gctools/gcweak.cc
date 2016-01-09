@@ -40,7 +40,8 @@ namespace gctools {
     }
 #endif
 
-WeakHashTable::WeakHashTable(size_t length) {
+void WeakHashTable::initialize() {
+  int length = this->_Length;
   /* round up to next power of 2 */
   if (length == 0)
     length = 2;
@@ -148,6 +149,7 @@ int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_b
 		result = 0;
 		length = this->_Keys->length();
 		MyType newHashTable(newLength);
+                newHashTable.initialize();
 		//new_keys = make_buckets(newLength, this->key_ap);
 		//new_values = make_buckets(newLength, this->value_ap);
 		//new_keys->dependent = new_values;

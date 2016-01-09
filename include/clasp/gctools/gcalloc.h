@@ -40,6 +40,26 @@ namespace gctools {
 extern uint64_t globalBytesAllocated;
 };
 
+
+namespace gctools {
+  extern int global_recursive_allocation_counter;
+  struct RecursiveAllocationCounter {
+    RecursiveAllocationCounter() {
+      ++global_recursive_allocation_counter;
+      if ( global_recursive_allocation_counter > 1 ) {
+        printf("%s:%d  There was a recursive allocation!!!!!!\n", __FILE__, __LINE__ );
+        abort();
+      }
+    };
+    virtual ~RecursiveAllocationCounter() {
+      --global_recursive_allocation_counter;
+    }
+  };
+};
+
+
+
+
 namespace gctools {
 template <class OT, bool Needed = true>
 struct GCObjectInitializer {};
@@ -282,6 +302,7 @@ struct RootClassAllocator {
     mps_ap_t obj_ap = global_non_moving_ap;
     mps_addr_t addr;
     gctools::tagged_pointer<T> tagged_obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -357,6 +378,7 @@ struct ClassAllocator {
     tagged_pointer<T> tagged_obj;
     mps_ap_t obj_ap = GCAllocationPoint<T>::get();
     mps_addr_t addr;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -408,6 +430,7 @@ namespace gctools {
         mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
         mps_addr_t addr;
         smart_pointer_type sp;
+        DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
         do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -458,6 +481,7 @@ namespace gctools {
       mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
       mps_addr_t addr;
       smart_pointer_type sp;
+      DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -513,6 +537,7 @@ When would I ever want the GC to automatically collect objects but not move them
       mps_ap_t obj_ap = global_non_moving_ap;
       mps_addr_t addr;
       smart_pointer_type sp;
+      DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -568,6 +593,7 @@ should not be managed by the GC */
       mps_ap_t obj_ap = global_non_moving_ap;
       mps_addr_t addr;
       gctools::smart_ptr<OT> sp;
+      DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -794,6 +820,7 @@ public:
     container_pointer myAddress(NULL);
     mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
     gc::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, obj_ap, size);
       if (res != MPS_RES_OK)
@@ -888,6 +915,7 @@ public:
     container_pointer myAddress(NULL);
     mps_ap_t obj_ap = global_non_moving_ap;
     gctools::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, obj_ap, size);
       if (res != MPS_RES_OK)
@@ -979,6 +1007,7 @@ public:
     mps_addr_t base;
     container_pointer myAddress;
     gctools::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1072,6 +1101,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1161,6 +1191,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1245,6 +1276,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1295,6 +1327,7 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1343,6 +1376,7 @@ public:
     mps_addr_t addr;
     value_pointer myAddress;
     gctools::tagged_pointer<value_type> obj;
+    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)

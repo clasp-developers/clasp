@@ -182,7 +182,7 @@ public:
   static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
   //        static const tagged_kind_t  fwd2_tag        = BOOST_BINARY(001);
 
-private:
+public:
   tagged_kind_t header;
   tagged_kind_t data[1]; // After this is where the client pointer starts
 public:

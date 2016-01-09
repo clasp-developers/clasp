@@ -795,8 +795,6 @@ void testFeatures() {
 }
 
 CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp, CorePkg, CorePkg_nicknames) {
-  //	testFeatures();
-  this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
 };
 
 void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
@@ -938,6 +936,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
   
 void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   {
+    this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
 #define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
@@ -1134,18 +1133,18 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
 #if 0
 
-	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
-	_sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
+  _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
+  _sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
 #endif
 
 #if 0 //Old system checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_TARGET_OS_DARWIN)
-	SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
-	Symbol_sp target_os = kw::_sym_target_os_darwin;
+  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
+  Symbol_sp target_os = kw::_sym_target_os_darwin;
 #elif defined(_TARGET_OS_LINUX)
-	SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
-	Symbol_sp target_os = kw::_sym_target_os_linux;
+  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
+  Symbol_sp target_os = kw::_sym_target_os_linux;
 #endif
 
 #endif //End old system checking
@@ -1206,11 +1205,11 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #if 0 //Old System checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_ADDRESS_MODEL_64)
-	SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
-	Symbol_sp address_model = kw::_sym_address_model_64;
+  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
+  Symbol_sp address_model = kw::_sym_address_model_64;
 #elif defined(_ADDRESS_MODEL_32)
-	SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
-	Symbol_sp address_model = kw::_sym_address_model_32;
+  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
+  Symbol_sp address_model = kw::_sym_address_model_32;
 #endif
 
 #endif //End old system checking

@@ -35,6 +35,9 @@ THE SOFTWARE.
 
 namespace gctools {
 
+/*! Used to signal recursive allocations */
+int global_recursive_allocation_counter = 0;
+
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
 void GCStack::growStack() {

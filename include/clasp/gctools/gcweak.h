@@ -294,6 +294,7 @@ public:
   typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
 
 public:
+  int _Length;
   gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
 #ifdef USE_MPS
@@ -301,8 +302,8 @@ public:
 #endif
 
 public:
-  WeakHashTable(size_t length = 0);
-
+ WeakHashTable(size_t length) : _Length(length) {};
+  void initialize();
 public:
   static uint sxhashKey(const value_type &key
 #ifdef USE_MPS

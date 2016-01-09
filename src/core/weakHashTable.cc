@@ -48,6 +48,11 @@ void WeakHashTable_O::exposePython(Lisp_sp lisp) {
 
 EXPOSE_CLASS(core, WeakKeyHashTable_O);
 
+
+void WeakKeyHashTable_O::initialize() {
+  this->_HashTable.initialize();
+}
+
 void WeakKeyHashTable_O::describe(T_sp stream) {
   KeyBucketsType &keys = *this->_HashTable._Keys;
   ValueBucketsType &values = *this->_HashTable._Values;
@@ -125,58 +130,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, splatted);
 SYMBOL_EXPORT_SC_(KeywordPkg, unbound);
 SYMBOL_EXPORT_SC_(KeywordPkg, deleted);
 
-#if 0
-/* Rehash 'tbl' so that it has 'new_length' buckets. If 'key' is found
- * during this process, update 'key_bucket' to be the index of the
- * bucket containing 'key' and return true, otherwise return false.
- * 
- * %%MPS: When re-hashing the table we reset the associated location
- * dependency and re-add a dependency on each object in the table.
- * This is because the table gets re-hashed when the locations of
- * objects have changed. See topic/location.
- */
-    int WeakKeyHashTable_O::rehash(size_t newLength, const value_type& key, size_t& key_bucket)
-    {
-        WEAK_LOG(BF("entered rehash newLength = %d") % newLength );
-        size_t i, length;
-        // buckets_t new_keys, new_values;
-        int result = 0;
-        length = this->_HashTable.Keys->length();
-        HashTableType newHashTable(newLength);
-        //new_keys = make_buckets(newLength, this->key_ap);
-        //new_values = make_buckets(newLength, this->value_ap);
-        //new_keys->dependent = new_values;
-        //new_values->dependent = new_keys;
-#ifdef USE_MPS
-        mps_ld_reset(&this->_LocationDependency,gctools::_global_arena);
-#endif
-        for (i = 0; i < length; ++i) {
-            value_type& old_key = (*this->_HashTable.Keys)[i];
-            if (!old_key.unboundp() && !old_key.deletedp()) {
-                int found;
-                size_t b;
-#ifdef USE_MPS
-                found = WeakKeyHashTable_O::find(newHashTable.Keys, old_key, &this->_LocationDependency, b);
-#else
-                found = WeakKeyHashTable_O::find(newHashTable.Keys, old_key, b);
-#endif
-                ASSERT(found);// assert(found);            /* new table shouldn't be full */
-                ASSERT((*this->_HashTable.Keys)[b].unboundp()); /* shouldn't be in new table */
-                newHashTable.Keys->set(b,old_key);
-                (*newHashTable.Values)[b] = (*this->_HashTable.Values)[i];
-                if (!key.NULLp() && old_key == key ) {
-                    key_bucket = b;
-                    result = 1;
-                }
-                (*newHashTable.Keys).setUsed((*newHashTable.Keys).used()+1); // TAG_COUNT(UNTAG_COUNT(new_keys->used) + 1);
-            }
-        }
-        ASSERT((*newHashTable.Keys).used() == this->_HashTable.tableSize() );
-        // assert(UNTAG_COUNT(new_keys->used) == table_size(tbl));
-        this->_HashTable.swap(newHashTable);
-        return result;
-    }
-#endif
 
 /* %%MPS: If we fail to find 'key' in the table, and if mps_ld_isstale
  * returns true, then some of the keys in the table might have been

@@ -592,7 +592,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   /* Objects that can not move but are managed by the garbage collector
      go in the global_non_moving_pool.  
-     Use an AWL pool rather than an AMS pool until the AMS bug gets fixed */
+     Use an AWL pool rather than an AMS pool until the AMS pool becomes a production pool */
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);

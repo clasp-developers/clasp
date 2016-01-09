@@ -55,7 +55,7 @@ struct Telemetry {
   static const size_t Message_telemetry = 0x02;
   static const size_t STACK_telemetry = 0x04;
 
-  Telemetry() : _File(NULL), _ThisRecordPos(0), _Mask(0) {
+Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
     this->initialize();
   }
 

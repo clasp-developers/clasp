@@ -32,7 +32,8 @@ alias gclib : lib_boehm : <gc>boehmdc ;
 
 alias gclib : lib_boehm : <gc>boehm ;
 
-alias gclib : mymps.c : <gc>mps ;
+obj mymps.o : mymps.c : <gc>mps <cflags>"-g -O0" ;
+alias gclib : mymps.c ;
 
 alias gclib : mymps.c : <gc>mps-prep ;
 

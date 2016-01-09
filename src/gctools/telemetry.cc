@@ -21,6 +21,9 @@ CL_DEFUN void core__telemetry_open(core::T_sp pathname) {
   core::Str_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
   global_telemetry_search->open_read(filename->c_str());
+  if (global_telemetry_search->_File == NULL ) {
+    printf("Could not open file: %s\n", _rep_(pathname).c_str());
+  }
 }
 #define MAX_WORDS 16
 

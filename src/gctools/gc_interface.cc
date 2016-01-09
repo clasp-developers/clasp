@@ -177,6 +177,9 @@ typedef bool _Bool;
  *
  */
 
+#define BAD_HEADER(msg,hdr) \
+    printf("%s:%d Illegal header@%p in %s  header->header=%lX  header->data[0]=%lX  header->data[1]=%lX\n", __FILE__, __LINE__, hdr, msg, hdr->header, hdr->data[0], hdr->data[1]);
+
 template <typename RT, typename...ARGS>
 NOINLINE void expose_function(const std::string& pkg_sym,
                      bool exported,
@@ -437,7 +440,8 @@ mps_addr_t obj_skip(mps_addr_t client) {
   } else if (header->padP()) {
     client = (char *)(client) + header->padSize();
   } else {
-    THROW_HARD_ERROR(BF("Illegal header at %p") % header);
+    BAD_HEADER("obj_skip",header);
+    abort();
   }
 DONE:
   GC_TELEMETRY3(telemetry::label_obj_skip,
@@ -495,7 +499,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       } else if (header->padP()) {
         client = (char *)(client) + header->padSize();
       } else {
-        THROW_HARD_ERROR(BF("Illegal header at %p") % header);
+        BAD_HEADER("obj_scan",header);
+        abort();
       }
     TOP:
       GC_TELEMETRY3(telemetry::label_obj_scan,
