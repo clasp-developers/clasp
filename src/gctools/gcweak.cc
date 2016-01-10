@@ -1,3 +1,12 @@
+/* NOTES:
+
+(1) _deleted is not being used or updated properly.
+(2) There is something wrong with WeakHashTable - weak pointers end up pointing to memory that is not the start of an object
+(3) The other weak objects (weak pointer, weak mapping) are doing allocations in their constructors.
+
+*/
+
+
 /*
     File: gcweak.cc
 */
@@ -384,7 +393,7 @@ core::T_mv WeakHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 							  ,pos);
 		if (result) { // WeakHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
 		    value_type& k = (*this->_Keys)[pos];
-		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % k.NULLp() );
+		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
 		    if ( !k.unboundp() && !k.deletedp() ) {
 			GCWEAK_LOG(BF("Returning success!"));
 			core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);

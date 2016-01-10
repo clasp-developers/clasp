@@ -201,6 +201,10 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
       break;
     std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
     printf("%s\n", entry.c_str());
+    if ((global_telemetry_search->_Index % 1000000) == 0 ) {
+      POLL_SIGNALS();
+      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+    }
   }
 }
 
@@ -216,11 +220,13 @@ CL_DEFUN size_t core__telemetry_count() {
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if (!read)
-      break;
-    if (global_telemetry_search->process_header(header))
-      continue;
+    if (!read) break;
+    if (global_telemetry_search->process_header(header)) continue;
     size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    if ((global_telemetry_search->_Index % 1000000) == 0 ) {
+      POLL_SIGNALS();
+      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+    }
   }
   return global_telemetry_search->_Index;
 }

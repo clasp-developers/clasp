@@ -430,9 +430,13 @@ EXPOSE_CLASS(core, SourceManager_O);
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("makeSourceManager");
-CL_DEFUN SourceManager_sp core__make_source_manager() {
+CL_DEFUN T_sp core__make_source_manager() {
+#ifdef USE_SOURCE_DATABASE
   SourceManager_sp sm = SourceManager_O::create();
   return sm;
+#else
+  return _Nil<T_O>();
+#endif
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);

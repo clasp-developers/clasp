@@ -52,8 +52,8 @@ struct Telemetry {
   const Header intern_header = 0xBEF4;
   const Header data_header = 0xDADA;
   static const size_t GC_telemetry = 0x01;
-  static const size_t Message_telemetry = 0x02;
-  static const size_t STACK_telemetry = 0x04;
+  static const size_t STACK_telemetry = 0x02;
+  static const size_t Message_telemetry = 0x04;
 
 Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
     this->initialize();
@@ -328,6 +328,15 @@ extern char *global_clasp_telemetry_file;
 extern Telemetry *global_telemetry;
 
 void initialize_telemetry_functions();
+ extern "C" {
+ extern void global_telemetry_flush();
+};
+
+#if defined(DEBUG_TELEMETRY) || defined(DEBUG_STACK_TELEMETRY)
+#define TELEMETRY_FLUSH() telemetry::global_telemetry_flush();
+#else
+#define TELEMETRY_FLUSH()
+#endif
 
 #ifdef DEBUG_TELEMETRY
 #define GC_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry, label)

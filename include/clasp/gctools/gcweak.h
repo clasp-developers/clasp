@@ -69,7 +69,7 @@ THE SOFTWARE.
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#define DEBUG_GCWEAK
 #ifdef DEBUG_GCWEAK
 #define GCWEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
 #else
@@ -253,7 +253,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
     }
 #endif
 #ifdef USE_MPS
-    GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.px)));
+    GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
     this->bucket[idx] = val;
 #endif
   }
@@ -265,7 +265,7 @@ struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
   Buckets(int l) : BucketsBase<T, U>(StrongBucketKind, l){};
   virtual ~Buckets() {}
   void set(size_t idx, const value_type &val) {
-    GCWEAK_LOG(BF("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p") % idx % ((void *)(val.px)));
+    GCWEAK_LOG(BF("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
     this->bucket[idx] = val;
   }
 };

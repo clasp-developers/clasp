@@ -440,6 +440,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
   } else if (header->padP()) {
     client = (char *)(client) + header->padSize();
   } else {
+    TELEMETRY_FLUSH();
     BAD_HEADER("obj_skip",header);
     abort();
   }

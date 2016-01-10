@@ -211,7 +211,11 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   /* Define the source file */
   SourceFileInfo_sp sfi = core__source_file_info(pathDesig);
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
+#ifdef USE_SOURCE_DATABASE
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
+#else
+  scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
+#endif
   scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
@@ -413,8 +417,11 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
-  SourceManager_sp db = _lisp->sourceDatabase();
-  T_sp sourcePosInfo = db->duplicateSourcePosInfo(form, code);
+  T_sp source_manager = _lisp->sourceDatabase();
+  T_sp sourcePosInfo = _Nil<T_O>();
+  if ( SourceManager_sp db = source_manager.asOrNull<SourceManager_O>() ) {
+    sourcePosInfo = db->duplicateSourcePosInfo(form, code);
+  }
   stringstream ss;
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
