@@ -15,6 +15,7 @@ ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   ACLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -I -f ecl-min
   BCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -f bclasp
   CCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
+  CLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
 else
   echo "ERROR CLASP_INTERNAL_BUILD_TARGET_DIR is not defined - what should I do now?"
 endif
@@ -73,6 +74,9 @@ link-cclasp-boehmdc-addons:
 cclasp-boehm-addons:
 	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
+cclasp-mps-addons:
+	$(CCLASP_MPS) -l "build_addons.lsp"
+
 link-cclasp-mps-addons:
 	$(CCLASP_MPS) -l "link_addons.lsp"
 
@@ -124,6 +128,9 @@ cclasp-boehm-clean:
 min-boehm:
 	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
+min-mps:
+	$(CLASP_MPS) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+
 min-boehmdc:
 	$(CLASP_BOEHMDC) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
@@ -145,6 +152,9 @@ bclasp-boehm:
 bclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
 
+bclasp-mps-bitcode:
+	$(CLASP_MPS) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+
 bclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
@@ -158,6 +168,9 @@ bclasp-boehm-addons-fasl:
 cclasp-from-bclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
 
+cclasp-from-bclasp-mps-bitcode:
+	$(BCLASP_MPS) -l "buildCleavirClasp.lsp"
+
 cclasp-boehm:
 	make cclasp-from-bclasp-boehm-bitcode
 	make cclasp-boehm-fasl
@@ -168,12 +181,15 @@ cclasp-boehm-bitcode:
 cclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
 
+cclasp-mps-fasl:
+	$(BCLASP_MPS) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+
 
 aclasp-mps-fasl:
 	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
 
 bclasp-mps-fasl:
-	$(CLASP_MPS) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
 cclasp-mps-fasl:
 	$(BCLASP_MPS) -f ecl-min -e "(link-cclasp)" -e "(quit)"

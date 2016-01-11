@@ -187,6 +187,26 @@ all:
 	make executable-symlinks
 	echo Clasp is now built
 
+
+mps-all:
+	make print-config
+	make submodules
+	make asdf
+	make boost_build
+	install -d build/clasp/Contents/Resources
+	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
+	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps bundle )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
+	make -C src/main min-mps
+	make -C src/main bclasp-mps-bitcode
+	make -C src/main bclasp-mps-fasl
+	make -C src/main cclasp-from-bclasp-mps-bitcode
+#	make -C src/main cclasp-mps-fasl
+	make -C src/main cclasp-mps-fasl
+	make -C src/main cclasp-mps-addons
+	make executable-symlinks
+	echo Clasp is now built
+
 lisp-source:
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
 
