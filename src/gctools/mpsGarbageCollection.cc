@@ -475,7 +475,7 @@ mps_addr_t dummyAwlFindDependent(mps_addr_t addr) {
 // Try something like
 // export CLASP_MPS_CONFIG="32 32 16 80 32 80"
 // to debug MPS
-bool maybePrseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent) {
+bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent) {
   char *cur = getenv("CLASP_MPS_CONFIG");
   size_t values[20];
   int numValues = 0;
