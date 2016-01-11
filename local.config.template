@@ -27,8 +27,8 @@
 ## Path to the python2 binary.
 #export PYTHON2
 
-## Path to the sbcl binary.
-#export CLASP_SBCL
+## Path to the sbcl or clisp binary.
+#export CLASP_EXTERNAL_LISP
 
 ## Where the llvm-config file resides
 #export LLVM_CONFIG

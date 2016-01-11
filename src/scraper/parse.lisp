@@ -30,7 +30,8 @@ and not a simple-function so return (values name class::name nil)"
                                        (char= c #\tab)))
                        tsig))
          (open-paren (position #\( tsig :test #'char=))
-         (full-function-name (string-trim '(#\newline #\space #\tab #\*) (subseq tsig first-space open-paren)))
+         (full-function-name (string-left-trim '(#\newline #\space #\tab #\*)
+                                                (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-space open-paren))))
          (colon-colon-pos (search "::" full-function-name)))
     (if colon-colon-pos
         (values (subseq full-function-name (+ 2 colon-colon-pos)) full-function-name nil)
@@ -59,7 +60,7 @@ and not a simple-function so return (values name class::name nil)"
                            tsig
                            :start first-sep))
          (open-paren (position #\( tsig :test #'char= :start first-name-char))
-         (class-method (string-trim '(#\newline #\space #\tab #\*) (subseq tsig first-name-char open-paren)))
+         (class-method (string-left-trim '(#\newline #\space #\tab #\*) (string-right-trim '(#\newline #\space #\tab) (subseq tsig first-name-char open-paren))))
          (colon-colon-pos (search "::" class-method)))
     (if colon-colon-pos
         (values (subseq class-method 0 colon-colon-pos)
