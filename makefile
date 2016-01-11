@@ -37,9 +37,10 @@ export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
 pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
 
 
-export CLASP_SBCL := $(or $(CLASP_SBCL),\
+export CLASP_EXTERNAL_LISP := $(or $(CLASP_EXTERNAL_LISP),\
 			$(call pathsearch, sbcl),\
-			$(error Could not find sbcl - it needs to be installed an in your path.))
+			$(call pathsearch, clisp),\
+			$(error Could not find sbcl or clisp - it needs to be installed an in your path.))
 
 export PYTHON2 := $(or $(PYTHON2),\
                        $(call pathsearch, python2.7),\
