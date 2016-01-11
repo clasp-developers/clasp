@@ -437,7 +437,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                               :line% (tags:line% tag)
                               :character-offset% (tags:character-offset% tag)
                               :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
-                              :value% (tags:value% tag))
+                              :value% (maybe-namespace cur-namespace-tag (tags:value% tag)))
                cur-values))
         (tags:end-enum-tag
          (let ((end-symbol (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))))

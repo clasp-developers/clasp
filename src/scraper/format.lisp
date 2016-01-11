@@ -78,3 +78,8 @@ Return a string in the form <package>:<name>. Figure out the package name from t
   (if (search "::" symbol-name)
       symbol-name
       (format nil "~a::~a" (tags:namespace% namespace-tag) symbol-name)))
+
+(defun maybe-namespace (namespace-tag name)
+  (if (search "::" name)
+      name
+      (format nil "~a::~a" (tags:namespace% namespace-tag) name)))
