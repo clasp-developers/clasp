@@ -12,8 +12,7 @@
           *load-current-source-file-info* 
           *load-current-linenumber*
           cons-car
-          cons-cdr
-          ))
+          cons-cdr))
 (sys:*make-special 'core::*notify-on-compile*)
 (setq *notify-on-compile* (member :notify-on-compile *features*))
 (export '*notify-on-compile*)
@@ -113,8 +112,7 @@
           all-encodings
           load-encoding
           make-encoding
-          assume-right-type
-          ))
+          assume-right-type))
 (core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
 (export '*module-provider-functions*)
@@ -827,8 +825,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (export 'select-source-files)
 
-
-
 (defun select-trailing-source-files (after-file &key system)
   (or system (error "You must provide :system to select-trailing-source-files"))
   (let ((cur (reverse system))
@@ -846,9 +842,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        (go top)
      done)
     files))
-
-
-
 
 (defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) (system *system-files*))
   #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
@@ -868,8 +861,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        (gctools:cleanup)
        (setq cur (cdr cur))
        (go top)
-     done
-       )))
+     done)))
 
 
 (defun compile-system (files &key reload (system *system-files*))
@@ -976,9 +968,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
               (if (eq (car entry) :load)
                   (load (cdr entry))
                 (eval (read-from-string (cdr entry)))))
-          core::*command-line-load-eval-sequence*)
-  )
-
+          core::*command-line-load-eval-sequence*)) 
 
 (defun load-clasprc ()
   "Load the users startup code"
@@ -1062,8 +1052,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (bformat t "(compile-system from-stage to-stage &key :reload t (system *system-files*))\n")
   (bformat t "          - Compile whatever parts of the system have changed\n")
   (bformat t "(clean-system after-stage)\n")
-  (bformat t "          - Remove all built files after after-stage\n")
-  )
+  (bformat t "          - Remove all built files after after-stage\n"))
 
 
 (defun tpl-default-pathname-defaults-command ()
@@ -1075,17 +1064,14 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	 (pn-dir (mapcar #'(lambda (x) (if (eq x :up) :back x)) dir))
 	 (new-pathname (merge-pathnames (make-pathname :directory pn-dir) *default-pathname-defaults*))
 	 )
-    (setq *default-pathname-defaults* new-pathname)
-    )
-  )
+    (setq *default-pathname-defaults* new-pathname)))
 
 
 (defun tpl-hook (cmd)
   (cond
     ((eq (car cmd) :pwd) (tpl-default-pathname-defaults-command))
     ((eq (car cmd) :cd) (tpl-change-default-pathname-defaults-dir-command (cadr cmd)))
-    (t (bformat t "Unknown command %s\n" cmd)))
-)
+    (t (bformat t "Unknown command %s\n" cmd))))
 
 (setq *top-level-command-hook* #'tpl-hook)
 
@@ -1116,10 +1102,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (bformat t "Load pos: %s %s\n" core:*load-current-source-file-info* core:*load-current-linenumber*))
 (export 'load-pos)
 
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Setup the build system for ASDF
@@ -1134,8 +1116,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (compile-file "kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "modules;asdf;asdf.fasl"
 										      :target-backend (default-target-backend)))
   #+(or)(cmp::link-system-lto "kernel;asdf;build;asdf.fasl"
-			      :lisp-bitcode-files (list #P"kernel/asdf/build/asdf.bc"))
-  )
+			      :lisp-bitcode-files (list #P"kernel/asdf/build/asdf.bc")))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1144,33 +1125,18 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 ;;
 (defun setup-cleavir ()
   (load "kernel;asdf;build;asdf.fasl")
-  (load "kernel;cleavir;ccmp-all.lsp")
-  )
+  (load "kernel;cleavir;ccmp-all.lsp"))
 
 (export 'setup-sicl)
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;;  Setup the swank
-;;
-(defun load-swank ()
-  (load "swank.lsp"))
-(export '(load-swank))
-
 
 (defun load-cleavir-system ()
   (let* ((fin (open "kernel;cleavir-system.lsp")))
     (read fin)))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Start everything up
 ;;
-
 
 (export 'core:top-level)
 (defun run-repl ()
@@ -1180,7 +1146,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	(load-clasprc)
 	(core:top-level))
       (core:low-level-repl)))
-
 
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)

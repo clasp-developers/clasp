@@ -612,6 +612,84 @@ CL_DEFUN void gctools__cleanup() {
 #endif
 };
 
+CL_DEFUN void gctools__configuration()
+{
+  bool use_boehm_memory_marker = false;
+#ifdef USE_BOEHM_MEMORY_MARKER
+  use_boehm_memory_marker = true;
+#endif
+  printf("USE_BOEHM_MEMORY_MARKER = %s\n", use_boehm_memory_marker ? "defined" : "undefined" );
+  bool use_alloca_for_frame = false;
+#ifdef USE_ALLOCA_FOR_FRAME
+  use_alloca_for_frame = true;
+#endif
+  printf("USE_ALLOCA_FOR_FRAME = %s\n", use_alloca_for_frame ? "defined" : "undefined" );
+
+  bool mps_recognize_all_tags = false;
+#ifdef MPS_RECOGNIZE_ALL_TAGS
+  mps_recognize_all_tags = true;
+#endif
+  printf("MPS_RECOGNIZE_ALL_TAGS = %s\n", mps_recognize_all_tags ? "defined" : "undefined" );
+
+  bool mps_recognize_zero_tags = false;
+#ifdef MPS_RECOGNIZE_ZERO_TAGS
+  mps_recognize_zero_tags = true;
+#endif
+  printf("MPS_RECOGNIZE_ZERO_TAGS = %s\n", mps_recognize_zero_tags ? "defined" : "undefined" );
+
+  bool use_symbols_in_global_array = false;
+#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
+  use_symbols_in_global_array = true;
+#endif
+  printf("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n", use_symbols_in_global_array ? "defined" : "undefined" );
+
+  bool use_static_analyzer_global_symbols = false;
+#ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+  use_static_analyzer_global_symbols = true;
+#endif
+  printf("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n", use_static_analyzer_global_symbols ? "defined" : "undefined" );
+
+  bool debug_throw_if_invalid_client_on = false;
+#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
+  debug_throw_if_invalid_client_on = true;
+#endif
+  printf("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n", debug_throw_if_invalid_client_on ? "defined" : "undefined" );
+
+    bool debug_telemetry = false;
+#ifdef DEBUG_TELEMETRY
+  debug_telemetry = true;
+#endif
+  printf("DEBUG_TELEMETRY = %s\n", debug_telemetry ? "defined" : "undefined" );
+
+  bool debug_stack_telemetry = false;
+#ifdef DEBUG_STACK_TELEMETRY
+  debug_stack_telemetry = true;
+#endif
+  printf("DEBUG_STACK_TELEMETRY = %s\n", debug_stack_telemetry ? "defined" : "undefined" );
+
+  bool debug_mps_underscanning = false;
+#ifdef DEBUG_MPS_UNDERSCANNING
+  debug_mps_underscanning = true;
+#endif
+  printf("DEBUG_MPS_UNDERSCANNING = %s\n", debug_mps_underscanning ? "defined" : "undefined" );
+  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+  printf("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n", debug_mps_underscanning_initial ? "true" : "false" );
+
+  bool debug_recursive_allocations = false;
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+  debug_recursive_allocations = true;
+#endif
+  printf("DEBUG_RECURSIVE_ALLOCATIONS = %s\n", debug_recursive_allocations ? "defined" : "undefined" );
+
+  bool config_var_cool = false;
+#ifdef CONFIG_VAR_COOL
+  config_var_cool = true;
+#endif
+  printf("CONFIG_VAR_COOL = %s\n", config_var_cool ? "defined" : "undefined" );
+
+}
+
+
 #define ARGS_gctools__debug_allocations "(arg)"
 #define DECL_gctools__debug_allocations ""
 #define DOCS_gctools__debug_allocations "debugAllocations"

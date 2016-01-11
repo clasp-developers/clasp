@@ -137,17 +137,6 @@ project clasp : requirements
 #        <define>DEBUG_TRYSET    #    Define this if you are using DEBUG_GCWEAK but can be defined alone & with DEBUG_FIND
 #        <define>DEBUG_FIND      #    Define this when using DEBUG_GCWEAK but can be defined along & with DEBUG_TRYSET
 #       <define>SOURCE_DEBUG
-#-------- mps options
-#	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
-	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
-	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
-##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
-##### This really, really slows things down
-        <define>DEBUG_MPS_UNDERSCANNING        # this is VERY expensive
-        <define>DEBUG_RECURSIVE_ALLOCATIONS    # this is not very expensive
-#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
-#        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
-#        <define>CONFIG_THREAD_SINGLE #  Single threaded
 #-----------
         <define>USE_CLASP_DYNAMIC_CAST
         <define>DEBUG_CL_SYMBOLS          # Lets you calculate which CL symbols are still missing from Clasp

@@ -564,18 +564,13 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
     for (auto &it : globalLoadTimeValuesRoots) {
       SIMPLE_POINTER_FIX(*it);
     }
-// Do I need to fix these pointers explicitly???
-//gctools::global_Symbol_OP_nil       = symbol_nil.raw_();
-//gctools::global_Symbol_OP_unbound   = symbol_unbound.raw_();
-//gctools::global_Symbol_OP_deleted   = symbol_deleted.raw_();
-//gctools::global_Symbol_OP_sameAsKey = symbol_sameAsKey.raw_();
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include "clasp_gc.cc"
 #undef GC_GLOBALS
 #endif
 
-#if 1
+#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
     for ( int i=0; i<global_symbol_count; ++i ) {
       SMART_PTR_FIX(global_symbols[i]);
     }
@@ -587,7 +582,6 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   #undef GC_GLOBAL_SYMBOLS
   #endif // if RUNNING_GC_BUILDER
 #else
-
 //
 // Ok, this looks nasty but it allows us to avoid running the static analyzer
 // every time we add or remove a symbol.  Every symbol that is scraped from

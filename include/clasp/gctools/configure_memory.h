@@ -8,7 +8,7 @@
 
 #define USE_BOEHM_MEMORY_MARKER
 
-///
+
 /// Define USE_ALLOCA_FOR_FRAME to use alloca to create Lisp stack frames within the C++ stack
 /// otherwise use the garbage collector to maintain a separate stack for lisp frames
 ///
@@ -30,10 +30,49 @@
 /// Only define one of MPS_RECOGNIZE_ALL_TAGS or MPS_RECOGNIZE_ZERO_TAG or neither
 /// MPS_RECOGNIZE_ALL_TAGS allows any value in the lower three bits to be considered as a pointer
 /// MPS_RECOGNIZE_ZERO_TAG allows ( ZERO_TAG_MASK | ptr ) == 0 to be considered as a pointer
-#define MPS_RECOGNIZE_ALL_TAGS // Anything can be a pointer
-//        <define>MPS_RECOGNIZE_ZERO_TAG   # recognize #b000 as a tagged pointer
+//#define MPS_RECOGNIZE_ALL_TAGS   // Anything can be a pointer - overrides MPS_RECOGNIZE_ZERO_TAG
+#define MPS_RECOGNIZE_ZERO_TAG   // recognize #b000 as a tagged pointer
 #define ZERO_TAG_MASK 7 // goes with MPS_RECOGNIZE_ZERO_TAG
 
+///------------------------------------------------------------
+/// USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+///
+/// If USE_SYMBOLS_IN_GLOBAL_ARRAY is undefined then
+/// symbols are fixed using either those extracted using the static analyzer
+/// or by the scraper.
 
 //#define USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+
+
+/// USE_SYMBOLS_IN_GLOBAL_ARRAY
+/// Puts all global symbols in one large array
+/// and they are fixed in gc_interface.cc with a loop
+
+#define USE_SYMBOLS_IN_GLOBAL_ARRAY
+
+
+/// ----------------------------------------------------------------------
+///
+/// MPS debugging options
+///
+
+//#define DEBUG_THROW_IF_INVALID_CLIENT_ON
+/// Generate telemetry data for debugging general GC
+#define DEBUG_TELEMETRY
+/// Generate telemetry data for debugging the stack
+#define DEBUG_STACK_TELEMETRY
+/// DEBUG_MPS_UNDERSCANNING  - When defined, does a garbage collection for every allocation
+/// DEBUG_MPS_UNDERSCANNING_INITIAL - (true|false)  - when DEBUG_MPS_UNDERSCANNING is defined you can
+///                                                   control it using (gctools:enable-underscanning (t|nil))
+///                                                   This sets the initial value of global_underscanning.
+//#define DEBUG_MPS_UNDERSCANNING
+#define DEBUG_MPS_UNDERSCANNING_INITIAL false
+
+/// DEBUG_RECURSIVE_ALLOCATIONS - Inexpensive test for allocations that invoke other allocations
+///                               This is not allowed in the MPS
+#define DEBUG_RECURSIVE_ALLOCATIONS
+
+/// An MPS build environment variable - see MPS docs
+//#define CONFIG_VAR_COOL
+
 #endif

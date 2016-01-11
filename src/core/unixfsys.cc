@@ -560,7 +560,8 @@ CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
      * then we resolve the value of the symlink and continue traversing
      * the filesystem.
      */
-  for (auto dir : coerce_to_list(pathname->_Directory)) {
+  List_sp directory_parts = coerce_to_list(pathname->_Directory);
+  for (auto dir : directory_parts ) {
     base_dir = enter_directory(base_dir, oCar(dir), false);
   }
   pathname = clasp_mergePathnames(base_dir, pathname, kw::_sym_default);

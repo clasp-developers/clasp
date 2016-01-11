@@ -78,7 +78,12 @@ MpsMetrics globalMpsMetrics;
    --------------------------------------------------
 */
 
+#ifdef DEBUG_MPS_UNDERSCANNING
+bool global_underscanning = DEBUG_MPS_UNDERSCANNING_INITIAL;
+#else
 bool global_underscanning = false;
+#endif
+
 mps_arena_t _global_arena;
 //    mps_pool_t _global_mvff_pool;
 mps_pool_t _global_amc_pool;
