@@ -427,7 +427,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                              :file% (tags:file% tag)
                                              :line% (tags:line% tag)
                                              :character-offset% (tags:character-offset% tag)
-                                             :type% (tags:type% tag)
+                                             :type% (maybe-namespace cur-namespace-tag (tags:type% tag))
                                              :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
                                              :description% (tags:description% tag))
                cur-values nil))
@@ -437,7 +437,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                               :line% (tags:line% tag)
                               :character-offset% (tags:character-offset% tag)
                               :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
-                              :value% (tags:value% tag))
+                              :value% (maybe-namespace-enum cur-namespace-tag (tags:value% tag)))
                cur-values))
         (tags:end-enum-tag
          (let ((end-symbol (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))))
@@ -446,10 +446,12 @@ If override-name-tag is not nil then return its value, otherwise return name"
            (unless cur-values
              (error 'tag-error :message "Missing VALUES" :tag tag))
            (unless (string= (symbol% cur-begin-enum) end-symbol)
-             (error 'tag-error
-                    :message "Mismatch between symbols of CL_BEGIN_ENUM ~a and CL_END_ENUM ~a"
-                    :message-args (list (symbol% cur-begin-enum) end-symbol)
-                    :tag tag))
+             (let ((begin-symbol (maybe-namespace-symbol cur-namespace-tag (symbol% cur-begin-enum)))
+                   (end-symbol (maybe-namespace-symbol cur-namespace-tag end-symbol)))
+               (error 'tag-error
+                      :message "Mismatch between symbols of CL_BEGIN_ENUM ~a and CL_END_ENUM ~a"
+                      :message-args (list begin-symbol end-symbol)
+                      :tag tag)))
            (pushnew (make-instance 'completed-enum
                                    :begin-enum% cur-begin-enum
                                    :values% cur-values)
