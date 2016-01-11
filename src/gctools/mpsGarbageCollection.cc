@@ -78,6 +78,7 @@ MpsMetrics globalMpsMetrics;
    --------------------------------------------------
 */
 
+bool global_underscanning = false;
 mps_arena_t _global_arena;
 //    mps_pool_t _global_mvff_pool;
 mps_pool_t _global_amc_pool;
@@ -286,8 +287,8 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
         base = (char *)base + sz;
         break;
       default:
-        THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-        break;
+          printf("%s:%d stack_frame_scan Unexpected object on side-stack\n", __FILE__, __LINE__ );
+          abort();
       }
       STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
                        (uintptr_t)original_base,
@@ -312,8 +313,9 @@ static mps_addr_t stack_frame_skip(mps_addr_t base) {
     base = (char *)base + sz;
     break;
   default:
-    THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-    break;
+      printf("%s:%d stack_frame_skip Unexpected object on side-stack\n", __FILE__, __LINE__ );
+      abort();
+      break;
   }
   STACK_TELEMETRY3(telemetry::label_stack_frame_skip,
                    (uintptr_t)original_base,
@@ -791,4 +793,14 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   return exit_code;
 };
+};
+
+
+namespace gctools {
+
+CL_DEFUN void gctools__enable_underscanning(bool us)
+{
+  global_underscanning = us;
+}
+
 };

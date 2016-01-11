@@ -716,6 +716,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/cmp/compiler"
     #P"kernel/cmp/compilefile"
     #P"kernel/cmp/cmpbundle"
+    :pre-repl
     #P"kernel/cmp/cmprepl"
     :cmp
     :min

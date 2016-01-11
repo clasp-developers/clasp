@@ -143,8 +143,8 @@ project clasp : requirements
 	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
 ##### This really, really slows things down
-#        <define>DEBUG_MPS_UNDERSCANNING        # this is VERY expensive
-         <define>DEBUG_RECURSIVE_ALLOCATIONS    # this is not very expensive
+        <define>DEBUG_MPS_UNDERSCANNING        # this is VERY expensive
+        <define>DEBUG_RECURSIVE_ALLOCATIONS    # this is not very expensive
 #        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded

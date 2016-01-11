@@ -16,6 +16,10 @@
 #define USE_ALLOCA_FOR_FRAME
 #endif
 
+#ifdef USE_MPS
+#define USE_ALLOCA_FOR_FRAME
+#endif
+
 /// Tracking allocations with TRACK_ALLOCATIONS keeps a count of
 /// exactly how many bytes are CONSed by Clasp
 /// Compiling min-boehm-recompile with it defined 4:54 min and off 4.56 min
