@@ -427,7 +427,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                              :file% (tags:file% tag)
                                              :line% (tags:line% tag)
                                              :character-offset% (tags:character-offset% tag)
-                                             :type% (maybe-namespace cur-namespace-tag (tags:type% tag))
+                                             :type% (maybe-namespace-type cur-namespace-tag (tags:type% tag))
                                              :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
                                              :description% (tags:description% tag))
                cur-values nil))

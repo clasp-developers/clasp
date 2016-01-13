@@ -1,3 +1,12 @@
+#|
+NOTE!!!!!   Running the static analyzer often runs into problems because clang can't find the system header files.
+
+Look at the definitions of +isystem-dir+, +resource-dir+ and possibly +additional-arguments+
+Find directories that look like them and replace the ones defined in the constants by the correct ones.
+
+|#
+
+
 (provide :clang-tool)
 
 (defpackage #:clang-tool
@@ -42,16 +51,13 @@
 (use-package :ast-tooling)
 (use-package :clang-ast)
 
-
-
-
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2"
   #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
   #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
@@ -59,13 +65,16 @@
   #+target-os-darwin (vector
                       "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
   #-target-os-darwin (vector
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
+
+
+
 
 
 
@@ -642,7 +651,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                                     (source-namestrings compilation-tool-database))))
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
     (when (multitool-arguments-adjuster mtool)
-      (ast-tooling:append-arguments-adjuster temp (multitool-arguments-adjuster mtool)))
+      (ast-tooling:append-arguments-adjuster *match-refactoring-tool* (multitool-arguments-adjuster mtool)))
     (let* ((*run-and-save* run-and-save)
            (tools (multitool-active-tools mtool))
            (match-finder (let ((mf (ast-tooling:new-match-finder)))
