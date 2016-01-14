@@ -513,6 +513,8 @@ SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 SYMBOL_SC_(CorePkg, invalidKeywordArgumentError);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
 SYMBOL_EXPORT_SC_(ClPkg, satisfies);
+SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
+
 SYMBOL_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
 SYMBOL_SC_(CorePkg, _PLUS_executableName_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);

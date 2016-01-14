@@ -63,8 +63,8 @@ VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement
 VectorObjectsWithFillPtr_O::VectorObjectsWithFillPtr_O() : Base(){};
 
 void VectorObjectsWithFillPtr_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<VectorObjectsWithFillPtr_O>()
-      .def("setf_fillPointer", &VectorObjectsWithFillPtr_O::setf_fillPointer);
+  ::core::class_<VectorObjectsWithFillPtr_O>();
+//      .def("setf_fillPointer", &VectorObjectsWithFillPtr_O::setf_fillPointer);
 }
 
 void VectorObjectsWithFillPtr_O::exposePython(::core::Lisp_sp lisp) {
@@ -134,11 +134,12 @@ Fixnum_sp VectorObjectsWithFillPtr_O::vectorPushExtend(T_sp newElement, int exte
   return make_fixnum(idx);
 }
 
-CL_LISPIFY_NAME("setf_fillPointer");
-CL_DEFMETHOD void VectorObjectsWithFillPtr_O::setf_fillPointer(Fixnum fp) {
-  if (fp >= this->_Values.size())
-    fp = this->_Values.size();
-  this->_FillPtr = fp;
+void VectorObjectsWithFillPtr_O::setFillPointer(size_t fp) {
+  if (fp < this->_Values.size()) {
+    this->_FillPtr = fp;
+    return;
+  }
+  TYPE_ERROR_INDEX(this->asSmartPtr(),fp);
 }
 
 }; /* core */

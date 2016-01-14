@@ -1557,10 +1557,10 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
 
 void lisp_error_condition(const char *functionName, const char *fileName, int lineNumber, T_sp baseCondition, T_sp initializers) {
   stringstream ss;
-  ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl
-     << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
   if (!_sym_signalSimpleError->fboundp()) {
-    ss << "An error occured " << _rep_(baseCondition) << " initializers: " << _rep_(initializers) << std::endl;
+    ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl
+       << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
+    ss << "An error occurred " << _rep_(baseCondition) << " initializers: " << _rep_(initializers) << std::endl;
     printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     LispDebugger dbg;
     dbg.invoke();
@@ -1569,7 +1569,7 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
   eval::applyLastArgsPLUSFirst(_sym_signalSimpleError, initializers // initializers is a LIST and the last argument to APPLY!!!!!
                                // this allows us to include a variable number of arguments next
                                ,
-                               baseCondition, _Nil<T_O>(), Str_O::create(ss.str()), _Nil<T_O>());
+                               baseCondition, _Nil<T_O>() );// Str_O::create(ss.str()), _Nil<T_O>());
 }
 
 void lisp_error(T_sp datum, T_sp arguments) {

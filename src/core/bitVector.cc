@@ -402,6 +402,15 @@ T_sp BitVectorWithFillPtr_O::vectorPush(T_sp newElement) {
   return clasp_make_fixnum(this->_fill_ptr - 1);
 }
 
+void BitVectorWithFillPtr_O::setFillPointer(size_t fp)
+{
+  if ( fp < this->dimension() ) {
+    this->_fill_ptr = fp;
+    return;
+  }
+  TYPE_ERROR_INDEX(this->asSmartPtr(),fp);
+}
+
 Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extension) {
   if (!this->_adjustable) {
     SIMPLE_ERROR(BF("This bit-vector is not extensible"));
