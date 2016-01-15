@@ -105,20 +105,6 @@ GCPROTECTED: // instance variables here
 
 public:
   bool isCallable() const { return (bool)(this->closure); };
-#if 0
-    public: // Functions that mimic ECL_XXXX_XXXX macros (eg: ECL_CLASS_SLOTS(x))
-	// Instances that represent CL classes have slots that are hard-coded to represent
-	// class instance variables
-	const Class_sp& _CLASS_OF() const	{ return this->_Class;};
-	T_sp& _SPECIALIZER_FLAG()  	{ return this->_Slots[0];};
-	T_sp& _SPECIALIZER_OBJECT() 	{ return this->_Slots[3];};
-	T_sp& _CLASS_NAME()   		{ return this->_Slots[3+0];}; // 3
-	T_sp& _CLASS_SUPERIORS() 	{ return this->_Slots[3+1];}; // 4
-	T_sp& _CLASS_INFERIORS() 	{ return this->_Slots[3+2];}; // 5 
-	T_sp& _CLASS_SLOTS() 	{ return this->_Slots[3+3];}; // 6
-	T_sp& _CLASS_CPL() 	{ return this->_Slots[3+4];};
-
-#endif
 public: // Generic function ECL macros are replicated here
   T_sp GFUN_NAME() const { return this->_Slots[0]; };
   T_sp GFUN_SPECIALIZERS() const { return this->_Slots[1]; };

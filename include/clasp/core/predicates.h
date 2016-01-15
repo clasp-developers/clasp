@@ -119,7 +119,12 @@ bool core__single_float_p(T_sp obj);
 bool core__special_form_p(T_sp obj);
 bool core__standardObjectP(T_sp obj);
 bool llvmo__llvm_sys_value_p(T_sp obj);
-
 }
+
+namespace ext {
+  bool local_function_form_p(core::T_sp form);
+};
+
+  
 
 #endif // _core_predicates_H

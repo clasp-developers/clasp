@@ -397,5 +397,19 @@ CL_DEFUN bool core__logical_pathname_p(T_sp obj) {
   return gc::IsA<LogicalPathname_sp>(obj);
 };
 
+
+
   SYMBOL_EXPORT_SC_(ClosPkg, classp);
+};
+
+
+namespace ext {
+CL_NAME("EXT:LOCAL-FUNCTION-FORM-P");
+CL_DEFUN bool local_function_form_p(core::T_sp form)
+{
+  return (core::cl__consp(form) &&
+          (core::oCar(gc::As<core::Cons_sp>(form)) == cl::_sym_flet ||
+           core::oCar(gc::As<core::Cons_sp>(form)) == cl::_sym_labels ));
+}
+
 };

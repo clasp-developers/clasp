@@ -172,6 +172,7 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 
 SYMBOL_EXPORT_SC_(ClPkg, provide);
@@ -225,6 +226,7 @@ SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
+SYMBOL_EXPORT_SC_(CorePkg, debug_message);
 SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
@@ -341,6 +343,9 @@ SYMBOL_EXPORT_SC_(ClPkg, set);
 SYMBOL_EXPORT_SC_(ClPkg, restartName);
 SYMBOL_EXPORT_SC_(ClPkg, position);
 SYMBOL_EXPORT_SC_(ClPkg, compileFile);
+SYMBOL_EXPORT_SC_(ClPkg, compiler_macro);
+SYMBOL_EXPORT_SC_(ClPkg, inline);
+SYMBOL_EXPORT_SC_(ClPkg, compilation_speed);
 SYMBOL_EXPORT_SC_(ClPkg, first);
 SYMBOL_EXPORT_SC_(ClPkg, float);
 SYMBOL_EXPORT_SC_(ClPkg, logical_pathname);
@@ -1132,6 +1137,8 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
+  clasp_cleavir::_sym_STARsimple_environmentSTAR->defparameter(_Nil<T_O>());
+  clasp_cleavir::_sym_STARcode_walkerSTAR->defparameter(_Nil<T_O>());
 #if 0
 
 	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

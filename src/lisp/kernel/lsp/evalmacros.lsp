@@ -161,14 +161,15 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(progn
-       (put-sysprop ',name 'sys::compiler-macro ,function)
+       (core:setf-compiler-macro-function ',name ,function) ;;(put-sysprop ',name 'sys::compiler-macro ,function)
        ,@(si::expand-set-documentation name 'function doc-string)
        ,(ext:register-with-pde whole)
        ',name)))
 
 (defun compiler-macro-function (name &optional env)
   ;;  (declare (ignorable env))
-  (values (get-sysprop name 'sys::compiler-macro)))
+  (core:get-compiler-macro-function name env))
+;;  (values (get-sysprop name 'sys::compiler-macro)))
 
 (defun compiler-macroexpand-1 (form &optional env)
   (if (atom form)

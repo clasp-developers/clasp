@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.h>
+#include <clasp/core/sysprop.h>
 #include <clasp/core/character.h>
 #include <clasp/core/executables.h>
 #include <clasp/core/package.h>
@@ -591,6 +592,41 @@ CL_DEFUN Pointer_mv core__c_function(Symbol_sp sym) {
 };
 #endif
 
+// ignore env
+CL_DEFUN T_sp core__compiler_macro_function(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,cl::_sym_compiler_macro);
+}
+
+// ignore env
+CL_LAMBDA(name &optional env);
+CL_DEFUN T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,cl::_sym_compiler_macro);
+}
+
+CL_LAMBDA(name function &optional env);
+CL_DEFUN void core__setf_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+{
+  core__put_sysprop(name,cl::_sym_compiler_macro,function);
+}
+
+// ignore env
+CL_LAMBDA(name &optional env);
+CL_DEFUN T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,cl::_sym_inline);
+}
+
+CL_LAMBDA(name status &optional env);
+CL_DEFUN void core__setf_global_inline_status(core::T_sp name, bool status, core::T_sp env)
+{
+  core__put_sysprop(name,cl::_sym_inline,_lisp->_boolean(status));
+}
+
+
+
+
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: macroFunction");
@@ -665,19 +701,6 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   return (Values(_Nil<T_O>()));
 };
 
-#if 0
-CL_LAMBDA(symbol);
-CL_DECLARE();
-CL_DOCSTRING("See CLHS: special-operator-p");
-CL_DEFUN T_sp core__treat_as_special_operator_p(T_sp sym) {
-  SYMBOL_EXPORT_SC_(CorePkg, debug_message);
-  if (sym == cl::_sym_unwind_protect)
-    return _Nil<T_O>(); // All handled in macros
-  if (sym == core::_sym_debug_message)
-    return _lisp->_true();
-  return cl__special_operator_p(sym);
-};
-#endif
 
 CL_LAMBDA(integer count);
 CL_DECLARE();

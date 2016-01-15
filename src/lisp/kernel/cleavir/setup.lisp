@@ -48,20 +48,20 @@
 	 ;; type, so we assume it is T, which is the default.
 	 (make-instance 'cleavir-env:special-variable-info
 	   :name symbol))
-        #+(or)(;; If it is not bound, it could still be special.  If so, it
-         ;; might have a restricted type on it.  It will then likely
-         ;; fail to bind it to an object of some type that we
-         ;; introduced, say our bogus environment.  It is not fool
-         ;; proof because it could have the type STANDARD-OBJECT.  But
-         ;; in the worst case, we will just fail to recognize it as a
-         ;; special variable.
-         (null (ignore-errors
-                 (eval `(let ((,symbol (make-instance 'clasp-global-environment)))
-                          t))))
-	 ;; It is a special variable.  However, we don't know its
-	 ;; type, so we assume it is T, which is the default.
-	 (make-instance 'cleavir-env:special-variable-info
-	   :name symbol))
+        #+(or)( ;; If it is not bound, it could still be special.  If so, it
+               ;; might have a restricted type on it.  It will then likely
+               ;; fail to bind it to an object of some type that we
+               ;; introduced, say our bogus environment.  It is not fool
+               ;; proof because it could have the type STANDARD-OBJECT.  But
+               ;; in the worst case, we will just fail to recognize it as a
+               ;; special variable.
+               (null (ignore-errors
+                       (eval `(let ((,symbol (make-instance 'clasp-global-environment)))
+                                t))))
+               ;; It is a special variable.  However, we don't know its
+               ;; type, so we assume it is T, which is the default.
+               (make-instance 'cleavir-env:special-variable-info
+                              :name symbol))
 	#+(or)( ;; If the previous test fails, it could still be special
                ;; without any type restriction on it.  We can try to
                ;; determine whether this is the case by checking whether the

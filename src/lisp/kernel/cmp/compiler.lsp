@@ -1181,12 +1181,13 @@ jump to blocks within this tagbody."
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
-  (cond
-    ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
-    ((eq sym 'cl:catch) nil)  ;; handled with macro
-    ((eq sym 'cl:throw) nil)  ;; handled with macro
-    ((eq sym 'core:debug-message) t)   ;; special operator
-    (t (special-operator-p sym))))
+  #+clc(clc-env:treat-as-special-operator-p sym)
+  #-clc(cond
+         ((eq sym 'cl:unwind-protect) nil) ;; handled with macro
+         ((eq sym 'cl:catch) nil)          ;; handled with macro
+         ((eq sym 'cl:throw) nil)          ;; handled with macro
+         ((eq sym 'core:debug-message) t)  ;; special operator
+         (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
 (defun codegen (result form env)
