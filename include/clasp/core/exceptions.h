@@ -79,12 +79,12 @@ struct _TRACE {
 
 #define NO_INITIALIZERS_ERROR(_type_)                                                     \
   {                                                                                       \
-    lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, _type_, _Nil<core::Cons_O>()); \
+    lisp_error( _type_, _Nil<core::Cons_O>()); \
     THROW_NEVER_REACH();                                                                  \
   }
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
-    lisp_error_condition(__FUNCTION__, __FILE__, __LINE__, _type_, _initializers_); \
+    lisp_error( _type_, _initializers_); \
     THROW_NEVER_REACH();                                                            \
   }
 #define SIMPLE_ERROR(_boost_fmt_)                                             \
