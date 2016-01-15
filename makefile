@@ -39,13 +39,13 @@ pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PAT
 
 export CLASP_SBCL := $(or $(CLASP_SBCL),\
 			$(call pathsearch, sbcl),\
-			$(error Could not find sbcl - it needs to be installed an in your path.))
+			$(error Could not find sbcl - it needs to be installed and in your path.))
 
 export PYTHON2 := $(or $(PYTHON2),\
                        $(call pathsearch, python2.7),\
                        $(call pathsearch, python2),\
                        $(call pathsearch, python),\
-                       $(error Could not find python.))
+                       $(warning Could not find python.))
 
 export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
                               $(and $(filter $(TARGET_OS),Darwin), MacOS))
@@ -85,13 +85,13 @@ export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
 			$(wildcard $(LLVM_BIN_DIR)/clang-$(LLVM_MAJOR_MINOR_VERSION)),\
 			$(call pathsearch, clang),\
 			$(call pathsearch, clang-$(LLVM_MAJOR_MINOR_VERSION)),\
-			$(error Could not find clang - it needs to be installed an in your path.))
+			$(error Could not find clang - it needs to be installed and in your path.))
 export CLASP_CLANGXX_PATH := $(or $(CLASP_CLANGXX_PATH),\
 			$(wildcard $(LLVM_BIN_DIR)/clang++),\
 			$(wildcard $(LLVM_BIN_DIR)/clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
 			$(call pathsearch, clang++),\
 			$(call pathsearch, clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
-			$(error Could not find clang - it needs to be installed an in your path.))
+			$(error Could not find clang - it needs to be installed and in your path.))
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 export LIBATOMIC_OPS_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/libatomic_ops
