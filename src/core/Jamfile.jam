@@ -28,7 +28,7 @@ project internals/core : requirements
 
 local sources =
       clc-generate-ast.cc
-      clc-env-info.cc
+      clc-default-info-methods.cc
       clc-env.cc
       clc-query.cc
       clc-ast.cc

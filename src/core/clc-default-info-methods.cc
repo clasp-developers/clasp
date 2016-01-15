@@ -95,7 +95,7 @@ CL_DEFUN core::T_sp defining_variable_info(core::T_sp environment, core::T_sp sy
       info->_Expansion  = sm->_Expansion;
       return info;
     }
-  } else if ( environment.nilp() ) {
+  } else if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return defining_variable_info_global(symbol);
   }
   // At this point it's guaranteed to be an entry
@@ -106,7 +106,7 @@ CL_DEFUN core::T_sp defining_variable_info(core::T_sp environment, core::T_sp sy
 CL_DEFUN core::T_sp variable_type(core::T_sp environment, Info_sp defining_info)
 {
   // The global environment
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return core::Cons_O::createList(defining_info->type());
   } else if ( LexicalVariable_sp lv = environment.asOrNull<LexicalVariable_O>() ) {
     if ( LexicalVariableInfo_sp lvi = defining_info.asOrNull<LexicalVariableInfo_O>() ) {
@@ -158,7 +158,7 @@ CL_DEFUN core::T_sp variable_type(core::T_sp environment, Info_sp defining_info)
 CL_DEFUN core::T_sp variable_ignore(core::T_sp environment, Info_sp defining_info)
 {
   // The global environment
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return _Nil<core::T_O>();
   } else if ( LexicalVariable_sp lv = environment.asOrNull<LexicalVariable_O>() ) {
     if ( LexicalVariableInfo_sp lvi = defining_info.asOrNull<LexicalVariableInfo_O>() ) {
@@ -197,7 +197,7 @@ CL_DEFUN core::T_sp variable_ignore(core::T_sp environment, Info_sp defining_inf
 
 CL_DEFUN core::T_sp variable_dynamic_extent(core::T_sp environment, Info_sp defining_info)
 {
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return _Nil<core::T_O>();
   } else if ( LexicalVariable_sp lv = environment.asOrNull<LexicalVariable_O>() ) {
     if ( LexicalVariableInfo_sp lvi = defining_info.asOrNull<LexicalVariableInfo_O>() ) {
@@ -302,7 +302,7 @@ CL_DEFUN core::T_sp defining_function_info(core::T_sp environment, core::T_sp fu
 CL_DEFUN core::T_sp function_type(core::T_sp environment, Info_sp defining_info )
 {
   // Global environment
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return defining_info->type();
   } else if ( Function_sp fe = environment.asOrNull<Function_O>() ) {
     if ( LocalFunctionInfo_sp lfi = defining_info.asOrNull<LocalFunctionInfo_O>() ) {
@@ -343,7 +343,7 @@ CL_DEFUN core::T_sp function_type(core::T_sp environment, Info_sp defining_info 
 
 CL_DEFUN core::T_sp function_ignore(core::T_sp environment, Info_sp defining_info)
 {
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return _Nil<core::T_O>();
   } else if ( Function_sp fe = environment.asOrNull<Function_O>() ) {
     if ( LocalFunctionInfo_sp lfi = defining_info.asOrNull<LocalFunctionInfo_O>() ) {
@@ -396,7 +396,7 @@ CL_DEFUN core::T_sp function_ignore(core::T_sp environment, Info_sp defining_inf
 
 CL_DEFUN core::T_sp function_dynamic_extent(core::T_sp environment, Info_sp defining_info )
 {
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return _Nil<core::T_O>();
   } else if ( Function_sp fe = environment.asOrNull<Function_O>() ) {
     if ( core::cl__eq(fe->_Name, defining_info->name() ) ) {
@@ -418,7 +418,7 @@ CL_DEFUN core::T_sp function_dynamic_extent(core::T_sp environment, Info_sp defi
 
 CL_DEFUN core::T_sp function_inline(core::T_sp environment, Info_sp defining_info )
 {
-  if ( environment.nilp() ) {
+  if ( GlobalEnvironment_sp ge = environment.asOrNull<GlobalEnvironment_O>() ) {
     return defining_info->inline_();
   } else if ( Function_sp fe = environment.asOrNull<Function_O>() ) {
     if ( LocalFunctionInfo_sp lfi = defining_info.asOrNull<LocalFunctionInfo_O>() ) {

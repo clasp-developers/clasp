@@ -2368,7 +2368,7 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   _lisp->defineSpecialOperator(ClPkg, "block", &sp_block);
   _lisp->defineSpecialOperator(ClPkg, "catch", &sp_catch);
   _lisp->defineSpecialOperator(ClPkg, "eval-when", &sp_eval_when);
-  _lisp->defineSpecialOperator(ExtPkg, "debug-message", &sp_debug_message);
+  _lisp->defineSpecialOperator(CorePkg, "debug-message", &sp_debug_message);
   _lisp->defineSpecialOperator(ClPkg, "flet", &sp_flet);
   _lisp->defineSpecialOperator(ClPkg, "function", &sp_function);
   _lisp->defineSpecialOperator(ClPkg, "the", &sp_the);
