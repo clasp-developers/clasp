@@ -192,7 +192,6 @@
              exposed-classes)
     (setf *classes* classes)
     (setf *inheritance* inheritance)
-    (format t "About to sort classes~%")
     (sort classes (lambda (x y)
                     (not (inherits-from x y inheritance))))))
 
