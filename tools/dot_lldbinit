@@ -30,7 +30,7 @@ command alias lreload command source ~/.lldbinit
 # set breakpoints
 break set -n dbg_hook
 
-command alias lbt expr (void)af_ihsBacktraceNoArgs()
+command alias lbt expr (void)core::core__ihs_backtrace_no_args()
 
 #
 # When we continue invoke the debugger as if control-c was hit

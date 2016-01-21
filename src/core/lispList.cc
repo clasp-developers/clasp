@@ -307,7 +307,6 @@ CL_DEFUN T_sp cl__last(T_sp list, int n) {
 
 CL_LAMBDA(&rest lists);
 CL_DECLARE();
-CL_DOCSTRING("tnconc");
 CL_DEFUN T_sp cl__nconc(List_sp lists) {
   T_sp head = _Nil<T_O>();
   T_sp tail = _Nil<T_O>();
