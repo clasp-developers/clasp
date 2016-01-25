@@ -37,11 +37,8 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, VectorObjects_O);
 
-#define ARGS_VectorObjects_O_make "(initial-element initial-contents dimension adjustable)"
-#define DECL_VectorObjects_O_make ""
-#define DOCS_VectorObjects_O_make "make VectorObjects args: initial-element initial-contents dimension"
+
 VectorObjects_sp VectorObjects_O::make(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType) {
   GC_ALLOCATE(VectorObjects_O, vo);
   vo->setup(initialElement, initialContents, dimension, adjustable, cl::_sym_T_O);
@@ -51,17 +48,8 @@ VectorObjects_sp VectorObjects_O::make(T_sp initialElement, T_sp initialContents
 
 VectorObjects_O::VectorObjects_O() : Base(), _ElementType(cl::_sym_T_O), _Adjustable(true){};
 
-void VectorObjects_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<VectorObjects_O>();
-}
 
-void VectorObjects_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), VectorObjects, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 VectorObjects_sp VectorObjects_O::create(T_sp initial_element, int dimension, T_sp elementType) {
   GC_ALLOCATE(VectorObjects_O, vo);

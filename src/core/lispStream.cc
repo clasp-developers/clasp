@@ -5781,19 +5781,19 @@ SourceFileInfo_sp clasp_input_source_file_info(T_sp strm) {
 
 namespace core {
 
-EXPOSE_CLASS(core, Stream_O);
-EXPOSE_CLASS(core, AnsiStream_O);
-EXPOSE_CLASS(core, FileStream_O);
-EXPOSE_CLASS(core, IOFileStream_O);
-EXPOSE_CLASS(core, IOStreamStream_O);
-EXPOSE_CLASS(core, StringStream_O);
-EXPOSE_CLASS(core, StringOutputStream_O);
-EXPOSE_CLASS(core, StringInputStream_O);
-EXPOSE_CLASS(core, SynonymStream_O);
-EXPOSE_CLASS(core, TwoWayStream_O);
-EXPOSE_CLASS(core, BroadcastStream_O);
-EXPOSE_CLASS(core, ConcatenatedStream_O);
-EXPOSE_CLASS(core, EchoStream_O);
+
+
+
+
+
+
+
+
+
+
+
+
+
 };
 
 namespace core {
@@ -5822,57 +5822,7 @@ T_sp SynonymStream_O::filename() const {
 };
 
 namespace core {
-void Stream_O::exposeCando(Lisp_sp lisp) {
-  class_<Stream_O>();
-}
-void Stream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
 
-namespace core {
-void AnsiStream_O::exposeCando(Lisp_sp lisp) {
-  class_<AnsiStream_O>();
-}
-void AnsiStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-
-namespace core {
-void StringStream_O::exposeCando(Lisp_sp lisp) {
-  class_<StringStream_O>();
-}
-void StringStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void StringInputStream_O::exposeCando(Lisp_sp lisp) {
-  class_<StringInputStream_O>();
-}
-void StringInputStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-
-namespace core {
-void StringOutputStream_O::exposeCando(Lisp_sp lisp) {
-  class_<StringOutputStream_O>();
-}
-void StringOutputStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
 
 void StringOutputStream_O::fill(const string &data) {
   this->_Contents->pushStringCharStar(data.c_str());
@@ -5888,94 +5838,12 @@ StrWithFillPtr_sp StringOutputStream_O::getAndReset() {
 };
 
 namespace core {
-void SynonymStream_O::exposeCando(Lisp_sp lisp) {
-  class_<SynonymStream_O>();
-}
-void SynonymStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void TwoWayStream_O::exposeCando(Lisp_sp lisp) {
-  class_<TwoWayStream_O>();
-}
-void TwoWayStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void BroadcastStream_O::exposeCando(Lisp_sp lisp) {
-  class_<BroadcastStream_O>();
-}
-void BroadcastStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void EchoStream_O::exposeCando(Lisp_sp lisp) {
-  class_<EchoStream_O>();
-}
-void EchoStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
   return ss.str();
 }
-
-void FileStream_O::exposeCando(Lisp_sp lisp) {
-  class_<FileStream_O>();
-}
-void FileStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void IOFileStream_O::exposeCando(Lisp_sp lisp) {
-  class_<IOFileStream_O>();
-}
-void IOFileStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void IOStreamStream_O::exposeCando(Lisp_sp lisp) {
-  class_<IOStreamStream_O>();
-}
-void IOStreamStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void ConcatenatedStream_O::exposeCando(Lisp_sp lisp) {
-  class_<ConcatenatedStream_O>();
-}
-void ConcatenatedStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-
-namespace core {
 
 T_sp StringInputStream_O::make(const string &str) {
   Str_sp s = str_create(str);

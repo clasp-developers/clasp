@@ -37,7 +37,7 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, VectorDisplaced_O);
+
 
 CL_LAMBDA(dim element-type displaced-to displaced-offset);
 CL_DECLARE();
@@ -54,18 +54,8 @@ CL_DEFUN VectorDisplaced_sp core__make_vector_displaced(T_sp dim, T_sp elementTy
   return vo;
 }
 
-void VectorDisplaced_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<VectorDisplaced_O>();
 
-}
 
-void VectorDisplaced_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), VectorDisplaced, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
 
 string VectorDisplaced_O::__repr__() const {
   _OF();

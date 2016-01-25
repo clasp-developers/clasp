@@ -281,28 +281,16 @@ void StandardClass_O::setupAccessors(List_sp slotNames)
 }
 
 
-void BuiltInClass_O::exposeCando(Lisp_sp lisp)
-{
-  class_<BuiltInClass_O>();
-}
+
 void BuiltInClass_O::exposePython(Lisp_sp lisp)
-{
-  PYTHON_CLASS(CorePkg, BuiltInClass, "", "", _lisp);
-}
 
 
 
 
-void StandardClass_O::exposeCando(Lisp_sp lisp)
-{
-  class_<StandardClass_O>();
-}
+
 void StandardClass_O::exposePython(Lisp_sp lisp)
-{
-  PYTHON_CLASS(CorePkg, StandardClass, "", "", _lisp);
-}
 
 
-EXPOSE_CLASS(core,BuiltInClass_O);
-EXPOSE_CLASS(core,StandardClass_O);
+
+
 };

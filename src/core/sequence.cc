@@ -201,33 +201,6 @@ CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp su
   SYMBOL_EXPORT_SC_(ClPkg, copySeq);
   SYMBOL_EXPORT_SC_(ClPkg, length);
 
-#if 0
-    void Sequence_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),Sequence,"","",_LISP)
-//	.initArgs("(self)")
-	    ;
-#endif
-    }
-#endif
-
-#if 0
-#if defined(OLD_SERIALIZE)
-    void Sequence_O::serialize(::serialize::SNodeP node)
-    {
-        this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-#endif
-#endif
-
-#if 0
-    void Sequence_O::archiveBase(::core::ArchiveP node)
-    {
-	// do nothing
-    }
-#endif
 
 /*! From ecl_sequence_start_end */
 

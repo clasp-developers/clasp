@@ -35,16 +35,8 @@ THE SOFTWARE.
 
 namespace core {
 
-void SpecialForm_O::exposeCando(Lisp_sp lisp) {
-  class_<SpecialForm_O>();
-}
 
-void SpecialForm_O::exposePython(Lisp_sp lisp) {
-#if 0  // USEBOOSTPYTHON //[
-	PYTHON_CLASS(CorePkg,SpecialForm,"","",_lisp)
-    ;
-#endif //]
-}
+
 
 SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr) {
   SpecialForm_sp sf = SpecialForm_O::create();
@@ -74,5 +66,5 @@ string SpecialForm_O::__repr__() const {
   return this->_SpecialSymbol->fullName();
 }
 
-EXPOSE_CLASS(core, SpecialForm_O);
+
 };

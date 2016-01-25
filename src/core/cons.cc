@@ -1288,25 +1288,10 @@ CL_DEFUN string core__alist_asString(List_sp alist) {
   SYMBOL_EXPORT_SC_(ClPkg, getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
   SYMBOL_SC_(CorePkg, put_f);
+#if 0
 
-void Cons_O::exposeCando(Lisp_sp lisp) {
-  class_<Cons_O>()
-      .def("core:exactlyMatches", &Cons_O::exactlyMatches)
-      .def("core:lookup", &Cons_O::olookupKeyObject)
-      .def("core:lookupDefault", &Cons_O::olookupKeyObjectDefault)
-      .def("core:filterOutNil", &Cons_O::filterOutNil)
-      .def("core:extend", &Cons_O::extend)
-      .def("core:cons-setf-car", &Cons_O::setf_car)
-      .def("core:cons-setf-cdr", &Cons_O::setf_cdr)
-      ;
-}
-
-void Cons_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, Cons, "", "", _lisp)
-      .def("__repr__", &Cons_O::__repr__);
 #endif
-}
 
-EXPOSE_CLASS(core, Cons_O);
+
+
 };

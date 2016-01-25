@@ -590,7 +590,7 @@ claspChar clasp_charCode(T_sp c) {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, Character_dummy_O);
+
 
   SYMBOL_EXPORT_SC_(ClPkg, char_code);
   SYMBOL_EXPORT_SC_(ClPkg, code_char);
@@ -617,17 +617,8 @@ EXPOSE_CLASS(core, Character_dummy_O);
   SYMBOL_EXPORT_SC_(ClPkg, charEqual);
   SYMBOL_EXPORT_SC_(ClPkg, digitCharP);
 
-void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<Character_dummy_O>();
-}
 
-void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), Character, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 #if 0
     Character_sp Character_O::create(gctools::Fixnum c)
@@ -691,23 +682,11 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
 
 
-    EXPOSE_CLASS(core,BaseChar_O);
 
-    void BaseChar_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<BaseChar_O>()
-//	.initArgs("(self)")
-	;
-    }
+
+
 
     void BaseChar_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),BaseChar,"","",_LISP)
-//	.initArgs("(self)")
-	;
-#endif
-    }
 
 
 
@@ -720,24 +699,14 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
 
 
-    EXPOSE_CLASS(core,StandardChar_O);
 
 
 
 
-    void StandardChar_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<StandardChar_O>()
-	    ;
-    }
+
+
 
     void StandardChar_O::exposePython(Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,StandardChar,"","",_lisp)
-	    ;
-#endif
-    }
 
 
 
@@ -944,23 +913,11 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
 
 
-    EXPOSE_CLASS(core,ExtendedChar_O);
 
-    void ExtendedChar_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<ExtendedChar_O>()
-//	.initArgs("(self)")
-	;
-    }
+
+
 
     void ExtendedChar_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),ExtendedChar,"","",_LISP)
-//	.initArgs("(self)")
-	;
-#endif
-    }
 
 #if 0
 #if defined(OLD_SERIALIZE)

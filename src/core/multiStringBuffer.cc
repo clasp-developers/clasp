@@ -101,18 +101,8 @@ void MultiStringBlock::dump(uint startIndex, std::ostream &out) {
   }
 }
 
-void MultiStringBuffer_O::exposeCando(Lisp_sp e) {
-  class_<MultiStringBuffer_O>()
-      .def("addString", &MultiStringBuffer_O::addString)
-      .def("getString", &MultiStringBuffer_O::getString)
-      .def("dump", &MultiStringBuffer_O::dump);
-}
 
-void MultiStringBuffer_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, MultiStringBuffer, "", "", _lisp);
-#endif //]
-}
+
 
 void MultiStringBuffer_O::initialize() {
   this->Base::initialize();
@@ -248,5 +238,5 @@ LongLongInt MultiStringBuffer_O::describeMemoryUsage() {
   return total;
 }
 
-EXPOSE_CLASS(core, MultiStringBuffer_O);
+
 };

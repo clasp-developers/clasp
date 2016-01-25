@@ -335,19 +335,8 @@ SYMBOL_EXPORT_SC_(ClPkg, shadowing_import);
 SYMBOL_EXPORT_SC_(ClPkg, findSymbol);
 SYMBOL_EXPORT_SC_(ClPkg, unintern);
 
-void Package_O::exposeCando(Lisp_sp lisp) {
-  class_<Package_O>()
-      //	    .def("allSymbols",&Package_O::allSymbols)
-      .def("core:PackageHashTables", &Package_O::hashTables);
-}
 
-void Package_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, Package, "", "", _lisp)
-      //	    .def("allSymbols",&Package_O::allSymbols)
-      ;
-#endif //]
-}
+
 
 Package_sp Package_O::create(const string &name) {
   Package_sp p = Package_O::create();
@@ -847,5 +836,5 @@ void Package_O::dumpSymbols() {
   printf("%s\n", all.c_str());
 }
 
-EXPOSE_CLASS(core, Package_O);
+
 };

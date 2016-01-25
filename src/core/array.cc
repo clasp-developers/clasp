@@ -38,7 +38,7 @@ namespace core {
 
 // ----------------------------------------------------------------------
 //
-EXPOSE_CLASS(core, Array_O);
+
 
 CL_LAMBDA(core::array);
 CL_DECLARE();
@@ -57,7 +57,7 @@ CL_LAMBDA(core::type &optional core::env);
 CL_DECLARE();
 CL_DOCSTRING("upgradedArrayElementType");
 CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type) {
-  return (Values(T_O::___staticClass));
+  return (Values(T_O::static_class));
 };
 
 CL_LAMBDA(out outStart in inStart len);
@@ -157,9 +157,6 @@ Symbol_sp Array_O::element_type_as_symbol() const {
   SIMPLE_ERROR(BF("Handle more array types"));
 }
 
-#define ARGS_Array_O_aref "((core::self core::array) &rest core::indices)"
-#define DECL_Array_O_aref ""
-#define DOCS_Array_O_aref "See CLHS aref"
 CL_LISPIFY_NAME("cl:aref");
 CL_LAMBDA((core::self core::array) &rest core::indices);
 CL_DEFMETHOD T_sp Array_O::aref(List_sp indices) const {
@@ -228,9 +225,6 @@ CL_DEFMETHOD List_sp Array_O::arrayDimensions() const {
   return ((indices));
 }
 
-#define ARGS_Array_O_setf_aref "((core::self array) &rest core::indices-val)"
-#define DECL_Array_O_setf_aref ""
-#define DOCS_Array_O_setf_aref "CLHS: setter for aref"
 CL_LAMBDA((core::self array) &rest core::indices-val);
 CL_DOCSTRING("Setter for aref");
 CL_LISPIFY_NAME("core:array-setf-aref");
@@ -283,42 +277,7 @@ string Array_O::__repr__() const {
 SYMBOL_SC_(CorePkg, copy_subarray);
 SYMBOL_SC_(CorePkg, aset);
 
-void Array_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<Array_O>()
-      .def("cl:aref", &Array_O::aref,
-           ARGS_Array_O_aref,
-           DECL_Array_O_aref,
-           DOCS_Array_O_aref)
-      .def("core:array-setf-aref", &Array_O::setf_aref, ARGS_Array_O_setf_aref, DECL_Array_O_setf_aref, DOCS_Array_O_setf_aref)
-      .def("core:index", &Array_O::index)
-      .def("cl:arrayTotalSize", &Array_O::arrayTotalSize)
-      .def("cl:array-dimension", &Array_O::arrayDimension)
-      .def("cl:array-dimensions", &Array_O::arrayDimensions)
-      .def("cl:array-elementType", &Array_O::elementType)
-      .def("cl:array-rank", &Array_O::rank)
-      .def("core:array-fill", &Array_O::arrayFill)
-      .def("core:fill-array-with-elt", &Array_O::fillArrayWithElt)
-      .def("cl:svref", &Array_O::svref)
-      .def("core:setf-svref", &Array_O::setf_svref)
-      .def("core:rowMajorAset", &Array_O::rowMajorAset)
-      .def("cl:rowMajorAref", &Array_O::rowMajorAref)
-      .def("cl:arrayRowMajorIndex", &Array_O::arrayRowMajorIndex)
-      .def("cl:arrayHasFillPointerP", &Array_O::arrayHasFillPointerP)
 
-      ;
-}
 
-void Array_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Array, "", "", _lisp)
-      .def("core:array-setf-aref", &Array_O::setf_aref)
-      .def("core:index", &Array_O::index)
-      .def("cl:array-dimension", &Array_O::arrayDimension)
-      .def("cl:array-dimensions", &Array_O::arrayDimensions)
-      .def("cl:array-rank", &Array_O::rank)
-      .def("copy-array", &Array_O::shallowCopy)
-      .def("array-fill", &Array_O::arrayFill);
-#endif
-}
 
 }; /* core */

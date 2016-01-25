@@ -789,9 +789,6 @@ T_mv sp_locally(List_sp args, T_sp env) {
 #define when_compile_p(s) ((s)&FLAG_COMPILE)
 #define when_execute_p(s) ((s)&FLAG_EXECUTE)
 
-#define ARGS_sp_eval_when "(situation &rest body)"
-#define DECL_sp_eval_when ""
-#define DOCS_sp_eval_when "eval_when"
 T_mv sp_eval_when(List_sp args, T_sp env) {
   List_sp situation_list = oCar(args);
   List_sp body = oCdr(args);
@@ -863,14 +860,10 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
 #endif
 };
 
-#define ARGS_sp_step "(form)"
-#define DECL_sp_step ""
-#define DOCS_sp_step "step is implemented as a special"
 T_mv sp_step(List_sp args, T_sp env) {
   IMPLEMENT_ME();
 };
 
-#define DOCS_sp_tagbody "tagbody special form - see CLHS"
 T_mv sp_tagbody(List_sp args, T_sp env) {
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
   //
@@ -915,7 +908,6 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   return Values0<T_O>();
 };
 
-#define DOCS_sp_go "go special form - see CLHS"
 T_mv sp_go(List_sp args, T_sp env) {
   Symbol_sp tag = gc::As<Symbol_sp>(oCar(args));
   int depth = 0;
@@ -1394,7 +1386,6 @@ T_mv sp_function(List_sp args, T_sp environment) {
 }
 
 #if 0
-#define DOCS_sp_lambda_block "Like lambda but the first argument is a symbol that defines the name of the lambda"
 	T_mv sp_lambda_block( List_sp args, T_sp env)
 	{
 	    ASSERTNOTNULL(args);
@@ -1404,7 +1395,6 @@ T_mv sp_function(List_sp args, T_sp environment) {
 #endif
 
 #if 0
-#define DOCS_sp_lambda_with_handler "Like lambda but the first argument is a symbol that defines the name of the lambda and the second argument is a lambda-list-handler rather than a lambda-list"
 	T_mv sp_lambda_with_handler( List_sp args, T_sp env)
 	{
 	    ASSERTNOTNULL(args);

@@ -235,29 +235,13 @@ CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, int ex
   return vec->vectorPushExtend(newElement, extension);
 }
 
-EXPOSE_CLASS(core, Vector_O);
+
 
 SYMBOL_SC_(CorePkg, make_vector);
 SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
 SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
 SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
-void Vector_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<Vector_O>()
-      .def("adjustableArrayP", &Vector_O::adjustableArrayP)
-      //	.initArgs("(self)")
-      ;
-}
 
-void Vector_O::exposePython(::core::Lisp_sp lisp) {
-//	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
-#ifdef USEBOOSTPYTHON
-  boost::python::class_<Vector_O,
-                        gctools::smart_ptr<Vector_O>,
-                        boost::python::bases<Vector_O::Bases::Base1, Vector_O::Bases::Base2>,
-                        boost::noncopyable>("Vector_O", boost::python::no_init)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 }; /* core */

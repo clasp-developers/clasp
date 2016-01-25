@@ -86,14 +86,7 @@ void CxxClass_O::describe(T_sp stream) {
   clasp_write_string(sr.str(), stream);
 }
 
-void CxxClass_O::exposeCando(Lisp_sp lisp) {
-  class_<CxxClass_O>();
-}
-void CxxClass_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CxxClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, CxxClass_O);
+
+
 };

@@ -274,8 +274,6 @@ LOAD:
 };
 
 #ifdef EXPOSE_DLLOAD
-#define ARGS_core__dlload "(pathDesig)"
-#define DECL_core__dlload ""
 CL_DOCSTRING("dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error)");
 CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
   string lib_extension = ".dylib";
@@ -405,9 +403,6 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   }
 }
 
-#define ARGS_compiler__implicit_compile_hook_default "(form &optional environment)"
-#define DECL_compiler__implicit_compile_hook_default ""
-#define DOCS_compiler__implicit_compile_hook_default "implicit_compile_hook_default"
 CL_LAMBDA(form &optional environment);
 CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does

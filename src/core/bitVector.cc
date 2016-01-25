@@ -320,45 +320,9 @@ CL_DEFMETHOD uint BitVector_O::lowestIndex() {
   return ((i));
 }
 
-void BitVector_O::exposeCando(Lisp_sp lisp) {
-  class_<BitVector_O>()
-      //	.def("equal",&BitVector_O::equal)
-      .def("core:setBit", &BitVector_O::setBit)
-      .def("core:testBit", &BitVector_O::testBit)
-      .def("core:inPlaceOr", &BitVector_O::inPlaceOr)
-      .def("core:inPlaceAnd", &BitVector_O::inPlaceAnd)
-      .def("core:inPlaceXor", &BitVector_O::inPlaceXor)
-      .def("core:bitOr", &BitVector_O::bitOr)
-      .def("core:bitAnd", &BitVector_O::bitAnd)
-      .def("core:bitXor", &BitVector_O::bitXor)
-      .def("core:countSet", &BitVector_O::countSet)
-      .def("core:isZero", &BitVector_O::isZero)
-      .def("core:lowestIndex", &BitVector_O::lowestIndex)
-      .def("core:dump", &BitVector_O::dump)
-      .def("core:BitVector-asString", &BitVector_O::asString);
-}
-void BitVector_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp)
-      //	.def("equal",&BitVector_O::equal)
-      .def("setBit", &BitVector_O::setBit)
-      .def("testBit", &BitVector_O::testBit)
-      .def("inPlaceOr", &BitVector_O::inPlaceOr)
-      .def("inPlaceAnd", &BitVector_O::inPlaceAnd)
-      .def("inPlaceXor", &BitVector_O::inPlaceXor)
-      .def("bitOr", &BitVector_O::bitOr)
-      .def("bitAnd", &BitVector_O::bitAnd)
-      .def("bitXor", &BitVector_O::bitXor)
-      .def("countSet", &BitVector_O::countSet)
-      .def("isZero", &BitVector_O::isZero)
-      .def("lowestIndex", &BitVector_O::lowestIndex)
-      .def("dump", &BitVector_O::dump)
-      .def("asString", &BitVector_O::asString);
-//    boost::python::def("create_BitVector",&BitVector_O::create);
-#endif
-}
 
-EXPOSE_CLASS(core, BitVector_O);
+
+
 
 CL_PKG_NAME(CorePkg,make-simple-bit-vector);
 CL_DEFUN SimpleBitVector_sp SimpleBitVector_O::make(size_t size) {
@@ -366,17 +330,9 @@ CL_DEFUN SimpleBitVector_sp SimpleBitVector_O::make(size_t size) {
   return sbv;
 }
 
-void SimpleBitVector_O::exposeCando(Lisp_sp lisp) {
-  class_<SimpleBitVector_O>();
-//  af_def(CorePkg, "make-simple-bit-vector", (SimpleBitVector_sp (*)(size_t)) & SimpleBitVector_O::create);
-}
-void SimpleBitVector_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, SimpleBitVector_O);
+
+
 
 CL_PKG_NAME(CorePkg,make-bit-vector-with-fill-ptr);
 CL_DEFUN BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::make(size_t size, size_t fill_ptr, bool adjust) {
@@ -430,15 +386,7 @@ Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extensio
   return clasp_make_fixnum(this->_fill_ptr - 1);
 }
 
-void BitVectorWithFillPtr_O::exposeCando(Lisp_sp lisp) {
-  class_<BitVectorWithFillPtr_O>();
-//  af_def(CorePkg, "make-bit-vector-with-fill-ptr", (BitVectorWithFillPtr_sp (*)(size_t, size_t, bool)) & BitVectorWithFillPtr_O::create);
-}
-void BitVectorWithFillPtr_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BitVector, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, BitVectorWithFillPtr_O);
+
+
 };

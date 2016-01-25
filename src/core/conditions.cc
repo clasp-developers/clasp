@@ -58,17 +58,10 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, CandoException_O);
 
-void CandoException_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<CandoException_O>();
-}
 
-void CandoException_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CandoException, "", "", _lisp);
-#endif
-}
+
+
 
 CandoException_sp CandoException_O::create(const string &msg) {
   GC_ALLOCATE(CandoException_O, ce);

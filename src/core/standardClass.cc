@@ -275,14 +275,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 
 #endif
 
-void StandardClass_O::exposeCando(Lisp_sp lisp) {
-  class_<StandardClass_O>();
-}
-void StandardClass_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StandardClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StandardClass_O);
+
+
 };

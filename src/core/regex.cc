@@ -46,28 +46,12 @@ CL_DEFUN Regex_sp core__make_regex(const string &str) {
   return regex;
 };
 
-EXPOSE_CLASS(core, Regex_O);
+
 
   SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
 
-void Regex_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<Regex_O>()
-      .def("regexMatches", &Regex_O::regexMatches)
-      .def("regexMatch", &Regex_O::regexMatch)
-      .def("regexSedReplace", &Regex_O::regexSedReplace) // Need to rethink exposing this function so result is returned
-      ;
-}
 
-void Regex_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Regex, "", "", _lisp)
-      .def("regexMatches", &Regex_O::regexMatches)
-      .def("regex-matches", &Regex_O::regexMatches)
-      .def("regex-match", &Regex_O::regexMatch)
-      //	    .def("regex-sed-replace",&Regex_O::regexSedReplace)
-      ;
-#endif
-}
+
 
 Regex_sp Regex_O::make(const string &regex) {
   GC_ALLOCATE(Regex_O, re);
@@ -110,9 +94,6 @@ CL_DEFMETHOD string Regex_O::regexSedReplace(const string &str, const string &re
                               boost::match_default | boost::format_sed);
 }
 
-#define ARGS_RegexMatch_O_matched "(regex-match &optional (idx 0))"
-#define DECL_RegexMatch_O_matched ""
-#define DOCS_RegexMatch_O_matched "Return true if this->_Match[idx].matched is true"
 CL_LAMBDA(regex-match &optional (idx 0));
 CL_LISPIFY_NAME("regex-match-matched");
 CL_DEFMETHOD bool RegexMatch_O::matched(int idx) const {
@@ -120,27 +101,10 @@ CL_DEFMETHOD bool RegexMatch_O::matched(int idx) const {
   return this->_Match[idx].matched;
 }
 
-EXPOSE_CLASS(core, RegexMatch_O);
 
-void RegexMatch_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<RegexMatch_O>()
-      .def("regex-match-length", &RegexMatch_O::size)
-      .def("regex-match-prefix", &RegexMatch_O::prefix)
-      .def("regex-match-suffix", &RegexMatch_O::suffix)
-      .def("regex-match-part", &RegexMatch_O::part)
-      .def("regex-match-matched", &RegexMatch_O::matched, ARGS_RegexMatch_O_matched);
-}
 
-void RegexMatch_O::exposePython(core::Lisp_sp lisp) {
-#if USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, RegexMatch, "", "", _lisp)
-      .def("size", &RegexMatch_O::size)
-      .def("prefix", &RegexMatch_O::prefix)
-      .def("suffix", &RegexMatch_O::suffix)
-      .def("part", &RegexMatch_O::part)
-      .def("matched", &RegexMatch_O::matched);
-#endif
-}
+
+
 
 void RegexMatch_O::initialize() {
   _OF();

@@ -36,11 +36,8 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, ArrayObjects_O);
 
-#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
-#define DECL_ArrayObjects_O_make ""
-#define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
+
 CL_LISPIFY_NAME(make-array-objects);
 CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   GC_ALLOCATE(ArrayObjects_O, array);
@@ -58,15 +55,8 @@ CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, 
   return ((array));
 }
 
-void ArrayObjects_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ArrayObjects_O>();
-}
 
-void ArrayObjects_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ArrayObjects, "", "", _lisp);
-#endif
-}
+
 
 #if defined(XML_ARCHIVE)
 void ArrayObjects_O::archiveBase(::core::ArchiveP node) {

@@ -35,21 +35,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, HashTableEqualp_O);
 
-void HashTableEqualp_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<HashTableEqualp_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void HashTableEqualp_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), HashTableEqualp, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 HashTableEqualp_sp HashTableEqualp_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
   GC_ALLOCATE(HashTableEqualp_O, hashTable);

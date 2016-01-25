@@ -561,21 +561,7 @@ SYMBOL_SC_(CorePkg, subclassp);
 SYMBOL_SC_(CorePkg, allocateRawClass);
 SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
 
-void Class_O::exposeCando(Lisp_sp lisp) {
-  class_<Class_O>()
-      .def("core:nameOfClass", &Class_O::className)
-      .def("core:direct-superclasses", &Class_O::directSuperclasses)
-      .def("core:hasCreator", &Class_O::hasCreator)
-    ;
-      //      .def("core:getCreator", &Class_O::getCreator);
-      //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
-      //	Defun(makeSureClosClassSlotsMatchClass);
-    }
-void Class_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Class, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, Class_O);
+
+
 };

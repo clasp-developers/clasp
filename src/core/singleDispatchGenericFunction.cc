@@ -228,23 +228,13 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) 
     }
 #endif
 
-EXPOSE_CLASS(core, SingleDispatchGenericFunction_O);
+
 
   SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchGenericFunction);
   SYMBOL_EXPORT_SC_(CorePkg, ensureSingleDispatchMethod);
 
-void SingleDispatchGenericFunction_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<SingleDispatchGenericFunction_O>()
-    .def("SingleDispatchGenericFunction-methods", &SingleDispatchGenericFunction_O::methods);
-}
 
-void SingleDispatchGenericFunction_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), SingleDispatchGenericFunction, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
   GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);

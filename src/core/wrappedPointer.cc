@@ -56,7 +56,7 @@ CL_DEFUN void core__pointer_delete(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-EXPOSE_CLASS(core, WrappedPointer_O);
+
 
 T_sp WrappedPointer_O::instanceClassSet(Class_sp cl) {
   this->_Class = cl;
@@ -93,14 +93,6 @@ CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not get address of pointer for %s") % _rep_(ptr));
 };
 
-void WrappedPointer_O::exposeCando(core::Lisp_sp e) {
-  class_<WrappedPointer_O>()
-      .def("validp", &WrappedPointer_O::validp);
-}
 
-void WrappedPointer_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, WrappedPointer, "", "", _lisp);
-#endif //]
-}
+
 };

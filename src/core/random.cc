@@ -37,9 +37,6 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_RandomState_O_make "(&optional state)"
-#define DECL_RandomState_O_make ""
-#define DOCS_RandomState_O_make "getUniversalTime"
 CL_LAMBDA(&optional state);
 CL_PKG_NAME(ClPkg,make-random-state);
 CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
@@ -74,16 +71,8 @@ CL_DEFUN T_sp cl__random(T_sp olimit, RandomState_sp random_state) {
   SIMPLE_ERROR(BF("Illegal limit for random"));
 }
 
-EXPOSE_CLASS(core, RandomState_O);
 
-void RandomState_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<RandomState_O>();
-//  af_def(ClPkg, "make-random-state", &RandomState_O::make, ARGS_RandomState_O_make, DECL_RandomState_O_make, DOCS_RandomState_O_make);
-}
 
-void RandomState_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CurrentPkg, RandomState, "", "", _lisp);
-#endif
-}
+
+
 };

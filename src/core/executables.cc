@@ -126,7 +126,7 @@ LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
 };
 
 InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-    : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
+  : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
 T_sp InterpretedClosure::lambdaList() const {
@@ -224,7 +224,7 @@ CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
   return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
 }
 
-EXPOSE_CLASS(core, Function_O);
+
 
 SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
 SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
@@ -269,26 +269,8 @@ CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
   return _Nil<T_O>();
 }
 
-void Function_O::exposeCando(Lisp_sp lisp) {
-  class_<Function_O>()
-      .def("core:macrop", &Function_O::macroP)
-      .def("core:setFunctionKind", &Function_O::setKind)
-      .def("core:functionKind", &Function_O::functionKind)
-      .def("core:closedEnvironment", &Function_O::closedEnvironment)
-      .def("core:functionName", &Function_O::functionName)
-      .def("core:functionSourcePos", &Function_O::functionSourcePos)
-      .def("core:functionLambdaListHandler", &Function_O::functionLambdaListHandler)
-      .def("core:function_declares", &Function_O::declares)
-      .def("core:function_docstring", &Function_O::docstring)
-      .def("core:cleavir_ast", &Function_O::cleavir_ast)
-      .def("core:setf_cleavir_ast", &Function_O::setf_cleavir_ast);
-}
 
-void Function_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Function, "", "", _lisp);
-#endif
-}
+
 
 string Function_O::__repr__() const {
   if (!(this->closure)) {
@@ -300,11 +282,11 @@ string Function_O::__repr__() const {
   ss << " " << _rep_(name);
   ss << " " << this->closure->describe();
 #if 0
-	auto closure = this->closure;
-	void* fptr = closure->functionAddress();
-	if ( fptr!=NULL ) {
-	    ss << " :address " << fptr;
-	}
+  auto closure = this->closure;
+  void* fptr = closure->functionAddress();
+  if ( fptr!=NULL ) {
+    ss << " :address " << fptr;
+  }
 #endif
   ss << ">";
   return ss.str();
@@ -317,15 +299,8 @@ void Function_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-EXPOSE_CLASS(core, CompiledFunction_O);
 
-void CompiledFunction_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<CompiledFunction_O>();
-}
 
-void CompiledFunction_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CompiledFunction, "", "", _lisp);
-#endif
-}
+
+
 };

@@ -690,14 +690,14 @@ string symbol_repr(Symbol_sp sym) {
     */
 Class_sp lisp_instance_class(T_sp o) {
   if (o.fixnump()) {
-    return core::Fixnum_dummy_O::___staticClass;
+    return core::Fixnum_dummy_O::static_class;
     //	    return core::Fixnum_O::___staticClass;
   } else if (o.characterp()) {
-    return core::Character_dummy_O::___staticClass;
+    return core::Character_dummy_O::static_class;
   } else if (o.single_floatp()) {
-    return core::SingleFloat_dummy_O::___staticClass;
+    return core::SingleFloat_dummy_O::static_class;
   } else if (o.nilp()) {
-    return core::Null_O::___staticClass;
+    return core::Null_O::static_class;
   } else if (Instance_sp iobj = o.asOrNull<Instance_O>()) {
     return iobj->_instanceClass();
   } else if (WrappedPointer_sp exobj = o.asOrNull<WrappedPointer_O>()) {
@@ -710,7 +710,7 @@ Class_sp lisp_instance_class(T_sp o) {
     return cobj->_instanceClass();
   } else if (o.valistp()) {
     // What do I return for this?
-    return core::VaList_dummy_O::___staticClass;
+    return core::VaList_dummy_O::static_class;
   } else if (o.objectp()) {
     return lisp_static_class(o);
   }
@@ -719,7 +719,7 @@ Class_sp lisp_instance_class(T_sp o) {
 
 Class_sp lisp_static_class(T_sp o) {
   if (o.nilp())
-    return core::Null_O::___staticClass;
+    return core::Null_O::static_class;
   if (o.unboundp()) {
     SIMPLE_ERROR(BF("You cannot get the class of UNBOUND"));
   } else if (!o) {

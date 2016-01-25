@@ -37,21 +37,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, SingleDispatchEffectiveMethodFunction_O);
 
-void SingleDispatchEffectiveMethodFunction_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<SingleDispatchEffectiveMethodFunction_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void SingleDispatchEffectiveMethodFunction_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), SingleDispatchEffectiveMethodFunction, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 #if 0
 #if defined(OLD_SERIALIZE)

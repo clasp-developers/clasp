@@ -114,17 +114,10 @@ Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
 }
 
-EXPOSE_CLASS(core, ActivationFrame_O);
 
-void ActivationFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ActivationFrame_O>();
-}
 
-void ActivationFrame_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ActivationFrame, "", "", _lisp);
-#endif
-}
+
+
 };
 
 namespace core {
@@ -271,17 +264,10 @@ bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &value
   return Environment_O::clasp_findValue(this->parentFrame(), sym, depth, index, valueKind, value);
 }
 
-EXPOSE_CLASS(core, ValueFrame_O);
 
-void ValueFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ValueFrame_O>();
-}
 
-void ValueFrame_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ValueFrame, "", "", _lisp);
-#endif
-}
+
+
 
 string FunctionFrame_O::summaryOfContents() const {
   return (this->asString());
@@ -318,17 +304,10 @@ const T_sp &FunctionFrame_O::entryReference(int idx) const {
   return (this->_Objects[idx]);
 }
 
-EXPOSE_CLASS(core, FunctionFrame_O);
 
-void FunctionFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<FunctionFrame_O>();
-}
 
-void FunctionFrame_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, FunctionFrame, "", "", _lisp);
-#endif
-}
+
+
 };
 
 namespace core {
@@ -357,15 +336,8 @@ TagbodyFrame_sp TagbodyFrame_O::create(T_sp parent) {
   return (vf);
 }
 
-EXPOSE_CLASS(core, TagbodyFrame_O);
 
-void TagbodyFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<TagbodyFrame_O>();
-}
 
-void TagbodyFrame_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, TagbodyFrame, "", "", _lisp);
-#endif
-}
+
+
 };

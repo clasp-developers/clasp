@@ -253,7 +253,7 @@ T_sp Environment_O::getActivationFrame() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
-EXPOSE_CLASS(core, Environment_O);
+
 
   SYMBOL_SC_(CorePkg, environmentActivationFrame);
   SYMBOL_SC_(CorePkg, currentVisibleEnvironment);
@@ -262,35 +262,8 @@ EXPOSE_CLASS(core, Environment_O);
   SYMBOL_SC_(CorePkg, environmentTypeList);
   SYMBOL_SC_(CorePkg, environmentId);
 
-void Environment_O::exposeCando(Lisp_sp lisp) {
-  class_<Environment_O>()
-      .def("environmentStackAsString", &Environment_O::environmentStackAsString)
-      .def("setRuntimeEnvironment", &Environment_O::setRuntimeEnvironment)
-      .def("classifyVariable", &Environment_O::classifyVariable)
-      .def("classifyFunctionLookup", &Environment_O::classifyFunctionLookup)
-      .def("getParentEnvironment", &Environment_O::getParentEnvironment)
-      .def("setf_metadata", &Environment_O::setf_metadata)
-      .def("push_metadata", &Environment_O::push_metadata)
-      .def("localMetadata", &Environment_O::localMetadata)
-      .def("lookupMetadata", &Environment_O::lookupMetadata)
-      .def("gather_metadata", &Environment_O::gather_metadata)
-      .def("find_tagbody_tag_environment", &Environment_O::find_tagbody_tag_environment)
-      .def("find_block_named_environment", &Environment_O::find_block_named_environment)
-      .def("find_unwindable_environment", &Environment_O::find_unwindable_environment)
-      .def("lexicalEnvironmentP", &Environment_O::lexicalEnvironmentP)
-      .def("unwindProtectEnvironmentP", &Environment_O::unwindProtectEnvironmentP)
-      .def("functionContainerEnvironmentP", &Environment_O::functionContainerEnvironmentP)
-      .def("getBlockSymbolFrame", &Environment_O::getBlockSymbolFrame)
-      .def("classifyTag", &Environment_O::classifyTag)
-      .def("countFunctionContainerEnvironments", &Environment_O::countFunctionContainerEnvironments)
-    ;
-}
 
-void Environment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Environment, "", "", _lisp);
-#endif
-}
+
 
 //
 // Constructor
@@ -832,22 +805,15 @@ string Environment_O::summaryOfContents() const {
 
 LexicalEnvironment_O::LexicalEnvironment_O() : Base(){};
 
-EXPOSE_CLASS(core, LexicalEnvironment_O);
+
 
 void LexicalEnvironment_O::initialize() {
   this->Base::initialize();
   this->_Metadata = HashTableEq_O::create_default();
 }
 
-void LexicalEnvironment_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<LexicalEnvironment_O>();
-}
 
-void LexicalEnvironment_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, LexicalEnvironment, "", "", _lisp);
-#endif
-}
+
 
 T_sp LexicalEnvironment_O::setf_metadata(Symbol_sp key, T_sp val) {
   this->_Metadata->hash_table_setf_gethash(key, val);
@@ -917,17 +883,10 @@ T_mv LexicalEnvironment_O::lookupMetadata(Symbol_sp key) const {
   return (Values(oCdr(it), _lisp->_true(), this->const_sharedThis<Environment_O>()));
 }
 
-EXPOSE_CLASS(core, RuntimeVisibleEnvironment_O);
 
-void RuntimeVisibleEnvironment_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<RuntimeVisibleEnvironment_O>();
-}
 
-void RuntimeVisibleEnvironment_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, RuntimeVisibleEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 RuntimeVisibleEnvironment_O::RuntimeVisibleEnvironment_O() : Base(){};
 
@@ -1153,32 +1112,15 @@ T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
   return obj;
 }
 
-EXPOSE_CLASS(core, ValueEnvironment_O);
 
-void ValueEnvironment_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ValueEnvironment_O>()
-      .def("valueEnvironment_defineSpecialBinding", &ValueEnvironment_O::defineSpecialBinding)
-      .def("valueEnvironment_defineLexicalBinding", &ValueEnvironment_O::defineLexicalBinding);
-}
 
-void ValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ValueEnvironment, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, FunctionValueEnvironment_O);
 
-void FunctionValueEnvironment_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<FunctionValueEnvironment_O>()
-      .def("bindFunction", &FunctionValueEnvironment_O::bind_function);
-}
 
-void FunctionValueEnvironment_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, FunctionValueEnvironment, "", "", _lisp);
-#endif
-}
+
+
+
+
 
 T_sp FunctionValueEnvironment_O::getActivationFrame() const {
   //	if (this -> isNil() ) return _Nil<ActivationFrame_O>();
@@ -1274,17 +1216,10 @@ CL_DEFMETHOD int FunctionValueEnvironment_O::bind_function(T_sp functionName, Fu
   return nextIdx;
 }
 
-EXPOSE_CLASS(core, CompileTimeEnvironment_O);
 
-void CompileTimeEnvironment_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<CompileTimeEnvironment_O>();
-}
 
-void CompileTimeEnvironment_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CompileTimeEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 CompileTimeEnvironment_O::CompileTimeEnvironment_O() : Base(){};
 
@@ -1312,18 +1247,10 @@ CL_DEFUN UnwindProtectEnvironment_sp UnwindProtectEnvironment_O::make(List_sp cl
   return environ;
 }
 
-EXPOSE_CLASS(core, UnwindProtectEnvironment_O);
 
-void UnwindProtectEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<UnwindProtectEnvironment_O>()
-      .def("UnwindProtectEnvironment-cleanupForm", &UnwindProtectEnvironment_O::cleanupForm);
-}
 
-void UnwindProtectEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, UnwindProtectEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 T_sp UnwindProtectEnvironment_O::find_unwindable_environment() const {
   _OF();
@@ -1361,17 +1288,10 @@ CL_DEFUN BlockEnvironment_sp BlockEnvironment_O::make(Symbol_sp blockSymbol, T_s
   return environ;
 }
 
-EXPOSE_CLASS(core, BlockEnvironment_O);
 
-void BlockEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<BlockEnvironment_O>();
-}
 
-void BlockEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BlockEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 string BlockEnvironment_O::summaryOfContents() const {
   int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
@@ -1423,17 +1343,10 @@ CL_DEFUN CatchEnvironment_sp CatchEnvironment_O::make(T_sp parent) {
   return environ;
 }
 
-EXPOSE_CLASS(core, CatchEnvironment_O);
 
-void CatchEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<CatchEnvironment_O>();
-}
 
-void CatchEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CatchEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 string CatchEnvironment_O::summaryOfContents() const {
   //	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
@@ -1464,17 +1377,10 @@ CL_DEFUN FunctionContainerEnvironment_sp FunctionContainerEnvironment_O::make(T_
   return environ;
 }
 
-EXPOSE_CLASS(core, FunctionContainerEnvironment_O);
 
-void FunctionContainerEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<FunctionContainerEnvironment_O>();
-}
 
-void FunctionContainerEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, FunctionContainerEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 string FunctionContainerEnvironment_O::summaryOfContents() const {
   stringstream ss;
@@ -1527,18 +1433,10 @@ CL_DEFUN TagbodyEnvironment_sp TagbodyEnvironment_O::make(T_sp parent) {
   return environ;
 }
 
-EXPOSE_CLASS(core, TagbodyEnvironment_O);
 
-void TagbodyEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<TagbodyEnvironment_O>()
-      .def("addTag", &TagbodyEnvironment_O::addTag);
-}
 
-void TagbodyEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, TagbodyEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 string TagbodyEnvironment_O::summaryOfContents() const {
   int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
@@ -1642,18 +1540,10 @@ CL_DEFUN MacroletEnvironment_sp MacroletEnvironment_O::make(T_sp parent) {
   return environ;
 }
 
-EXPOSE_CLASS(core, MacroletEnvironment_O);
 
-void MacroletEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<MacroletEnvironment_O>()
-      .def("addMacro", &MacroletEnvironment_O::addMacro);
-}
 
-void MacroletEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, MacroletEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 void MacroletEnvironment_O::initialize() {
   this->Base::initialize();
@@ -1712,18 +1602,10 @@ CL_DEFMETHOD void SymbolMacroletEnvironment_O::addSymbolMacro(Symbol_sp sym, Fun
   this->_Macros->hash_table_setf_gethash(sym, expansion);
 }
 
-EXPOSE_CLASS(core, SymbolMacroletEnvironment_O);
 
-void SymbolMacroletEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<SymbolMacroletEnvironment_O>()
-      .def("addSymbolMacro", &SymbolMacroletEnvironment_O::addSymbolMacro);
-}
 
-void SymbolMacroletEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SymbolMacroletEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 void SymbolMacroletEnvironment_O::initialize() {
   this->Base::initialize();
@@ -1767,18 +1649,10 @@ void StackValueEnvironment_O::addValue(T_sp sym, T_sp value) {
   this->_Values->hash_table_setf_gethash(sym, value);
 }
 
-EXPOSE_CLASS(core, StackValueEnvironment_O);
 
-void StackValueEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<StackValueEnvironment_O>()
-      ;
-}
 
-void StackValueEnvironment_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StackValueEnvironment, "", "", _lisp);
-#endif
-}
+
+
 
 void StackValueEnvironment_O::initialize() {
   this->Base::initialize();
@@ -1797,11 +1671,6 @@ string StackValueEnvironment_O::summaryOfContents() const {
   return ss.str();
 }
 
-REGISTER_CLASS(core, GlueEnvironment_O);
-
-void GlueEnvironment_O::exposeCando(Lisp_sp lisp) {
-  class_<GlueEnvironment_O>();
-}
 
 void GlueEnvironment_O::initialize() {
   this->Base::initialize();

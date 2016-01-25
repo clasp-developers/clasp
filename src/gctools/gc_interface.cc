@@ -644,7 +644,7 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
     printf("%s:%d ERROR!!!! The static class symbol %s was not found!\n", __FILE__, __LINE__, full_name.c_str() );
     abort();
   }
-  TheClass::___set_static_ClassSymbol(store._Symbol);
+  TheClass::set_static_class_symbol(store._Symbol);
 }
 
 void set_static_class_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
@@ -678,11 +678,11 @@ NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
   gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable();
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
-  TheClass::___staticClass = class_val;
+  TheClass::static_class = class_val;
   TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
   gctools::tagged_pointer<core::LispObjectCreator<TheClass>> cb = gctools::ClassAllocator<core::LispObjectCreator<TheClass>>::allocate_class();
-  TheClass::___set_static_creator(cb);
+  TheClass::set_static_creator(cb);
   class_val->setCreator(TheClass::static_creator);
   return class_val;
 }
@@ -724,6 +724,12 @@ void calculate_class_precedence_lists()
 //
 #include <clasp/core/wrappers.h>
 #include <clasp/core/external_wrappers.h>
+
+#define EXPOSE_STATIC_CLASS_VARIABLES
+#ifndef SCRAPING
+  #include <generated/initClassesAndMethods_inc.h>
+#endif
+#undef EXPOSE_STATIC_CLASS_VARIABLES
 
 #define EXPOSE_METHODS
 #ifndef SCRAPING

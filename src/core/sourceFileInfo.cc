@@ -366,28 +366,14 @@ const char *SourceFileInfo_O::permanentFileName() {
   return this->_PermanentFileName;
 }
 
-EXPOSE_CLASS(core, SourceFileInfo_O);
+
 
   SYMBOL_EXPORT_SC_(CorePkg, walkToFindSourceInfo);
 
-void SourceFileInfo_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<SourceFileInfo_O>()
-      .def("SourceFileInfo-pathname", &SourceFileInfo_O::pathname)
-      .def("SourceFileInfo-sourceDebugNamestring", &SourceFileInfo_O::sourceDebugNamestring)
-      .def("SourceFileInfo-sourceDebugOffset", &SourceFileInfo_O::sourceDebugOffset)
-      .def("SourceFileInfo-useLineno", &SourceFileInfo_O::useLineno);
-  //	SYMBOL_SC_(CorePkg,SourceFileInfoGetOrCreate);
-  //	Defun(SourceFileInfoGetOrCreate);
 
-}
 
-void SourceFileInfo_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SourceFileInfo, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, SourcePosInfo_O);
+
 
 string SourcePosInfo_O::__repr__() const {
   stringstream ss;
@@ -400,15 +386,8 @@ string SourcePosInfo_O::__repr__() const {
   return ss.str();
 }
 
-void SourcePosInfo_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<SourcePosInfo_O>();
-}
 
-void SourcePosInfo_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SourcePosInfo, "", "", _lisp);
-#endif
-}
+
 
 CL_LAMBDA(dumpAll);
 CL_DECLARE();
@@ -425,7 +404,7 @@ CL_DEFUN void core__dump_source_manager(T_sp dumpAll) {
   }
 };
 
-EXPOSE_CLASS(core, SourceManager_O);
+
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -437,16 +416,8 @@ CL_DEFUN SourceManager_sp core__make_source_manager() {
 
   SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);
 
-void SourceManager_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<SourceManager_O>();
 
-}
 
-void SourceManager_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SourceManager, "", "", _lisp);
-#endif
-}
 
 void SourceManager_O::initialize() {
   this->Base::initialize();

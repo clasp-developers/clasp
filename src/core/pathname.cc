@@ -307,9 +307,6 @@ BEGIN:
   return directory;
 }
 
-#define ARGS_Pathname_O_makePathname "(host device directory name type version fromcase &optional logical)"
-#define DECL_Pathname_O_makePathname ""
-#define DOCS_Pathname_O_makePathname "makePathname - force it to be logical-pathname with logical"
 Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
                                      T_sp name, T_sp type, T_sp version,
                                      T_sp fromcase, bool logical) {
@@ -1982,17 +1979,10 @@ begin:
   SIMPLE_ERROR(BF("%s admits no logical pathname translations") % _rep_(pathname));
 }
 
-EXPOSE_CLASS(core, Pathname_O);
 
-void Pathname_O::exposeCando(Lisp_sp lisp) {
-  class_<Pathname_O>();
-}
 
-void Pathname_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Pathname, "", "", _lisp);
-#endif
-};
+
+
 
 string Pathname_O::__repr__() const {
   stringstream ss;
@@ -2005,17 +1995,10 @@ string Pathname_O::__repr__() const {
   return ss.str();
 }
 
-EXPOSE_CLASS(core, LogicalPathname_O);
 
-void LogicalPathname_O::exposeCando(Lisp_sp lisp) {
-  class_<LogicalPathname_O>();
-}
 
-void LogicalPathname_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, LogicalPathname, "", "", _lisp);
-#endif
-};
+
+
 
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilename);
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilePathname);

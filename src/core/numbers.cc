@@ -779,9 +779,6 @@ CL_DEFUN Number_sp contagen_div(Number_sp na, Number_sp nb) {
   SIMPLE_ERROR(BF("Add support to div numbers %s[%s] and %s[%s]") % _rep_(na) % na->_instanceClass()->classNameAsString() % _rep_(nb) % nb->_instanceClass()->classNameAsString());
 }
 
-#define ARGS_cl___PLUS_ "(&rest numbers)"
-#define DECL_cl___PLUS_ ""
-#define DOCS_cl___PLUS_ "See CLHS: +"
 CL_LAMBDA(&rest numbers);
 CL_DEFUN T_mv cl___PLUS_(List_sp numbers) {
   if (numbers.nilp())
@@ -820,9 +817,6 @@ CL_DEFUN T_mv cl___MINUS_(Number_sp num, List_sp numbers) {
   return (Values(result));
 }
 
-#define ARGS_cl___DIVIDE_ "(num &rest numbers)"
-#define DECL_cl___DIVIDE_ ""
-#define DOCS_cl___DIVIDE_ "See CLHS: /"
 CL_LAMBDA(num &rest numbers);
 CL_DEFUN T_sp cl___DIVIDE_(Number_sp num, List_sp numbers) {
   if (numbers.nilp()) {
@@ -1137,33 +1131,21 @@ CL_DEFUN bool two_arg__EQ_(Number_sp x, Number_sp y) {
   return basic_compare(x, y) == 0;
 }
 
-#define ARGS_cl___LT_ "(&rest args)"
-#define DECL_cl___LT_ ""
-#define DOCS_cl___LT_ "LT less than function"
 CL_LAMBDA(&rest args);
 CL_DEFUN T_sp cl___LT_(List_sp args) {
   return numbers_monotonic(-1, 1, args);
 };
 
-#define ARGS_cl___GT_ "(&rest args)"
-#define DECL_cl___GT_ ""
-#define DOCS_cl___GT_ "GT less than function"
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___GT_(List_sp args) {
   return (Values(numbers_monotonic(1, 1, args)));
 };
 
-#define ARGS_cl___LE_ "(&rest args)"
-#define DECL_cl___LE_ ""
-#define DOCS_cl___LE_ "LT less than function"
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___LE_(List_sp args) {
   return (Values(numbers_monotonic(-1, 0, args)));
 };
 
-#define ARGS_cl___GE_ "(&rest args)"
-#define DECL_cl___GE_ ""
-#define DOCS_cl___GE_ "GT less than function"
 CL_LAMBDA(&rest args);
 CL_DEFUN T_mv cl___GE_(List_sp args) {
   return (Values(numbers_monotonic(1, 0, args)));
@@ -1308,7 +1290,7 @@ CL_DEFUN T_sp cl___EQ_(List_sp args) {
   return _lisp->_true();
 };
 
-EXPOSE_CLASS(core, Number_O);
+
 
 SYMBOL_EXPORT_SC_(ClPkg, max);
 SYMBOL_EXPORT_SC_(ClPkg, min);
@@ -1325,20 +1307,7 @@ SYMBOL_EXPORT_SC_(ClPkg, _TIMES_);
 SYMBOL_EXPORT_SC_(ClPkg, _MINUS_);
 SYMBOL_EXPORT_SC_(ClPkg, _DIVIDE_);
 
-void Number_O::exposeCando(Lisp_sp lisp) {
-  class_<Number_O>()
-      //	    .def("core:zerop",&Number_O::zerop)
-      //	    .def("signum",&Number_O::signum)
-      //      .def("abs",&Number_O::abs)
-      //	    .def("core:onePlus",&Number_O::onePlus)
-      //	    .def("core:oneMinus",&Number_O::oneMinus)
-      ;
-}
-void Number_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Number, "", "", _lisp);
-#endif
-}
+
 
 Number_sp Number_O::create(double val) {
   return DoubleFloat_O::create(val);
@@ -1387,35 +1356,15 @@ bool Number_O::equal(T_sp obj) const {
     }
 #endif
 
-EXPOSE_CLASS(core, Real_O);
 
-void Real_O::exposeCando(Lisp_sp lisp) {
-  class_<Real_O>()
-      //	    .def("minusp",&Real_O::minusp)
-      //      .def("plusp",&Real_O::plusp)
-      ;
-//  af_def(ClPkg, "minusp", &clasp_minusp);
-//  af_def(ClPkg, "plusp", &clasp_plusp);
-}
 
-void Real_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
-#endif
-};
 
-EXPOSE_CLASS(core, Float_O);
 
-void Float_O::exposeCando(Lisp_sp lisp) {
-  class_<Float_O>()
-      .def("core:castToInteger", &Float_O::castToInteger);
-}
 
-void Float_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Float, "", "", _lisp);
-#endif
-};
+
+
+
+
 
 Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
   mpz_class q, r;
@@ -1434,17 +1383,10 @@ Rational_sp Rational_O::create(Integer_sp num, Integer_sp denom) {
   return Rational_O::create(clasp_to_mpz(num), clasp_to_mpz(denom));
 }
 
-EXPOSE_CLASS(core, Rational_O);
 
-void Rational_O::exposeCando(Lisp_sp lisp) {
-  class_<Rational_O>();
-}
 
-void Rational_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Rational, "", "", _lisp);
-#endif
-};
+
+
 
 CL_LAMBDA(num);
 CL_DECLARE();
@@ -1563,7 +1505,7 @@ uint64_t Integer_O::as_uint64_() const {
   SUBIMP();
 };
 
-EXPOSE_CLASS(core, Integer_O);
+
 
 SYMBOL_EXPORT_SC_(ClPkg, logand);
 SYMBOL_EXPORT_SC_(ClPkg, logior);
@@ -1577,37 +1519,12 @@ SYMBOL_EXPORT_SC_(ClPkg, logorc1);
 SYMBOL_EXPORT_SC_(ClPkg, logorc2);
 SYMBOL_EXPORT_SC_(ClPkg, logxor);
 
-void Integer_O::exposeCando(Lisp_sp lisp) {
-  class_<Integer_O>()
-      // .def("evenp",&Integer_O::evenp)
-      // .def("oddp",&Integer_O::oddp)
-      ;
-//  af_def(ClPkg, "evenp", &clasp_evenp);
-//  af_def(ClPkg, "oddp", &clasp_oddp);
-}
 
-void Integer_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Integer, "", "", _lisp);
-#endif
-};
 
-EXPOSE_CLASS(core, Fixnum_dummy_O);
 
-void Fixnum_dummy_O::exposeCando(Lisp_sp lisp) {
-  core::class_<Fixnum_dummy_O>();
-}
-void Fixnum_dummy_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Fixnum, "", "", _lisp)
-      //	    .def("valueAsString", &Fixnum_O::valueAsString )
-      //	    .def("setFromString", &Fixnum_O::setFromString )
-      //	    .def("set", &Fixnum_O::set)
-      //	    .def("get", &Fixnum_O::get)
-      ;
-//    boost::python::def("create_Fixnum",&create_Fixnum );
-#endif
-}
+
+
+
 
 #ifdef USE_HEAP_FIXNUM
 
@@ -1916,18 +1833,10 @@ string ShortFloat_O::__repr__() const {
   return ss.str();
 }
 
-EXPOSE_CLASS(core, ShortFloat_O);
 
-void ShortFloat_O::exposeCando(Lisp_sp lisp) {
-  class_<ShortFloat_O>();
-  ;
-}
 
-void ShortFloat_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
-#endif
-}
+
+
 
 //----------------------------------------------------------------------
 
@@ -2069,18 +1978,10 @@ void ShortFloat_O::exposePython(Lisp_sp lisp) {
 
 #endif
 
-EXPOSE_CLASS(core, SingleFloat_dummy_O);
 
-void SingleFloat_dummy_O::exposeCando(Lisp_sp lisp) {
-  class_<SingleFloat_dummy_O>();
-  ;
-}
 
-void SingleFloat_dummy_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
-#endif
-}
+
+
 
 //--------------------------------------------------
 
@@ -2195,26 +2096,10 @@ string DoubleFloat_O::__repr__() const {
   return ss.str();
 }
 
-EXPOSE_CLASS(core, DoubleFloat_O);
 
-void DoubleFloat_O::exposeCando(Lisp_sp lisp) {
-  class_<DoubleFloat_O>()
-      //	    .def("exp",&DoubleFloat_O::exp)
-      //.def("core:isnan", &DoubleFloat_O::isnan);
-      SYMBOL_SC_(CorePkg, nan);
-  ;
-}
 
-void DoubleFloat_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp)
-      .def("valueAsString", &DoubleFloat_O::valueAsString)
-      .def("setFromString", &DoubleFloat_O::setFromString)
-      //	    .def("set", &DoubleFloat_O::set)
-      //	    .def("get", &DoubleFloat_O::get)
-      ;
-#endif
-}
+
+
 
 // ---------------------------------------------
 //
@@ -2325,18 +2210,10 @@ string LongFloat_O::__repr__() const {
 }
 #endif
 
-EXPOSE_CLASS(core, LongFloat_O);
 
-void LongFloat_O::exposeCando(Lisp_sp lisp) {
-  class_<LongFloat_O>();
-  ;
-}
 
-void LongFloat_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
-#endif
-}
+
+
 
 // --------------------------------------------------------------------------------
 
@@ -2420,7 +2297,7 @@ Number_sp Ratio_O::signum_() const {
   return clasp_signum(this->_numerator);
 }
 
-EXPOSE_CLASS(core, Ratio_O);
+
 
 #if defined(OLD_SERIALIZE)
 void Ratio_O::serialize(serialize::SNode node) {
@@ -2443,16 +2320,8 @@ void Ratio_O::setFromString(const string &str) {
   this->_denominator = Integer_O::create(parts[1]);
 }
 
-void Ratio_O::exposeCando(Lisp_sp lisp) {
-  class_<Ratio_O>();
-  ;
-}
 
-void Ratio_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
-#endif
-}
+
 
 // --------------------------------------------------------------------------------
 
@@ -2535,18 +2404,10 @@ Number_sp Complex_O::abs_() const {
   IMPLEMENT_ME();
 }
 
-EXPOSE_CLASS(core, Complex_O);
 
-void Complex_O::exposeCando(Lisp_sp lisp) {
-  class_<Complex_O>();
-  ;
-}
 
-void Complex_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Real, "", "", _lisp);
-#endif
-}
+
+
 
 /* ----------------------------------------------------------------------
 

@@ -111,22 +111,5 @@ CL_DEFUN bool createDirectory(Path_sp rpath) {
   return bf::create_directory(rpath->getPath());
 }
 
-class Path_Exposer : public Exposer {
-  void exposeCando() {
-    class_<Path_O>()
-        .def("setPath", &Path_O::setPath)
-        .def("string", &Path_O::string)
-        .def("stem", &Path_O::stem)
-        .def("extension", &Path_O::extension)
-        .def("exists", &Path_O::exists);
-  }
 
-  void exposePython() {
-#ifdef USEBOOSTPYTHON //[
-    PYTHON_CLASS(CorePkg, Path, "", "");
-#endif //]
-  }
-};
-
-REGISTER_EXPOSE_CLASS(core, core, Path_O, Path_Exposer);
 };

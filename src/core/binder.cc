@@ -46,22 +46,10 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, Binder_O);
 
-void Binder_O::exposeCando(Lisp_sp lisp) {
-  class_<Binder_O>()
-      ;
-}
 
-void Binder_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Binder, "", "", _lisp)
-      .def("contains", &Binder_O::contains)
-      //	    .def("extend",&Binder_O::extend)
-      .def("lookup", &Binder_O::lookupSymbol)
-      .def("keysAsCons", &Binder_O::allKeysAsCons);
-#endif
-}
+
+
 
 void Binder_O::initialize() {
   this->_Bindings = HashTableEq_O::create_default();

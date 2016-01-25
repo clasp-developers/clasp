@@ -71,9 +71,6 @@ CL_DEFUN bool core__bignump(T_sp obj) {
 };
 
 
-#define ARGS_cl__stringp "(arg)"
-#define DECL_cl__stringp ""
-#define DOCS_cl__stringp "stringP"
 CL_DEFUN bool cl__stringp(T_sp obj) {
   return gc::IsA<String_sp>(obj);
 };
@@ -161,9 +158,6 @@ CL_DEFUN bool cl__numberp(T_sp obj) {
   return gc::IsA<Number_sp>(obj);
 };
 
-#define ARGS_cl__complexp "(arg)"
-#define DECL_cl__complexp ""
-#define DOCS_cl__complexp "complexP"
 CL_DEFUN bool cl__complexp(T_sp obj) {
   return gc::IsA<Complex_sp>(obj);
 };
@@ -182,9 +176,6 @@ CL_DEFUN bool cl__random_state_p(T_sp obj) {
   return gc::IsA<RandomState_sp>(obj);
 };
 
-#define ARGS_cl__rationalp "(arg)"
-#define DECL_cl__rationalp ""
-#define DOCS_cl__rationalp "rationalP"
 CL_DEFUN bool cl__rationalp(T_sp obj) {
   return gc::IsA<Rational_sp>(obj);
 };
@@ -210,37 +201,22 @@ CL_DEFUN bool core__single_float_p(T_sp obj) {
   return gc::IsA<SingleFloat_sp>(obj);
 };
 
-#define ARGS_cl__realp "(arg)"
-#define DECL_cl__realp ""
-#define DOCS_cl__realp "realP"
 CL_DEFUN bool cl__realp(T_sp obj) {
   return gc::IsA<Real_sp>(obj);
 };
 
-#define ARGS_cl__floatp "(arg)"
-#define DECL_cl__floatp ""
-#define DOCS_cl__floatp "floatP"
 CL_DEFUN bool cl__floatp(T_sp obj) {
   return gc::IsA<Float_sp>(obj);
 };
 
-#define ARGS_cl__vectorp "(arg)"
-#define DECL_cl__vectorp ""
-#define DOCS_cl__vectorp "vectorP"
 CL_DEFUN bool cl__vectorp(T_sp obj) {
   return gc::IsA<Vector_sp>(obj);
 };
 
-#define ARGS_cl__integerp "(arg)"
-#define DECL_cl__integerp ""
-#define DOCS_cl__integerp "integerP"
 CL_DEFUN bool cl__integerp(T_sp obj) {
   return gc::IsA<Integer_sp>(obj);
 };
 
-#define ARGS_cl__keywordp "(arg)"
-#define DECL_cl__keywordp ""
-#define DOCS_cl__keywordp "keywordP"
 CL_DEFUN bool cl__keywordp(T_sp obj) {
   if (Symbol_sp s = obj.asOrNull<Symbol_O>()) {
     return s->isKeywordSymbol();
