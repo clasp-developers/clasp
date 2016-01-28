@@ -83,3 +83,73 @@ and not a simple-function so return (values name class::name nil)"
 
 (defun extract-method-name-from-pointer (pointer tag)
   (extract-function-name-from-pointer pointer tag))
+
+
+(defun split-by-one-char (string split-char)
+  "* Arguments
+- string :: A string.
+- split-char :: A character to split at.
+* Description
+Returns a list of substrings of string
+divided by ONE split-char each.
+Note: Two consecutive split-char will be seen as
+if there were an empty string between them."
+  (loop for i = 0 then (1+ j)
+     as j = (position split-char string :start i)
+     collect (string-trim '(#\space #\return #\tab) (subseq string i j))
+     while j))
+
+(defconstant +white-space+ '(#\space #\return #\tab))
+
+(defun split-type-name (type-name)
+  "* Arguments
+- type-name :: A string.
+* Description
+Split a string like \"const string &b\" into (values \"const string &\" \"b\") pair.  
+Trim whitespace from each member of the pair."
+  (declare (optimize (debug 3)))
+  (let* ((name-start (position-if #'(lambda (c)
+                                      (not (alphanumericp c)))
+                                  type-name
+                                  :from-end t))
+         (first (subseq type-name 0 (1+ name-start)))
+         (second (subseq type-name (1+ name-start))))
+    (values (string-trim +white-space+ first) (string-trim +white-space+ second))))
+
+(defun extract-lambda-list-from-c++-arguments (typed-arguments)
+  "* Arguments
+- typed-arguments :: A string
+* Description
+Split the typed arguments (int a, int b, string c)
+into two lists (int int string) and (a b c) and return as two values"
+  (declare (optimize (debug 3)))
+  (if (or (string= typed-arguments "")
+          (string= typed-arguments "void"))
+      ""
+      (let* ((split-args (split-by-one-char typed-arguments #\,))
+             (lambda-list (with-output-to-string (sout)
+                            (dolist (type-arg split-args)
+                              (multiple-value-bind (type argname)
+                                  (split-type-name type-arg)
+                                (when (string= argname "t")
+                                  (error "An argument list ~a had the name T - Common Lisp won't like that - change it to something else" typed-arguments))
+                                (format sout "~a " argname))))))
+        (string-trim +white-space+ lambda-list))))
+
+(defun prepend-dispatch-variable (lambda-list class)
+  (with-output-to-string (sout)
+    (format sout "(this !) ")
+    (format sout "~a" lambda-list)))
+
+(defun parse-lambda-list-from-signature (signature &key class)
+  "* Arguments 
+- signature :: A string.
+* Description
+- Extract from the C++ function arguments a lambda list."
+  (let* ((open-paren (position #\( signature))
+         (close-paren (position #\) signature))
+         (arguments (string-trim +white-space+ (subseq signature (1+ open-paren) close-paren)))
+         (lambda-list (extract-lambda-list-from-c++-arguments arguments)))
+    (if class
+        (prepend-dispatch-variable lambda-list class)
+        lambda-list)))
