@@ -28,7 +28,7 @@ last FORM.  If not, simply returns NIL."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(si::fset ',name ,function t ,pprint))
+       ,(ext:register-with-pde whole `(si::fset ',name ,function t ,pprint ',vl))
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
@@ -140,12 +140,14 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                                                ,@doclist (block ,(si::function-block-name name) ,@body))))
                     ;;(bformat t "DEFUN global-function --> %s\n" global-function )
                     `(progn
-                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function nil ',vl))
+                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function nil t ',vl))
                        ,@(si::expand-set-documentation name 'function doc-string)
                        ,(and *defun-inline-hook*
                              (funcall *defun-inline-hook* name global-function))
                        ',name)))))
-          t)
+          t
+          nil
+          '(name lambda-list &body body))
 
 
 ;;;

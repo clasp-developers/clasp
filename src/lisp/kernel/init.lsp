@@ -330,7 +330,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 		       (if decl (setq decl (list (cons 'declare decl))))
 		       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
 			 ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-			 (ext::register-with-pde def `(si::*fset ',name ,func)))))
+			 (ext::register-with-pde def `(si::*fset ',name ,func nil nil ',lambda-list)))))
 		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
 
 		 ))
@@ -472,9 +472,14 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 (si::*fset 'fset
-		 #'(lambda (whole env)
-		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole) ,(fifth whole)))
-		 t)
+           #'(lambda (whole env)
+               `(si::*fset ,(second whole) ; name
+                           ,(third whole) ; body
+                           ,(fourth whole) ; macro-p
+                           ,(fifth whole) ; pprint
+                           ,(sixth whole) ; lambda-list
+                           ))
+           t)
 (export 'fset)
 
 

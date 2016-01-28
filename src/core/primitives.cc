@@ -820,10 +820,19 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-CL_LAMBDA(function-name fn &optional is-macro lambda-list);
+CL_LAMBDA(function-name fn &optional is-macro pretty-print lambda-list);
 CL_DECLARE();
-CL_DOCSTRING("fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not.");
-CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp is_macro, T_sp lambda_list) {
+CL_DOCSTRING(R"doc(* Arguments
+- function-name :: The name of the function to bind.
+- fn :: The function object.
+- is-macro :: A boolean.
+- pretty-print : A boolean.
+- lambda-list : A lambda-list or nil.
+* Description
+Bind a function to the function slot of a symbol
+- handles symbol function-name and (SETF XXXX) names. 
+IS-MACRO defines if the function is a macro or not. PRETTY-PRINT was inherited from ecl - I don't know what its for.  LAMBDA-LIST passes the lambda-list.)doc");
+CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp is_macro, T_sp pretty_print, T_sp lambda_list) {
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (is_macro.isTrue()) {
     functionObject->setKind(kw::_sym_macro);
