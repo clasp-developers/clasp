@@ -53,6 +53,7 @@ public:
     this->kind = k;
   }
   T_sp lambdaList() const;
+  void setf_lambda_list(T_sp lambda_list);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();

@@ -911,16 +911,6 @@ void lisp_addClass(Symbol_sp classSymbol) {
   //	_lisp->addClass(classSymbol);
 }
 
-#if 0
-void lisp_addClassAndInitialize(Symbol_sp classSymbol,
-                                Creator *cb,
-                                Symbol_sp base1ClassSymbol,
-                                Symbol_sp base2ClassSymbol,
-                                Symbol_sp base3ClassSymbol) {
-  _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
-}
-
-#endif
 List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   if (args == "")
     return _Nil<T_O>();
@@ -951,6 +941,22 @@ LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List
   return llh;
 }
 
+
+/*! Insert the package qualified class_symbol into the lambda list wherever a ! is seen */
+string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
+{
+  stringstream new_lambda;
+  for ( auto c : lambda ) {
+    if ( c == '!' ) {
+      new_lambda << class_symbol->formattedName(true);
+    } else {
+      new_lambda << c;
+    }
+  }
+  return new_lambda.str();
+}
+
+
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
@@ -958,12 +964,13 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      Symbol_sp classSymbol,
                                      gctools::tagged_pointer<BuiltinClosure> methoid,
                                      int TemplateDispatchOn,
-                                     const string &arguments,
+                                     const string &raw_arguments,
                                      const string &declares,
                                      const string &docstring,
                                      bool autoExport,
                                      int number_of_required_arguments,
                                      const std::set<int> pureOutIndices) {
+  string arguments = fix_method_lambda(classSymbol,raw_arguments);
   Class_sp receiver_class = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   Symbol_sp className = receiver_class->name();
 #if 0
@@ -982,15 +989,11 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     llhandler = LambdaListHandler_O::create(number_of_required_arguments, pureOutIndices);
   } else if (arguments != "") {
     List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
-    /*-----*/
-    MULTIPLE_VALUES_CONTEXT();
     T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
     Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(1));
     Symbol_sp sd_class_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(2));
     List_sp llproc = coerce_to_list(tllproc);
-    /*-----*/
-
     if (sd_class_symbol.notnilp() && sd_class_symbol != classSymbol) {
       SIMPLE_ERROR(BF("Mismatch between hard coded class[%s] and"
                       " lambda-list single-dispatch argument class[%s] in argument list: %s") %

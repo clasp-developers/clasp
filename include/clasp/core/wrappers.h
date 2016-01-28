@@ -226,7 +226,7 @@ public:
     _G();
     this->setup_class(makerName);
   }
-
+ 
   // non-const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...),

@@ -104,9 +104,9 @@ string PosixTime_O::toSimpleString() {
 }
 
 CL_LISPIFY_NAME("sub");
-CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
+CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp tt) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-  result->_Duration = this->_Time - t->_Time;
+  result->_Duration = this->_Time - tt->_Time;
   return result;
 }
 
@@ -141,9 +141,9 @@ void PosixTimeDuration_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 CL_LISPIFY_NAME("sub");
-CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
+CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp tt) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-  result->_Duration = this->_Duration - t->_Duration;
+  result->_Duration = this->_Duration - tt->_Duration;
   return result;
 }
 

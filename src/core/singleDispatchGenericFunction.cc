@@ -111,6 +111,10 @@ T_sp SingleDispatchGenericFunctionClosure::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
+void SingleDispatchGenericFunctionClosure::setf_lambda_list(T_sp ll) {
+  // Do nothing
+};
+
 void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp method) {
   _OF();
   // Look to see if the method is already defined

@@ -92,6 +92,10 @@ core::T_sp CompiledClosure::lambdaList() const {
   return this->_lambdaList;
 }
 
+void CompiledClosure::setf_lambda_list(core::T_sp lambda_list) {
+  this->_lambdaList = lambda_list;
+}
+
 CL_DEFUN void compiler__setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs) {
   auto closure = cf->closure.as<CompiledClosure>();
   closure->setAssociatedFunctions(associatedFuncs);

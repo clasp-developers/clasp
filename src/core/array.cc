@@ -158,7 +158,7 @@ Symbol_sp Array_O::element_type_as_symbol() const {
 }
 
 CL_LISPIFY_NAME("cl:aref");
-CL_LAMBDA((core::self core::array) &rest core::indices);
+CL_LAMBDA((core::self cl:array) &rest core::indices);
 CL_DEFMETHOD T_sp Array_O::aref(List_sp indices) const {
   _OF();
   SUBCLASS_MUST_IMPLEMENT();

@@ -473,7 +473,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (si::*fset 'fset
 		 #'(lambda (whole env)
-		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
+		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole) ,(fifth whole)))
 		 t)
 (export 'fset)
 

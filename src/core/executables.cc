@@ -121,6 +121,10 @@ T_sp BuiltinClosure::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
+void BuiltinClosure::setf_lambda_list(T_sp lambda_list) {
+  // Do nothing
+}
+
 LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
@@ -131,6 +135,10 @@ InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_s
 
 T_sp InterpretedClosure::lambdaList() const {
   return this->lambdaListHandler()->lambdaList();
+}
+
+void InterpretedClosure::setf_lambda_list(T_sp lambda_list) {
+  // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
 LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
@@ -154,6 +162,11 @@ LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
 T_mv Function_O::lambdaList() {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return Values(this->closure->lambdaList(), _lisp->_true());
+}
+
+void Function_O::setf_lambda_list(T_sp ll) {
+  ASSERTF(this->closure, BF("The Function closure is NULL"));
+  this->closure->setf_lambda_list(ll);
 }
 
 CL_LISPIFY_NAME("core:cleavir_ast");
@@ -248,14 +261,11 @@ CL_LAMBDA(fn);
 CL_DECLARE();
 CL_DOCSTRING("functionLambdaExpression");
 CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
-  List_sp code = _Nil<List_V>();
-  if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
-    code = ic->_code;
-  }
+  T_sp code;
+  code = core__function_lambda_list(fn);
   bool closedp = true; // fn->closedEnvironment().notnilp();
   T_sp name = fn->closure->name;
-  T_sp tcode = code;
-  return Values(tcode, _lisp->_boolean(closedp), name);
+  return Values(code, _lisp->_boolean(closedp), name);
 };
 
 CL_LAMBDA(fn);

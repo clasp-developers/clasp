@@ -679,7 +679,6 @@ CL_DEFUN T_sp core__treat_as_special_operator_p(T_sp sym) {
 };
 #endif
 
-CL_LAMBDA(integer count);
 CL_DECLARE();
 CL_DOCSTRING("CLHS: ash");
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
@@ -821,16 +820,17 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-CL_LAMBDA(function-name fn &optional macro);
+CL_LAMBDA(function-name fn &optional is-macro lambda-list);
 CL_DECLARE();
 CL_DOCSTRING("fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not.");
-CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
+CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp is_macro, T_sp lambda_list) {
   ASSERTF(functionObject, BF("function is undefined\n"));
-  if (macro.isTrue()) {
+  if (is_macro.isTrue()) {
     functionObject->setKind(kw::_sym_macro);
   } else {
     functionObject->setKind(kw::_sym_function);
   }
+  functionObject->setf_lambda_list(lambda_list);
   if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()) {
     functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
   }

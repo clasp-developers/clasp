@@ -39,11 +39,6 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp InstanceClosure::lambdaList() const {
-  printf("%s:%d InstanceClosure::lambdaList returning NIL\n", __FILE__, __LINE__);
-  return _Nil<T_O>();
-}
-
 LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
