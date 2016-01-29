@@ -974,7 +974,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
 
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
-  Environment_sp evaluateEnvironment;
+  T_sp evaluateEnvironment;
   // SPECIFIC TO LET FROM HERE ON DOWN
   evaluateEnvironment = parentEnvironment;
   int debugInfoIndex = 0;
@@ -1049,8 +1049,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
 
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
-  Environment_sp evaluateEnvironment;
-
+  T_sp evaluateEnvironment;
   // SPECIFIC TO LET* FROM HERE ON DOWN
   evaluateEnvironment = newEnvironment; // SPECIFIC TO LET*
   int debugInfoIndex = 0;

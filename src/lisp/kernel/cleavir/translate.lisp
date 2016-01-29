@@ -880,7 +880,7 @@ nil)
 (defun describe-form (form)
   (when (consp form)
     (cond
-      ((eq 'core:*fset (car form))
+      ((eq 'core:fset (car form))
        (let* ((name (cadr (cadr form)))
 	      (is-macro (cadddr form))
 	      (header (if is-macro

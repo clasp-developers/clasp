@@ -199,12 +199,16 @@
     gfun))
 
 (defmethod ensure-generic-function-using-class
-    ((gfun generic-function) name &rest args &key
-     (method-class 'STANDARD-METHOD method-class-p)
-     (generic-function-class (class-of gfun))
-     (delete-methods nil))
+    ((gfun generic-function) name
+     &rest args
+     &key
+       #+clasp (lambda-list nil lambda-list-p)
+       (method-class 'STANDARD-METHOD method-class-p)
+       (generic-function-class (class-of gfun))
+       (delete-methods nil))
   #+compare(print "MLOG - entered ensure-generic-function-using-class (generic-function) generic.lsp 200")
   ;; modify the existing object
+  #+clasp(when lambda-list-p (core:setf-lambda-list gfun lambda-list))
   (setf args (copy-list args))
   (remf args :generic-function-class)
   (remf args :declare)
@@ -241,9 +245,10 @@
 
 (defmethod ensure-generic-function-using-class
     ((gfun null) name &rest args &key
-     (method-class 'STANDARD-METHOD method-class-p)
-     (generic-function-class 'STANDARD-GENERIC-FUNCTION)
-     (delete-methods nil))
+                                   #+clasp lambda-list
+                                   (method-class 'STANDARD-METHOD method-class-p)
+                                   (generic-function-class 'STANDARD-GENERIC-FUNCTION)
+                                   (delete-methods nil))
   (declare (ignore delete-methods gfun))
   #+compare(print (list "MLOG - entered ensure-generic-function-using-class (gfun null) generic.lsp name:" name " args:" args ))
   ;; else create a new generic function object
@@ -254,10 +259,10 @@
   (remf args :delete-methods)
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
-  (apply #'make-instance generic-function-class :name name args))
-
-
-
+  #+ecl(apply #'make-instance generic-function-class :name name args)
+  #+clasp(let ((gfun (apply #'make-instance generic-function-class :name name args)))
+           (core:setf-lambda-list gfun lambda-list)
+           gfun))
 
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
   #+compare(print (list "MLOG starting ensure-generic-function --> name: " name "  args: %" args))

@@ -820,7 +820,7 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-CL_LAMBDA(function-name fn &optional is-macro pretty-print lambda-list);
+CL_LAMBDA(function-name fn &optional is-macro pretty-print (lambda-list nil lambda-list-p));
 CL_DECLARE();
 CL_DOCSTRING(R"doc(* Arguments
 - function-name :: The name of the function to bind.
@@ -832,14 +832,16 @@ CL_DOCSTRING(R"doc(* Arguments
 Bind a function to the function slot of a symbol
 - handles symbol function-name and (SETF XXXX) names. 
 IS-MACRO defines if the function is a macro or not. PRETTY-PRINT was inherited from ecl - I don't know what its for.  LAMBDA-LIST passes the lambda-list.)doc");
-CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp is_macro, T_sp pretty_print, T_sp lambda_list) {
+CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functionObject, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
   ASSERTF(functionObject, BF("function is undefined\n"));
   if (is_macro.isTrue()) {
     functionObject->setKind(kw::_sym_macro);
   } else {
     functionObject->setKind(kw::_sym_function);
   }
-  functionObject->setf_lambda_list(lambda_list);
+  if ( lambda_list_p.notnilp() ) {
+    functionObject->setf_lambda_list(lambda_list);
+  }
   if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()) {
     functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
   }
@@ -1910,7 +1912,6 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
-  SYMBOL_SC_(CorePkg, STARfset);
   SYMBOL_SC_(CorePkg, unbound);
   SYMBOL_EXPORT_SC_(ClPkg, read);
   SYMBOL_EXPORT_SC_(ClPkg, read_preserving_whitespace);

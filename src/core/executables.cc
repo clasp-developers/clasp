@@ -164,7 +164,7 @@ T_mv Function_O::lambdaList() {
   return Values(this->closure->lambdaList(), _lisp->_true());
 }
 
-void Function_O::setf_lambda_list(T_sp ll) {
+CL_DEFMETHOD void Function_O::setf_lambda_list(T_sp ll) {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   this->closure->setf_lambda_list(ll);
 }
