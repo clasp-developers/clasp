@@ -409,14 +409,23 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
 (export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
+(defun default-target-stage ()
+  (if (member :ecl-min *features*)
+      (if (member :clasp-test *features*)
+          "min-test"
+          "min")
+      (if (member :cclasp *features*)
+          (if (member :clasp-test *features*)
+              "cclasp-test"
+              "cclasp")
+          (if (member :clasp-test *features*)
+              "full-test"
+              "full"))))
+
 (defun build-hostname (type &optional stage)
   (let* ((stage (if stage 
-                    stage 
-                    (if (member :ecl-min *features*) 
-                        "min" 
-                        (if (member :cclasp *features*) 
-                            "cclasp" 
-                            "full"))))
+                    stage
+                    (default-target-stage)))
          (type-modified-host-suffix (cond
                                       ((eq type :bc) "bitcode")
                                       (t (build-configuration))))
@@ -559,9 +568,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	      (bformat t "     Deleting bitcode: %s\n" bitcode-path)
 	      (delete-file bitcode-path))))))
 
+
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (member :ecl-min *features*) "min" (if (member :cclasp *features*) "cclasp" "full"))))
+  (let* ((stage (if given-stage
+                    given-stage
+                    (default-target-stage)))
          (garbage-collector (build-configuration))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
@@ -653,7 +665,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 
 
-
 (defvar *init-files*
   '(
     :init
@@ -739,9 +750,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/clos/std-slot-value"
     #P"kernel/clos/slot"
     #P"kernel/clos/boot"
-    #P"kernel/clos/kernel"
-    #P"kernel/clos/method"
-    #P"kernel/clos/combin"
+    #-clasp-test #P"kernel/clos/kernel"
+    #+clasp-test #P"kernel/clos/kernel-test"
+    #-clasp-test #P"kernel/clos/method"
+    #+clasp-test #P"kernel/clos/method-test"
+    #-clasp-test #P"kernel/clos/combin"
+    #+clasp-test #P"kernel/clos/combin-test"
     #P"kernel/clos/std-accessors"
     #P"kernel/clos/defclass"
     #P"kernel/clos/slotvalue"

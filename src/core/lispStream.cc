@@ -5709,6 +5709,7 @@ void clasp_write_string(const string &str, T_sp strm) {
 void clasp_writeln_string(const string &str, T_sp strm) {
   clasp_write_string(str, strm);
   clasp_terpri(strm);
+  clasp_finish_output(strm);
 }
 
 T_sp clasp_filename(T_sp strm, bool errorp) {

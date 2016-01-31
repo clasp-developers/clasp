@@ -262,7 +262,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
 };
 
-CL_LAMBDA(body expectDocString);
+CL_LAMBDA(body &optional expectDocString);
 CL_DECLARE();
 CL_DOCSTRING("Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials");
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {

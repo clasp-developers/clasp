@@ -65,8 +65,7 @@
 ;;; Methods
 
 (defun install-method (name qualifiers specializers lambda-list fun &rest options)
-  (declare (ignore doc)
-	   (notinline ensure-generic-function))
+  (declare (notinline ensure-generic-function))
   #+compare(print (list "MLOG entered install-method name: " name ))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))

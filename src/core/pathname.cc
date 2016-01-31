@@ -1666,9 +1666,15 @@ coerce_to_from_pathname(T_sp x, T_sp host) {
   SIMPLE_ERROR(BF("%s is not a valid from-pathname translation") % _rep_(x));
 }
 
-CL_LAMBDA(&optional (host nil hostp) set);
+CL_LAMBDA(&optional (host nil hostp) translation);
 CL_DECLARE();
-CL_DOCSTRING("core::pathnameTranslations");
+CL_DOCSTRING(R"doc(* Arguments
+- host :: A string or nil.
+- translation :: A list or nil.
+* Description
+If host is nil then return all pathname translations.
+If translation is nil then the pathname translation for the host name is returned.
+If translation is not nil then the pathname translation for the host name is set.)doc");
 CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   if (hostp.nilp())
     return _lisp->pathnameTranslations();
