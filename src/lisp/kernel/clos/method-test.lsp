@@ -44,9 +44,6 @@
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
 
-;;(defmacro method-log (&rest args) `(print (list "METHOD-LOG" ,@args)))
-(defmacro method-log (&rest args) nil)
-
 
 #+clasp
 (defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
@@ -77,7 +74,7 @@
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (declare (notinline make-method-lambda))
-  (method-log "entered defmethod name:" name)
+  (gf-log "entered defmethod name: ~a" name)
   (let* ((*print-length* 3)
 	 (*print-depth* 2)
 	 (qualifiers (loop while (and args (not (listp (first args))))
@@ -87,41 +84,41 @@
 	      (pop args)
 	      (error "Illegal defmethod form: missing lambda list")))
 	 (body args))
-    (method-log "defmethod line 58")
+    (gf-log "defmethod line 58")
     (multiple-value-bind (lambda-list required-parameters specializers)
 	(parse-specialized-lambda-list specialized-lambda-list)
-      (method-log "defmethod line 61")
+      (gf-log "defmethod line 61")
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env)
-	(method-log "defmethod line 64  - about to ensure-generic-function - " name)
+	(gf-log "defmethod line 64  - about to ensure-generic-function - ~a" name)
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
 			       #+compare(print (list "MLOG in defmethod - About to generic-function-method-class generic-function: " generic-function))
 			       (generic-function-method-class generic-function)))
 	       method)
-	  (method-log "defmethod line 68")
+	  (gf-log "defmethod line 68")
 	  (when *clos-booted*
-	    (method-log "defmethod line 70")
+	    (gf-log "defmethod line 70")
 	    (when (symbolp method-class)
 	      (setf method-class (find-class method-class nil)))
-	    (method-log "defmethod line 73 method-class: " method-class)
+	    (gf-log "defmethod line 73 method-class: ~a" method-class)
 	    (if method-class
 		(setf method (class-prototype method-class))
 		(error "Cannot determine the method class for generic functions of type ~A"
 		       (type-of generic-function))))
-	  (method-log "defmethod line 78")
+	  (gf-log "defmethod line 78")
 	  (multiple-value-bind (fn-form options)
 	      (make-method-lambda generic-function method lambda-form env)
-	    (method-log "defmethod line 81")
+	    (gf-log "defmethod line 81")
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
-	    (method-log "defmethod line 84")
+	    (gf-log "defmethod line 84")
 	    (multiple-value-bind (wrapped-lambda wrapped-p)
 		(simplify-lambda name fn-form)
-	      (method-log "defmethod line 87")
+	      (gf-log "defmethod line 87")
 	      (unless wrapped-p
 		(error "Unable to unwrap function"))
-	      (method-log "defmethod line 90")
+	      (gf-log "defmethod line 90")
 	      (ext:register-with-pde
 	       whole
 	       `(prog1
@@ -244,11 +241,11 @@
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
     (multiple-value-bind (declarations body doc)
-        (process-declarations (cddr method-lambda) nil) ;; We don't expect docstring
+        (process-declarations (cddr method-lambda) t) ; We expect docstring
       ;;      (let 
       (values `(lambda (.next-methods. .method-args.
                         ,@(cadr method-lambda))
-                 ,@declarations
+                 (declare ,@declarations) ; process-declarations doesn't return the (DECLARE ...) part so insert it
                  ,doc
                  (flet (,@(and call-next-method-p
                                `((call-next-method (&rest args)
