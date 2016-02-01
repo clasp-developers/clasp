@@ -108,7 +108,7 @@
 		       (type-of generic-function))))
 	  (gf-log "defmethod line 78")
 	  (multiple-value-bind (fn-form options)
-	      (make-method-lambda generic-function method lambda-form env)
+	      (make-method-lambda generic-function method lambda-form name env)
 	    (gf-log "defmethod line 81")
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
@@ -226,7 +226,8 @@
                     block))))
       (values method-lambda declarations documentation))))
 
-(defun make-method-lambda (gf method method-lambda env)
+(defun make-method-lambda (gf method method-lambda name env)
+  (gf-log "make-method-lambda name: ~a" name)
   #+ecl
   (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
       (walk-method-lambda method-lambda env)
@@ -245,7 +246,7 @@
       ;;      (let 
       (values `(lambda (.next-methods. .method-args.
                         ,@(cadr method-lambda))
-                 (declare ,@declarations) ; process-declarations doesn't return the (DECLARE ...) part so insert it
+                 (declare ,@declarations (core:lambda-name ,(intern (bformat nil "%s.make-method-lambda" name))))
                  ,doc
                  (flet (,@(and call-next-method-p
                                `((call-next-method (&rest args)

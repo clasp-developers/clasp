@@ -54,6 +54,10 @@
 		  'standard-optimized-reader-method
 		  'standard-reader-method)))
 
+(break "Take out break after reader-method-class in fixup.lsp")
+
+
+
 #+compare(print "MLOG About to do defmethod writer-method-class in fixup.lsp")
 
 (defmethod writer-method-class ((class std-class)

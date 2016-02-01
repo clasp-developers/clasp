@@ -42,6 +42,8 @@ extern core::Symbol_sp& _sym_name;
 };
 
 namespace core {
+T_mv cl__apply(T_sp head, VaList_sp args);
+
 
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
@@ -100,6 +102,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
   ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
   return applyClosureToActivationFrame(closureP, frob);
 }
+
 
 inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
   gctools::tagged_pointer<Closure> ft = func->closure;

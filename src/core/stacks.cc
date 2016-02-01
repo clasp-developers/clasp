@@ -175,7 +175,7 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
   } else
     closureType = "toplevel";
   string sargs = this->argumentsAsString(256);
-  ss << (BF("#%3d%2s@%p %20s %5d%-3d (%s %s)") % this->_Index % closureType % (void *)closure.raw_() % sourceFileName % lineNumber % column % funcName % sargs).str();
+  ss << (BF("#%3d%2s %20s %5d (%s %s)") % this->_Index % closureType % sourceFileName % lineNumber % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();
