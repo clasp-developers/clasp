@@ -163,7 +163,6 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
   return Values(_Nil<T_O>(), Str_O::create("Provide-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
 }
 
-SYMBOL_EXPORT_SC_(KeywordPkg,clasp_test);
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
@@ -173,7 +172,6 @@ CL_DEFUN T_sp core__startup_image_pathname() {
   List_sp mps = features->memberEq(kw::_sym_use_mps);
   List_sp boehmdc = features->memberEq(kw::_sym_use_boehmdc);
   List_sp bclasp = features->memberEq(kw::_sym_bclasp);
-  List_sp clasp_test = features->memberEq(kw::_sym_clasp_test);
   string strStage = "min";
   if (min.nilp()) {
     if (bclasp.notnilp()) {
@@ -190,10 +188,6 @@ CL_DEFUN T_sp core__startup_image_pathname() {
   } else if (executable.find("cclasp") != string::npos) {
     strStage = "cclasp";
   }
-  string strTest = "";
-  if ( clasp_test.notnilp() ) {
-    strTest = "test-";
-  }
   string strGc;
   if (boehmdc.notnilp()) {
     strGc = "boehmdc";
@@ -203,7 +197,7 @@ CL_DEFUN T_sp core__startup_image_pathname() {
     strGc = "boehm";
   }
   stringstream ss;
-  ss << strStage << "-" << strTest << strGc;
+  ss << strStage << "-" << strGc;
   ss << ":image.fasl";
   Str_sp spath = Str_O::create(ss.str());
   Pathname_sp pn = cl__pathname(spath);
