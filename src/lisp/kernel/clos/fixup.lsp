@@ -33,6 +33,9 @@
 (defclass standard-effective-slot-definition (standard-slot-definition direct-slot-definition))
 |#
 
+
+;;; This will print every form as its compiled
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (format t "Starting fixup.lsp")
   (setq *echo-repl-tpl-read* t)
@@ -53,10 +56,6 @@
 			    structure-class))
 		  'standard-optimized-reader-method
 		  'standard-reader-method)))
-
-(break "Take out break after reader-method-class in fixup.lsp")
-
-
 
 #+compare(print "MLOG About to do defmethod writer-method-class in fixup.lsp")
 
