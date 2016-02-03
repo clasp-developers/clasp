@@ -44,7 +44,7 @@
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
 
-;;(defmacro gf-log (&rest args) `(print (list "GF-LOG" ,@args)))
+;;(defmacro method-log (&rest args) `(print (list "METHOD-LOG" ,@args)))
 (defmacro method-log (&rest args) nil)
 
 
@@ -77,7 +77,7 @@
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (declare (notinline make-method-lambda))
-  (gf-log "entered defmethod name:" name)
+  (method-log "entered defmethod name:" name)
   (let* ((*print-length* 3)
 	 (*print-depth* 2)
 	 (qualifiers (loop while (and args (not (listp (first args))))
@@ -87,41 +87,41 @@
 	      (pop args)
 	      (error "Illegal defmethod form: missing lambda list")))
 	 (body args))
-    (gf-log "defmethod line 58")
+    (method-log "defmethod line 58")
     (multiple-value-bind (lambda-list required-parameters specializers)
 	(parse-specialized-lambda-list specialized-lambda-list)
-      (gf-log "defmethod line 61")
+      (method-log "defmethod line 61")
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env)
-	(gf-log "defmethod line 64  - about to ensure-generic-function - " name)
+	(method-log "defmethod line 64  - about to ensure-generic-function - " name)
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
 			       #+compare(print (list "MLOG in defmethod - About to generic-function-method-class generic-function: " generic-function))
 			       (generic-function-method-class generic-function)))
 	       method)
-	  (gf-log "defmethod line 68")
+	  (method-log "defmethod line 68")
 	  (when *clos-booted*
-	    (gf-log "defmethod line 70")
+	    (method-log "defmethod line 70")
 	    (when (symbolp method-class)
 	      (setf method-class (find-class method-class nil)))
-	    (gf-log "defmethod line 73 method-class: " method-class)
+	    (method-log "defmethod line 73 method-class: " method-class)
 	    (if method-class
 		(setf method (class-prototype method-class))
 		(error "Cannot determine the method class for generic functions of type ~A"
 		       (type-of generic-function))))
-	  (gf-log "defmethod line 78")
+	  (method-log "defmethod line 78")
 	  (multiple-value-bind (fn-form options)
 	      (make-method-lambda generic-function method lambda-form env)
-	    (gf-log "defmethod line 81")
+	    (method-log "defmethod line 81")
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
-	    (gf-log "defmethod line 84")
+	    (method-log "defmethod line 84")
 	    (multiple-value-bind (wrapped-lambda wrapped-p)
 		(simplify-lambda name fn-form)
-	      (gf-log "defmethod line 87")
+	      (method-log "defmethod line 87")
 	      (unless wrapped-p
 		(error "Unable to unwrap function"))
-	      (gf-log "defmethod line 90")
+	      (method-log "defmethod line 90")
 	      (ext:register-with-pde
 	       whole
 	       `(prog1
