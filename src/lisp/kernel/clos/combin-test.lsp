@@ -57,6 +57,7 @@
 	 (error "Malformed effective method form:~%~A" form))
 	((eq (setf first (first form)) 'MAKE-METHOD)
          (coerce `(lambda (.method-args. .next-methods.)
+                    (declare (core:lambda-name effective-method-function.make-method))
                     (flet ((call-next-method (&rest args)
                              (if (not .next-methods.)
                                  (error "No next method")
@@ -71,7 +72,8 @@
           (mapcar #'effective-method-function (third form))))
         (top-level
          (coerce `(lambda (.method-args. no-next-methods)
-                    (declare (ignorable no-next-methods))
+                    (declare (ignorable no-next-methods)
+                             (core:lambda-name effective-method-function.top-level))
                     ,form)
                  'function))
         (t
@@ -87,7 +89,8 @@
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
   #'(lambda (.method-args. no-next-methods)
-      (declare (ignorable no-next-methods))
+      (declare (ignorable no-next-methods)
+               (core:lambda-name combine-method-functions.lambda))
       (apply method .method-args. rest-methods .method-args.))) 
 
 #+compare(print "combin.lsp 121")
@@ -102,7 +105,8 @@
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
   #'(lambda (.method-args. no-next-method)
-      (declare (ignore no-next-method))
+      (declare (ignore no-next-method)
+               (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
         (apply i .method-args. nil .method-args.))
       (if after

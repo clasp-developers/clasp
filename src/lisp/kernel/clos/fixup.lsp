@@ -33,6 +33,9 @@
 (defclass standard-effective-slot-definition (standard-slot-definition direct-slot-definition))
 |#
 
+
+;;; This will print every form as its compiled
+#+(or)
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (format t "Starting fixup.lsp")
   (setq *echo-repl-tpl-read* t)

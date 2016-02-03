@@ -386,7 +386,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if ((currentPackage == myPackage) && !prefixAlways) {
+      if (currentPackage->_findSymbol(this->_Name).notnilp() && !prefixAlways) {
         ss << this->_Name->get();
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {

@@ -204,8 +204,10 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp 
       eval::funcall(function);
     }
     stringstream stail;
+#if 0
     stail << " @";
     stail << o.raw_();
+#endif
     stail << ">";
     clasp_write_string(stail.str(), ostream);
   }

@@ -146,7 +146,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
     return eval::apply_consume_VaList(func, valist);
-  } else if (List_sp cargs = gc::As<Cons_sp>(last)) {
+  } else if (last.consp() ) {
     // Cons as last argument
     int lenFirst = lenArgs - 1;
     int lenRest = cl__length(last);
@@ -156,6 +156,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     for (int i(0); i < lenFirst; ++i) {
       frame[i] = LCC_NEXT_ARG_RAW(args, i);
     }
+    List_sp cargs = gc::As<Cons_sp>(last);
     for (int i(lenFirst); i < nargs; ++i) {
       frame[i] = oCar(cargs).raw_();
       cargs = oCdr(cargs);

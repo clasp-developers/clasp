@@ -258,10 +258,13 @@
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
+  (gf-log "About to test method-class-p")
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
+  (gf-log "About to make-instance (class-of generic-function-class) -> ~a" (class-of generic-function-class))
   #+ecl(apply #'make-instance generic-function-class :name name args)
   #+clasp(let ((gfun (apply #'make-instance generic-function-class :name name args)))
+           (gf-log "Did make-instance")
            (core:setf-lambda-list gfun lambda-list)
            gfun))
 

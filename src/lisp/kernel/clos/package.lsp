@@ -159,8 +159,10 @@
 
 (export '*environment-contains-closure-hook*)
 
-(defmacro gf-log (fmt &rest fmt-args)
-  `(progn
-     (format t "GF-LOG:  ")
-     (format t ,fmt ,@fmt-args)
-     (format t "~%")))
+#+(or)(defmacro gf-log (fmt &rest fmt-args)
+        `(progn
+           (format t "GF-LOG:  ")
+           (format t ,fmt ,@fmt-args)
+           (format t "~%")))
+
+(defmacro gf-log (fmt &rest fmt-args) nil)

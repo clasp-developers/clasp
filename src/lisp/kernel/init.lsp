@@ -411,16 +411,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun default-target-stage ()
   (if (member :ecl-min *features*)
-      (if (member :clasp-test *features*)
-          "min-test"
-          "min")
+      "min"
       (if (member :cclasp *features*)
-          (if (member :clasp-test *features*)
-              "cclasp-test"
-              "cclasp")
-          (if (member :clasp-test *features*)
-              "full-test"
-              "full"))))
+          "cclasp"
+          "full")))
 
 (defun build-hostname (type &optional stage)
   (let* ((stage (if stage 
@@ -750,14 +744,10 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/clos/std-slot-value"
     #P"kernel/clos/slot"
     #P"kernel/clos/boot"
-    #-clasp-test #P"kernel/clos/kernel"
-    #+clasp-test #P"kernel/clos/kernel-test"
-    #-clasp-test #P"kernel/clos/method"
-    #+clasp-test #P"kernel/clos/method-test"
-    #-clasp-test #P"kernel/clos/combin"
-    #+clasp-test #P"kernel/clos/combin-test"
-    #-clasp-test #P"kernel/clos/std-accessors"
-    #+clasp-test #P"kernel/clos/std-accessors-test"
+    #P"kernel/clos/kernel"
+    #P"kernel/clos/method"
+    #P"kernel/clos/combin"
+    #P"kernel/clos/std-accessors"
     #P"kernel/clos/defclass"
     #P"kernel/clos/slotvalue"
     #P"kernel/clos/standard"
