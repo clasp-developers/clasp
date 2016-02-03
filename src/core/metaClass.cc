@@ -222,7 +222,7 @@ string Class_O::__repr__() const {
     return "#<built-in-class t>";
   }
   stringstream ss;
-  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << " @" << (void *)(this) << ">";
+  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << ">";
 
   return ss.str();
 }

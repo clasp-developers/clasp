@@ -451,7 +451,7 @@ string T_O::description() const {
     T_O *me_gc_safe = const_cast<T_O *>(this);
     ss << "#<" << me_gc_safe->_instanceClass()->classNameAsString() << " ";
 
-    ss << "@" << std::hex << this << std::dec;
+//    ss << "@" << std::hex << this << std::dec;
     ss << ")";
     ss << this->descriptionOfContents() << " > ";
   }

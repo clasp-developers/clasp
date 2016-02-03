@@ -289,8 +289,9 @@ string Function_O::__repr__() const {
   T_sp name = this->closure->name;
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "/" << this->closure->describe();
   ss << " " << _rep_(name);
-  ss << " " << this->closure->describe();
+  ss << " lambda-list: " << _rep_(this->closure->lambdaList());
 #if 0
   auto closure = this->closure;
   void* fptr = closure->functionAddress();
