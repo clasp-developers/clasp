@@ -320,9 +320,14 @@
        method-lambda env
        :code-walker-function #'code-walker)
       #+cclasp
-      (clasp-cleavir:code-walk-using-cleavir
-       method-lambda env
-       :code-walker-function #'code-walker))
+      (if (fboundp 'clasp-cleavir:code-walk-using-cleavir)
+          (clasp-cleavir:code-walk-using-cleavir
+           method-lambda env
+           :code-walker-function #'code-walker)
+          ;; If we don't have code-walk-using-cleavier available
+          ;; then assume the worst
+          (setq call-next-method-p t
+                next-method-p-p t)))
     (values call-next-method-p next-method-p-p)))
                                    
 
