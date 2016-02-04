@@ -127,7 +127,6 @@
                                     ,(specializers-expression specializers)
                                     ',lambda-list
                                     ,(maybe-remove-block wrapped-lambda)
-                                    ,wrapped-p
                                     ,@(mapcar #'si::maybe-quote options))
                   #+clasp(maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))))
 
@@ -227,16 +226,6 @@
       (values method-lambda declarations documentation))))
 
 (defun make-method-lambda (gf method method-lambda env)
-  #+ecl
-  (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
-      (walk-method-lambda method-lambda env)
-    (values `(lambda (.combined-method-args. *next-methods*)
-               (declare (special .combined-method-args. *next-methods*))
-               (apply ,(if in-closure-p
-                           (add-call-next-method-closure method-lambda)
-                           method-lambda)
-                      .combined-method-args.))
-            nil))
   #+clasp
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
@@ -250,8 +239,14 @@
                  (flet (,@(and call-next-method-p
                                `((call-next-method (&rest args)
                                                    (if (not .next-methods.)
-                                                       (apply #'no-next-method ,gf ,method
-                                                              (or args .method-args.))
+                                                       ;; But how do I generate code that can be compiled
+                                                       ;; that will get access to the current method and
+                                                       ;; current generic function?   (apply #'no-next-method ,gf ,method ...)
+                                                       ;; won't work because the compiler will need to externalize the generic function gf
+                                                       ;; and the method method.
+                                                       #+(or)(apply #'no-next-method ,gf ,method
+                                                                    (or args .method-args.))
+                                                       (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
                                                        (apply (car .next-methods.)
                                                               .method-args.
                                                               (cdr .next-methods.)
@@ -259,7 +254,17 @@
                         (next-method-p ()
                           (and .next-methods. t)))
                    ,@body))
-              nil))))
+              nil)))
+    #+ecl
+  (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
+      (walk-method-lambda method-lambda env)
+    (values `(lambda (.combined-method-args. *next-methods*)
+               (declare (special .combined-method-args. *next-methods*))
+               (apply ,(if in-closure-p
+                           (add-call-next-method-closure method-lambda)
+                           method-lambda)
+                      .combined-method-args.))
+            nil)))
                      
 
 (defun add-call-next-method-closure (method-lambda)
@@ -310,8 +315,12 @@
       ;; bclasp uses *code-walk-hook* (set in cmpwalk.lsp)
       ;; To walk to method lambda and figure out if a closure
       ;; is needed or not.
-      #+clasp
+      #+bclasp
       (cmp:code-walk-using-compiler
+       method-lambda env
+       :code-walker-function #'code-walker)
+      #+cclasp
+      (clasp-cleavir:code-walk-using-cleavir
        method-lambda env
        :code-walker-function #'code-walker))
     (values call-next-method-p next-method-p-p)))

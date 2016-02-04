@@ -95,6 +95,14 @@
                (core:lambda-name combine-method-functions.lambda))
       (apply method .method-args. rest-methods .method-args.))) 
 
+(defmacro call-method (method &optional rest-methods)
+  `(apply ,(effective-method-function method)
+          ;; This is a stab in the dark - I don't know if .method-args.
+          ;; will be defined in the lexical environment
+          .method-args.
+          ',(and rest-methods (mapcar #'effective-method-function rest-methods))
+          .method-args.))
+
 #+compare(print "combin.lsp 121")
 (defun error-qualifier (m qualifier)
   (declare (si::c-local))
@@ -349,6 +357,8 @@
   (error "Invalid method error for ~A~%~S"
 	 method
 	 (apply #'format nil format-control args)))
+
+
 
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-EFFECTIVE-METHOD
