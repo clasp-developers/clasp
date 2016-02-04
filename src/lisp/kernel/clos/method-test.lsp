@@ -226,8 +226,7 @@
                     block))))
       (values method-lambda declarations documentation))))
 
-(defun make-method-lambda (gf method method-lambda name env)
-  (gf-log "make-method-lambda name: ~a" name)
+(defun make-method-lambda (gf method method-lambda env)
   #+ecl
   (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
       (walk-method-lambda method-lambda env)
@@ -238,15 +237,15 @@
                            method-lambda)
                       .combined-method-args.))
             nil))
-  ;;  #+bclasp
+  #+clasp
   (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
       ;;      (let 
-      (values `(lambda (.next-methods. .method-args.
+      (values `(lambda (.method-args. .next-methods.
                         ,@(cadr method-lambda))
-                 (declare ,@declarations (core:lambda-name ,(intern (bformat nil "%s.make-method-lambda" name))))
+                 (declare ,@declarations)
                  ,doc
                  (flet (,@(and call-next-method-p
                                `((call-next-method (&rest args)
@@ -258,16 +257,7 @@
                         (next-method-p ()
                           (and .next-methods. t)))
                    ,@body))
-              nil)))
-  ;; cclasp should be using Cleavir's REMOVE-USELESS-INSTRUCTIONS to
-  ;; remove the closure that we are adding here in cases where it
-  ;; can be removed
-  ;;  #+cclasp
-  #+(or)(values `(lambda (.combined-method-args. *next-methods*)
-                   (declare (special .combined-method-args. *next-methods*))
-                   (apply ,(add-call-next-method-closure method-lambda)
-                          .combined-method-args.))
-                nil))
+              nil))))
 
 (defun add-call-next-method-closure (method-lambda)
   (multiple-value-bind (declarations real-body documentation)
@@ -317,21 +307,10 @@
       ;; bclasp uses *code-walk-hook* (set in cmpwalk.lsp)
       ;; To walk to method lambda and figure out if a closure
       ;; is needed or not.
-      #+bclasp
-      (progn
-	(cmp:code-walk-using-compiler
-         method-lambda env
-         :code-walker-function #'code-walker))
-      ;; cclasp uses *code-walk-hook* (set in kernel/cleavir/auto-compile.lisp)
-      #+cclasp
-      (if (fboundp 'clasp-cleavir:code-walk-for-method-lambda-closure)
-          (clasp-cleavir:code-walk-for-method-lambda-closure
-           method-lambda env
-           :code-walker-function #'code-walker)
-          (setf call-next-method-p t
-                next-method-p-p t)))
-    (values call-next-method-p
-            next-method-p-p)))
+      #+clasp
+      (cmp:code-walk-using-compiler
+       method-lambda env
+       :code-walker-function #'code-walker))))
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                                parsing

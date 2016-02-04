@@ -56,21 +56,30 @@
 	((atom form)
 	 (error "Malformed effective method form:~%~A" form))
 	((eq (setf first (first form)) 'MAKE-METHOD)
-	 (coerce `(lambda (.combined-method-args. *next-methods*)
-		    (declare (special .combined-method-args. *next-methods*))
-		    ,(second form))
-		 'function))
-	((eq first 'CALL-METHOD)
-	 (combine-method-functions
-	  (effective-method-function (second form))
-	  (mapcar #'effective-method-function (third form))))
-	(top-level
-	 (coerce `(lambda (.combined-method-args. no-next-methods)
-		    (declare (ignorable no-next-methods))
-		    ,form)
-		 'function))
-	(t
-	 (error "Malformed effective method form:~%~A" form))))
+         (coerce `(lambda (.method-args. .next-methods.)
+                    (declare (core:lambda-name effective-method-function.make-method))
+                    (flet ((call-next-method (&rest args)
+                             (if (not .next-methods.)
+                                 (error "No next method")
+                                 (apply (car .next-methods.)
+                                        .method-args.
+                                        (cdr .next-methods.)
+                                        (or args .method-args.))))
+                           (next-method-p ()
+                             (and .next-methods. t)))
+                      ,(second form)))))
+        ((eq first 'CALL-METHOD)
+         (combine-method-functions
+          (effective-method-function (second form))
+          (mapcar #'effective-method-function (third form))))
+        (top-level
+         (coerce `(lambda (.method-args. no-next-methods)
+                    (declare (ignorable no-next-methods)
+                             (core:lambda-name effective-method-function.top-level))
+                    ,form)
+                 'function))
+        (t
+         (error "Malformed effective method form:~%~A" form))))
 
 ;;;
 ;;; This function is a combinator of effective methods. It creates a
@@ -81,39 +90,10 @@
 #+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (args no-next-methods)
-      (declare (ignorable no-next-methods))
-      (funcall method args rest-methods)))
-
-#+compare(print "combin.lsp 88")
-(defmacro call-method (method &optional rest-methods)
-  `(funcall ,(effective-method-function method)
-	    .combined-method-args.
-	    ',(and rest-methods (mapcar #'effective-method-function rest-methods))))
-
-#+compare(print "combin.lsp 94")
-(defun call-next-method (&rest args)
-  (declare (special .combined-method-args. *next-methods*))
-  (unless *next-methods*
-    (error "No next method."))
-  (funcall (car *next-methods*) (or args .combined-method-args.) (rest *next-methods*)))
-
-#+compare(print "combin.lsp 104")
-(defun next-method-p ()
-  (declare (special *next-methods*))
-  *next-methods*)
-
-#+compare(print "combin.lsp 109")
-(define-compiler-macro call-next-method (&rest args)
-  `(if *next-methods*
-       (funcall (car *next-methods*)
-		,(if args `(list ,@args) '.combined-method-args.)
-		(rest *next-methods*))
-       (error "No next method.")))
-
-#+compare(print "combin.lsp 117")
-(define-compiler-macro next-method-p ()
-  'clos::*next-methods*)
+  #'(lambda (.method-args. no-next-methods)
+      (declare (ignorable no-next-methods)
+               (core:lambda-name combine-method-functions.lambda))
+      (apply method .method-args. rest-methods .method-args.))) 
 
 #+compare(print "combin.lsp 121")
 (defun error-qualifier (m qualifier)
@@ -126,16 +106,18 @@
 #+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.combined-method-args. no-next-method)
-      (declare (ignorable no-next-method))
+  #'(lambda (.method-args. no-next-method)
+      (declare (ignore no-next-method)
+               (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-	(funcall i .combined-method-args. nil))
+        (apply i .method-args. nil .method-args.))
       (if after
 	  (multiple-value-prog1
-	   (funcall (first primary) .combined-method-args. (rest primary))
-	   (dolist (i after)
-	     (funcall i .combined-method-args. nil)))
-	(funcall (first primary) .combined-method-args. (rest primary)))))
+              (apply (first primary) .method-args. (rest primary) .method-args.)
+            (dolist (i after)
+              (apply i .method-args. nil .method-args.)))
+          (apply (first primary) .method-args. (rest primary) .method-args.))))
+
 
 #+compare(print "combin.lsp 143")
 (defun standard-compute-effective-method (gf methods)
@@ -175,8 +157,7 @@
 				      (nconc (rest around) main)))
 	  (if (or before after)
 	      (standard-main-effective-method before primary after)
-	      (combine-method-functions (first primary) (rest primary))))
-      )))
+	      (combine-method-functions (first primary) (rest primary)))))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
@@ -349,9 +330,7 @@
                                                         "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ,name)))))
                      ,@group-after
-                     (effective-method-function (progn ,@body) t))))
-				   )
-      )))
+                     (effective-method-function (progn ,@body) t))))))))
 
 #+compare(print "combin.lsp 345")
 (defmacro define-method-combination (name &body body)

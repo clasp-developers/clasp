@@ -746,6 +746,7 @@ jump to blocks within this tagbody."
   "codegen-block using the try macro"
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
+    (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
     (with-dbg-lexical-block (body)
       (let* ((block-env (irc-new-block-environment env :name block-symbol))
              traceid)

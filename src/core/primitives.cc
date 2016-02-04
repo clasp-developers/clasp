@@ -526,12 +526,12 @@ Symbol_sp functionBlockName(T_sp functionName) {
 CL_LAMBDA(functionName);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
-CL_DEFUN Symbol_mv core__function_block_name(T_sp functionName) {
+CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
   Symbol_sp output = functionBlockName(functionName);
   if (output.nilp()) {
     SIMPLE_ERROR(BF("Invalid function name: %s") % _rep_(functionName));
   }
-  return (Values(output));
+  return output;
 }
 
 CL_LAMBDA(arg);

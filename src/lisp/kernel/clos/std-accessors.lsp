@@ -161,7 +161,7 @@
 					writer-args))))
 	  (dolist (fname readers)
 	    (let ((method (make-method reader-class nil `(,standard-class) '(self)
-				       (wrapped-method-function reader)
+				       (wrapped-method-reader reader)
 				       options)))
 	      (safe-add-method fname method)
 	      ;; This is redundant, but we need it at boot time because
@@ -171,7 +171,7 @@
 	  (dolist (fname writers)
 	    (let ((method (make-method writer-class nil
 				       `(,(find-class t) ,standard-class) '(value self)
-				       (wrapped-method-function writer)
+				       (wrapped-method-writer writer)
 				       options)))
 	      (safe-add-method fname method)
 	      ;; This is redundant, but we need it at boot time because

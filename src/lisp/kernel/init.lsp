@@ -1001,6 +1001,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (remove-stage-features)
   (setq *features* (list* :clos :cclasp *features*)))
 
+(export '(load-bclasp-source))
+(defun load-bclasp-source ()
+  (bclasp-features)
+  (let ((*target-backend* (default-target-backend)))
+    (load-system :start :all :interp t )))
+
 (export '(compile-bclasp))
 (defun compile-bclasp ()
   (bclasp-features)

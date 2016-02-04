@@ -305,29 +305,30 @@
                      group-after (list* `(when (eq ,order-var :most-specific-first)
                                            (setf ,group-name (nreverse ,group-name)))
                                         group-after)))))))
-      `(install-method-combination ',name
-				   #+ecl(ext::lambda-block ,name (,generic-function .methods-list. ,@lambda-list)
-							   (let (,@group-names)
-							     (dolist (.method. .methods-list.)
-							       (let ((.method-qualifiers. (method-qualifiers .method.)))
-								 (cond ,@(nreverse group-checks)
-								       (t (invalid-method-error .method.
-												"Method qualifiers ~S are not allowed in the method~
+      `(install-method-combination
+        ',name
+        #+ecl(ext::lambda-block ,name (,generic-function .methods-list. ,@lambda-list)
+                                (let (,@group-names)
+                                  (dolist (.method. .methods-list.)
+                                    (let ((.method-qualifiers. (method-qualifiers .method.)))
+                                      (cond ,@(nreverse group-checks)
+                                            (t (invalid-method-error .method.
+                                                                     "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ,name)))))
-							     ,@group-after
-							     (effective-method-function (progn ,@body) t)))
-				   #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
-					    (declare (core:lambda-name ,name))
-					    (block ,name 
-					      (let (,@group-names)
-						(dolist (.method. .methods-list.)
-						  (let ((.method-qualifiers. (method-qualifiers .method.)))
-						    (cond ,@(nreverse group-checks)
-							  (t (invalid-method-error .method.
-										   "Method qualifiers ~S are not allowed in the method~
+                                  ,@group-after
+                                  (effective-method-function (progn ,@body) t)))
+        #+clasp(lambda (,generic-function .methods-list. ,@lambda-list)
+                 (declare (core:lambda-name ,name))
+                 (block ,name 
+                   (let (,@group-names)
+                     (dolist (.method. .methods-list.)
+                       (let ((.method-qualifiers. (method-qualifiers .method.)))
+                         (cond ,@(nreverse group-checks)
+                               (t (invalid-method-error .method.
+                                                        "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ,name)))))
-						,@group-after
-						(effective-method-function (progn ,@body) t))))))))
+                     ,@group-after
+                     (effective-method-function (progn ,@body) t))))))))
 
 #+compare(print "combin.lsp 345")
 (defmacro define-method-combination (name &body body)
@@ -352,10 +353,6 @@
 ;;;
 
 #+compare(print "combin.lsp 367")
-;; The following chokes in clasp because I don't have the method-combination class defined
-;; during compilation of the full clasp source code.
-;; I don't use compiler macros anyway so I'll feature this out
-#-clasp
 (eval-when (compile #+clasp-boot :load-toplevel)
   (let* ((class (find-class 'method-combination)))
     (define-compiler-macro method-combination-compiler (o)

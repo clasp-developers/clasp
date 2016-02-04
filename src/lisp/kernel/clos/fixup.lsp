@@ -218,7 +218,7 @@ their lambda lists ~A and ~A are not congruent."
   (let* ((aux-name 'temp-method)
          (method (eval `(defmethod ,aux-name ,signature)))
          (generic-function (fdefinition aux-name)))
-    (setf (method-function method) (wrapped-method-function (fdefinition name)))
+    (setf (method-function method) (wrapped-method-function-from-defun (fdefinition name)))
     (setf (fdefinition name) generic-function)
     (setf (generic-function-name generic-function) name)
     (fmakunbound aux-name)))

@@ -44,9 +44,6 @@
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
 
-;;(defmacro gf-log (&rest args) `(print (list "GF-LOG" ,@args)))
-(defmacro method-log (&rest args) nil)
-
 
 #+clasp
 (defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
@@ -77,7 +74,7 @@
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (declare (notinline make-method-lambda))
-  (gf-log "entered defmethod name:" name)
+  (gf-log "entered defmethod name: ~a" name)
   (let* ((*print-length* 3)
 	 (*print-depth* 2)
 	 (qualifiers (loop while (and args (not (listp (first args))))
@@ -93,7 +90,7 @@
       (gf-log "defmethod line 61")
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env)
-	(gf-log "defmethod line 64  - about to ensure-generic-function - " name)
+	(gf-log "defmethod line 64  - about to ensure-generic-function - ~a" name)
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
 			       #+compare(print (list "MLOG in defmethod - About to generic-function-method-class generic-function: " generic-function))
@@ -104,15 +101,16 @@
 	    (gf-log "defmethod line 70")
 	    (when (symbolp method-class)
 	      (setf method-class (find-class method-class nil)))
-	    (gf-log "defmethod line 73 method-class: " method-class)
+	    (gf-log "defmethod line 73 method-class: ~a" method-class)
 	    (if method-class
 		(setf method (class-prototype method-class))
 		(error "Cannot determine the method class for generic functions of type ~A"
 		       (type-of generic-function))))
 	  (gf-log "defmethod line 78")
+          (gf-log "About to make-method-lambda generic-function: ~a method: ~a lambda-form: ~a" generic-function method lambda-form)
 	  (multiple-value-bind (fn-form options)
 	      (make-method-lambda generic-function method lambda-form env)
-	    (gf-log "defmethod line 81")
+            (gf-log "Left make-method-lambda fn-form: ~a options: ~a" fn-form options)
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
 	    (gf-log "defmethod line 84")
@@ -159,12 +157,12 @@
 		#+clasp(lambda ,(second method-lambda)
 			 (declare (core:lambda-name ,(second block)))
 			 ,@declarations
-			 (block ,(second block)
-			   ,@(cddr block)))
-		)
+			 (block ,(if (symbolp (second block)) (second block) (error "The block name ~a is not a symbol" (second block)))
+			   ,@(cddr block))))
 	  ))))
   method-lambda)
 
+#+(or)
 (defun simplify-lambda (method-name fn-form)
   (let ((aux fn-form))
     (if (and (eq (pop aux) 'lambda)
@@ -178,6 +176,11 @@
 	     (eq (first aux) 'lambda))
 	(values aux t)
 	(values fn-form nil))))
+
+;;; simplify-lambda is called from defmethod - provide a dummy one
+(defun simplify-lambda (method-name fn-form)
+  (values fn-form t))
+
 
 (defun make-raw-lambda (name lambda-list required-parameters specializers body env)
   (declare (si::c-local))
@@ -221,8 +224,7 @@
                ,(if copied-variables
                     `(let* ,copied-variables ,block)
                     block))))
-      (values method-lambda declarations documentation)))
-  )
+      (values method-lambda declarations documentation))))
 
 (defun make-method-lambda (gf method method-lambda env)
   #+ecl
@@ -235,25 +237,30 @@
                            method-lambda)
                       .combined-method-args.))
             nil))
-;;  #+bclasp
-  (multiple-value-bind (call-next-method-p next-method-p-p in-closure-p)
+  #+clasp
+  (multiple-value-bind (call-next-method-p next-method-p-p)
       (walk-method-lambda method-lambda env)
-    (values `(lambda (.combined-method-args. *next-methods*)
-               (declare (special .combined-method-args. *next-methods*))
-               (apply ,(if in-closure-p
-                           (add-call-next-method-closure method-lambda)
-                           method-lambda)
-                      .combined-method-args.))
-            nil))
-   ;; cclasp should be using Cleavir's REMOVE-USELESS-INSTRUCTIONS to
-  ;; remove the closure that we are adding here in cases where it
-  ;; can be removed
-;;  #+cclasp
-  #+(or)(values `(lambda (.combined-method-args. *next-methods*)
-             (declare (special .combined-method-args. *next-methods*))
-             (apply ,(add-call-next-method-closure method-lambda)
-                    .combined-method-args.))
-          nil))
+    (multiple-value-bind (declarations body doc)
+        (process-declarations (cddr method-lambda) t) ; We expect docstring
+      ;;      (let 
+      (values `(lambda (.method-args. .next-methods.
+                        ,@(cadr method-lambda))
+                 (declare ,@declarations)
+                 ,doc
+                 (flet (,@(and call-next-method-p
+                               `((call-next-method (&rest args)
+                                                   (if (not .next-methods.)
+                                                       (apply #'no-next-method ,gf ,method
+                                                              (or args .method-args.))
+                                                       (apply (car .next-methods.)
+                                                              .method-args.
+                                                              (cdr .next-methods.)
+                                                              (or args .method-args.))))))
+                        (next-method-p ()
+                          (and .next-methods. t)))
+                   ,@body))
+              nil))))
+                     
 
 (defun add-call-next-method-closure (method-lambda)
   (multiple-value-bind (declarations real-body documentation)
@@ -274,55 +281,24 @@
 		  .next-methods.))
 	   ,@real-body)))))
 
-(defun environment-contains-closure (env)
-  ;;
-  ;; As explained in compiler.d (make_lambda()), we use a symbol with
-  ;; name "FUNCTION-BOUNDARY" to mark the beginning of a function. If
-  ;; we find that symbol twice, it is quite likely that this form will
-  ;; end up in a closure.
-  ;;
-  #-clasp
-  (let ((counter 0))
-    (declare (fixnum counter))
-    (dolist (item (car env))
-      (when (and (consp item)
-		 (eq (first (the cons item)) 'si::function-boundary)
-		 (> (incf counter) 1)) 
-	(return t))))
-  ;; ECL uses FUNCTION-BOUNDARY, I have linked lists of Environments
-  ;; and I have FunctionContainerEnvironments to indicate the boundaries
-  ;; of Functions within Lexical environments.
-  #+bclasp
-  (let ((num (core:count-function-container-environments env)))
-    (> num 1))
-  #+cclasp
-  (let ((res (member 'si::function-boundary env)))
-    res))
-
 (defun walk-method-lambda (method-lambda env)
   (declare (si::c-local))
   (let ((call-next-method-p nil)
-	(next-method-p-p nil)
-	(in-closure-p nil))
+        (next-method-p-p nil))
     (flet ((code-walker (form env)
 	     (unless (atom form)
 	       (let ((name (first form)))
 		 (case name
 		   (CALL-NEXT-METHOD
 		    (setf call-next-method-p
-			  (or call-next-method-p T)
-			  in-closure-p
-			  (or in-closure-p (environment-contains-closure env))))
+			  (or call-next-method-p T)))
 		   (NEXT-METHOD-P
-		    (setf next-method-p-p t
-			  in-closure-p (or in-closure-p (environment-contains-closure env))))
+                    (setf next-method-p-p t))
 		   (FUNCTION
 		    (when (eq (second form) 'CALL-NEXT-METHOD)
-		      (setf in-closure-p t
-			    call-next-method-p 'FUNCTION))
+                      (setf call-next-method-p 'FUNCTION))
 		    (when (eq (second form) 'NEXT-METHOD-P)
-		      (setf next-method-p-p 'FUNCTION
-			    in-closure-p t))))))
+                      (setf next-method-p-p 'FUNCTION))))))
 	     form))
       #+ecl
       (let ((si::*code-walker* #'code-walker))
@@ -334,22 +310,12 @@
       ;; bclasp uses *code-walk-hook* (set in cmpwalk.lsp)
       ;; To walk to method lambda and figure out if a closure
       ;; is needed or not.
-      #+bclasp
-      (progn
-	(cmp:code-walk-using-compiler method-lambda env
-                                      :code-walker-function #'code-walker))
-      ;; cclasp uses *code-walk-hook* (set in kernel/cleavir/auto-compile.lisp)
-      ;; but it doesn't use the code-walker function
-      #+cclasp
-      (if (fboundp 'clasp-cleavir:code-walk-for-method-lambda-closure)
-          (clasp-cleavir:code-walk-for-method-lambda-closure method-lambda env
-                                                             :code-walker-function #'code-walker)
-          (setq call-next-method-p t
-                next-method-p-p t
-                in-closure-p t)))
-    (values call-next-method-p
-	    next-method-p-p
-	    in-closure-p)))
+      #+clasp
+      (cmp:code-walk-using-compiler
+       method-lambda env
+       :code-walker-function #'code-walker))
+    (values call-next-method-p next-method-p-p)))
+                                   
 
 
 ;;; ----------------------------------------------------------------------
