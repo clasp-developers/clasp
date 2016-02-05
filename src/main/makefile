@@ -238,6 +238,12 @@ mps-interface:
 	make compile-commands
 	make mps-interface-run
 
+mps-interface-cclasp:
+	@echo Building mps-prep
+	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
+	make compile-commands-cclasp
+	make mps-interface-run-cclasp
+
 
 scrape:
 	echo $(CLASP_CLANGXX_PATH)

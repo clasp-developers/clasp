@@ -203,7 +203,7 @@ public:
   void sxhash_(HashGenerator &hg) const;
 
   /*! Depth first search to find a Cons with ParsePos information */
-  virtual List_sp walkToFindParsePos() const;
+//  virtual List_sp walkToFindParsePos() const;
 
   inline Cons_sp rplaca(T_sp o) {
     this->_Car = o;
@@ -214,8 +214,8 @@ public:
     return this->asSmartPtr();
   };
 
-  virtual T_sp onth(int idx) const;
-  virtual List_sp onthcdr(int idx) const;
+  T_sp onth(int idx) const;
+  List_sp onthcdr(int idx) const;
 
   T_sp elt(int index) const;
   T_sp setf_elt(int index, T_sp value);
@@ -560,17 +560,6 @@ namespace core
 };
 #endif
 
-namespace core {
-/*! Create a Cons or a SourceCodeCons that that copies the source code location of looCons */
-Cons_sp Cons_create(T_sp car, Cons_sp locCons);
-
-/*! Create a Cons or a SourceCodeCons that that copies the source code location of locCons */
-Cons_sp Cons_create(T_sp car, T_sp cdr, Cons_sp locCons);
-
-Cons_sp Cons_create_loc(T_sp car, const char *fileName, int line);
-
-Cons_sp Cons_create_loc(T_sp car, T_sp cdr, const char *fileName, int line);
-};
 
 namespace core {
 
