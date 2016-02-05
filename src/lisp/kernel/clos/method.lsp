@@ -251,8 +251,9 @@
                                                               .method-args.
                                                               (cdr .next-methods.)
                                                               (or args .method-args.))))))
-                        (next-method-p ()
-                          (and .next-methods. t)))
+                        ,@(and next-method-p-p
+                               `((next-method-p ()
+                                                (and .next-methods. t)))))
                    ,@body))
               nil)))
     #+ecl
