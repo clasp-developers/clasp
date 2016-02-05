@@ -21,6 +21,8 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (&whole whole name vl &body body &aux doc-string)
   ;; Documentation in help.lsp
+  (unless (symbolp name)
+    (error "Macro name ~s is not a symbol." name))
   (multiple-value-bind (function pprint doc-string)
       (sys::expand-defmacro name vl body)
     (setq function `(function ,function))
