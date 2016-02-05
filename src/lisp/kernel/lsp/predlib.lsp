@@ -391,6 +391,10 @@ and is not adjustable."
 #+clasp
 (defun upgraded-array-element-type (element-type &optional env)
   (cond
+    ((eq element-type t) 't)
+    ((eq element-type 'character) 'character)
+    ((eq element-type 'base-char) 'base-char)
+    ((eq element-type 'bit) 'bit)
     ((subtypep element-type nil) nil) 
     ((subtypep element-type 'bit) 'bit)
     ((subtypep element-type 'base-char) 'base-char)
