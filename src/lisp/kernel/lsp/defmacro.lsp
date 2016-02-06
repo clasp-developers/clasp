@@ -422,12 +422,11 @@
                 `(lambda (,whole ,env &aux ,@dl)
                    (declare (ignorable ,@ignorables) (core:lambda-name ,name))
                    ,@decls
-                   (block ,name
+                   (block ,(si::function-block-name name)
                      ,@arg-check
                      ,@body))
                 ppn
-                doc)
-        ))))
+                doc)))))
 
 #+ecl-min
 (si::fset 'defmacro
