@@ -236,7 +236,7 @@ public:
 
 public:
   explicit _RootDummyClass();
-  virtual ~_RootDummyClass(){};
+  ~_RootDummyClass(){};
 };
 
 template <class T_Base>
@@ -402,7 +402,7 @@ public:
 //    extern Symbol_sp _sym_t;
 class T_O : public _RootDummyClass {
 public:
-  virtual ~T_O(){};
+  ~T_O(){};
 
 private:
   friend class CoreExposer;
@@ -441,12 +441,11 @@ public:                                                                         
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
   static core::Symbol_sp static_classSymbol() { return oClass::static_class_symbol; };                                \
-  virtual core::Symbol_sp virtual_classSymbol() { return oClass::static_class_symbol; };                              \
-  virtual core::Class_sp __class() const {                                                                             \
-    return oClass::static_class;                                                                                     \
-  }                                                                                                                    \
   static string Package() { return oClass::static_packageName(); };                                                    \
   static string Pkg() { return Package(); };                                                                           \
+    virtual core::Class_sp __class() const {                                                                             \
+    return oClass::static_class;                                                                                     \
+  }                                                                                                                    \
   static void expose_to_clasp();
 
 #define __COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)   \

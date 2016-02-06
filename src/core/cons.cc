@@ -294,20 +294,6 @@ T_sp Cons_O::append(List_sp x, List_sp y) {
     }
 #endif
 
-List_sp Cons_O::walkToFindParsePos() const {
-  //	if ( this->hasParsePos() ) return((this->asSmartPtr()));
-  if (this->_Cdr.notnilp() && cl__consp(this->_Cdr)) {
-    List_sp wcdr = gc::As<Cons_sp>(this->_Cdr)->walkToFindParsePos();
-    if (wcdr.notnilp())
-      return ((wcdr));
-  }
-  if (this->_Car.notnilp() && cl__consp(this->_Car)) {
-    List_sp wcar = gc::As<Cons_sp>(this->_Car)->walkToFindParsePos();
-    if (wcar.notnilp())
-      return ((wcar));
-  }
-  return ((_Nil<T_O>()));
-}
 
 void Cons_O::sxhash_(HashGenerator &hg) const {
   _OF();
@@ -581,11 +567,10 @@ void Cons_O::serialize(serialize::SNode node) {
 #endif
 
 bool Cons_O::equal(T_sp obj) const {
-  _OF();
-  if (this->eq(obj))
-    return ((true));
   if (!obj.consp())
     return false;
+  if (this->eq(obj))
+    return ((true));
   List_sp other = obj;
   if (!cl__equal(this->_Car, oCar(other)))
     return false;
@@ -595,10 +580,10 @@ bool Cons_O::equal(T_sp obj) const {
 }
 
 bool Cons_O::equalp(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
   if (!obj.consp())
     return false;
+  if (this->eq(obj))
+    return true;
   List_sp other = obj;
   if (!cl__equalp(this->_Car, oCar(other)))
     return false;
