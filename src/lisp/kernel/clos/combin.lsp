@@ -118,13 +118,13 @@
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-        (apply i .method-args. nil args))
+        (apply i .method-args. nil .method-args.))
       (if after
 	  (multiple-value-prog1
-              (apply (first primary) .method-args. (rest primary) args)
+              (apply (first primary) .method-args. (rest primary) .method-args.)
             (dolist (i after)
-              (apply i .method-args. nil args)))
-          (apply (first primary) .method-args. (rest primary) args))))
+              (apply i .method-args. nil .method-args.)))
+          (apply (first primary) .method-args. (rest primary) .method-args.))))
 
 
 #+compare(print "combin.lsp 143")
