@@ -134,7 +134,7 @@
 					     (or name :anonymous)))
 			      )
   (declare (ignore initargs slot-names)
-           (core:lambda-name shared-initialize.generic-function))
+           (core:lambda-name shared-initialize-generic-function))
   ;;
   ;; Check the validity of several fields.
   ;;
