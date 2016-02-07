@@ -83,6 +83,7 @@
   bases
   vbases
   fields
+  size
   method-names
   metadata
   )
@@ -91,6 +92,7 @@
 (defstruct instance-variable
   "Represent an instance variable, it's name, it's source-location and it's classified type"
   field-name
+  field-offset
   location
   ctype
   )
@@ -714,6 +716,7 @@ can be saved and reloaded within the project for later analysis"
   (symbol-macrolet ((results (project-classes (clang-tool:multitool-results mtool))))
     (labels ((%%new-class-callback (match-info class-node record-key template-specializer)
                (let ((cname (clang-tool:mtag-name match-info :whole))
+                     (record-decl (clang-tool:mtag-node match-info :whole))
                      bases vbases fields method-names metadata )
                  ;;
                  ;; Run a matcher to find the base classes and their namespaces
@@ -745,6 +748,9 @@ can be saved and reloaded within the project for later analysis"
                           (push (make-instance-variable
                                  :location (clang-tool:mtag-loc-start minfo :field)
                                  :field-name (clang-tool:mtag-name minfo :field)
+                                 :field-offset (ast-tooling:get-field-offset (clang-tool:ast-context match-info)
+                                                                             record-decl
+                                                                             (cast:get-field-index (clang-tool:mtag-node minfo :field)))
                                  :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
                                                                              :location (clang-tool:mtag-loc-start minfo :field))))
                                           (classify-ctype (to-canonical-type type))))
@@ -784,6 +790,7 @@ can be saved and reloaded within the project for later analysis"
                                     :vbases vbases
                                     :method-names method-names
                                     :metadata metadata
+                                    :size (ast-tooling:get-record-size (clang-tool:ast-context match-info) record-decl)
                                     :fields fields))))
              (%%class-callback (match-info)
                (gclog "MATCH: ------------------~%")

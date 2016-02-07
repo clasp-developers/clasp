@@ -93,6 +93,13 @@ mps_pool_t global_unmanaged_pool;
 mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
 
+#ifdef DEBUG_GUARD
+size_t random_tail_size() {
+  size_t ts = ((rand() % 8) + 1) * Alignment();
+  return ts;
+}
+#endif
+
 void rawHeaderDescribe(uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {

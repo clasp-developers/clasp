@@ -114,17 +114,17 @@
 #+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method)
+  #'(lambda (.method-args. no-next-method)   ;;; Schafmeister 2016 MAY VIOLATE MOP
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-        (apply i .method-args. nil .method-args.))
+        (apply i .method-args. nil args))
       (if after
 	  (multiple-value-prog1
-              (apply (first primary) .method-args. (rest primary) .method-args.)
+              (apply (first primary) .method-args. (rest primary) args)
             (dolist (i after)
-              (apply i .method-args. nil .method-args.)))
-          (apply (first primary) .method-args. (rest primary) .method-args.))))
+              (apply i .method-args. nil args)))
+          (apply (first primary) .method-args. (rest primary) args))))
 
 
 #+compare(print "combin.lsp 143")

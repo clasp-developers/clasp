@@ -52,12 +52,12 @@ Find directories that look like them and replace the ones defined in the constan
 (use-package :clang-ast)
 
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
   #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
   #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
