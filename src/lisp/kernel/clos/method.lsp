@@ -83,10 +83,10 @@
 	      (pop args)
 	      (error "Illegal defmethod form: missing lambda list")))
 	 (body args))
-    (method-log "defmethod line 58")
+    (gf-log "defmethod line 58")
     (multiple-value-bind (lambda-list required-parameters specializers)
 	(parse-specialized-lambda-list specialized-lambda-list)
-      (method-log "defmethod line 61")
+      (gf-log "defmethod line 61")
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env)
 	(let* ((generic-function (ensure-generic-function name))
@@ -94,9 +94,9 @@
 			       #+compare(print (list "MLOG in defmethod - About to generic-function-method-class generic-function: " generic-function))
 			       (generic-function-method-class generic-function)))
 	       method)
-	  (method-log "defmethod line 68")
+	  (gf-log "defmethod line 68")
 	  (when *clos-booted*
-	    (method-log "defmethod line 70")
+	    (gf-log "defmethod line 70")
 	    (when (symbolp method-class)
 	      (setf method-class (find-class method-class nil)))
 	    (if method-class
@@ -110,13 +110,13 @@
             (gf-log "Left make-method-lambda fn-form: ~a options: ~a" fn-form options)
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
-	    (method-log "defmethod line 84")
+	    (gf-log "defmethod line 84")
 	    (multiple-value-bind (wrapped-lambda wrapped-p)
 		(simplify-lambda name fn-form)
-	      (method-log "defmethod line 87")
+	      (gf-log "defmethod line 87")
 	      (unless wrapped-p
 		(error "Unable to unwrap function"))
-	      (method-log "defmethod line 90")
+	      (gf-log "defmethod line 90")
 	      (ext:register-with-pde
 	       whole
 	       `(prog1

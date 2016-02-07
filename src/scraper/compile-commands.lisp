@@ -137,7 +137,7 @@ Split the list of ccs into a number of lists."
               (loop for cc in job
                  do (run-cpp cc forki))
               (format t "Child done~%")
-              (sb-ext:exit))))
+              (sb-ext:quit))))
     (funcall (find-symbol "WAIT" "SB-POSIX"))))
 
 (defun update-cpps (ccs)
