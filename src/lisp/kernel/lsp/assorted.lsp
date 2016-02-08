@@ -43,10 +43,27 @@
   (declare (ignore x))
   nil)
 
+;;; Copied from SBCL
 (declaim (ftype (function (list) list) copy-alist))
 (defun copy-alist (alist)
   "Copy the list structure and conses of an alist."
-  (loop for (a . b) in alist collecting (cons a b)))
+  (if (endp alist)
+      alist
+      (let ((result
+              (cons (if (atom (car alist))
+                        (car alist)
+                        (cons (caar alist) (cdar alist)))
+                    nil)))
+        (do ((x (cdr alist) (cdr x))
+             (splice result
+                     (cdr (rplacd splice
+                                  (cons
+                                   (if (atom (car x))
+                                       (car x)
+                                       (cons (caar x) (cdar x)))
+                                   nil)))))
+            ((endp x)))
+        result)))
 
 #+(or) ;; numlib provides this
 (progn
