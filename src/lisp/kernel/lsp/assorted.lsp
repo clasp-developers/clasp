@@ -111,12 +111,10 @@
 (defun short-site-name () nil)
 (defun long-site-name () nil)
 
-
-(defun digit-char (weight &optional radix)
-  (if (>= weight radix)
-      nil
-      (code-char (+ weight (if (< weight 10) 48 55)))))
-
+(defun digit-char (weight &optional (radix 10))
+  (check-type radix (integer 2 36))
+  (when (< weight radix)
+    (code-char (+ weight (if (< weight 10) 48 55)))))
 
 ;; Donated by Shinmera in #clasp on April 2015 "free of charge"
 (in-package :cl)
