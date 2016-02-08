@@ -439,14 +439,13 @@ namespace asttooling {
 /*Return the field offset in bits */
 size_t getFieldOffset(clang::ASTContext* context, clang::RecordDecl* record, size_t fieldIndex)
 {
-  clang::SourceLocation loc = record->getLocStart();
   const clang::Type* type = record->getTypeForDecl();
   if ( type->isDependentType() ) return 0;
   const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
-  printf("getFieldOffset context = %p record = %p(%s) fieldIndex = %lu\n", context, record, record->getNameAsString().c_str(), fieldIndex );
-  printf("  layout = %p\n", &layout );
+//  printf("getFieldOffset context = %p record = %p(%s) fieldIndex = %lu\n", context, record, record->getNameAsString().c_str(), fieldIndex );
+//  printf("  layout = %p\n", &layout );
   size_t offset = layout.getFieldOffset(fieldIndex);
-  printf("Returning offset=%lu\n", offset);
+//  printf("Returning offset=%lu\n", offset);
   return offset;
 }
 
@@ -454,11 +453,11 @@ size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record)
 {
   const clang::Type* type = record->getTypeForDecl();
   if ( type->isDependentType() ) return 0;
-  printf("getRecordSize context = %p record = %p(%s)\n", context, record, record->getNameAsString().c_str() );
+//  printf("getRecordSize context = %p record = %p(%s)\n", context, record, record->getNameAsString().c_str() );
   const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
-  printf("  layout = %p\n", &layout );
+//  printf("  layout = %p\n", &layout );
   size_t size= layout.getSize().getQuantity();
-  printf("Returning size=%lu\n", size);
+//  printf("Returning size=%lu\n", size);
   return size;
 }
 
