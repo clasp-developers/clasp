@@ -118,20 +118,22 @@
 
 ;; Donated by Shinmera in #clasp on April 2015 "free of charge"
 (in-package :cl)
-(defun string-capitalize (string)
-  (with-output-to-string (stream)
-    (loop with capitalize = T
-          for char across (string string)
-          do (cond ((alphanumericp char)
-                    (cond (capitalize
-                           (setf capitalize NIL)
-                           (write-char (char-upcase char) stream))
-                          (T
-                           (write-char (char-downcase char) stream))))
-                   (T
-                    (setf capitalize T)
-                    (write-char char stream))))))
 
+(defun nstring-capitalize (string &key (start 0) end)
+  (loop with capitalize = t
+        for i from start below (or end (length string))
+        for char = (char string i)
+        do (cond ((not (alphanumericp char))
+                  (setf capitalize t))
+                 (capitalize
+                  (setf capitalize nil)
+                  (setf (char string i) (char-upcase char)))
+                 (t
+                  (setf (char string i) (char-downcase char)))))
+  string)
+
+(defun string-capitalize (string &key (start 0) end)
+  (nstring-capitalize (copy-seq (string string)) :start start :end end))
 
 (defun float-radix (arg)
   ;; Unless you are internally representing
