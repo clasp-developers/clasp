@@ -213,12 +213,10 @@ mps-interface-clasp:
 compile-commands:
 	-bjam link=static gc=mps-prep program=clasp link=static release -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
-
-compile-commands-cclasp:
-	-bjam -j4 toolset=clang-darwin link=shared program=clasp --prefix=/Users/meister/Development/clasp/build/clasp/Contents/execs/boehm/release gc=mps-prep release clasp_install -n -a >bjam.out
-	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(CCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	clasp_boehm_o -f bclasp \
+		-l $(CLASP_HOME)/src/common/build-json.lisp \
+		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
+		-e "(quit)"
 
 mps-interface-run:
 	$(BCLASP_BOEHMDC)  \

@@ -796,6 +796,8 @@ can be saved and reloaded within the project for later analysis"
                (gclog "MATCH: ------------------~%")
                (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
                (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
+               #+(or)(unless (clang-tool:match-in-compilation-tool-database-source-tree (clang-tool:multitool-compilation-tool-database mtool) match-info)
+                 (return-from %%class-callback))
                (let* ((class-node (clang-tool:mtag-node match-info :whole)))
                  (multiple-value-bind (record-key template-specializer)
                      (record-key class-node)
@@ -2159,7 +2161,10 @@ so that they don't have to be constantly recalculated"
   nil)
 
 (defmethod fix-code ((x cxxrecord-ctype) analysis)
-  (fix-code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis))) analysis))
+  (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
+    (unless code
+      (error "Could not find ~a in (project-classes (analysis-project analysis))" (cxxrecord-ctype-key x)))
+    (fix-code code analysis)))
 
 (defmethod fix-code ((x class-template-specialization-ctype) analysis)
   (cond
@@ -2654,10 +2659,11 @@ It converts relative -I../... arguments to absolute paths"
       result)))
 
 
-(defun setup-tools ()
+(defun setup-tools (compilation-tool-database)
   "* Description
 Setup all of the ASTMatcher tools for the clasp-analyzer."
-  (let ((tools (clang-tool:make-multitool :arguments-adjuster (build-arguments-adjuster))))
+  (let ((tools (clang-tool:make-multitool :arguments-adjuster (build-arguments-adjuster)
+                                          :compilation-tool-database compilation-tool-database)))
     (setup-cclass-search tools)         ; search for all classes
     (setup-lispalloc-search tools)
     (setup-classalloc-search tools)
@@ -2810,7 +2816,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 * Description
 Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
-  (let ((tools (setup-tools))
+  (let ((tools (setup-tools compilation-tool-database))
         (all-jobs (clang-tool:source-namestrings compilation-tool-database)))
     (save-data all-jobs (merge-pathnames #P"project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
     (format t "all-jobs: ~a~%" all-jobs)
@@ -2832,16 +2838,22 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
         (setf (elt args i) (format nil "-I~a/include" main-directory-namestring))))
     args))
 
-(defun setup-clasp-analyzer-compilation-tool-database (pathname &key (selection-pattern ".*") arguments-adjuster)
+
+
+   
+(defun setup-clasp-analyzer-compilation-tool-database (pathname &key (selection-pattern ".*") source-path-identifier arguments-adjuster)
   "* Arguments
 - pathname :: The pathname to the compilation database for clasp analyzer.
 - selection-pattern : A regex pattern for selecting a subset of the source files for testing.
+- source-path-identifier :: A string
 * Description
 Return a compilation database for analyzing the clasp (or some other clasp derived project) source code.
-Two files (mps.c and gc_interface.cc) are removed from the list of files that clasp-analyzer will run on."
+Two files (mps.c and gc_interface.cc) are removed from the list of files that clasp-analyzer will run on.
+If the source location of a match contains the string source-path-identifier then that match is processed."
   (let* ((compilation-tool-database (clang-tool:load-compilation-tool-database
                                      pathname
-                                     :convert-relative-includes-to-absolute t))
+                                     :convert-relative-includes-to-absolute t
+                                     :source-path-identifier source-path-identifier))
          (source-filenames (clang-tool:select-source-namestrings compilation-tool-database selection-pattern))
          (regex-mps-dot-c (core:make-regex ".*mps\.c$"))
          (removed-mps-dot-c (remove-if #'(lambda (x) (core:regex-matches regex-mps-dot-c x)) source-filenames))

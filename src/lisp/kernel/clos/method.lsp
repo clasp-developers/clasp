@@ -341,9 +341,9 @@
       ;; cclasp uses *code-walk-hook* (set in kernel/cleavir/auto-compile.lisp)
       ;; but it doesn't use the code-walker function
       #+cclasp
-      (if (fboundp 'clasp-cleavir:code-walk-for-method-lambda-closure)
-          (clasp-cleavir:code-walk-for-method-lambda-closure method-lambda env
-                                                             :code-walker-function #'code-walker)
+      (if (fboundp 'clasp-cleavir:code-walk-using-cleavir)
+          (clasp-cleavir:code-walk-using-cleavir method-lambda env
+                                                 :code-walker-function #'code-walker)
           (setq call-next-method-p t
                 next-method-p-p t
                 in-closure-p t)))
