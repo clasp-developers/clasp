@@ -770,23 +770,20 @@ List_sp Cons_O::last(int n) const {
 List_sp Cons_O::copyList() const {
   _OF();
   List_sp first, cur;
-  first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  cur = first;
   List_sp p = this->asSmartPtr();
-  while (p.consp()) {
-    List_sp carNode = p.asCons()->copyListCar();
-    cur.asCons()->setCdr(carNode);
-    cur = oCdr(cur);
-    T_sp cdr = oCdr(p);
-    if (cdr.nilp())
-      break;
-    if (!cdr.consp()) {
-      cur.asCons()->setCdr(cdr);
-      break;
-    }
+  T_sp cdr;
+  first = Cons_O::create(oCar(p), _Nil<T_O>());
+  cur = first;
+  cdr = oCdr(p);
+  while (cdr.consp()) {
     p = cdr;
+    List_sp newCar = Cons_O::create(oCar(p), _Nil<T_O>());
+    cur.asCons()->setCdr(newCar);
+    cur = newCar;
+    cdr = oCdr(p);
   }
-  return ((oCdr(first)));
+  cur.asCons()->setCdr(cdr);
+  return first;
 };
 
 Cons_sp Cons_O::copyListCar() const {
