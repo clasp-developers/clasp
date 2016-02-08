@@ -22,10 +22,15 @@
     (when (and (eq y z) (plusp n)) (return nil))))
 
 (declaim (ftype (function (list list &optional list) list) pairlis))
-(defun pairlis (keys data &optional alist)
-  "Create an alist with keys KEYS paired with data DATA, appended to an existing ALIST."
-  ;; bit inefficient but this is low-use
-  (append (mapcar #'cons keys data) alist))
+;;; Copied from SBCL
+(defun pairlis (keys data &optional (alist '()))
+  "Construct an association list from KEYS and DATA (adding to ALIST)."
+  (do ((x keys (cdr x))
+       (y data (cdr y)))
+      ((and (endp x) (endp y)) alist)
+    (if (or (endp x) (endp y))
+        (error "The lists of keys and data are of unequal length."))
+        (setq alist (acons (car x) (car y) alist))))
 
 ;; if not already defined
 (deftype function-name () '(or symbol (cons (eql setf) (cons symbol null))))
