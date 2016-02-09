@@ -464,11 +464,6 @@ namespace gctools {
 #ifdef USE_MPS
 extern "C" {
 GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_SCAN_TABLE
-#include "clasp_gc.cc"
-#undef GC_OBJ_SCAN_TABLE
-#endif
   GC_TELEMETRY2(telemetry::label_obj_scan_start,
                 (uintptr_t)client,
                 (uintptr_t)limit);
@@ -482,6 +477,20 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
         kind = header->kind();
+        const KindInfo& kind_info = OBJ_SCAN_kind_info[kind];
+        if (kind_info.family = struct_family) {
+          int* info = kind_info.info_ptr;
+          int num_fields = info[0];
+          for ( i=1; i<=num_fields; ++i ) {
+            field_ptr = client + info[i];
+          
+          
+        kind_family = OBJ_SCAN_family[kind];
+        if (kind_family == container_kind) {
+          
+          
+        switch (kind_family) {
+          case 
 #ifndef RUNNING_GC_BUILDER
         goto *(OBJ_SCAN_table[kind]);
 #define GC_OBJ_SCAN

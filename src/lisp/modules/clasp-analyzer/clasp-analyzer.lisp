@@ -796,7 +796,7 @@ can be saved and reloaded within the project for later analysis"
                (gclog "MATCH: ------------------~%")
                (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
                (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
-               #+(or)(unless (clang-tool:match-in-compilation-tool-database-source-tree (clang-tool:multitool-compilation-tool-database mtool) match-info)
+               (unless (clang-tool:match-in-compilation-tool-database-source-tree (clang-tool:multitool-compilation-tool-database mtool) match-info)
                  (return-from %%class-callback))
                (let* ((class-node (clang-tool:mtag-node match-info :whole)))
                  (multiple-value-bind (record-key template-specializer)
@@ -1558,6 +1558,16 @@ so that they don't have to be constantly recalculated"
 		      (format fout "    // Should never be invoked~%")
 		      )))
 
+(defun field-data (instance-var)
+  (let ((type (car (last instance-var)))
+        names offsets)
+    (dolist (field (butlast instance-var))
+      (push (instance-variable-field-name field) names)
+      (push (instance-variable-field-offset field) offsets))
+    (format nil " { ~a, ~d, ~s }"
+            (if (eq type :smart-ptr-fix) "SMART_PTR_FIX" "TAGGED_PTR_FIX")
+            (apply #'+ offsets)
+            (format nil "~a" (nreverse names)))))
 
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -1566,24 +1576,14 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (with-destination (fout dest enum "goto TOP")
-;; Generate a helper function
+      ;; Generate a helper function
       (let ((fh (destination-helper-stream dest)))
-        (format fh "template <>~%")
-        (format fh "~a mps_res_t obj_scan_helper<~a>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client)~%" (inline-analysis :scan key anal) key)
-        (format fh "{~%")
-        (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-          (when all-instance-variables
-            (format fh "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
+        (format fh "{ CLASS_INFO, ~d, ~s },~%" enum-name key)
+        (format fh "{ CLASS_SIZE, sizeof(~a), \"\" },~%" key )
+        (let ((all-instance-variables
+               (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
           (dolist (instance-var all-instance-variables)
-            (code-for-instance-var fh +ptr-name+ instance-var)))
-        (format fh "    typedef ~A type_~A;~%" key enum-name)
-        (format fh "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-        (format fh "    return MPS_RES_OK;~%")
-        (format fh "}~%"))
-      (format fout "  mps_res_t result = gctools::obj_scan_helper<~a>(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,client);~%" key)
-      (format fout "  if ( result != MPS_RES_OK ) return result;~%")
-      )))
-
+            (format fh "~a,~%" (field-data instance-var))))))))
 
 (defun skipper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -2117,12 +2117,12 @@ so that they don't have to be constantly recalculated"
     (cond
       ((null code) nil)
       ((atom code)
-       (list (list (instance-variable-field-name field) code)))
+       (list (list field code)))
       ((consp code)
-       (mapcar (lambda (f) (cons (instance-variable-field-name field) f))
-               code))
+       (mapcar (lambda (f) (cons field f)) code))
       (t
-       (instance-variable-field-name field) code))))
+       (error "Feb 2016 I inserted this error to see if the code ever gets here")
+       (instance-variable-field-offset field) code))))
 
 (defgeneric fix-code (x analysis))
 (defmethod fix-code ((x cclass) analysis)
@@ -2866,8 +2866,9 @@ If the source location of a match contains the string source-path-identifier the
 
 (defun search/generate-code (compilation-tool-database)
   (clang-tool:with-compilation-tool-database compilation-tool-database
-    (let* ((*project* (serial-search-all compilation-tool-database))
-           (analysis (analyze-project *project*)))
+    (setf *project* (serial-search-all compilation-tool-database))
+    (let ((analysis (analyze-project *project*)))
       (setf (analysis-inline analysis) '("core::Cons_O"))
-      (generate-code analysis))))
+      (generate-code analysis))
+    *project*))
 
