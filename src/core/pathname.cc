@@ -1182,7 +1182,8 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     clasp_write_char(logical ? ';' : DIR_SEPARATOR_CHAR, buffer);
   }
 NO_DIRECTORY:
-  if (unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(buffer))) == 0) {
+  core::T_sp fp = clasp_file_position(buffer);
+  if (unbox_fixnum(gc::As<Fixnum_sp>(fp)) == 0 ) {
     if ((cl__stringp(x->_Name) &&
          clasp_memberChar(':', x->_Name)) ||
         (cl__stringp(x->_Type) &&
