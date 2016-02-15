@@ -13,7 +13,7 @@ namespace core {
 #define RECORD_LOG(abf)
 #endif
 
-T_sp record_circle_subst(T_sp repl_table, T_sp tree);
+  T_sp record_circle_subst(T_sp repl_table, T_sp tree);
 
 SMART(Record);
 class Record_O : public T_O {

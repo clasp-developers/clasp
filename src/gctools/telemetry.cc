@@ -17,7 +17,8 @@ void throw_if_invalid_global_telemetry_search() {
 CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("");
-CL_DEFUN void core__telemetry_open(core::T_sp pathname) {
+CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
+  core::Pathname_sp pathname = core::cl__pathname(tpathname);
   core::Str_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
   global_telemetry_search->open_read(filename->c_str());
@@ -223,7 +224,20 @@ CL_DEFUN size_t core__telemetry_count() {
 }
 
 char *global_clasp_telemetry_file;
-Telemetry *global_telemetry = NULL;
+
+
+void Telemetry::dump_entry_varargs(Handle label, size_t num, ... )
+{
+  Word data[8];
+  va_list arguments;
+  va_start(arguments,num);
+  for ( int x = 0; x<num; ++x ) {
+    data[x] = va_arg(arguments,Word);
+  }
+  va_end(arguments);
+  std::string msg = this->entry_as_string(label,num,data);
+  printf("%s\n", msg.c_str());
+}
 
 std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[]) {
   std::string slabel = global_telemetry_search->_Labels[label];
@@ -294,6 +308,6 @@ void initialize_telemetry_functions() {
 
 extern "C" {
 void global_telemetry_flush() {
-  telemetry::global_telemetry->flush();
+  telemetry::global_telemetry_search->flush();
 };
 };

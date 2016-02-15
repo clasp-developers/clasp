@@ -25,6 +25,29 @@ THE SOFTWARE.
 */
 /* -^- */
 
+/*
+struct MemoryCode {
+Cmd _cmd;
+size_t _data;
+const char* _description;
+}
+
+enum Cmd {
+class_kind, class_size, field_fix,
+container_kind, container_jump_table_index,
+templated_class_kind, templated_class_jump_table_index,
+layout_end
+};
+class_kind, kind_value, name
+class_size, size, NULL
+field_fix, offset_words, name
+container_kind, kind_value, name
+container_jump_table_index, jump_table_index, NULL
+templated_class_kind, kind_value, name
+templated_class_jump_table_index, jump_table_index, NULL
+
+
+*/
 //#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
@@ -519,6 +542,8 @@ bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nu
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+
+  
   if (Alignment() == 16) {
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
   }
@@ -586,10 +611,20 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create amc chain");
 
+#ifdef DEBUG_MPS_FENCEPOST_FREE
+  mps_pool_debug_option_s debug_options = {
+      "fencepost", 9,
+      "free", 4,
+  };
+#endif
+  
   // Create the AMC pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+#ifdef DEBUG_MPS_FENCEPOST_FREE
+    MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
+#endif
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
     res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
   }
@@ -742,6 +777,10 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // register the main thread roots in static and heap space
 
   //#define TEST_MPS        1
+
+  for ( int i=0; i<global_symbol_count; ++i ) {
+    global_symbols[i].rawRef_() = (core::Symbol_O*)NULL;
+  }
 
   int exit_code = 0;
 

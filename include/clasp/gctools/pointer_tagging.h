@@ -134,6 +134,14 @@ static const uintptr_t single_float_tag = BOOST_BINARY(01111); // single-float
 static const uintptr_t single_float_shift = 5;
 static const uintptr_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
+ struct Immediate_info {
+   uintptr_t _kind;
+   const char* _name;
+ Immediate_info(uintptr_t k, const char* n) : _kind(k), _name(n) {};
+ };
+
+ std::vector<Immediate_info> get_immediate_info();
+ 
 static const uintptr_t kind_fixnum = 1;
 static const uintptr_t kind_single_float = 2;
 static const uintptr_t kind_character = 3;

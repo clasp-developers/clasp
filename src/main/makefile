@@ -133,6 +133,10 @@ bclasp-boehmdc-bitcode:
 bclasp-boehmdc-fasl:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
+bclasp-boehmdc:
+	make bclasp-boehmdc-bitcode
+	make bclasp-boehmdc-fasl
+
 cclasp-boehmdc-bitcode:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
 
@@ -219,15 +223,15 @@ compile-commands:
 		-e "(quit)"
 
 mps-interface-run:
-	$(BCLASP_BOEHMDC)  \
+	clasp_boehmdc_o -f bclasp  \
 		-e "(require :clasp-analyzer)" \
-		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
 mps-interface-run-cclasp:
 	$(CCLASP_BOEHM)  \
 		-e "(require :clasp-analyzer)" \
-		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
 mps-interface:

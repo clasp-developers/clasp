@@ -48,6 +48,9 @@ namespace clbind {
 class ConstructorCreator;
 };
 
+
+
+
 //#define GC_INTERFACE_FORWARD
 //#include <project_headers.h>
 //#undef GC_INTERFACE_FORWARD
@@ -92,9 +95,13 @@ namespace gctools {
 #include <clasp/gctools/other_tagged_casts.h>
 
 extern "C" {
-char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::kind_t kind);
 extern void obj_dump_base(void *base);
 extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
+
+extern int global_symbol_count;
+extern gctools::smart_ptr<core::Symbol_O> global_symbols[];
+
 };
 
 void initialize_clasp();
@@ -102,4 +109,5 @@ void initialize_clasp();
 void initialize_functions();
 void initialize_source_info();
 void initialize_classes_and_methods();
+
 #endif

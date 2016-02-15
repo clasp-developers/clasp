@@ -1535,8 +1535,8 @@ void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
 }
 
 void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
-  if (telemetry::global_telemetry)
-    telemetry::global_telemetry->flush();
+  if (telemetry::global_telemetry_search)
+    telemetry::global_telemetry_search->flush();
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt.str();

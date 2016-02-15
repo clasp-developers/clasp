@@ -14,6 +14,11 @@
 
 (search/generate-code *db*)
 
+(clang-tool:with-compilation-tool-database *db*
+  (defparameter *project* (clasp-analyzer:load-project)))
+
+
+(print "Done")
 (defun gcode ()
   (clang-tool:with-compilation-tool-database *db*
     (let ((analysis (analyze-project *project*)))

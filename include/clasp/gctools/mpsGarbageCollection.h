@@ -110,7 +110,7 @@ typedef enum { KIND_null,
 };
 
 extern "C" {
-char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::kind_t kind);
 extern void obj_dump_base(void *base);
 };
 
@@ -254,7 +254,8 @@ void headerDescribe(core::T_O *taggedClient);
 namespace gctools {
 
 constexpr size_t Alignment() {
-  return sizeof(Header_s);
+//  return sizeof(Header_s);
+  return alignof(Header_s);
 };
 inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
@@ -462,7 +463,10 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
   return MPS_RES_OK;
 };
 #define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
-#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&_ptr_))
+// Get rid of SIMPLE_POINTER_FIX - its a terrible name
+#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_REF_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(_ptr_))
 
 namespace gctools {
 

@@ -140,11 +140,13 @@ project clasp : requirements
 #-------- mps options
 
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
-#	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
+#        <define>DEBUG_TELEMETRY_DUMP       # dump telemetry information as it is generated
+	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
 #	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
 ##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
+        <define>DEBUG_MPS_FENCEPOST_FREE
 ##### This really, really slows things down
-#        <define>DEBUG_MPS_UNDERSCANNING
+        <define>DEBUG_MPS_UNDERSCANNING
         <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded

@@ -33,12 +33,23 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/debugger.h>
 #include <clasp/gctools/telemetry.h>
+#include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/memoryManagement.h>
 //#include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #endif
+
+namespace gctools {
+std::vector<Immediate_info> get_immediate_info() {
+  std::vector<Immediate_info> info;
+  info.push_back(Immediate_info(kind_fixnum,"FIXNUM"));
+  info.push_back(Immediate_info(kind_single_float,"SINGLE_FLOAT"));
+  info.push_back(Immediate_info(kind_character,"CHARACTER"));
+  return info;
+};
+};
 
 namespace gctools {
 
@@ -82,7 +93,7 @@ void handle_signals(int signo) {
   // Indicate that a signal was caught and handle it at a safe-point
   //
   SET_SIGNAL(signo);
-  telemetry::global_telemetry->flush();
+  telemetry::global_telemetry_search->flush();
   if (signo == SIGABRT && core::_global_debuggerOnSIGABRT) {
     printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
     core::LispDebugger debugger(_Nil<core::T_O>());
@@ -181,9 +192,26 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   gctools::_global_stack_marker = &stackMarker;
   gctools::_global_stack_max_size = stackMax;
 
+  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
+
+  { // Debugging info
+    size_t alignment = Alignment();
+    printf("%s:%d Alignment() = %lu\n", __FILE__, __LINE__, alignment);
+#ifdef USE_MPS
+    printf("%s:%d Align(1) = %lu\n", __FILE__, __LINE__, Align(1));
+    printf("%s:%d Align(Alignment()) = %lu\n", __FILE__, __LINE__, Align(Alignment()));
+#endif
+    printf("%s:%d Alignup(1) = %lu\n", __FILE__, __LINE__, AlignUp(1));
+    printf("%s:%d Alignup(Alignment()) = %lu\n", __FILE__, __LINE__, AlignUp(Alignment()));
+    printf("%s:%d global_alignup_sizeof_header = %lu\n", __FILE__, __LINE__, global_alignup_sizeof_header );
+  }
+
+  build_kind_field_layout_tables();
+  
   setupSignals();
 
-  telemetry::global_telemetry = new telemetry::Telemetry();
+  telemetry::global_telemetry_search = new telemetry::Telemetry();
+  telemetry::initialize_telemetry_functions();
 
   char *clasp_telemetry_mask_string = getenv("CLASP_TELEMETRY_MASK");
   telemetry::global_clasp_telemetry_file = getenv("CLASP_TELEMETRY_FILE");
@@ -191,14 +219,13 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   if (clasp_telemetry_mask_string) {
     printf("CLASP_TELEMETRY_MASK= %s\n", clasp_telemetry_mask_string);
     size_t mask = std::stoi(clasp_telemetry_mask_string);
-    telemetry::global_telemetry->set_mask(mask);
+    telemetry::global_telemetry_search->set_mask(mask);
   }
   if (telemetry::global_clasp_telemetry_file) {
     printf("CLASP_TELEMETRY_FILE= %s\n", telemetry::global_clasp_telemetry_file);
-    telemetry::global_telemetry->open_write(telemetry::global_clasp_telemetry_file);
+    telemetry::global_telemetry_search->open_write(telemetry::global_clasp_telemetry_file);
   }
 
-  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 #if defined(USE_MPS)
   int exitCode = gctools::initializeMemoryPoolSystem(startupFn, argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
@@ -212,7 +239,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
-  telemetry::global_telemetry->close();
+  telemetry::global_telemetry_search->close();
   return exitCode;
 }
 };
