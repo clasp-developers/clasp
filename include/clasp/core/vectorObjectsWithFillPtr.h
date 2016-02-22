@@ -50,8 +50,10 @@ public:
 public: // Functions here
   gc::Fixnum length() const { return this->_FillPtr; };
 
+  void clear() { this->_FillPtr = 0; };
   virtual bool arrayHasFillPointerP() const { return true; };
-  virtual T_sp &operator[](uint index);
+  virtual T_sp &operator[](uint index) {  return this->_Values[index]; };
+  virtual const T_sp &operator[](uint index) const { return this->_Values[index];};
 
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);

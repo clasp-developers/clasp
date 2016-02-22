@@ -300,9 +300,11 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   printf("%s:%d About to obj_deallocate_unmanaged_instance %s\n", __FILE__, __LINE__, _rep_(obj).c_str() );
   // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_DEALLOCATOR_TABLE
-#include "clasp_gc.cc"
-#undef GC_OBJ_DEALLOCATOR_TABLE
+  #ifndef USE_CXX_DYNAMIC_CAST
+    #define GC_OBJ_DEALLOCATOR_TABLE
+    #include "clasp_gc.cc"
+    #undef GC_OBJ_DEALLOCATOR_TABLE
+  #endif // USE_CXX_DYNAMIC_CAST
 #endif
 
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
@@ -310,11 +312,13 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
   GC_TELEMETRY1(telemetry::label_obj_deallocate_unmanaged_instance, (uintptr_t)client);
 #ifndef RUNNING_GC_BUILDER
+  #ifndef USE_CXX_DYNAMIC_CAST
   size_t jump_table_index = (size_t)kind - kind_first_general;
   goto *(OBJ_DEALLOCATOR_table[jump_table_index]);
-#define GC_OBJ_DEALLOCATOR
-#include "clasp_gc.cc"
-#undef GC_OBJ_DEALLOCATOR
+    #define GC_OBJ_DEALLOCATOR
+    #include "clasp_gc.cc"
+    #undef GC_OBJ_DEALLOCATOR
+  #endif // USE_CXX_DYNAMIC_CASE
 #else
 // do nothing
 #endif
