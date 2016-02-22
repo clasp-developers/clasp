@@ -79,9 +79,6 @@ string VectorObjectsWithFillPtr_O::__repr__() const {
   return ss.str();
 }
 
-T_sp &VectorObjectsWithFillPtr_O::operator[](uint index) {
-  return this->_Values[index];
-}
 
 T_sp VectorObjectsWithFillPtr_O::elt(int index) const {
   if (index >= this->_FillPtr) {

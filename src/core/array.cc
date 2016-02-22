@@ -151,10 +151,16 @@ void Array_O::initialize() {
 
 Symbol_sp Array_O::element_type_as_symbol() const {
   // If this fails we need a different way of doing this
+  if ( cl__symbolp(this->elementType()) ) {
+    return this->elementType();
+  }
   if (this->elementType() == _lisp->_true()) {
     return cl::_sym_T;
   }
-  SIMPLE_ERROR(BF("Handle more array types"));
+  if (this->elementType() == cl__find_class(cl::_sym_DoubleFloat_O) ) {
+    return cl::_sym_DoubleFloat_O;
+  }
+  SIMPLE_ERROR(BF("Handle more array types - the current array type is: %s") % _rep_(this->elementType()));
 }
 
 CL_LISPIFY_NAME("cl:aref");
