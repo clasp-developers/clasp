@@ -201,7 +201,7 @@ public:
   };
 
   template <typename OT>
-  void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT> &value) {
+    void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT> &value) {
     switch (this->stage()) {
     case saving: {
       if (value.notnilp()) {
@@ -209,8 +209,7 @@ public:
         this->_alist = Cons_O::create(apair, this->_alist);
       }
     } break;
-    case initializing:
-    case loading: {
+    case initializing: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
       List_sp find = core__alist_get(this->_alist, name);
@@ -219,8 +218,21 @@ public:
       else {
         Cons_sp apair = gc::As<Cons_sp>(oCar(find));
         value = gc::As<gc::smart_ptr<OT>>(oCdr(apair));
-        if (this->stage() == initializing)
-          this->flagSeen(apair);
+        this->flagSeen(apair);
+      }
+    } break;
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_get(this->_alist, name);
+      if (find.nilp())
+        value = _Nil<core::T_O>();
+      else {
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        // When loading the object oCdr(apair) may not be of the
+        // same type as value - it may be a symbol - used for patching
+        // use As_unsafe for this.
+        value = gc::As_unsafe<gc::smart_ptr<OT>>(oCdr(apair));
       }
     } break;
     case patching: {

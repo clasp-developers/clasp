@@ -578,6 +578,16 @@ inline To_SP As(const return_type &rhs) {
   lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0));
   HARD_UNREACHABLE();
 }
+
+ // Cast the type without any concern if it is appropriate
+ // This is only used for loading objects and patching
+ // See src/core/record.h
+ template <typename To_SP, typename From_SP>
+   inline To_SP As_unsafe(From_SP const &rhs) {
+   To_SP ret((Tagged)rhs.raw_());
+   return ret;
+ }
+
 };
 
 namespace gctools {
