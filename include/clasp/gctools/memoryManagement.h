@@ -163,8 +163,8 @@ extern void monitorAllocation(kind_t k, size_t sz);
 #endif
 }
 extern "C" {
-char *obj_name(gctools::kind_t kind);
-char *obj_kind_name(core::T_O *ptr);
+const char *obj_name(gctools::kind_t kind);
+const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };

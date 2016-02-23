@@ -150,9 +150,11 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN core::T_mv core__hardwired_kinds() {
-  core::List_sp result = core::Cons_O::createList(core::Cons_O::create(core::Str_O::create("FIXNUM"), core::clasp_make_fixnum(kind_fixnum)),
-                                                  core::Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), core::clasp_make_fixnum(kind_single_float)),
-                                                  core::Cons_O::create(core::Str_O::create("CHARACTER"), core::clasp_make_fixnum(kind_character)));
+  std::vector<Immediate_info> immediates = get_immediate_info();
+  core::List_sp result = _Nil<core::T_O>();
+  for ( int i=0; i<immediates.size(); ++i ) {
+    result = core::Cons_O::create(core::Cons_O::create(core::Str_O::create(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
+  }
   core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
 }

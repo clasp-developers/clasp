@@ -12,4 +12,21 @@
    :selection-pattern ".*cons\.cc.*$"
    :source-path-identifier "/clasp/"))
 
-(defparameter *project* (search/generate-code *db*))
+(search/generate-code *db*)
+
+(clang-tool:with-compilation-tool-database *db*
+  (defparameter *project* (clasp-analyzer:load-project)))
+
+
+(print "Done")
+(defun gcode ()
+  (clang-tool:with-compilation-tool-database *db*
+    (let ((analysis (analyze-project *project*)))
+      (generate-code analysis))))
+
+(gcode)
+(trace clasp-analyzer::scanner-for-lispallocs)
+
+
+
+(print "Done")

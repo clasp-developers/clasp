@@ -148,7 +148,7 @@ struct weak_fwd2_s : public WeakObject {
 };
 
 struct weak_pad_s : public WeakObject {
-  WeakObject *fwd;                         /* forwarded object */
+//  WeakObject *fwd;                         /* forwarded object */  /*WHY!!*//
   gctools::smart_ptr<core::Fixnum_I> size; /* total size of this object */
 };
 
