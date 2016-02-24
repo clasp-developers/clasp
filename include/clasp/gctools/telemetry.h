@@ -165,7 +165,12 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   std::string entry_as_string(Handle label, size_t num, Word data[]);
 
+  void dump_entry_varargs(Handle label, size_t num, ... );
+
   void write(size_t kind, Handle label) {
+#ifdef DEBUG_TELEMETRY_DUMP
+    this->dump_entry_varargs(label,0);
+#endif
     if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
@@ -200,6 +205,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   void write(size_t kind, Handle label, Word data0, const std::string &msg) {
     if ((this->_Mask & kind) && this->_File) {
+#ifdef DEBUG_TELEMETRY_DUMP
+      this->dump_entry_varargs(label,1,data0);
+#endif
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 2;
@@ -217,6 +225,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   void write(size_t kind, Handle label, Word data0, Word data1, Word data2) {
     if ((this->_Mask & kind) && this->_File) {
+#ifdef DEBUG_TELEMETRY_DUMP
+      this->dump_entry_varargs(label,3,data0,data1,data2);
+#endif
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 3;
@@ -230,6 +241,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3) {
     if ((this->_Mask & kind) && this->_File) {
+#ifdef DEBUG_TELEMETRY_DUMP
+      this->dump_entry_varargs(label,4,d0,d1,d2,d3);
+#endif
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 4;
@@ -244,6 +258,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4) {
     if ((this->_Mask & kind) && this->_File) {
+#ifdef DEBUG_TELEMETRY_DUMP
+      this->dump_entry_varargs(label,5,d0,d1,d2,d3,d4);
+#endif
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 5;
@@ -259,6 +276,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4, Word d5) {
     if ((this->_Mask & kind) && this->_File) {
+#ifdef DEBUG_TELEMETRY_DUMP
+      this->dump_entry_varargs(label,6,d0,d1,d2,d3,d4,d5);
+#endif
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 6;
@@ -275,6 +295,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4, Word d5, Word d6) {
     if ((this->_Mask & kind) && this->_File) {
+#ifdef DEBUG_TELEMETRY_DUMP
+      this->dump_entry_varargs(label,7,d0,d1,d2,d3,d4,d5,d6);
+#endif
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 7;
@@ -325,7 +348,7 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
 };
 
 extern char *global_clasp_telemetry_file;
-extern Telemetry *global_telemetry;
+extern Telemetry *global_telemetry_search;
 
 void initialize_telemetry_functions();
  extern "C" {
@@ -339,11 +362,11 @@ void initialize_telemetry_functions();
 #endif
 
 #ifdef DEBUG_TELEMETRY
-#define GC_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry, label)
-#define GC_TELEMETRY1(label, arg0) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0)
-#define GC_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1)
-#define GC_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2)
-#define GC_TELEMETRY4(label, arg0, arg1, arg2, arg3) telemetry::global_telemetry->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2, (uintptr_t)arg3)
+#define GC_TELEMETRY0(label) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label)
+#define GC_TELEMETRY1(label, arg0) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0)
+#define GC_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1)
+#define GC_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2)
+#define GC_TELEMETRY4(label, arg0, arg1, arg2, arg3) telemetry::global_telemetry_search->write(telemetry::Telemetry::GC_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2, (uintptr_t)arg3)
 #else
 #define GC_TELEMETRY0(label)
 #define GC_TELEMETRY1(label, arg0)
@@ -352,11 +375,11 @@ void initialize_telemetry_functions();
 #define GC_TELEMETRY4(label, arg0, arg1, arg2, arg3)
 #endif
 #ifdef DEBUG_STACK_TELEMETRY
-#define STACK_TELEMETRY0(label) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry, label)
-#define STACK_TELEMETRY1(label, arg0) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0)
-#define STACK_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1)
-#define STACK_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2)
-#define STACK_TELEMETRY7(label, a0, a1, a2, a3, a4, a5, a6) telemetry::global_telemetry->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)a0, (uintptr_t)a1, (uintptr_t)a2, (uintptr_t)a3, (uintptr_t)a4, (uintptr_t)a5, (uintptr_t)a6)
+#define STACK_TELEMETRY0(label) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label)
+#define STACK_TELEMETRY1(label, arg0) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0)
+#define STACK_TELEMETRY2(label, arg0, arg1) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1)
+#define STACK_TELEMETRY3(label, arg0, arg1, arg2) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)arg0, (uintptr_t)arg1, (uintptr_t)arg2)
+#define STACK_TELEMETRY7(label, a0, a1, a2, a3, a4, a5, a6) telemetry::global_telemetry_search->write(telemetry::Telemetry::STACK_telemetry, label, (uintptr_t)a0, (uintptr_t)a1, (uintptr_t)a2, (uintptr_t)a3, (uintptr_t)a4, (uintptr_t)a5, (uintptr_t)a6)
 #else
 #define STACK_TELEMETRY0(label)
 #define STACK_TELEMETRY1(label, arg0)

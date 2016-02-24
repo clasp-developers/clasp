@@ -146,7 +146,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
     return eval::apply_consume_VaList(func, valist);
-  } else if (List_sp cargs = gc::As<Cons_sp>(last)) {
+  } else if (last.consp() ) {
     // Cons as last argument
     int lenFirst = lenArgs - 1;
     int lenRest = cl__length(last);
@@ -156,6 +156,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     for (int i(0); i < lenFirst; ++i) {
       frame[i] = LCC_NEXT_ARG_RAW(args, i);
     }
+    List_sp cargs = gc::As<Cons_sp>(last);
     for (int i(lenFirst); i < nargs; ++i) {
       frame[i] = oCar(cargs).raw_();
       cargs = oCdr(cargs);
@@ -262,7 +263,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));
 };
 
-CL_LAMBDA(body expectDocString);
+CL_LAMBDA(body &optional expectDocString);
 CL_DECLARE();
 CL_DOCSTRING("Handle special declarations and remove declarations from body. Return MultipleValues: declarations body documentation specials");
 CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString) {
@@ -789,9 +790,6 @@ T_mv sp_locally(List_sp args, T_sp env) {
 #define when_compile_p(s) ((s)&FLAG_COMPILE)
 #define when_execute_p(s) ((s)&FLAG_EXECUTE)
 
-#define ARGS_sp_eval_when "(situation &rest body)"
-#define DECL_sp_eval_when ""
-#define DOCS_sp_eval_when "eval_when"
 T_mv sp_eval_when(List_sp args, T_sp env) {
   List_sp situation_list = oCar(args);
   List_sp body = oCdr(args);
@@ -863,14 +861,10 @@ T_mv sp_eval_when(List_sp args, T_sp env) {
 #endif
 };
 
-#define ARGS_sp_step "(form)"
-#define DECL_sp_step ""
-#define DOCS_sp_step "step is implemented as a special"
 T_mv sp_step(List_sp args, T_sp env) {
   IMPLEMENT_ME();
 };
 
-#define DOCS_sp_tagbody "tagbody special form - see CLHS"
 T_mv sp_tagbody(List_sp args, T_sp env) {
   TagbodyEnvironment_sp tagbodyEnv = TagbodyEnvironment_O::make(env);
   //
@@ -915,7 +909,6 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   return Values0<T_O>();
 };
 
-#define DOCS_sp_go "go special form - see CLHS"
 T_mv sp_go(List_sp args, T_sp env) {
   Symbol_sp tag = gc::As<Symbol_sp>(oCar(args));
   int depth = 0;
@@ -982,7 +975,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
 
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
-  Environment_sp evaluateEnvironment;
+  T_sp evaluateEnvironment;
   // SPECIFIC TO LET FROM HERE ON DOWN
   evaluateEnvironment = parentEnvironment;
   int debugInfoIndex = 0;
@@ -1057,8 +1050,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
 
   // Figure out which environment to evaluate in
   List_sp curExp = expressions;
-  Environment_sp evaluateEnvironment;
-
+  T_sp evaluateEnvironment;
   // SPECIFIC TO LET* FROM HERE ON DOWN
   evaluateEnvironment = newEnvironment; // SPECIFIC TO LET*
   int debugInfoIndex = 0;
@@ -1394,7 +1386,6 @@ T_mv sp_function(List_sp args, T_sp environment) {
 }
 
 #if 0
-#define DOCS_sp_lambda_block "Like lambda but the first argument is a symbol that defines the name of the lambda"
 	T_mv sp_lambda_block( List_sp args, T_sp env)
 	{
 	    ASSERTNOTNULL(args);
@@ -1404,7 +1395,6 @@ T_mv sp_function(List_sp args, T_sp environment) {
 #endif
 
 #if 0
-#define DOCS_sp_lambda_with_handler "Like lambda but the first argument is a symbol that defines the name of the lambda and the second argument is a lambda-list-handler rather than a lambda-list"
 	T_mv sp_lambda_with_handler( List_sp args, T_sp env)
 	{
 	    ASSERTNOTNULL(args);

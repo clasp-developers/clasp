@@ -47,6 +47,34 @@
 ;;(defmacro method-log (&rest args) `(print (list "METHOD-LOG" ,@args)))
 (defmacro method-log (&rest args) nil)
 
+
+#+clasp
+(defun maybe-augment-generic-function-lambda-list (name method-lambda-list)
+  (let* ((gf (fdefinition name))
+         (gf-lambda-list-all (core:function-lambda-list gf))
+         (has-aok (member '&allow-other-keys gf-lambda-list-all))
+         (gf-lambda-list (if has-aok (butlast gf-lambda-list-all 1)
+                             gf-lambda-list-all)))
+    (flet ((match-key (entry)
+             (cond
+               ((symbolp entry)
+                (intern (string entry) :keyword))
+               ((and (consp entry) (consp (car entry)))
+                (car (car entry)))
+               ((consp entry)
+                (intern (string (car entry)) :keyword))
+               (t (error "Illegal keyword parameter ~a" entry)))))
+      (let* ((key-old (member '&key gf-lambda-list)))
+        (when key-old
+          (let ((key-new (member '&key method-lambda-list))
+                append-keys)
+            (dolist (k (cdr key-new))
+              (when (not (member (match-key k) key-old :key #'match-key))
+                (push k append-keys)))
+            (let ((new-ll (append gf-lambda-list append-keys
+                                  (if has-aok (list '&allow-other-keys) nil))))
+              (core:setf-lambda-list gf new-ll))))))))
+
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (declare (notinline make-method-lambda))
   (method-log "entered defmethod name:" name)
@@ -96,12 +124,14 @@
 	      (method-log "defmethod line 90")
 	      (ext:register-with-pde
 	       whole
-	       `(install-method ',name ',qualifiers
-				,(specializers-expression specializers)
-				',lambda-list
-				,(maybe-remove-block wrapped-lambda)
-				,wrapped-p
-				,@(mapcar #'si::maybe-quote options))))))))))
+	       `(prog1
+                    (install-method ',name ',qualifiers
+                                    ,(specializers-expression specializers)
+                                    ',lambda-list
+                                    ,(maybe-remove-block wrapped-lambda)
+                                    ,wrapped-p
+                                    ,@(mapcar #'si::maybe-quote options))
+                  #+clasp(maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))))
 
 (defun specializers-expression (specializers)
   (declare (si::c-local))
@@ -311,9 +341,9 @@
       ;; cclasp uses *code-walk-hook* (set in kernel/cleavir/auto-compile.lisp)
       ;; but it doesn't use the code-walker function
       #+cclasp
-      (if (fboundp 'clasp-cleavir:code-walk-for-method-lambda-closure)
-          (clasp-cleavir:code-walk-for-method-lambda-closure method-lambda env
-                                                             :code-walker-function #'code-walker)
+      (if (fboundp 'clasp-cleavir:code-walk-using-cleavir)
+          (clasp-cleavir:code-walk-using-cleavir method-lambda env
+                                                 :code-walker-function #'code-walker)
           (setq call-next-method-p t
                 next-method-p-p t
                 in-closure-p t)))

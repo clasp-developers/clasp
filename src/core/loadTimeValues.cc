@@ -165,11 +165,8 @@ CL_DEFUN void core__load_time_values_dump_symbols(T_sp nameOrLtv, T_sp indices) 
   ltv->dumpSymbols(vi);
 };
 
-EXPOSE_CLASS(core, LoadTimeValues_O);
 
-#define ARGS_LoadTimeValues_O_make "(dimension)"
-#define DECL_LoadTimeValues_O_make ""
-#define DOCS_LoadTimeValues_O_make "This is a thin wrapper around VectorObjectsWithFillPtr - it creates a place to store LoadTimeValues"
+
 CL_LISPIFY_NAME(make-load-time-values);
 CL_DEFUN LoadTimeValues_sp LoadTimeValues_O::make(int dataDimension, int symbolsDimension) {
   GC_ALLOCATE(LoadTimeValues_O, vo);
@@ -185,20 +182,8 @@ SYMBOL_SC_(CorePkg, lookupLoadTimeSymbol);
 SYMBOL_EXPORT_SC_(CorePkg, setRunTimeValuesVector);
 
 
-void LoadTimeValues_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<LoadTimeValues_O>()
-      .def("data_vectorPushExtend", &LoadTimeValues_O::data_vectorPushExtend)
-      .def("symbols_vectorPushExtend", &LoadTimeValues_O::symbols_vectorPushExtend);
-//  Defun_maker(CorePkg, LoadTimeValues);
-}
 
-void LoadTimeValues_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), LoadTimeValues, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 void dumpOneValue(stringstream &ss, T_sp val) {
   if (val.nilp()) {
@@ -271,26 +256,5 @@ CL_DEFMETHOD int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int e
   this->_Symbols.push_back(val);
   return i;
 }
-
-#if 0 // Depreciated
-
-    EXPOSE_CLASS(core,MemoryLockedLoadTimeValuesPointer_O);
-
-    void MemoryLockedLoadTimeValuesPointer_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<MemoryLockedLoadTimeValuesPointer_O>()
-	    ;
-    }
-
-    void MemoryLockedLoadTimeValuesPointer_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),MemoryLockedLoadTimeValuesPointer,"","",_LISP)
-//	.initArgs("(self)")
-	    ;
-#endif
-    }
-
-#endif
 
 }; /* core */

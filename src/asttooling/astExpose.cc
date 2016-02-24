@@ -1162,9 +1162,10 @@ void initialize_astExpose() {
     CLASS_DECL(Value, NamedDecl)
         .def("getType", &clang::ValueDecl::getType),
     CLASS_DECL(Declarator, ValueDecl),
-    CLASS_DECL(Field, DeclaratorDecl),
+    CLASS_DECL(Field, DeclaratorDecl)
+    .def("getFieldIndex",&clang::FieldDecl::getFieldIndex) ,
     CLASS_DECL(ObjCAtDefsField, FieldDecl),
-    CLASS_DECL(ObjCIvar, FieldDecl),
+    CLASS_DECL(ObjCIvar, FieldDecl) ,
     CLASS_DECL(Function, DeclaratorDecl)
         .def("hasBody", (bool (clang::FunctionDecl::*)() const) & clang::FunctionDecl::hasBody)
         .def("isThisDeclarationADefinition", &clang::FunctionDecl::isThisDeclarationADefinition)

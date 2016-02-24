@@ -36,15 +36,12 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, ArrayDisplaced_O);
+
 
 T_mv ArrayDisplaced_O::arrayDisplacement() const {
   return Values(this->_Array, make_fixnum(this->_DisplacedIndexOffset));
 };
 
-#define ARGS_ArrayDisplaced_O_make "(dimensions element-type displaced-to displaced-index-offset)"
-#define DECL_ArrayDisplaced_O_make ""
-#define DOCS_ArrayDisplaced_O_make "make ArrayDisplaced args: dimensions element-type displaced-to displaced-index-offset"
 CL_LISPIFY_NAME(make-array-displaced);
 CL_DEFUN ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementType, T_sp displacedTo, int displacedIndexOffset) {
   GC_ALLOCATE(ArrayDisplaced_O, array);
@@ -62,15 +59,8 @@ CL_DEFUN ArrayDisplaced_sp ArrayDisplaced_O::make(T_sp dim_desig, T_sp elementTy
   return array;
 }
 
-void ArrayDisplaced_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ArrayDisplaced_O>();
-}
 
-void ArrayDisplaced_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ArrayDisplaced, "", "", _lisp);
-#endif
-}
+
 
 #if defined(XML_ARCHIVE)
 void ArrayDisplaced_O::archiveBase(::core::ArchiveP node) {

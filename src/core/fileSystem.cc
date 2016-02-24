@@ -254,9 +254,6 @@ CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   this->_Path = p;
 }
 
-#define ARGS_Path_O_parts "(self)"
-#define DECL_Path_O_parts ""
-#define DOCS_Path_O_parts "Returns a list of path parts as strings"
 CL_LAMBDA(self);
 CL_DOCSTRING("Returns a list of path parts as strings");
 CL_LISPIFY_NAME("path-parts");
@@ -324,44 +321,10 @@ CL_DEFMETHOD bool Path_O::exists() {
   return boost_filesystem::exists(this->_Path);
 }
 
-EXPOSE_CLASS(core, Path_O);
 
-void Path_O::exposeCando(Lisp_sp lisp) {
-  class_<Path_O>()
-      .def("path-parts", &Path_O::parts, ARGS_Path_O_parts, DECL_Path_O_parts, DOCS_Path_O_parts)
-      .def("isAbsolute", &Path_O::isAbsolute)
-      .def("last_write_time", &Path_O::last_write_time)
-      .def("setPathFromString", &Path_O::setPathFromString)
-      .def("parent_path", &Path_O::parent_path)
-      .def("copyPath", &Path_O::copyPath)
-      .def("path-stem", &Path_O::stem)
-      .def("path-append", &Path_O::path_append)
-      .def("extension", &Path_O::extension)
-      .def("replaceExtension", &Path_O::replaceExtension)
-      .def("exists", &Path_O::exists)
-      .def("path-absolute", &Path_O::absolute)
-      .def("asString", &Path_O::asString)
-      .def("path-fileName", &Path_O::fileName);
-}
 
-void Path_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Path, "", "", _lisp)
-      .def("setPathFromString", &Path_O::setPathFromString)
-      .def("parent_path", &Path_O::parent_path)
-      .def("copyPath", &Path_O::copyPath)
-      .def("stem", &Path_O::stem)
-      .def("path-append", &Path_O::path_append)
-      .def("extension", &Path_O::extension)
-      .def("exists", &Path_O::exists)
-      .def("asString", &Path_O::asString);
-#endif
-  // 	defInPackage(CorePkg,"directory",&directory, _LISP);
-  // 	defInPackage(CorePkg,"remove",&remove, _LISP);
-  // 	defInPackage(CorePkg,"rename",&rename, _LISP);
-  // 	defInPackage(CorePkg,"removeAll",&removeAll, _LISP);
-  // 	defNoWrapPackageWithArguments(CorePkg,"ensure-directories-exist",&ensureDirectoriesExist, "(path)", _LISP);
-}
+
+
 
 DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
   GC_ALLOCATE(DirectoryIterator_O, di);
@@ -369,17 +332,10 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
   return di;
 }
 
-EXPOSE_CLASS(core, DirectoryIterator_O);
 
-void DirectoryIterator_O::exposeCando(Lisp_sp lisp) {
-  class_<DirectoryIterator_O>();
-}
 
-void DirectoryIterator_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, DirectoryIterator, "", "", _lisp);
-#endif
-}
+
+
 
 #if 0
     T_sp DirectoryIterator_O::make_init(Function_sp exec, Cons_sp args, T_sp bargs)
@@ -476,17 +432,10 @@ RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path)
   return di;
 }
 
-EXPOSE_CLASS(core, RecursiveDirectoryIterator_O);
 
-void RecursiveDirectoryIterator_O::exposeCando(Lisp_sp lisp) {
-  class_<RecursiveDirectoryIterator_O>();
-}
 
-void RecursiveDirectoryIterator_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, RecursiveDirectoryIterator, "", "", _lisp);
-#endif
-}
+
+
 
 #if 0
 #define ARGS_af_makeRecursiveDirectoryIterator "(path)"
@@ -576,22 +525,9 @@ RecursiveDirectoryIterator_O::~RecursiveDirectoryIterator_O() {
   }
 }
 
-EXPOSE_CLASS(core, DirectoryEntry_O);
-void DirectoryEntry_O::exposeCando(Lisp_sp lisp) {
-  class_<DirectoryEntry_O>()
-      .def("fileStatus", &DirectoryEntry_O::fileStatus)
-      .def("symlinkStatus", &DirectoryEntry_O::symlinkStatus)
-      .def("path", &DirectoryEntry_O::path);
-}
 
-void DirectoryEntry_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, DirectoryEntry, "", "", _lisp)
-      .def("fileStatus", &DirectoryEntry_O::fileStatus)
-      .def("symlinkStatus", &DirectoryEntry_O::symlinkStatus)
-      .def("path", &DirectoryEntry_O::path);
-#endif
-}
+
+
 
 void DirectoryEntry_O::initialize() {
   this->Base::initialize();
@@ -637,26 +573,9 @@ DirectoryEntry_O::~DirectoryEntry_O() {
     delete this->_Entry;
 }
 
-EXPOSE_CLASS(core, FileStatus_O);
-void FileStatus_O::exposeCando(Lisp_sp lisp) {
-  class_<FileStatus_O>()
-      .def("exists", &FileStatus_O::exists)
-      .def("isDirectory", &FileStatus_O::isDirectory)
-      .def("isRegularFile", &FileStatus_O::isRegularFile)
-      .def("isSymlink", &FileStatus_O::isSymlink)
-      .def("isOther", &FileStatus_O::isOther);
-}
 
-void FileStatus_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, FileStatus, "", "", _lisp)
-      .def("exists", &FileStatus_O::exists)
-      .def("isDirectory", &FileStatus_O::isDirectory)
-      .def("isRegularFile", &FileStatus_O::isRegularFile)
-      .def("isSymlink", &FileStatus_O::isSymlink)
-      .def("isOther", &FileStatus_O::isOther);
-#endif
-}
+
+
 
 void FileStatus_O::initialize() {
   this->Base::initialize();

@@ -83,6 +83,7 @@
   bases
   vbases
   fields
+  size
   method-names
   metadata
   )
@@ -91,6 +92,7 @@
 (defstruct instance-variable
   "Represent an instance variable, it's name, it's source-location and it's classified type"
   field-name
+  field-offset
   location
   ctype
   )
@@ -186,8 +188,16 @@
   (forwards (make-hash-table :test #'equal))
   (enums (make-hash-table :test #'equal))
   sorted-enums
+  (scanner-jump-table-indices-for-enum-names (make-hash-table :test #'equal))
   enum-roots
   )
+
+(defun scanner-jump-table-index-for-enum-name (enum-name anal)
+  (let* ((jt (analysis-scanner-jump-table-indices-for-enum-names anal))
+         (jt-index (gethash enum-name jt)))
+    (if jt-index
+        jt-index
+        (setf (gethash enum-name jt) (hash-table-count jt)))))
 
 ;; Return "inline" if the function should be inlined
 ;; For now it's really simple, inline if it's in a list and don't if it's not
@@ -714,6 +724,7 @@ can be saved and reloaded within the project for later analysis"
   (symbol-macrolet ((results (project-classes (clang-tool:multitool-results mtool))))
     (labels ((%%new-class-callback (match-info class-node record-key template-specializer)
                (let ((cname (clang-tool:mtag-name match-info :whole))
+                     (record-decl (clang-tool:mtag-node match-info :whole))
                      bases vbases fields method-names metadata )
                  ;;
                  ;; Run a matcher to find the base classes and their namespaces
@@ -745,6 +756,9 @@ can be saved and reloaded within the project for later analysis"
                           (push (make-instance-variable
                                  :location (clang-tool:mtag-loc-start minfo :field)
                                  :field-name (clang-tool:mtag-name minfo :field)
+                                 :field-offset (ast-tooling:get-field-offset (clang-tool:ast-context match-info)
+                                                                             record-decl
+                                                                             (cast:get-field-index (clang-tool:mtag-node minfo :field)))
                                  :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
                                                                              :location (clang-tool:mtag-loc-start minfo :field))))
                                           (classify-ctype (to-canonical-type type))))
@@ -784,6 +798,7 @@ can be saved and reloaded within the project for later analysis"
                                     :vbases vbases
                                     :method-names method-names
                                     :metadata metadata
+                                    :size (ast-tooling:get-record-size (clang-tool:ast-context match-info) record-decl)
                                     :fields fields))))
              (%%class-callback (match-info)
                (gclog "MATCH: ------------------~%")
@@ -1493,30 +1508,25 @@ so that they don't have to be constantly recalculated"
   pointee-type)
 
 
-(defgeneric fixer-macro-name (fixer-head fixer))
+(defgeneric fixer-macro-name (fixer-head))
 
-(defmethod fixer-macro-name ((x (eql :smart-ptr-fix)) fixer) "SMART_PTR_FIX")
+(defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
 
-(defmethod fixer-macro-name ((x (eql :tagged-pointer-fix)) fixer) "TAGGED_POINTER_FIX")
+(defmethod fixer-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_FIX")
 
-(defmethod fixer-macro-name ((x pointer-fixer) fixer) "SIMPLE_POINTER_FIX")
+(defmethod fixer-macro-name ((x pointer-fixer)) "POINTER_REF_FIX")
 
-(defmethod fixer-macro-name ((x array-fixer) fixer) "ARRAY_FIX")
+(defmethod fixer-macro-name ((x array-fixer)) "ARRAY_FIX")
 
 
 (defun code-for-instance-var (stream ptr-name instance-var)
-  (let* ((fixer-macro (fixer-macro-name (car (last instance-var)) (last instance-var)))
+  (let* ((fixer-macro (fixer-macro-name (car (last instance-var))))
          (variable-chain (butlast instance-var 1)))
-    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name variable-chain)))
-#||
-           (macro-name (macro fixer))
-           (accessor (variable-accessor e)))
-      (format stream "~a(~a);~%" (macro fixer) (variable e)))))
-||#
+    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name
+            (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain))))
 
 (defconstant +ptr-name+ "obj_gc_safe"
   "This variable is used to temporarily hold a pointer to a Wrapper<...> object - we want the GC to ignore it")
-
 
 (defstruct destination
   stream
@@ -1525,11 +1535,12 @@ so that they don't have to be constantly recalculated"
   label-list
   label-prefix )
 
-(defmacro with-destination ((fout dest enum &optional continue) &body body)
+(defmacro with-jump-table ((fout jump-table-index dest enum &optional continue) &body body)
   (let ((label-gs (gensym)))
     `(let* ((,fout (destination-stream ,dest))
 	    (,label-gs (format nil "~a_~a" (destination-label-prefix ,dest)
-                               (enum-name ,enum))))
+                               (enum-name ,enum)))
+            (,jump-table-index (length (destination-label-list ,dest))))
        (push (cons (enum-value ,enum) ,label-gs) (destination-label-list ,dest))
        (format ,fout "~a:~%" ,label-gs)
        (format ,fout "{~%")
@@ -1539,16 +1550,16 @@ so that they don't have to be constantly recalculated"
        )))
 
 
-(defun scanner-dummy (dest enum anal)
-  (assert (simple-enum-p enum))
-  (let* ((alloc (simple-enum-alloc enum))
-         (key (alloc-key alloc))
-         (enum-name (enum-name enum)))
-    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum "goto TOP")
-		      (format fout "    // Should never be invoked~%")
-		      )))
 
+(defun field-data (instance-var)
+  (let ((type (car (last instance-var)))
+        names offsets)
+    (dolist (field (butlast instance-var))
+      (push (instance-variable-field-name field) names)
+      (push (instance-variable-field-offset field) offsets))
+    (format nil " { field_fix, ~d, ~s }"
+            (apply #'+ offsets)
+            (format nil "~a" (nreverse names)))))
 
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -1556,49 +1567,30 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum "goto TOP")
-;; Generate a helper function
-      (let ((fh (destination-helper-stream dest)))
-        (format fh "template <>~%")
-        (format fh "~a mps_res_t obj_scan_helper<~a>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t &_mps_ufs, mps_word_t _mps_wt, mps_addr_t& client)~%" (inline-analysis :scan key anal) key)
-        (format fh "{~%")
-        (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-          (when all-instance-variables
-            (format fh "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key))
-          (dolist (instance-var all-instance-variables)
-            (code-for-instance-var fh +ptr-name+ instance-var)))
-        (format fh "    typedef ~A type_~A;~%" key enum-name)
-        (format fh "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-        (format fh "    return MPS_RES_OK;~%")
-        (format fh "}~%"))
-      (format fout "  mps_res_t result = gctools::obj_scan_helper<~a>(_ss,_mps_zs,_mps_w,_mps_ufs,_mps_wt,client);~%" key)
-      (format fout "  if ( result != MPS_RES_OK ) return result;~%")
-      )))
-
+    (let ((fh (destination-helper-stream dest)))
+      (format fh "{ class_kind, ~d, ~s },~%" enum-name key)
+      (format fh "{ class_size, sizeof(~a), \"\" },~%" key )
+      (let ((all-instance-variables
+             (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+        (dolist (instance-var all-instance-variables)
+          (format fh "~a,~%" (field-data instance-var)))))))
 
 (defun skipper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (gclog "skipper-for-lispallocs -> inheritance classid[~a]  value[~a]~%" key (enum-value enum))
-    (with-destination (fout dest enum)
-		      (format fout "    typedef ~A type_~A;~%" key enum-name)
-		      (format fout "    client = (char*)client + AlignUp(sizeof(type_~a)) + global_alignup_sizeof_header;~%" enum-name)
-                      (format fout "    goto DONE; //return client;~%")
-		      )))
+    (gclog "skipper-for-lispallocs -> inheritance classid[~a]  value[~a]~%" key (enum-value enum))))
 
 (defun dumper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum "goto BOTTOM")
-		      ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-		      (format fout "    typedef ~A type_~A;~%" key enum-name)
-		      (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" enum-name enum-name )
-		      )))
-
+    (with-jump-table (fout jti dest enum "goto BOTTOM")
+      ;;    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+      (format fout "    typedef ~A type_~A;~%" key enum-name)
+      (format fout "    sout << \"~a size[\" << (AlignUp(sizeof(type_~a))+global_alignup_sizeof_header) << \"]\" ;~%" enum-name enum-name ))))
 
 (defun finalizer-for-lispallocs (dest enum anal)
   (check-type enum simple-enum)
@@ -1607,7 +1599,7 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
     (gclog "build-mps-finalize-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
@@ -1622,7 +1614,7 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
     (gclog "build-mps-deallocator-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
@@ -1636,40 +1628,37 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum "goto TOP")
-		      ;;    (format fout "    typedef ~a MyType;~%" key)
-		      ;;    (format fout "    typedef typename gctools::GCHeader<MyType>::HeaderType HeadT;~%")
-		      ;;    (format fout "    HeadT* header = reinterpret_cast<HeadT*>(base);~%")
-		      ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
-		      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-		      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
-			(dolist (instance-var all-instance-variables)
-			  (code-for-instance-var fout +ptr-name+ instance-var)))
-		      ;;    (format fout "    base = (char*)base + length;~%")
-		      ;;    (format fout "    typedef ~A type_~A;~%" key enum-name)
-		      (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
-		      )))
+    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
+      (let ((fh (destination-helper-stream dest)))
+        (format fh "{ templated_class_kind, ~d, ~s },~%" enum-name key)
+        (format fh "{ templated_class_jump_table_index, ~d, \"\" },~%" jti)
+        (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+        (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+          (dolist (instance-var all-instance-variables)
+            (code-for-instance-var fout +ptr-name+ instance-var)))
+        (format fout "    size = ~a->templatedSizeof();" +ptr-name+)))))
 
 (defun skipper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum)
-		      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-		      (format fout "    client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
-                      (format fout "    goto DONE; //return client;~%")
-		      )))
+    (with-jump-table (fout jti dest enum)
+      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+      (format fout "    // client = (char*)client + AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header;~%" +ptr-name+)
+      (format fout "    size = ~a->templatedSizeof();~%" +ptr-name+)
+      (format fout "    goto DONE; //return client;~%")
+      )))
 
 (defun dumper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-destination (fout dest enum "goto BOTTOM")
-		      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-		      (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" enum-name +ptr-name+ )
-		      )))
+    (with-jump-table (fout jti dest enum "goto BOTTOM")
+      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+      (format fout "    sout << \"~a size[\" << (AlignUp(~a->templatedSizeof()) + global_alignup_sizeof_header) << \"]\" ;~%" enum-name +ptr-name+ )
+      )))
 
 (defun finalizer-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
@@ -1677,7 +1666,7 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
@@ -1689,7 +1678,7 @@ so that they don't have to be constantly recalculated"
          (enum-name (enum-name enum))
          (ns-cn key)
          (cn (strip-all-namespaces-from-name ns-cn)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
@@ -1704,40 +1693,39 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum "goto TOP")
-		      ;;    (format fout "// processing ~a~%" alloc)
-		      (if (cxxrecord-ctype-p decl)
-			  (progn
-			    (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
-			(let* ((parms (class-template-specialization-ctype-arguments decl))
-			       (parm0 (car parms))
-			       (parm0-ctype (gc-template-argument-ctype parm0)))
-			  ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-			  (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-			  (format fout "    for (~a::iterator it = ~a->begin(); it!=~a->end(); ++it) {~%" key +ptr-name+ +ptr-name+)
-			  ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
-			  (cond
-			   ((smart-ptr-ctype-p parm0-ctype)
-			    (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
-                           ((tagged-pointer-ctype-p parm0-ctype)
-                            (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
-			   ((cxxrecord-ctype-p parm0-ctype)
-			    (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
-			      (dolist (instance-var all-instance-variables)
-				(code-for-instance-var fout "it" instance-var))))
-			   ((class-template-specialization-ctype-p parm0-ctype)
-			    (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
-			      (dolist (instance-var all-instance-variables)
-				(code-for-instance-var fout "it" instance-var))))
-			   ((pointer-ctype-p parm0-ctype)
-			    (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
-			   (t (error "Write code to scan ~a" parm0-ctype)))
-			  (format fout "    }~%")
-			  (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-			  (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-			  (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)))
-		      ;;              (format fout "    base = (char*)base + length;~%")
-		      )))
+    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
+      (let ((fh (destination-helper-stream dest)))
+        (format fh "{ container_kind, ~d, ~s },~%" enum-name key)
+        (format fh "{ container_jump_table_index, ~d, \"\" },~%" jti)
+        (if (cxxrecord-ctype-p decl)
+            (progn
+              (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+            (let* ((parms (class-template-specialization-ctype-arguments decl))
+                   (parm0 (car parms))
+                   (parm0-ctype (gc-template-argument-ctype parm0)))
+              ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+              (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+              (format fout "    for (~a::iterator it = ~a->begin(); it!=~a->end(); ++it) {~%" key +ptr-name+ +ptr-name+)
+              ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
+              (cond
+                ((smart-ptr-ctype-p parm0-ctype)
+                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                ((tagged-pointer-ctype-p parm0-ctype)
+                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                ((cxxrecord-ctype-p parm0-ctype)
+                 (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
+                   (dolist (instance-var all-instance-variables)
+                     (code-for-instance-var fout "it" instance-var))))
+                ((class-template-specialization-ctype-p parm0-ctype)
+                 (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
+                   (dolist (instance-var all-instance-variables)
+                     (code-for-instance-var fout "it" instance-var))))
+                ((pointer-ctype-p parm0-ctype)
+                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                (t (error "Write code to scan ~a" parm0-ctype)))
+              (format fout "    }~%")
+              (format fout "    typedef typename ~A type_~A;~%" key enum-name)
+              (format fout "    size = sizeof_container<type_~a>(~a->capacity());" enum-name +ptr-name+)))))))
 
 
 (defun skipper-for-gccontainer (dest enum anal)
@@ -1746,7 +1734,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
       ;;    (format fout "// processing ~a~%" alloc)
       (if (cxxrecord-ctype-p decl)
           (progn
@@ -1758,8 +1746,9 @@ so that they don't have to be constantly recalculated"
             (format fout "  {~%")
             (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
             (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-            (format fout "    size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-            (format fout "    client = (char*)client + header_and_gccontainer_size;~%" enum-name)
+            (format fout "    // size_t header_and_gccontainer_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+            (format fout "    size = sizeof_container<type_~a>(~a->capacity());~%" enum-name +ptr-name+)
+            (format fout "    //client = (char*)client + header_and_gccontainer_size;~%" enum-name)
             (format fout "  }~%")))
       (format fout "    goto DONE; //return client;~%")
       ;;              (format fout "    base = (char*)base + length;~%")
@@ -1771,7 +1760,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum "goto BOTTOM")
+    (with-jump-table (fout jti dest enum "goto BOTTOM")
 		      ;;    (format fout "// processing ~a~%" alloc)
 		      (if (cxxrecord-ctype-p decl)
 			  (progn
@@ -1797,7 +1786,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1815,7 +1804,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1828,6 +1817,17 @@ so that they don't have to be constantly recalculated"
     )))
 
 
+(defun scanner-for-gcstring (dest enum anal)
+  (assert (simple-enum-p enum))
+  (let* ((alloc (simple-enum-alloc enum))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
+    (with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
+      (let ((fh (destination-helper-stream dest)))
+        (format fh "{ container_kind, ~d, ~s },~%" enum-name key)
+        (format fh "{ container_jump_table_index, ~d, \"\" },~%" jump-table-index))
+      (format fout "    // Should never be invoked~%"))))
 
 
 (defun skipper-for-gcstring (dest enum anal)
@@ -1836,7 +1836,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
       ;;    (format fout "// processing ~a~%" alloc)
       (if (cxxrecord-ctype-p decl)
           (progn
@@ -1849,8 +1849,9 @@ so that they don't have to be constantly recalculated"
             (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
             ;;          (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
             (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-            (format fout "    size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
-            (format fout "    client = (char*)client + Align(header_and_gcstring_size);~%")
+            (format fout "    //size_t header_and_gcstring_size = AlignUp(sizeof_container<type_~a>(~a->capacity()))+AlignUp(sizeof(gctools::Header_s));~%" enum-name +ptr-name+)
+            (format fout "    size = sizeof_container<type_~a>(~a->capacity());~%" enum-name +ptr-name+)
+            (format fout "    //client = (char*)client + Align(header_and_gcstring_size);~%")
             (format fout "  }~%")
             ;;          (format fout "    base = (char*)base + length;~%")
             (format fout "    goto DONE; //return client;~%")
@@ -1864,7 +1865,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum "goto BOTTOM")
+    (with-jump-table (fout jti dest enum "goto BOTTOM")
 		      ;;    (format fout "// processing ~a~%" alloc)
 		      (if (cxxrecord-ctype-p decl)
 			  (progn
@@ -1888,7 +1889,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1906,7 +1907,7 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-destination (fout dest enum)
+    (with-jump-table (fout jti dest enum)
 ;;    (format fout "// processing ~a~%" alloc)
     (if (cxxrecord-ctype-p decl)
         (progn
@@ -1970,7 +1971,7 @@ so that they don't have to be constantly recalculated"
                                        ))
     (add-species manager (make-species :name :GCSTRING
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
-                                       :scan 'scanner-dummy ;; don't need to scan
+                                       :scan 'scanner-for-gcstring ;; don't need to scan but do need to calculate size
                                        :skip 'skipper-for-gcstring
                                        :dump 'dumper-for-gcstring
                                        :finalize 'finalizer-for-gcstring
@@ -2103,17 +2104,18 @@ so that they don't have to be constantly recalculated"
            (analysis-enums anal)))
 
 
+
 (defun fix-code-for-field (field analysis)
   (let ((code (fix-code (instance-variable-ctype field) analysis)))
     (cond
       ((null code) nil)
       ((atom code)
-       (list (list (instance-variable-field-name field) code)))
+       (list (list field code)))
       ((consp code)
-       (mapcar (lambda (f) (cons (instance-variable-field-name field) f))
-               code))
+       (mapcar (lambda (f) (cons field f)) code))
       (t
-       (instance-variable-field-name field) code))))
+       (error "Feb 2016 I inserted this error to see if the code ever gets here")
+       (instance-variable-field-offset field) code))))
 
 (defgeneric fix-code (x analysis))
 (defmethod fix-code ((x cclass) analysis)
@@ -2152,7 +2154,10 @@ so that they don't have to be constantly recalculated"
   nil)
 
 (defmethod fix-code ((x cxxrecord-ctype) analysis)
-  (fix-code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis))) analysis))
+  (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
+    (unless code
+      (error "Could not find ~a in (project-classes (analysis-project analysis))" (cxxrecord-ctype-key x)))
+    (fix-code code analysis)))
 
 (defmethod fix-code ((x class-template-specialization-ctype) analysis)
   (cond
@@ -2167,6 +2172,22 @@ so that they don't have to be constantly recalculated"
 (defmethod fix-code ((x constant-array-ctype) analysis)
   (if (contains-fixptr-p x (analysis-project analysis))
       (make-array-fixer :element-type (constant-array-ctype-element-type x))))
+
+(defmethod fix-code ((x pointer-ctype) analysis )
+  (let ((pointee (pointer-ctype-pointee x)))
+    (cond
+    ((or (gcvector-moveable-ctype-p pointee)
+         (gcarray-moveable-ctype-p pointee)
+         (gcstring-moveable-ctype-p pointee))
+        (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+    ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
+     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+    ((fixable-pointee-p (pointer-ctype-pointee x))
+     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+    ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
+    (t
+      (warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
+      nil))))
 
 
 (defun fixable-pointee-p (ctype)
@@ -2292,21 +2313,6 @@ so that they don't have to be constantly recalculated"
      (warn "Check ignorable-ctype-p ((ctype pointer-ctype)) for ~a" ctype))))
 
 
-(defmethod fix-code ((x pointer-ctype) analysis )
-  (let ((pointee (pointer-ctype-pointee x)))
-    (cond
-    ((or (gcvector-moveable-ctype-p pointee)
-         (gcarray-moveable-ctype-p pointee)
-         (gcstring-moveable-ctype-p pointee))
-        (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
-     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((fixable-pointee-p (pointer-ctype-pointee x))
-     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
-    (t
-      (warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
-      nil))))
 
 (defun separate-namespace-name (name)
 "Separate a X::Y::Z name into (list X Y Z) - strip any preceeding 'class '"
@@ -2453,10 +2459,11 @@ so that they don't have to be constantly recalculated"
     ))
 
 
+#+(or) ;; this info is provided by kind info tables
 (defun impl-generate-kind-name-map (dest anal)
   (mapc (lambda (enum)
           (let* ((enum-name (enum-name enum)))
-	    (with-destination (fout dest enum)
+	    (with-jump-table (fout jti dest enum)
 			      (format fout "return \"~A\";~%" enum-name))))
 	(analysis-sorted-enums anal))
 	)
@@ -2537,17 +2544,15 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
   (multiple-value-bind (hardwired-kinds  ignore-classes first-general)
       (core:hardwired-kinds)
     (format (destination-stream dest)
-            "static void* ~a_table[] = { NULL ~%"
+            "static void* ~a_table[] = { ~%"
             (destination-table-name dest))
-    (dotimes (iskip (1- first-general))
-      (format (destination-stream dest)
-              "       , NULL /* Skip entry for immediate */~%"))
     (let ((entries (reverse (destination-label-list dest))))
       (dolist (entry entries)
-        (format (destination-stream dest) "  /* ~a */ , &&~a~%" (car entry) (cdr entry))))
+        (format (destination-stream dest) "  /* ~a */ &&~a,~%" (car entry) (cdr entry))))
+    (format (destination-stream dest) "   NULL~%" )
     (format (destination-stream dest) "};~%")))
 
-(defmacro do-generator (stream analysis &key table-name function-declaration function-prefix function-table-type generator)
+(defmacro do-generator (stream analysis &key table-name function-declaration function-prefix function-table-type generator jump-table-index-function)
   (let ((dest-gs (gensym)))
     `(let ((,dest-gs (make-destination :stream ,stream
 				       :table-name ,table-name
@@ -2561,10 +2566,6 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
        (format stream "#if defined(GC_~a_TABLE)~%" ,table-name)
        (generate-label-table ,dest-gs)
        (format stream "#endif // defined(GC_~a_TABLE)~%" ,table-name))))
-
-
-
-
 
 (defun generate-code (analysis &key test )
   (let ((filename (if test
@@ -2583,13 +2584,15 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (format stream "#if defined(GC_KIND_SELECTORS)~%")
                     (generate-gckind-for-enums stream analysis)
                     (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
-		    (do-generator stream analysis
-				  :table-name "KIND_NAME_MAP"
-				  :function-declaration "const char* ~a()"
-				  :function-prefix "kind_name"
-				  :function-table-type "const char* (*KIND_NAME_MAP_table[])()"
-				  :generator #'impl-generate-kind-name-map)
-		    (do-generator stream analysis
+    ;;; This info is provided by kind info tables
+		    #+(or)(do-generator stream analysis
+                                        :table-name "KIND_NAME_MAP"
+                                        :function-declaration "const char* ~a()"
+                                        :function-prefix "kind_name"
+                                        :function-table-type "const char* (*KIND_NAME_MAP_table[])()"
+                                        :generator #'impl-generate-kind-name-map)
+    ;; This info isn't needed anymore                    
+		    #+(or)(do-generator stream analysis
 				  :table-name "OBJ_DUMP_MAP"
 				  :function-declaration "string ~a(mps_addr_t client)"
 				  :function-prefix "obj_dump"
@@ -2610,6 +2613,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 				  :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
 				  :function-prefix "obj_scan"
 				  :function-table-type "GC_RESULT (*OBJ_SCAN_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+                                  :jump-table-index-function 'scanner-jump-table-index-for-enum-name
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
 						 (funcall (species-scan (enum-species enum)) dest enum anal))))
@@ -2646,11 +2650,11 @@ It converts relative -I../... arguments to absolute paths"
                                        "-DRUNNING_GC_BUILDER"))))
       result)))
 
-
-(defun setup-tools ()
+(defun setup-tools (compilation-tool-database)
   "* Description
 Setup all of the ASTMatcher tools for the clasp-analyzer."
-  (let ((tools (clang-tool:make-multitool :arguments-adjuster (build-arguments-adjuster))))
+  (let ((tools (clang-tool:make-multitool :arguments-adjuster (build-arguments-adjuster)
+                                          :compilation-tool-database compilation-tool-database)))
     (setup-cclass-search tools)         ; search for all classes
     (setup-lispalloc-search tools)
     (setup-classalloc-search tools)
@@ -2659,8 +2663,6 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
     (setup-global-variable-search tools)
     (setup-variable-search tools)
     tools))
-
-
 
 (defun split-list (list pieces)
   (let ((split-size (floor (/ (length list) pieces)))
@@ -2672,10 +2674,6 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
                       (+ start split-size))))
         (push (subseq list start end) result)))
     result))
-
-
-
-
 
 (defparameter *max-parallel-searches* (parse-integer (ext:getenv "PJOBS")))
 
@@ -2725,10 +2723,6 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
             (core:waitpid -1 0))
           (format t "~%!~%!  Done ~%!~%")
           (parallel-merge)))
-
-
-
-
 
 #+(or)(defun parallel-merge (compilation-tool-database &key end (start 0) restart)
         "Merge the analyses generated from the parallel search"
@@ -2803,7 +2797,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 * Description
 Run searches in *tools* on the source files in the compilation database."
   (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
-  (let ((tools (setup-tools))
+  (let ((tools (setup-tools compilation-tool-database))
         (all-jobs (clang-tool:source-namestrings compilation-tool-database)))
     (save-data all-jobs (merge-pathnames #P"project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
     (format t "all-jobs: ~a~%" all-jobs)
@@ -2825,16 +2819,22 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
         (setf (elt args i) (format nil "-I~a/include" main-directory-namestring))))
     args))
 
-(defun setup-clasp-analyzer-compilation-tool-database (pathname &key (selection-pattern ".*") arguments-adjuster)
+
+
+   
+(defun setup-clasp-analyzer-compilation-tool-database (pathname &key (selection-pattern ".*") source-path-identifier arguments-adjuster)
   "* Arguments
 - pathname :: The pathname to the compilation database for clasp analyzer.
 - selection-pattern : A regex pattern for selecting a subset of the source files for testing.
+- source-path-identifier :: A string
 * Description
 Return a compilation database for analyzing the clasp (or some other clasp derived project) source code.
-Two files (mps.c and gc_interface.cc) are removed from the list of files that clasp-analyzer will run on."
+Two files (mps.c and gc_interface.cc) are removed from the list of files that clasp-analyzer will run on.
+If the source location of a match contains the string source-path-identifier then that match is processed."
   (let* ((compilation-tool-database (clang-tool:load-compilation-tool-database
                                      pathname
-                                     :convert-relative-includes-to-absolute t))
+                                     :convert-relative-includes-to-absolute t
+                                     :source-path-identifier source-path-identifier))
          (source-filenames (clang-tool:select-source-namestrings compilation-tool-database selection-pattern))
          (regex-mps-dot-c (core:make-regex ".*mps\.c$"))
          (removed-mps-dot-c (remove-if #'(lambda (x) (core:regex-matches regex-mps-dot-c x)) source-filenames))
@@ -2847,8 +2847,9 @@ Two files (mps.c and gc_interface.cc) are removed from the list of files that cl
 
 (defun search/generate-code (compilation-tool-database)
   (clang-tool:with-compilation-tool-database compilation-tool-database
-    (let* ((*project* (serial-search-all compilation-tool-database))
-           (analysis (analyze-project *project*)))
+    (setf *project* (serial-search-all compilation-tool-database))
+    (let ((analysis (analyze-project *project*)))
       (setf (analysis-inline analysis) '("core::Cons_O"))
-      (generate-code analysis))))
+      (generate-code analysis))
+    *project*))
 

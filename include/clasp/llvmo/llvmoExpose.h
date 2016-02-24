@@ -1328,6 +1328,7 @@ public:
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
   bool compiledP() const { return true; };
   core::T_sp lambdaList() const;
+  void setf_lambda_list(core::T_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -2314,6 +2315,14 @@ struct from_object<const llvm::APFloat &, std::true_type> {
 };
 /* to_object translators */
 
+#if 0
+template <>
+struct gctools::GCInfo<llvmo::APFloat_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+#endif
 namespace llvmo {
 FORWARD(APInt);
 class APInt_O : public core::ExternalObject_O {
@@ -2351,7 +2360,14 @@ struct from_object<const llvm::APInt &, std::true_type> {
   from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value){};
 };
 /* to_object translators */
-
+#if 0
+ template <>
+struct gctools::GCInfo<llvmo::APInt_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+#endif
 template <>
 struct to_object<llvm::APInt> {
   static core::T_sp convert(llvm::APInt sr) { return llvmo::APInt_O::create(sr); };

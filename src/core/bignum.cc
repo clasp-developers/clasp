@@ -51,9 +51,6 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
   return this->buffer;
 };
 
-#define ARGS_Bignum_O_make "(value_in_string)"
-#define DECL_Bignum_O_make ""
-#define DOCS_Bignum_O_make "make"
 CL_PKG_NAME(CorePkg,make-bignum);
 CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
   GC_ALLOCATE(Bignum_O, bn);
@@ -216,20 +213,10 @@ bool Bignum_O::eql_(T_sp o) const {
     }
 #endif
 
-EXPOSE_CLASS(core, Bignum_O);
 
-void Bignum_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<Bignum_O>()
-      .def("core:fitsSintP", &Bignum_O::fits_sint_p)
-      .def("core:asUint64String", &Bignum_O::as_uint64_string);
-//  af_def(CorePkg, "make-bignum", &Bignum_O::make, ARGS_Bignum_O_make, DECL_Bignum_O_make, DOCS_Bignum_O_make);
-}
 
-void Bignum_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CurrentPkg, Bignum, "", "", _lisp);
-#endif
-}
+
+
 
 Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
   Bignum mpzq, mpzr;

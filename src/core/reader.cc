@@ -44,16 +44,9 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, Reader_O);
-void Reader_O::exposeCando(Lisp_sp lisp) {
-  class_<Reader_O>();
-}
 
-void Reader_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Reader, "", "", _lisp);
-#endif
-}
+
+
 
 Reader_sp Reader_O::create(T_sp sin) {
   Reader_sp reader = Reader_O::create();

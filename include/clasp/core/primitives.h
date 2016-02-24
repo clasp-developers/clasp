@@ -38,7 +38,7 @@ namespace core {
 extern T_sp cl__macro_function(Symbol_sp symbol, T_sp env);
 extern T_mv core__separate_pair_list(List_sp listOfPairs);
 
-extern Symbol_mv core__function_block_name(T_sp functionName);
+extern Symbol_sp core__function_block_name(T_sp functionName);
 
 //extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 

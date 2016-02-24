@@ -120,7 +120,7 @@
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
 (export '*register-with-pde-hook*)
-(core::*fset 'register-with-pde
+(core::fset 'register-with-pde
              #'(lambda (whole env)
                  (let* ((definition (second whole))
                         (output-form (third whole)))
@@ -129,7 +129,7 @@
                                  (copy-tree *source-location*)
                                  ,definition
                                  ,output-form)
-                      ,output-form)))
+                        ,output-form)))
              t)
 (export 'register-with-pde)
 (core:*make-special '*invoke-debugger-hook*)
@@ -139,7 +139,7 @@
   (core:select-package :core))
 
 
-(si::*fset 'core::defvar #'(lambda (whole env)
+(si::fset 'core::defvar #'(lambda (whole env)
 			     (let ((var (cadr whole))
 				   (formp (cddr whole))
 				   (form (caddr whole))
@@ -157,7 +157,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 	  t )
 (export 'defvar)
 
-(si::*fset 'core::defparameter #'(lambda (whole env)
+(si:fset 'core::defparameter #'(lambda (whole env)
 			    (let ((var (cadr whole))
 				  (form (caddr whole))
 				  (doc-string (cadddr whole)))
@@ -172,7 +172,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (export 'defparameter)
 
 
-(si::*fset 'core::defconstant #'(lambda (whole env)
+(si:fset 'core::defconstant #'(lambda (whole env)
 			    (let ((var (cadr whole))
 				  (form (caddr whole))
 				  (doc-string (cadddr whole)))
@@ -317,7 +317,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
   (core::select-package :core))
 
 ;;; A temporary definition of defun - the real one is in evalmacros
-(si::*fset 'defun
+(si:fset 'defun
 	   #'(lambda (def env)
 	       (let ((name (second def))	;cadr
 		     (lambda-list (third def))	; caddr
@@ -328,7 +328,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 		       (if decl (setq decl (list (cons 'declare decl))))
 		       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
 			 ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-			 (ext::register-with-pde def `(si::*fset ',name ,func)))))
+			 (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
 		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
 
 		 ))
@@ -407,14 +407,17 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
 (export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
+(defun default-target-stage ()
+  (if (member :ecl-min *features*)
+      "min"
+      (if (member :cclasp *features*)
+          "cclasp"
+          "full")))
+
 (defun build-hostname (type &optional stage)
   (let* ((stage (if stage 
-                    stage 
-                    (if (member :ecl-min *features*) 
-                        "min" 
-                        (if (member :cclasp *features*) 
-                            "cclasp" 
-                            "full"))))
+                    stage
+                    (default-target-stage)))
          (type-modified-host-suffix (cond
                                       ((eq type :bc) "bitcode")
                                       (t (build-configuration))))
@@ -469,15 +472,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (t (error "bad module name: ~s" module))))
 
 
-(si::*fset 'fset
-		 #'(lambda (whole env)
-		     `(si::*fset ,(cadr whole) ,(caddr whole) ,(cadddr whole)))
-		 t)
-(export 'fset)
 
-
-
-(si::*fset 'and
+(si:fset 'and
 	   #'(lambda (whole env)
 	       (let ((forms (cdr whole)))
 		 (if (null forms)
@@ -488,7 +484,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 			      (and ,@(cdr forms)))))))
 	   t)
 
-(si::*fset 'or
+(si:fset 'or
 	   #'(lambda (whole env)
 	       (let ((forms (cdr whole)))
 		 (if (null forms)
@@ -511,7 +507,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defvar *reversed-init-filenames* ())
 
-(si::*fset 'interpreter-iload
+(si:fset 'interpreter-iload
            #'(lambda (module)
                (let* ((pathname (probe-file (build-pathname module :lisp)))
 		      (name (namestring pathname)))
@@ -564,9 +560,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	      (bformat t "     Deleting bitcode: %s\n" bitcode-path)
 	      (delete-file bitcode-path))))))
 
+
 ;; I need to search the list rather than using features because *features* may change at runtime
 (defun default-target-backend (&optional given-stage)
-  (let* ((stage (if given-stage given-stage (if (member :ecl-min *features*) "min" (if (member :cclasp *features*) "cclasp" "full"))))
+  (let* ((stage (if given-stage
+                    given-stage
+                    (default-target-stage)))
          (garbage-collector (build-configuration))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
@@ -654,7 +653,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-path
     ))
 (export 'compile-kernel-file)
-
 
 
 
@@ -994,6 +992,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (remove-stage-features)
   (setq *features* (list* :clos :cclasp *features*)))
 
+(export '(load-bclasp-source))
+(defun load-bclasp-source ()
+  (bclasp-features)
+  (let ((*target-backend* (default-target-backend)))
+    (load-system :start :all :interp t )))
+
 (export '(compile-bclasp))
 (defun compile-bclasp ()
   (bclasp-features)
@@ -1089,7 +1093,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
              (float (/ (- run-end run-start) internal-time-units-per-second)))))
 
 (core:*make-special 'my-time)
-(si::*fset 'my-time
+(si:fset 'my-time
            #'(lambda (def env)
                (let ((form (cadr def)))
                  `(my-do-time #'(lambda () ,form))))

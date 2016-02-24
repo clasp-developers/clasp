@@ -76,9 +76,6 @@ void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
 }
 
-#define ARGS_llvm_sys__mangleSymbolName "(arg)"
-#define DECL_llvm_sys__mangleSymbolName ""
-#define DOCS_llvm_sys__mangleSymbolName "Mangle the LLVM symbol name so that it will be a legal symbol for ld"
 CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
   stringstream sout;
   const char *cur = name->get().c_str();
@@ -98,9 +95,6 @@ CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
 };
 
 
-#define ARGS_llvm_sys__cxxDataStructuresInfo "()"
-#define DECL_llvm_sys__cxxDataStructuresInfo ""
-#define DOCS_llvm_sys__cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
 CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   List_sp list = _Nil<T_O>();
   list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
@@ -135,9 +129,6 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   return list;
 }
 
-#define ARGS_llvm_sys__throwIfMismatchedStructureSizes "(&key tsp tmv ihf)"
-#define DECL_llvm_sys__throwIfMismatchedStructureSizes ""
-#define DOCS_llvm_sys__throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
 CL_LAMBDA(&key tsp tmv ihf);
 CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize) {
   int T_sp_size = sizeof(core::T_sp);
@@ -157,9 +148,6 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
 };
 
 #if 0
-#define ARGS_llvm_sys__memoryLockedSymbolForLlvm "(symbol)"
-#define DECL_llvm_sys__memoryLockedSymbolForLlvm ""
-#define DOCS_llvm_sys__memoryLockedSymbolForLlvm "Lookup or create a boost::shared_ptr<Symbol_O> for a Symbol and return the pointer to it"
     core::Symbol_sp* getOrCreateMemoryLockedSymbolForLlvm(core::Symbol_sp sym)
     {
 	STATIC_ROOT_FRAME_BEGIN(MemoryLockedSymbols) {
@@ -191,9 +179,6 @@ CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize,
     };
 #endif
 
-#define ARGS_llvm_sys__getOrCreateExternalGlobal "(symbol resname shared-ptr-type)"
-#define DECL_llvm_sys__getOrCreateExternalGlobal ""
-#define DOCS_llvm_sys__getOrCreateExternalGlobal "getOrCreateExternalGlobal"
 CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type) {
   llvm::Module *llvm_module = module->wrappedPtr();
   llvm::Type *llvm_data_type = data_type->wrappedPtr();
@@ -235,16 +220,10 @@ void dump_funcs(core::Function_sp compiledFunction) {
   STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
 }
 
-#define ARGS_llvm_sys__disassembleSTAR "(fn)"
-#define DECL_llvm_sys__disassembleSTAR ""
-#define DOCS_llvm_sys__disassembleSTAR "disassembleSTAR"
 CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
   dump_funcs(cf);
 }
 
-#define ARGS_llvm_sys__viewCFG "(fn &optional only)"
-#define DECL_llvm_sys__viewCFG ""
-#define DOCS_llvm_sys__viewCFG "viewCFG (view-cfg fn &optional only)"
 CL_LAMBDA(fn &optional only);
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);

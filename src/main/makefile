@@ -140,6 +140,10 @@ bclasp-boehmdc-bitcode:
 bclasp-boehmdc-fasl:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
+bclasp-boehmdc:
+	make bclasp-boehmdc-bitcode
+	make bclasp-boehmdc-fasl
+
 cclasp-boehmdc-bitcode:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
 
@@ -227,25 +231,23 @@ mps-interface-clasp:
 	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 compile-commands:
-	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
+	-bjam link=static gc=mps-prep program=clasp link=static release -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
-
-compile-commands-cclasp:
-	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
-	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(CCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	clasp_boehmdc_o -f bclasp \
+		-l $(CLASP_HOME)/src/common/build-json.lisp \
+		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
+		-e "(quit)"
 
 mps-interface-run:
-	$(BCLASP_BOEHMDC)  \
+	clasp_boehmdc_o -f bclasp  \
 		-e "(require :clasp-analyzer)" \
-		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
 mps-interface-run-cclasp:
 	$(CCLASP_BOEHM)  \
 		-e "(require :clasp-analyzer)" \
-		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
 mps-interface:
@@ -253,6 +255,12 @@ mps-interface:
 	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
 	make compile-commands
 	make mps-interface-run
+
+mps-interface-cclasp:
+	@echo Building mps-prep
+	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
+	make compile-commands-cclasp
+	make mps-interface-run-cclasp
 
 
 scrape:

@@ -737,7 +737,7 @@ DONE:
   return (Values0<T_O>());
 }; // core__sharp_vertical_bar
 
-EXPOSE_CLASS(core, ReadTable_O);
+
 SYMBOL_EXPORT_SC_(KeywordPkg, syntax);
 SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
 HashTable_sp ReadTable_O::create_standard_syntax_table() {
@@ -883,9 +883,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, non_terminating_macro_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, terminating_macro_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, macro_function);
 
-#define ARGS_ReadTable_set_macro_character "(ch func_desig &optional non-terminating-p)"
-#define DECL_ReadTable_set_macro_character ""
-#define DOCS_ReadTable_set_macro_character "set-macro-character as in CL"
 T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_terminating_p) {
   if (non_terminating_p.isTrue()) {
     this->set_syntax_type(ch, kw::_sym_non_terminating_macro_character);
@@ -1073,17 +1070,7 @@ ReadTable_sp ReadTable_O::copyReadTable(gc::Nilable<ReadTable_sp> tdest) {
   SYMBOL_EXPORT_SC_(ClPkg, setDispatchMacroCharacter);
   SYMBOL_EXPORT_SC_(ClPkg, getDispatchMacroCharacter);
 
-void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ReadTable_O>()
-      ;
-}
 
-void ReadTable_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), ReadTable, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 }; /* core */

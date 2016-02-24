@@ -463,7 +463,7 @@ void dbg_describe_tagged_T_Optr_header(T_O *p) {
 
 extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);
@@ -472,7 +472,7 @@ void dbg_describe(T_sp obj) {
 }
 
 void dbg_describe_cons(Cons_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);
@@ -480,7 +480,7 @@ void dbg_describe_cons(Cons_sp obj) {
 }
 
 void dbg_describe_symbol(Symbol_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);
@@ -488,7 +488,7 @@ void dbg_describe_symbol(Symbol_sp obj) {
 }
 
 void dbg_describeActivationFrame(ActivationFrame_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe ActivationFrame class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);
@@ -502,7 +502,7 @@ void dbg_describeTPtr(uintptr_t raw) {
   }
   T_sp obj = gctools::smart_ptr<T_O>(raw);
   printf("dbg_describeTPtr Raw pointer value: %p\n", obj.raw_());
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);

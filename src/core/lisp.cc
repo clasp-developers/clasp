@@ -503,10 +503,26 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     core__pathname_translations(Str_O::create("app-resources"), _lisp->_true(), app);
 
     // setup the build;system pathnames
+    // The regular pathname translations -------------------------------------------------------------
     {
       Cons_sp p = Cons_O::createList(
                                      Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
       core__pathname_translations(Str_O::create("min-bitcode"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-boehm"), _lisp->_true(), p);
+    }
+    {
+      Cons_sp p = Cons_O::createList(
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
+      core__pathname_translations(Str_O::create("min-mps"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
@@ -520,11 +536,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     }
     {
       Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
                                      Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
       core__pathname_translations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
     }
@@ -532,11 +543,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       Cons_sp p = Cons_O::createList(
                                      Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
       core__pathname_translations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-boehm"), _lisp->_true(), p);
     }
     {
       Cons_sp p = Cons_O::createList(
@@ -550,11 +556,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     }
     {
       Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-mps"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
                                      Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
       core__pathname_translations(Str_O::create("full-mps"), _lisp->_true(), p);
     }
@@ -563,6 +564,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
                                      Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
       core__pathname_translations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
     }
+    // -------------------------------------------------------------
     /* Call the function defined in main.cc that creates the source-main: host */
 #ifndef PROGRAM_CLBIND
     create_source_main_host();
@@ -2339,9 +2341,6 @@ void Lisp_O::switchToClassNameHashTable() {
   this->_BootClassTableIsValid = false;
 }
 
-#define ARGS_Lisp_O_find_single_dispatch_generic_function "(gf-symbol &optional errorp)"
-#define DECL_Lisp_O_find_single_dispatch_generic_function ""
-#define DOCS_Lisp_O_find_single_dispatch_generic_function "Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception"
 CL_LAMBDA(gf-symbol &optional errorp);
 CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
 CL_LISPIFY_NAME(find_single_dispatch_generic_function);
@@ -2356,9 +2355,6 @@ CL_DEFUN SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_f
   return gc::As<SingleDispatchGenericFunction_sp>(fn);
 }
 
-#define ARGS_Lisp_O_setf_find_single_dispatch_generic_function "(gf-symbol gf)"
-#define DECL_Lisp_O_setf_find_single_dispatch_generic_function ""
-#define DOCS_Lisp_O_setf_find_single_dispatch_generic_function "Define a single dispatch generic function "
 CL_LAMBDA(gf-symbol gf)
 CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
 CL_DOCSTRING("Define a single dispatch generic function");
@@ -2367,9 +2363,6 @@ CL_DEFUN SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_gene
   return gf;
 }
 
-#define ARGS_Lisp_O_forget_all_single_dispatch_generic_functions "()"
-#define DECL_Lisp_O_forget_all_single_dispatch_generic_functions ""
-#define DOCS_Lisp_O_forget_all_single_dispatch_generic_functions "Forget all single dispatch functions"
 CL_LISPIFY_NAME(forget_all_single_dispatch_generic_functions);
 CL_DEFUN void Lisp_O::forget_all_single_dispatch_generic_functions() {
   _lisp->_Roots._SingleDispatchGenericFunctionTable->clrhash();
@@ -2795,96 +2788,8 @@ SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
 void Lisp_O::initializeGlobals(Lisp_sp lisp) {
 }
 
-void Lisp_O::exposeCando() {
-}
 
-void Lisp_O::exposePython() {
-#if 0
-	Symbol_sp (Lisp_O::*intern1)(const string&) = &Lisp_O::intern;
-	PYTHON_CLASS(CorePkg,Lisp,"","",_lisp)
-	    .def("intern",intern1)
-#if 0
-	    .def("true",&Lisp_O::_true)
-	    .def("false",&Lisp_O::onil)
-	    .def("nil",&Lisp_O::onil)
-#endif
-	    ;
 
-//    boost::python::def("loadArchive",boost::python::wrapped_function(CorePkg,"loadArchive",&prim_loadArchive,ARGS_prim_loadArchive,DOCS_prim_loadArchive,lisp));
-#if 0
-//	boost::python::def_raw(CorePkg,"export",&prim_export,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"apply", &prim_apply,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"testomp", &prim_testomp,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"isTopLevelScript", &prim_isTopLevelScript ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"allGlobalNames", &prim_allGlobalNames ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"locals", &prim_locals,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"sourceFileLine", &prim_sourceFileLine,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"backtrace", &prim_backtrace,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"globals", &prim_globals,ARGS_empty,DOCS_empty,_LISP);
-
-	boost::python::def_raw(CorePkg,"load", &prim_load,ARGS_prim_load,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"include",&prim_include,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"testScanner", &prim_testScanner ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"printPushPrefix", &prim_printPushPrefix ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"printPopPrefix", &prim_printPopPrefix ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"println", &prim_println ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"print", &prim_print ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"prin1", &prim_prin1 ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"prim-dump", &prim_dump ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"isAssignableTo", &prim_isAssignableTo ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"isSubClassOf", &prim_isSubClassOf,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"derive", &prim_derive ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"isA", &prim_isA ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"dumpln", &prim_dumpln ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"parseConsOfStrings", &prim_parseConsOfStrings ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"exit", &prim_exit ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"quit", &prim_exit ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"funcall", &prim_funcall ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"apply", &prim_apply ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"sub", &prim_sub ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"-", &prim_sub ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"div", &prim_div ,ARGS_empty,DOCS_empty,_LISP);
-//    boost::python::def_raw(CorePkg,"mod", &prim_mod ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"/", &prim_div ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"mul", &prim_mul ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"*", &prim_mul ,ARGS_empty,DOCS_empty,_LISP);
-#if 0
-	boost::python::def_raw(CorePkg,"listref", &prim_listref ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"@", &prim_listref ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"car", &prim_car ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"cdr", &prim_cdr ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"cddr", &prim_cddr ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"cdddr", &prim_cdddr ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"cadr", &prim_cadr ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"caddr", &prim_caddr ,ARGS_empty,DOCS_empty,_LISP);
-#endif
-//    boost::python::def_raw(CorePkg,"cons", &prim_cons ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"className", &prim_className ,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"repr", &prim_repr ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"not", &prim_not,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"debugLogOn",&prim_debugLogOn,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"debugLogOff",&prim_debugLogOff,ARGS_empty,DOCS_empty,_LISP);
-	boost::python::def_raw(CorePkg,"dumpClasses",&prim_dumpClasses,ARGS_empty,DOCS_empty,_LISP);
-
-	// Basic tests
-//	boost::python::def_raw(CorePkg,"consp",&prim_consp,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"symbolp",&prim_symbolp,ARGS_empty,DOCS_empty,_LISP);
-
-	// aliases for "list" command
-
-//	boost::python::def_raw(CorePkg,"comparer", &prim_list ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"sorted", &prim_sorted ,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"sort", &prim_sort,ARGS_empty,DOCS_empty,_LISP);
-	// information functions
-//	boost::python::def_raw(CorePkg,"databaseDir", &prim_databaseDir,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"scriptDir", &prim_scriptDir,ARGS_empty,DOCS_empty,_LISP);
-//	boost::python::def_raw(CorePkg,"dumpHidden", &prim_dumpHidden,ARGS_empty,DOCS_empty,_LISP);
-
-	boost::python::def_raw(CorePkg,"setCurrentWorkingDirectory",&prim_setCurrentWorkingDirectory,ARGS_empty,DOCS_empty,_LISP);
-#endif
-	initializePythonPrimitives(_LISP);
-#endif
-}
 
 LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->_Lisp = Lisp_O::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
@@ -2946,7 +2851,7 @@ Exposer::Exposer(Lisp_sp lisp, const string &packageName) {
 
 Exposer::~Exposer(){};
 
-//    EXPOSE_CLASS(core,Lisp_O);
+
 
 ChangePackage::ChangePackage(Package_sp newPackage) : _SavedPackage(_lisp->getCurrentPackage()) {
   _lisp->selectPackage(newPackage);

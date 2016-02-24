@@ -34,19 +34,12 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, WeakHashTable_O);
 
-void WeakHashTable_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<WeakHashTable_O>();
-}
 
-void WeakHashTable_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, WeakHashTable, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, WeakKeyHashTable_O);
+
+
+
 
 
 void WeakKeyHashTable_O::initialize() {
@@ -220,14 +213,6 @@ CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
   ht->_HashTable.rehash(newLength, dummyKey, dummyPos);
 };
 
-void WeakKeyHashTable_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<WeakKeyHashTable_O>()
-      .def("weakHashTableSize", &WeakKeyHashTable_O::tableSize);
-}
 
-void WeakKeyHashTable_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, WeakKeyHashTable, "", "", _lisp);
-#endif
-}
+
 };

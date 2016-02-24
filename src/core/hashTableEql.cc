@@ -36,21 +36,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, HashTableEql_O);
 
-void HashTableEql_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<HashTableEql_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void HashTableEql_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), HashTableEql, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
   if (sz == 0)

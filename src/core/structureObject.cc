@@ -325,21 +325,8 @@ string StructureObject_O::__repr__() const {
 
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
 
-void StructureObject_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureObject_O>()
-      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
-      ;
-#if 0
-	    SYMBOL_SC_(CorePkg,make_structure);
-	    Defun(make_structure);
-#endif
-}
 
-void StructureObject_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StructureObject, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StructureObject_O);
+
+
 };

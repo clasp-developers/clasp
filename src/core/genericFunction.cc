@@ -342,8 +342,13 @@ CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the 
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
-  _lisp->methodCachePtr()->removeOne(what);
-  _lisp->slotCachePtr()->removeOne(what);
+  if ( what == _lisp->_true() ) {
+    _lisp->methodCachePtr()->empty();
+    _lisp->slotCachePtr()->empty();
+  } else {
+    _lisp->methodCachePtr()->removeOne(what);
+    _lisp->slotCachePtr()->removeOne(what);
+  }
 };
 
   SYMBOL_SC_(ClosPkg, clearGfunHash);

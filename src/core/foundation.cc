@@ -690,14 +690,14 @@ string symbol_repr(Symbol_sp sym) {
     */
 Class_sp lisp_instance_class(T_sp o) {
   if (o.fixnump()) {
-    return core::Fixnum_dummy_O::___staticClass;
+    return core::Fixnum_dummy_O::static_class;
     //	    return core::Fixnum_O::___staticClass;
   } else if (o.characterp()) {
-    return core::Character_dummy_O::___staticClass;
+    return core::Character_dummy_O::static_class;
   } else if (o.single_floatp()) {
-    return core::SingleFloat_dummy_O::___staticClass;
+    return core::SingleFloat_dummy_O::static_class;
   } else if (o.nilp()) {
-    return core::Null_O::___staticClass;
+    return core::Null_O::static_class;
   } else if (Instance_sp iobj = o.asOrNull<Instance_O>()) {
     return iobj->_instanceClass();
   } else if (WrappedPointer_sp exobj = o.asOrNull<WrappedPointer_O>()) {
@@ -710,7 +710,7 @@ Class_sp lisp_instance_class(T_sp o) {
     return cobj->_instanceClass();
   } else if (o.valistp()) {
     // What do I return for this?
-    return core::VaList_dummy_O::___staticClass;
+    return core::VaList_dummy_O::static_class;
   } else if (o.objectp()) {
     return lisp_static_class(o);
   }
@@ -719,7 +719,7 @@ Class_sp lisp_instance_class(T_sp o) {
 
 Class_sp lisp_static_class(T_sp o) {
   if (o.nilp())
-    return core::Null_O::___staticClass;
+    return core::Null_O::static_class;
   if (o.unboundp()) {
     SIMPLE_ERROR(BF("You cannot get the class of UNBOUND"));
   } else if (!o) {
@@ -911,16 +911,6 @@ void lisp_addClass(Symbol_sp classSymbol) {
   //	_lisp->addClass(classSymbol);
 }
 
-#if 0
-void lisp_addClassAndInitialize(Symbol_sp classSymbol,
-                                Creator *cb,
-                                Symbol_sp base1ClassSymbol,
-                                Symbol_sp base2ClassSymbol,
-                                Symbol_sp base3ClassSymbol) {
-  _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
-}
-
-#endif
 List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   if (args == "")
     return _Nil<T_O>();
@@ -951,6 +941,22 @@ LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List
   return llh;
 }
 
+
+/*! Insert the package qualified class_symbol into the lambda list wherever a ! is seen */
+string fix_method_lambda(core::Symbol_sp class_symbol, const string& lambda)
+{
+  stringstream new_lambda;
+  for ( auto c : lambda ) {
+    if ( c == '!' ) {
+      new_lambda << class_symbol->formattedName(true);
+    } else {
+      new_lambda << c;
+    }
+  }
+  return new_lambda.str();
+}
+
+
 SYMBOL_EXPORT_SC_(KeywordPkg, body);
 SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
@@ -958,12 +964,13 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      Symbol_sp classSymbol,
                                      gctools::tagged_pointer<BuiltinClosure> methoid,
                                      int TemplateDispatchOn,
-                                     const string &arguments,
+                                     const string &raw_arguments,
                                      const string &declares,
                                      const string &docstring,
                                      bool autoExport,
                                      int number_of_required_arguments,
                                      const std::set<int> pureOutIndices) {
+  string arguments = fix_method_lambda(classSymbol,raw_arguments);
   Class_sp receiver_class = gc::As<Class_sp>(eval::funcall(cl::_sym_findClass, classSymbol, _lisp->_true()));
   Symbol_sp className = receiver_class->name();
 #if 0
@@ -982,15 +989,11 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     llhandler = LambdaListHandler_O::create(number_of_required_arguments, pureOutIndices);
   } else if (arguments != "") {
     List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
-    /*-----*/
-    MULTIPLE_VALUES_CONTEXT();
     T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
     Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(1));
     Symbol_sp sd_class_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(2));
     List_sp llproc = coerce_to_list(tllproc);
-    /*-----*/
-
     if (sd_class_symbol.notnilp() && sd_class_symbol != classSymbol) {
       SIMPLE_ERROR(BF("Mismatch between hard coded class[%s] and"
                       " lambda-list single-dispatch argument class[%s] in argument list: %s") %
@@ -1532,8 +1535,8 @@ void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
 }
 
 void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
-  if (telemetry::global_telemetry)
-    telemetry::global_telemetry->flush();
+  if (telemetry::global_telemetry_search)
+    telemetry::global_telemetry_search->flush();
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt.str();
@@ -1557,10 +1560,10 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
 
 void lisp_error_condition(const char *functionName, const char *fileName, int lineNumber, T_sp baseCondition, T_sp initializers) {
   stringstream ss;
-  ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl
-     << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
   if (!_sym_signalSimpleError->fboundp()) {
-    ss << "An error occured " << _rep_(baseCondition) << " initializers: " << _rep_(initializers) << std::endl;
+    ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl
+       << _rep_(baseCondition) << " :initializers " << _rep_(initializers) << std::endl;
+    ss << "An error occurred " << _rep_(baseCondition) << " initializers: " << _rep_(initializers) << std::endl;
     printf("%s:%d lisp_error_condition--->\n %s\n", __FILE__, __LINE__, ss.str().c_str());
     LispDebugger dbg;
     dbg.invoke();
@@ -1569,7 +1572,7 @@ void lisp_error_condition(const char *functionName, const char *fileName, int li
   eval::applyLastArgsPLUSFirst(_sym_signalSimpleError, initializers // initializers is a LIST and the last argument to APPLY!!!!!
                                // this allows us to include a variable number of arguments next
                                ,
-                               baseCondition, _Nil<T_O>(), Str_O::create(ss.str()), _Nil<T_O>());
+                               baseCondition, _Nil<T_O>() );// Str_O::create(ss.str()), _Nil<T_O>());
 }
 
 void lisp_error(T_sp datum, T_sp arguments) {

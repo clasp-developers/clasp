@@ -1,0 +1,44 @@
+# .lldbinit file for debugging clasp
+#
+#
+
+break set -n dbg_hook
+break set -n core::lisp_error_simple
+
+
+
+# set the arguments for running the executable
+#
+command regex set-args 's/(.+)/settings set target.run-args %1/'
+
+#
+# Print the lisp value of the smart-ptr argument
+#
+command regex lp 's/(.+)/expr core::dbg_printTPtr((uintptr_t)%1.theObject,true)/'
+
+command regex lpr 's/(.+)/expr core::dbg_describe_tagged_T_Optr((core::T_O*)%1.theObject)/'
+command regex lpraw 's/(.+)/expr core::dbg_describe_tagged_T_Optr((core::T_O*)%1)/'
+command regex lphead 's/(.+)/expr core::dbg_describe_tagged_T_Optr_header((core::T_O*)%1)/'
+command regex lmv 's/(.+)/expr core::dbg_mv_lowLevelDescribe(%1)/'
+
+
+
+# command alias ldbg expr af_invokeInternalDebuggerFromGdb()
+
+command alias lreload command source ~/.lldbinit
+
+# set breakpoints
+break set -n dbg_hook
+
+command alias lbt expr (void)core::core__ihs_backtrace_no_args()
+
+#
+# When we continue invoke the debugger as if control-c was hit
+command alias ldbg expr (void)dbg_controlC()
+
+command alias llow-level-backtrace expr core::core_lowLevelBacktrace()
+command alias lframe-next expr af_gotoIhsNext()
+command alias lframe-prev expr af_gotoIhsPrev()
+command alias lprint-frame expr af_printCurrentIhsFrame()
+command alias lprint-frame-env expr af_printCurrentIhsFrameEnvironment()
+command regex lgoto-frame 's/lgoto-frame ([0-9]+)/expr af_gotoIhsFrame(%1)/'

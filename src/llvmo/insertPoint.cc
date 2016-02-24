@@ -42,15 +42,8 @@ InsertPoint_sp InsertPoint_O::create(llvm::IRBuilderBase::InsertPoint &ip) {
   return oip;
 }
 
-EXPOSE_CLASS(llvmo, InsertPoint_O);
 
-void InsertPoint_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<InsertPoint_O>();
-}
 
-void InsertPoint_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(LlvmoPkg, InsertPoint, "", "", _lisp);
-#endif
-}
+
+
 };

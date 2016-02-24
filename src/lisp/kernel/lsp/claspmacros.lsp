@@ -103,7 +103,7 @@
 ;;;
 (dolist (so (core::list-of-all-special-operators))
   (when (eq (fdefinition so) T)
-    (core:*fset so
+    (core:fset so
                 (let ((so so))
                   (lambda (&rest args)
                     (declare (ignore args))

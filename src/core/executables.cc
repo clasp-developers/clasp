@@ -121,16 +121,24 @@ T_sp BuiltinClosure::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
+void BuiltinClosure::setf_lambda_list(T_sp lambda_list) {
+  // Do nothing
+}
+
 LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
 
 InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-    : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
+  : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
 T_sp InterpretedClosure::lambdaList() const {
   return this->lambdaListHandler()->lambdaList();
+}
+
+void InterpretedClosure::setf_lambda_list(T_sp lambda_list) {
+  // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
 LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
@@ -154,6 +162,11 @@ LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
 T_mv Function_O::lambdaList() {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return Values(this->closure->lambdaList(), _lisp->_true());
+}
+
+CL_DEFMETHOD void Function_O::setf_lambda_list(T_sp ll) {
+  ASSERTF(this->closure, BF("The Function closure is NULL"));
+  this->closure->setf_lambda_list(ll);
 }
 
 CL_LISPIFY_NAME("core:cleavir_ast");
@@ -224,7 +237,7 @@ CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
   return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
 }
 
-EXPOSE_CLASS(core, Function_O);
+
 
 SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
 SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
@@ -248,14 +261,11 @@ CL_LAMBDA(fn);
 CL_DECLARE();
 CL_DOCSTRING("functionLambdaExpression");
 CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
-  List_sp code = _Nil<List_V>();
-  if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
-    code = ic->_code;
-  }
+  T_sp code;
+  code = core__function_lambda_list(fn);
   bool closedp = true; // fn->closedEnvironment().notnilp();
   T_sp name = fn->closure->name;
-  T_sp tcode = code;
-  return Values(tcode, _lisp->_boolean(closedp), name);
+  return Values(code, _lisp->_boolean(closedp), name);
 };
 
 CL_LAMBDA(fn);
@@ -269,26 +279,8 @@ CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
   return _Nil<T_O>();
 }
 
-void Function_O::exposeCando(Lisp_sp lisp) {
-  class_<Function_O>()
-      .def("core:macrop", &Function_O::macroP)
-      .def("core:setFunctionKind", &Function_O::setKind)
-      .def("core:functionKind", &Function_O::functionKind)
-      .def("core:closedEnvironment", &Function_O::closedEnvironment)
-      .def("core:functionName", &Function_O::functionName)
-      .def("core:functionSourcePos", &Function_O::functionSourcePos)
-      .def("core:functionLambdaListHandler", &Function_O::functionLambdaListHandler)
-      .def("core:function_declares", &Function_O::declares)
-      .def("core:function_docstring", &Function_O::docstring)
-      .def("core:cleavir_ast", &Function_O::cleavir_ast)
-      .def("core:setf_cleavir_ast", &Function_O::setf_cleavir_ast);
-}
 
-void Function_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Function, "", "", _lisp);
-#endif
-}
+
 
 string Function_O::__repr__() const {
   if (!(this->closure)) {
@@ -297,14 +289,15 @@ string Function_O::__repr__() const {
   T_sp name = this->closure->name;
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "/" << this->closure->describe();
   ss << " " << _rep_(name);
-  ss << " " << this->closure->describe();
+  ss << " lambda-list: " << _rep_(this->closure->lambdaList());
 #if 0
-	auto closure = this->closure;
-	void* fptr = closure->functionAddress();
-	if ( fptr!=NULL ) {
-	    ss << " :address " << fptr;
-	}
+  auto closure = this->closure;
+  void* fptr = closure->functionAddress();
+  if ( fptr!=NULL ) {
+    ss << " :address " << fptr;
+  }
 #endif
   ss << ">";
   return ss.str();
@@ -317,15 +310,8 @@ void Function_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-EXPOSE_CLASS(core, CompiledFunction_O);
 
-void CompiledFunction_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<CompiledFunction_O>();
-}
 
-void CompiledFunction_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CompiledFunction, "", "", _lisp);
-#endif
-}
+
+
 };

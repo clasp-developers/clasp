@@ -109,6 +109,7 @@ public:
   T_sp functionLambdaListHandler() const;
   /*! Return (values lambda-list foundp) */
   T_mv lambdaList();
+  void setf_lambda_list(T_sp lambda_list);
   T_sp closedEnvironment() const;
   List_sp functionDeclares() const;
   T_sp functionName() const;
@@ -147,6 +148,7 @@ public:
   List_sp code() const { return this->_code; };
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
   T_sp lambdaList() const;
+  void setf_lambda_list(T_sp lambda_list);
 };
 
 #if 0

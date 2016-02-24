@@ -35,15 +35,8 @@ THE SOFTWARE.
 
 namespace core {
 
-void StdClass_O::exposeCando(Lisp_sp lisp) {
-  class_<StdClass_O>();
-}
 
-void StdClass_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StdClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StdClass_O);
+
+
 };

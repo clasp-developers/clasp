@@ -86,7 +86,7 @@ struct HashTableLocker {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, HashTable_O);
+
 
 CL_LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug);
 CL_DECLARE();
@@ -590,9 +590,6 @@ CL_DEFUN void core__hash_table_force_rehash(HashTable_sp ht) {
   ht->rehash(false, _Unbound<T_O>());
 }
 
-//#define ARGS_HashTable_O_gethash "(key (self hash-table) &optional default_value)"
-//#define DECL_HashTable_O_gethash ""
-//#define DOCS_HashTable_O_gethash "See CLHS"
 T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   List_sp keyValuePair = this->tableRef(key);
@@ -640,9 +637,6 @@ bool HashTable_O::contains(T_sp key) {
   return true;
 }
 
-#define ARGS_HashTable_O_remhash "(self key)"
-#define DECL_HashTable_O_remhash ""
-#define DOCS_HashTable_O_remhash "setf into the hash-table"
 bool HashTable_O::remhash(T_sp key) {
   _OF();
   List_sp keyValuePair = this->tableRef(key);
@@ -653,9 +647,6 @@ bool HashTable_O::remhash(T_sp key) {
   return true;
 }
 
-#define ARGS_HashTable_O_hash_table_setf_gethash "(self key value)"
-#define DECL_HashTable_O_hash_table_setf_gethash ""
-#define DOCS_HashTable_O_hash_table_setf_gethash "setf into the hash-table"
 CL_LISPIFY_NAME("core:hashTableSetfGethash");
 CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   List_sp keyValuePair = this->tableRef(key);
@@ -833,9 +824,6 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first)
 #endif
   }
 };
-#define ARGS_HashTable_O_hash_table_dump "(&optional (start 0) end)"
-#define DECL_HashTable_O_hash_table_dump ""
-#define DOCS_HashTable_O_hash_table_dump "Dump the hash-table"
 CL_LISPIFY_NAME("core:hashTableDump");
 CL_DEFMETHOD string HashTable_O::hash_table_dump(Fixnum start, T_sp end) const {
   stringstream ss;
@@ -951,35 +939,7 @@ string HashTable_O::keysAsString() {
   SYMBOL_EXPORT_SC_(ClPkg, remhash);
   SYMBOL_EXPORT_SC_(ClPkg, gethash);
 
-void HashTable_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<HashTable_O> ht;
-  ht
-      //	.initArgs("(self)")
-      .def("hash-table-count", &HashTable_O::hashTableCount)
-      .def("hash-table-size", &HashTable_O::hashTableSize)
-      .def("hash-table-rehash-size", &HashTable_O::hashTableRehashSize)
-      .def("hash-table-rehash-threshold", &HashTable_O::hashTableRehashThreshold)
-      .def("hash-table-test", &HashTable_O::hashTableTest)
-      .def("core:hashIndex", &HashTable_O::hashIndex)
-      .def("core:hashTableNumberOfHashes", &HashTable_O::hashTableNumberOfHashes)
-      .def("core:hashTableAlistAtHash", &HashTable_O::hashTableAlistAtHash);
-  ht
-      .def("core:hashTableSetfGethash", &HashTable_O::hash_table_setf_gethash)
-      .def("core:hashTableDump", &HashTable_O::hash_table_dump);
 
-}
 
-void HashTable_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), HashTable, "", "", _LISP)
-      .def("hash-table-count", &HashTable_O::hashTableCount)
-      .def("hash-table-size", &HashTable_O::hashTableSize)
-      .def("hash-table-rehash-size", &HashTable_O::hashTableRehashSize)
-      .def("hash-table-rehash-threshold", &HashTable_O::hashTableRehashThreshold)
-      .def("hash-table-test", &HashTable_O::hashTableTest)
-      .def("hash-table-dump", &HashTable_O::hash_table_dump)
-      ;
-#endif
-}
 
 }; /* core */

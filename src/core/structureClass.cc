@@ -297,14 +297,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 #endif
 
-void StructureClass_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureClass_O>();
-}
-void StructureClass_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StructureClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StructureClass_O);
+
+
 };

@@ -93,11 +93,11 @@
       (funcall *code-walker* form *simple-environment*))
     (call-next-method)))
 
-(defun code-walk-for-method-lambda-closure (form env &key code-walker-function)
+(defun code-walk-using-cleavir (form env &key code-walker-function)
   (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
          (clasp-cleavir:*code-walker* code-walker-function))
     (cleavir-generate-ast:generate-ast form env *clasp-system*)))
 
-(export 'code-walk-for-method-lambda-closure)
+(export 'code-walk-using-cleavir)
 
 

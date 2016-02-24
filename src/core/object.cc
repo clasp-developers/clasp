@@ -101,10 +101,9 @@ T_sp alist_from_plist(List_sp plist) {
 
 CL_LAMBDA(class-name &rest args);
 CL_DECLARE();
-CL_DOCSTRING("makeCxxObject");
+CL_DOCSTRING("make-cxx-object makes a C++ object using the encode/decode/fields functions");
 CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
   Class_sp theClass;
-  ;
   if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
     theClass = argClass;
   } else if (class_or_name.nilp()) {
@@ -120,6 +119,35 @@ CL_DEFUN T_sp core__make_cxx_object(T_sp class_or_name, T_sp args) {
       args = alist_from_plist(args);
       //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
       instance->initialize(args);
+    }
+    return instance;
+  }
+BAD_ARG0:
+  TYPE_ERROR(class_or_name, Cons_O::createList(cl::_sym_Class_O, cl::_sym_Symbol_O));
+  UNREACHABLE();
+}
+
+
+CL_LAMBDA(class-name &rest args);
+CL_DECLARE();
+CL_DOCSTRING("load-cxx-object makes a C++ object using the encode/decode/fields functions using decoder/loader(s) - they support patching of objects");
+CL_DEFUN T_sp core__load_cxx_object(T_sp class_or_name, T_sp args) {
+  Class_sp theClass;
+  if (Class_sp argClass = class_or_name.asOrNull<Class_O>()) {
+    theClass = argClass;
+  } else if (class_or_name.nilp()) {
+    goto BAD_ARG0;
+  } else if (Symbol_sp name = class_or_name.asOrNull<Symbol_O>()) {
+    theClass = cl__find_class(name, true, _Nil<T_O>());
+  } else {
+    goto BAD_ARG0;
+  }
+  {
+    T_sp instance = theClass->make_instance();
+    if (args.notnilp()) {
+      args = alist_from_plist(args);
+      //      printf("%s:%d initializer alist = %s\n", __FILE__, __LINE__, _rep_(args).c_str());
+      instance->decode(args);
     }
     return instance;
   }
@@ -274,9 +302,14 @@ void T_O::initialize() {
 }
 
 void T_O::initialize(core::List_sp alist) {
+#if 1
   Record_sp record = Record_O::create_initializer(alist);
   this->fields(record);
   record->errorIfInvalidArguments();
+#else
+  // I shouldn't use decode directly - there is no errorIfInvalidArguments checking
+  this->decode(alist);
+#endif
 }
 
 List_sp T_O::encode() {
@@ -451,7 +484,7 @@ string T_O::description() const {
     T_O *me_gc_safe = const_cast<T_O *>(this);
     ss << "#<" << me_gc_safe->_instanceClass()->classNameAsString() << " ";
 
-    ss << "@" << std::hex << this << std::dec;
+//    ss << "@" << std::hex << this << std::dec;
     ss << ")";
     ss << this->descriptionOfContents() << " > ";
   }
@@ -527,95 +560,11 @@ SYMBOL_EXPORT_SC_(CorePkg, implementationClass);
 SYMBOL_EXPORT_SC_(CorePkg, classNameAsString);
 SYMBOL_EXPORT_SC_(ClPkg, copyTree);
 
-void T_O::exposeCando(core::Lisp_sp lisp) {
-  class_<T_O> ot;
-};
-
-void T_O::exposePython(Lisp_sp lisp) { // lisp will be undefined - don't use it
-#ifdef USEBOOSTPYTHON
-  boost::python::class_<T_O, T_sp,
-                        boost::noncopyable>("Object", boost::python::no_init)
-      //    	.def("class",&T_O::_class)
-      //	.def("instanceBaseClass",&T_O::instanceBaseClass)
-      .def("classSymbol", &T_O::classSymbol)
-      .def("describe", &T_O::describe)
-      .def("description", &T_O::descriptionNonConst)
-      .def("core:className", &T_O::className_notConst)
-      .def("classNameSymbol", &T_O::classNameSymbol)
-      //	.def("baseClassSymbol",&T_O::baseClassSymbol)
-      .def("sameAs", &T_O::sameAs)
-      //	.def("atom", &T_O::atomp)
-      .def("consp", &T_O::consP)
-      .def("sourceCodeConsP", &T_O::sourceCodeConsP)
-      .def("vectorp", &T_O::vectorP)
-      .def("symbolp", &T_O::symbolP)
-      .def("numberp", &T_O::numberP)
-      .def("stringp", &T_O::stringP)
-      .def("booleanp", &T_O::booleanP)
-      .def("specialFormp", &T_O::specialFormP)
-      .def("isNil", &T_O::isNil)
-      //	.def("notNil",&T_O::notNil)
-      .def("eq", &T_O::eq)
-      //	.def("eql", &T_O::eql)
-      .def("eqn", &T_O::eqn)
-      //	.def("equal", &T_O::equal)
-      .def("equalp", &T_O::equalp)
-      .def("neq", &T_O::neql)
-      .def("lt", &T_O::operator<)
-      .def("shallowCopy", &T_O::shallowCopy)
-      .def("deepCopy", &T_O::deepCopy)
-
-      .def("car", &T_O::ocar)
-      .def("cdr", &T_O::ocdr)
-      .def("caar", &T_O::ocaar)
-      .def("cadr", &T_O::ocadr)
-      .def("cdar", &T_O::ocdar)
-      .def("cddr", &T_O::ocddr)
-      .def("caaar", &T_O::ocaaar)
-      .def("caadr", &T_O::ocaadr)
-      .def("cadar", &T_O::ocadar)
-      .def("caddr", &T_O::ocaddr)
-      .def("cdaar", &T_O::ocdaar)
-      .def("cdadr", &T_O::ocdadr)
-      .def("cddar", &T_O::ocddar)
-      .def("cdddr", &T_O::ocdddr)
-      .def("caaaar", &T_O::ocaaaar)
-      .def("caadar", &T_O::ocaadar)
-      .def("cadaar", &T_O::ocadaar)
-      .def("caddar", &T_O::ocaddar)
-      .def("cdaaar", &T_O::ocdaaar)
-      .def("cdadar", &T_O::ocdadar)
-      .def("cddaar", &T_O::ocddaar)
-      .def("cdddar", &T_O::ocdddar)
-      .def("caaadr", &T_O::ocaaadr)
-      .def("caaddr", &T_O::ocaaddr)
-      .def("cadadr", &T_O::ocadadr)
-      .def("cadddr", &T_O::ocadddr)
-      .def("cdaadr", &T_O::ocdaadr)
-      .def("cdaddr", &T_O::ocdaddr)
-      .def("cddadr", &T_O::ocddadr)
-      .def("cddddr", &T_O::ocddddr)
-
-      .def("first", &T_O::ocar)
-      .def("rest", &T_O::ocdr)
-
-      .def("first", &T_O::ofirst)
-      .def("second", &T_O::osecond)
-      .def("third", &T_O::othird)
-      .def("fourth", &T_O::ofourth)
-      .def("fifth", &T_O::ofifth)
-      .def("sixth", &T_O::osixth)
-      .def("seventh", &T_O::oseventh)
-      .def("eighth", &T_O::oeighth)
-      .def("ninth", &T_O::oninth)
-      .def("tenth", &T_O::otenth)
-
-      ;
-#endif
-}
+;
 
 
-EXPOSE_CLASS(core, T_O);
+
+
 
 #include <clasp/core/multipleValues.h>
 

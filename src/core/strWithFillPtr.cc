@@ -54,18 +54,10 @@ StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, 
   return str;
 }
 
-EXPOSE_CLASS(core, StrWithFillPtr_O);
 
-void StrWithFillPtr_O::exposeCando(Lisp_sp lisp) {
-  class_<StrWithFillPtr_O>()
-      .def("core:pushString", (void (StrWithFillPtr_O::*)(T_sp)) & StrWithFillPtr_O::pushString);
-}
 
-void StrWithFillPtr_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Str, "", "", _lisp);
-#endif
-}
+
+
 
 T_sp StrWithFillPtr_O::vectorPush(T_sp newElement) {
   if (newElement.notnilp()) {

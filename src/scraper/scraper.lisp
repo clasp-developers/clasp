@@ -74,7 +74,7 @@ Read all of the scraped info files and interpret their tags."
       (let ((tags (read-all-tags-all-sif-files all-cc)))
         (format t "Interpreting tags~%")
         (setf *tags* tags)
-        (multiple-value-bind (packages-to-create functions symbols classes enums)
+        (multiple-value-bind (packages-to-create functions symbols classes enums initializers)
             (interpret-tags tags)
           (setq *packages-to-create* packages-to-create)
           (setq *symbols* symbols)
@@ -82,7 +82,7 @@ Read all of the scraped info files and interpret their tags."
           (setq *functions* functions)
           (setq *enums* enums)
           (format t "Generating code~%")
-          (generate-code packages-to-create functions symbols classes enums main-path app-config))
+          (generate-code packages-to-create functions symbols classes enums initializers main-path app-config))
         (format t "Done scraping code~%")))))
 
 

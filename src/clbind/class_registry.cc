@@ -63,16 +63,9 @@ THE SOFTWARE.
 namespace clbind {
 
 CLBIND_API void push_instance_metatable();
-EXPOSE_CLASS(clbind, ClassRegistry_O);
 
-void ClassRegistry_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ClassRegistry_O>();
-}
-void ClassRegistry_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ClassRegistry, "", "", _lisp);
-#endif
-}
+
+
 
 #if 0
     namespace {

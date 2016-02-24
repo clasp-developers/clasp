@@ -39,11 +39,6 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp InstanceClosure::lambdaList() const {
-  printf("%s:%d InstanceClosure::lambdaList returning NIL\n", __FILE__, __LINE__);
-  return _Nil<T_O>();
-}
-
 LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
@@ -55,9 +50,6 @@ LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
   return (this->entryPoint)(this->instance, gfargs);
 }
 
-#define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
-#define DECL_clos_setFuncallableInstanceFunction ""
-#define DOCS_clos_setFuncallableInstanceFunction "setFuncallableInstanceFunction"
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
@@ -188,22 +180,12 @@ T_sp Instance_O::instanceSig() const {
   return ((this->_Sig));
 }
 
-EXPOSE_CLASS(core, Instance_O);
+
 
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
-void Instance_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<Instance_O>();
 
-//  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
-//  ClosDefun(setFuncallableInstanceFunction);
-}
 
-void Instance_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Instance, "", "", _lisp);
-#endif
-}
 
 T_sp Instance_O::instanceClassSet(Class_sp mc) {
   this->_Class = mc;

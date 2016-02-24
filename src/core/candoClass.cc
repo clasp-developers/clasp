@@ -116,12 +116,7 @@ void CandoClass_O::setupAccessors(List_sp slotNames) {
 #endif
 }
 
-void CandoClass_O::exposeCando(Lisp_sp lisp) {
-  class_<CandoClass_O>();
-}
-void CandoClass_O::exposePython(Lisp_sp lisp) {
-  PYTHON_CLASS(CorePkg, CandoClass, "", "", _lisp);
-}
 
-EXPOSE_CLASS(core, CandoClass_O);
+
+
 };

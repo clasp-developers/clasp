@@ -47,7 +47,7 @@ SNode_sp getOrCreateSNodeForObjectIncRefCount(T_sp val) {
 
 SYMBOL_EXPORT_SC_(KeywordPkg, podSymbolMap);
 
-EXPOSE_CLASS(core, SNode_O);
+
 
 SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
   if (val.nilp() ||
@@ -68,21 +68,7 @@ SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
   return branchSNode;
 }
 
-void SNode_O::exposeCando(Lisp_sp lisp) {
-  class_<SNode_O>()
-      .def("core:setNodeKind", &SNode_O::setKind)
-      .def("core:getNodeKind", &SNode_O::getKind)
-      .def("core:getVectorSNodes", &SNode_O::getVectorSNodes)
-      .def("core:setVectorSNodes", &SNode_O::setVectorSNodesUnsafe)
-      .def("core:setAttributes", &SNode_O::setAttributesUnsafe)
-      .def("core:getAttributes", &SNode_O::getAttributes)
-      .def("core:getUniqueId", &SNode_O::getUniqueId)
-      .def("core:childWithUniqueId", &SNode_O::childWithUniqueId)
-      .def("core:keys", &SNode_O::keys)
-      .def("core:object", &SNode_O::object);
-}
-void SNode_O::exposePython(Lisp_sp lisp) {
-}
+
 
 CL_DEFUN BranchSNode_sp core__make_branch_snode() {
   return BranchSNode_O::create();
@@ -117,13 +103,9 @@ BranchSNode_sp BranchSNode_O::create(Symbol_sp kind, List_sp plist, Vector_sp da
   return v;
 }
 
-EXPOSE_CLASS(core, BranchSNode_O);
 
-void BranchSNode_O::exposeCando(Lisp_sp lisp) {
-  class_<BranchSNode_O>("core:make-branch-snode");
-}
-void BranchSNode_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 T_sp BranchSNode_O::object() const {
   LoadArchive_sp archive = Archive_O::currentLoadArchive();
@@ -291,13 +273,9 @@ LeafSNode_sp LeafSNode_O::create(T_sp obj) {
   return v;
 }
 
-EXPOSE_CLASS(core, LeafSNode_O);
 
-void LeafSNode_O::exposeCando(Lisp_sp lisp) {
-  class_<LeafSNode_O>();
-}
-void LeafSNode_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 string LeafSNode_O::__repr__() const {
   return _rep_(this->_Object);
@@ -305,13 +283,9 @@ string LeafSNode_O::__repr__() const {
 
 Archive_O::Archive_O() : _Version(0), _TopNode(_Nil<T_O>()), _NextUniqueId(0){};
 
-EXPOSE_CLASS(core, Archive_O);
 
-void Archive_O::exposeCando(Lisp_sp lisp) {
-  class_<Archive_O>();
-}
-void Archive_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 string Archive_O::__repr__() const {
   stringstream ss;
@@ -320,14 +294,9 @@ string Archive_O::__repr__() const {
   return ss.str();
 }
 
-EXPOSE_CLASS(core, SaveArchive_O);
 
-void SaveArchive_O::exposeCando(Lisp_sp lisp) {
-  class_<SaveArchive_O>("make-save-archive")
-      .def("put", &SaveArchive_O::put);
-}
-void SaveArchive_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 Archive_sp Archive_O::currentArchive() {
   SYMBOL_EXPORT_SC_(CorePkg, STARserializerArchiveSTAR);
@@ -374,17 +343,9 @@ SNode_sp SaveArchive_O::getOrCreateSNodeForObjectIncRefCount(T_sp val) {
   return snode;
 }
 
-EXPOSE_CLASS(core, LoadArchive_O);
 
-void LoadArchive_O::exposeCando(Lisp_sp lisp) {
-  class_<LoadArchive_O>()
-      .def("loadArchive-keys", &LoadArchive_O::keys)
-      .def("loadArchive-get", &LoadArchive_O::get)
-      .def("loadArchive-contains", &LoadArchive_O::contains)
-      .def("loadArchive-getContents", &LoadArchive_O::getContents);
-}
-void LoadArchive_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 void LoadArchive_O::initialize() {
   this->Base::initialize();

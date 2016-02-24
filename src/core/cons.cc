@@ -294,20 +294,6 @@ T_sp Cons_O::append(List_sp x, List_sp y) {
     }
 #endif
 
-List_sp Cons_O::walkToFindParsePos() const {
-  //	if ( this->hasParsePos() ) return((this->asSmartPtr()));
-  if (this->_Cdr.notnilp() && cl__consp(this->_Cdr)) {
-    List_sp wcdr = gc::As<Cons_sp>(this->_Cdr)->walkToFindParsePos();
-    if (wcdr.notnilp())
-      return ((wcdr));
-  }
-  if (this->_Car.notnilp() && cl__consp(this->_Car)) {
-    List_sp wcar = gc::As<Cons_sp>(this->_Car)->walkToFindParsePos();
-    if (wcar.notnilp())
-      return ((wcar));
-  }
-  return ((_Nil<T_O>()));
-}
 
 void Cons_O::sxhash_(HashGenerator &hg) const {
   _OF();
@@ -581,11 +567,10 @@ void Cons_O::serialize(serialize::SNode node) {
 #endif
 
 bool Cons_O::equal(T_sp obj) const {
-  _OF();
-  if (this->eq(obj))
-    return ((true));
   if (!obj.consp())
     return false;
+  if (this->eq(obj))
+    return ((true));
   List_sp other = obj;
   if (!cl__equal(this->_Car, oCar(other)))
     return false;
@@ -595,10 +580,10 @@ bool Cons_O::equal(T_sp obj) const {
 }
 
 bool Cons_O::equalp(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
   if (!obj.consp())
     return false;
+  if (this->eq(obj))
+    return true;
   List_sp other = obj;
   if (!cl__equalp(this->_Car, oCar(other)))
     return false;
@@ -785,23 +770,20 @@ List_sp Cons_O::last(int n) const {
 List_sp Cons_O::copyList() const {
   _OF();
   List_sp first, cur;
-  first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  cur = first;
   List_sp p = this->asSmartPtr();
-  while (p.consp()) {
-    List_sp carNode = p.asCons()->copyListCar();
-    cur.asCons()->setCdr(carNode);
-    cur = oCdr(cur);
-    T_sp cdr = oCdr(p);
-    if (cdr.nilp())
-      break;
-    if (!cdr.consp()) {
-      cur.asCons()->setCdr(cdr);
-      break;
-    }
+  T_sp cdr;
+  first = Cons_O::create(oCar(p), _Nil<T_O>());
+  cur = first;
+  cdr = oCdr(p);
+  while (cdr.consp()) {
     p = cdr;
+    List_sp newCar = Cons_O::create(oCar(p), _Nil<T_O>());
+    cur.asCons()->setCdr(newCar);
+    cur = newCar;
+    cdr = oCdr(p);
   }
-  return ((oCdr(first)));
+  cur.asCons()->setCdr(cdr);
+  return first;
 };
 
 Cons_sp Cons_O::copyListCar() const {
@@ -1288,25 +1270,10 @@ CL_DEFUN string core__alist_asString(List_sp alist) {
   SYMBOL_EXPORT_SC_(ClPkg, getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
   SYMBOL_SC_(CorePkg, put_f);
+#if 0
 
-void Cons_O::exposeCando(Lisp_sp lisp) {
-  class_<Cons_O>()
-      .def("core:exactlyMatches", &Cons_O::exactlyMatches)
-      .def("core:lookup", &Cons_O::olookupKeyObject)
-      .def("core:lookupDefault", &Cons_O::olookupKeyObjectDefault)
-      .def("core:filterOutNil", &Cons_O::filterOutNil)
-      .def("core:extend", &Cons_O::extend)
-      .def("core:cons-setf-car", &Cons_O::setf_car)
-      .def("core:cons-setf-cdr", &Cons_O::setf_cdr)
-      ;
-}
-
-void Cons_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, Cons, "", "", _lisp)
-      .def("__repr__", &Cons_O::__repr__);
 #endif
-}
 
-EXPOSE_CLASS(core, Cons_O);
+
+
 };

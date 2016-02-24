@@ -65,19 +65,8 @@ CL_DEFMETHOD void SmallMap_O::setf(T_sp key, T_sp val) {
   found.first->second = val;
 }
 
-void SmallMap_O::exposeCando(Lisp_sp lisp) {
-  class_<SmallMap_O>()
-      .def("map_find", &SmallMap_O::find)
-      .def("map_setf", &SmallMap_O::setf)
-      .def("map_size", &SmallMap_O::size)
-      .def("map_capacity", &SmallMap_O::capacity);
-}
 
-void SmallMap_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SmallMap, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, SmallMap_O);
+
+
 };

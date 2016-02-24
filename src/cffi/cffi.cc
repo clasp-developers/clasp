@@ -245,9 +245,6 @@ Pointer_sp Pointer_O::create(void *ptr) {
   return p;
 }
 
-#define ARGS_Pointer_O_make "(arg)"
-#define DECL_Pointer_O_make ""
-#define DOCS_Pointer_O_make "make"
 CL_PKG_NAME(CffiPkg,make-pointer);
 CL_DEFUN Pointer_sp Pointer_O::make(core::Number_sp arg) {
   if (core__fixnump(arg)) {
@@ -262,9 +259,6 @@ CL_DEFUN Pointer_sp Pointer_O::make(core::Number_sp arg) {
   SIMPLE_ERROR(BF("Illegal type for address of pointer"));
 };
 
-#define ARGS_Pointer_O_null_pointer "(arg)"
-#define DECL_Pointer_O_null_pointer ""
-#define DOCS_Pointer_O_null_pointer "null_pointer"
 CL_PKG_NAME(CffiPkg,null-pointer);
 CL_DEFUN Pointer_sp Pointer_O::null_pointer() {
   GC_ALLOCATE(Pointer_O, res);
@@ -272,9 +266,6 @@ CL_DEFUN Pointer_sp Pointer_O::null_pointer() {
   return res;
 }
 
-#define ARGS_Pointer_O_PERCENTmem_ref "((self pointer) atype &optional ( offset 0) )"
-#define DECL_Pointer_O_PERCENTmem_ref ""
-#define DOCS_Pointer_O_PERCENTmem_ref "PERCENTmem_ref"
 CL_LISPIFY_NAME("CFFI-SYS:PERCENTmem_ref");
 CL_DEFMETHOD core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::Integer_sp offset) {
   void *ptr = ((char *)(this->_ptr) + clasp_to_int(offset));
@@ -355,9 +346,6 @@ CL_DEFMETHOD core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::I
   }
 }
 
-#define ARGS_Pointer_O_PERCENTsetf_mem_ref "((self pointer) atype &rest rest)"
-#define DECL_Pointer_O_PERCENTsetf_mem_ref ""
-#define DOCS_Pointer_O_PERCENTsetf_mem_ref "PERCENTsetf_mem_ref"
 CL_LISPIFY_NAME("CFFI-SYS:PERCENTsetf_mem_ref");
 CL_DEFMETHOD core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp rest) {
   core::LongLongInt offset = 0;
@@ -462,9 +450,6 @@ CL_DEFMETHOD core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, co
 Pointer_O::Pointer_O() : Base(), _ptr(NULL){};
 Pointer_O::~Pointer_O(){};
 
-#define ARGS_Pointer_O_foreign_free "()"
-#define DECL_Pointer_O_foreign_free ""
-#define DOCS_Pointer_O_foreign_free "foreign_free"
 CL_LISPIFY_NAME("CFFI-SYS:foreign_free");
 CL_DEFMETHOD void Pointer_O::foreign_free() {
   if (this->_ptr != NULL) {
@@ -486,34 +471,13 @@ string Pointer_O::__repr__() const {
   return ss.str();
 }
 
-EXPOSE_CLASS(cffi, Pointer_O);
+
 
 SYMBOL_EXPORT_SC_(CffiPkg, PERCENTmem_ref);
 SYMBOL_EXPORT_SC_(CffiPkg, PERCENTsetf_mem_ref);
 
-void Pointer_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<Pointer_O>()
-      .def("CFFI-SYS:foreign_free", &Pointer_O::foreign_free)
-      .def("CFFI-SYS:PERCENTmem_ref", &Pointer_O::PERCENTmem_ref,
-           ARGS_Pointer_O_PERCENTmem_ref,
-           DECL_Pointer_O_PERCENTmem_ref,
-           DOCS_Pointer_O_PERCENTmem_ref)
-      .def("CFFI-SYS:PERCENTsetf_mem_ref", &Pointer_O::PERCENTsetf_mem_ref,
-           ARGS_Pointer_O_PERCENTsetf_mem_ref,
-           DECL_Pointer_O_PERCENTsetf_mem_ref,
-           DOCS_Pointer_O_PERCENTsetf_mem_ref)
-      .def("CFFI-SYS:inc-pointer", &Pointer_O::inc_pointer);
-//  core::af_def(CffiPkg, "make-pointer", &Pointer_O::make, ARGS_Pointer_O_make, DECL_Pointer_O_make, DOCS_Pointer_O_make);
-//  core::af_def(CffiPkg, "null-pointer", &Pointer_O::null_pointer, ARGS_Pointer_O_null_pointer, DECL_Pointer_O_null_pointer, DOCS_Pointer_O_null_pointer);
 
-  core::add_defsetf_access_update(_sym_PERCENTmem_ref, _sym_PERCENTsetf_mem_ref);
-}
 
-void Pointer_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CffiPkg, Pointer, "", "", _lisp);
-#endif
-}
 
 SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_alignment);
 SYMBOL_EXPORT_SC_(CffiPkg, PERCENTforeign_type_size);

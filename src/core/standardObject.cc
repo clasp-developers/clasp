@@ -116,15 +116,8 @@ string StandardObject_O::__repr__() const {
     }
 #endif
 
-void StandardObject_O::exposeCando(Lisp_sp lisp) {
-  class_<StandardObject_O>();
-}
 
-void StandardObject_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StandardObject, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StandardObject_O);
+
+
 };

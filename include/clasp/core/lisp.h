@@ -984,9 +984,6 @@ public:
 	  if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char *name);
 
-  void exposeCando();
-  void exposePython();
-
   explicit Lisp_O();
   virtual ~Lisp_O(){};
 };

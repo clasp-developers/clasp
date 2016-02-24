@@ -27,7 +27,7 @@
 ## Path to the python2 binary.
 #export PYTHON2
 
-## Path to the sbcl binary.
+## Path to the sbcl 
 #export CLASP_SBCL
 
 ## Where the llvm-config file resides

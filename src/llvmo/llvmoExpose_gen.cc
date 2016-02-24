@@ -53,124 +53,44 @@ LLVMContext_sp LLVMContext_O::get_global_context() {
 }
 
 namespace llvmo {
-EXPOSE_CLASS(llvmo, LLVMContext_O);
 
-void LLVMContext_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<LLVMContext_O>();
-  af_def(LlvmoPkg, "get-global-context", &LLVMContext_O::get_global_context);
-};
 
-void LLVMContext_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
+;
+
+; // llvmo
 namespace llvmo {
 }
 
 namespace llvmo {
-EXPOSE_CLASS(llvmo, Pass_O);
 
-void Pass_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<Pass_O>();
-};
 
-void Pass_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
+;
+
+; // llvmo
 namespace llvmo {
 }
 
 namespace llvmo {
-EXPOSE_CLASS(llvmo, FunctionPass_O);
 
-void FunctionPass_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<FunctionPass_O>();
-};
 
-void FunctionPass_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
+;
+
+; // llvmo
 namespace llvmo {
 }
 
 namespace llvmo {
-EXPOSE_CLASS(llvmo, ModulePass_O);
 
-void ModulePass_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<ModulePass_O>();
-};
 
-void ModulePass_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
+;
+
+; // llvmo
 namespace llvmo {
 }
 
-namespace llvmo {
-EXPOSE_CLASS(llvmo, ImmutablePass_O);
-
-void ImmutablePass_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<ImmutablePass_O>();
-};
-
-void ImmutablePass_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-EXPOSE_CLASS(llvmo, PassManagerBase_O);
-
-void PassManagerBase_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<PassManagerBase_O>();
-};
-
-void PassManagerBase_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
 namespace llvmo {
 Value_sp Value_O::create(llvm::Value *ptr) {
   return core::RP_Create_wrapped<Value_O, llvm::Value *>(ptr);
 };
 }
 
-namespace llvmo {
-EXPOSE_CLASS(llvmo, Value_O);
-
-void Value_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<Value_O>()
-      .def("dump", &llvm::Value::dump)
-
-      .def("getName", &llvm::Value::getName)
-
-      .def("setName", &llvm::Value::setName)
-
-      .def("getType", &llvm::Value::getType)
-
-      ;
-};
-
-void Value_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo
-namespace llvmo {
-}
-
-namespace llvmo {
-EXPOSE_CLASS(llvmo, User_O);
-
-void User_O::exposeCando(core::Lisp_sp lisp) {
-  core::externalClass_<User_O>();
-};
-
-void User_O::exposePython(core::Lisp_sp lisp) {
-  IMPLEMENT_ME();
-};
-}; // llvmo

@@ -38,16 +38,8 @@ THE SOFTWARE.
 
 namespace core {
 
-void ExternalObject_O::exposeCando(Lisp_sp e) {
-  class_<ExternalObject_O>()
-      .def("isUndefined", &ExternalObject_O::isUndefined);
-}
 
-void ExternalObject_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, ExternalObject, "", "", _lisp);
-#endif //]
-}
+
 
 #if defined(XML_ARCHIVE)
 void ExternalObject_O::archiveBase(ArchiveP node) {
@@ -64,13 +56,10 @@ bool ExternalObject_O::eql_(T_sp obj) const {
   return false;
 }
 
-EXPOSE_CLASS(core, ExternalObject_O);
 
-EXPOSE_CLASS(core, ForeignData_O);
 
-#define ARGS_ForeignData_O_allocateForeignObject "(kind)"
-#define DECL_ForeignData_O_allocateForeignObject ""
-#define DOCS_ForeignData_O_allocateForeignObject "Allocate a chunk of memory for foreign-data"
+
+
 CL_LISPIFY_NAME(allocateForeignObject);
 CL_DOCSTRING("Allocate a chunk of memory for foreign-data");
 CL_DEFUN ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind) {
@@ -83,16 +72,8 @@ CL_DEFUN ForeignData_sp ForeignData_O::allocateForeignObject(T_sp kind) {
   return obj;
 }
 
-void ForeignData_O::exposeCando(Lisp_sp lisp) {
-  class_<ForeignData_O>()
-      .def("freeForeignObject", &ForeignData_O::freeForeignObject);
-}
 
-void ForeignData_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, ForeignData, "", "", _lisp);
-#endif //]
-}
+
 
 ForeignData_O::ForeignData_O() : _Kind(_Nil<T_O>()), _OwnershipFlags(0), _Size(0), _Data(NULL) {
 }

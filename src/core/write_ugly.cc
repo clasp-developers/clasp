@@ -54,6 +54,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/str.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
@@ -475,7 +476,17 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
       x->__write__(stream);
     }
   } else if (x.valistp()) {
-    clasp_write_string("#<VA-LIST>", stream);
+    clasp_write_string("#<VA-LIST: ", stream);
+    VaList_sp vl = VaList_sp((gc::Tagged)x.raw_());
+    VaList_S valist_scopy(*vl);
+    VaList_sp xa(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
+    ql::list l;
+    int nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(xa);
+    for (int i(0); i < nargs; ++i) {
+      l << LCC_NEXT_ARG(xa,i);
+    }
+    core::write_ugly_object(l.cons(),stream);
+    clasp_write_string(">",stream);
   } else {
     SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
   }

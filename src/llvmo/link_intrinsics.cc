@@ -1427,7 +1427,7 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
   ASSERT(resultP != NULL);
   ASSERT(mvP != NULL);
   int numValues = (*mvP).number_of_values();
-  core::VectorObjects_sp vo = core::VectorObjects_O::create(_Nil<core::T_O>(), numValues, core::T_O::___staticClass);
+  core::VectorObjects_sp vo = core::VectorObjects_O::create(_Nil<core::T_O>(), numValues, core::T_O::static_class);
   //	printf("intrinsics.cc saveValues numValues = %d\n", numValues );
   if (numValues > 0) {
     vo->setf_elt(0, (*mvP));

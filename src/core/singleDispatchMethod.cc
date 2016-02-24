@@ -122,27 +122,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, SingleDispatchMethod_O);
 
-void SingleDispatchMethod_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<SingleDispatchMethod_O>()
-      .def("singleDispatchMethodName", &SingleDispatchMethod_O::singleDispatchMethodName)
-      .def("singleDispatchMethodReceiverClass", &SingleDispatchMethod_O::singleDispatchMethodReceiverClass)
-      .def("singleDispatchMethodCode", &SingleDispatchMethod_O::singleDispatchMethodCode)
-      .def("singleDispatchMethodLambdaListHandler", &SingleDispatchMethod_O::singleDispatchMethodLambdaListHandler)
-      .def("singleDispatchMethodDeclares", &SingleDispatchMethod_O::singleDispatchMethodDeclares)
-      .def("singleDispatchMethodDocstring", &SingleDispatchMethod_O::singleDispatchMethodDocstring)
-      //	.initArgs("(self)")
-      ;
-}
 
-void SingleDispatchMethod_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), SingleDispatchMethod, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
                                                        Class_sp receiverClass,

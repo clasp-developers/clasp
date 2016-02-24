@@ -35,9 +35,6 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-#define ARGS_WeakKeyMapping_O_make "(key val)"
-#define DECL_WeakKeyMapping_O_make ""
-#define DOCS_WeakKeyMapping_O_make "make WeakKeyMapping args: obj"
 CL_LISPIFY_NAME(make-weak-key-mapping);
 CL_DEFUN WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval) {
   T_sp val(tval);
@@ -48,22 +45,10 @@ CL_DEFUN WeakKeyMapping_sp WeakKeyMapping_O::make(T_sp key, T_sp tval) {
   return me;
 };
 
-EXPOSE_CLASS(core, WeakKeyMapping_O);
 
-void WeakKeyMapping_O::exposeCando(Lisp_sp lisp) {
-  class_<WeakKeyMapping_O>()
-      .def("weakKeyMappingValid", &WeakKeyMapping_O::valid)
-      .def("weakKeyMappingKeyValue", &WeakKeyMapping_O::keyValue);
-//  Defun_maker(CorePkg, WeakKeyMapping);
-}
 
-void WeakKeyMapping_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, WeakKeyMapping, "", "", _lisp)
-      .def("weakKeyMappingValid", &WeakKeyMapping_O::valid)
-      .def("weakKeyMappingValue", &WeakKeyMapping_O::value);
-#endif
-}
+
+
 
 #if defined(OLD_SERIALIZE)
 void WeakKeyMapping_O::serialize(serialize::SNode snode) {

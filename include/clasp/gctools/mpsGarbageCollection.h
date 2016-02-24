@@ -113,7 +113,7 @@ typedef enum { KIND_null,
 };
 
 extern "C" {
-char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::kind_t kind);
 extern void obj_dump_base(void *base);
 };
 
@@ -187,9 +187,17 @@ public:
 
 public:
   tagged_kind_t header;
+#ifdef DEBUG_GUARD
+  size_t tail_start;
+  size_t tail_size;
+#endif
   tagged_kind_t data[1]; // After this is where the client pointer starts
 public:
+#ifndef DEBUG_GUARD
  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
+#else
+ Header_s(kind_t k,size_t tstart, size_t tsize) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567}, tail_start(tstart), tail_size(tsize) {};
+#endif
 
   bool invalidP() const { return (this->header & tag_mask) == 0; };
   bool kindP() const { return (this->header & tag_mask) == kind_tag; };
@@ -249,12 +257,20 @@ void headerDescribe(core::T_O *taggedClient);
 namespace gctools {
 
 constexpr size_t Alignment() {
-  return sizeof(Header_s);
+//  return sizeof(Header_s);
+  return alignof(Header_s);
 };
 inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
+
+#ifdef DEBUG_GUARD
+ template <class T>
+  inline size_t tail_start() { return sizeof(T) + sizeof(Header_s); }
+ template <class T>
+   inline size_t tail_size() { return (sizeof_with_header<T> - tail_start<T>) + random_tail_size(); };
+#endif
 };
 
 /* Align size upwards and ensure that it's big enough to store a
@@ -450,7 +466,10 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
   return MPS_RES_OK;
 };
 #define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
-#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&_ptr_))
+// Get rid of SIMPLE_POINTER_FIX - its a terrible name
+#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_REF_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(_ptr_))
 
 namespace gctools {
 

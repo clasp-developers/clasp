@@ -239,9 +239,6 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
     this->_Name->sxhash_(hg);
 }
 
-#define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"
-#define DECL_Symbol_O_copy_symbol ""
-#define DOCS_Symbol_O_copy_symbol "copy_symbol"
 CL_LISPIFY_NAME("cl:copy_symbol");
 CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
@@ -389,7 +386,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if ((currentPackage == myPackage) && !prefixAlways) {
+      if (currentPackage->_findSymbol(this->_Name).notnilp() && !prefixAlways) {
         ss << this->_Name->get();
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
@@ -487,31 +484,8 @@ SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
 SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
 SYMBOL_EXPORT_SC_(ClPkg, boundp);
 
-void Symbol_O::exposeCando(Lisp_sp lisp) {
-  // TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
-  class_<Symbol_O>()
-    .def("core:specialp", &Symbol_O::specialP)
-      .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
-      .def("core:STARmakeConstant", &Symbol_O::makeConstant)
-      .def("core:fullName", &Symbol_O::fullName)
-      .def("core:asKeywordSymbol", &Symbol_O::asKeywordSymbol)
-      .def("core:setf_symbolFunction", &Symbol_O::setf_symbolFunction)
-      .def("makunbound", &Symbol_O::makunbound)
-      .def("cl:copy_symbol", &Symbol_O::copy_symbol,
-           ARGS_Symbol_O_copy_symbol,
-           DECL_Symbol_O_copy_symbol,
-           DOCS_Symbol_O_copy_symbol)
-    ;
-}
 
-void Symbol_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Symbol, "", "", _lisp)
-      .def("fullName", &Symbol_O::fullName)
-      //	    .def("namestring",&Symbol_O::fullName)
-      .def("asKeywordSymbol", &Symbol_O::asKeywordSymbol);
-#endif
-}
+
 
 void Symbol_O::dump() {
   stringstream ss;
@@ -555,5 +529,5 @@ void Symbol_O::dump() {
   printf("%s", ss.str().c_str());
 }
 
-EXPOSE_CLASS(core, Symbol_O);
+
 };

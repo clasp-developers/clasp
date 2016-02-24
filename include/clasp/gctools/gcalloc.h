@@ -40,26 +40,6 @@ namespace gctools {
 extern uint64_t globalBytesAllocated;
 };
 
-
-namespace gctools {
-  extern int global_recursive_allocation_counter;
-  struct RecursiveAllocationCounter {
-    RecursiveAllocationCounter() {
-      ++global_recursive_allocation_counter;
-      if ( global_recursive_allocation_counter > 1 ) {
-        printf("%s:%d  There was a recursive allocation!!!!!!\n", __FILE__, __LINE__ );
-        abort();
-      }
-    };
-    virtual ~RecursiveAllocationCounter() {
-      --global_recursive_allocation_counter;
-    }
-  };
-};
-
-
-
-
 namespace gctools {
 template <class OT, bool Needed = true>
 struct GCObjectInitializer {};
@@ -270,134 +250,150 @@ public:
 
 namespace gctools {
 
-/*! Allocate regular C++ classes that are considered roots */
-template <class T>
-struct RootClassAllocator {
-
-  template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
-    return allocate_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
-  };
-
-  template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate_kind(kind_t the_kind, ARGS &&... args) {
-    size_t sz = sizeof_with_header<T>();
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(the_kind, sz);
-#endif
-#ifdef USE_BOEHM
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
-    new (base) Header_s(the_kind);
-    T *obj = BasePtrToMostDerivedPtr<T>(base);
-    new (obj) T(std::forward<ARGS>(args)...);
-    POLL_SIGNALS();
-    gctools::tagged_pointer<T> tagged_obj(obj);
-    return tagged_obj;
-#endif
 #ifdef USE_MPS
-    // Different classes can have different Headers
+  template <class PTR_TYPE, typename... ARGS>
+    inline PTR_TYPE do_mps_allocation(kind_t the_kind,
+                                      size_t size,
+                                      size_t& true_size,
+                                      mps_ap_t& allocation_point,
+                                      const char* ap_name,
+                                      mps_addr_t& addr,
+                                      ARGS &&... args) {
+    typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-    T *obj;
-    mps_ap_t obj_ap = global_non_moving_ap;
-    mps_addr_t addr;
-    gctools::tagged_pointer<T> tagged_obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
+    PTR_TYPE tagged_obj;
+    T* obj;
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
-      mps_res_t res = mps_reserve(&addr, obj_ap, sz);
+      mps_res_t res = mps_reserve(&addr, allocation_point, size);
 #pragma clang diagnostic pop
       HeadT *header = reinterpret_cast<HeadT *>(addr);
       new (header) HeadT(the_kind);
-      obj = BasePtrToMostDerivedPtr<T>(addr);
-      new (obj) T(std::forward<ARGS>(args)...);
-      tagged_obj = gctools::tagged_pointer<T>(obj);
-    } while (!mps_commit(obj_ap, addr, sz));
-    globalMpsMetrics.nonMovingAllocation(sz);
-    DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, the_kind);
+      obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(addr);
+      new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
+      tagged_obj = PTR_TYPE(obj);
+    } while (!mps_commit(allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION(ap_name,addr,obj,size,the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
+    true_size = size;
     return tagged_obj;
+  };
+#endif // #ifdef USE_MPS
+    
+/*! Allocate regular C++ classes that are considered roots */
+  template <class T>
+    struct RootClassAllocator {
+
+      template <class... ARGS>
+      static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
+        return allocate_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
+      };
+
+      template <class... ARGS>
+      static gctools::tagged_pointer<T> allocate_kind(kind_t the_kind, ARGS &&... args) {
+        size_t sz = sizeof_with_header<T>();
+#ifdef TRACK_ALLOCATIONS
+        globalBytesAllocated += sz;
+        MONITOR_ALLOCATION(the_kind, sz);
 #endif
-  }
-
-  template <class... ARGS>
-  static T *untagged_allocate(ARGS &&... args) {
-    gctools::tagged_pointer<T> tagged_obj = allocate(args...);
-    return &*tagged_obj;
-  }
-
-  static void deallocate(gctools::tagged_pointer<T> memory) {
 #ifdef USE_BOEHM
-    GC_FREE(&*memory);
+        Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
+        new (base) Header_s(the_kind);
+        T *obj = BasePtrToMostDerivedPtr<T>(base);
+        new (obj) T(std::forward<ARGS>(args)...);
+        POLL_SIGNALS();
+        gctools::tagged_pointer<T> tagged_obj(obj);
+        return tagged_obj;
+#endif
+#ifdef USE_MPS
+    // Different classes can have different Headers
+        typedef typename GCHeader<T>::HeaderType HeadT;
+        T *obj;
+        mps_ap_t obj_ap = global_non_moving_ap;
+        mps_addr_t addr;
+        tagged_pointer<T> tagged_obj;
+        do {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+          mps_res_t res = mps_reserve(&addr, obj_ap, sz);
+#pragma clang diagnostic pop
+          HeadT *header = reinterpret_cast<HeadT *>(addr);
+          new (header) HeadT(the_kind);
+          obj = BasePtrToMostDerivedPtr<T>(addr);
+          new (obj) T(std::forward<ARGS>(args)...);
+          tagged_obj = gctools::tagged_pointer<T>(obj);
+        } while (!mps_commit(obj_ap, addr, sz));
+        globalMpsMetrics.nonMovingAllocation(sz);
+        DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, the_kind);
+        DEBUG_MPS_UNDERSCANNING_TESTS();
+        POLL_SIGNALS();
+        return tagged_obj;
+#endif
+      }
+
+      template <class... ARGS>
+      static T *untagged_allocate(ARGS &&... args) {
+        gctools::tagged_pointer<T> tagged_obj = allocate(args...);
+        return &*tagged_obj;
+      }
+
+      static void deallocate(gctools::tagged_pointer<T> memory) {
+#ifdef USE_BOEHM
+        GC_FREE(&*memory);
 #endif
 #if defined(USE_MPS) && !defined(RUNNING_GC_BUILDER)
-    THROW_HARD_ERROR(BF("I need a way to deallocate MPS allocated objects that are not moveable or collectable"));
-    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+        THROW_HARD_ERROR(BF("I need a way to deallocate MPS allocated objects that are not moveable or collectable"));
+        GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
-  };
+      };
 
-  static void untagged_deallocate(void *memory) {
+      static void untagged_deallocate(void *memory) {
 #ifdef USE_BOEHM
-    GC_FREE(memory);
+        GC_FREE(memory);
 #endif
 #ifdef USE_MPS
-    GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
+        GCTOOLS_ASSERT(false); // ADD SOME WAY TO FREE THE MEMORY
 #endif
-  };
-};
+      };
+    };
 
-template <class T>
-struct ClassAllocator {
+  template <class T>
+    struct ClassAllocator {
 
-  template <class... ARGS>
-  static tagged_pointer<T> allocate_class(ARGS &&... args) {
-    return ClassAllocator<T>::allocate_class_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
-  };
+      template <class... ARGS>
+      static tagged_pointer<T> allocate_class(ARGS &&... args) {
+        return ClassAllocator<T>::allocate_class_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
+      };
   /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
-  template <class... ARGS>
-  static tagged_pointer<T> allocate_class_kind(kind_t the_kind, ARGS &&... args) {
-    size_t sz = sizeof_with_header<T>();
+      template <class... ARGS>
+      static tagged_pointer<T> allocate_class_kind(kind_t the_kind, ARGS &&... args) {
+        size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(the_kind, sz);
+        globalBytesAllocated += sz;
+        MONITOR_ALLOCATION(the_kind, sz);
 #endif
 #ifdef USE_BOEHM
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
-    new (base) Header_s(the_kind);
-    T *obj = BasePtrToMostDerivedPtr<T>(base);
-    new (obj) T(std::forward<ARGS>(args)...);
-    POLL_SIGNALS();
-    return tagged_pointer<T>(obj);
+        Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
+        new (base) Header_s(the_kind);
+        T *obj = BasePtrToMostDerivedPtr<T>(base);
+        new (obj) T(std::forward<ARGS>(args)...);
+        POLL_SIGNALS();
+        return tagged_pointer<T>(obj);
 #endif
 #ifdef USE_MPS
     // Different classes can have different Headers
-    typedef typename GCHeader<T>::HeaderType HeadT;
-    T *obj;
-    tagged_pointer<T> tagged_obj;
-    mps_ap_t obj_ap = GCAllocationPoint<T>::get();
-    mps_addr_t addr;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
-    do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-      mps_res_t res = mps_reserve(&addr, obj_ap, sz);
-#pragma clang diagnostic pop
-      HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(the_kind);
-      obj = BasePtrToMostDerivedPtr<T>(addr);
-      new (obj) T(std::forward<ARGS>(args)...);
-      tagged_obj = tagged_pointer<T>(obj);
-    } while (!mps_commit(obj_ap, addr, sz));
-    globalMpsMetrics.unknownAllocation(sz);
-    DEBUG_MPS_ALLOCATION("AP", addr, obj, sz, the_kind);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    POLL_SIGNALS();
-    return tagged_obj;
+        mps_ap_t obj_ap = GCAllocationPoint<T>::get();
+        mps_addr_t addr;
+        size_t true_size;
+        tagged_pointer<T> tagged_obj =
+          do_mps_allocation<tagged_pointer<T>>(the_kind,sz,true_size,obj_ap,"AP",addr,std::forward<ARGS>(args)...);
+        globalMpsMetrics.unknownAllocation(true_size);
+        return tagged_obj;
 #endif
-  }
-};
+      }
+    };
 };
 
 namespace gctools {
@@ -425,12 +421,12 @@ namespace gctools {
         return sp;
 #endif
 #ifdef USE_MPS
-        typedef typename GCHeader<OT>::HeaderType HeadT;
-        OT *obj;
         mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
         mps_addr_t addr;
-        smart_pointer_type sp;
-        DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
+        size_t true_size;
+        smart_ptr<OT> sp =
+          do_mps_allocation<smart_ptr<OT>>(the_kind,size,true_size,obj_ap,"AMC",addr,std::forward<ARGS>(args)...);
+#ifdef OLD_ALLOCATION
         do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -445,6 +441,7 @@ namespace gctools {
         globalMpsMetrics.movingAllocation(size);
         DEBUG_MPS_ALLOCATION("AMC", addr, obj, size, the_kind);
         DEBUG_MPS_UNDERSCANNING_TESTS();
+#endif
         return sp;
 #endif
       };
@@ -481,7 +478,6 @@ namespace gctools {
       mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
       mps_addr_t addr;
       smart_pointer_type sp;
-      DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -537,7 +533,6 @@ When would I ever want the GC to automatically collect objects but not move them
       mps_ap_t obj_ap = global_non_moving_ap;
       mps_addr_t addr;
       smart_pointer_type sp;
-      DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -593,7 +588,6 @@ should not be managed by the GC */
       mps_ap_t obj_ap = global_non_moving_ap;
       mps_addr_t addr;
       gctools::smart_ptr<OT> sp;
-      DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
       do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -820,7 +814,6 @@ public:
     container_pointer myAddress(NULL);
     mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
     gc::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, obj_ap, size);
       if (res != MPS_RES_OK)
@@ -915,7 +908,6 @@ public:
     container_pointer myAddress(NULL);
     mps_ap_t obj_ap = global_non_moving_ap;
     gctools::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, obj_ap, size);
       if (res != MPS_RES_OK)
@@ -1007,7 +999,6 @@ public:
     mps_addr_t base;
     container_pointer myAddress;
     gctools::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -1101,7 +1092,6 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1191,7 +1181,6 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1276,7 +1265,6 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1327,7 +1315,6 @@ public:
     mps_addr_t addr;
     container_pointer myAddress(NULL);
     gctools::tagged_pointer<container_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
       if (res != MPS_RES_OK)
@@ -1376,7 +1363,6 @@ public:
     mps_addr_t addr;
     value_pointer myAddress;
     gctools::tagged_pointer<value_type> obj;
-    DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS();
     do {
       mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
       if (res != MPS_RES_OK)

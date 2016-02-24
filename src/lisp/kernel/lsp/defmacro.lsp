@@ -422,12 +422,11 @@
                 `(lambda (,whole ,env &aux ,@dl)
                    (declare (ignorable ,@ignorables) (core:lambda-name ,name))
                    ,@decls
-                   (block ,name
+                   (block ,(si::function-block-name name)
                      ,@arg-check
                      ,@body))
                 ppn
-                doc)
-        ))))
+                doc)))))
 
 #+ecl-min
 (si::fset 'defmacro
@@ -460,8 +459,7 @@
 		  (when *dump-defmacro-definitions*
 		    (print function)
 		    (setq function `(si::bc-disassemble ,function)))
-		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint))))))
-	   )
+		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint ',vl)))))))
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:

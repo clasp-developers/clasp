@@ -1102,6 +1102,7 @@ public:
   virtual int column() const { return 0; };
   virtual LambdaListHandler_sp lambdaListHandler() const = 0;
   virtual T_sp lambdaList() const = 0;
+  virtual void setf_lambda_list(T_sp lambda_list) = 0;
   virtual T_sp docstring() const;
   virtual List_sp declares() const;
   virtual T_sp cleavir_ast() const;
@@ -1173,6 +1174,7 @@ public:
     this->kind = k;
   }
   virtual T_sp lambdaList() const;
+  virtual void setf_lambda_list(T_sp lambda_list);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "BuiltinClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
@@ -1185,16 +1187,17 @@ class InstanceClosure : public FunctionClosure {
 public:
   GenericFunctionPtr entryPoint;
   Instance_sp instance;
-
+  T_sp lambda_list;
 public:
   DISABLE_NEW();
   InstanceClosure(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
-      : FunctionClosure(name), entryPoint(ep), instance(inst){};
+    : FunctionClosure(name), entryPoint(ep), instance(inst), lambda_list(_Nil<T_O>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InstanceClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
   LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
-  T_sp lambdaList() const;
+  T_sp lambdaList() const { return this->lambda_list; };
+  void setf_lambda_list(T_sp ll) { this->lambda_list = ll; };
 };
 }
 
