@@ -153,16 +153,22 @@ extern MonitorAllocations global_monitorAllocations;
 
 extern void monitorAllocation(kind_t k, size_t sz);
 
-#ifdef GC_MONITOR_ALLOCATIONS
-#define MONITOR_ALLOCATION(k, sz)     \
-  if (global_monitorAllocations.on) { \
-    monitorAllocation(k, sz);         \
-  }
+#ifdef TRACK_ALLOCATIONS
+ inline void monitor_allocation(kind_t k, size_t sz) {
+   globalBytesAllocated += sz;
+  #ifdef GC_MONITOR_ALLOCATIONS
+   if ( global_monitorAllocations.on ) {
+     monitorAllocation(k,sz);
+   }
+  #endif
+ }
 #else
-#define MONITOR_ALLOCATION(k, sz)
+inline void monitor_allocation(kind_t k, size_t sz) {};
 #endif
-}
-extern "C" {
+
+
+
+ extern "C" {
 const char *obj_name(gctools::kind_t kind);
 const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);

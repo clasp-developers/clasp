@@ -293,12 +293,12 @@ namespace gctools {
 
       template <class... ARGS>
       static gctools::tagged_pointer<T> allocate_kind(kind_t the_kind, ARGS &&... args) {
+#ifdef USE_BOEHM
         size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
         globalBytesAllocated += sz;
         MONITOR_ALLOCATION(the_kind, sz);
 #endif
-#ifdef USE_BOEHM
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
         new (base) Header_s(the_kind);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -308,6 +308,11 @@ namespace gctools {
         return tagged_obj;
 #endif
 #ifdef USE_MPS
+        size_t sz = sizeof_with_header<T>();
+#ifdef TRACK_ALLOCATIONS
+        globalBytesAllocated += sz;
+        MONITOR_ALLOCATION(the_kind, sz);
+#endif
     // Different classes can have different Headers
         typedef typename GCHeader<T>::HeaderType HeadT;
         T *obj;
@@ -369,12 +374,12 @@ namespace gctools {
   /*! Allocate regular C++ classes that will be garbage collected as soon as nothing points to them */
       template <class... ARGS>
       static tagged_pointer<T> allocate_class_kind(kind_t the_kind, ARGS &&... args) {
+#ifdef USE_BOEHM
         size_t sz = sizeof_with_header<T>();
 #ifdef TRACK_ALLOCATIONS
         globalBytesAllocated += sz;
         MONITOR_ALLOCATION(the_kind, sz);
 #endif
-#ifdef USE_BOEHM
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
         new (base) Header_s(the_kind);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -383,6 +388,11 @@ namespace gctools {
         return tagged_pointer<T>(obj);
 #endif
 #ifdef USE_MPS
+        size_t sz = sizeof_with_header<T>();
+#ifdef TRACK_ALLOCATIONS
+        globalBytesAllocated += sz;
+        MONITOR_ALLOCATION(the_kind, sz);
+#endif
     // Different classes can have different Headers
         mps_ap_t obj_ap = GCAllocationPoint<T>::get();
         mps_addr_t addr;
@@ -405,12 +415,12 @@ namespace gctools {
       typedef smart_ptr<OT> smart_pointer_type;
       template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind(kind_t the_kind, ARGS &&... args) {
+#ifdef USE_BOEHM
         size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
         globalBytesAllocated += size;
         MONITOR_ALLOCATION(the_kind, size);
 #endif
-#ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
@@ -421,6 +431,11 @@ namespace gctools {
         return sp;
 #endif
 #ifdef USE_MPS
+        size_t size = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+        globalBytesAllocated += size;
+        MONITOR_ALLOCATION(the_kind, size);
+#endif
         mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
         mps_addr_t addr;
         size_t true_size;
@@ -458,12 +473,12 @@ namespace gctools {
     typedef smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
+#ifdef USE_BOEHM
       size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
       globalBytesAllocated += size;
       MONITOR_ALLOCATION(the_kind, size);
 #endif
-#ifdef USE_BOEHM
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(size));
       new (base) Header_s(the_kind);
@@ -473,6 +488,11 @@ namespace gctools {
       return sp;
 #endif
 #ifdef USE_MPS
+      size_t size = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+      globalBytesAllocated += size;
+      MONITOR_ALLOCATION(the_kind, size);
+#endif
       typedef typename GCHeader<OT>::HeaderType HeadT;
       OT *obj;
       mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
@@ -512,12 +532,12 @@ When would I ever want the GC to automatically collect objects but not move them
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
+#ifdef USE_BOEHM
       size_t size = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
       globalBytesAllocated += size;
       MONITOR_ALLOCATION(the_kind, size);
 #endif
-#ifdef USE_BOEHM
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
@@ -528,6 +548,11 @@ When would I ever want the GC to automatically collect objects but not move them
       return sp;
 #endif
 #ifdef USE_MPS
+      size_t size = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+      globalBytesAllocated += size;
+      MONITOR_ALLOCATION(the_kind, size);
+#endif
       typedef typename GCHeader<OT>::HeaderType HeadT;
       OT *obj;
       mps_ap_t obj_ap = global_non_moving_ap;
@@ -567,12 +592,12 @@ should not be managed by the GC */
     typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
     template <typename... ARGS>
       static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
+#ifdef USE_BOEHM
       size_t sz = sizeof_with_header<OT>();
 #ifdef TRACK_ALLOCATIONS
       globalBytesAllocated += sz;
       MONITOR_ALLOCATION(the_kind, sz);
 #endif
-#ifdef USE_BOEHM
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
       new (base) Header_s(the_kind);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
@@ -582,6 +607,11 @@ should not be managed by the GC */
       return sp;
 #endif
 #ifdef USE_MPS
+      size_t sz = sizeof_with_header<OT>();
+#ifdef TRACK_ALLOCATIONS
+      globalBytesAllocated += sz;
+      MONITOR_ALLOCATION(the_kind, sz);
+#endif
     // Different classes can have different Headers
       typedef typename GCHeader<OT>::HeaderType HeadT;
       OT *obj;
