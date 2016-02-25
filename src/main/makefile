@@ -195,9 +195,6 @@ aclasp-mps-fasl:
 bclasp-mps-fasl:
 	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
-cclasp-mps-fasl:
-	$(BCLASP_MPS) -f ecl-min -e "(link-cclasp)" -e "(quit)"
-
 
 
 clasp-gc-interface:
