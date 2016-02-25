@@ -277,6 +277,7 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
 
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
+
   GC_TELEMETRY2(telemetry::label_obj_pad,
                 (uintptr_t)base,
                 (uintptr_t)size);
