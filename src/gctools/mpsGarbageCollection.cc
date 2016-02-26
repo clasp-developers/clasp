@@ -128,7 +128,8 @@ size_t random_tail_size() {
   return ts;
 }
 
-void Header_s::validate_object() {
+
+void Header_s::validate_object() const {
   if ( this->kindP() ) {
     if ( this->kind() > KIND_max ) {
       printf("%s:%d  INVALID object  this->kind() > KIND_max\n", __FILE__, __LINE__ );
@@ -143,16 +144,14 @@ void Header_s::validate_object() {
     printf("%s:%d  INVALID object  this->guard is bad\n", __FILE__, __LINE__ );
     abort();
   }
-  for ( char* cp=((char*)(this)+this->tail_start), char* cpEnd((char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+  for ( char *cp=((char*)(this)+this->tail_start), 
+          *cpEnd((char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
     if (*cp!=0xcc) {
       printf("%s:%d INVALID tail\n", __FILE__, __LINE__ );
     }
   }
 }
   
-  
-}
-
 #endif
 
 
