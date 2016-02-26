@@ -133,10 +133,7 @@ namespace gctools {
       static gctools::tagged_pointer<T> allocate_kind(kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
         size_t sz = sizeof_with_header<T>();
-#ifdef TRACK_ALLOCATIONS
-        globalBytesAllocated += sz;
-        MONITOR_ALLOCATION(the_kind, sz);
-#endif
+        monitor_allocation(the_kind,sz);
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
         new (base) Header_s(the_kind);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -147,10 +144,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
         size_t sz = sizeof_with_header<T>();
-#ifdef TRACK_ALLOCATIONS
-        globalBytesAllocated += sz;
-        MONITOR_ALLOCATION(the_kind, sz);
-#endif
+        monitor_allocation(the_kind,sz);
     // Different classes can have different Headers
         typedef typename GCHeader<T>::HeaderType HeadT;
         T *obj;
@@ -214,10 +208,7 @@ namespace gctools {
       static tagged_pointer<T> allocate_class_kind(kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
         size_t sz = sizeof_with_header<T>();
-#ifdef TRACK_ALLOCATIONS
-        globalBytesAllocated += sz;
-        MONITOR_ALLOCATION(the_kind, sz);
-#endif
+        monitor_allocation(the_kind,sz);
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(sz));
         new (base) Header_s(the_kind);
         T *obj = BasePtrToMostDerivedPtr<T>(base);
@@ -227,10 +218,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
         size_t sz = sizeof_with_header<T>();
-#ifdef TRACK_ALLOCATIONS
-        globalBytesAllocated += sz;
-        MONITOR_ALLOCATION(the_kind, sz);
-#endif
+        monitor_allocation(the_kind,sz);
     // Different classes can have different Headers
         mps_ap_t obj_ap = GCAllocationPoint<T>::get();
         mps_addr_t addr;
@@ -255,10 +243,7 @@ namespace gctools {
       static smart_pointer_type allocate_in_appropriate_pool_kind(kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
         size_t size = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-        globalBytesAllocated += size;
-        MONITOR_ALLOCATION(the_kind, size);
-#endif
+        monitor_allocation(the_kind,size);
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
         Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
@@ -270,10 +255,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
         size_t size = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-        globalBytesAllocated += size;
-        MONITOR_ALLOCATION(the_kind, size);
-#endif
+        monitor_allocation(the_kind,size);
         mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
         mps_addr_t addr;
         size_t true_size;
@@ -313,10 +295,7 @@ namespace gctools {
       static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
       size_t size = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-      globalBytesAllocated += size;
-      MONITOR_ALLOCATION(the_kind, size);
-#endif
+      monitor_allocation(the_kind,size);
     // Atomic objects (do not contain pointers) are allocated in separate pool
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(size));
       new (base) Header_s(the_kind);
@@ -327,10 +306,7 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
       size_t size = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-      globalBytesAllocated += size;
-      MONITOR_ALLOCATION(the_kind, size);
-#endif
+      monitor_allocation(the_kind,size);
       typedef typename GCHeader<OT>::HeaderType HeadT;
       OT *obj;
       mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
@@ -372,10 +348,7 @@ When would I ever want the GC to automatically collect objects but not move them
       static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
       size_t size = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-      globalBytesAllocated += size;
-      MONITOR_ALLOCATION(the_kind, size);
-#endif
+      monitor_allocation(the_kind,size);
     // By default allocate in the normal pool for objects that contain pointers
     // to other objects.
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
@@ -387,10 +360,7 @@ When would I ever want the GC to automatically collect objects but not move them
 #endif
 #ifdef USE_MPS
       size_t size = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-      globalBytesAllocated += size;
-      MONITOR_ALLOCATION(the_kind, size);
-#endif
+      monitor_allocation(the_kind,size);
       typedef typename GCHeader<OT>::HeaderType HeadT;
       OT *obj;
       mps_ap_t obj_ap = global_non_moving_ap;
@@ -432,10 +402,7 @@ should not be managed by the GC */
       static smart_pointer_type allocate_in_appropriate_pool_kind( kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
       size_t sz = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-      globalBytesAllocated += sz;
-      MONITOR_ALLOCATION(the_kind, sz);
-#endif
+      monitor_allocation(the_kind,sz);
       Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
       new (base) Header_s(the_kind);
       OT *obj = BasePtrToMostDerivedPtr<OT>(base);
@@ -446,10 +413,7 @@ should not be managed by the GC */
 #endif
 #ifdef USE_MPS
       size_t sz = sizeof_with_header<OT>();
-#ifdef TRACK_ALLOCATIONS
-      globalBytesAllocated += sz;
-      MONITOR_ALLOCATION(the_kind, sz);
-#endif
+      monitor_allocation(the_kind, sz);
     // Different classes can have different Headers
       typedef typename GCHeader<OT>::HeaderType HeadT;
       OT *obj;
@@ -548,10 +512,7 @@ public:
     static smart_pointer_type root_allocate_kind(kind_t the_kind, ARGS &&... args) {
 #ifdef USE_BOEHM
     size_t sz = sizeof_with_header<OT>(); // USE HEADER FOR BOEHM ROOTS BUT NOT MPS
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(the_kind, sz);
-#endif
+    monitor_allocation(the_kind,sz);
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(sz));
     new (base) Header_s(the_kind);
     pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
@@ -662,10 +623,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate_kind(kind_t the_kind, size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<TY>(num);
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(the_kind, size);
-#endif
+    monitor_allocation(the_kind,size);
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
@@ -756,10 +714,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   gctools::tagged_pointer<container_type> allocate_kind( kind_t the_kind, size_type num, const void * = 0) {
     size_t size = sizeof_container_with_header<TY>(num);
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(the_kind, size);
-#endif
+    monitor_allocation(the_kind,size);
 #ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
@@ -846,10 +801,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   gctools::tagged_pointer<container_type> allocate_kind( kind_t the_kind, size_type num, const void * = 0) {
     size_t sz = sizeof_container_with_header<container_type>(num);
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += sz;
-    MONITOR_ALLOCATION(the_kind, sz);
-#endif
+    monitor_allocation(the_kind,sz);
 #if defined(USE_BOEHM)
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
@@ -939,10 +891,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null, size);
-#endif
+    monitor_allocation(KIND_null,size);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
@@ -1031,10 +980,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate( size_type num, const void * = 0) {
     size_t size = sizeof_container<container_type>(num); // NO HEADER FOR BUCKETS
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null, size);
-#endif
+    monitor_allocation(KIND_null,size);
 #ifdef USE_BOEHM
 #ifdef DEBUG_GCWEAK
     printf("%s:%d Allocating Bucket with GC_MALLOC\n", __FILE__, __LINE__);
@@ -1115,10 +1061,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate( const VT &val) {
     size_t size = sizeof(container_type);
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null, size);
-#endif
+    monitor_allocation(KIND_null,size);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
     container_pointer myAddress = (container_pointer)GC_MALLOC_ATOMIC(size);
@@ -1165,10 +1108,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<container_type> allocate(const VT &val) {
     size_t size = sizeof(container_type);
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null, size);
-#endif
+    monitor_allocation(KIND_null,size);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating Mapping with GC_MALLOC\n", __FILE__, __LINE__);
     container_pointer myAddress = (container_pointer)GC_MALLOC(size);
@@ -1215,10 +1155,7 @@ public:
   // allocate but don't initialize num elements of type value_type
   static gctools::tagged_pointer<value_type> allocate(const contained_type &val) {
     size_t size = sizeof(VT);
-#ifdef TRACK_ALLOCATIONS
-    globalBytesAllocated += size;
-    MONITOR_ALLOCATION(KIND_null, size);
-#endif
+    monitor_allocation(KIND_null,size);
 #ifdef USE_BOEHM
     printf("%s:%d Allocating WeakPointer with GC_MALLOC_ATOMIC\n", __FILE__, __LINE__);
     value_pointer myAddress = (value_pointer)GC_MALLOC_ATOMIC(size);
@@ -1410,8 +1347,6 @@ public:
   };
 };
 };
-
-
 
 #endif // USE_BOEHM || USE_MPS
 

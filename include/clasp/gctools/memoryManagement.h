@@ -140,35 +140,36 @@ word of every object in memory managed by the GC */
 
 namespace gctools {
 
-struct MonitorAllocations {
-  bool on;
-  bool stackDump;
-  int counter;
-  int start;
-  int end;
-  int backtraceDepth;
+  struct MonitorAllocations {
+    bool on;
+    bool stackDump;
+    int counter;
+    int start;
+    int end;
+    int backtraceDepth;
   MonitorAllocations() : on(false), stackDump(false), counter(0){};
-};
-extern MonitorAllocations global_monitorAllocations;
+  };
+  extern MonitorAllocations global_monitorAllocations;
 
-extern void monitorAllocation(kind_t k, size_t sz);
+  extern void monitorAllocation(kind_t k, size_t sz);
+  extern uint64_t globalBytesAllocated;
 
 #ifdef TRACK_ALLOCATIONS
- inline void monitor_allocation(kind_t k, size_t sz) {
-   globalBytesAllocated += sz;
-  #ifdef GC_MONITOR_ALLOCATIONS
-   if ( global_monitorAllocations.on ) {
-     monitorAllocation(k,sz);
-   }
-  #endif
- }
+  inline void monitor_allocation(kind_t k, size_t sz) {
+    globalBytesAllocated += sz;
+#ifdef GC_MONITOR_ALLOCATIONS
+    if ( global_monitorAllocations.on ) {
+      monitorAllocation(k,sz);
+    }
+#endif
+  }
 #else
-inline void monitor_allocation(kind_t k, size_t sz) {};
+  inline void monitor_allocation(kind_t k, size_t sz) {};
 #endif
 
+};
 
-
- extern "C" {
+extern "C" {
 const char *obj_name(gctools::kind_t kind);
 const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
@@ -177,28 +178,28 @@ extern void obj_dump_base(void *base);
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-template <class OT>
-struct GCKind {
+  template <class OT>
+    struct GCKind {
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
-  static GCKindEnum const Kind = KIND_null;
+      static GCKindEnum const Kind = KIND_null;
 #else
   // We need a default Kind when running the gc-builder.lsp static analyzer
   // but we don't want a default Kind when compiling the mps version of the code
   // to force compiler errors when the Kind for an object hasn't been declared
-  static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
+      static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
-  static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
+      static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
 #else
                                             // We don't want a default Kind when compiling the boehm version of the code
                                             // to force compiler errors when the Kind for an object hasn't been declared
 // using clasp_gc.cc
 #endif // USE_CXX_DYNAMIC_CAST
 #endif
-};
+    };
 };
 
 namespace gctools {
