@@ -101,15 +101,13 @@ namespace gctools {
     typedef typename GCHeader<T>::HeaderType HeadT;
     PTR_TYPE tagged_obj;
     T* obj;
+    size_t true_size = size;
 #ifdef DEBUG_GUARD
     size_t tail_size = ((rand()%8)+1)*Alignment();
+    true_size += tail_size;
 #endif
     do {
-#ifdef DEBUG_GUARD
-      mps_res_t res = mps_reserve(&addr, allocation_point, size+tail_size);
-#else
-      mps_res_t res = mps_reserve(&addr, allocation_point, size);
-#endif
+      mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
       if ( res != MPS_RES_OK ) {
         printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
       }
@@ -122,11 +120,11 @@ namespace gctools {
       obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(addr);
       new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
       tagged_obj = PTR_TYPE(obj);
-    } while (!mps_commit(allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION(ap_name,addr,obj,size,the_kind);
+    } while (!mps_commit(allocation_point, addr, true_size));
+    DEBUG_MPS_ALLOCATION(ap_name,addr,obj,true_size,the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
-    globalMpsMetrics.totalMemoryAllocated += size;
+    globalMpsMetrics.totalMemoryAllocated += true_size;
     ++globalMpsMetrics_countAllocations;
     return tagged_obj;
   };
