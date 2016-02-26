@@ -127,7 +127,40 @@ size_t random_tail_size() {
   size_t ts = ((rand() % 8) + 1) * Alignment();
   return ts;
 }
+
+void Header_s::validate_object() {
+  if ( this->kindP() ) {
+    if ( this->kind() > KIND_max ) {
+      printf("%s:%d  INVALID object  this->kind() > KIND_max\n", __FILE__, __LINE__ );
+      abort();
+    }
+    if ( this->data[1] != 0xDEADBEEF01234567 ) {
+      printf("%s:%d  INVALID object  this->data[1] != guard\n", __FILE__, __LINE__ );
+      abort();
+    }
+  }
+  if ( this->guard != 0x0FEEAFEEBFEECFEED) {
+    printf("%s:%d  INVALID object  this->guard is bad\n", __FILE__, __LINE__ );
+    abort();
+  }
+  for ( char* cp=((char*)(this)+this->tail_start), char* cpEnd((char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+    if (*cp!=0xcc) {
+      printf("%s:%d INVALID tail\n", __FILE__, __LINE__ );
+    }
+  }
+}
+  
+  
+}
+
 #endif
+
+
+
+
+
+
+
 
 void rawHeaderDescribe(uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::tag_mask;

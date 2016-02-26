@@ -152,6 +152,9 @@ project clasp : requirements
         <define>DEBUG_MPS_UNDERSCANNING
         <define>DEBUG_MPS_UNDERSCANNING_INITIAL="true"
 
+#### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory
+     <define>DEBUG_GUARD
+
 #### DEBUG_RECURSIVE_ALLOCATIONS - Inexpensive test for allocations that invoke other allocations
 ####                               This is not allowed in the MPS
          <define>DEBUG_RECURSIVE_ALLOCATIONS

@@ -92,22 +92,33 @@ namespace gctools {
   template <class PTR_TYPE, typename... ARGS>
     inline PTR_TYPE do_mps_allocation(kind_t the_kind,
                                       size_t size,
-                                      size_t& true_size,
                                       mps_ap_t& allocation_point,
                                       const char* ap_name,
-                                      mps_addr_t& addr,
+                                      size_t& globalMpsMetrics_countAllocations,
                                       ARGS &&... args) {
+    mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
     PTR_TYPE tagged_obj;
     T* obj;
+#ifdef DEBUG_GUARD
+    size_t tail_size = ((rand()%8)+1)*Alignment();
+#endif
     do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
+#ifdef DEBUG_GUARD
+      mps_res_t res = mps_reserve(&addr, allocation_point, size+tail_size);
+#else
       mps_res_t res = mps_reserve(&addr, allocation_point, size);
-#pragma clang diagnostic pop
+#endif
+      if ( res != MPS_RES_OK ) {
+        printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
+      }
       HeadT *header = reinterpret_cast<HeadT *>(addr);
+#ifdef DEBUG_GUARD
+      new (header) HeadT(the_kind,size,tail_size);
+#else
       new (header) HeadT(the_kind);
+#endif
       obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(addr);
       new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
       tagged_obj = PTR_TYPE(obj);
@@ -115,15 +126,46 @@ namespace gctools {
     DEBUG_MPS_ALLOCATION(ap_name,addr,obj,size,the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
-    true_size = size;
+    globalMpsMetrics.totalMemoryAllocated += size;
+    ++globalMpsMetrics_countAllocations;
     return tagged_obj;
   };
+
+
+
+  template <class PTR_TYPE, typename... ARGS>
+    inline PTR_TYPE do_mps_weak_allocation(size_t size,
+                                           mps_ap_t& allocation_point,
+                                           const char* ap_name,
+                                           ARGS &&... args) {
+    typedef typename PTR_TYPE::Type T;
+    typedef typename GCHeader<T>::HeaderType HeadT;
+    PTR_TYPE tagged_obj;
+    mps_addr_t addr;
+    T* myAddress;
+    do {
+      mps_res_t res = mps_reserve(&addr, allocation_point, size);
+      if (res != MPS_RES_OK)
+        THROW_HARD_ERROR(BF("Out of memory"));
+      GC_LOG(("allocated @%p %zu bytes\n", addr, size));
+      myAddress = reinterpret_cast<T*>(addr);
+      if (!myAddress)
+        THROW_HARD_ERROR(BF("NULL address in allocate!"));
+      new (myAddress) T(std::forward<ARGS>(args)...);
+      tagged_obj = PTR_TYPE(myAddress);
+    } while (!mps_commit(allocation_point, addr, size));
+    DEBUG_MPS_ALLOCATION(ap_name, addr, myAddress, size, /*gctools::*/ KIND_null);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
+    if (!myAddress)
+      THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
+    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
+    return tagged_obj;
+  }
 #endif // #ifdef USE_MPS
     
 /*! Allocate regular C++ classes that are considered roots */
   template <class T>
     struct RootClassAllocator {
-
       template <class... ARGS>
       static gctools::tagged_pointer<T> allocate( ARGS &&... args) {
         return allocate_kind(GCKind<T>::Kind,std::forward<ARGS>(args)...);
@@ -145,27 +187,13 @@ namespace gctools {
 #ifdef USE_MPS
         size_t sz = sizeof_with_header<T>();
         monitor_allocation(the_kind,sz);
-    // Different classes can have different Headers
-        typedef typename GCHeader<T>::HeaderType HeadT;
-        T *obj;
-        mps_ap_t obj_ap = global_non_moving_ap;
-        mps_addr_t addr;
-        tagged_pointer<T> tagged_obj;
-        do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-          mps_res_t res = mps_reserve(&addr, obj_ap, sz);
-#pragma clang diagnostic pop
-          HeadT *header = reinterpret_cast<HeadT *>(addr);
-          new (header) HeadT(the_kind);
-          obj = BasePtrToMostDerivedPtr<T>(addr);
-          new (obj) T(std::forward<ARGS>(args)...);
-          tagged_obj = gctools::tagged_pointer<T>(obj);
-        } while (!mps_commit(obj_ap, addr, sz));
-        globalMpsMetrics.nonMovingAllocation(sz);
-        DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, the_kind);
-        DEBUG_MPS_UNDERSCANNING_TESTS();
-        POLL_SIGNALS();
+        tagged_pointer<T> tagged_obj =
+          do_mps_allocation<tagged_pointer<T>>(the_kind,
+                                               sz,
+                                               global_non_moving_ap,
+                                               "NON_MOVING_POOL",
+                                               globalMpsMetrics.nonMovingAllocations,
+                                               std::forward<ARGS>(args)...);
         return tagged_obj;
 #endif
       }
@@ -219,13 +247,11 @@ namespace gctools {
 #ifdef USE_MPS
         size_t sz = sizeof_with_header<T>();
         monitor_allocation(the_kind,sz);
-    // Different classes can have different Headers
         mps_ap_t obj_ap = GCAllocationPoint<T>::get();
-        mps_addr_t addr;
-        size_t true_size;
         tagged_pointer<T> tagged_obj =
-          do_mps_allocation<tagged_pointer<T>>(the_kind,sz,true_size,obj_ap,"AP",addr,std::forward<ARGS>(args)...);
-        globalMpsMetrics.unknownAllocation(true_size);
+          do_mps_allocation<tagged_pointer<T>>(the_kind,sz,obj_ap,"AP",
+                                               globalMpsMetrics.unknownAllocations,
+                                               std::forward<ARGS>(args)...);
         return tagged_obj;
 #endif
       }
@@ -257,26 +283,10 @@ namespace gctools {
         size_t size = sizeof_with_header<OT>();
         monitor_allocation(the_kind,size);
         mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
-        mps_addr_t addr;
-        size_t true_size;
         smart_ptr<OT> sp =
-          do_mps_allocation<smart_ptr<OT>>(the_kind,size,true_size,obj_ap,"AMC",addr,std::forward<ARGS>(args)...);
-#ifdef OLD_ALLOCATION
-        do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-          mps_res_t res = mps_reserve(&addr, obj_ap, size);
-#pragma clang diagnostic pop
-          HeadT *header = reinterpret_cast<HeadT *>(addr);
-          new (header) HeadT(the_kind);
-          obj = BasePtrToMostDerivedPtr<OT>(addr);
-          new (obj) OT(std::forward<ARGS>(args)...);
-          sp = gctools::smart_ptr<value_type>(obj);
-        } while (!mps_commit(obj_ap, addr, size));
-        globalMpsMetrics.movingAllocation(size);
-        DEBUG_MPS_ALLOCATION("AMC", addr, obj, size, the_kind);
-        DEBUG_MPS_UNDERSCANNING_TESTS();
-#endif
+          do_mps_allocation<smart_ptr<OT>>(the_kind,size,obj_ap,"AMC",
+                                           globalMpsMetrics.movingAllocations,
+                                           std::forward<ARGS>(args)...);
         return sp;
 #endif
       };
@@ -307,25 +317,11 @@ namespace gctools {
 #ifdef USE_MPS
       size_t size = sizeof_with_header<OT>();
       monitor_allocation(the_kind,size);
-      typedef typename GCHeader<OT>::HeaderType HeadT;
-      OT *obj;
       mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
-      mps_addr_t addr;
-      smart_pointer_type sp;
-      do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-        mps_res_t res = mps_reserve(&addr, obj_ap, size);
-#pragma clang diagnostic pop
-        HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(the_kind);
-        obj = BasePtrToMostDerivedPtr<OT>(addr);
-        new (obj) OT(std::forward<ARGS>(args)...);
-        sp = /*gctools::*/ smart_ptr<value_type>(obj);
-      } while (!mps_commit(obj_ap, addr, size));
-      globalMpsMetrics.movingZeroRankAllocation(size);
-      DEBUG_MPS_ALLOCATION("AMCZ", addr, obj, size, /*gctools::*/ the_kind);
-      DEBUG_MPS_UNDERSCANNING_TESTS();
+      smart_pointer_type sp =
+        do_mps_allocation<smart_pointer_type>(the_kind,size,obj_ap,"AMCZ",
+                                              globalMpsMetrics.movingZeroRankAllocations,
+                                              std::forward<ARGS>(args)...);
       return sp;
 #endif
     };
@@ -361,25 +357,11 @@ When would I ever want the GC to automatically collect objects but not move them
 #ifdef USE_MPS
       size_t size = sizeof_with_header<OT>();
       monitor_allocation(the_kind,size);
-      typedef typename GCHeader<OT>::HeaderType HeadT;
-      OT *obj;
       mps_ap_t obj_ap = global_non_moving_ap;
-      mps_addr_t addr;
-      smart_pointer_type sp;
-      do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-        mps_res_t res = mps_reserve(&addr, obj_ap, size);
-#pragma clang diagnostic pop
-        HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(the_kind);
-        obj = BasePtrToMostDerivedPtr<OT>(addr);
-        new (obj) OT(std::forward<ARGS>(args)...);
-        sp = /*gctools::*/ smart_ptr<value_type>(obj);
-      } while (!mps_commit(obj_ap, addr, size));
-      globalMpsMetrics.nonMovingAllocation(size);
-      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, size, /*gctools::*/ the_kind);
-      DEBUG_MPS_UNDERSCANNING_TESTS();
+      smart_pointer_type sp =
+        do_mps_allocation<smart_pointer_type>(the_kind,size,obj_ap,"NON_MOVING_POOL",
+                                              globalMpsMetrics.nonMovingAllocations,
+                                              std::forward<ARGS>(args)...);
       return sp;
 #endif
     };
@@ -414,27 +396,11 @@ should not be managed by the GC */
 #ifdef USE_MPS
       size_t sz = sizeof_with_header<OT>();
       monitor_allocation(the_kind, sz);
-    // Different classes can have different Headers
-      typedef typename GCHeader<OT>::HeaderType HeadT;
-      OT *obj;
       mps_ap_t obj_ap = global_non_moving_ap;
-      mps_addr_t addr;
-      gctools::smart_ptr<OT> sp;
-      do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-        mps_res_t res = mps_reserve(&addr, obj_ap, sz);
-#pragma clang diagnostic pop
-        HeadT *header = reinterpret_cast<HeadT *>(addr);
-        new (header) HeadT(the_kind);
-        obj = BasePtrToMostDerivedPtr<OT>(addr);
-        new (obj) OT(std::forward<ARGS>(args)...);
-        sp = gctools::smart_ptr<OT>(obj);
-      } while (!mps_commit(obj_ap, addr, sz));
-      globalMpsMetrics.nonMovingAllocation(sz);
-      DEBUG_MPS_ALLOCATION("NON_MOVING_POOL", addr, obj, sz, the_kind);
-      DEBUG_MPS_UNDERSCANNING_TESTS();
-      POLL_SIGNALS();
+      gctools::smart_ptr<OT> sp =
+        do_mps_allocation<gctools::smart_ptr<OT>>(the_kind,sz,obj_ap,"NON_MOVING_POOL",
+                                                  globalMpsMetrics.nonMovingAllocations,
+                                                  std::forward<ARGS>(args)...);
       return sp;
 #endif
     }
@@ -622,9 +588,9 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gc::tagged_pointer<container_type> allocate_kind(kind_t the_kind, size_type num, const void * = 0) {
+#ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
     monitor_allocation(the_kind,size);
-#ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
@@ -635,26 +601,13 @@ public:
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #ifdef USE_MPS
-    typedef typename GCHeader<TY>::HeaderType HeadT;
-    mps_addr_t addr;
-    container_pointer myAddress(NULL);
+    size_t size = sizeof_container_with_header<TY>(num);
+    monitor_allocation(the_kind,size);
     mps_ap_t obj_ap = _global_automatic_mostly_copying_allocation_point;
-    gc::tagged_pointer<container_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, obj_ap, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCContainerAllocator_mps"));
-      HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(the_kind);
-      myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
-      new (myAddress) TY(num);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(obj_ap, addr, size));
-    globalMpsMetrics.movingAllocation(size);
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
-    DEBUG_MPS_ALLOCATION("containerAMC", addr, myAddress, size, /*gctools::*/ the_kind);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    POLL_SIGNALS();
+    gc::tagged_pointer<container_type> obj =
+      do_mps_allocation<gc::tagged_pointer<container_type>>(the_kind,size,obj_ap,"containerAMC",
+                                                            globalMpsMetrics.movingAllocations,
+                                                            num);
     return obj;
 #endif
   }
@@ -713,9 +666,9 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gctools::tagged_pointer<container_type> allocate_kind( kind_t the_kind, size_type num, const void * = 0) {
+#ifdef USE_BOEHM
     size_t size = sizeof_container_with_header<TY>(num);
     monitor_allocation(the_kind,size);
-#ifdef USE_BOEHM
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC(size));
     if (!base)
@@ -726,26 +679,13 @@ public:
     return myAddress;
 #endif
 #ifdef USE_MPS
-    typedef typename GCHeader<TY>::HeaderType HeadT;
-    mps_addr_t addr;
-    container_pointer myAddress(NULL);
+    size_t size = sizeof_container_with_header<TY>(num);
+    monitor_allocation(the_kind,size);
     mps_ap_t obj_ap = global_non_moving_ap;
-    gctools::tagged_pointer<container_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, obj_ap, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCContainerNonMoveableAllocator_mps"));
-      HeadT *header = reinterpret_cast<HeadT *>(addr);
-      new (header) HeadT(the_kind);
-      myAddress = (BasePtrToMostDerivedPtr<TY>(addr));
-      new (myAddress) TY(num);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(obj_ap, addr, size));
-    globalMpsMetrics.nonMovingAllocation(size);
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
-    POLL_SIGNALS();
-    DEBUG_MPS_ALLOCATION("container_MVFF", addr, myAddress, size, /*gctools::*/ the_kind);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_allocation<gc::tagged_pointer<container_type>>(the_kind,size,obj_ap,"container_non_moving_ap",
+                                                            globalMpsMetrics.nonMovingAllocations,
+                                                            num);
     return obj;
 #endif
   }
@@ -800,9 +740,9 @@ public:
 
   // allocate but don't initialize num elements of type value_type
   gctools::tagged_pointer<container_type> allocate_kind( kind_t the_kind, size_type num, const void * = 0) {
+#if defined(USE_BOEHM)
     size_t sz = sizeof_container_with_header<container_type>(num);
     monitor_allocation(the_kind,sz);
-#if defined(USE_BOEHM)
     // prepend a one pointer header with a pointer to the typeinfo.name
     Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_ATOMIC(sz));
     if (!base)
@@ -814,27 +754,15 @@ public:
     return gctools::tagged_pointer<container_type>(myAddress);
 #endif
 #if defined(USE_MPS)
-    typedef typename GCHeader<TY>::HeaderType HeadT;
-    mps_ap_t obj_ap = _global_automatic_mostly_copying_zero_rank_allocation_point;
-    mps_addr_t base;
-    container_pointer myAddress;
-    gctools::tagged_pointer<container_type> obj;
-    do {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-variable"
-      mps_res_t res = mps_reserve(&base, obj_ap, sz);
-#pragma clang diagnostic pop
-      HeadT *header = reinterpret_cast<HeadT *>(base);
-      new (header) HeadT(the_kind);
-      //                header->kind._Kind = /*gctools::*/the_kind;
-      myAddress = BasePtrToMostDerivedPtr<TY>(base);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(obj_ap, base, sz));
-    globalMpsMetrics.movingZeroRankAllocation(sz);
-    new (myAddress) TY(num);
-    POLL_SIGNALS();
-    DEBUG_MPS_ALLOCATION("string_AMCZ", base, myAddress, sz, /*gctools::*/ the_kind);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
+    size_t sz = sizeof_container_with_header<container_type>(num);
+    monitor_allocation(the_kind,sz);
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_allocation<gctools::tagged_pointer<container_type>>(the_kind,
+                                                                 sz,
+                                                                 _global_automatic_mostly_copying_zero_rank_allocation_point,
+                                                                 "string_AMCZ",
+                                                                 globalMpsMetrics.movingZeroRankAllocations,
+                                                                 num);
     return obj;
 #endif
   }
@@ -908,23 +836,8 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    gctools::tagged_pointer<container_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-      GC_LOG(("allocated @%p %zu bytes\n", addr, size));
-      myAddress = reinterpret_cast<container_pointer>(addr);
-      if (!myAddress)
-        THROW_HARD_ERROR(BF("NULL address in allocate!"));
-      new (myAddress) container_type(num);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION("weak_link_Bucket", addr, myAddress, size, /*gctools::*/ KIND_null);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    if (!myAddress)
-      THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_weak_link_allocation_point,"weak_link_Bucket",num);
     return obj;
 #endif
   }
@@ -994,23 +907,8 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    gctools::tagged_pointer<container_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCBucketsAllocator_mps"));
-      GC_LOG(("allocated @%p %zu bytes\n", addr, size));
-      myAddress = reinterpret_cast<container_pointer>(addr);
-      if (!myAddress)
-        THROW_HARD_ERROR(BF("NULL address in allocate!"));
-      new (myAddress) container_type(num);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(_global_strong_link_allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION("strong_link_Bucket", addr, myAddress, size, /*gctools::*/ KIND_null);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    if (!myAddress)
-      THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,StrongLinks>>"));
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_strong_link_allocation_point,"strong_link_Bucket",num);
     return obj;
 #endif
   }
@@ -1075,18 +973,8 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    gctools::tagged_pointer<container_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCMappingAllocator_mps"));
-      myAddress = reinterpret_cast<container_pointer>(addr);
-      new (myAddress) container_type(val);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION("weak_link_Allocator", addr, myAddress, size, /*gctools::*/ KIND_null);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_weak_link_allocation_point,"weak_link_Allocator",val);
     return obj;
 #endif
   }
@@ -1122,18 +1010,8 @@ public:
     typedef typename GCHeader<TY>::HeaderType HeadT;
     mps_addr_t addr;
     container_pointer myAddress(NULL);
-    gctools::tagged_pointer<container_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, _global_strong_link_allocation_point, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCMappingAllocator_mps"));
-      myAddress = reinterpret_cast<container_pointer>(addr);
-      new (myAddress) container_type(val);
-      obj = gctools::tagged_pointer<container_type>(myAddress);
-    } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION("weak_link2_Allocator", addr, myAddress, size, /*gctools::*/ KIND_null);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
-    GC_LOG(("malloc@%p %zu bytes\n", myAddress, size));
+    gctools::tagged_pointer<container_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<container_type>>(size,_global_strong_link_allocation_point,"weak_link2_Allocator",val);
     return obj;
 #endif
   }
@@ -1167,17 +1045,8 @@ public:
 #ifdef USE_MPS
     mps_addr_t addr;
     value_pointer myAddress;
-    gctools::tagged_pointer<value_type> obj;
-    do {
-      mps_res_t res = mps_reserve(&addr, _global_weak_link_allocation_point, size);
-      if (res != MPS_RES_OK)
-        THROW_HARD_ERROR(BF("Out of memory in GCWeakPointerAllocator_mps"));
-      myAddress = reinterpret_cast<value_pointer>(addr);
-      new (myAddress) VT(val);
-      obj = gctools::tagged_pointer<value_type>(myAddress);
-    } while (!mps_commit(_global_weak_link_allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION("weak_link3_Allocator", addr, myAddress, size, /*gctools::*/ KIND_null);
-    DEBUG_MPS_UNDERSCANNING_TESTS();
+    gctools::tagged_pointer<value_type> obj =
+      do_mps_weak_allocation<gctools::tagged_pointer<value_type>>(size,_global_weak_link_allocation_point,"weak_link3_Allocator",val);
     return obj;
 #endif
   }

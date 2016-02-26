@@ -376,8 +376,11 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #include "clasp_gc.cc"
 #undef GC_OBJ_SKIP
     DONE:
-      size_t aligned_size = AlignUp(size);
-      client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
 #else
       return NULL;
 #endif
@@ -453,7 +456,11 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #include "clasp_gc.cc"
 #undef GC_OBJ_SCAN
         SCAN_ADVANCE:
+#ifndef DEBUG_GUARD
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
 #endif // #ifndef RUNNING_GC_BUILDER
         }
       } else if (header->fwdP()) {

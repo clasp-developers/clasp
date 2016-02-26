@@ -190,13 +190,25 @@ public:
 #ifdef DEBUG_GUARD
   size_t tail_start;
   size_t tail_size;
+  tagged_kind_t guard;
 #endif
   tagged_kind_t data[1]; // After this is where the client pointer starts
 public:
 #ifndef DEBUG_GUARD
  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
 #else
- Header_s(kind_t k,size_t tstart, size_t tsize) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567}, tail_start(tstart), tail_size(tsize) {};
+    inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
+ Header_s(kind_t k,size_t tstart, size_t tsize) 
+   : header((((kind_t)k) << 2) | kind_tag),
+      data{0xDEADBEEF01234567},
+      tail_start(tstart),
+      tail_size(tsize),
+      guard(0x0FEEAFEEBFEECFEED)
+      {
+        this->fill_tail();
+      };
+
+      void validate_object() const;
 #endif
 
   bool invalidP() const { return (this->header & tag_mask) == 0; };
@@ -265,12 +277,6 @@ inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) &
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
-#ifdef DEBUG_GUARD
- template <class T>
-  inline size_t tail_start() { return sizeof(T) + sizeof(Header_s); }
- template <class T>
-   inline size_t tail_size() { return (sizeof_with_header<T> - tail_start<T>) + random_tail_size(); };
-#endif
 };
 
 /* Align size upwards and ensure that it's big enough to store a
