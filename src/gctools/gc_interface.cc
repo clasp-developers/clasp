@@ -358,6 +358,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+#ifdef DEBUG_VALIDATE_GUARD
+      header->validate_object();
+#endif
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
@@ -365,8 +368,11 @@ mps_addr_t obj_skip(mps_addr_t client) {
     if (kind_layout.layout_operation == class_operation) {
       const Class_layout& class_layout = kind_layout.class_;
       size = class_layout.size;
-      client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-          // Here add tail
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
     } else {
           // Container or templated_class - special case - use jump table
       size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
@@ -430,6 +436,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       // The client must have a valid header
       DEBUG_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+#ifdef DEBUG_VALIDATE_GUARD
+      header->validate_object();
+#endif
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
         kind = header->kind();
@@ -443,8 +452,13 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
+            ++field_layout_cur;
           }
-          client = (mps_addr_t((char*)client + AlignUp(size + sizeof(Header_s))));
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
           // Here add tail
 #endif // #ifndef RUNNING_GC_BUILDER
         } else {

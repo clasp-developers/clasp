@@ -131,23 +131,24 @@ size_t random_tail_size() {
 
 void Header_s::validate_object() const {
   if ( this->kindP() ) {
+    if ( this->guard != 0x0FEEAFEEBFEECFEED) {
+      printf("%s:%d  INVALID object  this->guard is bad\n", __FILE__, __LINE__ );
+      abort();
+    }
     if ( this->kind() > KIND_max ) {
       printf("%s:%d  INVALID object  this->kind() > KIND_max\n", __FILE__, __LINE__ );
       abort();
     }
-    if ( this->data[1] != 0xDEADBEEF01234567 ) {
-      printf("%s:%d  INVALID object  this->data[1] != guard\n", __FILE__, __LINE__ );
+    if ( this->data[0] != 0xDEADBEEF01234567 ) {
+      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],this->data[0],0xDEADBEEF01234567 );
       abort();
     }
-  }
-  if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-    printf("%s:%d  INVALID object  this->guard is bad\n", __FILE__, __LINE__ );
-    abort();
-  }
-  for ( char *cp=((char*)(this)+this->tail_start), 
-          *cpEnd((char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
-    if (*cp!=0xcc) {
-      printf("%s:%d INVALID tail\n", __FILE__, __LINE__ );
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+      if (*cp!=0xcc) {
+        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
+        abort();
+      }
     }
   }
 }
@@ -169,7 +170,7 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf(" Not an object header!\n");
     break;
   case Header_s::kind_tag: {
-    printf("  0x%16l0X : 0x%16l0X 0x%16l0X <--- Valid objects have 0xDEADBEEF01234567 \n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
@@ -190,6 +191,11 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     }
     break;
   }
+#if DEBUG_GUARD
+  Header_s* header = (Header_s*)headerP;
+  header->validate_object();
+  printf("This object passed the validate_object() test\n");
+#endif
 };
 
 void headerDescribe(core::T_O *taggedClient) {
@@ -309,7 +315,6 @@ static mps_addr_t obj_isfwd(mps_addr_t client) {
 
 static void obj_pad(mps_addr_t base, size_t size) {
   size_t alignment = Alignment();
-
   GC_TELEMETRY2(telemetry::label_obj_pad,
                 (uintptr_t)base,
                 (uintptr_t)size);
