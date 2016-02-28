@@ -64,8 +64,7 @@ void build_kind_field_layout_tables()
         break;
     case field_fix:
         ++global_kind_layout[cur_kind].class_.number_of_fields;
-        ASSERT(cur->data%8 == 0);
-        cur_field_layout->field_offset = cur->data/8;
+        cur_field_layout->field_offset = cur->data;
         cur_field_info->field_name = cur->description;
         ++cur_field_layout;
         ++cur_field_info;
