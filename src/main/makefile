@@ -236,7 +236,7 @@ compile-commands:
 		-e "(quit)"
 
 mps-interface-run:
-	clasp_boehmdc_o -f bclasp  \
+	clasp_boehm_o -f bclasp  \
 		-e "(require :clasp-analyzer)" \
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"

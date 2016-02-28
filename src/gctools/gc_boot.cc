@@ -21,7 +21,7 @@ void build_kind_field_layout_tables()
 {
   // First pass through the global_kind_layout_codes_table
   // to count the number of kinds and the number of fields
-  Layout_code* cur = global_kind_layout_codes;
+  Layout_code* cur = get_kind_layout_codes();
   size_t number_of_fields = 0;
   global_kind_max = 0;
   while (cur->cmd != layout_end) {
@@ -45,7 +45,7 @@ void build_kind_field_layout_tables()
   // Fill in the immediate kinds
   
   // Traverse the global_kind_layout_codes again and fill the tables
-  cur = global_kind_layout_codes;
+  cur = get_kind_layout_codes();
   Field_layout* cur_field_layout= global_field_layout;
   Field_info* cur_field_info= global_field_info;
   int cur_kind=0;

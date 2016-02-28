@@ -9,10 +9,16 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*cons\.cc.*$"
-   :source-path-identifier "/clasp/"))
+   :selection-pattern ".*lisp\.cc.*"
+))
 
-(search/generate-code *db*)
+(clasp-analyzer:search/generate-code *db*)
+
+
+
+(clang-tool:with-compilation-tool-database *db*
+  (defparameter *project* (clasp-analyzer:load-project))
+  (search/generate-code *db*))
 
 (clang-tool:with-compilation-tool-database *db*
   (defparameter *project* (clasp-analyzer:load-project)))
