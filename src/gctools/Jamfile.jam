@@ -36,7 +36,7 @@ alias gclib : mymps.c : <gc>mps-prep ;
 
 
 obj gc_boot.o : gc_boot.cc : <cxxflags>-std=c++11 ;
-obj gc_interface.o : gc_boot.cc : <cxxflags>-std=c++11 ;
+obj gc_interface.o : gc_interface.cc : <cxxflags>-std=c++11 ;
 obj gcFunctions.o : gcFunctions.cc : <cxxflags>-std=c++11 ;
 obj gctoolsPackage.o : gctoolsPackage.cc : <cxxflags>-std=c++11 ;
 obj globals.o : globals.cc : <cxxflags>-std=c++11 ;
