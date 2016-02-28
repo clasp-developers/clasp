@@ -57,22 +57,4 @@
 ///
 
 //#define DEBUG_THROW_IF_INVALID_CLIENT_ON
-/// Generate telemetry data for debugging general GC
-#define DEBUG_TELEMETRY
-/// Generate telemetry data for debugging the stack
-#define DEBUG_STACK_TELEMETRY
-/// DEBUG_MPS_UNDERSCANNING  - When defined, does a garbage collection for every allocation
-/// DEBUG_MPS_UNDERSCANNING_INITIAL - (true|false)  - when DEBUG_MPS_UNDERSCANNING is defined you can
-///                                                   control it using (gctools:enable-underscanning (t|nil))
-///                                                   This sets the initial value of global_underscanning.
-//#define DEBUG_MPS_UNDERSCANNING
-#define DEBUG_MPS_UNDERSCANNING_INITIAL false
-
-/// DEBUG_RECURSIVE_ALLOCATIONS - Inexpensive test for allocations that invoke other allocations
-///                               This is not allowed in the MPS
-#define DEBUG_RECURSIVE_ALLOCATIONS
-
-/// An MPS build environment variable - see MPS docs
-//#define CONFIG_VAR_COOL
-
 #endif

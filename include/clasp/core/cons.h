@@ -177,11 +177,14 @@ public:
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
   static Cons_sp create(T_sp car, T_sp cdr) {
     GC_ALLOCATE_VARIADIC( Cons_O, ll, car, cdr );
+#ifdef DEBUG_VALIDATE_GUARD
+    client_validate(ll->_Car.raw_());
+    client_validate(ll->_Cdr.raw_());
+#endif
     return ll;
   };
   static Cons_sp create(T_sp obj) {
-    GC_ALLOCATE_VARIADIC( Cons_O, ret, obj, _Nil<T_O>() );
-    return ret;
+    return create(obj,_Nil<T_O>());
   }
 
 public:
@@ -207,10 +210,16 @@ public:
 
   inline Cons_sp rplaca(T_sp o) {
     this->_Car = o;
+#ifdef DEBUG_VALIDATE_GUARD
+    client_validate(this->_Car.raw_());
+#endif
     return this->asSmartPtr();
   };
   inline Cons_sp rplacd(T_sp o) {
     this->_Cdr = o;
+#ifdef DEBUG_VALIDATE_GUARD
+    client_validate(this->_Cdr.raw_());
+#endif
     return this->asSmartPtr();
   };
 

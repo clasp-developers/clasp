@@ -358,6 +358,9 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+#ifdef DEBUG_VALIDATE_GUARD
+      header->validate();
+#endif
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
@@ -365,8 +368,11 @@ mps_addr_t obj_skip(mps_addr_t client) {
     if (kind_layout.layout_operation == class_operation) {
       const Class_layout& class_layout = kind_layout.class_;
       size = class_layout.size;
-      client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-          // Here add tail
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
     } else {
           // Container or templated_class - special case - use jump table
       size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
@@ -376,8 +382,11 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #include "clasp_gc.cc"
 #undef GC_OBJ_SKIP
     DONE:
-      size_t aligned_size = AlignUp(size);
-      client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
 #else
       return NULL;
 #endif
@@ -427,6 +436,9 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       // The client must have a valid header
       DEBUG_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+#ifdef DEBUG_VALIDATE_GUARD
+      header->validate();
+#endif
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
         kind = header->kind();
@@ -440,8 +452,18 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
+            ++field_layout_cur;
           }
-          client = (mps_addr_t((char*)client + AlignUp(size + sizeof(Header_s))));
+          if ( kind == KIND_ROOTCLASSALLOC_core__Lisp_O ) {
+            printf("%s:%d obj_scan of core::Lisp_O\n", __FILE__, __LINE__);
+            core::Lisp_O* lclient = (core::Lisp_O*)client;
+            printf("%s:%d       new _lisp->_Roots._ClassSymbolsHolder.raw_() = %p\n", __FILE__, __LINE__, lclient->_Roots._ClassSymbolsHolder._Vector._Contents.raw_());
+          }
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
           // Here add tail
 #endif // #ifndef RUNNING_GC_BUILDER
         } else {
@@ -453,7 +475,11 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #include "clasp_gc.cc"
 #undef GC_OBJ_SCAN
         SCAN_ADVANCE:
+#ifndef DEBUG_GUARD
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
 #endif // #ifndef RUNNING_GC_BUILDER
         }
       } else if (header->fwdP()) {

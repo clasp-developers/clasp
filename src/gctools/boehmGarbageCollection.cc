@@ -45,7 +45,10 @@ void rawHeaderDescribe(uintptr_t *rawheaderP) {
   fflush(stdout);
 };
 
-void headerDescribe(core::T_O *taggedClient) {
+};
+
+extern "C" {
+void client_describe(core::T_O *taggedClient) {
   if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header

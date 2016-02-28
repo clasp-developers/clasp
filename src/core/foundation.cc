@@ -104,6 +104,8 @@ class_id allocate_class_id(type_id const &cls) {
 
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym) {
   ASSERT(_lisp);
+  // I'm clobbering the memory - add this assert
+  ASSERT(_lisp->classSymbolsHolder().size() < 4096 && _lisp->classSymbolsHolder().size()>=0 );
   if (cid >= _lisp->classSymbolsHolder().size()) {
     _lisp->classSymbolsHolder().resize(cid + 1, core::lisp_symbolNil());
   }
@@ -1024,6 +1026,9 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   methoid->finishSetup(llhandler, kw::_sym_function);
   Function_sp fn = Function_O::make(methoid);
   ASSERT(llhandler || llhandler.notnilp())
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+#endif
   core__ensure_single_dispatch_method(sym, receiver_class, llhandler, ldeclares, docStr, fn);
 }
 

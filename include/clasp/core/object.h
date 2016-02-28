@@ -707,6 +707,8 @@ public:
   virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
   virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
+  virtual void validate() const {};
+  
 public: // Instance protocol
   //! Some Class objects will create instances of classes different from themselves
   virtual core::Class_sp _instanceClass() const { return this->__class(); };

@@ -168,8 +168,8 @@ template <class T>
 inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(TemplatedHeader_s)); };
 #endif
 
-void headerDescribe(core::T_O *taggedClient);
 };
+
 
 namespace gctools {
 

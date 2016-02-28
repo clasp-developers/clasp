@@ -188,6 +188,7 @@ public:
 public:
   tagged_kind_t header;
 #ifdef DEBUG_GUARD
+  tagged_kind_t guard;
   size_t tail_start;
   size_t tail_size;
 #endif
@@ -196,7 +197,18 @@ public:
 #ifndef DEBUG_GUARD
  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
 #else
- Header_s(kind_t k,size_t tstart, size_t tsize) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567}, tail_start(tstart), tail_size(tsize) {};
+    inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
+ Header_s(kind_t k,size_t tstart, size_t tsize) 
+   : header((((kind_t)k) << 2) | kind_tag),
+      data{0xDEADBEEF01234567},
+      tail_start(tstart),
+      tail_size(tsize),
+      guard(0x0FEEAFEEBFEECFEED)
+      {
+        this->fill_tail();
+      };
+
+      void validate() const;
 #endif
 
   bool invalidP() const { return (this->header & tag_mask) == 0; };
@@ -219,11 +231,11 @@ public:
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
   void setPad(tagged_kind_t p) { this->header = p; };
   /*! Return the pad1 size */
-  tagged_kind_t pad1Size() const { return sizeof(Header_s); };
+  tagged_kind_t pad1Size() const { return alignof(Header_s); };
   /*! Return the size of the pad block - without the header */
-  tagged_kind_t padSize() const { return data[0]; };
+  tagged_kind_t padSize() const { return ((uintptr_t*)this)[1]; };
   /*! This writes into the first tagged_kind_t sized word of the client data. */
-  void setPadSize(size_t sz) { this->data[0] = sz; };
+  void setPadSize(size_t sz) { ((uintptr_t*)this)[1] = sz; };
   string description() const {
     if (this->kindP()) {
       std::stringstream ss;
@@ -251,7 +263,6 @@ public:
   }
 };
 
-void headerDescribe(core::T_O *taggedClient);
 };
 
 namespace gctools {
@@ -265,12 +276,6 @@ inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) &
 template <class T>
 inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
-#ifdef DEBUG_GUARD
- template <class T>
-  inline size_t tail_start() { return sizeof(T) + sizeof(Header_s); }
- template <class T>
-   inline size_t tail_size() { return (sizeof_with_header<T> - tail_start<T>) + random_tail_size(); };
-#endif
 };
 
 /* Align size upwards and ensure that it's big enough to store a
@@ -451,15 +456,6 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
                       (uintptr_t)obj);
       }
 #endif
-      *taggedP = obj;
-    };
-  } else if (*taggedP) {
-    printf("%s:%d POINTER_FIX called on untagged pointer\n", __FILE__, __LINE__);
-    gctools::Tagged obj = *taggedP;
-    if (MPS_FIX1(_ss, obj)) {
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK)
-        return res;
       *taggedP = obj;
     };
   };
