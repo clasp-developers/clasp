@@ -359,7 +359,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
-      header->validate_object();
+      header->validate();
 #endif
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
@@ -437,7 +437,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       DEBUG_THROW_IF_INVALID_CLIENT(client);
       gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
-      header->validate_object();
+      header->validate();
 #endif
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
@@ -453,6 +453,11 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
             ++field_layout_cur;
+          }
+          if ( kind == KIND_ROOTCLASSALLOC_core__Lisp_O ) {
+            printf("%s:%d obj_scan of core::Lisp_O\n", __FILE__, __LINE__);
+            core::Lisp_O* lclient = (core::Lisp_O*)client;
+            printf("%s:%d       new _lisp->_Roots._ClassSymbolsHolder.raw_() = %p\n", __FILE__, __LINE__, lclient->_Roots._ClassSymbolsHolder._Vector._Contents.raw_());
           }
 #ifndef DEBUG_GUARD
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));

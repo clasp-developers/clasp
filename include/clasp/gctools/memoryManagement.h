@@ -293,4 +293,17 @@ int handleFatalCondition();
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
 };
 
+
+extern "C" {
+// These must be provided the the garbage collector specific code
+
+//! Describe the header of the client
+void client_describe(core::T_O *taggedClient);
+//! Validate the client
+void client_validate(core::T_O *taggedClient);
+//! Describe the header
+void header_describe(gctools::Header_s* headerP);
+};
+
+
 #endif // _clasp_memoryManagement_H

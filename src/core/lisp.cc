@@ -385,6 +385,9 @@ void testStrings() {
 
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   { // Trap symbols as they are interned
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment\n", __FILE__, __LINE__ );
+#endif
     char* trapInterncP = getenv("CLASP_TRAP_INTERN");
     if ( trapInterncP ) {
       this->_TrapIntern = true;
@@ -446,6 +449,9 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   //
   // Finish initializing Lisp object
   //
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize everything\n", __FILE__, __LINE__ );
+#endif
   this->_Roots._CommandLineArguments = _Nil<T_O>();
   {
     _BLOCK_TRACE("Initialize other code"); // needs _TrueObject
@@ -454,11 +460,29 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     core::_sym_STARcxxDocumentationSTAR->defparameter(ht);
     initialize_functions();
     eval::defineSpecialOperatorsAndMacros(this->_Roots._CorePackage);
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_classes_and_methods\n", __FILE__, __LINE__ );
+#endif
     initialize_classes_and_methods();
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_source_info\n", __FILE__, __LINE__ );
+#endif
     initialize_source_info();
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_cache\n", __FILE__, __LINE__ );
+#endif
     initialize_cache();
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_backquote\n", __FILE__, __LINE__ );
+#endif
     initialize_backquote();
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_compiler_primitives\n", __FILE__, __LINE__ );
+#endif
     initialize_compiler_primitives(_lisp);
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d startupLispEnvironment initialize_bits\n", __FILE__, __LINE__ );
+#endif
     initialize_bits();
     // Rest may be unnecessary after new boot-strapping approach is developed
 #ifdef DEBUG_CL_SYMBOLS
@@ -2672,6 +2696,9 @@ void Lisp_O::dump_backtrace(int numcol) {
 #endif
 
 void Lisp_O::run() {
+#ifdef DEBUG_PROGRESS
+    printf("%s:%d run\n", __FILE__, __LINE__ );
+#endif
 
   // If the user adds "-f debug-startup" to the command line
   // then set core::*debug-startup* to true

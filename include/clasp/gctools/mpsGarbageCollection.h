@@ -208,7 +208,7 @@ public:
         this->fill_tail();
       };
 
-      void validate_object() const;
+      void validate() const;
 #endif
 
   bool invalidP() const { return (this->header & tag_mask) == 0; };
@@ -263,7 +263,6 @@ public:
   }
 };
 
-void headerDescribe(core::T_O *taggedClient);
 };
 
 namespace gctools {

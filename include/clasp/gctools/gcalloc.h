@@ -113,6 +113,7 @@ namespace gctools {
       }
       HeadT *header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
+      memset(header,0x00,true_size);
       new (header) HeadT(the_kind,size,tail_size);
 #else
       new (header) HeadT(the_kind);

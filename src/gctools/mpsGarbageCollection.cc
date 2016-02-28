@@ -129,15 +129,21 @@ size_t random_tail_size() {
 }
 
 
-void Header_s::validate_object() const {
+void Header_s::validate() const {
   if ( this->kindP() ) {
     if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad\n", __FILE__, __LINE__ );
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
       abort();
     }
     if ( this->kind() > KIND_max ) {
-      printf("%s:%d  INVALID object  this->kind() > KIND_max\n", __FILE__, __LINE__ );
+      printf("%s:%d  INVALID object  this->kind()=%d > KIND_max=%d\n", __FILE__, __LINE__, this->kind(), KIND_max );
       abort();
+    }
+    if ( this->tail_start & 0xffffffffff000000 ) {
+      printf("%s:%d   header->tail_start is not a reasonable value -> %p\n", this->tail_start);
+    }
+    if ( this->tail_size & 0xffffffffff000000 ) {
+      printf("%s:%d   header->tail_size is not a reasonable value -> %p\n", this->tail_size);
     }
     if ( this->data[0] != 0xDEADBEEF01234567 ) {
       printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],this->data[0],0xDEADBEEF01234567 );
@@ -170,7 +176,14 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf(" Not an object header!\n");
     break;
   case Header_s::kind_tag: {
-    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+1), *(headerP+1));
+#ifdef DEBUG_GUARD
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+2), *(headerP+2));
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+3), *(headerP+3));
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+4), *(headerP+4));
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+5), *(headerP+5));
+#endif    
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
@@ -186,41 +199,21 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
     if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
       printf("   pad1_tag\n");
+      printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
     } else {
       printf("   pad_tag\n");
+      printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
+      printf("  0x%16l0X : 0x%16l0X\n", (headerP+1), *(headerP+1));
     }
     break;
   }
 #if DEBUG_GUARD
   Header_s* header = (Header_s*)headerP;
-  header->validate_object();
-  printf("This object passed the validate_object() test\n");
+  header->validate();
+  printf("This object passed the validate() test\n");
 #endif
 };
 
-void headerDescribe(core::T_O *taggedClient) {
-  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
-    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
-    // Currently this assumes that Conses and General objects share the same header
-    // this may not be true in the future
-    // conses may be moved into a separate pool and dealt with in a different way
-    uintptr_t *headerP;
-    if (tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
-    } else {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
-    }
-    rawHeaderDescribe(headerP);
-  } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
-#if 0
-    printf("    Trying to interpret as client pointer\n");
-    uintptr_t* headerP;
-    headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(taggedClient));
-    rawHeaderDescribe(headerP);
-#endif
-  }
-};
 
 string gcResultToString(GC_RESULT res) {
   switch (res) {
@@ -890,6 +883,56 @@ namespace gctools {
 CL_DEFUN void gctools__enable_underscanning(bool us)
 {
   global_underscanning = us;
+}
+
+};
+
+extern "C" {
+void client_validate(core::T_O *taggedClient) {
+  if ( gctools::tagged_generalp(taggedClient))
+  {
+    void* client = gctools::untag_general(taggedClient);
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+    header->validate();
+  } else if (gctools::tagged_consp(taggedClient)) {
+    void* client = gctools::untag_cons(taggedClient);
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+    header->validate();
+  }    
+};
+
+
+void client_describe(core::T_O *taggedClient) {
+  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
+    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
+    // Currently this assumes that Conses and General objects share the same header
+    // this may not be true in the future
+    // conses may be moved into a separate pool and dealt with in a different way
+    uintptr_t *headerP;
+    if (tagged_generalp(taggedClient)) {
+      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
+    } else {
+      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
+    }
+    gctools::rawHeaderDescribe(headerP);
+  } else {
+    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
+    printf("    Trying to interpret as client pointer\n");
+    uintptr_t* headerP;
+    headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(taggedClient));
+    gctools::rawHeaderDescribe(headerP);
+  }
+};
+
+void header_describe(gctools::Header_s* headerP) {
+  gctools::rawHeaderDescribe((uintptr_t*)headerP);
+};
+
+
+void check_all_clients() {
+  mps_arena_park(gctools::_global_arena);
+  // Add code to walk the pool and check everything
+  mps_arena_release(gctools::_global_arena);
 }
 
 };

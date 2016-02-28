@@ -462,7 +462,7 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
 CL_LAMBDA(&optional x (marker 0) msg);
 CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
-             CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
+CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
   string smsg = "Total";
   if (core::Str_sp msg = tmsg.asOrNull<core::Str_O>()) {
     smsg = msg->get();
