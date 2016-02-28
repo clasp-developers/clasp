@@ -457,12 +457,14 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             POINTER_FIX(field);
             ++field_layout_cur;
           }
+#if 0
           if ( kind == KIND_ROOTCLASSALLOC_core__Lisp_O ) {
             printf("%s:%d obj_scan of core::Lisp_O\n", __FILE__, __LINE__);
             core::Lisp_O* lclient = (core::Lisp_O*)client;
             printf("%s:%d  offsetof(core::Lisp_O,_Roots._ClassSymbolsHolder) --> %d\n", __FILE__, __LINE__, offsetof(core::Lisp_O,_Roots._ClassSymbolsHolder._Vector._Contents));
             printf("%s:%d       new _lisp->_Roots._ClassSymbolsHolder.raw_() = %p\n", __FILE__, __LINE__, lclient->_Roots._ClassSymbolsHolder._Vector._Contents.raw_());
           }
+#endif
 #ifndef DEBUG_GUARD
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
 #else
