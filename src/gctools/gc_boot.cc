@@ -21,20 +21,27 @@ void build_kind_field_layout_tables()
 {
   // First pass through the global_kind_layout_codes_table
   // to count the number of kinds and the number of fields
-  Layout_code* cur = get_kind_layout_codes();
+  Layout_code* codes0 = get_kind_layout_codes();
+  int idx = 0;
   size_t number_of_fields = 0;
   global_kind_max = 0;
-  while (cur->cmd != layout_end) {
-    if ( cur->cmd == class_kind ||
-         cur->cmd == container_kind ||
-         cur->cmd == templated_class_kind ) {
-      if ( global_kind_max < cur->data ) {
-        global_kind_max = cur->data;
+  while (1) {
+    if ( codes0[idx].cmd == layout_end ) break;
+    if ( codes0[idx].cmd < 0 || codes0[idx].cmd > layout_end ) {
+      printf("%s:%d the layout code table is damaged\n");
+      abort();
+    }
+    if ( codes0[idx].cmd == class_kind ||
+         codes0[idx].cmd == container_kind ||
+         codes0[idx].cmd == templated_class_kind ) {
+      if ( global_kind_max < codes0[idx].data ) {
+        global_kind_max = codes0[idx].data;
+      } else {
       }
-    } else if ( cur->cmd == field_fix ) {
+    } else if ( codes0[idx].cmd == field_fix ) {
       ++number_of_fields;
     }
-    ++cur;
+    ++idx;
   }
   // Now malloc memory for the tables
   // now that we know the size of everything
@@ -45,52 +52,53 @@ void build_kind_field_layout_tables()
   // Fill in the immediate kinds
   
   // Traverse the global_kind_layout_codes again and fill the tables
-  cur = get_kind_layout_codes();
+  Layout_code* codes = get_kind_layout_codes();
   Field_layout* cur_field_layout= global_field_layout;
   Field_info* cur_field_info= global_field_info;
   int cur_kind=0;
-  while (cur->cmd != layout_end) {
-    switch (cur->cmd) {
+  idx = 0;
+  while (codes[idx].cmd != layout_end) {
+    switch (codes[idx].cmd) {
     case class_kind: 
-        cur_kind = cur->data;
+        cur_kind = codes[idx].data;
         global_kind_layout[cur_kind].layout_operation = class_operation;
         global_kind_layout[cur_kind].class_.field_layout_start = cur_field_layout;
         global_kind_layout[cur_kind].class_.number_of_fields = 0;
-        global_kind_info[cur_kind].name = cur->description;
+        global_kind_info[cur_kind].name = codes[idx].description;
         global_kind_info[cur_kind].field_info_ptr = cur_field_info;
         break;
     case class_size: 
-        global_kind_layout[cur_kind].class_.size = cur->data;
+        global_kind_layout[cur_kind].class_.size = codes[idx].data;
         break;
     case field_fix:
         ++global_kind_layout[cur_kind].class_.number_of_fields;
-        cur_field_layout->field_offset = cur->data;
-        cur_field_info->field_name = cur->description;
+        cur_field_layout->field_offset = codes[idx].data;
+        cur_field_info->field_name = codes[idx].description;
         ++cur_field_layout;
         ++cur_field_info;
         break;
     case container_kind:
-        cur_kind = cur->data;
+        cur_kind = codes[idx].data;
         global_kind_layout[cur_kind].layout_operation = jump_table_operation;
-        global_kind_info[cur_kind].name = cur->description;
+        global_kind_info[cur_kind].name = codes[idx].description;
         global_kind_info[cur_kind].field_info_ptr = NULL;
         break;
     case container_jump_table_index:
-        global_kind_layout[cur_kind].jump.jump_table_index = cur->data;
+        global_kind_layout[cur_kind].jump.jump_table_index = codes[idx].data;
         break;
     case templated_class_kind:
-        cur_kind = cur->data;
+        cur_kind = codes[idx].data;
         global_kind_layout[cur_kind].layout_operation = jump_table_operation;
-        global_kind_info[cur_kind].name = cur->description;
+        global_kind_info[cur_kind].name = codes[idx].description;
         global_kind_info[cur_kind].field_info_ptr = NULL;
         break;
     case templated_class_jump_table_index:
-        global_kind_layout[cur_kind].jump.jump_table_index = cur->data;
+        global_kind_layout[cur_kind].jump.jump_table_index = codes[idx].data;
         break;
     default:
-        THROW_HARD_ERROR(BF("The Layout_code table contained an illegal command: %d\n") % cur->cmd);
+        THROW_HARD_ERROR(BF("The Layout_code table contained an illegal command: %d\n") % codes[idx].cmd);
     }
-    ++cur;
+    ++idx;
   }
 }
 };
