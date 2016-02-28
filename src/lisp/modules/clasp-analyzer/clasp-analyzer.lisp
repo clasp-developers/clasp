@@ -1551,16 +1551,17 @@ so that they don't have to be constantly recalculated"
 
 
 
-(defun field-data (instance-var)
+(defun field-data (key instance-var)
   (let ((type (car (last instance-var)))
         names offsets)
     (dolist (field (butlast instance-var))
       (push (instance-variable-field-name field) names)
       (push (instance-variable-field-offset field) offsets))
-    (format nil " { field_fix, ~d, ~s } // offsets: ~s"
-            (apply #'+ offsets)
-            (format nil "~a" (nreverse names))
-            (format nil "~a" (nreverse offsets)))))
+    (let ((reverse-names (nreverse names)))
+      (format nil " { field_fix, offsetof(~a,~{~a~^.~}), \"~s\" }"
+              key
+              reverse-names
+              reverse-names))))
 
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -1574,7 +1575,7 @@ so that they don't have to be constantly recalculated"
       (let ((all-instance-variables
              (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
         (dolist (instance-var all-instance-variables)
-          (format fh "~a,~%" (field-data instance-var)))))))
+          (format fh "~a,~%" (field-data key instance-var)))))))
 
 (defun skipper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
