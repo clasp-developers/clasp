@@ -4,8 +4,6 @@ echo "core dir = $(dir)" ;
 #
 #
 project internals/core : requirements
-	<define>EXPAT
-	<threading>single
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
@@ -174,4 +172,4 @@ local sources =
 		posixTime.cc
      		;
 
-alias core : $(sources) ;
+alias core : $(sources) : <cxxflags>"-std=c++11" ;
