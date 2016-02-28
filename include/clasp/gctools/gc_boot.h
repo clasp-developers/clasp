@@ -77,7 +77,7 @@ namespace gctools {
     };
   };
 
-  extern Layout_code global_kind_layout_codes[];
+  extern Layout_code* get_kind_layout_codes();
   extern size_t           global_kind_max;
   extern Kind_info*       global_kind_info;
   extern Kind_layout*     global_kind_layout;

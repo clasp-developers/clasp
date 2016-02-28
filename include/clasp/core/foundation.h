@@ -845,6 +845,12 @@ class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 }
 
+namespace gctools {
+  class Layout_code;
+  // Defined in clasp/src/gctools/gc_interface.cc
+  extern Layout_code* get_kind_layout_codes();
+};
+
 #if defined(USE_BOEHM)
 #define FRIEND_GC_SCANNER(nscl)
 #endif
@@ -852,7 +858,8 @@ typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 #ifdef RUNNING_GC_BUILDER
 #define FRIEND_GC_SCANNER(nscl)
 #else
-#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
+#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);\
+  friend gctools::Layout_code* gctools::get_kind_layout_codes();
 #endif
 #endif
 

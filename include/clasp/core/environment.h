@@ -503,7 +503,7 @@ class UnwindProtectEnvironment_O : public CompileTimeEnvironment_O {
 public:
   void initialize();
 
-private:
+public:
   List_sp _CleanupForm;
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);

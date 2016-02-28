@@ -1558,10 +1558,10 @@ so that they don't have to be constantly recalculated"
       (push (instance-variable-field-name field) names)
       (push (instance-variable-field-offset field) offsets))
     (let ((reverse-names (nreverse names)))
-      (format nil " { field_fix, offsetof(~a,~{~a~^.~}), \"~s\" }"
+      (format nil " { field_fix, offsetof(~a,~{~a~^.~}), ~s }"
               key
               reverse-names
-              reverse-names))))
+              (format nil "~a" reverse-names)))))
 
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
