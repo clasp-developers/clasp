@@ -1557,9 +1557,10 @@ so that they don't have to be constantly recalculated"
     (dolist (field (butlast instance-var))
       (push (instance-variable-field-name field) names)
       (push (instance-variable-field-offset field) offsets))
-    (format nil " { field_fix, ~d, ~s }"
+    (format nil " { field_fix, ~d, ~s } // offsets: ~s"
             (apply #'+ offsets)
-            (format nil "~a" (nreverse names)))))
+            (format nil "~a" (nreverse names))
+            (format nil "~a" (nreverse offsets)))))
 
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
