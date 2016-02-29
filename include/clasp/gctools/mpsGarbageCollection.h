@@ -196,6 +196,7 @@ public:
 public:
 #ifndef DEBUG_GUARD
  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
+  void validate() const {};
 #else
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
  Header_s(kind_t k,size_t tstart, size_t tsize) 

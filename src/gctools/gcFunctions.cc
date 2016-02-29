@@ -624,9 +624,11 @@ CL_DEFUN void gctools__configuration()
   bool debug_mps_underscanning = false;
 #ifdef DEBUG_MPS_UNDERSCANNING
   debug_mps_underscanning = true;
+  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+#else
+  bool debug_mps_underscanning_initial = false;
 #endif
   printf("DEBUG_MPS_UNDERSCANNING = %s\n", debug_mps_underscanning ? "defined" : "undefined" );
-  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
   printf("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n", debug_mps_underscanning_initial ? "true" : "false" );
 
   bool debug_recursive_allocations = false;
