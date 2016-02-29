@@ -96,7 +96,6 @@ project clasp : requirements
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
 	<target-os>linux:<linkflags>"-lpthread -ldl -lrt"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
-	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
         <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"

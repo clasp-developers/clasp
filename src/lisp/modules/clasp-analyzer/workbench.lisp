@@ -12,6 +12,8 @@
    :selection-pattern ".*lisp\.cc.*"
 ))
 
+(apropos "compilation-tool")
+(apropos "get-field-offset")
 (clasp-analyzer:search/generate-code *db*)
 
 

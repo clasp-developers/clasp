@@ -48,7 +48,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 
 
 */
-//#define MPS_LOVEMORE 1
+#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -784,16 +784,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   // register the main thread stack scanner
   mps_root_t global_stack_root;
-#ifdef MPS_LOVEMORE
-  res = mps_root_create_reg(&global_stack_root,
-                            _global_arena,
-                            mps_rank_ambig(),
-                            0,
-                            global_thread,
-                            mps_stack_scan_ambig,
-                            _global_stack_marker,
-                            0);
-#else
   // use mask
   res = mps_root_create_stack(&global_stack_root,
                               _global_arena,
@@ -803,7 +793,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
                               gctools::pointer_tag_mask,
                               gctools::pointer_tag_eq,
                               _global_stack_marker);
-#endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
 
