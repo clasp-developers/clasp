@@ -1382,7 +1382,7 @@ so that they don't have to be constantly recalculated"
   skip          ;; Function - generates obj_skip code for species
   finalize      ;; Function - generates obj_finalize code for species
   deallocator   ;; Function - generates obj_deallocate_unmanaged_instance code for species
-  validate      ;; Function - generates validator for species
+  validator      ;; Function - generates validator for species
   dump          ;; Function - fills a stringstream with a dump of the species
   index
   )
@@ -1763,9 +1763,9 @@ so that they don't have to be constantly recalculated"
             ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
             (cond
               ((smart-ptr-ctype-p parm0-ctype)
-               (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+               (format fout "          VALIDATE(*it);~%"))
               ((tagged-pointer-ctype-p parm0-ctype)
-               (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+               (format fout "          VALIDATE(*it);~%"))
               ((cxxrecord-ctype-p parm0-ctype)
                (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                  (dolist (instance-var all-instance-variables)
@@ -1775,7 +1775,7 @@ so that they don't have to be constantly recalculated"
                  (dolist (instance-var all-instance-variables)
                    (validator-code-for-instance-var fout "it" instance-var))))
               ((pointer-ctype-p parm0-ctype)
-               (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+               (format fout "          VALIDATE(*it);~%"))
               (t (error "Write code to validate ~a" parm0-ctype)))
             (format fout "    }~%"))))))
 
@@ -2049,6 +2049,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
+                                       :validator 'validator-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs
                                        ))
@@ -2693,7 +2694,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                                   :jump-table-index-function 'scanner-jump-table-index-for-enum-name
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
-						 (funcall (species-validate (enum-species enum)) dest enum anal))))
+						 (funcall (species-validator (enum-species enum)) dest enum anal))))
 		    (do-generator stream analysis
 				  :table-name "OBJ_FINALIZE"
 				  :function-declaration "void ~a(mps_addr_t client)"

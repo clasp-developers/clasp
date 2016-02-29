@@ -5592,6 +5592,342 @@ static void* OBJ_SCAN_table[] = {
    NULL
 };
 #endif // defined(GC_OBJ_SCAN_TABLE)
+#if defined(GC_OBJ_VALIDATE)
+obj_validate_KIND_TEMPLATED_CLASSALLOC_core__Creator:
+{
+    core::Creator* obj_gc_safe = reinterpret_cast<core::Creator*>(client);
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator:
+{
+    clbind::ConstructorCreator* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator*>(client);
+    VALIDATE(obj_gc_safe->_mostDerivedClassSymbol);
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O:
+{
+    core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
+    VALIDATE(obj_gc_safe->_Class);
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_TEMPLATED_LISPALLOC_core__Iterator_O:
+{
+    core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__tagged_pointer_core__SequenceStepper__:
+{
+    gctools::GCVector_moveable<gctools::tagged_pointer<core::SequenceStepper>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::tagged_pointer<core::SequenceStepper>>*>(client);
+    for (gctools::GCVector_moveable<gctools::tagged_pointer<core::SequenceStepper>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
+{
+    gctools::GCVector_moveable<core::KeywordArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::KeywordArgument>*>(client);
+    for (gctools::GCVector_moveable<core::KeywordArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_ArgTarget);
+    VALIDATE(it->_Default);
+    VALIDATE(it->_Keyword);
+    VALIDATE(it->_Sensor._ArgTarget);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_:
+{
+    gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>*>(client);
+    for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,0>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::List_V>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCSTRING_gctools__GCString_moveable_char_:
+{
+    // Should never be invoked
+}
+goto SCAN_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
+{
+    gctools::GCVector_moveable<core::RequiredArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::RequiredArgument>*>(client);
+    for (gctools::GCVector_moveable<core::RequiredArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_ArgTarget);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
+{
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    for (gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->first);
+    VALIDATE(it->second);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
+{
+    gctools::GCVector_moveable<core::SymbolStorage>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolStorage>*>(client);
+    for (gctools::GCVector_moveable<core::SymbolStorage>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_Symbol);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
+{
+    gctools::GCVector_moveable<asttooling::ContextFrame>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ContextFrame>*>(client);
+    for (gctools::GCVector_moveable<asttooling::ContextFrame>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->Range);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
+{
+    gctools::GCVector_moveable<core::T_O *>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::T_O *>*>(client);
+    for (gctools::GCVector_moveable<core::T_O *>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
+{
+    gctools::GCVector_moveable<core::AuxArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::AuxArgument>*>(client);
+    for (gctools::GCVector_moveable<core::AuxArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_ArgTarget);
+    VALIDATE(it->_Expression);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
+{
+    gctools::GCVector_moveable<asttooling::ParserValue>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ParserValue>*>(client);
+    for (gctools::GCVector_moveable<asttooling::ParserValue>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->Range);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
+{
+    gctools::GCVector_moveable<core::SymbolClassPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::SymbolClassPair>*>(client);
+    for (gctools::GCVector_moveable<core::SymbolClassPair>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->symbol);
+    VALIDATE(it->theClass);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_:
+{
+    gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>*>(client);
+    for (gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->Name);
+    VALIDATE(it->matcher);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
+{
+    gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>*>(client);
+    for (gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->first);
+    VALIDATE(it->second);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
+{
+    gctools::GCVector_moveable<core::CacheRecord>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::CacheRecord>*>(client);
+    for (gctools::GCVector_moveable<core::CacheRecord>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_key);
+    VALIDATE(it->_value);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::Cons_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_:
+{
+    gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,1>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,1>*>(client);
+    for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,1>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
+{
+    gctools::GCVector_moveable<asttooling::ErrorContent>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::ErrorContent>*>(client);
+    for (gctools::GCVector_moveable<asttooling::ErrorContent>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->ContextStack._Vector._Contents);
+    VALIDATE(it->Messages._Vector._Contents);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
+{
+    gctools::GCVector_moveable<asttooling::Message>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<asttooling::Message>*>(client);
+    for (gctools::GCVector_moveable<asttooling::Message>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->Range);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__tagged_pointer_asttooling__internal__MatcherDescriptor__:
+{
+    gctools::GCVector_moveable<gctools::tagged_pointer<asttooling::internal::MatcherDescriptor>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::tagged_pointer<asttooling::internal::MatcherDescriptor>>*>(client);
+    for (gctools::GCVector_moveable<gctools::tagged_pointer<asttooling::internal::MatcherDescriptor>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__2_:
+{
+    gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,2>* obj_gc_safe = reinterpret_cast<gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,2>*>(client);
+    for (gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>,2>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_:
+{
+    gctools::GCVector_moveable<core::OptionalArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::OptionalArgument>*>(client);
+    for (gctools::GCVector_moveable<core::OptionalArgument>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_ArgTarget);
+    VALIDATE(it->_Default);
+    VALIDATE(it->_Sensor._ArgTarget);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure:
+{
+    core::BuiltinClosure* obj_gc_safe = reinterpret_cast<core::BuiltinClosure*>(client);
+    VALIDATE(obj_gc_safe->name);
+    VALIDATE(obj_gc_safe->closedEnvironment);
+    VALIDATE(obj_gc_safe->kind);
+    VALIDATE(obj_gc_safe->_cleavir_ast);
+    VALIDATE(obj_gc_safe->_lambdaListHandler);
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
+{
+    gctools::GCVector_moveable<core::ExceptionEntry>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::ExceptionEntry>*>(client);
+    for (gctools::GCVector_moveable<core::ExceptionEntry>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_Key);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_:
+{
+    gctools::GCVector_moveable<core::DynamicBinding>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::DynamicBinding>*>(client);
+    for (gctools::GCVector_moveable<core::DynamicBinding>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+    VALIDATE(it->_Var);
+    VALIDATE(it->_Val);
+    }
+}
+goto VALIDATE_ADVANCE;
+obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:
+{
+    gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>*>(client);
+    for (gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>::iterator it = obj_gc_safe->begin(); it!=obj_gc_safe->end(); ++it) {
+          VALIDATE(*it);
+    }
+}
+goto VALIDATE_ADVANCE;
+#endif // defined(GC_OBJ_VALIDATE)
+#if defined(GC_OBJ_VALIDATE_HELPERS)
+
+#endif // defined(GC_OBJ_VALIDATE_HELPERS)
+#if defined(GC_OBJ_VALIDATE_TABLE)
+static void* OBJ_VALIDATE_table[] = { 
+  /* 6 */ &&obj_validate_KIND_TEMPLATED_CLASSALLOC_core__Creator,
+  /* 9 */ &&obj_validate_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator,
+  /* 63 */ &&obj_validate_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O,
+  /* 173 */ &&obj_validate_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
+  /* 251 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__tagged_pointer_core__SequenceStepper__,
+  /* 252 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 253 */ &&obj_validate_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__0_,
+  /* 255 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 256 */ &&obj_validate_KIND_GCSTRING_gctools__GCString_moveable_char_,
+  /* 257 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 259 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 261 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 263 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 264 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_,
+  /* 266 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 270 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 271 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_,
+  /* 272 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 273 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 274 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_,
+  /* 275 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 276 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 278 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 280 */ &&obj_validate_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_,
+  /* 282 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_,
+  /* 284 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_,
+  /* 285 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__tagged_pointer_asttooling__internal__MatcherDescriptor__,
+  /* 286 */ &&obj_validate_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__2_,
+  /* 288 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 290 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 291 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 292 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 293 */ &&obj_validate_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure,
+  /* 294 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 296 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 298 */ &&obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+   NULL
+};
+#endif // defined(GC_OBJ_VALIDATE_TABLE)
 #if defined(GC_OBJ_FINALIZE)
 obj_finalize_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps:
 {
