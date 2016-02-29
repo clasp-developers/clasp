@@ -1504,16 +1504,15 @@ so that they don't have to be constantly recalculated"
   pointee-type)
 
 
-(defgeneric fixer-macro-name (fixer-head))
-
+(defgeneric fixer-macro-name (fixer-head suffix))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
-
 (defmethod fixer-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_FIX")
-
 (defmethod fixer-macro-name ((x pointer-fixer)) "POINTER_REF_FIX")
-
 (defmethod fixer-macro-name ((x array-fixer)) "ARRAY_FIX")
 
+(defgeneric validator-macro-name (validator-head suffix))
+(defmethod validator-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_VALIDATE")
+(defmethod validator-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_VALIDATE")
 
 (defun scanner-code-for-instance-var (stream ptr-name instance-var)
   (let* ((fixer-macro (fixer-macro-name (car (last instance-var))))
@@ -1522,9 +1521,9 @@ so that they don't have to be constantly recalculated"
             (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain))))
 
 (defun validator-code-for-instance-var (stream ptr-name instance-var)
-  (let* ((fixer-macro "VALIDATE")
+  (let* ((validator-macro (validator-macro-name (car (last instance-var))))
          (variable-chain (butlast instance-var 1)))
-    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name
+    (format stream "    ~a(~a->~{~a~^.~});~%" validator-macro ptr-name
             (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain))))
 
 (defconstant +ptr-name+ "obj_gc_safe"
@@ -1763,9 +1762,9 @@ so that they don't have to be constantly recalculated"
             ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
             (cond
               ((smart-ptr-ctype-p parm0-ctype)
-               (format fout "          VALIDATE(*it);~%"))
+               (format fout "          ~a(*it);~%" (validate-macro-name parm0-ctype)))
               ((tagged-pointer-ctype-p parm0-ctype)
-               (format fout "          VALIDATE(*it);~%"))
+               (format fout "          ~a(*it);~%" (validate-macro-name parm0-ctype)))
               ((cxxrecord-ctype-p parm0-ctype)
                (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                  (dolist (instance-var all-instance-variables)
@@ -1775,7 +1774,7 @@ so that they don't have to be constantly recalculated"
                  (dolist (instance-var all-instance-variables)
                    (validator-code-for-instance-var fout "it" instance-var))))
               ((pointer-ctype-p parm0-ctype)
-               (format fout "          VALIDATE(*it);~%"))
+               (format fout "          ~a(*it);~%" (validate-macro-name parm0-ctype)))
               (t (error "Write code to validate ~a" parm0-ctype)))
             (format fout "    }~%"))))))
 

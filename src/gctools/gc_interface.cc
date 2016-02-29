@@ -457,14 +457,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             POINTER_FIX(field);
             ++field_layout_cur;
           }
-#if 0
-          if ( kind == KIND_ROOTCLASSALLOC_core__Lisp_O ) {
-            printf("%s:%d obj_scan of core::Lisp_O\n", __FILE__, __LINE__);
-            core::Lisp_O* lclient = (core::Lisp_O*)client;
-            printf("%s:%d  offsetof(core::Lisp_O,_Roots._ClassSymbolsHolder) --> %d\n", __FILE__, __LINE__, offsetof(core::Lisp_O,_Roots._ClassSymbolsHolder._Vector._Contents));
-            printf("%s:%d       new _lisp->_Roots._ClassSymbolsHolder.raw_() = %p\n", __FILE__, __LINE__, lclient->_Roots._ClassSymbolsHolder._Vector._Contents.raw_());
-          }
-#endif
 #ifndef DEBUG_GUARD
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
 #else
@@ -511,6 +503,121 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 }
 };
 #endif // ifdef USE_MPS
+
+
+extern "C" {
+/*!
+ * client_validate_internal
+ *
+ * Validate this client and the clients that it points to.
+ */
+#if 0
+void client_validate_internal(core::T_O* tagged_client) {
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_VALIDATE_TABLE
+#include "clasp_gc.cc"
+#undef GC_OBJ_VALIDATE_TABLE
+#endif
+  if (!gctools::tagged_objectp(tagged_client)) return;
+  GCKindEnum kind;
+      // The client must have a valid header
+  core::T_O* client = gctools::untag_object(tagged_client);
+  DEBUG_THROW_IF_INVALID_CLIENT(client);
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+#ifdef DEBUG_VALIDATE_GUARD
+  header->validate();
+#endif
+  if (header->kindP()) {
+    kind = header->kind();
+    const Kind_layout& kind_layout = global_kind_layout[kind];
+    if (kind_layout.layout_operation == class_operation) {
+#ifndef RUNNING_GC_BUILDER
+      const Class_layout& class_layout = kind_layout.class_;
+      int num_fields = class_layout.number_of_fields;
+      Field_layout* field_layout_cur = class_layout.field_layout_start;
+      for ( int i=0; i<num_fields; ++i ) {
+        core::T_O* child_client = *(core::T_O**)((const char*)client + field_layout_cur->field_offset);
+        client_validate(child_client);
+        ++field_layout_cur;
+      }
+#endif RUNNING_GC_BUILDER
+    } else {
+          // Container or templated_class - special case - use jump table
+      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
+#ifndef RUNNING_GC_BUILDER
+      goto *(OBJ_VALIDATE_table[jump_table_index]);
+#define VALIDATE(x) client_validate((x).raw_())
+#define GC_OBJ_VALIDATE
+#include "clasp_gc.cc"
+#undef GC_OBJ_VALIDATE
+#undef VALIDATE
+    VALIDATE_ADVANCE:
+#endif // #ifndef RUNNING_GC_BUILDER
+    }
+  }
+};
+#endif // #if 0
+
+/*!
+ * client_validate_recursive
+ *
+ * Recursively walk the tagged pointers within this client and validate them.
+ * Keep track of which tagged pointers have been seen using the _seen_ set.
+ */
+#if 0
+void client_validate_recursive(core::T_O* tagged_client, std::set<core::T_O*>& seen) {
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_VALIDATE_TABLE
+#include "clasp_gc.cc"
+#undef GC_OBJ_VALIDATE_TABLE
+#endif
+  if ( !gctools::tagged_objectp(tagged_client) ) return;
+  GCKindEnum kind;
+      // The client must have a valid header
+  DEBUG_THROW_IF_INVALID_CLIENT(client);
+  core::T_O* client = gctools::untag_object(tagged_client);
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+#ifdef DEBUG_VALIDATE_GUARD
+  header->validate();
+#endif
+  if (header->kindP()) {
+    kind = header->kind();
+    const Kind_layout& kind_layout = global_kind_layout[kind];
+    if (kind_layout.layout_operation == class_operation) {
+#ifndef RUNNING_GC_BUILDER
+      const Class_layout& class_layout = kind_layout.class_;
+      size = class_layout.size;
+      int num_fields = class_layout.number_of_fields;
+      Field_layout* field_layout_cur = class_layout.field_layout_start;
+      for ( int i=0; i<num_fields; ++i ) {
+        core::T_O* child_client = *(core::T_O**)((const char*)client + field_layout_cur->field_offset);
+        if ( !seen.count(child_client) ) {
+          client_validate_recursive(child_client,seen);
+          seen.insert(child_client);
+        }
+        ++field_layout_cur;
+      }
+#endif RUNNING_GC_BUILDER
+    } else {
+          // Container or templated_class - special case - use jump table
+      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
+#ifndef RUNNING_GC_BUILDER
+      goto *(OBJ_VALIDATE_table[jump_table_index]);
+#define VALIDATE(x) {if ( !seen.count(*x) ) { client_validate_recursive(*x,seen); seen.insert(*x); }}
+#define GC_OBJ_VALIDATE
+#include "clasp_gc.cc"
+#undef GC_OBJ_VALIDATE
+#undef VALIDATE
+    VALIDATE_ADVANCE:
+#endif // #ifndef RUNNING_GC_BUILDER
+    }
+  }
+};
+#endif // #if 0
+};
+
+
+
 
 #ifdef USE_MPS
 extern "C" {
