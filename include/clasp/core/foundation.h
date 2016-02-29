@@ -852,7 +852,7 @@ namespace gctools {
 };
 
 #if defined(USE_BOEHM)
-#define FRIEND_GC_SCANNER(nscl)
+#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_kind_layout_codes();
 #endif
 #if defined(USE_MPS)
 #ifdef RUNNING_GC_BUILDER
