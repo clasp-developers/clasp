@@ -92,7 +92,6 @@
 (defstruct instance-variable
   "Represent an instance variable, it's name, it's source-location and it's classified type"
   field-name
-  field-offset
   location
   ctype
   )
@@ -756,9 +755,6 @@ can be saved and reloaded within the project for later analysis"
                           (push (make-instance-variable
                                  :location (clang-tool:mtag-loc-start minfo :field)
                                  :field-name (clang-tool:mtag-name minfo :field)
-                                 :field-offset (ast-tooling:get-field-offset (clang-tool:ast-context match-info)
-                                                                             record-decl
-                                                                             (cast:get-field-index (clang-tool:mtag-node minfo :field)))
                                  :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
                                                                              :location (clang-tool:mtag-loc-start minfo :field))))
                                           (classify-ctype (to-canonical-type type))))
@@ -798,7 +794,6 @@ can be saved and reloaded within the project for later analysis"
                                     :vbases vbases
                                     :method-names method-names
                                     :metadata metadata
-                                    :size (ast-tooling:get-record-size (clang-tool:ast-context match-info) record-decl)
                                     :fields fields))))
              (%%class-callback (match-info)
                (gclog "MATCH: ------------------~%")
@@ -1387,6 +1382,7 @@ so that they don't have to be constantly recalculated"
   skip          ;; Function - generates obj_skip code for species
   finalize      ;; Function - generates obj_finalize code for species
   deallocator   ;; Function - generates obj_deallocate_unmanaged_instance code for species
+  validate      ;; Function - generates validator for species
   dump          ;; Function - fills a stringstream with a dump of the species
   index
   )
@@ -1519,8 +1515,14 @@ so that they don't have to be constantly recalculated"
 (defmethod fixer-macro-name ((x array-fixer)) "ARRAY_FIX")
 
 
-(defun code-for-instance-var (stream ptr-name instance-var)
+(defun scanner-code-for-instance-var (stream ptr-name instance-var)
   (let* ((fixer-macro (fixer-macro-name (car (last instance-var))))
+         (variable-chain (butlast instance-var 1)))
+    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name
+            (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain))))
+
+(defun validator-code-for-instance-var (stream ptr-name instance-var)
+  (let* ((fixer-macro "VALIDATE")
          (variable-chain (butlast instance-var 1)))
     (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name
             (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain))))
@@ -1553,10 +1555,9 @@ so that they don't have to be constantly recalculated"
 
 (defun field-data (key instance-var)
   (let ((type (car (last instance-var)))
-        names offsets)
+        names)
     (dolist (field (butlast instance-var))
-      (push (instance-variable-field-name field) names)
-      (push (instance-variable-field-offset field) offsets))
+      (push (instance-variable-field-name field) names))
     (let ((reverse-names (nreverse names)))
       (format nil " { field_fix, offsetof(~a,~{~a~^.~}), ~s }"
               key
@@ -1576,6 +1577,10 @@ so that they don't have to be constantly recalculated"
              (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
         (dolist (instance-var all-instance-variables)
           (format fh "~a,~%" (field-data key instance-var)))))))
+
+(defun validator-for-lispallocs (dest enum anal)
+  ;; Do nothing - uses table
+  )
 
 (defun skipper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -1637,8 +1642,18 @@ so that they don't have to be constantly recalculated"
         (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
         (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
           (dolist (instance-var all-instance-variables)
-            (code-for-instance-var fout +ptr-name+ instance-var)))
+            (scanner-code-for-instance-var fout +ptr-name+ instance-var)))
         (format fout "    size = ~a->templatedSizeof();" +ptr-name+)))))
+
+(defun validator-for-templated-lispallocs (dest enum anal)
+  (assert (templated-enum-p enum))
+  (let* ((key (enum-key enum))
+         (enum-name (enum-name enum)))
+    (with-jump-table (fout jti dest enum "goto VALIDATE_ADVANCE")
+      (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+      (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
+        (dolist (instance-var all-instance-variables)
+          (validator-code-for-instance-var fout +ptr-name+ instance-var))))))
 
 (defun skipper-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
@@ -1717,17 +1732,52 @@ so that they don't have to be constantly recalculated"
                 ((cxxrecord-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (code-for-instance-var fout "it" instance-var))))
+                     (scanner-code-for-instance-var fout "it" instance-var))))
                 ((class-template-specialization-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (code-for-instance-var fout "it" instance-var))))
+                     (scanner-code-for-instance-var fout "it" instance-var))))
                 ((pointer-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
                 (t (error "Write code to scan ~a" parm0-ctype)))
               (format fout "    }~%")
               (format fout "    typedef typename ~A type_~A;~%" key enum-name)
               (format fout "    size = sizeof_container<type_~a>(~a->capacity());" enum-name +ptr-name+)))))))
+
+(defun validator-for-gccontainer (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (with-jump-table (fout jti dest enum "goto VALIDATE_ADVANCE")
+      (if (cxxrecord-ctype-p decl)
+          (progn
+            (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+          (let* ((parms (class-template-specialization-ctype-arguments decl))
+                 (parm0 (car parms))
+                 (parm0-ctype (gc-template-argument-ctype parm0)))
+            ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+            (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+            (format fout "    for (~a::iterator it = ~a->begin(); it!=~a->end(); ++it) {~%" key +ptr-name+ +ptr-name+)
+            ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
+            (cond
+              ((smart-ptr-ctype-p parm0-ctype)
+               (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+              ((tagged-pointer-ctype-p parm0-ctype)
+               (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+              ((cxxrecord-ctype-p parm0-ctype)
+               (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
+                 (dolist (instance-var all-instance-variables)
+                   (validator-code-for-instance-var fout "it" instance-var))))
+              ((class-template-specialization-ctype-p parm0-ctype)
+               (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
+                 (dolist (instance-var all-instance-variables)
+                   (validator-code-for-instance-var fout "it" instance-var))))
+              ((pointer-ctype-p parm0-ctype)
+               (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+              (t (error "Write code to validate ~a" parm0-ctype)))
+            (format fout "    }~%"))))))
 
 
 (defun skipper-for-gccontainer (dest enum anal)
@@ -1829,6 +1879,15 @@ so that they don't have to be constantly recalculated"
       (let ((fh (destination-helper-stream dest)))
         (format fh "{ container_kind, ~d, ~s },~%" enum-name key)
         (format fh "{ container_jump_table_index, ~d, \"\" },~%" jump-table-index))
+      (format fout "    // Should never be invoked~%"))))
+
+
+(defun validator-for-gcstring (dest enum anal)
+  (assert (simple-enum-p enum))
+  (let* ((alloc (simple-enum-alloc enum))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
       (format fout "    // Should never be invoked~%"))))
 
 
@@ -1934,6 +1993,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
+                                       :validator 'validator-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs
                                        ))
@@ -1944,6 +2004,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
+                                       :validator 'validator-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs
                                        ))
@@ -1952,6 +2013,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-templated-lispallocs
                                        :skip 'skipper-for-templated-lispallocs
                                        :dump 'dumper-for-templated-lispallocs
+                                       :validator 'validator-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        :deallocator 'deallocator-for-templated-lispallocs
                                        ))
@@ -1960,6 +2022,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-gccontainer
                                        :skip 'skipper-for-gccontainer
                                        :dump 'dumper-for-gccontainer
+                                       :validator 'validator-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        :deallocator 'deallocator-for-gccontainer
                                        ))
@@ -1968,6 +2031,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-gccontainer
                                        :skip 'skipper-for-gccontainer
                                        :dump 'dumper-for-gccontainer
+                                       :validator 'validator-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
                                        :deallocator 'deallocator-for-gccontainer
                                        ))
@@ -1976,6 +2040,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-gcstring ;; don't need to scan but do need to calculate size
                                        :skip 'skipper-for-gcstring
                                        :dump 'dumper-for-gcstring
+                                       :validator 'validator-for-gcstring
                                        :finalize 'finalizer-for-gcstring
                                        :deallocator 'deallocator-for-gcstring
                                        ))
@@ -1992,6 +2057,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-lispallocs
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
+                                       :validator 'validator-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
                                        :deallocator 'deallocator-for-lispallocs
                                        ))
@@ -2000,6 +2066,7 @@ so that they don't have to be constantly recalculated"
                                        :scan 'scanner-for-templated-lispallocs
                                        :skip 'skipper-for-templated-lispallocs
                                        :dump 'dumper-for-templated-lispallocs
+                                       :validator 'validator-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
                                        :deallocator 'deallocator-for-templated-lispallocs
                                        ))
@@ -2116,8 +2183,7 @@ so that they don't have to be constantly recalculated"
       ((consp code)
        (mapcar (lambda (f) (cons field f)) code))
       (t
-       (error "Feb 2016 I inserted this error to see if the code ever gets here")
-       (instance-variable-field-offset field) code))))
+       (error "Feb 2016 I inserted this error to see if the code ever gets here") code))))
 
 (defgeneric fix-code (x analysis))
 (defmethod fix-code ((x cclass) analysis)
@@ -2619,6 +2685,15 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
 						 (funcall (species-scan (enum-species enum)) dest enum anal))))
+		    (do-generator stream analysis
+				  :table-name "OBJ_VALIDATE"
+				  :function-declaration "GC_RESULT ~a(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+				  :function-prefix "obj_validate"
+				  :function-table-type "GC_RESULT (*OBJ_VALIDATE_table[])(mps_ss_t& ss, mps_addr_t& client, mps_addr_t limit)"
+                                  :jump-table-index-function 'scanner-jump-table-index-for-enum-name
+				  :generator (lambda (dest anal)
+					       (dolist (enum (analysis-sorted-enums anal))
+						 (funcall (species-validate (enum-species enum)) dest enum anal))))
 		    (do-generator stream analysis
 				  :table-name "OBJ_FINALIZE"
 				  :function-declaration "void ~a(mps_addr_t client)"
