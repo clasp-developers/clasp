@@ -49,16 +49,16 @@ void rawHeaderDescribe(uintptr_t *rawheaderP) {
 
 extern "C" {
 void client_describe(void *taggedClient) {
-  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
+  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
     uintptr_t *headerP;
-    if (tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
+    if (gctools::tagged_generalp(taggedClient)) {
+      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
+      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
     }
     gctools::rawHeaderDescribe(headerP);
   } else {
