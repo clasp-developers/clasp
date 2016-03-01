@@ -511,7 +511,7 @@ extern "C" {
  *
  * Validate this client and the clients that it points to.
  */
-#if 1
+#if 0
 void client_validate_internal(void* tagged_client) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_VALIDATE_TABLE
@@ -566,8 +566,8 @@ void client_validate_internal(void* tagged_client) {
  * Recursively walk the tagged pointers within this client and validate them.
  * Keep track of which tagged pointers have been seen using the _seen_ set.
  */
-#if 1
-void client_validate_recursive(void* tagged_client, std::set<core::T_O*>& seen) {
+#if 0
+void client_validate_recursive(void* tagged_client, std::set<void*>& seen) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_VALIDATE_TABLE
 #include "clasp_gc.cc"
@@ -576,8 +576,8 @@ void client_validate_recursive(void* tagged_client, std::set<core::T_O*>& seen) 
   if ( !gctools::tagged_objectp(tagged_client) ) return;
   GCKindEnum kind;
       // The client must have a valid header
-  DEBUG_THROW_IF_INVALID_CLIENT(client);
   core::T_O* client = gctools::untag_object(tagged_client);
+  DEBUG_THROW_IF_INVALID_CLIENT(client);
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
   header->validate();
