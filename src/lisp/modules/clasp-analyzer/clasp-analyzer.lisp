@@ -1504,13 +1504,11 @@ so that they don't have to be constantly recalculated"
   pointee-type)
 
 
-(defgeneric fixer-macro-name (fixer-head suffix))
+(defgeneric fixer-macro-name (fixer-head))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
 (defmethod fixer-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_FIX")
-(defmethod fixer-macro-name ((x pointer-fixer)) "POINTER_REF_FIX")
-(defmethod fixer-macro-name ((x array-fixer)) "ARRAY_FIX")
 
-(defgeneric validator-macro-name (validator-head suffix))
+(defgeneric validator-macro-name (validator-head))
 (defmethod validator-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_VALIDATE")
 (defmethod validator-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_VALIDATE")
 
@@ -2578,6 +2576,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-macro-name ((var tagged-pointer-ctype)) "TAGGED_POINTER_FIX")
 (defmethod fix-macro-name ((var pointer-ctype)) "SIMPLE_POINTER_FIX")
 (defmethod fix-macro-name ((var cxxrecord-ctype)) "RECORD_FIX")
+
+(defgeneric validate-macro-name (var))                           
+(defmethod validate-macro-name ((var global-variable))
+  (validate-macro-name (global-variable-ctype var)))
+(defmethod validate-macro-name ((var smart-ptr-ctype)) "SMART_PTR_VALIDATE")
+(defmethod validate-macro-name ((var tagged-pointer-ctype)) "TAGGED_POINTER_VALIDATE")
+(defmethod validate-macro-name ((var pointer-ctype)) "SIMPLE_POINTER_VALIDATE")
+(defmethod validate-macro-name ((var cxxrecord-ctype)) "RECORD_VALIDATE")
 
 
 (defun generate-code-for-global-non-symbol-variables (stream analysis)
