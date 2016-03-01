@@ -588,7 +588,6 @@ void client_validate_recursive(void* tagged_client, std::set<core::T_O*>& seen) 
     if (kind_layout.layout_operation == class_operation) {
 #ifndef RUNNING_GC_BUILDER
       const Class_layout& class_layout = kind_layout.class_;
-      size = class_layout.size;
       int num_fields = class_layout.number_of_fields;
       Field_layout* field_layout_cur = class_layout.field_layout_start;
       for ( int i=0; i<num_fields; ++i ) {
@@ -605,8 +604,8 @@ void client_validate_recursive(void* tagged_client, std::set<core::T_O*>& seen) 
       size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
 #ifndef RUNNING_GC_BUILDER
       goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define SMART_PTR_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);};
-#define TAGGED_POINTER_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);};
+#define SMART_PTR_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
+#define TAGGED_POINTER_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
 #define GC_OBJ_VALIDATE
 #include "clasp_gc.cc"
 #undef GC_OBJ_VALIDATE
