@@ -877,7 +877,7 @@ CL_DEFUN void gctools__enable_underscanning(bool us)
 };
 
 extern "C" {
-void client_validate(core::T_O *taggedClient) {
+void client_validate(void *taggedClient) {
   if ( gctools::tagged_generalp(taggedClient))
   {
     void* client = gctools::untag_general(taggedClient);
@@ -891,8 +891,8 @@ void client_validate(core::T_O *taggedClient) {
 };
 
 
-void client_describe(core::T_O *taggedClient) {
-  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
+void client_describe(void *taggedClient) {
+  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future

@@ -298,9 +298,9 @@ extern "C" {
 // These must be provided the the garbage collector specific code
 
 //! Describe the header of the client
-void client_describe(core::T_O *taggedClient);
+void client_describe(void *taggedClient);
 //! Validate the client
-void client_validate(core::T_O *taggedClient);
+void client_validate(void *taggedClient);
 //! Describe the header
 void header_describe(gctools::Header_s* headerP);
 };

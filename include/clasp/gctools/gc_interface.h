@@ -102,8 +102,8 @@ extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj)
 extern int global_symbol_count;
 extern gctools::smart_ptr<core::Symbol_O> global_symbols[];
 
-extern void client_validate_internal(core::T_O* tagged_client);
-extern void client_validate_recursive(core::T_O* tagged_client, std::set<core::T_O*> seen );
+extern void client_validate_internal(void* tagged_client);
+extern void client_validate_recursive(void* tagged_client, std::set<core::T_O*> seen );
 };
 
 void initialize_clasp();

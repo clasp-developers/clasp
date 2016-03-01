@@ -511,8 +511,8 @@ extern "C" {
  *
  * Validate this client and the clients that it points to.
  */
-#if 0
-void client_validate_internal(core::T_O* tagged_client) {
+#if 1
+void client_validate_internal(void* tagged_client) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_VALIDATE_TABLE
 #include "clasp_gc.cc"
@@ -521,7 +521,7 @@ void client_validate_internal(core::T_O* tagged_client) {
   if (!gctools::tagged_objectp(tagged_client)) return;
   GCKindEnum kind;
       // The client must have a valid header
-  core::T_O* client = gctools::untag_object(tagged_client);
+  void* client = gctools::untag_object(tagged_client);
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
@@ -546,11 +546,13 @@ void client_validate_internal(core::T_O* tagged_client) {
       size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
 #ifndef RUNNING_GC_BUILDER
       goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define VALIDATE(x) client_validate((x).raw_())
+#define SMART_PTR_VALIDATE(x) client_validate((x).rawRef_())
+#define TAGGED_POINTER_VALIDATE(x) client_validate((x).rawRef_())
 #define GC_OBJ_VALIDATE
 #include "clasp_gc.cc"
 #undef GC_OBJ_VALIDATE
-#undef VALIDATE
+#undef SMART_PTR_VALIDATE
+#undef TAGGED_PTR_VALIDATE
     VALIDATE_ADVANCE:
 #endif // #ifndef RUNNING_GC_BUILDER
     }
@@ -564,8 +566,8 @@ void client_validate_internal(core::T_O* tagged_client) {
  * Recursively walk the tagged pointers within this client and validate them.
  * Keep track of which tagged pointers have been seen using the _seen_ set.
  */
-#if 0
-void client_validate_recursive(core::T_O* tagged_client, std::set<core::T_O*>& seen) {
+#if 1
+void client_validate_recursive(void* tagged_client, std::set<core::T_O*>& seen) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_VALIDATE_TABLE
 #include "clasp_gc.cc"
@@ -603,11 +605,13 @@ void client_validate_recursive(core::T_O* tagged_client, std::set<core::T_O*>& s
       size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
 #ifndef RUNNING_GC_BUILDER
       goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define VALIDATE(x) {if ( !seen.count(*x) ) { client_validate_recursive(*x,seen); seen.insert(*x); }}
+#define SMART_PTR_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);};
+#define TAGGED_POINTER_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);};
 #define GC_OBJ_VALIDATE
 #include "clasp_gc.cc"
 #undef GC_OBJ_VALIDATE
-#undef VALIDATE
+#undef SMART_PTR_VALIDATE
+#undef TAGGED_PTR_VALIDATE
     VALIDATE_ADVANCE:
 #endif // #ifndef RUNNING_GC_BUILDER
     }
