@@ -898,17 +898,17 @@ void client_describe(void *taggedClient) {
     // this may not be true in the future
     // conses may be moved into a separate pool and dealt with in a different way
     uintptr_t *headerP;
-    if (tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
+    if (gctools::tagged_generalp(taggedClient)) {
+      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
     } else {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
+      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
     }
     gctools::rawHeaderDescribe(headerP);
   } else {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
     printf("    Trying to interpret as client pointer\n");
     uintptr_t* headerP;
-    headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(taggedClient));
+    headerP = reinterpret_cast<uintptr_t*>(gctools::ClientPtrToBasePtr(taggedClient));
     gctools::rawHeaderDescribe(headerP);
   }
 };
