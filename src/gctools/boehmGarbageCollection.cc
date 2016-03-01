@@ -65,7 +65,7 @@ void client_describe(core::T_O *taggedClient) {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
   };
 };
-void client_validate(core::T_O *taggedClient)
+void client_validate(void *taggedClient)
 {
 }
 
