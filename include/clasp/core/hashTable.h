@@ -112,6 +112,13 @@ CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThr
   uint hashTableSize() const;
 
   virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+  gc::Fixnum safe_sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey ) const {
+#ifdef DEBUG_HASH_TABLE_AS_ALIST
+    return 0;
+#else
+    return this->sxhashKey(key,bound,willAddKey);
+#endif
+  }
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */

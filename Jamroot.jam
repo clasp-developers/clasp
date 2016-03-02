@@ -138,6 +138,14 @@ project clasp : requirements
 #       <define>SOURCE_DEBUG
 #-------- mps options
 
+
+#### Memory sanitizer and don't omit frame pointers
+#          <cflags>"-fsanitize=memory -fno-omit-frame-pointer"
+#          <cflags>"-fsanitize=address"
+
+### DEBUG_HASH_TABLE_AS_ALIST    ---- hash-tables become one big alist to debug hashing and GC
+    <define>DEBUG_HASH_TABLE_AS_ALIST
+
 #### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
         <define>DEBUG_SPLAT_FORWARD
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
