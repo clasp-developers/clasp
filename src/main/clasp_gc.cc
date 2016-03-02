@@ -5654,7 +5654,7 @@ obj_validate_KIND_GCSTRING_gctools__GCString_moveable_char_:
 {
     // Should never be invoked
 }
-goto SCAN_ADVANCE;
+goto VALIDATE_ADVANCE;
 obj_validate_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
     gctools::GCVector_moveable<core::RequiredArgument>* obj_gc_safe = reinterpret_cast<gctools::GCVector_moveable<core::RequiredArgument>*>(client);

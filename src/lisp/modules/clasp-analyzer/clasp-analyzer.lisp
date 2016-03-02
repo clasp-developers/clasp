@@ -1884,7 +1884,7 @@ so that they don't have to be constantly recalculated"
   (let* ((alloc (simple-enum-alloc enum))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
+    (with-jump-table (fout jump-table-index dest enum "goto VALIDATE_ADVANCE")
       (format fout "    // Should never be invoked~%"))))
 
 
