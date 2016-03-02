@@ -389,7 +389,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     stringstream sdebug;
     bool debugging = gctools::debugging_configuration(sdebug);
     if ( debugging ) {
-      printf("%s:%d Debugging flags are set - configuration:\n%s\n", sdebug.str().c_str());
+      printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
     }
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment\n", __FILE__, __LINE__ );
