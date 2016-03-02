@@ -266,7 +266,7 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
   if (obj.objectp()) {
 #ifdef USE_MPS
     if (ld)
-      mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
+      mps_ld_add(ld, gctools::_global_arena, &(*obj));
 #endif
     obj->T_O::sxhash_(hg);
     return;
@@ -296,7 +296,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
   }
 #ifdef USE_MPS
   if (ld)
-    mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
+    mps_ld_add(ld, gctools::_global_arena, &(*obj));
 #endif
   obj->T_O::sxhash_(hg);
 }
@@ -350,7 +350,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
   }
 #ifdef USE_MPS
   if (ld)
-    mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
+    mps_ld_add(ld, gctools::_global_arena, &(*obj));
 #endif
   obj->T_O::sxhash_(hg);
 }
@@ -424,7 +424,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
   }
 #ifdef USE_MPS
   if (ld)
-    mps_ld_add(ld, gctools::_global_arena, SmartPtrToBasePtr(obj));
+    mps_ld_add(ld, gctools::_global_arena, &(*obj));
 #endif
   obj->T_O::sxhash_(hg);
 }
@@ -489,6 +489,7 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
   this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena);
+  this->_LocationDependencyTracker._rs = (mps_word_t)-1;
 #endif
   return sz;
 }
@@ -574,7 +575,7 @@ List_sp HashTable_O::tableRef(T_sp key) {
 #ifdef USE_MPS
   // Location dependency test if key is stale
   if (key.objectp()) {
-    void *blockAddr = SmartPtrToBasePtr(key);
+    void *blockAddr = &(*key);
     if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }

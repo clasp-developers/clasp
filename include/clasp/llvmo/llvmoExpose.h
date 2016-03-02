@@ -2308,11 +2308,12 @@ TRANSLATE(llvmo::APFloat_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
-  typedef const llvm::APFloat &DeclareType;
+  typedef llvm::APFloat DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value){};
 };
 };
+
 /* to_object translators */
 
 #if 0
@@ -2355,7 +2356,7 @@ TRANSLATE(llvmo::APInt_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APInt &, std::true_type> {
-  typedef const llvm::APInt &DeclareType;
+  typedef llvm::APInt DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value){};
 };
