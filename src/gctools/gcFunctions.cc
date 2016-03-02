@@ -21,6 +21,7 @@ extern "C" {
 #include <clasp/core/standardClass.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/structureClass.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
