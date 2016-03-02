@@ -626,7 +626,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            (file-write-date image-file))
         t)))
 
-(defun compile-kernel-file (filename &key (reload nil) load-bitcode (force-recompile nil))
+(defun compile-kernel-file (filename &key (reload nil) load-bitcode (force-recompile nil) counter total-files)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" filename)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((source-path (build-pathname filename :lisp))
@@ -640,7 +640,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	  )
 	(progn
 	  (bformat t "\n")
-	  (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload)
+	  (if (and counter total-files)
+              (bformat t "Compiling source [%d of %d] %s\n    to %s - will reload: %s\n" counter total-files source-path bitcode-path reload)
+              (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload))
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
             (compile-file (probe-file source-path) :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
@@ -864,12 +866,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun compile-system (files &key reload (system *system-files*))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
-  (let* ((cur files))
+  (let* ((cur files)
+         (counter 1)
+         (total (length files)))
     (tagbody
      top
        (if (endp cur) (go done))
-       (compile-kernel-file (car cur) :reload reload )
+       (compile-kernel-file (car cur) :reload reload :counter counter :total-files total )
        (setq cur (cdr cur))
+       (setq counter (+ 1 counter))
        (go top)
      done)))
 (export 'compile-system)

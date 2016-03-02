@@ -566,83 +566,110 @@ CL_DEFUN void gctools__cleanup() {
 #endif
 };
 
-CL_DEFUN void gctools__configuration()
-{
+
+
+
+bool debugging_configuration(stringstream& ss) {
+  bool debugging = false;
   bool use_boehm_memory_marker = false;
 #ifdef USE_BOEHM_MEMORY_MARKER
   use_boehm_memory_marker = true;
+  debugging = true;
 #endif
-  printf("USE_BOEHM_MEMORY_MARKER = %s\n", use_boehm_memory_marker ? "defined" : "undefined" );
+  ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "defined" : "undefined") ).str();
   bool use_alloca_for_frame = false;
 #ifdef USE_ALLOCA_FOR_FRAME
   use_alloca_for_frame = true;
+  debugging = true;
 #endif
-  printf("USE_ALLOCA_FOR_FRAME = %s\n", use_alloca_for_frame ? "defined" : "undefined" );
+  ss << (BF("USE_ALLOCA_FOR_FRAME = %s\n") % (use_alloca_for_frame ? "defined" : "undefined") ).str();
 
   bool mps_recognize_all_tags = false;
 #ifdef MPS_RECOGNIZE_ALL_TAGS
   mps_recognize_all_tags = true;
+  debugging = true;
 #endif
-  printf("MPS_RECOGNIZE_ALL_TAGS = %s\n", mps_recognize_all_tags ? "defined" : "undefined" );
+  ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "defined" : "undefined") ).str();
 
   bool mps_recognize_zero_tags = false;
 #ifdef MPS_RECOGNIZE_ZERO_TAGS
   mps_recognize_zero_tags = true;
+  debugging = true;
 #endif
-  printf("MPS_RECOGNIZE_ZERO_TAGS = %s\n", mps_recognize_zero_tags ? "defined" : "undefined" );
+  ss << (BF("MPS_RECOGNIZE_ZERO_TAGS = %s\n") % (mps_recognize_zero_tags ? "defined" : "undefined") ).str();
 
   bool use_symbols_in_global_array = false;
 #ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
   use_symbols_in_global_array = true;
 #endif
-  printf("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n", use_symbols_in_global_array ? "defined" : "undefined" );
+  ss << (BF("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n") % (use_symbols_in_global_array ? "defined" : "undefined") ).str();
 
   bool use_static_analyzer_global_symbols = false;
 #ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
   use_static_analyzer_global_symbols = true;
 #endif
-  printf("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n", use_static_analyzer_global_symbols ? "defined" : "undefined" );
+  ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "defined" : "undefined") ).str();
 
   bool debug_throw_if_invalid_client_on = false;
 #ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
   debug_throw_if_invalid_client_on = true;
+  debugging = true;
 #endif
-  printf("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n", debug_throw_if_invalid_client_on ? "defined" : "undefined" );
+  ss << (BF("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n") % (debug_throw_if_invalid_client_on ? "defined" : "undefined") ).str();
 
     bool debug_telemetry = false;
 #ifdef DEBUG_TELEMETRY
   debug_telemetry = true;
+  debugging = true;
 #endif
-  printf("DEBUG_TELEMETRY = %s\n", debug_telemetry ? "defined" : "undefined" );
+  ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "defined" : "undefined") ).str();
 
   bool debug_stack_telemetry = false;
 #ifdef DEBUG_STACK_TELEMETRY
   debug_stack_telemetry = true;
+  debugging = true;
 #endif
-  printf("DEBUG_STACK_TELEMETRY = %s\n", debug_stack_telemetry ? "defined" : "undefined" );
+  ss << (BF("DEBUG_STACK_TELEMETRY = %s\n") % (debug_stack_telemetry ? "defined" : "undefined") ).str();
 
   bool debug_mps_underscanning = false;
 #ifdef DEBUG_MPS_UNDERSCANNING
   debug_mps_underscanning = true;
   bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+  debugging = true;
 #else
   bool debug_mps_underscanning_initial = false;
 #endif
-  printf("DEBUG_MPS_UNDERSCANNING = %s\n", debug_mps_underscanning ? "defined" : "undefined" );
-  printf("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n", debug_mps_underscanning_initial ? "true" : "false" );
+  ss << (BF("DEBUG_MPS_UNDERSCANNING = %s\n") % (debug_mps_underscanning ? "defined" : "undefined") ).str();
+  ss << (BF("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n") % (debug_mps_underscanning_initial ? "true" : "false") ).str();
 
   bool debug_recursive_allocations = false;
 #ifdef DEBUG_RECURSIVE_ALLOCATIONS
   debug_recursive_allocations = true;
+  debugging = true;
 #endif
-  printf("DEBUG_RECURSIVE_ALLOCATIONS = %s\n", debug_recursive_allocations ? "defined" : "undefined" );
+  ss << (BF("DEBUG_RECURSIVE_ALLOCATIONS = %s\n") % (debug_recursive_allocations ? "defined" : "undefined") ).str();
 
   bool config_var_cool = false;
 #ifdef CONFIG_VAR_COOL
   config_var_cool = true;
+  debugging = true;
 #endif
-  printf("CONFIG_VAR_COOL = %s\n", config_var_cool ? "defined" : "undefined" );
+  ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
 
+  bool debug_hash_table_as_alist = false;
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+  debug_hash_table_as_alist = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_HASH_TABLE_AS_ALIST = %s\n") % (debug_hash_table_as_alist ? "defined" : "undefined") ).str();
+  return debugging;
+}
+
+CL_DEFUN void gctools__configuration()
+{
+  stringstream ss;
+  bool debugging = debugging_configuration(ss);
+  core::clasp_writeln_string(ss.str());
 }
 
 
