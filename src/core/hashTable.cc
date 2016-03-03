@@ -757,37 +757,6 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
           this->_HashTable->operator[](index) = newCur;
         }
       }
-#if 0
-      List_sp next;
-      for ( List_sp cur = oldTable->operator[](it); cur.notnilp(); cur = next )
-      {
-        T_sp tnext = oCdr(cur);
-        next = coerce_to_list(tnext);//;cCdr(cur);
-        Cons_sp pair = cCar(cur);
-        T_sp key = oCar(pair);
-        T_sp value = oCdr(pair);
-        if ( !value.unboundp() ) {
-                        // key/value represent a valid entry in the hash table
-                        //
-                        // If findKey is not unbound and we haven't already found
-                        // the value that it points to.
-                        // then while we are rehashing the hash table we are also looking
-                        // for the key it points to.
-                        // Check if the current key matches findKey and if it does
-                        // set foundKeyValuePair so that it will be returned when
-                        // the rehash is complete.
-          if ( foundKeyValuePair.nilp() && !findKey.unboundp() ) {
-            if ( this->keyTest(key,findKey) ) {
-              foundKeyValuePair = pair;
-            }
-          }
-          uint index = this->safe_sxhashKey(key,cl__length(this->_HashTable),true /* Will add key */);
-          LOG(BF("Re-indexing key[%s] to index[%d]") % _rep_(key) % index );
-          Cons_sp newCur = Cons_O::create(pair,this->_HashTable->operator[](index));
-          this->_HashTable->operator[](index) = newCur;
-        }
-      }
-#endif
     }
   }
   uint endCount = this->hashTableCount();

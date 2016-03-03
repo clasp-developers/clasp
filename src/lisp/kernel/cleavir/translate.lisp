@@ -950,9 +950,7 @@ nil)
                      (format *debug-log* "cleavir-generate-ast::*current-form-is-top-level-p* --> ~a~%" 
                              (if (boundp 'cleavir-generate-ast::*current-form-is-top-level-p*) 
                                  cleavir-generate-ast::*current-form-is-top-level-p* 
-                                 "UNBOUND" ))
-                     (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
-                             cleavir-generate-ast::*subforms-are-top-level-p*))
+                                 "UNBOUND" )))
         (let* ((clasp-system *clasp-system*)
                (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
                       (when *debug-cleavir* (draw-ast a))

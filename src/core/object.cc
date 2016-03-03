@@ -330,7 +330,7 @@ string T_O::className() const {
 }
 
 void T_O::sxhash_(HashGenerator &hg) const {
-  int res = (int)((reinterpret_cast<unsigned long long int>(GC_BASE_ADDRESS_FROM_PTR(this)) >> 4) & INT_MAX);
+  int res = (int)((((uintptr_t)this) >> 4) & INT_MAX);
   hg.addPart(res);
 }
 
