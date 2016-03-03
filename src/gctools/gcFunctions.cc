@@ -658,7 +658,7 @@ bool debugging_configuration(stringstream& ss) {
   ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
 
   bool debug_hash_table_as_alist = false;
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+#ifdef DEBUG_HASH_TABLE_AS_ALIST
   debug_hash_table_as_alist = true;
   debugging = true;
 #endif
