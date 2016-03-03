@@ -175,7 +175,6 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
     }
   }
 
-  printf("%s:%d WARNING I added this->_LocationDependencyTracker->_rs = (mps_word_t)-1; to HashTable_O::resizeEmptyTable - remove this\n", __FILE__, __LINE__ );
   core::CommandLineOptions options(argc, argv);
   int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
 

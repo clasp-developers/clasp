@@ -86,6 +86,7 @@ typedef Fixnum cl_fixnum;
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */
 typedef uintptr_t Tagged;
+static const int tag_shift = 3;
 static const int fixnum_bits = 61;
 static const int fixnum_shift = 3;
 static const size_t thread_local_cl_stack_min_size = THREAD_LOCAL_CL_STACK_MIN_SIZE;

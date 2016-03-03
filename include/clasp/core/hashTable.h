@@ -63,6 +63,9 @@ class HashTable_O : public T_O {
 
 protected: // instance variables here
   uint _InitialSize;
+#if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC) && defined(USE_MPS)
+  mps_word_t _Epoch;
+#endif
   Number_sp _RehashSize;
   double _RehashThreshold;
   VectorObjects_sp _HashTable;

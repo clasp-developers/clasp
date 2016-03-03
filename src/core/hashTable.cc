@@ -241,6 +241,9 @@ void HashTable_O::clrhash() {
 
 void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
   _OF();
+#if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC) && defined(USE_MPS)
+  this->_Epoch = mps_collections();
+#endif
   sz = this->resizeEmptyTable(sz);
   this->_InitialSize = sz;
   this->_RehashSize = rehashSize;
@@ -264,11 +267,11 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
     return;
   }
   if (obj.objectp()) {
+    volatile void* address = &(*obj);
 #ifdef USE_MPS
-    if (ld)
-      mps_ld_add(ld, gctools::_global_arena, &(*obj));
+    if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
-    obj->T_O::sxhash_(hg);
+    hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
     return;
   }
   SIMPLE_ERROR(BF("sxhash_eq cannot hash object"));
@@ -294,11 +297,11 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
       return;
     }
   }
+  volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld)
-    mps_ld_add(ld, gctools::_global_arena, &(*obj));
+  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
-  obj->T_O::sxhash_(hg);
+  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
 }
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -348,11 +351,11 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
       return;
     }
   }
+  volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld)
-    mps_ld_add(ld, gctools::_global_arena, &(*obj));
+  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
-  obj->T_O::sxhash_(hg);
+  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -422,11 +425,11 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
     }
   }
+  volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld)
-    mps_ld_add(ld, gctools::_global_arena, &(*obj));
+  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
-  obj->T_O::sxhash_(hg);
+  hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
 }
 
 bool HashTable_O::equalp(T_sp other) const {
@@ -489,7 +492,6 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
   this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena);
-  this->_LocationDependencyTracker._rs = (mps_word_t)-1;
 #endif
   return sz;
 }
@@ -569,6 +571,13 @@ List_sp HashTable_O::bucketsFind(T_sp key) const {
 }
 
 List_sp HashTable_O::tableRef(T_sp key) {
+#if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC) && defined(USE_MPS)
+  epoch = mps_collections();
+  if ( this->_Epoch != epoch ) {
+    this->_Epoch = epoch;
+    this->rehash(false,_Unbound<core::T_O>());
+  }
+#endif
   List_sp keyValueCons = this->bucketsFind(key);
   if (keyValueCons.notnilp())
     return keyValueCons;
