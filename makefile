@@ -217,6 +217,12 @@ fixup:
 	echo Fixed-up Clasp is now built
 
 mps-build:
+	make print-config
+	make submodules
+	make asdf
+	make boost_build
+	install -d build/clasp/Contents/Resources
+	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	make -C src/main mps-debug-cxx
 	make -C src/main mps-release-cxx
 
