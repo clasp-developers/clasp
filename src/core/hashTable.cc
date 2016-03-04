@@ -242,7 +242,7 @@ void HashTable_O::clrhash() {
 void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
   _OF();
 #if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC) && defined(USE_MPS)
-  this->_Epoch = mps_collections();
+  this->_Epoch = mps_collections(gctools::_global_arena);
 #endif
   sz = this->resizeEmptyTable(sz);
   this->_InitialSize = sz;
@@ -269,7 +269,12 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
   if (obj.objectp()) {
     volatile void* address = &(*obj);
 #ifdef USE_MPS
+    #ifdef DEBUG_OBJECT_UNIQUE_ID
+    hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
+    return;
+    #else
     if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+    #endif
 #endif
     hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
     return;
@@ -299,9 +304,15 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
+#ifdef DEBUG_OBJECT_UNIQUE_ID
+  hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
+  return;
+#else
   if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
+#endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  return;
 }
 
 void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -353,9 +364,15 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
+#ifdef DEBUG_OBJECT_UNIQUE_ID
+  hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
+  return;
+#else
   if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
+#endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  return;
 }
 
 void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyPtrT ld) {
@@ -427,9 +444,15 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
+#ifdef DEBUG_OBJECT_UNIQUE_ID
+  hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
+  return;
+#else
   if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
 #endif
+#endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
+  return;
 }
 
 bool HashTable_O::equalp(T_sp other) const {
@@ -571,26 +594,29 @@ List_sp HashTable_O::bucketsFind(T_sp key) const {
 }
 
 List_sp HashTable_O::tableRef(T_sp key) {
-#if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC) && defined(USE_MPS)
-  epoch = mps_collections();
-  if ( this->_Epoch != epoch ) {
-    this->_Epoch = epoch;
-    this->rehash(false,_Unbound<core::T_O>());
-  }
-#endif
   List_sp keyValueCons = this->bucketsFind(key);
   if (keyValueCons.notnilp())
     return keyValueCons;
 #if !defined(DEBUG_HASH_TABLE_AS_ALIST)
-#ifdef USE_MPS
+  #if defined(USE_MPS)
+    #if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC)
+  mps_word_t epoch = mps_collections(gctools::_global_arena);
+  if ( this->_Epoch != epoch ) {
+    this->_Epoch = epoch;
+    keyValueCons = this->rehash(false,key);
+  }
+    #else
   // Location dependency test if key is stale
   if (key.objectp()) {
+      #if !defined(DEBUG_OBJECT_UNIQUE_ID)
     void *blockAddr = &(*key);
     if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }
+      #endif
   }
-#endif
+    #endif
+  #endif
 #endif
   return keyValueCons;
 }

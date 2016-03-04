@@ -128,6 +128,9 @@ size_t random_tail_size() {
   return ts;
 }
 
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+static uintptr_t global_next_uid = 0;
+#endif // #if defined(DEBUG_OBJECT_UNIQUE_ID)
 
 void Header_s::validate() const {
   if ( this->kindP() ) {

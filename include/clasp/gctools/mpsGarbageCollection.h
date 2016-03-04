@@ -173,6 +173,11 @@ inline size_t sizeof_with_header();
       bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
     */
 
+ 
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+ static uintptr_t global_next_uid;
+#endif // #if defined(DEBUG_OBJECT_UNIQUE_ID)
+ 
 class Header_s {
 public:
   static const tagged_kind_t tag_mask = BOOST_BINARY(11);
@@ -187,6 +192,9 @@ public:
 
 public:
   tagged_kind_t header;
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+  uintptr_t     uid;
+#endif
 #ifdef DEBUG_GUARD
   tagged_kind_t guard;
   size_t tail_start;
@@ -195,12 +203,19 @@ public:
   tagged_kind_t data[1]; // After this is where the client pointer starts
 public:
 #ifndef DEBUG_GUARD
- Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
+ Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag)
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+    ,uid(++global_next_uid)
+#endif
+    ,data{0xDEADBEEF01234567} {};
   void validate() const {};
 #else
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
  Header_s(kind_t k,size_t tstart, size_t tsize) 
    : header((((kind_t)k) << 2) | kind_tag),
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+    ,uid(++global_next_uid);
+#endif
       data{0xDEADBEEF01234567},
       tail_start(tstart),
       tail_size(tsize),
@@ -219,6 +234,16 @@ public:
   bool padP() const { return (this->header & pad_mask) == pad_tag; };
   bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
 
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+  uintptr_t get_uid() const {
+#ifdef USE_BOEHM
+    return (uintptr_t)this;
+#else
+    return this->uid;
+#endif // #ifdef USE_BOEHM
+  }
+#endif // #if defined(DEBUG_OBJECT_UNIQUE_ID)
+  
   /*! No sanity checking done - this function assumes kindP == true */
   GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
   void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
@@ -366,6 +391,13 @@ inline void *ClientPtrToBasePtr(void *mostDerived) {
   return ptr;
 }
 
+ inline Header_s* header_pointer(void* client_pointer)
+ {
+   Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client_pointer) - sizeof(Header_s));
+   return header;
+ }
+   
+   
 inline void throwIfInvalidClient(core::T_O *client) {
   Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
   if (header->invalidP()) {

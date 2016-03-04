@@ -179,6 +179,12 @@ inline void *ClientPtrToBasePtr(void *mostDerived) {
   return ptr;
 }
 
+ inline Header_s* header_pointer(void* client_pointer)
+ {
+   Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client_pointer));
+   return header;
+ }
+
 template <typename T>
 inline T *BasePtrToMostDerivedPtr(void *base) {
   size_t headerSize = AlignUp(sizeof(Header_s));

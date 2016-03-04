@@ -149,6 +149,10 @@ project clasp : requirements
 ### DEBUG_HASH_TABLE_REHASH_EVERY_GC  ---- hash-tables are rehashed every GC
     <define>DEBUG_HASH_TABLE_REHASH_EVERY_GC
 
+### DEBUG_OBJECT_UNIQUE_ID  --- give every allocated object a unique id
+###                             used to debug hash tables
+    <define>DEBUG_OBJECT_UNIQUE_ID
+
 #### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
         <define>DEBUG_SPLAT_FORWARD
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT

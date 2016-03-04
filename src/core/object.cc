@@ -330,7 +330,7 @@ string T_O::className() const {
 }
 
 void T_O::sxhash_(HashGenerator &hg) const {
-  Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift);
+  Fixnum res = (Fixnum)((((uintptr_t)this) >> gctools::tag_shift));
   hg.addPart(res);
 }
 
