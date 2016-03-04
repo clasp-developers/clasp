@@ -177,6 +177,7 @@ all:
 	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
+	make executable-symlinks
 	make -C src/main min-boehm
 	make -C src/main bclasp-boehm-bitcode
 	make -C src/main bclasp-boehm-fasl
@@ -184,7 +185,6 @@ all:
 #	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-addons
-	make executable-symlinks
 	echo Clasp is now built
 
 
@@ -197,6 +197,7 @@ mps-all:
 	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
+	make executable-symlinks
 	make -C src/main min-mps
 	make -C src/main bclasp-mps-bitcode
 	make -C src/main bclasp-mps-fasl
@@ -225,6 +226,7 @@ mps-build:
 	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	make -C src/main mps-debug-cxx
 	make -C src/main mps-release-cxx
+	make executable-symlinks
 
 
 boot:
