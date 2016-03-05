@@ -104,19 +104,6 @@ CL_DEFUN core::T_mv gctools__bytes_allocated() {
   return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes));
 }
 
-#if defined(DEBUG_OBJECT_UNIQUE_ID)
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("Return the header uid for the object");
-CL_DEFUN Fixnum core__header_unique_id(core::T_sp obj) {
-  if (obj.consp()) {
-    return header_pointer(&(*obj))->uid;
-  } else if (obj.generalp()) {
-    return header_pointer(&(*obj))->uid;
-  }
-  return -1;
-}
-#endif //#if defined(DEBUG_OBJECT_UNIQUE_ID)
 
 
 CL_LAMBDA();
@@ -671,27 +658,7 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
 
-  bool debug_hash_table_as_alist = false;
-#ifdef DEBUG_HASH_TABLE_AS_ALIST
-  debug_hash_table_as_alist = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_HASH_TABLE_AS_ALIST = %s\n") % (debug_hash_table_as_alist ? "defined" : "undefined") ).str();
 
-    bool debug_hash_table_rehash_every_gc = false;
-#ifdef DEBUG_HASH_TABLE_REHASH_EVERY_GC
-  debug_hash_table_rehash_every_gc = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_HASH_TABLE_REHASH_EVERY_GC = %s\n") % (debug_hash_table_rehash_every_gc ? "defined" : "undefined") ).str();
-
-  bool debug_object_unique_id = false;
-#ifdef DEBUG_OBJECT_UNIQUE_ID
-  debug_object_unique_id = true;
-  debugging = true;
-#endif
-  ss << (BF("DEBUG_OBJECT_UNIQUE_ID = %s\n") % (debug_object_unique_id ? "defined" : "undefined") ).str();
-  
   return debugging;
 }
 

@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
 
 #include <limits>
 #include <clasp/core/common.h>
@@ -50,14 +49,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-bool DebugHashTable = false;
-
-CL_LAMBDA(on);
-CL_DECLARE();
-CL_DOCSTRING("DebugHashTable");
-CL_DEFUN void core__debug_hash_table(bool don) {
-  DebugHashTable = don;
-}
 
 #ifdef USE_MPS
 static int LockDepth = 0;
@@ -99,9 +90,6 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
     }
     SIMPLE_ERROR(BF("Only :weakness :key (weak-key hash tables) are currently supported"));
   }
-#ifdef DEBUG_HASH_TABLE
-//  printf("%s:%d make_hash_table WARNING DEBUG_HASH_TABLE is on\n", __FILE__, __LINE__);
-#endif
   int isize = clasp_to_int(size);
   double rehash_threshold = clasp_to_double(orehash_threshold);
   HashTable_sp table = _Nil<HashTable_O>();
@@ -117,11 +105,6 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   } else {
     SIMPLE_ERROR(BF("Illegal test[%s] for make-hash-table") % _rep_(test));
   }
-#ifdef DEBUG_HASH_TABLE
-  if (table.notnilp()) {
-    table->_DebugHashTable = debug.isTrue();
-  }
-#endif
   return table;
 }
 
@@ -240,10 +223,6 @@ void HashTable_O::clrhash() {
 }
 
 void HashTable_O::setup(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  _OF();
-#if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC) && defined(USE_MPS)
-  this->_Epoch = mps_collections(gctools::_global_arena);
-#endif
   sz = this->resizeEmptyTable(sz);
   this->_InitialSize = sz;
   this->_RehashSize = rehashSize;
@@ -269,12 +248,7 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
   if (obj.objectp()) {
     volatile void* address = &(*obj);
 #ifdef USE_MPS
-    #ifdef DEBUG_OBJECT_UNIQUE_ID
-    hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
-    return;
-    #else
     if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
-    #endif
 #endif
     hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
     return;
@@ -304,12 +278,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-#ifdef DEBUG_OBJECT_UNIQUE_ID
-  hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
-  return;
-#else
   if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
-#endif
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -364,12 +333,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-#ifdef DEBUG_OBJECT_UNIQUE_ID
-  hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
-  return;
-#else
   if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
-#endif
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -444,12 +408,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-#ifdef DEBUG_OBJECT_UNIQUE_ID
-  hg.addPart((Fixnum)(gctools::header_pointer(&(*obj))->get_uid()));
-  return;
-#else
   if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
-#endif
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -563,32 +522,13 @@ CL_LAMBDA(key hash-table &optional default_value);
 CL_DECLARE();
 CL_DOCSTRING("gethash");
 CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
-#ifdef DEBUG_HASH_TABLE
-  if (gc::As<HashTable_sp>(hashTable)->_DebugHashTable) {
-    string className = "NULL";
-    if (key.objectp()) {
-      className = key->_instanceClass()->classNameAsString();
-    }
-    printf("%s:%d DebugHashTable hashTable = %s  className(key) = %s   key = %s\n", __FILE__, __LINE__, _rep_(hashTable).c_str(), className.c_str(), _rep_(key).c_str());
-  }
-#endif
   HashTable_sp ht = gc::As<HashTable_sp>(hashTable);
   return ht->gethash(key, default_value);
 };
 
 List_sp HashTable_O::bucketsFind(T_sp key) const {
   ASSERT(this->_HashTable);
-#ifdef DEBUG_HASH_TABLE
-  if (this->_DebugHashTable) {
-    printf("%s:%d  About to sxhashKey: %s hash table length: %d\n", __FILE__, __LINE__, _rep_(key).c_str(), cl__length(this->_HashTable));
-  }
-#endif
   gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), false);
-#ifdef DEBUG_HASH_TABLE
-  if (this->_DebugHashTable) {
-    printf("%s:%d  bucketsFind index = %ld\n", __FILE__, __LINE__, index);
-  }
-#endif
   List_sp keyValueCons = this->findAssoc(index, key);
   return keyValueCons;
 }
@@ -597,26 +537,14 @@ List_sp HashTable_O::tableRef(T_sp key) {
   List_sp keyValueCons = this->bucketsFind(key);
   if (keyValueCons.notnilp())
     return keyValueCons;
-#if !defined(DEBUG_HASH_TABLE_AS_ALIST)
-  #if defined(USE_MPS)
-    #if defined(DEBUG_HASH_TABLE_REHASH_EVERY_GC)
-  mps_word_t epoch = mps_collections(gctools::_global_arena);
-  if ( this->_Epoch != epoch ) {
-    this->_Epoch = epoch;
-    keyValueCons = this->rehash(false,key);
-  }
-    #else
+#if defined(USE_MPS)
   // Location dependency test if key is stale
   if (key.objectp()) {
-      #if !defined(DEBUG_OBJECT_UNIQUE_ID)
     void *blockAddr = &(*key);
     if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }
-      #endif
   }
-    #endif
-  #endif
 #endif
   return keyValueCons;
 }
@@ -632,14 +560,6 @@ T_mv HashTable_O::gethash(T_sp key, T_sp default_value) {
   LOG(BF("gethash looking for key[%s]") % _rep_(key));
   List_sp keyValuePair = this->tableRef(key);
   LOG(BF("Found keyValueCons")); // % keyValueCons->__repr__() ); INFINITE-LOOP
-#ifdef DEBUG_HASH_TABLE
-  if (this->_DebugHashTable) {
-    DebugHashTable = false; // Turn it off to print
-    printf("%s:%d DebugHashTable after tableRef() keyValuePair=%s\n", __FILE__, __LINE__, _rep_(keyValuePair).c_str());
-    DebugHashTable = true;
-  }
-#endif
-
   if (keyValuePair.nilp()) {
     LOG(BF("valueOrUnbound is unbound - returning default"));
     return (Values(default_value, _Nil<T_O>()));
@@ -688,55 +608,28 @@ bool HashTable_O::remhash(T_sp key) {
 CL_LISPIFY_NAME("core:hashTableSetfGethash");
 CL_DEFMETHOD T_sp HashTable_O::hash_table_setf_gethash(T_sp key, T_sp value) {
   List_sp keyValuePair = this->tableRef(key);
-#ifdef DEBUG_HASH_TABLE
-  if (this->_DebugHashTable) {
-    printf("%s:%d hash_table_setf_gethash hashTable=%s\n", __FILE__, __LINE__, _rep_(this->asSmartPtr()).c_str());
-    printf("%s:%d hash_table_setf_gethash key=%s\n", __FILE__, __LINE__, _rep_(key).c_str());
-    printf("%s:%d hash_table_setf_gethash keyValuePair = %s\n", __FILE__, __LINE__, _rep_(keyValuePair).c_str());
-  }
-#endif
   if (keyValuePair.nilp()) {
     gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), true /*Will add key*/);
     Cons_sp newKeyValue = Cons_O::create(key, value);
     //            printf("%s:%d  Inserted newKeyValue@%p\n", __FILE__, __LINE__, newKeyValue.raw_());
     Cons_sp newEntry = Cons_O::create(newKeyValue, this->_HashTable->operator[](index));
     this->_HashTable->operator[](index) = newEntry;
-#ifdef DEBUG_HASH_TABLE
-    if (this->_DebugHashTable) {
-      printf("%s:%d hash_table_setf_gethash insert at index: %d\n", __FILE__, __LINE__, index);
-    }
-#endif
     //            this->_HashTableEntryCount++;
     ++(this->_HashTableCount);
   } else if (oCdr(keyValuePair).unboundp()) {
-#ifdef DEBUG_HASH_TABLE
-    if (this->_DebugHashTable) {
-      printf("%s:%d hash_table_setf_gethash overwriting Unbound\n", __FILE__, __LINE__);
-    }
-#endif
     keyValuePair.asCons()->setCdr(value);
     ++(this->_HashTableCount);
   } else {
-#ifdef DEBUG_HASH_TABLE
-    if (this->_DebugHashTable) {
-      printf("%s:%d hash_table_setf_gethash changing value\n", __FILE__, __LINE__);
-    }
-#endif
     keyValuePair.asCons()->setCdr(value);
   }
-#if !defined(DEBUG_HASH_TABLE_AS_ALIST)
   if (this->_HashTableCount > this->_RehashThreshold * cl__length(this->_HashTable)) {
     LOG(BF("Expanding hash table"));
     this->rehash(true, _Unbound<T_O>());
   }
-#endif
   return value;
 }
 
 List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
-#ifdef DEBUG_HASH_TABLE_AS_ALIST
-  return _Nil<T_O>();
-#endif
   //        printf("%s:%d rehash of hash-table@%p\n", __FILE__, __LINE__,  this );
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
   ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
@@ -760,13 +653,6 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
     {
       _BLOCK_TRACEF(BF("Re-indexing hash table row index[%d]") % it);
-#ifdef DEBUG_ALL
-      stringstream sk;
-      for (Cons_sp scur = oldTable->operator[](it); scur.notnilp(); scur = cCdr(scur)) {
-        sk << scur->ocar()->ocar()->__repr__() << " ";
-      }
-      LOG(BF("About to re-index hash table row index[%d] keys: %s") % (it - oldTable.begin()) % sk.str());
-#endif
       for (auto cur : coerce_to_list((*oldTable)[it])) {
         List_sp pair = oCar(cur);
         T_sp key = oCar(pair);

@@ -93,7 +93,6 @@ void HashTableEq_O::archiveBase(::core::ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  _OF();
   return cl__eq(entryKey, searchKey);
 }
 

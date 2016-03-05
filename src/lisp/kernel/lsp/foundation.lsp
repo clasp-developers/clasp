@@ -242,7 +242,8 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun hash-table-iterator (hash-table)
-  (let ((number-of-hashes (hash-table-number-of-hashes hash-table))
+  (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
+        (buckets (core:hash-table-buckets hash-table))
 	(hash 0)
 	(cur-alist))
     (labels ((advance-hash-table-iterator ()
@@ -256,9 +257,9 @@ the corresponding VAR.  Returns NIL."
                          (progn
                            (setq hash (1+ hash))
                            (advance-hash-table-iterator))))
-		   (if (< hash number-of-hashes)
+		   (if (< hash number-of-buckets)
 		       (progn
-			 (setq cur-alist (hash-table-alist-at-hash hash-table hash))
+			 (setq cur-alist (elt buckets hash))
                          (if cur-alist
                              (progn
                                (when (core:hash-table-entry-deleted-p (car cur-alist))
@@ -267,11 +268,11 @@ the corresponding VAR.  Returns NIL."
                                (setq hash (1+ hash))
                                (advance-hash-table-iterator))))))))
       (function (lambda ()
-	(if (>= hash number-of-hashes)
+	(if (>= hash number-of-buckets)
 	    nil
 	    (progn
 	      (advance-hash-table-iterator)
-	      (when (< hash number-of-hashes)
+	      (when (< hash number-of-buckets)
 		(values t (caar cur-alist) (cdar cur-alist))))))))))
 
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST."
