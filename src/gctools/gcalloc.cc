@@ -92,6 +92,7 @@ void *GCStack::pushFrameImpl(size_t frameSize) {
   FRAME_HEADER_SIZE_FIELD(headerAndFrame) = headerAndFrameSize;
   void *frameStart = headerAndFrame + 1; // skip uintptr_t header
   this->_TotalSize += headerAndFrameSize;
+  this->_TotalAllocations += headerAndFrameSize;
   goto DONE;
 #endif
 #ifdef USE_MPS
@@ -130,6 +131,7 @@ void *GCStack::pushFrameImpl(size_t frameSize) {
   FRAME_HEADER_SIZE_FIELD(allocP) = headerAndFrameSize;
   void *frameStart = FRAME_START(allocP); // skip uintptr_t header
   this->_TotalSize += headerAndFrameSize;
+  this->_TotalAllocations += headerAndFrameSize;
   goto DONE;
 #endif
 DONE:

@@ -473,6 +473,12 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   mps_word_t numCollections = mps_collections(gctools::_global_arena);
   size_t arena_committed = mps_arena_committed(gctools::_global_arena);
   size_t arena_reserved = mps_arena_reserved(gctools::_global_arena);
+  vector<ReachableMPSObject> reachables;
+  for (int i = 0; i < gctools::KIND_max; ++i) {
+    reachables.push_back(ReachableMPSObject(i));
+  }
+  mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);
+  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   printf("%12lu collections\n", numCollections);
   printf("%12lu mps_arena_committed\n", arena_committed);
   printf("%12lu mps_arena_reserved\n", arena_reserved);
@@ -484,12 +490,6 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   printf("%12lu    moving zero-rank(AMCZ) allocations\n", globalMpsMetrics.movingZeroRankAllocations);
   printf("%12lu    unknown(configurable) allocations\n", globalMpsMetrics.unknownAllocations);
   printf("%12lu total memory allocated\n", globalMpsMetrics.totalMemoryAllocated);
-  vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < gctools::KIND_max; ++i) {
-    reachables.push_back(ReachableMPSObject(i));
-  }
-  mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);
-  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);

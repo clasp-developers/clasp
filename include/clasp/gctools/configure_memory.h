@@ -17,7 +17,7 @@
 #endif
 
 #ifdef USE_MPS
-#define USE_ALLOCA_FOR_FRAME
+//#define USE_ALLOCA_FOR_FRAME
 #endif
 
 /// Tracking allocations with TRACK_ALLOCATIONS keeps a count of

@@ -501,13 +501,6 @@
   (let* ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
-      #+(or)(push enclosed-function *functions-to-finalize*)
-      #+(or)(progn
-	      (warn "------- Implement enclose-instruction: ~a~%" instruction)
-	      (format t "   enter-instruction: ~a~%" enter-instruction)
-	      (format t "   enclosed-function: ~a~%" enclosed-function)
-	      (format t "    inputs: ~a~%" inputs)
-	      (format t "    outputs: ~a~%" outputs))
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
 	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))

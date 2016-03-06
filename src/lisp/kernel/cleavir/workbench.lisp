@@ -22,7 +22,12 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
+(clasp-cleavir::cleavir-compile nil '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug t)
+
+
 (apropos "cleavir-compile-file")
+
+
 
 (print "Hello")
 (clasp-cleavir::cleavir-compile-file "sys:kernel;clos;print.lsp" :print t)

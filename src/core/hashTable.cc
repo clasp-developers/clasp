@@ -501,12 +501,10 @@ bool HashTable_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 }
 
 gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
-  _OF();
   SUBCLASS_MUST_IMPLEMENT();
 }
 
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
-  _OF();
   List_sp rib = coerce_to_list((*this->_HashTable)[index]);
   for (auto cur : rib) {
     List_sp pair = oCar(cur);
@@ -596,7 +594,6 @@ bool HashTable_O::contains(T_sp key) {
 }
 
 bool HashTable_O::remhash(T_sp key) {
-  _OF();
   List_sp keyValuePair = this->tableRef(key);
   if (keyValuePair.nilp() || oCdr(keyValuePair).unboundp())
     return false;
@@ -634,7 +631,6 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   ASSERTF(!clasp_zerop(this->_RehashSize), BF("RehashSize is zero - it shouldn't be"));
   ASSERTF(cl__length(this->_HashTable) != 0, BF("HashTable is empty in expandHashTable - this shouldn't be"));
   List_sp foundKeyValuePair(_Nil<T_O>());
-  uint startCount = this->hashTableCount();
   LOG(BF("At start of expandHashTable current hash table size: %d") % startSize);
   gc::Fixnum newSize = 0;
   if (expandTable) {
@@ -651,8 +647,6 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
   LOG(BF("Resizing table to size: %d") % newSize);
   size_t oldSize = cl__length(oldTable);
   for (size_t it(0), itEnd(oldSize); it < itEnd; ++it) {
-    {
-      _BLOCK_TRACEF(BF("Re-indexing hash table row index[%d]") % it);
       for (auto cur : coerce_to_list((*oldTable)[it])) {
         List_sp pair = oCar(cur);
         T_sp key = oCar(pair);
@@ -678,11 +672,6 @@ List_sp HashTable_O::rehash(bool expandTable, T_sp findKey) {
           this->_HashTable->operator[](index) = newCur;
         }
       }
-    }
-  }
-  uint endCount = this->hashTableCount();
-  if (startCount != endCount) {
-    SIMPLE_ERROR(BF("After rehash the hash-table-count is %d but at start it was %d") % endCount % startCount);
   }
   return foundKeyValuePair;
 }
@@ -782,7 +771,6 @@ void HashTable_O::map_while_true(std::function<bool(T_sp, T_sp)> const &fn) {
 }
 
 void HashTable_O::lowLevelMapHash(KeyValueMapper *mapper) const {
-  _OF();
   //        HASH_TABLE_LOCK();
   VectorObjects_sp table = this->_HashTable;
   for (size_t it(0), itEnd(cl__length(table)); it < itEnd; ++it) {

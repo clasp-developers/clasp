@@ -1064,6 +1064,7 @@ public:
                  pad_t } frameType;
   size_t _MaxSize;
   size_t _TotalSize;
+  size_t _TotalAllocations;
 #ifdef USE_BOEHM
 #ifdef BOEHM_ONE_BIG_STACK
   uintptr_t *_StackCur;
@@ -1136,6 +1137,11 @@ public:
   size_t totalSize() const {
     return this->_TotalSize;
   }
+
+  size_t totalAllocations() const {
+    return this->_TotalAllocations;
+  }
+
 #define FRAME_HEADER_SIZE (sizeof(int) * 2)
 #define FRAME_HEADER_TYPE_FIELD(hptr) *(((int *)hptr))
 #define FRAME_HEADER_SIZE_FIELD(hptr) *(((int *)hptr) + 1)
@@ -1198,7 +1204,7 @@ public:
 #endif // USE_MPS
   }
 
-  GCStack() : _TotalSize(0), _MaxSize(0)
+ GCStack() : _TotalSize(0), _TotalAllocations(0), _MaxSize(0)
 #ifdef USE_BOEHM
 #endif
 #ifdef USE_MPS
