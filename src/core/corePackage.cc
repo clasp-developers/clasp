@@ -1057,9 +1057,8 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
-  _sym_STARsharp_equal_final_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-  _sym_STARsharp_equal_temp_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-  _sym_STARsharp_equal_repl_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
+  _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
+
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_executableName_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
