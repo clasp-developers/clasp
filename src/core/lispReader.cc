@@ -594,7 +594,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp cur = first;
   while (1) {
+#ifdef SOURCE_TRACKING
     SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
+#endif
     Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
     LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp));
     if (clasp_as_char(cp) == end_char) {
@@ -611,7 +613,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
       TRAP_BAD_CONS(otherResult);
       if (otherResult.nilp())
         return (Values(_Nil<T_O>()));
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(otherResult, info);
+#endif
       return (otherResult);
     }
     int ivalues;
@@ -638,7 +642,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
           SIMPLE_ERROR(BF("More than one object after consing dot"));
         }
         Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
+#ifdef SOURCE_TRACKING
         lisp_registerSourcePosInfo(one, info);
+#endif
         LOG(BF("One = %s\n") % _rep_(one));
         LOG(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
         LOG(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());

@@ -228,7 +228,7 @@ mps-interface-clasp:
 	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 compile-commands:
-	-bjam link=static gc=mps-prep program=clasp link=static release -n -a >bjam.out
+	-$(BJAM) link=static gc=mps-prep program=clasp link=static release -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
 	clasp_boehm_o -f bclasp \
 		-l $(CLASP_HOME)/src/common/build-json.lisp \
@@ -262,6 +262,6 @@ mps-interface-cclasp:
 
 scrape:
 	echo $(CLASP_CLANGXX_PATH)
-	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
-	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
+	$(BJAM) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
+	$(BJAM) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
 	sbcl --load "../scraper/scraper.lisp" -- $(CLASP_CLANGXX_PATH) $(CLASP_HOME)/include/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
