@@ -657,10 +657,7 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   }
 }
 
-/*! Used when USE_SHARP_EQUAL_HASH_TABLES is on */
 SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_equal_temp_tableSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_equal_repl_tableSTAR);
 
 __thread unsigned int read_lisp_object_recursion_depth = 0;
 struct increment_read_lisp_object_recursion_depth {
@@ -703,12 +700,7 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     }
   } else {
     increment_read_lisp_object_recursion_depth::reset();
-    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,
-                              HashTableEql_O::create(40, make_fixnum(4000), 0.8));
-    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,
-                                    HashTableEql_O::create(40, make_fixnum(4000), 0.8));
-    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,
-                                    HashTableEq_O::create(40, make_fixnum(4000), 0.8));
+    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
   }
   if (result.nilp())
