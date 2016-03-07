@@ -25,6 +25,7 @@ project internals/core : requirements
 #
 
 local sources =
+      sharpEqualWrapper.cc
       vectorDisplaced.cc
       stacks.cc
       weakKeyMapping.cc

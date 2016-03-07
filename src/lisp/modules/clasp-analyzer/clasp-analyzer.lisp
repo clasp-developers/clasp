@@ -1512,11 +1512,13 @@ so that they don't have to be constantly recalculated"
 (defmethod validator-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_VALIDATE")
 (defmethod validator-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_VALIDATE")
 
-(defun scanner-code-for-instance-var (stream ptr-name instance-var)
+(defun scanner-code-for-instance-var (stream fh variable-type struct-name ptr-name instance-var)
   (let* ((fixer-macro (fixer-macro-name (car (last instance-var))))
-         (variable-chain (butlast instance-var 1)))
-    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name
-            (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain))))
+         (variable-chain (butlast instance-var 1))
+         (instance-vars (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain)))
+    (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name instance-vars)
+    (format fh "    { ~a_field_offset, offsetof(~a,~{~a~^.~},\"~{~a~^.~}\" }, ~%"
+            struct-name variable-type instance-vars instance-vars )))
 
 (defun validator-code-for-instance-var (stream ptr-name instance-var)
   (let* ((validator-macro (validator-macro-name (car (last instance-var))))
@@ -1559,7 +1561,7 @@ so that they don't have to be constantly recalculated"
       (format nil " { field_fix, offsetof(~a,~{~a~^.~}), ~s }"
               key
               reverse-names
-              (format nil "~a" reverse-names)))))
+              (format nil "~{~a~^.~}" reverse-names)))))
 
 (defun scanner-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -1639,7 +1641,7 @@ so that they don't have to be constantly recalculated"
         (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
         (let ((all-instance-variables (fix-code (gethash key (project-classes (analysis-project anal))) anal)))
           (dolist (instance-var all-instance-variables)
-            (scanner-code-for-instance-var fout +ptr-name+ instance-var)))
+            (scanner-code-for-instance-var fout fh "templated_class" key +ptr-name+ instance-var)))
         (format fout "    size = ~a->templatedSizeof();" +ptr-name+)))))
 
 (defun validator-for-templated-lispallocs (dest enum anal)
@@ -1711,6 +1713,7 @@ so that they don't have to be constantly recalculated"
       (let ((fh (destination-helper-stream dest)))
         (format fh "{ container_kind, ~d, ~s },~%" enum-name key)
         (format fh "{ container_jump_table_index, ~d, \"\" },~%" jti)
+        (format fh "{ container_content_size, sizeof(~a::value_type), \"~a\" },~%" key )
         (if (cxxrecord-ctype-p decl)
             (progn
               (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
@@ -1723,19 +1726,22 @@ so that they don't have to be constantly recalculated"
               ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
               (cond
                 ((smart-ptr-ctype-p parm0-ctype)
-                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
+                 (format fh "{ container_content_offset, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                ((pointer-ctype-p parm0-ctype)
+                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
+                 (format fh "{ container_content_offset, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((tagged-pointer-ctype-p parm0-ctype)
-                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
+                 (format fh "{ container_content_offset, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((cxxrecord-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (scanner-code-for-instance-var fout "it" instance-var))))
+                     (scanner-code-for-instance-var fout fh "container" key "it" instance-var))))
                 ((class-template-specialization-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (scanner-code-for-instance-var fout "it" instance-var))))
-                ((pointer-ctype-p parm0-ctype)
-                 (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
+                     (scanner-code-for-instance-var fout fh "container" key "it" instance-var))))
                 (t (error "Write code to scan ~a" parm0-ctype)))
               (format fout "    }~%")
               (format fout "    typedef typename ~A type_~A;~%" key enum-name)

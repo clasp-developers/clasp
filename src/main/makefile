@@ -228,7 +228,7 @@ mps-interface-clasp:
 	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 compile-commands:
-	-$(BJAM) link=static gc=mps-prep program=clasp link=static release -n -a >bjam.out
+	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
 	clasp_boehm_o -f bclasp \
 		-l $(CLASP_HOME)/src/common/build-json.lisp \
