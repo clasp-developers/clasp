@@ -149,8 +149,6 @@ CL_DEFUN T_mv cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non
 
 SYMBOL_EXPORT_SC_(KeywordPkg, constituent_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
-SYMBOL_SC_(CorePkg, STARsharp_equal_alistSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_sharp_alistSTAR);
 SYMBOL_SC_(CorePkg, STARconsing_dot_allowedSTAR);
 SYMBOL_SC_(CorePkg, STARconsing_dotSTAR);
 SYMBOL_SC_(CorePkg, STARpreserve_whitespace_pSTAR);

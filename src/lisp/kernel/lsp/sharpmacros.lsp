@@ -2,58 +2,26 @@
 
 (in-package :core)
 
-
-;;; objects already seen by CIRCLE-SUBST
-(defvar *sharp-equal-circle-table*)
-;;(declaim (type hash-table *sharp-equal-circle-table*))
-
-
 (defun %reader-error (stream msg &rest arguments)
   (apply #'simple-reader-error stream msg arguments))
 
+;;; Based on the SBCL version
+(defconstant +sharp-marker+ '+sharp-marker+)
 
+(defstruct (sharp-tag
+            (:constructor make-sharp-tag)
+            (:copier nil))
+  (value +sharp-marker+))
 
-;;;  Modified from http://marc.info/?l=sbcl-devel&m=118219422006130
-;;;
-;;; The SHARP-EQUAL function introduces a label for an object, and the
-;;; SHARP-SHARP function allows us to refer to this label.  This is slightly
-;;; tricky because the object we are labelling can contain labels to itself in
-;;; order to create circular structures, e.g., #1=(cons 'hello #1#).
-;;;
-;;; The SHARP-EQUAL function is called when we are reading a stream and
-;;; encounter text of the form #<LABEL>=<OBJ>, where <LABEL> should be a number
-;;; and <OBJ> ought to be readable as an object.  Our first step is to use
-;;; gensym to create a new <TAG> for this label; we temporarily bind <LABEL> to
-;;; <TAG> and then read in <OBJ> using our <TAG> as a temporary binding for
-;;; <LABEL>.  Finally, we fix the <OBJ> by replacing any occurrences of <TAG>
-;;; with a pointer to <OBJ> itself, creating the circular structures.
-;;;
-;;; We now do this with a couple of data structures.
-;;;
-;;; 1.  *SHARP-EQUAL-FINAL-TABLE* is a hash table where "finished" associations
-;;;     are stored.  That is, it is a hash table from labels to objects, where
-;;;     the objects have already been patched and are tag-free.
-;;;
-;;; 2.  *SHARP-EQUAL-TEMP-TABLE* is a hash table where "unfinished"
-;;;     associations are stored.  That is, it is a hash table from labels to
-;;;     tags.
-;;;
-;;; 3.  *SHARP-EQUAL-REPL-TABLE* is a hash table that associates tags with
-;;;     their corrective pointers.  That is, this is the table we use to
-;;;     "patch" the objects.
-
-(defun circle-subst (repl-table tree)
-  (cond ((not (typep tree '(or cons (array t) #| #+clos instance #+clos funcallable-instance |#)))
-	 (multiple-value-bind (value presentp)
-	     (gethash tree repl-table)
-	   (if presentp
-	       value
-	       tree)))
-        ((null (gethash tree *sharp-equal-circle-table*))
-         (setf (gethash tree *sharp-equal-circle-table*) t)
+(defun circle-subst (circle-table tree)
+  (cond ((and (sharp-tag-p tree)
+              (not (eq (sharp-tag-value tree) +sharp-marker+)))
+         (sharp-tag-value tree))
+        ((null (gethash tree circle-table))
+         (setf (gethash tree circle-table) t)
          (cond ((consp tree)
-                (let ((a (circle-subst repl-table (car tree)))
-                      (d (circle-subst repl-table (cdr tree))))
+                (let ((a (circle-subst circle-table (car tree)))
+                      (d (circle-subst circle-table (cdr tree))))
                   (unless (eq a (car tree))
                     (rplaca tree a))
                   (unless (eq d (cdr tree))
@@ -62,7 +30,7 @@
                 (do ((i 0 (1+ i)))
                     ((>= i (array-total-size tree)))
                   (let* ((old (row-major-aref tree i))
-                         (new (circle-subst repl-table old)))
+                         (new (circle-subst circle-table old)))
                     (unless (eq old new)
                       (setf (row-major-aref tree i) new))))
 		)
@@ -70,10 +38,11 @@
                ((hash-table-p tree)
                 (error "Handle hash-tables in circle-subst"))
                ;; Do something for builtin objects
+               #|
                ((typep tree 'cxx-object)
-                (let ((record (make-record-patcher repl-table)))
+                (let ((record (make-record-patcher circle-table)))
                   (patch-object tree record)))
-               #|	       #+clos ((typep tree 'instance)
+               #+clos ((typep tree 'instance)
                (let* ((n-untagged (layout-n-untagged-slots (%instance-layout tree)))
                (n-tagged (- (%instance-length tree) n-untagged)))
 			 ;; N-TAGGED includes the layout as well (at index 0), which ; ;
@@ -81,13 +50,13 @@
                (do ((i 1 (1+ i)))
                ((= i n-tagged))
                (let* ((old (%instance-ref tree i))
-               (new (circle-subst repl-table old)))
+               (new (circle-subst circle-table old)))
                (unless (eq old new)
                (setf (%instance-ref tree i) new))))
                (do ((i 0 (1+ i)))
                ((= i n-untagged))
                (let* ((old (%raw-instance-ref/word tree i))
-               (new (circle-subst repl-table old)))
+               (new (circle-subst circle-table old)))
                (unless (= old new)
                (setf (%raw-instance-ref/word tree i) new))))))
                #+clos ((typep tree 'funcallable-instance)
@@ -95,7 +64,7 @@
                (end (- (1+ (get-closure-length tree)) %funcallable-instance-info-offset)))
                ((= i end))
                (let* ((old (%funcallable-instance-info tree i))
-               (new (circle-subst repl-table old)))
+               (new (circle-subst circle-table old)))
                (unless (eq old new)
                (setf (%funcallable-instance-info tree i) new)))))
                |#
@@ -109,53 +78,44 @@
   (when *read-suppress* (return-from sharp-equal (values)))
   (unless label
     (simple-reader-error stream "missing label for #=" label))
-  (when (or (multiple-value-bind (value presentp)
-		(gethash label *sharp-equal-final-table*)
-	      (declare (ignore value))
-	      presentp)
-            (multiple-value-bind (value presentp)
-		(gethash label *sharp-equal-temp-table*)
-	      (declare (ignore value))
-	      presentp))
-    (simple-reader-error stream "multiply defined label: #~D=" label))
-  (let ((tag (gensym)))
-    (setf (gethash label *sharp-equal-temp-table*) tag)
-    (let ((obj (read stream t nil t)))
-      (when (eq obj tag)
-	(%reader-error stream "must tag something more than just #~D#" label))
-      (setf (gethash tag *sharp-equal-repl-table*) obj)
-      (let ((*sharp-equal-circle-table* (make-hash-table :test 'eq :size 20)))
-        (circle-subst *sharp-equal-repl-table* obj))
-      (setf (gethash label *sharp-equal-final-table*) obj))))
+  (cond ((not *sharp-equal-final-table*)
+         (setf *sharp-equal-final-table* (make-hash-table)))
+        ((gethash label *sharp-equal-final-table*)
+         (simple-reader-error stream "multiply defined label: #~D=" label)))
+  (let ((tag (setf (gethash label *sharp-equal-final-table*)
+                   (make-sharp-tag)))
+        (obj (read stream t nil t)))
+    (when (eq obj tag)
+      (simple-reader-error stream
+                           "must tag something more than just #~D#"
+                           label))
+    (setf (sharp-tag-value tag) obj)
+    (circle-subst (make-hash-table :test 'eq) obj)))
 
 (defun sharp-sharp (stream ignore label)
   (declare (ignore ignore))
-  (when *read-suppress* (return-from sharp-sharp (values nil)))
+  (when *read-suppress* (return-from sharp-sharp nil))
   (unless label
     (simple-reader-error stream "missing label for ##" label))
-  ;; Don't read ANSI "2.4.8.15 Sharpsign Equal-Sign" and worry that it requires
-  ;; you to implement forward references, because forward references are
-  ;; disallowed in "2.4.8.16 Sharpsign Sharpsign".
-  (multiple-value-bind (finalized-object successp)
-      (gethash label *sharp-equal-final-table*)
-    (if successp
-	finalized-object
-	(multiple-value-bind
-	      (temporary-tag successp)
-	    (gethash label *sharp-equal-temp-table*)
-	  (if successp
-	      temporary-tag
-	      (%reader-error stream "reference to undefined label #~D#" label))))))
+  ;; Has this label been defined previously? (Don't read
+  ;; ANSI "2.4.8.15 Sharpsign Equal-Sign" and worry that
+  ;; it requires you to implement forward references,
+  ;; because forward references are disallowed in
+  ;; "2.4.8.16 Sharpsign Sharpsign".)
+  (let ((entry (and
+                *sharp-equal-final-table*
+                (gethash label *sharp-equal-final-table*))))
+    (cond ((not entry)
+           (simple-reader-error stream
+                                "reference to undefined label #~D#"
+                                label))
+          ((eq (sharp-tag-value entry) +sharp-marker+)
+           entry)
+          (t
+           (sharp-tag-value entry)))))
 
 (defun sharpmacros-enhance ()
   (set-dispatch-macro-character #\# #\= #'sharp-equal)
-  (set-dispatch-macro-character #\# #\# #'sharp-sharp)
-)
+  (set-dispatch-macro-character #\# #\# #'sharp-sharp))
 
 (sharpmacros-enhance)
-
-
-
-
-
-
