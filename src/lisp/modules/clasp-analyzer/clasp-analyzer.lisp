@@ -1517,8 +1517,8 @@ so that they don't have to be constantly recalculated"
          (variable-chain (butlast instance-var 1))
          (instance-vars (mapcar (lambda (f) (instance-variable-field-name f)) variable-chain)))
     (format stream "    ~a(~a->~{~a~^.~});~%" fixer-macro ptr-name instance-vars)
-    (format fh "    { ~a_field_offset, offsetof(~a,~{~a~^.~},\"~{~a~^.~}\" }, ~%"
-            struct-name variable-type instance-vars instance-vars )))
+    (format fh "    { ~a_field_fix, offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}),\"~{~a~^.~}\" }, ~%"
+            variable-type struct-name instance-vars instance-vars )))
 
 (defun validator-code-for-instance-var (stream ptr-name instance-var)
   (let* ((validator-macro (validator-macro-name (car (last instance-var))))
@@ -1558,7 +1558,7 @@ so that they don't have to be constantly recalculated"
     (dolist (field (butlast instance-var))
       (push (instance-variable-field-name field) names))
     (let ((reverse-names (nreverse names)))
-      (format nil " { field_fix, offsetof(~a,~{~a~^.~}), ~s }"
+      (format nil " { field_fix, offsetof(MACRO_SAFE_TYPE(~a),~{~a~^.~}), ~s }"
               key
               reverse-names
               (format nil "~{~a~^.~}" reverse-names)))))
@@ -1713,7 +1713,7 @@ so that they don't have to be constantly recalculated"
       (let ((fh (destination-helper-stream dest)))
         (format fh "{ container_kind, ~d, ~s },~%" enum-name key)
         (format fh "{ container_jump_table_index, ~d, \"\" },~%" jti)
-        (format fh "{ container_content_size, sizeof(~a::value_type), \"~a\" },~%" key )
+        (format fh "{ container_content_size, sizeof(~a::value_type), \"~a\" },~%" key  key)
         (if (cxxrecord-ctype-p decl)
             (progn
               (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
@@ -1727,22 +1727,28 @@ so that they don't have to be constantly recalculated"
               (cond
                 ((smart-ptr-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
-                 (format fh "{ container_content_offset, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                 (format fh "{ container_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((pointer-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
-                 (format fh "{ container_content_offset, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                 (format fh "{ container_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((tagged-pointer-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
-                 (format fh "{ container_content_offset, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                 (format fh "{ container_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((cxxrecord-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (scanner-code-for-instance-var fout fh "container" key "it" instance-var))))
+                     (scanner-code-for-instance-var fout fh "container"
+                                                    (format nil "~a::value_type" key)
+                                                    "it" instance-var))))
                 ((class-template-specialization-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (scanner-code-for-instance-var fout fh "container" key "it" instance-var))))
+                     (scanner-code-for-instance-var fout fh "container"
+                                                    (format nil "~a::value_type" key)
+                                                    "it" instance-var))))
                 (t (error "Write code to scan ~a" parm0-ctype)))
+
+              
               (format fout "    }~%")
               (format fout "    typedef typename ~A type_~A;~%" key enum-name)
               (format fout "    size = sizeof_container<type_~a>(~a->capacity());" enum-name +ptr-name+)))))))
@@ -2937,6 +2943,13 @@ If the source location of a match contains the string source-path-identifier the
 (defun search/generate-code (compilation-tool-database)
   (clang-tool:with-compilation-tool-database compilation-tool-database
     (setf *project* (serial-search-all compilation-tool-database))
+    (let ((analysis (analyze-project *project*)))
+      (setf (analysis-inline analysis) '("core::Cons_O"))
+      (generate-code analysis))
+    *project*))
+
+(defun analyze-only (compilation-tool-database)
+  (clang-tool:with-compilation-tool-database compilation-tool-database
     (let ((analysis (analyze-project *project*)))
       (setf (analysis-inline analysis) '("core::Cons_O"))
       (generate-code analysis))

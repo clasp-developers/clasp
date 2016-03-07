@@ -172,6 +172,11 @@ typedef bool _Bool;
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
 
+/*! Template types with commas in them can't be passed
+to macros unless they are wrapped in this.
+eg: offsetof(MACRO_SAFE_TYPE(a<b,c>),d)
+*/
+#define MACRO_SAFE_TYPE(...) __VA_ARGS__
 
 namespace gctools {
 

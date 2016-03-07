@@ -235,8 +235,16 @@ compile-commands:
 		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
 		-e "(quit)"
 
-mps-interface-run:
-	clasp_boehm_o -f bclasp  \
+compile-commands-boot:
+	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
+	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
+	clasp_boehmdc_o -f bclasp \
+		-l $(CLASP_HOME)/src/common/build-json.lisp \
+		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
+		-e "(quit)"
+
+mps-interface-run-boot:
+	clasp_boehmdc_o -f bclasp  \
 		-e "(require :clasp-analyzer)" \
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
@@ -259,6 +267,13 @@ mps-interface-cclasp:
 	make compile-commands-cclasp
 	make mps-interface-run-cclasp
 
+
+
+mps-interface-boot:
+	@echo Building mps-prep
+	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
+	make compile-commands-boot
+	make mps-interface-run-boot
 
 scrape:
 	echo $(CLASP_CLANGXX_PATH)

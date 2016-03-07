@@ -86,6 +86,12 @@ void build_kind_field_layout_tables()
     case container_jump_table_index:
         global_kind_layout[cur_kind].jump.jump_table_index = codes[idx].data;
         break;
+    case container_content_size:
+        // ignore for now
+        break;
+    case container_field_fix:
+        // ignore for now
+        break;
     case templated_class_kind:
         cur_kind = codes[idx].data;
         global_kind_layout[cur_kind].layout_operation = jump_table_operation;
@@ -94,6 +100,9 @@ void build_kind_field_layout_tables()
         break;
     case templated_class_jump_table_index:
         global_kind_layout[cur_kind].jump.jump_table_index = codes[idx].data;
+        break;
+    case templated_class_field_fix:
+        // ignore for now
         break;
     default:
         THROW_HARD_ERROR(BF("The Layout_code table contained an illegal command: %d\n") % codes[idx].cmd);
