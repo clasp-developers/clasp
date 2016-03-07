@@ -44,7 +44,7 @@ THE SOFTWARE.
 namespace core {
 
 
-  SYMBOL_EXPORT_SC_(CorePkg, sharp_marker);
+  SYMBOL_EXPORT_SC_(CorePkg, _PLUS_sharp_marker_PLUS_);
 
 SMART(SharpEqualWrapper);
 class SharpEqualWrapper_O : public T_O {
@@ -56,7 +56,7 @@ class SharpEqualWrapper_O : public T_O {
   CL_DEFMETHOD T_sp sharp_equal_wrapper_value() const { return this->_Value; };
   CL_DEFMETHOD T_sp setf_sharp_equal_wrapper_value(T_sp v) { this->_Value = v; return v;};
   
- SharpEqualWrapper_O() : _Value(_sym_sharp_marker) {};
+ SharpEqualWrapper_O() : _Value(_sym__PLUS_sharp_marker_PLUS_) {};
   virtual ~SharpEqualWrapper_O() {};
 };
 

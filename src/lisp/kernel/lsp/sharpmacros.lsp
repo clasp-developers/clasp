@@ -8,15 +8,10 @@
 ;;; Based on the SBCL version
 (defconstant +sharp-marker+ '+sharp-marker+)
 
-(defstruct (sharp-tag
-            (:constructor make-sharp-tag)
-            (:copier nil))
-  (value +sharp-marker+))
-
 (defun circle-subst (circle-table tree)
-  (cond ((and (sharp-tag-p tree)
-              (not (eq (sharp-tag-value tree) +sharp-marker+)))
-         (sharp-tag-value tree))
+  (cond ((and (core:sharp-equal-wrapper-p tree)
+              (not (eq (core:sharp-equal-wrapper-value tree) +sharp-marker+)))
+         (core:sharp-equal-wrapper-value tree))
         ((null (gethash tree circle-table))
          (setf (gethash tree circle-table) t)
          (cond ((consp tree)
@@ -83,13 +78,13 @@
         ((gethash label *sharp-equal-final-table*)
          (simple-reader-error stream "multiply defined label: #~D=" label)))
   (let ((tag (setf (gethash label *sharp-equal-final-table*)
-                   (make-sharp-tag)))
+                   (core:make-sharp-equal-wrapper)))
         (obj (read stream t nil t)))
     (when (eq obj tag)
       (simple-reader-error stream
                            "must tag something more than just #~D#"
                            label))
-    (setf (sharp-tag-value tag) obj)
+    (setf (core:sharp-equal-wrapper-value tag) obj)
     (circle-subst (make-hash-table :test 'eq) obj)))
 
 (defun sharp-sharp (stream ignore label)
@@ -109,10 +104,10 @@
            (simple-reader-error stream
                                 "reference to undefined label #~D#"
                                 label))
-          ((eq (sharp-tag-value entry) +sharp-marker+)
+          ((eq (core:sharp-equal-wrapper-value entry) +sharp-marker+)
            entry)
           (t
-           (sharp-tag-value entry)))))
+           (core:sharp-equal-wrapper-value entry)))))
 
 (defun sharpmacros-enhance ()
   (set-dispatch-macro-character #\# #\= #'sharp-equal)
