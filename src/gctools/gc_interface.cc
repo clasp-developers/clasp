@@ -178,6 +178,12 @@ eg: offsetof(MACRO_SAFE_TYPE(a<b,c>),d)
 */
 #define MACRO_SAFE_TYPE(...) __VA_ARGS__
 
+#ifdef _TARGET_OS_DARWIN
+// The OS X offsetof macro is defined as __offsetof which is defined as __builtin_offsetof - take out one level of macro so that the MACRO_SAFE_TYPE hack works
+#undef offsetof
+#define offsetof(t,x) __builtin_offsetof(t,x)
+#endif
+
 namespace gctools {
 
 /* This is where the class_layout codes are included
