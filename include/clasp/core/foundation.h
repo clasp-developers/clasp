@@ -1078,7 +1078,24 @@ public:
   string nameAsString();
   virtual ~Functoid(){};
 };
+};
 
+namespace core {
+  template <int Slots>
+    class ClosureWithSlots : public Functoid {
+    size_t _NumberOfSlots;
+    T_O* _Slots[0];
+  };
+
+  CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {
+    return global_alignup_sizeof_header + gctools::AlignUp(sizeof(ClosureWithSlots<0>)) + sizeof(T_O*)*numberOfSlots;
+  };
+    
+};
+
+
+
+namespace core { 
 class Closure : public Functoid {
 public:
   T_sp closedEnvironment;
