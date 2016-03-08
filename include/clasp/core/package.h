@@ -136,7 +136,7 @@ public:
   /*! Return the Symbol if we contain it 
 		 * and create it and return it if we don't
 		 */
-  T_mv intern(const string &symbolName);
+  T_mv intern(Str_sp symbolName);
 
   /*! Remove the symbol from the package */
   bool unintern(Symbol_sp sym);
@@ -193,7 +193,7 @@ public:
 
   virtual bool mapKeyValue(T_sp key, T_sp value);
 };
-T_mv cl__find_symbol(const string &symbolName, T_sp packageDesig);
+T_mv cl__find_symbol(Str_sp symbolName, T_sp packageDesig);
 };
 TRANSLATE(core::Package_O);
 #endif //]

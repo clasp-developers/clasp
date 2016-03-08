@@ -89,9 +89,9 @@ CL_DEFUN bool cl__unintern(Symbol_sp sym, T_sp packageDesig) {
 CL_LAMBDA(sym &optional (package *package*));
 CL_DECLARE();
 CL_DOCSTRING("findSymbol");
-CL_DEFUN T_mv cl__find_symbol(const string &symbolname, T_sp packageDesig) {
+CL_DEFUN T_mv cl__find_symbol(Str_sp symbolname, T_sp packageDesig) {
   Package_sp package = coerce::packageDesignator(packageDesig);
-  return package->findSymbol(symbolname);
+  return package->_findSymbol(symbolname);
 };
 
 CL_LAMBDA("package-name &key nicknames (use (list \"CL\"))");
@@ -277,20 +277,16 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
     ss << spref;
     ss << static_gentemp_counter;
     ++static_gentemp_counter;
-    {
-      MULTIPLE_VALUES_CONTEXT();
-      T_mv mv = pkg->findSymbol(ss.str());
-      if (gc::As<T_sp>(mv.valueGet(1)).nilp()) {
-        {
-          MULTIPLE_VALUES_CONTEXT();
-          retval = pkg->intern(ss.str());
-          goto DONE;
-        }
+    T_mv mv = pkg->findSymbol(ss.str());
+    if (gc::As<T_sp>(mv.valueGet(1)).nilp()) {{
+        Str_sp sname = Str_O::create(ss.str());
+        retval = pkg->intern(sname);
+        goto DONE;
       }
     }
   }
   SIMPLE_ERROR(BF("Could not find unique gentemp"));
-DONE:
+ DONE:
   return (Values(retval));
 };
 
@@ -612,7 +608,7 @@ void Package_O::_export2(Symbol_sp sym) {
 
 bool Package_O::shadow(Str_sp symbolName) {
   Symbol_sp shadowSym, status;
-  Symbol_mv values = this->findSymbol(symbolName->get());
+  Symbol_mv values = this->_findSymbol(symbolName);
   shadowSym = values;
   status = gc::As<Symbol_sp>(values.valueGet(1));
   if (status.nilp() || (status != kw::_sym_internal && status != kw::_sym_external)) {
@@ -696,8 +692,8 @@ void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp s
   }
 }
 
-T_mv Package_O::intern(const string &name) {
-  Symbol_mv values = this->findSymbol(name);
+T_mv Package_O::intern(Str_sp name) {
+  Symbol_mv values = this->_findSymbol(name);
   Symbol_sp sym = values;
   Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
   if (status.nilp()) {

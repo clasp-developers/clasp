@@ -2112,7 +2112,7 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS: intern");
 CL_DEFUN T_mv cl__intern(Str_sp symbol_name, T_sp package_desig) {
   Package_sp package = coerce::packageDesignator(package_desig);
-  return (package->intern(symbol_name->get()));
+  return (package->intern(symbol_name));
 }
 
 CL_LAMBDA(continue-string datum initializers);
@@ -2443,14 +2443,6 @@ string Lisp_O::classNameFromClassSymbol(Symbol_sp cid) {
 Class_sp Lisp_O::classFromClassName(const string &name) {
   _OF();
   DEPRECIATED();
-#if 0
-	Symbol_sp sym = this->findSymbol(name);
-	if ( sym.nilp() )
-	{
-	    SIMPLE_ERROR(BF("Could not find class with name: %s") % name );
-	}
-	return _lisp->findClass(sym);
-#endif
   //    return sym->symbolValue().as<Class_O>();
 }
 
@@ -2510,7 +2502,8 @@ Symbol_mv Lisp_O::intern(const string &name, T_sp optionalPackageDesignator) {
   }
   ASSERTNOTNULL(package);
   ASSERT(package.notnilp());
-  T_mv symStatus = package->intern(symbolName);
+  Str_sp sname = Str_O::create(symbolName);
+  T_mv symStatus = package->intern(sname);
   Symbol_sp sym = gc::As<Symbol_sp>(symStatus);
   T_sp status = symStatus.second();
   return Values(sym, status);
@@ -2590,7 +2583,8 @@ Symbol_sp Lisp_O::internKeyword(const string &name) {
     SIMPLE_ERROR(BF("You cannot intern[%s] as a keyword - it has package designating ':' characters in it at pos[%d]") % realName % colonPos);
   }
   boost::to_upper(realName);
-  return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(realName));
+  Str_sp str_real_name = Str_O::create(realName);
+  return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
 }
 
 void Lisp_O::dump_apropos(const char *part) const {

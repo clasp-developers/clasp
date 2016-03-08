@@ -413,7 +413,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
         return _Nil<T_O>();
       string symbolName = tokenStr(token, name_marker - token.data());
-      Symbol_sp sym = _lisp->getCurrentPackage()->intern(symbolName);
+      Str_sp sym_name = Str_O::create(symbolName);
+      Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       return sym;
     }
     break;
@@ -435,19 +436,20 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       ++cur;
     }
     string symbolName = tokenStr(token, name_marker - token.data());
+    Str_sp symbol_name_str = Str_O::create(symbolName);
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % packageSin.str() % symbolName);
     string packageName = packageSin.str();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
     if (separator == 1) { // Asking for external symbol
-      Symbol_mv sym_mv = pkg->findSymbol(symbolName);
+      Symbol_mv sym_mv = pkg->_findSymbol(symbol_name_str);
       sym = sym_mv;
       T_sp status = sym_mv.second();
       if (status != kw::_sym_external) {
         SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbolName % _rep_(pkg));
       }
     } else {
-      sym = pkg->intern(symbolName);
+      sym = pkg->intern(symbol_name_str);
     }
     ASSERT(sym);
     return sym;
@@ -458,7 +460,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
     string keywordName = tokenStr(token, name_marker - token.data());
-    return _lisp->keywordPackage()->intern(keywordName);
+    Str_sp keyword_name = Str_O::create(keywordName);
+    return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsyme:
   case tsymp:

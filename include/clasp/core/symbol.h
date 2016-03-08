@@ -83,10 +83,16 @@ public:
 	  Before NIL, UNBOUND etc are defined */
   static Symbol_sp create_at_boot(const string &nm);
   static Symbol_sp create(const string &nm);
-
+  static Symbol_sp create(Str_sp snm) {
+  // This is used to allocate roots that are pointed
+  // to by global variable _sym_XXX  and will never be collected
+    Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate(true);
+    n->setf_name(snm);
+    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
+    return n;
+  };
 public:
   string formattedName(bool prefixAlways) const;
-
 public:
   //  T_sp apply();
   //  T_sp funcall();

@@ -116,33 +116,6 @@ T_sp Binder_O::lookup(Symbol_sp sym) const {
   return ((this->_Values->operator[](unbox_fixnum(gc::As<Fixnum_sp>(val)))));
 }
 
-#if 0
-    T_sp Binder_O::lookup(const string& rawpackage,const string& rawsymStr) const
-    {
-	string package = lispify_symbol_name(rawpackage);
-	string symStr = lispify_symbol_name(rawsymStr);
-	Symbol_sp sym = _lisp->internWithPackageName(package,symStr);
-	return((this->lookup(sym)));
-    }
-#endif
-
-#if 0
-    Binder_O::const_iterator Binder_O::find(Symbol_sp sym) const
-    {
-//    LOG(BF("Looking for symbol(%s)")%  sym->fullName() );
-	Binder_O::const_iterator it = this->_Bindings.find(sym);
-	return((it));
-    }
-
-
-    Binder_O::iterator Binder_O::find(Symbol_sp sym)
-    {
-//    LOG(BF("Looking for symbol(%s)")%  sym->fullName() );
-	Binder_O::iterator it = this->_Bindings.find(sym);
-	return((it));
-    }
-#endif
-
 bool Binder_O::contains(Symbol_sp sym) const {
   TESTING();
   return this->_Bindings->gethash(sym, _Nil<T_O>()).notnilp();
