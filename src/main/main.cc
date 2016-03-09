@@ -176,7 +176,12 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
   }
 
   core::CommandLineOptions options(argc, argv);
-  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
+  int exitCode = 0;
+  try {
+    exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
+  } catch (...) {
+    return 1; // something is wrong - exiting with non-zero error
+  }
 
 #ifdef USE_MPI
   mpip::Mpi_O::Finalize();

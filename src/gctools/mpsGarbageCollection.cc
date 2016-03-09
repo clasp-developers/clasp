@@ -537,44 +537,55 @@ mps_addr_t dummyAwlFindDependent(mps_addr_t addr) {
 //     size_t generation1Kb = CHAIN_SIZE*4;
 //     size_t generation1MortalityPercent = 50;
 // Try something like
-// export CLASP_MPS_CONFIG="32 32 16 80 32 80"
+// export CLASP_MPS_CONFIG="32 32 16 80 32 80 64"
 // to debug MPS
-bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent) {
+bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent, size_t &keyExtendBy ) {
   char *cur = getenv("CLASP_MPS_CONFIG");
   size_t values[20];
   int numValues = 0;
   if (cur) {
-    printf("CLASP_MPS_CONFIG = %s\n", cur);
+    printf("Default CLASP_MPS_CONFIG = %lu %lu %lu %lu %lu %lu %lu\n",
+           arenaMb,
+           spareCommitLimitMb,
+           nurseryKb,
+           nurseryMortalityPercent,
+           generation1Kb,
+           generation1MortalityPercent,
+           keyExtendBy );
+    printf("Changed to CLASP_MPS_CONFIG = %s\n", cur);
     while (*cur && numValues < 20) {
       values[numValues] = strtol(cur, &cur, 10);
       ++numValues;
     }
-    if (numValues > 6)
-      numValues = 6;
+    if (numValues > 7)
+      numValues = 7;
     switch (numValues) {
+    case 7:
+        keyExtendBy = values[6];
     case 6:
-      generation1MortalityPercent = values[5];
+        generation1MortalityPercent = values[5];
     case 5:
-      generation1Kb = values[4];
+        generation1Kb = values[4];
     case 4:
-      nurseryMortalityPercent = values[3];
+        nurseryMortalityPercent = values[3];
     case 3:
-      nurseryKb = values[2];
+        nurseryKb = values[2];
     case 2:
-      spareCommitLimitMb = values[1];
+        spareCommitLimitMb = values[1];
     case 1:
-      arenaMb = values[0];
-      printf("CLASP_MPS_CONFIG...\n");
-      printf("                    arenaMb = %lu\n", arenaMb);
-      printf("         spareCommitLimitMb = %lu\n", spareCommitLimitMb);
-      printf("                  nurseryKb = %lu\n", nurseryKb);
-      printf("    nurseryMortalityPercent = %lu\n", nurseryMortalityPercent);
-      printf("              generation1Kb = %lu\n", generation1Kb);
-      printf("generation1MortalityPercent = %lu\n", generation1MortalityPercent);
-      return true;
-      break;
+        arenaMb = values[0];
+        printf("CLASP_MPS_CONFIG...\n");
+        printf("                    arenaMb = %lu\n", arenaMb);
+        printf("         spareCommitLimitMb = %lu\n", spareCommitLimitMb);
+        printf("                  nurseryKb = %lu\n", nurseryKb);
+        printf("    nurseryMortalityPercent = %lu\n", nurseryMortalityPercent);
+        printf("              generation1Kb = %lu\n", generation1Kb);
+        printf("generation1MortalityPercent = %lu\n", generation1MortalityPercent);
+        printf("                keyExtendBy = %lu\n", keyExtendBy );
+        return true;
+        break;
     default:
-      break;
+        break;
     };
   }
   return false;
@@ -591,16 +602,17 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   global_sizeof_fwd = AlignUp(sizeof(Header_s) + sizeof(uintptr_t));
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
-#define CHAIN_SIZE 6400 // 256 // 6400
+#define CHAIN_SIZE 6400*5 // 256 // 6400
   size_t arenaSizeMb = 320;
   size_t spareCommitLimitMb = 320;
   size_t nurseryKb = CHAIN_SIZE;
   size_t nurseryMortalityPercent = 80;
   size_t generation1Kb = CHAIN_SIZE * 4;
   size_t generation1MortalityPercent = 50;
-
-  // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80"   to debug MPS
-  maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent);
+  size_t keyExtendBy = 64;  // 64K
+  
+  // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80 64"   to debug MPS
+  maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent, keyExtendBy );
 
   double nurseryMortalityFraction = nurseryMortalityPercent / 100.0;
   double generation1MortalityFraction = generation1MortalityPercent / 100.0;
@@ -667,6 +679,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
     MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
 #endif
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
+    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendBy*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendBy*1024);
     res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
   }
   MPS_ARGS_END(args);
