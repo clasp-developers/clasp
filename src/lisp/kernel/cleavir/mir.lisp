@@ -20,7 +20,7 @@
                  :successors (list successor)
                  :code code))
 
-(defmethod cleavir-ir-graphviz:draw-instruction ((instruction enclose-instruction) stream)
+(defmethod cleavir-ir-graphviz:draw-instruction ((instruction stack-enclose-instruction) stream)
   (format stream "   ~a [label = \"stack-enclose\"];~%"
 	  (instruction-id instruction))
   (format stream "  ~a -> ~a [color = pink, style = dashed];~%"

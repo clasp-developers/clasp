@@ -168,6 +168,9 @@ define varprint
 endef
 
 all:
+	make mps-all
+
+boehm-all:
 	make print-config
 	make submodules
 	make asdf
