@@ -1081,16 +1081,46 @@ public:
 };
 
 namespace core {
-  template <int Slots>
-    class ClosureWithSlots : public Functoid {
+  class ClosureWithSlots : public Functoid {
+  public:
+    fnLispCallingConvention _FunctionPointer;
     size_t _NumberOfSlots;
     T_O* _Slots[0];
+    ClosureWithSlots(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
+      : Functoid(name)
+      , _FunctionPointer(fptr)
+      , _NumberOfSlots(num_slots) {}
   };
 
-  CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {
-    return global_alignup_sizeof_header + gctools::AlignUp(sizeof(ClosureWithSlots<0>)) + sizeof(T_O*)*numberOfSlots;
+  inline CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {
+    return gctools::global_alignup_sizeof_header + gctools::AlignUp(sizeof(ClosureWithSlots)) + sizeof(T_O*)*numberOfSlots;
   };
-    
+
+  inline gctools::tagged_ptr<ClosureWithSlots> initialize_closure_with_slots(void* block, T_sp name, fnLispCallingConvention fptr, size_t num_slots, ... ) {
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(block);
+    ClosureWithSlots* closure = reinterpret_cast<ClosureWithSlots*>((char*)block+gctools::global_alignup_sizeof_header);
+    new(header) gctools::Header_s(gctools::GCKind<ClosureWithSlots>::Kind);
+    new(closure) ClosureWithSlots(name,fptr,num_slots);
+    va_list valist;
+    va_start(valist, num_slots);
+    for ( size_t i=0; i<num_slots; ++i ) {
+      closure->_Slots[i] = va_arg(valist,T_O*);
+    }
+    va_end(valist);
+    return gctools::tagged_ptr<ClosureWithSlots>((gctools::Tagged)gctools::tag_general<ClosureWithSlots*>(closure));
+  }
+
+  inline T_O* closure_with_slots_read_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index)
+  {
+    ClosureWithSlots* closure = gctools::untag_general(tagged_closure.theObject);
+    return closure->_Slots[index];
+  }
+
+  inline void closure_with_slots_write_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index, T_O* val)
+  {
+    ClosureWithSlots* closure = gctools::untag_general(tagged_closure.theObject);
+    closure->_Slots[index] = val;
+  }
 };
 
 

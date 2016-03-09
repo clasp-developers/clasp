@@ -185,6 +185,10 @@ all:
 #	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-addons
+	make -C src/main mps-release-cxx
+	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
+	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	clasp_mps_o -f bclasp -e "(link-cclasp)" -e "(quit)"
 	echo Clasp is now built
 
 
