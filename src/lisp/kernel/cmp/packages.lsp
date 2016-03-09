@@ -34,6 +34,7 @@
           +i32+
           +i64+
           +i8*+
+          +i8+
           +mv-struct+
           +size_t+
           +t*+
