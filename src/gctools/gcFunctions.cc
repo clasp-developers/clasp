@@ -586,6 +586,13 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("USE_ALLOCA_FOR_FRAME = %s\n") % (use_alloca_for_frame ? "defined" : "undefined") ).str();
 
+  bool use_amc_pool = false;
+#ifdef USE_AMC_POOL
+  use_amc_pool = true;
+  debugging = true;
+#endif
+  ss << (BF("USE_AMC_POOL = %s\n") % (use_amc_pool ? "defined" : "undefined") ).str();
+
   bool mps_recognize_all_tags = false;
 #ifdef MPS_RECOGNIZE_ALL_TAGS
   mps_recognize_all_tags = true;

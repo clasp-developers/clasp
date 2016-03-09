@@ -143,6 +143,9 @@ project clasp : requirements
 #          <cflags>"-fsanitize=memory -fno-omit-frame-pointer"
 #          <cflags>"-fsanitize=address"
 
+### USE_AMC_POOL  --- controls if certain objects (Closures) are allocated in a non-moving pool or AMC
+     <define>USE_AMC_POOL
+
 ### DEBUG_HASH_TABLE_AS_ALIST    ---- hash-tables become one big alist to debug hashing and GC
 #    <define>DEBUG_HASH_TABLE_AS_ALIST
 
