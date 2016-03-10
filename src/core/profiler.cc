@@ -58,7 +58,6 @@ int timerFixedNonbondRestraint;
 int forcesGreaterThan10000;
 
 void initializeProfiler(LightProfiler &profiler, const Lisp_sp &lisp) {
-  _G();
   LOG(BF("Initializing this"));
   timerLibrary = profiler.createTimer(0, "Force field library");
   timerPreconditioner = profiler.createTimer(timerLibrary, "Preconditioning");

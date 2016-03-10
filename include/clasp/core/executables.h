@@ -80,8 +80,7 @@ namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
 class Function_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Function_O, "Function");
+  LISP_CLASS(core, ClPkg, Function_O, "Function",T_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -110,6 +109,7 @@ public:
   T_sp functionLambdaListHandler() const;
   /*! Return (values lambda-list foundp) */
   T_mv lambdaList();
+  void setf_lambda_list(T_sp lambda_list);
   T_sp closedEnvironment() const;
   List_sp functionDeclares() const;
   T_sp functionName() const;
@@ -124,8 +124,7 @@ template <>
 struct gctools::GCInfo<core::Function_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::Function_O);
 
@@ -149,6 +148,7 @@ public:
   List_sp code() const { return this->_code; };
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
   T_sp lambdaList() const;
+  void setf_lambda_list(T_sp lambda_list);
 };
 
 #if 0
@@ -180,8 +180,7 @@ namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
 class CompiledFunction_O : public Function_O {
-  LISP_BASE1(Function_O);
-  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction");
+  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Function_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -205,8 +204,7 @@ template <>
 struct gctools::GCInfo<core::CompiledFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::CompiledFunction_O);
 

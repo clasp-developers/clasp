@@ -41,9 +41,8 @@ typedef unsigned char BitBlockType;
 
 SMART(BitVector);
 class BitVector_O : public Vector_O {
-  friend T_sp core_bitArrayOp(T_sp o, T_sp x, T_sp y, T_sp r);
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector");
+  friend T_sp core__bit_array_op(T_sp o, T_sp x, T_sp y, T_sp r);
+  LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector",Vector_O);
 
 protected:
   vector<unsigned char> bits;
@@ -87,7 +86,8 @@ public:
   //! Return the number of set bits
   uint countSet();
   //! Return true if the BitVector contains only 0's
-  bool isZero() { return (this->countSet() == 0); };
+CL_LISPIFY_NAME("core:isZero");
+CL_DEFMETHOD   bool isZero() { return (this->countSet() == 0); };
 
   void do_subseq(BitVector_sp result, int start, int iend) const;
 
@@ -122,11 +122,10 @@ public:
 
 SMART(SimpleBitVector);
 class SimpleBitVector_O : public BitVector_O {
-  LISP_BASE1(BitVector_O);
-  LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector");
+  LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",BitVector_O);
 
 public:
-  static SimpleBitVector_sp create(size_t size);
+  static SimpleBitVector_sp make(size_t size);
 
 private:
   size_t _length;
@@ -142,11 +141,10 @@ public:
 
 SMART(BitVectorWithFillPtr);
 class BitVectorWithFillPtr_O : public BitVector_O {
-  LISP_BASE1(BitVector_O);
-  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr");
+  LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr",BitVector_O);
 
 public:
-  static BitVectorWithFillPtr_sp create(size_t size, size_t fill_ptr, bool adjustable);
+  static BitVectorWithFillPtr_sp make(size_t size, size_t fill_ptr, bool adjustable);
 
 private:
   size_t _fill_ptr;
@@ -158,6 +156,7 @@ public:
   virtual T_sp vectorPush(T_sp newElement);
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 8);
   virtual T_sp subseq(int start, T_sp end) const;
+  void setFillPointer(size_t fp);
   T_sp deepCopy() const;
   explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust) : BitVector_O(sz), _fill_ptr(fill_ptr), _adjustable(adjust){};
   explicit BitVectorWithFillPtr_O() : BitVector_O(){};

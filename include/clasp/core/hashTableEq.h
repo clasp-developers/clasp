@@ -37,8 +37,7 @@ namespace core {
 
 FORWARD(HashTableEq);
 class HashTableEq_O : public HashTable_O {
-  LISP_BASE1(HashTable_O);
-  LISP_CLASS(core, CorePkg, HashTableEq_O, "HashTableEq");
+  LISP_CLASS(core, CorePkg, HashTableEq_O, "HashTableEq",HashTable_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -65,8 +64,7 @@ template <>
 struct gctools::GCInfo<core::HashTableEq_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::HashTableEq_O);

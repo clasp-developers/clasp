@@ -66,8 +66,7 @@ private:
   friend class Class_O;
   friend class Package_O;
   friend class CoreExposer;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol");
+  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",T_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -84,10 +83,16 @@ public:
 	  Before NIL, UNBOUND etc are defined */
   static Symbol_sp create_at_boot(const string &nm);
   static Symbol_sp create(const string &nm);
-
+  static Symbol_sp create(Str_sp snm) {
+  // This is used to allocate roots that are pointed
+  // to by global variable _sym_XXX  and will never be collected
+    Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate(true);
+    n->setf_name(snm);
+    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
+    return n;
+  };
 public:
   string formattedName(bool prefixAlways) const;
-
 public:
   //  T_sp apply();
   //  T_sp funcall();
@@ -117,7 +122,8 @@ public:
   bool getReadOnlyFunction() const { return this->_ReadOnlyFunction; };
 
   /*! Return true if the symbol is dynamic/special */
-  bool specialP() const { return this->_IsSpecial; };
+CL_LISPIFY_NAME("core:specialp");
+CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
@@ -198,7 +204,7 @@ public: // ctor/dtor for classes with shared virtual base
   /*! Special constructor used when starting up the Lisp environment */
   explicit Symbol_O(bool dummy); // string const &name);
   /*! Used to finish setting up symbol when created with the above constructor */
-  void finish_setup(Package_sp pkg, bool exportp);
+  void finish_setup(Package_sp pkg, bool exportp, bool shadowp);
 
   /*! Return -1, 0, 1 if this is <, ==, > other by name */
   inline int order(core::Symbol_O other) {
@@ -220,11 +226,11 @@ public:
   virtual ~Symbol_O(){};
 };
 
-T_sp af_symbolValue(const Symbol_sp sym);
-Str_sp af_symbolName(Symbol_sp sym);
-T_sp af_symbolPackage(Symbol_sp sym);
-Function_sp af_symbolFunction(Symbol_sp sym);
-bool af_boundp(Symbol_sp sym);
+T_sp cl__symbol_value(const Symbol_sp sym);
+Str_sp cl__symbol_name(Symbol_sp sym);
+T_sp cl__symbol_package(Symbol_sp sym);
+Function_sp cl__symbol_function(Symbol_sp sym);
+bool cl__boundp(Symbol_sp sym);
 };
 
 namespace core {
@@ -246,8 +252,7 @@ template <>
 struct gctools::GCInfo<core::Symbol_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]

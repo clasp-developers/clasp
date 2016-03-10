@@ -71,7 +71,7 @@ THE SOFTWARE.
 #include <clasp/core/externalObject.h>
 #include <clasp/core/lispVector.h>
 #include <clasp/llvmo/llvmoExpose.fwd.h>
-#include <clasp/llvmo/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
@@ -236,7 +236,8 @@ namespace llvmo {
 FORWARD(AttributeSet);
 class AttributeSet_O : public core::T_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::AttributeSet, AttributeSet_O, "AttributeSet", core::T_O);
-
+ public:
+  typedef llvm::AttributeSet ExternalType;
 protected:
   llvm::AttributeSet val;
 
@@ -599,6 +600,81 @@ struct to_object<const llvm::TargetSubtargetInfo *> {
   }
 };
 };
+
+
+
+namespace translate {
+template <>
+struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
+  typedef llvm::CodeGenOpt::Level DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::CodeGenOpt::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenOpt->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::CodeGenOpt::Level>(so);
+    } else {
+      SIMPLE_ERROR(BF("You must pass a valid CodeGenOpt"));
+    }
+  }
+};
+
+template <>
+struct from_object<llvm::Reloc::Model, std::true_type> {
+  typedef llvm::Reloc::Model DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::Reloc::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
+    } else {
+      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+    }
+  }
+};
+
+template <>
+struct from_object<llvm::CodeModel::Model, std::true_type> {
+  typedef llvm::CodeModel::Model DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::CodeModel::Default) {
+    if (object.nilp()) {
+      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+    }
+    if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeModel->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::CodeModel::Model>(so);
+    } else {
+      SIMPLE_ERROR(BF("You must pass a valid CodeModel"));
+    }
+  }
+};
+template <>
+struct from_object<llvm::TargetMachine::CodeGenFileType, std::true_type> {
+  typedef llvm::TargetMachine::CodeGenFileType DeclareType;
+  DeclareType _v;
+  from_object(T_P object) : _v(llvm::TargetMachine::CGFT_ObjectFile) {
+    if (object.notnilp()) {
+      if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
+        core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_CodeGenFileType->symbolValue());
+        this->_v = converter->enumForSymbol<llvm::TargetMachine::CodeGenFileType>(so);
+        return;
+      }
+    }
+    SIMPLE_ERROR(BF("You must pass a valid "));
+  }
+};
+};
+
+
+
+
+
 
 namespace llvmo {
 FORWARD(TargetMachine);
@@ -1101,8 +1177,7 @@ TRANSLATE(llvmo::User_O);
 
 namespace llvmo {
 class Attribute_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute");
+  LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute",core::T_O);
   DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -1253,6 +1328,7 @@ public:
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
   bool compiledP() const { return true; };
   core::T_sp lambdaList() const;
+  void setf_lambda_list(core::T_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
@@ -2099,7 +2175,8 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
-  string error_string() const { return this->_ErrorStr; };
+CL_LISPIFY_NAME("error_string");
+CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
 
   EngineBuilder_O() : Base(), _ptr(NULL){};
   ~EngineBuilder_O() {
@@ -2231,13 +2308,22 @@ TRANSLATE(llvmo::APFloat_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
-  typedef const llvm::APFloat &DeclareType;
+  typedef llvm::APFloat DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value){};
 };
 };
+
 /* to_object translators */
 
+#if 0
+template <>
+struct gctools::GCInfo<llvmo::APFloat_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+#endif
 namespace llvmo {
 FORWARD(APInt);
 class APInt_O : public core::ExternalObject_O {
@@ -2270,12 +2356,19 @@ TRANSLATE(llvmo::APInt_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APInt &, std::true_type> {
-  typedef const llvm::APInt &DeclareType;
+  typedef llvm::APInt DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value){};
 };
 /* to_object translators */
-
+#if 0
+ template <>
+struct gctools::GCInfo<llvmo::APInt_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+#endif
 template <>
 struct to_object<llvm::APInt> {
   static core::T_sp convert(llvm::APInt sr) { return llvmo::APInt_O::create(sr); };
@@ -2324,7 +2417,8 @@ public:
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
   void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
-  core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
+CL_LISPIFY_NAME("CurrentDebugLocation");
+CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
 TRANSLATE(llvmo::IRBuilderBase_O);
@@ -3571,7 +3665,8 @@ public:
 public:
   llvm::MDNode *getOperand(uint i) { return this->_ptr->getOperand(i); };
   uint getNumOperands() { return this->_ptr->getNumOperands(); };
-  void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
+CL_LISPIFY_NAME("addOperand");
+CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
   string getName() { return this->_ptr->getName(); };
 
 }; // NamedMDNode_O

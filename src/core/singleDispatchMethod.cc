@@ -40,7 +40,6 @@ namespace core {
 /*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
 void Lambda_method_function::LISP_INVOKE() {
-  _G();
 #if 0
 	    ASSERTF(this->_method->_body.notnilp(),BF("The method body should never by nil"));
 // TODO: Make this more efficient - this is crazy to put the arguments into a Cons and then
@@ -123,27 +122,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, SingleDispatchMethod_O);
 
-void SingleDispatchMethod_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<SingleDispatchMethod_O>()
-      .def("singleDispatchMethodName", &SingleDispatchMethod_O::singleDispatchMethodName)
-      .def("singleDispatchMethodReceiverClass", &SingleDispatchMethod_O::singleDispatchMethodReceiverClass)
-      .def("singleDispatchMethodCode", &SingleDispatchMethod_O::singleDispatchMethodCode)
-      .def("singleDispatchMethodLambdaListHandler", &SingleDispatchMethod_O::singleDispatchMethodLambdaListHandler)
-      .def("singleDispatchMethodDeclares", &SingleDispatchMethod_O::singleDispatchMethodDeclares)
-      .def("singleDispatchMethodDocstring", &SingleDispatchMethod_O::singleDispatchMethodDocstring)
-      //	.initArgs("(self)")
-      ;
-}
 
-void SingleDispatchMethod_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), SingleDispatchMethod, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
                                                        Class_sp receiverClass,
@@ -151,7 +133,6 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
                                                        List_sp declares,
                                                        gc::Nilable<Str_sp> docstr,
                                                        Function_sp body) {
-  _G();
   GC_ALLOCATE(SingleDispatchMethod_O, method);
   method->_name = name;
   method->_receiver_class = receiverClass;
@@ -167,7 +148,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
 #if 0
 	CompiledBody_sp cb_method_function_primitive = CompiledBody_O::create(method_functoid,_Nil<T_O>());
 	LambdaListHandler_sp llh_pass_arguments_through(_Nil<LambdaListHandler_O>());
-	BuiltinClosure* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocateClass(name,method);
+	BuiltinClosure* method_functoid = gctools::ClassAllocator<Lambda_method_function>::allocate_class(name,method);
 	method->_method_builtin = BuiltIn_O::make(name,llh_pass_arguments_through,cb_method_function_primitive);
 #endif
   return method;

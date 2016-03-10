@@ -83,10 +83,10 @@ typedef gctools::smart_ptr<SNode_O> ArchiveP;
 class Function_O;
 typedef gctools::smart_ptr<Function_O> Function_sp;
 
-bool cl_eq(T_sp x, T_sp y);
-bool cl_eql(T_sp x, T_sp y);
-bool cl_equal(T_sp x, T_sp y);
-bool cl_equalp(T_sp x, T_sp y);
+bool cl__eq(T_sp x, T_sp y);
+bool cl__eql(T_sp x, T_sp y);
+bool cl__equal(T_sp x, T_sp y);
+bool cl__equalp(T_sp x, T_sp y);
 bool clasp_charEqual2(T_sp, T_sp);
 };
 
@@ -232,11 +232,11 @@ class _RootDummyClass : public gctools::GCObject {
 private:
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
-  static void ___set_static_creator(gc::tagged_pointer<core::Creator> cb){};
+  static void set_static_creator(gc::tagged_pointer<core::Creator> cb){};
 
 public:
   explicit _RootDummyClass();
-  virtual ~_RootDummyClass(){};
+  ~_RootDummyClass(){};
 };
 
 template <class T_Base>
@@ -402,7 +402,7 @@ public:
 //    extern Symbol_sp _sym_t;
 class T_O : public _RootDummyClass {
 public:
-  virtual ~T_O(){};
+  ~T_O(){};
 
 private:
   friend class CoreExposer;
@@ -427,28 +427,26 @@ public:                                                                         
   typedef gctools::smart_ptr<oClass> smart_ptr;                                                                        \
                                                                                                                        \
 public:                                                                                                                \
-  static core::Symbol_sp ___staticClassSymbol;                                                                         \
-  static core::Class_sp ___staticClass;                                                                                \
+  static core::Symbol_sp static_class_symbol;                                                                         \
+  static core::Class_sp static_class;                                                                                \
   static gctools::tagged_pointer<core::Creator> static_creator;                                                        \
   static int static_Kind;                                                                                              \
   /* static gctools::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */                            \
   /* static gctools::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */                    \
-  /*    static oClass* ___staticDereferencedNilInstance;	*/                                                            \
+  /*    static oClass* ___staticDereferencedNilInstance;	*/                                                     \
   /*    static oClass* ___staticDereferencedUnboundInstance; */                                                        \
 public:                                                                                                                \
-  static void ___set_static_ClassSymbol(core::Symbol_sp i) { oClass::___staticClassSymbol = i; };                      \
-  static void ___set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };       \
+  static void set_static_class_symbol(core::Symbol_sp i) { oClass::static_class_symbol = i; };                      \
+  static void set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };       \
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
-  static core::Symbol_sp static_classSymbol() { return oClass::___staticClassSymbol; };                                \
-  virtual core::Symbol_sp virtual_classSymbol() { return oClass::___staticClassSymbol; };                              \
-  virtual core::Class_sp __class() const {                                                                             \
-    return oClass::___staticClass;                                                                                     \
-  }                                                                                                                    \
+  static core::Symbol_sp static_classSymbol() { return oClass::static_class_symbol; };                                \
   static string Package() { return oClass::static_packageName(); };                                                    \
   static string Pkg() { return Package(); };                                                                           \
-  static void exposeCando(core::Lisp_sp);                                                                              \
-  static void exposePython(core::Lisp_sp);
+    virtual core::Class_sp __class() const {                                                                             \
+    return oClass::static_class;                                                                                     \
+  }                                                                                                                    \
+  static void expose_to_clasp();
 
 #define __COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)   \
   __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName) \
@@ -460,32 +458,23 @@ public:                                                                         
 #define LISP_TEMPLATE_CLASS(oClass) \
   __COMMON_VIRTUAL_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
 
+#ifndef SCRAPING
 #define LISP_META_CLASS(x) // nothing
 
-#define LISP_BASE1(b1) \
-public:                \
-  typedef b1 Base;     \
-  typedef LispBases1<b1> Bases;
-
-#define LISP_VIRTUAL_BASE2(v0, b1, b2) \
-public:                                \
-  typedef LispVirtualBases2<v0, b1, b2> Bases;
-
-#define LISP_BASE2(b1, b2) \
-public:                    \
-  typedef LispBases2<b1, b2> Bases;
-
-#define LISP_TEMPLATE_BASE1(b1) \
-  /*no-scrape*/ LISP_BASE1(b1);
-
-#define LISP_CLASS(aNamespace, aPackage, aClass, aClassName) \
+#define LISP_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
+  public: \
+    typedef b1 Base; \
+  typedef LispBases1<Base> Bases; \
   __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
 
-#define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName) \
+#define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
+  public: \
+    typedef b1 Base; \
+  typedef LispBases1<Base> Bases; \
   __COMMON_VIRTUAL_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
+#endif
 
-  LISP_BASE1(_RootDummyClass);
-  LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T");
+  LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
 
 #define DECLARE_INIT_GLOBALS() \
 public:                        \
@@ -556,11 +545,6 @@ public: // Introspection stuff -----------------------------
   template <class o_class>
   bool isAssignableTo() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol()); }
 
-#if 0
-	/*! isA is a shorter way to write isAssignableTo */
-	template <class o_class>
-	bool i s A() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol());};
-#endif
 
   /*! If this object can render itself into a graphics object then
 	 * return true
@@ -716,13 +700,15 @@ public:
     SUBCLASS_MUST_IMPLEMENT();
   }; // This is the only one that absolutely has to be defined in a subclass
   virtual bool operator<=(T_sp obj) const {
-    if (cl_eql(this->asSmartPtr(), obj))
+    if (cl__eql(this->asSmartPtr(), obj))
       return true;
     return this->operator<(obj);
   };
   virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
   virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
+  virtual void validate() const {};
+  
 public: // Instance protocol
   //! Some Class objects will create instances of classes different from themselves
   virtual core::Class_sp _instanceClass() const { return this->__class(); };
@@ -777,17 +763,17 @@ inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
 
 namespace core {
 
-#define ARGS_cl_eq "(x y)"
-#define DECL_cl_eq ""
-#define DOCS_cl_eq "eq"
-inline bool cl_eq(T_sp x, T_sp y) {
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("eq");
+inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
   return (x == y);
 };
 
-#define ARGS_cl_eql "(x y)"
-#define DECL_cl_eql ""
-#define DOCS_cl_eql "eql"
-inline bool cl_eql(T_sp x, T_sp y) {
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("eql");
+inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
@@ -804,10 +790,10 @@ inline bool cl_eql(T_sp x, T_sp y) {
   return x->eql_(y);
 };
 
-#define ARGS_cl_equal "(x y)"
-#define DECL_cl_equal ""
-#define DOCS_cl_equal "equal"
-inline bool cl_equal(T_sp x, T_sp y) {
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("equal");
+inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
   if (x.fixnump()) {
     return x.raw_() == y.raw_();
   } else if (x.single_floatp()) {
@@ -826,10 +812,10 @@ inline bool cl_equal(T_sp x, T_sp y) {
 
 extern int basic_compare(Number_sp na, Number_sp nb);
 
-#define ARGS_cl_equalp "(x y)"
-#define DECL_cl_equalp ""
-#define DOCS_cl_equalp "equalp"
-inline bool cl_equalp(T_sp x, T_sp y) {
+ CL_LAMBDA(x y);
+ CL_DECLARE();
+ CL_DOCSTRING("equalp");
+inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
   if (x.fixnump()) {
     if (y.fixnump()) {
       return x.raw_() == y.raw_();
@@ -960,17 +946,13 @@ public:                                                      \
 
 /*! Register all classes with this method
  */
+#if 0
 template <class oClass>
-inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
-                          core::ExposePythonFunction exposePythonFunction,
-                          core::InitializationCallback initGlobalCallback,
-                          core::Lisp_sp lisp) {
-  _G();
+inline void registerClass() {
   string nobase;
   core::Symbol_sp classSymbol;
   if (oClass::static_classSymbol() != core::T_O::static_classSymbol()) {
     if (!oClass::Bases::baseClassSymbolsDefined()) {
-      _G();
       THROW_HARD_ERROR(boost::format("You are trying to register class(%s) "
                                      "but you have not registered its baseClass") %
                        oClass::static_className());
@@ -980,22 +962,17 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
   //    if ( oClass::static_classSymbol() == UndefinedUnsignedInt )
   if (!IS_SYMBOL_DEFINED(oClass::static_classSymbol())) {
     core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_className(), oClass::static_packageName());
-    LOG(BF("Setting staticClassSymbol for class to: %d") % classSymbol);
     oClass::___set_static_ClassSymbol(classSymbol);
     if (!oClass::static_creator) {
-      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocateClass();
+      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocate_class_kind(gctools::GCKind<core::LispObjectCreator<oClass>>::Kind);
       oClass::___set_static_creator(lispObjectCreator);
     }
   }
-  LOG(BF("REGISTERING class(%s::%s)  classSymbol(%2d)") % oClass::static_packageName() % oClass::static_className() % oClass::static_classSymbol());
-  if (exposeCandoFunction != NULL) {
-    (exposeCandoFunction)(lisp);
-  }
-  // Sometimes we need to initialize globals - a callback can be setup by exposeCandoFunction
-  if (initGlobalCallback) {
-    initGlobalCallback(_lisp); // lisp_installGlobalInitializationCallback(initGlobalCallback);
-  }
+  oClass::expose_to_clasp();
 };
+#endif
+
+
 
 // ^^^^^^^^^^^^
 // ^^^^^^^^^^^^
@@ -1005,10 +982,10 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
 // Defines the class method that defines nil for this class
 // and avoids the static initialization fiasco
 //
-// uint oClass::___staticClassSymbol; = UndefinedUnsignedInt;
+// uint oClass::static_class_symbol; = UndefinedUnsignedInt;
 #define _REGISTER_CLASS_HEADER_COMMON(oClass)   \
-  core::Symbol_sp oClass::___staticClassSymbol; \
-  core::Class_sp oClass::___staticClass;        \
+  core::Symbol_sp oClass::static_class_symbol; \
+  core::Class_sp oClass::static_class;        \
   int oClass::static_Kind;                      \
   gctools::tagged_pointer<core::Creator> oClass::static_creator;
 
@@ -1025,64 +1002,19 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
   }                                                             \
   void Register_##ns##__##oClass(core::Lisp_sp lisp)
 
-#define _REGISTER_CLASS_HEADER_ROOT_NAMESPACE(oClass)   \
-  _REGISTER_CLASS_HEADER_COMMON(oClass);                \
-  void Call_exposePython_##oClass(core::Lisp_sp lisp) { \
-    oClass::exposePython(lisp);                         \
-  }                                                     \
-  void Register_##oClass(core::Lisp_sp lisp)
-
 /*! Register a class.
  * Return True if it could be registered otherwise False.
  * If this class depends on other classes being registered
  * then return False and classes will be repeatedly registered until they
  * are all registered.
  */
-#define REGISTER_CLASS(ns, oClass)                                              \
-  _REGISTER_CLASS_HEADER(ns, oClass) {                                          \
-    _G();                                                                       \
-    registerClass<oClass>(&core::defaultExposeCando<oClass>, NULL, NULL, lisp); \
-  };                                                                            \
-  void oClass::exposePython(core::Lisp_sp lisp) {}
-
+#define REGISTER_CLASS(ns,oClass)  _REGISTER_CLASS_HEADER_COMMON(oClass);
 /*end*/
 
-/*!
- * Use this from now on.
- * 1) Assumes "c" namespace
- * 2) Exposers are static functions within the class (exposeCando,exposePython)
- */
-#define EXPOSE_CLASS_ROOT_NAMESPACE(oClass)                                         \
-  _REGISTER_CLASS_HEADER_ROOT_NAMESPACE(oClass) {                                   \
-    _G();                                                                           \
-    registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, NULL, lisp); \
-  };
-
-#define EXPOSE_CLASS(ns, oClass)                                                    \
-  _REGISTER_CLASS_HEADER(ns, oClass) {                                              \
-    _G();                                                                           \
-    registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, NULL, lisp); \
-  };
-
-#define EXPOSE_CLASS_AND_GLOBALS(ns, oClass)                                                               \
-  _REGISTER_CLASS_HEADER(ns, oClass) {                                                                     \
-    _G();                                                                                                  \
-    ::registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, &oClass::lisp_initGlobals, lisp); \
-  };
-
-#define EXPOSE_CLASS_NO_PYTHON(ns, oClass)                                          \
-  void oClass::exposePython(core::Lisp_sp lisp) {}                                  \
-  _REGISTER_CLASS_HEADER(ns, oClass) {                                              \
-    _G();                                                                           \
-    registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, NULL, lisp); \
-  };
-
-#define EXPOSE_CLASS_AND_GLOBALS_NO_PYTHON(ns, oClass)                                                     \
-  void oClass::exposePython(core::Lisp_sp lisp) {}                                                         \
-  _REGISTER_CLASS_HEADER(ns, oClass) {                                                                     \
-    _G();                                                                                                  \
-    ::registerClass<oClass>(&oClass::exposeCando, &oClass::exposePython, &oClass::lisp_initGlobals, lisp); \
-  };
+/*! Do nothing - this is now generated by the scraper
+*/
+#define EXPOSE_CLASS(ns,oClass) 
+//#define EXPOSE_CLASS(ns,oClass) REGISTER_CLASS(ns,oClass)
 
 /*!
  * Create a default python interface
@@ -1117,11 +1049,11 @@ inline void registerClass(core::ExposeCandoFunction exposeCandoFunction,
                         boost::noncopyable>(#className, init<core::Lisp_sp>)
 
 namespace core {
-Class_sp af_classOf(T_sp obj);
-bool cl_eq(T_sp x, T_sp y);
-bool cl_eql(T_sp x, T_sp y);
-bool cl_equal(T_sp x, T_sp y);
-bool cl_equalp(T_sp x, T_sp y);
+Class_sp cl__class_of(T_sp obj);
+bool cl__eq(T_sp x, T_sp y);
+bool cl__eql(T_sp x, T_sp y);
+bool cl__equal(T_sp x, T_sp y);
+bool cl__equalp(T_sp x, T_sp y);
 };
 
 #include <clasp/core/glue.h>
@@ -1138,7 +1070,4 @@ TRANSLATE(core::T_O);
 #include <clasp/core/tagged_cast_specializations.h>
 #include <clasp/core/cxxObject.h>
 
-namespace core {
-void initialize_object();
-};
 #endif //]

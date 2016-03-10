@@ -63,17 +63,17 @@ void FEtype_error_list(cl_object x) {
 }
 
 void FEtype_error_proper_list(cl_object x) {
-  cl_error(9, @'simple-type-error', @':format-control',
+  cl__error(9, @'simple-type-error', @':format-control',
            make_constant_base_string("Not a proper list ~D"),
            @':format-arguments', Cons_O::createList(x),
-           @':expected-type', ecl_read_from_cstring("si::proper-list"),
+           @':expected-type', ecl__read_from_cstring("si::proper-list"),
            @':datum', x);
 }
 
 void FEcircular_list(cl_object x) {
   /* FIXME: Is this the right way to rebind it? */
   ecl_bds_bind(ecl_process_env(), @'*print-circle*', ECL_T);
-  cl_error(9, @'simple-type-error', @':format-control',
+  cl__error(9, @'simple-type-error', @':format-control',
            make_constant_base_string("Circular list ~D"),
            @':format-arguments', Cons_O::createList(x),
            @':expected-type', @'list',
@@ -82,8 +82,8 @@ void FEcircular_list(cl_object x) {
 
 void FEtype_error_index(cl_object seq, gctools::Fixnum ndx) {
   cl_object n = ecl_make_fixnum(ndx);
-  cl_index l = ECL_INSTANCEP(seq) ? seq->instance.length : ecl_length(seq);
-  cl_error(9, @'simple-type-error', @':format-control',
+  cl_index l = ECL_INSTANCEP(seq) ? seq->instance.length : ecl__length(seq);
+  cl__error(9, @'simple-type-error', @':format-control',
            make_constant_base_string("~S is not a valid index into the object ~S"),
            @':format-arguments', Cons_O::createList(n, seq),
            @':expected-type', Cons_O::createList(@'integer', ecl_make_fixnum(0), ecl_make_fixnum(l - 1)),
@@ -194,7 +194,7 @@ ecl_type_to_symbol(cl_type t) {
     return @'ext::sse-pack';
 #endif
   default:
-    ecl_internal_error("not a lisp data object");
+    ecl__internal_error("not a lisp data object");
   }
 }
 
@@ -233,7 +233,7 @@ void assert_type_proper_list(cl_object p) {
 }
 
 cl_object
-cl_type_of(cl_object x) {
+cl__type_of(cl_object x) {
   cl_object t;
   cl_type tx = ecl_t_of(x);
   switch (tx) {
@@ -276,18 +276,18 @@ cl_type_of(cl_object x) {
       t = @'array';
     else
       t = @'simple-array';
-    t = Cons_O::createList(t, ecl_elttype_to_symbol(ecl_array_elttype(x)),
+    t = Cons_O::createList(t, ecl__elttype_to_symbol(ecl_array_elttype(x)),
                            cl_array_dimensions(x));
     break;
   case t_vector:
     if (ECL_ADJUSTABLE_ARRAY_P(x) ||
         !Null(CAR(x->vector.displaced))) {
-      t = Cons_O::createList(@'vector', ecl_elttype_to_symbol(ecl_array_elttype(x)),
+      t = Cons_O::createList(@'vector', ecl__elttype_to_symbol(ecl_array_elttype(x)),
                              ecl_make_fixnum(x->vector.dim));
     } else if (ECL_ARRAY_HAS_FILL_POINTER_P(x) ||
-               (cl_elttype)x->vector.elttype != ecl_aet_object) {
+               (cl__elttype)x->vector.elttype != ecl_aet_object) {
       t = Cons_O::createList(@'simple-array',
-                             ecl_elttype_to_symbol(ecl_array_elttype(x)),
+                             ecl__elttype_to_symbol(ecl_array_elttype(x)),
                              cl_array_dimensions(x));
     } else {
       t = Cons_O::createList(@'simple-vector', ecl_make_fixnum(x->vector.dim));

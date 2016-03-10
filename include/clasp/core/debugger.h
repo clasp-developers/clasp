@@ -42,8 +42,8 @@ namespace core {
   the single step state to what it was.
 */
 
-void core_lowLevelBacktrace();
-void core_clibBacktrace(int depth = 999999999);
+void core__low_level_backtrace();
+void core__clib_backtrace(int depth = 999999999);
 
 FORWARD(InvocationHistoryFrameIterator);
 
@@ -81,7 +81,6 @@ public:
 
 void af_backtrace();
 
-void initialize_debugging();
 
 extern "C" {
 void af_gotoIhsTop();

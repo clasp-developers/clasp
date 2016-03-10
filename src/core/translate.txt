@@ -1,3 +1,0 @@
-Cons->reverse()  --> af_reverse(Cons)
-Cons->last()
-

@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clang/Tooling/JSONCompilationDatabase.h>
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/AST/Comment.h>
+#include <clang/AST/RecordLayout.h>
 #include <clang/Tooling/Tooling.h>
 #include <clang/Tooling/Refactoring.h>
 #include <clang/Frontend/CompilerInstance.h>
@@ -44,6 +45,7 @@ THE SOFTWARE.
 #include <clang/AST/ASTConsumer.h>
 #include <clang/AST/ASTContext.h>
 #include <clang/Rewrite/Core/Rewriter.h>
+#include <clang/Sema/Sema.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Lex/Preprocessor.h>
 #include <clang/ASTMatchers/Dynamic/VariantValue.h>
@@ -63,7 +65,7 @@ THE SOFTWARE.
 #include <clasp/asttooling/astExpose.h>
 #include <clasp/asttooling/asttoolingPackage.h>
 #include <clasp/asttooling/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/asttooling/Diagnostics.h>
 #include <clasp/asttooling/Registry.h>
@@ -147,7 +149,8 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
       gctools::tagged_pointer<core::Closure> closure = func->closure;
       if (auto compiledClosure = closure.asOrNull<llvmo::CompiledClosure>()) {
         core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
-        this->_v = [fptr](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
+        core::T_O* closedEnvironment = compiledClosure->closedEnvironment.raw_();
+        this->_v = [fptr,closedEnvironment](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
 			core::T_mv result;
@@ -156,7 +159,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
                         onearg[0] = targs.raw_();
                         core::VaList_S onearg_valist_s(onearg);
                         core::T_O* lcc_arglist = onearg_valist_s.asTaggedPtr();
-			result = fptr(LCC_PASS_ARGS1_VA_LIST(targs.raw_()));
+			result = fptr(LCC_PASS_ENV_ARGS1_VA_LIST(closedEnvironment,targs.raw_()));
 			// Should resolve to const vector<string>& 
 			translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
 			return cresult._v;
@@ -287,20 +290,18 @@ INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableFrontendActionF
 
 namespace asttooling {
 
-#define ARGS_af_clangVersionString "()"
-#define DECL_af_clangVersionString ""
-#define DOCS_af_clangVersionString "clangVersionString"
-core::Str_sp af_clangVersionString() {
-  _G();
+#define ARGS_ast_tooling__clangVersionString "()"
+#define DECL_ast_tooling__clangVersionString ""
+#define DOCS_ast_tooling__clangVersionString "clangVersionString"
+CL_DEFUN core::Str_sp ast_tooling__clangVersionString() {
   core::Str_sp version = core::Str_O::create(CLANG_VERSION_STRING);
   return version;
 };
 
-#define ARGS_af_getSingleMatcher "(variant-matcher)"
-#define DECL_af_getSingleMatcher ""
-#define DOCS_af_getSingleMatcher "getSingleMatcher"
-core::T_sp af_getSingleMatcher(core::T_sp variantMatcher) {
-  _G();
+#define ARGS_ast_tooling__getSingleMatcher "(variant-matcher)"
+#define DECL_ast_tooling__getSingleMatcher ""
+#define DOCS_ast_tooling__getSingleMatcher "getSingleMatcher"
+core::T_sp ast_tooling__getSingleMatcher(core::T_sp variantMatcher) {
   clang::ast_matchers::dynamic::VariantMatcher *vp = gc::As<core::WrappedPointer_sp>(variantMatcher)->cast<clang::ast_matchers::dynamic::VariantMatcher>();
   llvm::Optional<clang::ast_matchers::internal::DynTypedMatcher> dtm = vp->getSingleMatcher();
   if (dtm.hasValue()) {
@@ -309,11 +310,10 @@ core::T_sp af_getSingleMatcher(core::T_sp variantMatcher) {
   return _Nil<core::T_O>();
 };
 
-#define ARGS_af_IDToNodeMap "(bound-nodes)"
-#define DECL_af_IDToNodeMap ""
-#define DOCS_af_IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
-core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
-  _G();
+#define ARGS_ast_tooling__IDToNodeMap "(bound-nodes)"
+#define DECL_ast_tooling__IDToNodeMap ""
+#define DOCS_ast_tooling__IDToNodeMap "IDToNodeMap - returns a HashTable of bound keyword symbols to wrapped nodes"
+core::HashTable_sp ast_tooling__IDToNodeMap(core::T_sp bn) {
   if (const clang::ast_matchers::BoundNodes *boundNodes = gc::As<core::WrappedPointer_sp>(bn)->cast<const clang::ast_matchers::BoundNodes>()) {
     core::HashTable_sp ht = core::HashTable_O::create(::cl::_sym_eq);
     const clang::ast_matchers::BoundNodes::IDToNodeMap &nodemap = boundNodes->getMap();
@@ -333,7 +333,7 @@ core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
       } else if (const clang::TypeLoc *typeLocType = dtn.get<clang::TypeLoc>()) {
         value = translate::to_object<clang::TypeLoc>::convert(*typeLocType);
       } else {
-        SIMPLE_ERROR(BF("%s:%d Handle boxing of other node types in af_IDToNodeMap") % __FILE__ % __LINE__);
+        SIMPLE_ERROR(BF("%s:%d Handle boxing of other node types in ast_tooling__IDToNodeMap") % __FILE__ % __LINE__);
       }
       ht->hash_table_setf_gethash(_lisp->internKeyword(key), value);
     }
@@ -342,11 +342,10 @@ core::HashTable_sp af_IDToNodeMap(core::T_sp bn) {
   SIMPLE_ERROR(BF("Wrong argument type for IDToNodeMap"));
 }
 
-#define ARGS_af_match "(match-finder node ast-context)"
-#define DECL_af_match ""
-#define DOCS_af_match "Run the MATCH-FINDER on the NODE. This will handle any kind of clang ast node."
-void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
-  _G();
+#define ARGS_ast_tooling__match "(match-finder node ast-context)"
+#define DECL_ast_tooling__match ""
+#define DOCS_ast_tooling__match "Run the MATCH-FINDER on the NODE. This will handle any kind of clang ast node."
+void ast_tooling__match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext) {
   clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(tmatchFinder)->cast<clang::ast_matchers::MatchFinder>();
   clang::ASTContext *astContext = gc::As<core::WrappedPointer_sp>(tastContext)->cast<clang::ASTContext>();
   core::WrappedPointer_sp wp_node = gc::As<core::WrappedPointer_sp>(tnode);
@@ -361,15 +360,14 @@ void af_match(core::T_sp tmatchFinder, core::T_sp tnode, core::T_sp tastContext)
   } else if (clang::TypeLoc *typeloc = wp_node->castOrNull<clang::TypeLoc>()) {
     matchFinder->match(*typeloc, *astContext);
   } else {
-    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in af_match") % __FILE__ % __LINE__);
+    SIMPLE_ERROR(BF("%s:%d Handle unboxing of other node types in ast_tooling__match") % __FILE__ % __LINE__);
   }
 };
 
-#define ARGS_af_newFrontendActionFactory "(consumer-factory)"
-#define DECL_af_newFrontendActionFactory ""
-#define DOCS_af_newFrontendActionFactory "newFrontendActionFactory"
-core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory) {
-  _G();
+#define ARGS_ast_tooling__newFrontendActionFactory "(consumer-factory)"
+#define DECL_ast_tooling__newFrontendActionFactory ""
+#define DOCS_ast_tooling__newFrontendActionFactory "newFrontendActionFactory"
+core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
   if (clang::ast_matchers::MatchFinder *matchFinder = gc::As<core::WrappedPointer_sp>(consumerFactory)->cast<clang::ast_matchers::MatchFinder>()) {
     typedef clbind::Wrapper<clang::tooling::FrontendActionFactory, std::unique_ptr<clang::tooling::FrontendActionFactory>> wrapped_type;
     std::unique_ptr<clang::tooling::FrontendActionFactory> val = clang::tooling::newFrontendActionFactory(matchFinder);
@@ -384,20 +382,18 @@ core::T_sp af_newFrontendActionFactory(core::T_sp consumerFactory) {
   SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory));
 };
 
-#define ARGS_af_Replacements_insert "(replacement)"
-#define DECL_af_Replacements_insert ""
-#define DOCS_af_Replacements_insert "Replacements_insert - try to insert the Replacement, return true if successful"
-bool af_Replacements_insert(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
-  _G();
+#define ARGS_ast_tooling__Replacements_insert "(replacement)"
+#define DECL_ast_tooling__Replacements_insert ""
+#define DOCS_ast_tooling__Replacements_insert "Replacements_insert - try to insert the Replacement, return true if successful"
+bool ast_tooling__Replacements_insert(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
   pair<clang::tooling::Replacements::iterator, bool> res = replacements.insert(one);
   return res.second;
 };
 
-#define ARGS_af_deduplicate "(replacements)"
-#define DECL_af_deduplicate ""
-#define DOCS_af_deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
-core::T_mv af_deduplicate(core::List_sp replacements) {
-  _G();
+#define ARGS_ast_tooling__deduplicate "(replacements)"
+#define DECL_ast_tooling__deduplicate ""
+#define DOCS_ast_tooling__deduplicate "deduplicate wraps and lispifys clang::tooling::deduplicate - it takes a Cons of replacements and returns (values replacements overlapping-ranges)"
+CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   core::List_sp creps = replacements;
   vector<clang::tooling::Replacement> vreps;
   for (; creps.notnilp(); creps = oCdr(creps)) {
@@ -429,11 +425,10 @@ core::T_mv af_deduplicate(core::List_sp replacements) {
   return Values(oCdr(firstRep), oCdr(firstRang));
 }
 
-#define ARGS_af_testDerivable "(obj)"
-#define DECL_af_testDerivable ""
-#define DOCS_af_testDerivable "testDerivable"
-void af_testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
-  _G();
+#define ARGS_ast_tooling__testDerivable "(obj)"
+#define DECL_ast_tooling__testDerivable ""
+#define DOCS_ast_tooling__testDerivable "testDerivable"
+CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
   printf("%s:%d - got DerivableMatchCallback object --> %p\n", __FILE__, __LINE__, ptr);
   ptr->onEndOfTranslationUnit();
 };
@@ -441,171 +436,199 @@ void af_testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
 
 namespace asttooling {
 
+/*Return the field offset in bits */
+size_t getFieldOffset(clang::ASTContext* context, clang::RecordDecl* record, size_t fieldIndex)
+{
+  const clang::Type* type = record->getTypeForDecl();
+  if ( type->isDependentType() ) return 0;
+  const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
+//  printf("getFieldOffset context = %p record = %p(%s) fieldIndex = %lu\n", context, record, record->getNameAsString().c_str(), fieldIndex );
+//  printf("  layout = %p\n", &layout );
+  size_t offset = layout.getFieldOffset(fieldIndex);
+//  printf("Returning offset=%lu\n", offset);
+  return offset;
+}
+
+size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record)
+{
+  const clang::Type* type = record->getTypeForDecl();
+  if ( type->isDependentType() ) return 0;
+//  printf("getRecordSize context = %p record = %p(%s)\n", context, record, record->getNameAsString().c_str() );
+  const clang::ASTRecordLayout& layout = context->getASTRecordLayout(record);
+//  printf("  layout = %p\n", &layout );
+  size_t size= layout.getSize().getQuantity();
+//  printf("Returning size=%lu\n", size);
+  return size;
+}
+
 void initialize_clangTooling() {
 
   // overloaded functions that had trouble resolving
   clang::ASTContext &(clang::ASTUnit::*clang_ASTUnit_getASTContext)() = &clang::ASTUnit::getASTContext;
-  package(AstToolingPkg, {"CLANG"}, {"CL", "CORE", "AST-TOOLING"})[
-    class_<clang::tooling::CompilationDatabase>("CompilationDatabase", no_default_constructor)
-        .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
-        .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
-        .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands),
-    class_<clang::tooling::JSONCompilationDatabase, bases<clang::tooling::CompilationDatabase>>("JSONCompilationDatabase", no_default_constructor),
-    def("JSONCompilationDatabase-loadFromFile",
-        &clang::tooling::JSONCompilationDatabase::loadFromFile,
-        policies<adopt<result>, pureOutValue<2>>()),
-    class_<clang::ASTConsumer>("Clang-ASTConsumer", no_default_constructor),
-    class_<clang::LangOptions>("LangOptions", no_default_constructor),
-    class_<clang::Lexer>("Lexer", no_default_constructor),
-    class_<clang::Preprocessor>("Preprocessor", no_default_constructor),
-    class_<clang::ASTContext>("ASTContext", no_default_constructor)
-        .def("getTranslationUnitDecl", &clang::ASTContext::getTranslationUnitDecl)
-        .def("getLangOpts", &clang::ASTContext::getLangOpts)
-        .def("getCommentForDecl", &clang::ASTContext::getCommentForDecl),
-    class_<clang::SourceManager>("SourceManager", no_default_constructor)
-        .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, policies<>(), "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
-        .def("getFilename", &clang::SourceManager::getFilename)
-        .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
-        .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, policies<pureOutValue<2>>())
-        .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, policies<pureOutValue<2>>())
-        .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
-        .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, policies<pureOutValue<2>>())
-        .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, policies<pureOutValue<2>>())
-        .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, policies<pureOutValue<2>>())
-        .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, policies<pureOutValue<2>>()),
-    class_<clang::SourceLocation>("SourceLocation", no_default_constructor)
-        .def("isFileID", &clang::SourceLocation::isFileID)
-        .def("printToString", &clang::SourceLocation::printToString),
-    class_<clang::PresumedLoc>("PresumedLoc", no_default_constructor)
-        .def("isValid", &clang::PresumedLoc::isValid)
-        .def("isInvalid", &clang::PresumedLoc::isInvalid)
-        .def("PresumedLoc-getFilename", &clang::PresumedLoc::getFilename)
-        .def("getLine", &clang::PresumedLoc::getLine)
-        .def("getColumn", &clang::PresumedLoc::getColumn)
-        .def("getIncludeLoc", &clang::PresumedLoc::getIncludeLoc),
-    class_<clang::SourceRange>("SourceRange", no_default_constructor)
-        .def("getBegin", &clang::SourceRange::getBegin)
-        .def("getEnd", &clang::SourceRange::getEnd),
-    class_<clang::CharSourceRange>("CharSourceRange", no_default_constructor)
+  package(AstToolingPkg, {"CLANG"}, {"CL", "CORE", "AST-TOOLING"})
+    [
+     class_<clang::tooling::CompilationDatabase>("CompilationDatabase", no_default_constructor)
+     .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
+     .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
+     .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands),
+     class_<clang::tooling::JSONCompilationDatabase, bases<clang::tooling::CompilationDatabase>>("JSONCompilationDatabase", no_default_constructor),
+     def("JSONCompilationDatabase-loadFromFile",
+         &clang::tooling::JSONCompilationDatabase::loadFromFile,
+         policies<adopt<result>, pureOutValue<2>>()),
+     class_<clang::ASTConsumer>("Clang-ASTConsumer", no_default_constructor),
+     class_<clang::LangOptions>("LangOptions", no_default_constructor),
+     class_<clang::Lexer>("Lexer", no_default_constructor),
+     class_<clang::Preprocessor>("Preprocessor", no_default_constructor),
+     class_<clang::ASTContext>("ASTContext", no_default_constructor)
+     .def("getTranslationUnitDecl", &clang::ASTContext::getTranslationUnitDecl)
+     .def("getLangOpts", &clang::ASTContext::getLangOpts)
+     .def("getCommentForDecl", &clang::ASTContext::getCommentForDecl)
+     .def("getASTRecordLayout",&clang::ASTContext::getASTRecordLayout),
+     class_<clang::SourceManager>("SourceManager", no_default_constructor)
+     .def("getPresumedLoc", &clang::SourceManager::getPresumedLoc, policies<>(), "((self ast-tooling:source-manager) source-location &optional (use-line-directives t))")
+     .def("getFilename", &clang::SourceManager::getFilename)
+     .def("getExpansionLoc", &clang::SourceManager::getExpansionLoc)
+     .def("getExpansionLineNumber", &clang::SourceManager::getExpansionLineNumber, policies<pureOutValue<2>>())
+     .def("getExpansionColumnNumber", &clang::SourceManager::getExpansionColumnNumber, policies<pureOutValue<2>>())
+     .def("getSpellingLoc", &clang::SourceManager::getSpellingLoc)
+     .def("getSpellingLineNumber", &clang::SourceManager::getSpellingLineNumber, policies<pureOutValue<2>>())
+     .def("getSpellingColumnNumber", &clang::SourceManager::getSpellingColumnNumber, policies<pureOutValue<2>>())
+     .def("getPresumedLineNumber", &clang::SourceManager::getPresumedLineNumber, policies<pureOutValue<2>>())
+     .def("getPresumedColumnNumber", &clang::SourceManager::getPresumedColumnNumber, policies<pureOutValue<2>>()),
+     def("getFieldOffset",&getFieldOffset),
+     def("getRecordSize",&getRecordSize),
+     class_<clang::SourceLocation>("SourceLocation", no_default_constructor)
+     .def("isFileID", &clang::SourceLocation::isFileID)
+     .def("printToString", &clang::SourceLocation::printToString),
+     class_<clang::PresumedLoc>("PresumedLoc", no_default_constructor)
+     .def("isValid", &clang::PresumedLoc::isValid)
+     .def("isInvalid", &clang::PresumedLoc::isInvalid)
+     .def("PresumedLoc-getFilename", &clang::PresumedLoc::getFilename)
+     .def("getLine", &clang::PresumedLoc::getLine)
+     .def("getColumn", &clang::PresumedLoc::getColumn)
+     .def("getIncludeLoc", &clang::PresumedLoc::getIncludeLoc),
+     class_<clang::SourceRange>("SourceRange", no_default_constructor)
+     .def("getBegin", &clang::SourceRange::getBegin)
+     .def("getEnd", &clang::SourceRange::getEnd),
+     class_<clang::CharSourceRange>("CharSourceRange", no_default_constructor)
     // Create a CharSourceRange from a pair of begin/end SourceLocations that contains a TokenRange
-    ,
-    def("newCharSourceRange-getTokenRange",
-        (clang::CharSourceRange (*)(clang::SourceLocation, clang::SourceLocation)) & clang::CharSourceRange::getTokenRange)
+     ,
+     def("newCharSourceRange-getTokenRange",
+         (clang::CharSourceRange (*)(clang::SourceLocation, clang::SourceLocation)) & clang::CharSourceRange::getTokenRange)
     // Create a CharSourceRange from a pair of begin/end SourceLocations that contains a CharRange
-    ,
-    def("newCharSourceRange-getCharRange",
-        (clang::CharSourceRange (*)(clang::SourceLocation, clang::SourceLocation)) & clang::CharSourceRange::getCharRange)
+     ,
+     def("newCharSourceRange-getCharRange",
+         (clang::CharSourceRange (*)(clang::SourceLocation, clang::SourceLocation)) & clang::CharSourceRange::getCharRange)
     // Create a CharSourceRange from a SourceRange that contains a TokenRange
-    ,
-    def("newCharSourceRange-getTokenRange-SourceRange",
-        (clang::CharSourceRange (*)(clang::SourceRange)) & clang::CharSourceRange::getTokenRange)
+     ,
+     def("newCharSourceRange-getTokenRange-SourceRange",
+         (clang::CharSourceRange (*)(clang::SourceRange)) & clang::CharSourceRange::getTokenRange)
     // Create a CharSourceRange from a SourceRange that contains a CharRange
-    ,
-    def("newCharSourceRange-getCharRange-SourceRange",
-        (clang::CharSourceRange (*)(clang::SourceRange)) & clang::CharSourceRange::getCharRange),
-    class_<clang::CompilerInstance>("CompilerInstance")
-        .def("getASTContext", &clang::CompilerInstance::getASTContext),
-    class_<clang::FrontendAction>("FrontendAction", no_default_constructor),
-    class_<clang::ASTFrontendAction, clang::FrontendAction>("Clang-ASTFrontendAction", no_default_constructor),
-    class_<clang::SyntaxOnlyAction, clang::ASTFrontendAction>("Clang-SyntaxOnlyAction", no_default_constructor),
-    derivable_class_<DerivableASTFrontendAction, clang::ASTFrontendAction>("ASTFrontendAction")
-        .def("CreateASTConsumer", &DerivableASTFrontendAction::CreateASTConsumer, policies<adopt<result>>()),
-    class_<clang::tooling::ClangTool>("ClangTool", no_default_constructor)
-        .def_constructor("newClangTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
-        .def("clearArgumentsAdjusters", &clang::tooling::ClangTool::clearArgumentsAdjusters)
+     ,
+     def("newCharSourceRange-getCharRange-SourceRange",
+         (clang::CharSourceRange (*)(clang::SourceRange)) & clang::CharSourceRange::getCharRange),
+     class_<clang::CompilerInstance>("CompilerInstance")
+     .def("getASTContext", &clang::CompilerInstance::getASTContext),
+     class_<clang::FrontendAction>("FrontendAction", no_default_constructor),
+     class_<clang::ASTFrontendAction, clang::FrontendAction>("Clang-ASTFrontendAction", no_default_constructor),
+     class_<clang::SyntaxOnlyAction, clang::ASTFrontendAction>("Clang-SyntaxOnlyAction", no_default_constructor),
+     derivable_class_<DerivableASTFrontendAction, clang::ASTFrontendAction>("ASTFrontendAction")
+     .def("CreateASTConsumer", &DerivableASTFrontendAction::CreateASTConsumer, policies<adopt<result>>()),
+     class_<clang::tooling::ClangTool>("ClangTool", no_default_constructor)
+     .def_constructor("newClangTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
+     .def("clearArgumentsAdjusters", &clang::tooling::ClangTool::clearArgumentsAdjusters)
         //            .  def("addArgumentsAdjuster",&clang::tooling::ClangTool::addArgumentsAdjuster)
-        .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
-        .def("clangToolRun", &clang::tooling::ClangTool::run)
-        .def("buildASTs", &clang::tooling::ClangTool::buildASTs, policies<pureOutValue<1>>()),
-    class_<clang::tooling::Replacement>("Replacement", no_default_constructor)
-        .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, StringRef>())
-        .def("toString", &clang::tooling::Replacement::toString)
-        .def("apply", &clang::tooling::Replacement::apply),
-    class_<clang::tooling::Range>("Range", no_default_constructor),
-    class_<clang::tooling::Replacements>("Replacements", no_default_constructor),
-    def("Replacements-insert", &af_Replacements_insert) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
-    ,
-    class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool>("RefactoringTool", no_default_constructor)
-        .def_constructor("newRefactoringTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
-        .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
-        .def("applyAllReplacements", &clang::tooling::RefactoringTool::applyAllReplacements)
-        .def("runAndSave", &clang::tooling::RefactoringTool::runAndSave),
-    class_<clang::Rewriter>("Rewriter", no_default_constructor)
-        .def_constructor("newRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>()),
-    class_<clang::ASTUnit>("ASTUnit", no_default_constructor)
-        .def("getASTContext", clang_ASTUnit_getASTContext) // (clang::ASTContext&(*)())&clang::ASTUnit::getASTContext)
-    ,
-    derivable_class_<DerivableSyntaxOnlyAction, clang::SyntaxOnlyAction>("SyntaxOnlyAction")
-        .def("CreateASTConsumer", &DerivableSyntaxOnlyAction::CreateASTConsumer),
-    class_<clang::tooling::ToolAction>("ToolAction", no_default_constructor),
-    class_<clang::tooling::FrontendActionFactory, clang::tooling::ToolAction>("Clang-FrontendActionFactory", no_default_constructor),
-    def("newFrontendActionFactory", &af_newFrontendActionFactory),
-    derivable_class_<DerivableFrontendActionFactory, clang::tooling::FrontendActionFactory>("FrontendActionFactory")
-        .def("create", &DerivableFrontendActionFactory::default_create),
-    class_<clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster", no_default_constructor),
-    def("getClangSyntaxOnlyAdjuster", &clang::tooling::getClangSyntaxOnlyAdjuster),
-    def("getClangStripOutputAdjuster", &clang::tooling::getClangStripOutputAdjuster)
+     .def("appendArgumentsAdjuster", &clang::tooling::ClangTool::appendArgumentsAdjuster)
+     .def("clangToolRun", &clang::tooling::ClangTool::run)
+     .def("buildASTs", &clang::tooling::ClangTool::buildASTs, policies<pureOutValue<1>>()),
+     class_<clang::tooling::Replacement>("Replacement", no_default_constructor)
+     .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, StringRef>())
+     .def("toString", &clang::tooling::Replacement::toString)
+     .def("apply", &clang::tooling::Replacement::apply),
+     class_<clang::tooling::Range>("Range", no_default_constructor),
+     class_<clang::tooling::Replacements>("Replacements", no_default_constructor),
+     def("Replacements-insert", &ast_tooling__Replacements_insert) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
+     ,
+     class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool>("RefactoringTool", no_default_constructor)
+     .def_constructor("newRefactoringTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())
+     .def("getReplacements", &clang::tooling::RefactoringTool::getReplacements)
+     .def("applyAllReplacements", &clang::tooling::RefactoringTool::applyAllReplacements)
+     .def("runAndSave", &clang::tooling::RefactoringTool::runAndSave),
+     class_<clang::Rewriter>("Rewriter", no_default_constructor)
+     .def_constructor("newRewriter", constructor<clang::SourceManager &, const clang::LangOptions &>()),
+     class_<clang::ASTUnit>("ASTUnit", no_default_constructor)
+     .def("getASTContext", clang_ASTUnit_getASTContext) // (clang::ASTContext&(*)())&clang::ASTUnit::getASTContext)
+     ,
+     derivable_class_<DerivableSyntaxOnlyAction, clang::SyntaxOnlyAction>("SyntaxOnlyAction")
+     .def("CreateASTConsumer", &DerivableSyntaxOnlyAction::CreateASTConsumer),
+     class_<clang::tooling::ToolAction>("ToolAction", no_default_constructor),
+     class_<clang::tooling::FrontendActionFactory, clang::tooling::ToolAction>("Clang-FrontendActionFactory", no_default_constructor),
+     def("newFrontendActionFactory", &ast_tooling__newFrontendActionFactory),
+     derivable_class_<DerivableFrontendActionFactory, clang::tooling::FrontendActionFactory>("FrontendActionFactory")
+     .def("create", &DerivableFrontendActionFactory::default_create),
+     class_<clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster", no_default_constructor),
+     def("getClangSyntaxOnlyAdjuster", &clang::tooling::getClangSyntaxOnlyAdjuster),
+     def("getClangStripOutputAdjuster", &clang::tooling::getClangStripOutputAdjuster)
 
     // Don't need derivable_class_ ???????
     //            ,derivable_class_<DerivableArgumentsAdjuster,clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster")
     //            .    def("ArgumentsAdjuster-adjust",&DerivableArgumentsAdjuster::Adjust)
 
     /* Expose the Dynamic Matcher library */
-    ,
-    class_<clang::ast_matchers::dynamic::DynTypedMatcher>("DynTypedMatcher", no_default_constructor),
-    class_<ParserValue>("ParserValue", no_default_constructor)
-        .def_constructor("newParserValue", constructor<core::Cons_sp, const VariantValue &>()),
-    class_<clang::ast_matchers::dynamic::VariantValue>("VariantValue", no_default_constructor)
-        .def_constructor("newVariantValueUnsigned", constructor<unsigned>())
-        .def_constructor("newVariantValueString", constructor<std::string>())
-        .def_constructor("newVariantValueMatcher", constructor<const clang::ast_matchers::dynamic::VariantMatcher &>()),
-    class_<clang::ast_matchers::dynamic::VariantMatcher>("VariantMatcher", no_default_constructor)
-        .def("getTypeAsString", &clang::ast_matchers::dynamic::VariantMatcher::getTypeAsString)
+     ,
+     class_<clang::ast_matchers::dynamic::DynTypedMatcher>("DynTypedMatcher", no_default_constructor),
+     class_<ParserValue>("ParserValue", no_default_constructor)
+     .def_constructor("newParserValue", constructor<core::Cons_sp, const VariantValue &>()),
+     class_<clang::ast_matchers::dynamic::VariantValue>("VariantValue", no_default_constructor)
+     .def_constructor("newVariantValueUnsigned", constructor<unsigned>())
+     .def_constructor("newVariantValueString", constructor<std::string>())
+     .def_constructor("newVariantValueMatcher", constructor<const clang::ast_matchers::dynamic::VariantMatcher &>()),
+     class_<clang::ast_matchers::dynamic::VariantMatcher>("VariantMatcher", no_default_constructor)
+     .def("getTypeAsString", &clang::ast_matchers::dynamic::VariantMatcher::getTypeAsString)
     //            .def("getSingleMatcher",&clang::ast_matchers::dynamic::VariantMatcher::getSingleMatcher,policies<pureOutValue<1> >())
-    ,
-    def("getSingleMatcher", &af_getSingleMatcher),
-    class_<Diagnostics>("Diagnostics", no_default_constructor)
-        .def("toStringFull", &Diagnostics::toStringFull)
-        .def_constructor("newDiagnostics", constructor<>()),
-    def("constructMatcher", &Registry::constructMatcher),
-    def("constructBoundMatcher", &Registry::constructBoundMatcher),
-    class_<clang::ast_matchers::MatchFinder>("MatchFinder", no_default_constructor)
-        .def_constructor("newMatchFinder", constructor<>())
-        .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
-        .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST),
-    def("match", &af_match, policies<>(), ARGS_af_match, DECL_af_match, DOCS_af_match),
-    def("runToolOnCode", &clang::tooling::runToolOnCode),
-    class_<clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback-abstract", no_default_constructor),
-    derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback")
-        .def("run", &DerivableMatchCallback::default_run)
-        .def("onStartOfTranslationUnit", &DerivableMatchCallback::default_onStartOfTranslationUnit)
-        .def("onEndOfTranslationUnit", &DerivableMatchCallback::default_onEndOfTranslationUnit),
-    class_<clang::ast_matchers::MatchFinderMatchResult>("MatchResult", no_default_constructor)
-        .def("Nodes", &clang::ast_matchers::MatchFinderMatchResult::getNodes)
-        .def("Context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
-        .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager)
+     ,
+     def("getSingleMatcher", &ast_tooling__getSingleMatcher),
+     class_<Diagnostics>("Diagnostics", no_default_constructor)
+     .def("toStringFull", &Diagnostics::toStringFull)
+     .def_constructor("newDiagnostics", constructor<>()),
+     def("constructMatcher", &Registry::constructMatcher),
+     def("constructBoundMatcher", &Registry::constructBoundMatcher),
+     class_<clang::ast_matchers::MatchFinder>("MatchFinder", no_default_constructor)
+     .def_constructor("newMatchFinder", constructor<>())
+     .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object
+     .def("matchAST", &clang::ast_matchers::MatchFinder::matchAST),
+     def("match", &ast_tooling__match, policies<>(), ARGS_ast_tooling__match, DECL_ast_tooling__match, DOCS_ast_tooling__match),
+     def("runToolOnCode", &clang::tooling::runToolOnCode),
+     class_<clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback-abstract", no_default_constructor),
+     derivable_class_<DerivableMatchCallback, clang::ast_matchers::MatchFinder::MatchCallback>("MatchCallback")
+     .def("run", &DerivableMatchCallback::default_run)
+     .def("onStartOfTranslationUnit", &DerivableMatchCallback::default_onStartOfTranslationUnit)
+     .def("onEndOfTranslationUnit", &DerivableMatchCallback::default_onEndOfTranslationUnit),
+     class_<clang::ast_matchers::MatchFinderMatchResult>("MatchResult", no_default_constructor)
+     .def("Nodes", &clang::ast_matchers::MatchFinderMatchResult::getNodes)
+     .def("Context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
+     .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager)
     //            .  property("Nodes",&clang::ast_matchers::MatchFinderMatchResult::Nodes)
     //            .  property("Context",&clang::ast_matchers::MatchFinderMatchResult::Context)
     //            .  property("SourceManager",&clang::ast_matchers::MatchFinderMatchResult::SourceManager)
-    ,
-    class_<clang::ast_matchers::BoundNodes>("BoundNodes", no_default_constructor),
-    def("IDToNodeMap", &af_IDToNodeMap, policies<>(), ARGS_af_IDToNodeMap, DECL_af_IDToNodeMap, DOCS_af_IDToNodeMap),
-    def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken),
-    def("Lexer-getSourceText", &clang::Lexer::getSourceText, policies<pureOutValue<4>>()),
-    class_<clang::tooling::CompileCommand>("CompileCommand", no_default_constructor)
-        .property("CompileCommandDirectory", &clang::tooling::CompileCommand::Directory)
-        .property("CompileCommandCommandLine", &clang::tooling::CompileCommand::CommandLine)
+     ,
+     class_<clang::ast_matchers::BoundNodes>("BoundNodes", no_default_constructor),
+     def("IDToNodeMap", &ast_tooling__IDToNodeMap, policies<>(), ARGS_ast_tooling__IDToNodeMap, DECL_ast_tooling__IDToNodeMap, DOCS_ast_tooling__IDToNodeMap),
+     def("Lexer-getLocForEndOfToken", &clang::Lexer::getLocForEndOfToken),
+     def("Lexer-getSourceText", &clang::Lexer::getSourceText, policies<pureOutValue<4>>()),
+     class_<clang::tooling::CompileCommand>("CompileCommand", no_default_constructor)
+     .property("CompileCommandDirectory", &clang::tooling::CompileCommand::Directory)
+     .property("CompileCommandCommandLine", &clang::tooling::CompileCommand::CommandLine)
     //            ,def("buildASTFromCodeWithArgs",&clang::tooling::buildASTFromCodeWithArgs)
-  ];
-  Defun(deduplicate);
-  Defun(clangVersionString);
-
-  Defun(testDerivable);
+     ];
+//  Defun(deduplicate);
+//  Defun(clangVersionString);
+//  Defun(testDerivable);
 
   package("CLANG-COMMENTS", {}, {})[
-    class_<clang::comments::Comment>("Comment", no_default_constructor)
-        .def("getSourceRange", &clang::comments::Comment::getSourceRange),
-    class_<clang::comments::FullComment, clang::comments::Comment>("FullComment", no_default_constructor)
-  ];
+                                    class_<clang::comments::Comment>("Comment", no_default_constructor)
+                                    .def("getSourceRange", &clang::comments::Comment::getSourceRange),
+                                    class_<clang::comments::FullComment, clang::comments::Comment>("FullComment", no_default_constructor)
+                                    ];
 }
 };

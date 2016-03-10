@@ -235,7 +235,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     if ((forced_package = forced_print_package(package)))
       print_package = true;
     if (!print_package) {
-      T_mv symbol_mv = cl_findSymbol(name->get(), _lisp->getCurrentPackage());
+      T_mv symbol_mv = cl__find_symbol(name, _lisp->getCurrentPackage());
       Symbol_sp sym = symbol_mv;
       Symbol_sp intern_flag = gc::As<Symbol_sp>(symbol_mv.valueGet(1));
       if ((sym != x) || intern_flag.nilp())
@@ -247,7 +247,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
                           print_case, stream,
                           needs_to_be_escaped(name, readtable, print_case));
       if (!x.nilp()) {
-        Symbol_mv sym2_mv = cl_findSymbol(x->symbolName()->get(), package);
+        Symbol_mv sym2_mv = cl__find_symbol(x->symbolName(), package);
         Symbol_sp sym2 = sym2_mv;
         Symbol_sp intern_flag2 = gc::As<Symbol_sp>(sym2_mv.valueGet(1));
         if (sym2 != x) {

@@ -77,7 +77,7 @@ typedef enum { KIND_null = 0,
 #else
 typedef
 #define GC_ENUM
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
 #endif
@@ -89,7 +89,7 @@ extern int globalBoehmMarker;
 #endif
 class Header_s {
 public:
-  Header_s(GCKindEnum k) : Kind(k)
+  Header_s(kind_t k) : Kind(k)
 #ifdef BIG_BOEHM_HEADER
                            ,
                            ValidStamp(0xDEADBEEF), TypeidName(name)
@@ -110,12 +110,7 @@ public:
   };
 
 private:
-#ifdef _ADDRESS_MODEL_64
-  uint64_t Kind;
-#endif
-#ifdef _ADDRESS_MODEL_32
-  uint32_t Kind;
-#endif
+  kind_t Kind;
 #ifdef BIG_BOEHM_HEADER
   uintptr_t ValidStamp;
   const char *TypeidName;
@@ -173,8 +168,8 @@ template <class T>
 inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(TemplatedHeader_s)); };
 #endif
 
-void headerDescribe(core::T_O *taggedClient);
 };
+
 
 namespace gctools {
 
@@ -183,6 +178,12 @@ inline void *ClientPtrToBasePtr(void *mostDerived) {
   void *ptr = reinterpret_cast<char *>(mostDerived) - headerSize;
   return ptr;
 }
+
+ inline Header_s* header_pointer(void* client_pointer)
+ {
+   Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client_pointer));
+   return header;
+ }
 
 template <typename T>
 inline T *BasePtrToMostDerivedPtr(void *base) {
@@ -205,14 +206,14 @@ class ConstructorCreator;
 
 #ifndef USE_CXX_DYNAMIC_CAST
 #define DECLARE_FORWARDS
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef DECLARE_FORWARDS
 #endif
 
 namespace gctools {
 #ifndef USE_CXX_DYNAMIC_CAST
 #define GC_DYNAMIC_CAST
-#include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
+#include "clasp_gc.cc" // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };

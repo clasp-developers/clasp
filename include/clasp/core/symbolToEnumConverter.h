@@ -40,8 +40,7 @@ SMART(Symbol);
 
 SMART(SymbolToEnumConverter);
 class SymbolToEnumConverter_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter");
+  LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter",T_O);
 
 public:
   static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent);

@@ -47,9 +47,11 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/package.h>
 
+#include <clasp/asttooling/astExpose.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/asttooling/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/asttooling/asttoolingPackage.h>
 
 //
 // This needs to be before clbind is included
@@ -370,8 +372,6 @@ TYPE(Atomic, Type);
 
 using namespace clbind;
 using namespace clang;
-
-SYMBOL_EXPORT_SC_(ClangAstPkg, type);
 
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl>);
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl const>);
@@ -1024,7 +1024,6 @@ core::T_sp mostDerivedType(const clang::Type *x) {
 #define DECL_af_getTypePtrOrNull ""
 #define DOCS_af_getTypePtrOrNull "getTypePtrOrNull - returns the most derived Type* ptr or NIL"
 core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
-  _G();
   const clang::Type *tp = qt.getTypePtrOrNull();
   if (tp) {
     return mostDerivedType(tp);
@@ -1036,7 +1035,6 @@ core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
 #define DECL_af_getAsCXXRecordDecl ""
 #define DOCS_af_getAsCXXRecordDecl "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL"
 core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
-  _G();
   const clang::CXXRecordDecl *declp = tp->getAsCXXRecordDecl();
   if (declp) {
     return mostDerivedDecl(declp);
@@ -1048,7 +1046,6 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
 #define DECL_af_getNameForDiagnostic ""
 #define DOCS_af_getNameForDiagnostic "getNameForDiagnostic"
 void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, LangOptions &langOps, bool qualified) {
-  _G();
   string str;
   llvm::raw_string_ostream ostr(str);
   decl->getNameForDiagnostic(ostr, langOps, qualified);
@@ -1060,7 +1057,6 @@ void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core:
 #define DECL_af_makeQualType ""
 #define DOCS_af_makeQualType "makeQualType"
 clang::QualType af_makeQualType(clang::Type *ty) {
-  _G();
   clang::QualType qt(ty, 0);
   return qt;
 };
@@ -1071,12 +1067,11 @@ CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateSpecializationKind, asttooling::_
 
 namespace asttooling {
 
-#define ClangAstPkg "CLANG-AST"
 
 void initialize_astExpose() {
   SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
   SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
-  core::Package_sp pkg = _lisp->makePackage(ClangAstPkg, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
+  core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::Str_O::create("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)
@@ -1167,9 +1162,10 @@ void initialize_astExpose() {
     CLASS_DECL(Value, NamedDecl)
         .def("getType", &clang::ValueDecl::getType),
     CLASS_DECL(Declarator, ValueDecl),
-    CLASS_DECL(Field, DeclaratorDecl),
+    CLASS_DECL(Field, DeclaratorDecl)
+    .def("getFieldIndex",&clang::FieldDecl::getFieldIndex) ,
     CLASS_DECL(ObjCAtDefsField, FieldDecl),
-    CLASS_DECL(ObjCIvar, FieldDecl),
+    CLASS_DECL(ObjCIvar, FieldDecl) ,
     CLASS_DECL(Function, DeclaratorDecl)
         .def("hasBody", (bool (clang::FunctionDecl::*)() const) & clang::FunctionDecl::hasBody)
         .def("isThisDeclarationADefinition", &clang::FunctionDecl::isThisDeclarationADefinition)
@@ -1318,7 +1314,9 @@ void initialize_astExpose() {
     CLASS_STMT(ShuffleVectorExpr, Expr),
     CLASS_STMT(SizeOfPackExpr, Expr),
     CLASS_STMT(StmtExpr, Expr),
-    CLASS_STMT(StringLiteral, Expr),
+    CLASS_STMT(StringLiteral, Expr)
+    .def("getString",&clang::StringLiteral::getString)
+    ,
     CLASS_STMT(SubstNonTypeTemplateParmExpr, Expr),
     CLASS_STMT(SubstNonTypeTemplateParmPackExpr, Expr),
     CLASS_STMT(TypeTraitExpr, Expr),

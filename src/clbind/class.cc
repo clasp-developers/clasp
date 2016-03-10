@@ -94,7 +94,7 @@ void class_registration::register_() const {
   if (m_default_constructor != NULL) {
     allocator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    allocator = gctools::ClassAllocator<DummyCreator>::allocateClass(classNameString);
+    allocator = gctools::ClassAllocator<DummyCreator>::allocate_class(classNameString);
   }
   _lisp->addClass(className, crep, allocator);
   registry->add_class(m_type, crep);

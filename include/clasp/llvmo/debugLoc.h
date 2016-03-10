@@ -42,8 +42,7 @@ THE SOFTWARE.
 
 namespace llvmo {
 class DebugLoc_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc");
+  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc",core::T_O);
 
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(DebugLoc_O);
@@ -56,8 +55,10 @@ private: // instance variables here
 
 public: // Functions here
   llvm::DebugLoc &debugLoc() { return this->_DebugLoc; };
-  uint getLine() const { return this->_DebugLoc.getLine(); };
-  uint getCol() const { return this->_DebugLoc.getCol(); };
+CL_LISPIFY_NAME("getLine");
+CL_DEFMETHOD   uint getLine() const { return this->_DebugLoc.getLine(); };
+CL_LISPIFY_NAME("getCol");
+CL_DEFMETHOD   uint getCol() const { return this->_DebugLoc.getCol(); };
   MDNode_sp getScope(LLVMContext_sp context) const;
 }; // DebugLoc class
 

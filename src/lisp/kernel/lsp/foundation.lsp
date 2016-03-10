@@ -242,7 +242,8 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun hash-table-iterator (hash-table)
-  (let ((number-of-hashes (hash-table-number-of-hashes hash-table))
+  (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
+        (buckets (core:hash-table-buckets hash-table))
 	(hash 0)
 	(cur-alist))
     (labels ((advance-hash-table-iterator ()
@@ -256,9 +257,9 @@ the corresponding VAR.  Returns NIL."
                          (progn
                            (setq hash (1+ hash))
                            (advance-hash-table-iterator))))
-		   (if (< hash number-of-hashes)
+		   (if (< hash number-of-buckets)
 		       (progn
-			 (setq cur-alist (hash-table-alist-at-hash hash-table hash))
+			 (setq cur-alist (elt buckets hash))
                          (if cur-alist
                              (progn
                                (when (core:hash-table-entry-deleted-p (car cur-alist))
@@ -267,11 +268,11 @@ the corresponding VAR.  Returns NIL."
                                (setq hash (1+ hash))
                                (advance-hash-table-iterator))))))))
       (function (lambda ()
-	(if (>= hash number-of-hashes)
+	(if (>= hash number-of-buckets)
 	    nil
 	    (progn
 	      (advance-hash-table-iterator)
-	      (when (< hash number-of-hashes)
+	      (when (< hash number-of-buckets)
 		(values t (caar cur-alist) (cdar cur-alist))))))))))
 
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST."
@@ -359,18 +360,32 @@ the corresponding VAR.  Returns NIL."
   (core:function-name x))
 
 (defun compiled-function-file (x)
-  (multiple-value-bind (sfi pos)
-      (core:function-source-pos x)
-    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
-      (if source-file
-          (let* ((source-pathname (pathname source-file))
-                 (source-directory (pathname-directory source-pathname))
-                 (pn (if (eq (car source-directory) :relative)
-                         (merge-pathnames source-pathname (translate-logical-pathname "SYS:"))
-                         source-pathname))
-                 (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-            (values pn filepos))
-          (values nil 0)))))
+  (if (and x (functionp x))
+      (multiple-value-bind (sfi pos)
+          (core:function-source-pos x)
+        (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
+          (when source-file
+            (let* ((src-pathname (pathname source-file))
+                   (src-directory (pathname-directory src-pathname))
+                   (src-name (pathname-name src-pathname))
+                   (src-type (pathname-type src-pathname))
+                   (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
+              (cond
+                ((or (string= src-type "lsp")
+                     (string= src-type "lisp"))
+                 (let* ((pn (if (eq (car src-directory) :relative)
+                                (merge-pathnames src-pathname (translate-logical-pathname "SYS:"))
+                                src-pathname)))
+                   (return-from compiled-function-file (values pn filepos))))
+                ((or (string= src-type "cc")
+                     (string= src-type "cpp")
+                     (string= src-type "h")
+                     (string= src-type "hpp"))
+                 (let ((absolute-dir (merge-pathnames src-pathname
+                                                      (translate-logical-pathname "source-main:"))))
+                   (return-from compiled-function-file (values absolute-dir filepos))))))))))
+  (values nil 0))
+
 (export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)

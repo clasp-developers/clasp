@@ -14,22 +14,26 @@ void throw_if_invalid_global_telemetry_search() {
   }
 }
 
-#define ARGS_core_telemetry_open "(pathname)"
-#define DECL_core_telemetry_open ""
-#define DOCS_core_telemetry_open ""
-void core_telemetry_open(core::T_sp pathname) {
-  core::Str_sp filename = core::cl_namestring(pathname);
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
+  core::Pathname_sp pathname = core::cl__pathname(tpathname);
+  core::Str_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
   global_telemetry_search->open_read(filename->c_str());
+  if (global_telemetry_search->_File == NULL ) {
+    printf("Could not open file: %s\n", _rep_(pathname).c_str());
+  }
 }
 #define MAX_WORDS 16
 
 #define CANONICAL_POINTER(p) (p & (~0x7))
 
-#define ARGS_core_telemetry_search "(addresses)"
-#define DECL_core_telemetry_search ""
-#define DOCS_core_telemetry_search ""
-void core_telemetry_search(core::List_sp addresses) {
+CL_LAMBDA(addresses);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN void core__telemetry_search(core::List_sp addresses) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
   size_t prev, cur;
@@ -66,10 +70,10 @@ void core_telemetry_search(core::List_sp addresses) {
   }
 }
 
-#define ARGS_core_telemetry_search_labels "(label &optional (begin 0) end)"
-#define DECL_core_telemetry_search_labels ""
-#define DOCS_core_telemetry_search_labels ""
-void core_telemetry_search_labels(core::List_sp labels) {
+CL_LAMBDA(label &optional (begin 0) end);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN void core__telemetry_search_labels(core::List_sp labels) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
   size_t prev, cur;
@@ -107,10 +111,10 @@ void core_telemetry_search_labels(core::List_sp labels) {
   }
 }
 
-#define ARGS_core_telemetry_follow "(address)"
-#define DECL_core_telemetry_follow ""
-#define DOCS_core_telemetry_follow ""
-void core_telemetry_follow(core::T_sp address) {
+CL_LAMBDA(address);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN void core__telemetry_follow(core::T_sp address) {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
   size_t prev, cur;
@@ -153,20 +157,20 @@ void core_telemetry_follow(core::T_sp address) {
   }
 }
 
-#define ARGS_core_telemetry_labels "()"
-#define DECL_core_telemetry_labels ""
-#define DOCS_core_telemetry_labels ""
-void core_telemetry_labels() {
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN void core__telemetry_labels() {
   throw_if_invalid_global_telemetry_search();
   for (int i(0); i < global_telemetry_search->_Labels.size(); ++i) {
     printf("[%d] %s\n", i, global_telemetry_search->_Labels[i].c_str());
   }
 }
 
-#define ARGS_core_telemetry_dump "(&optional (begin 0) end)"
-#define DECL_core_telemetry_dump ""
-#define DOCS_core_telemetry_dump ""
-void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
+CL_LAMBDA(&optional (begin 0) end);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
   throw_if_invalid_global_telemetry_search();
   if (!begin.fixnump()) {
     SIMPLE_ERROR(BF("begin must be a FIXNUM"));
@@ -198,13 +202,17 @@ void core_telemetry_dump(core::T_sp begin, core::T_sp end) {
       break;
     std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
     printf("%s\n", entry.c_str());
+    if ((global_telemetry_search->_Index % 1000000) == 0 ) {
+      POLL_SIGNALS();
+      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+    }
   }
 }
 
-#define ARGS_core_telemetry_count "()"
-#define DECL_core_telemetry_count ""
-#define DOCS_core_telemetry_count ""
-size_t core_telemetry_count() {
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN size_t core__telemetry_count() {
   throw_if_invalid_global_telemetry_search();
   global_telemetry_search->seek0();
   size_t prev, cur;
@@ -213,17 +221,32 @@ size_t core_telemetry_count() {
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if (!read)
-      break;
-    if (global_telemetry_search->process_header(header))
-      continue;
+    if (!read) break;
+    if (global_telemetry_search->process_header(header)) continue;
     size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    if ((global_telemetry_search->_Index % 1000000) == 0 ) {
+      POLL_SIGNALS();
+      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+    }
   }
   return global_telemetry_search->_Index;
 }
 
 char *global_clasp_telemetry_file;
-Telemetry *global_telemetry = NULL;
+
+
+void Telemetry::dump_entry_varargs(Handle label, size_t num, ... )
+{
+  Word data[8];
+  va_list arguments;
+  va_start(arguments,num);
+  for ( int x = 0; x<num; ++x ) {
+    data[x] = va_arg(arguments,Word);
+  }
+  va_end(arguments);
+  std::string msg = this->entry_as_string(label,num,data);
+  printf("%s\n", msg.c_str());
+}
 
 std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[]) {
   std::string slabel = global_telemetry_search->_Labels[label];
@@ -285,21 +308,15 @@ void Telemetry::initialize() {
   this->intern("label_stack_push ap@%p frame@%p depth:%lu", label_stack_push);
   this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
   this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);
+  this->intern("obj_deallocate_unmanaged_instance addr@%p", label_obj_deallocate_unmanaged_instance);
 };
 
 void initialize_telemetry_functions() {
-  CoreDefun(telemetry_open);
-  CoreDefun(telemetry_search);
-  CoreDefun(telemetry_search_labels);
-  CoreDefun(telemetry_labels);
-  CoreDefun(telemetry_dump);
-  CoreDefun(telemetry_count);
-  CoreDefun(telemetry_follow);
 }
 };
 
 extern "C" {
 void global_telemetry_flush() {
-  telemetry::global_telemetry->flush();
+  telemetry::global_telemetry_search->flush();
 };
 };

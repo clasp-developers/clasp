@@ -48,10 +48,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_functionLambdaList "(function)"
-#define DECL_core_functionLambdaList ""
-#define DOCS_core_functionLambdaList "functionLambdaList"
-T_mv core_functionLambdaList(T_sp obj) {
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionLambdaList");
+CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(), _Nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
@@ -66,22 +66,20 @@ T_mv core_functionLambdaList(T_sp obj) {
   return Values(_Nil<T_O>(), _Nil<T_O>());
 }
 
-#define ARGS_core_functionSourcePosInfo "(function)"
-#define DECL_core_functionSourcePosInfo ""
-#define DOCS_core_functionSourcePosInfo "functionSourcePosInfo"
-gc::Nilable<SourcePosInfo_sp> core_functionSourcePosInfo(T_sp functionDesignator) {
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionSourcePosInfo");
+CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
   Function_sp func = coerce::functionDesignator(functionDesignator);
   gctools::tagged_pointer<Closure> closure = func->closure;
   gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
   return sourcePosInfo;
 }
 
-#define ARGS_core_setKind "(fn kind)"
-#define DECL_core_setKind ""
-#define DOCS_core_setKind "setKind"
-#define FILE_core_setKind __FILE__
-#define LINE_core_setKind __LINE__
-void core_setKind(Function_sp fn, Symbol_sp kind) {
+CL_LAMBDA(fn kind);
+CL_DECLARE();
+CL_DOCSTRING("set the kind of a function object (:function|:macro)");
+CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   fn->closure->setKind(kind);
 };
 
@@ -105,7 +103,7 @@ int FunctionClosure::column() const {
 }
 
 T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
-  SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
+  SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
   this->_sourceFileInfoHandle = gc::As<Fixnum_sp>(sfi.valueGet(1)).unsafe_fixnum();
   this->_filePos = filePos;
   this->_lineno = lineno;
@@ -123,16 +121,24 @@ T_sp BuiltinClosure::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
+void BuiltinClosure::setf_lambda_list(T_sp lambda_list) {
+  // Do nothing
+}
+
 LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
 
 InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-    : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
+  : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
 T_sp InterpretedClosure::lambdaList() const {
   return this->lambdaListHandler()->lambdaList();
+}
+
+void InterpretedClosure::setf_lambda_list(T_sp lambda_list) {
+  // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
 LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
@@ -158,64 +164,80 @@ T_mv Function_O::lambdaList() {
   return Values(this->closure->lambdaList(), _lisp->_true());
 }
 
-T_sp Function_O::cleavir_ast() const {
+CL_DEFMETHOD void Function_O::setf_lambda_list(T_sp ll) {
+  ASSERTF(this->closure, BF("The Function closure is NULL"));
+  this->closure->setf_lambda_list(ll);
+}
+
+CL_LISPIFY_NAME("core:cleavir_ast");
+CL_DEFMETHOD T_sp Function_O::cleavir_ast() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->cleavir_ast();
 }
 
-void Function_O::setf_cleavir_ast(T_sp ast) {
+CL_LISPIFY_NAME("core:setf_cleavir_ast");
+CL_DEFMETHOD void Function_O::setf_cleavir_ast(T_sp ast) {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   this->closure->setf_cleavir_ast(ast);
 }
 
-T_sp Function_O::functionLambdaListHandler() const {
+CL_LISPIFY_NAME("core:functionLambdaListHandler");
+CL_DEFMETHOD T_sp Function_O::functionLambdaListHandler() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->lambdaListHandler();
 };
-bool Function_O::macroP() const {
+CL_LISPIFY_NAME("core:macrop");
+CL_DEFMETHOD bool Function_O::macroP() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->macroP();
 }
 
-void Function_O::setKind(Symbol_sp k) {
+CL_LISPIFY_NAME("core:setFunctionKind");
+CL_DEFMETHOD void Function_O::setKind(Symbol_sp k) {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   this->closure->setKind(k);
 }
-Symbol_sp Function_O::functionKind() const {
+CL_LISPIFY_NAME("core:functionKind");
+CL_DEFMETHOD Symbol_sp Function_O::functionKind() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->getKind();
 };
 
-T_sp Function_O::docstring() const {
+CL_LISPIFY_NAME("core:function_docstring");
+CL_DEFMETHOD T_sp Function_O::docstring() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->docstring();
 };
 
-List_sp Function_O::declares() const {
+CL_LISPIFY_NAME("core:function_declares");
+CL_DEFMETHOD List_sp Function_O::declares() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->declares();
 };
-T_sp Function_O::closedEnvironment() const {
+CL_LISPIFY_NAME("core:closedEnvironment");
+CL_DEFMETHOD T_sp Function_O::closedEnvironment() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->closedEnvironment;
 };
 
-T_sp Function_O::functionName() const {
+CL_LISPIFY_NAME("core:functionName");
+CL_DEFMETHOD T_sp Function_O::functionName() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   return this->closure->name;
 }
 
-T_mv Function_O::functionSourcePos() const {
+CL_LISPIFY_NAME("core:functionSourcePos");
+CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   T_sp spi = this->closure->sourcePosInfo();
-  T_sp sfi = core_sourceFileInfo(spi);
+  T_sp sfi = core__source_file_info(spi);
   if (sfi.nilp() || spi.nilp()) {
     return Values(sfi, make_fixnum(0), make_fixnum(0));
   }
   return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
 }
 
-EXPOSE_CLASS(core, Function_O);
+
 
 SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
 SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
@@ -235,25 +257,21 @@ void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure> closure) 
   }
 }
 
-#define ARGS_cl_functionLambdaExpression "(fn)"
-#define DECL_cl_functionLambdaExpression ""
-#define DOCS_cl_functionLambdaExpression "functionLambdaExpression"
-T_mv cl_functionLambdaExpression(Function_sp fn) {
-  _G();
-  List_sp code = _Nil<List_V>();
-  if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
-    code = ic->_code;
-  }
+CL_LAMBDA(fn);
+CL_DECLARE();
+CL_DOCSTRING("functionLambdaExpression");
+CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
+  T_sp code;
+  code = core__function_lambda_list(fn);
   bool closedp = true; // fn->closedEnvironment().notnilp();
   T_sp name = fn->closure->name;
-  T_sp tcode = code;
-  return Values(tcode, _lisp->_boolean(closedp), name);
+  return Values(code, _lisp->_boolean(closedp), name);
 };
 
-#define ARGS_core_functionSourceCode "(fn)"
-#define DECL_core_functionSourceCode ""
-#define DOCS_core_functionSourceCode "functionSourceCode"
-T_sp core_functionSourceCode(Function_sp fn) {
+CL_LAMBDA(fn);
+CL_DECLARE();
+CL_DOCSTRING("functionSourceCode");
+CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
   gctools::tagged_pointer<Closure> closure = fn->closure;
   if (auto ic = closure.as<InterpretedClosure>()) {
     return ic->code();
@@ -261,49 +279,25 @@ T_sp core_functionSourceCode(Function_sp fn) {
   return _Nil<T_O>();
 }
 
-void Function_O::exposeCando(Lisp_sp lisp) {
-  class_<Function_O>()
-      .def("core:macrop", &Function_O::macroP)
-      .def("core:setFunctionKind", &Function_O::setKind)
-      .def("core:functionKind", &Function_O::functionKind)
-      .def("core:closedEnvironment", &Function_O::closedEnvironment)
-      .def("core:functionName", &Function_O::functionName)
-      .def("core:functionSourcePos", &Function_O::functionSourcePos)
-      .def("core:functionLambdaListHandler", &Function_O::functionLambdaListHandler)
-      .def("core:function_declares", &Function_O::declares)
-      .def("core:function_docstring", &Function_O::docstring)
-      .def("core:cleavir_ast", &Function_O::cleavir_ast)
-      .def("core:setf_cleavir_ast", &Function_O::setf_cleavir_ast);
-  ClDefun(functionLambdaExpression);
-  CoreDefun(functionSourcePosInfo);
-  CoreDefun(setKind);
-  CoreDefun(functionLambdaList);
-  CoreDefun(functionSourceCode);
-}
 
-void Function_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Function, "", "", _lisp);
-#endif
-}
+
 
 string Function_O::__repr__() const {
-  _G();
   if (!(this->closure)) {
     return "Function_O::__repr__ NULL closure";
   }
   T_sp name = this->closure->name;
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "/" << this->closure->describe();
   ss << " " << _rep_(name);
-  ss << " " << this->closure->describe();
+  ss << " lambda-list: " << _rep_(this->closure->lambdaList());
 #if 0
-	auto closure = this->closure;
-	void* fptr = closure->functionAddress();
-	if ( fptr!=NULL ) {
-	    ss << " :address " << fptr;
-	}
+  auto closure = this->closure;
+  void* fptr = closure->functionAddress();
+  if ( fptr!=NULL ) {
+    ss << " :address " << fptr;
+  }
 #endif
   ss << ">";
   return ss.str();
@@ -316,16 +310,8 @@ void Function_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-EXPOSE_CLASS(core, CompiledFunction_O);
 
-void CompiledFunction_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<CompiledFunction_O>();
-}
 
-void CompiledFunction_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CompiledFunction, "", "", _lisp);
-#endif
-}
+
+
 };

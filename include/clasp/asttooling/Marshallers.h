@@ -452,7 +452,7 @@ template <typename ReturnType>
 gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(),
                                                               core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
-  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
+  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocate_class(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
 #else
   return new FixedArgCountMatcherDescriptor(
       matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func),
@@ -465,7 +465,7 @@ template <typename ReturnType, typename ArgType1>
 gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
                                                               core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
-  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
+  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocate_class(
       matcherMarshall1<ReturnType, ArgType1>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
 #else
@@ -481,7 +481,7 @@ gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)
                                                                                  ArgType2),
                                                               core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
-  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
+  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocate_class(
       matcherMarshall2<ReturnType, ArgType1, ArgType2>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
 #else
@@ -498,7 +498,7 @@ gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
                         core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
-  return gctools::ClassAllocator<FreeFuncMatcherDescriptor>::allocateClass(
+  return gctools::ClassAllocator<FreeFuncMatcherDescriptor>::allocate_class(
       &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
 #else
   return new FreeFuncMatcherDescriptor(
@@ -517,7 +517,7 @@ makeMatcherAutoMarshall(clang::ast_matchers::internal::ArgumentAdaptingMatcherFu
   AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes, ToTypes>(MatcherName,
                                                                     Overloads);
 #ifndef USE_NEW
-  return gctools::ClassAllocator<OverloadedMatcherDescriptor>::allocateClass(Overloads);
+  return gctools::ClassAllocator<OverloadedMatcherDescriptor>::allocate_class(Overloads);
 #else
   return new OverloadedMatcherDescriptor(Overloads);
 #endif
@@ -539,7 +539,7 @@ gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
                         core::Symbol_sp MatcherName) {
 #ifndef USE_NEW
-  return gctools::ClassAllocator<VariadicOperatorMatcherDescriptor>::allocateClass(MinCount, MaxCount, Func.Op,
+  return gctools::ClassAllocator<VariadicOperatorMatcherDescriptor>::allocate_class(MinCount, MaxCount, Func.Op,
                                                                                    MatcherName);
 #else
   return new VariadicOperatorMatcherDescriptor(MinCount, MaxCount, Func.Func,

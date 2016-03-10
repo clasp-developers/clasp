@@ -65,7 +65,6 @@ template <>
 struct to_object<core::Creator *> {
   typedef core::Creator *GivenType;
   static core::T_sp convert(GivenType v) {
-    _G();
     if (v)
       return core::Pointer_O::create(v);
     return _Nil<core::T_O>();
@@ -77,20 +76,18 @@ namespace core {
 
 const int Class_O::NumberOfClassSlots;
 
-#define ARGS_af_inheritDefaultAllocator "(class directSuperclasses)"
-#define DECL_af_inheritDefaultAllocator ""
-#define DOCS_af_inheritDefaultAllocator "inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time"
-void af_inheritDefaultAllocator(Class_sp cl, T_sp directSuperclasses) {
-  _G();
-  //        printf("%s:%d In af_inheritDefaultAllocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
+CL_LAMBDA(class directSuperclasses);
+CL_DECLARE();
+CL_DOCSTRING("inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time");
+CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclasses) {
+  //        printf("%s:%d In core__inherit_default_allocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
   cl->inheritDefaultAllocator(directSuperclasses);
 };
 
-#define ARGS_af_allocateRawClass "(original meta-class slots &optional name)"
-#define DECL_af_allocateRawClass ""
-#define DOCS_af_allocateRawClass "allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O."
-T_sp af_allocateRawClass(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
-  _G();
+CL_LAMBDA(original meta-class slots &optional name);
+CL_DECLARE();
+CL_DOCSTRING("allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O.");
+CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
   if (orig.notnilp()) {
     SIMPLE_ERROR(BF("Deal with non-nil orig class in allocateRawClass"));
     // Check out ecl/src/c/instance.d/si_allocate_raw_instance
@@ -167,13 +164,14 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
     //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocateClass(this->name());
+    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocate_class(this->name());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }
 }
 
-Symbol_sp Class_O::className() const {
+CL_LISPIFY_NAME("core:nameOfClass");
+CL_DEFMETHOD Symbol_sp Class_O::className() const {
   return this->name();
   //    SIMPLE_ERROR(BF("You should use instanceClassName rather than className for classes"));
 }
@@ -184,28 +182,18 @@ string Class_O::classNameAsString() const {
 }
 
 T_sp Class_O::allocate_newNil() {
-  _G();
-  if (!this->_theCreator) {
-    IMPLEMENT_MEF(BF("All allocation should be done through _creator"));
-    // if the newNil_callback is NULL then allocate an instance
-    int slots = unbox_fixnum(gc::As<Fixnum_sp>(this->_MetaClassSlots[REF_SIZE]));
-    printf("%s:%d:%s  Allocating new instance of %s with %d slots\n", __FILE__, __LINE__, __FUNCTION__, _rep_(this->asSmartPtr()).c_str(), slots);
-    return Instance_O::allocateInstance(this->asSmartPtr(), slots);
-    //	    SIMPLE_ERROR(BF("_creator for %s is NULL!!") % _rep_(this->asSmartPtr()) );
-  }
+  ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
   T_sp newObject = this->_theCreator->allocate();
   return newObject;
 }
 
 T_sp Class_O::make_instance() {
-  _G();
   T_sp instance = this->allocate_newNil();
   instance->initialize();
   return instance;
 }
 
 bool Class_O::isSubClassOf(Class_sp ancestor) const {
-  _G();
   if (this == ancestor.get())
     return true;
   // TODO: I need to memoize this somehow so that I'm not constantly searching a list in
@@ -234,7 +222,7 @@ string Class_O::__repr__() const {
     return "#<built-in-class t>";
   }
   stringstream ss;
-  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << " @" << (void *)(this) << ">";
+  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << ">";
 
   return ss.str();
 }
@@ -244,7 +232,7 @@ string Class_O::getPackageName() const {
 }
 
 // LambdaListHandler_sp Class_O::__init__lambdaListHandler()
-// {_G();
+// {
 //     return _Nil<LambdaListHandler_O>();
 // }
 
@@ -265,7 +253,6 @@ string Class_O::getPackagedName() const {
 }
 
 void Class_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjectsWithFillPtr_sp arrayedSupers, Class_sp mc) {
-  _G();
   if (IS_SYMBOL_UNDEFINED(mc->className()))
     return;
   //	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
@@ -301,12 +288,11 @@ namespace gcroots {
 namespace core {
 
 void Class_O::lowLevel_calculateClassPrecedenceList() {
-  _G();
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
   VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
-  vector<list<int>> graph(cl_length(arrayedSupers));
+  vector<list<int>> graph(cl__length(arrayedSupers));
 
   class TopoSortSetup : public KeyValueMapper {
   private:
@@ -333,7 +319,7 @@ void Class_O::lowLevel_calculateClassPrecedenceList() {
   supers->lowLevelMapHash(&topoSortSetup);
 #ifdef DEBUG_ON
   {
-    for (size_t zi(0), ziEnd(cl_length(arrayedSupers)); zi < ziEnd; ++zi) {
+    for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
       stringstream ss;
       ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName()).str();
       for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
@@ -445,17 +431,17 @@ void Class_O::addInstanceBaseClass(Symbol_sp className) {
 
 void Class_O::setInstanceBaseClasses(List_sp classes) {
   _OF();
-  this->instanceSet(REF_DIRECT_SUPERCLASSES, cl_copyList(classes));
+  this->instanceSet(REF_DIRECT_SUPERCLASSES, cl__copy_list(classes));
   this->lowLevel_calculateClassPrecedenceList();
 }
 
-List_sp Class_O::directSuperclasses() const {
+CL_LISPIFY_NAME("core:direct-superclasses");
+CL_DEFMETHOD List_sp Class_O::directSuperclasses() const {
   _OF();
   return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
 }
 
 void Class_O::appendDirectSuperclassAndResetClassPrecedenceList(Class_sp superClass) {
-  _G();
   List_sp directSuperclasses = this->directSuperclasses();
   directSuperclasses = Cons_O::create(superClass, directSuperclasses);
   this->instanceSet(REF_DIRECT_SUPERCLASSES, directSuperclasses);
@@ -547,7 +533,6 @@ T_sp Class_O::instanceClassSet(Class_sp mc) {
 }
 
 void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
-  _G();
   this->setName(className);
   T_sp tmc = this->_instanceClass();
   ASSERTNOTNULL(tmc);
@@ -556,11 +541,10 @@ void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp classNa
   this->lowLevel_calculateClassPrecedenceList();
 }
 
-#define ARGS_af_subclassp "(low high)"
-#define DECL_af_subclassp ""
-#define DOCS_af_subclassp "subclassp"
-bool af_subclassp(T_sp low, T_sp high) {
-  _G();
+CL_LAMBDA(low high);
+CL_DECLARE();
+CL_DOCSTRING("subclassp");
+CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
   if (low == high)
     return true;
   if (Class_sp lowmc = low.asOrNull<Class_O>()) {
@@ -573,27 +557,11 @@ bool af_subclassp(T_sp low, T_sp high) {
   SIMPLE_ERROR(BF("Illegal argument for subclassp: %s") % _rep_(low));
 };
 
-void Class_O::exposeCando(Lisp_sp lisp) {
-  class_<Class_O>()
-      .def("core:nameOfClass", &Class_O::className)
-      .def("core:direct-superclasses", &Class_O::directSuperclasses)
-      .def("core:hasCreator", &Class_O::hasCreator)
-      //      .def("core:getCreator", &Class_O::getCreator);
-      //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
-      //	Defun(makeSureClosClassSlotsMatchClass);
-      SYMBOL_SC_(CorePkg, subclassp);
-  Defun(subclassp);
-  SYMBOL_SC_(CorePkg, allocateRawClass);
-  Defun(allocateRawClass);
-  SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
-  Defun(inheritDefaultAllocator);
-}
-void Class_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Class, "", "", _lisp);
-#endif
-}
+SYMBOL_SC_(CorePkg, subclassp);
+SYMBOL_SC_(CorePkg, allocateRawClass);
+SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
 
-EXPOSE_CLASS(core, Class_O);
+
+
+
 };

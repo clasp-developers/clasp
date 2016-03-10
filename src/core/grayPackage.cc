@@ -35,16 +35,8 @@ THE SOFTWARE.
 
 namespace gray {
 
-#pragma GCC visibility push(default)
-#define GrayPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef GrayPkg_SYMBOLS
-#pragma GCC visibility pop
-
 SYMBOL_SC_(GrayPkg, aSingleGraySymbol);
-SYMBOL_EXPORT_SC_(GrayPkg, open_stream_p);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, open_stream_p);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_read_byte);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_write_byte);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_read_byte);
@@ -66,16 +58,16 @@ SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_input);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_clear_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_force_output);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_finish_output);
-SYMBOL_EXPORT_SC_(GrayPkg, streamp);
-SYMBOL_EXPORT_SC_(GrayPkg, input_stream_p);
-SYMBOL_EXPORT_SC_(GrayPkg, output_stream_p);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, streamp);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, input_stream_p);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, output_stream_p);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_interactive_p);
-SYMBOL_EXPORT_SC_(GrayPkg, stream_element_type);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, stream_element_type);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_position);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_file_position);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_line_column);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_advance_to_column);
-SYMBOL_EXPORT_SC_(GrayPkg, close);
+SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, close);
 
 void initialize_grayPackage() {
   list<string> lnicknames;

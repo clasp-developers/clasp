@@ -27,6 +27,7 @@
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
+   #:alloca-i8
 ))
 
 (defpackage #:clasp-cleavir-generate-ast
@@ -110,7 +111,9 @@
 
 (defpackage #:cc-mir
   (:use #:common-lisp)
-  (:export 
+  (:export
+   #:stack-enclose-instruction
+   #:make-stack-enclose-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

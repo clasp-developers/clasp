@@ -110,7 +110,6 @@ uint LightProfiler::createEventCounter(string name) {
 }
 
 uint LightProfiler::createTimer(uint parent, const string &name) {
-  _G();
   LightTimer child(this);
   ;
   if (this->_Timers.size() == 0) {
@@ -211,7 +210,6 @@ void LightProfiler::dumpChildTimers(uint level, uint top) {
 }
 
 void LightProfiler::dump() {
-  _G();
   int root;
   if (!this->_MessagesEnabled)
     return;

@@ -58,8 +58,91 @@ THE SOFTWARE.
 
 // ------------------- include all headers for corePackage here
 
-#define HEADER_INCLUDES
-#include INIT_CLASSES_INC_H
+#include <clasp/core/object.h>
+#include <clasp/asttooling/astVisitor.h>
+#include <clasp/cffi/cffi.h>
+#include <clasp/clbind/class_registry.h>
+#include <clasp/core/serialize.h>
+#include <clasp/core/array.h>
+#include <clasp/core/binder.h>
+#include <clasp/core/conditions.h>
+#include <clasp/core/character.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/cxxObject.h>
+#include <clasp/core/fileSystem.h>
+#include <clasp/core/environment.h>
+#include <clasp/core/externalObject.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/hashTable.h>
+#include <clasp/core/intArray.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/iterator.h>
+#include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/userData.h>
+#include <clasp/core/loadTimeValues.h>
+#include <clasp/core/multiStringBuffer.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/package.h>
+#include <clasp/core/pathname.h>
+#include <clasp/core/pointer.h>
+#include <clasp/core/posixTime.h>
+#include <clasp/core/random.h>
+#include <clasp/core/readtable.h>
+#include <clasp/core/reader.h>
+#include <clasp/core/record.h>
+#include <clasp/core/regex.h>
+#include <clasp/core/singleDispatchMethod.h>
+#include <clasp/core/smallMap.h>
+#include <clasp/core/smallMultimap.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/lispStream.h>
+#include <clasp/core/structureObject.h>
+#include <clasp/core/symbolToEnumConverter.h>
+#include <clasp/core/symbol.h>
+#include <clasp/core/lispList.h>
+#include <clasp/core/weakHashTable.h>
+#include <clasp/core/weakKeyMapping.h>
+#include <clasp/core/weakPointer.h>
+#include <clasp/core/wrappedPointer.h>
+#include <clasp/llvmo/llvmoExpose.h>
+#include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/debugLoc.h>
+#include <clasp/llvmo/insertPoint.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/arrayDisplaced.h>
+#include <clasp/core/arrayObjects.h>
+#include <clasp/core/hashTableEq.h>
+#include <clasp/core/hashTableEql.h>
+#include <clasp/core/hashTableEqual.h>
+#include <clasp/core/hashTableEqualp.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/metaobject.h>
+#include <clasp/core/null.h>
+#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
+#include <clasp/core/singleDispatchGenericFunction.h>
+#include <clasp/core/specialForm.h>
+#include <clasp/core/lispVector.h>
+#include <clasp/core/bitVector.h>
+#include <clasp/core/sexpLoadArchive.h>
+#include <clasp/core/sexpSaveArchive.h>
+#include <clasp/core/specializer.h>
+#include <clasp/core/lispString.h>
+#include <clasp/core/vectorDisplaced.h>
+#include <clasp/core/newVectorObjects.h>
+#include <clasp/core/metaClass.h>
+#include <clasp/core/str.h>
+#include <clasp/core/newVectorObjectsWithFillPtr.h>
+#include <clasp/core/bignum.h>
+#include <clasp/core/builtInClass.h>
+#include <clasp/core/cxxClass.h>
+#include <clasp/core/forwardReferencedClass.h>
+#include <clasp/core/stdClass.h>
+#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/structureClass.h>
+#include <clasp/clbind/class_rep.h>
+#include <clasp/core/funcallableStandardClass.h>
+#include <clasp/core/standardClass.h>
 
 //
 // Load the gctools::GcInfo<core-classes>::Kind specializers
@@ -69,17 +152,19 @@ THE SOFTWARE.
 #undef NAMESPACE_core
 
 namespace core {
+#if 0
 #define EXPOSE_TO_CANDO
 #define Use_CorePkg
 #define Use_ClPkg
 #define Use_ExtPkg
 #define EXTERN_REGISTER
-#include INIT_CLASSES_INC_H
+#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
 #undef Use_CorePkg
 #undef EXPOSE_TO_CANDO
+#endif
 };
 
 namespace core {
@@ -137,6 +222,10 @@ SYMBOL_EXPORT_SC_(ClPkg, lambdaParametersLimit);
 SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
+SYMBOL_EXPORT_SC_(ClPkg, documentation);
+SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
+SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
+SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
@@ -151,14 +240,16 @@ SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
 SYMBOL_SC_(CorePkg, printf);
 
 SYMBOL_EXPORT_SC_(CorePkg, asin);
-SYMBOL_EXPORT_SC_(CorePkg, acos);
 SYMBOL_EXPORT_SC_(CorePkg, asinh);
+SYMBOL_EXPORT_SC_(CorePkg, acos);
 SYMBOL_EXPORT_SC_(CorePkg, acosh);
 SYMBOL_EXPORT_SC_(CorePkg, atanh);
 
 SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
+SYMBOL_EXPORT_SC_(KeywordPkg, create);
+SYMBOL_EXPORT_SC_(KeywordPkg, append);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
 SYMBOL_EXPORT_SC_(KeywordPkg, cclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
@@ -187,6 +278,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, if_exists);
 SYMBOL_EXPORT_SC_(KeywordPkg, io);
 SYMBOL_EXPORT_SC_(KeywordPkg, probe);
 
+SYMBOL_EXPORT_SC_(ClPkg, stream_element_type);
 SYMBOL_EXPORT_SC_(ClPkg, stream_external_format);
 SYMBOL_EXPORT_SC_(ClPkg, open_stream_p);
 SYMBOL_EXPORT_SC_(ClPkg, write_sequence);
@@ -333,9 +425,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, operands);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_ecl_syntax_progv_list_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_io_syntax_progv_list_PLUS_);
 SYMBOL_SC_(CorePkg, STARprintPackageSTAR);
-SYMBOL_SC_(CorePkg, STARprintStructureSTAR);
 SYMBOL_SC_(CorePkg, STARsharpEqContextSTAR);
-SYMBOL_SC_(CorePkg, STARcircleCounterSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARcircleCounterSTAR);
 
 SYMBOL_EXPORT_SC_(ClPkg, typep);
 SYMBOL_EXPORT_SC_(ClPkg, type);
@@ -373,7 +464,7 @@ SYMBOL_EXPORT_SC_(ClPkg, char);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, escape);
 SYMBOL_EXPORT_SC_(ClPkg, write);
-SYMBOL_SC_(KeywordPkg, capitalize);
+SYMBOL_EXPORT_SC_(KeywordPkg, capitalize);
 SYMBOL_EXPORT_SC_(ClPkg, STARreadDefaultFloatFormatSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_escapeSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARprint_baseSTAR);
@@ -400,28 +491,30 @@ SYMBOL_EXPORT_SC_(ClPkg, break);
 SYMBOL_EXPORT_SC_(ClPkg, STARbreakOnSignalsSTAR);
 SYMBOL_SC_(CorePkg, STARnestedErrorDepthSTAR);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
-SYMBOL_SC_(KeywordPkg, typeError);
-SYMBOL_SC_(KeywordPkg, datum);
-SYMBOL_SC_(KeywordPkg, expectedType);
+SYMBOL_EXPORT_SC_(KeywordPkg, typeError);
+SYMBOL_EXPORT_SC_(KeywordPkg, datum);
+SYMBOL_EXPORT_SC_(KeywordPkg, expectedType);
 SYMBOL_EXPORT_SC_(ClPkg, typeError);
 SYMBOL_EXPORT_SC_(ClPkg, printObject);
 SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
 SYMBOL_EXPORT_SC_(ClPkg, controlError);
-SYMBOL_SC_(KeywordPkg, print);
-SYMBOL_SC_(KeywordPkg, pathname);
+SYMBOL_EXPORT_SC_(KeywordPkg, print);
+SYMBOL_EXPORT_SC_(KeywordPkg, pathname);
 SYMBOL_SC_(CorePkg, setThrowPosition);
 SYMBOL_EXPORT_SC_(CorePkg, tooFewArgumentsError);
 SYMBOL_EXPORT_SC_(CorePkg, tooManyArgumentsError);
 SYMBOL_EXPORT_SC_(KeywordPkg, object);
-SYMBOL_SC_(KeywordPkg, formatControl);
-SYMBOL_SC_(KeywordPkg, formatArguments);
-SYMBOL_SC_(KeywordPkg, name);
-SYMBOL_SC_(KeywordPkg, stream);
-SYMBOL_SC_(KeywordPkg, package);
+SYMBOL_EXPORT_SC_(KeywordPkg, formatControl);
+SYMBOL_EXPORT_SC_(KeywordPkg, formatArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, name);
+SYMBOL_EXPORT_SC_(KeywordPkg, stream);
+SYMBOL_EXPORT_SC_(KeywordPkg, package);
 SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 SYMBOL_SC_(CorePkg, invalidKeywordArgumentError);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
 SYMBOL_EXPORT_SC_(ClPkg, satisfies);
+SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
+
 SYMBOL_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
 SYMBOL_SC_(CorePkg, _PLUS_executableName_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
@@ -477,9 +570,9 @@ SYMBOL_EXPORT_SC_(ClPkg, STARread_baseSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, compile);
 SYMBOL_EXPORT_SC_(ClPkg, load);
 SYMBOL_EXPORT_SC_(ClPkg, eval);
-SYMBOL_SC_(KeywordPkg, compile_toplevel);
-SYMBOL_SC_(KeywordPkg, load_toplevel);
-SYMBOL_SC_(KeywordPkg, execute);
+SYMBOL_EXPORT_SC_(KeywordPkg, compile_toplevel);
+SYMBOL_EXPORT_SC_(KeywordPkg, load_toplevel);
+SYMBOL_EXPORT_SC_(KeywordPkg, execute);
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_evalSTAR);
 SYMBOL_SC_(CorePkg, STARdocumentation_poolSTAR);
@@ -490,7 +583,7 @@ SYMBOL_EXPORT_SC_(ClPkg, deftype);
 SYMBOL_EXPORT_SC_(ClPkg, define_method_combination);
 SYMBOL_SC_(CorePkg, generic);
 SYMBOL_EXPORT_SC_(ClPkg, defsetf);
-SYMBOL_SC_(KeywordPkg, allow_other_keys);
+SYMBOL_EXPORT_SC_(KeywordPkg, allow_other_keys);
 SYMBOL_SC_(CorePkg, DOT);
 SYMBOL_EXPORT_SC_(ClPkg, AMPwhole);
 SYMBOL_EXPORT_SC_(ClPkg, AMPenvironment);
@@ -505,8 +598,8 @@ SYMBOL_EXPORT_SC_(ClPkg, integer);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
 SYMBOL_SC_(CorePkg, anonymous);
 SYMBOL_EXPORT_SC_(ClPkg, declare);
-SYMBOL_SC_(KeywordPkg, macro);
-SYMBOL_SC_(KeywordPkg, function);
+SYMBOL_EXPORT_SC_(KeywordPkg, macro);
+SYMBOL_EXPORT_SC_(KeywordPkg, function);
 SYMBOL_SC_(CorePkg, macro);
 SYMBOL_EXPORT_SC_(ClPkg, function);
 SYMBOL_EXPORT_SC_(ClPkg, variable);
@@ -519,11 +612,11 @@ SYMBOL_SC_(CorePkg, input_stream_designator);
 SYMBOL_SC_(CorePkg, STARprint_source_code_consSTAR);
 /*! Set to true if you want the repl to print what was read */
 SYMBOL_SC_(CorePkg, STARechoReplReadSTAR);
-SYMBOL_SC_(KeywordPkg, invalid_character);
-SYMBOL_SC_(KeywordPkg, brcl);
-SYMBOL_SC_(KeywordPkg, not);
-SYMBOL_SC_(KeywordPkg, and);
-SYMBOL_SC_(KeywordPkg, or );
+SYMBOL_EXPORT_SC_(KeywordPkg, invalid_character);
+SYMBOL_EXPORT_SC_(KeywordPkg, brcl);
+SYMBOL_EXPORT_SC_(KeywordPkg, not);
+SYMBOL_EXPORT_SC_(KeywordPkg, and);
+SYMBOL_EXPORT_SC_(KeywordPkg, or );
 SYMBOL_EXPORT_SC_(ClPkg, and);
 SYMBOL_EXPORT_SC_(ClPkg, or );
 SYMBOL_EXPORT_SC_(ClPkg, car);
@@ -566,24 +659,24 @@ SYMBOL_SC_(CorePkg, okey);
 SYMBOL_EXPORT_SC_(ClPkg, hash_table);
 SYMBOL_SC_(CorePkg, default);
 
-SYMBOL_SC_(KeywordPkg, class);
-SYMBOL_SC_(KeywordPkg, instance);
+SYMBOL_EXPORT_SC_(KeywordPkg, class);
+SYMBOL_EXPORT_SC_(KeywordPkg, instance);
 
-SYMBOL_SC_(KeywordPkg, output);
-SYMBOL_SC_(KeywordPkg, input);
-SYMBOL_SC_(KeywordPkg, io);
-SYMBOL_SC_(KeywordPkg, default);
-SYMBOL_SC_(KeywordPkg, internal);
-SYMBOL_SC_(KeywordPkg, external);
-SYMBOL_SC_(KeywordPkg, inherited);
-SYMBOL_SC_(KeywordPkg, changed);
+SYMBOL_EXPORT_SC_(KeywordPkg, output);
+SYMBOL_EXPORT_SC_(KeywordPkg, input);
+SYMBOL_EXPORT_SC_(KeywordPkg, io);
+SYMBOL_EXPORT_SC_(KeywordPkg, default);
+SYMBOL_EXPORT_SC_(KeywordPkg, internal);
+SYMBOL_EXPORT_SC_(KeywordPkg, external);
+SYMBOL_EXPORT_SC_(KeywordPkg, inherited);
+SYMBOL_EXPORT_SC_(KeywordPkg, changed);
 SYMBOL_SC_(CorePkg, dot);
 SYMBOL_EXPORT_SC_(ClPkg, STARfeaturesSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARload_printSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARload_verboseSTAR);
 SYMBOL_SC_(CorePkg, ifDoesNotExist);
-SYMBOL_SC_(KeywordPkg, debug);
-SYMBOL_SC_(KeywordPkg, direct_super_classes);
+SYMBOL_EXPORT_SC_(KeywordPkg, debug);
+SYMBOL_EXPORT_SC_(KeywordPkg, direct_super_classes);
 SYMBOL_EXPORT_SC_(ClPkg, lambda);
 SYMBOL_EXPORT_SC_(CorePkg, symbolMacroletLambda);
 SYMBOL_EXPORT_SC_(ExtPkg, lambda_block);
@@ -616,27 +709,16 @@ SYMBOL_EXPORT_SC_(ClPkg, list);
 SYMBOL_SC_(CorePkg, key);
 SYMBOL_SC_(CorePkg, test_not);
 
-SYMBOL_SC_(KeywordPkg, name);
-SYMBOL_SC_(CorePkg, forward_referenced_class);
+SYMBOL_EXPORT_SC_(KeywordPkg, name);
+SYMBOL_EXPORT_SC_(CorePkg, forward_referenced_class);
 SYMBOL_EXPORT_SC_(ClPkg, standard_class);
 SYMBOL_EXPORT_SC_(ClPkg, rest);
 
-SYMBOL_SC_(CorePkg, instance);
+SYMBOL_EXPORT_SC_(CorePkg, instance);
 SYMBOL_SC_(CorePkg, all_keys);
 
-SYMBOL_SC_(KeywordPkg, changed);
+SYMBOL_EXPORT_SC_(KeywordPkg, changed);
 
-#pragma GCC visibility push(default)
-#define CorePkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) Symbol_sp cname; // = UNDEFINED_SYMBOL;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef CorePkg_SYMBOLS
-#pragma GCC visibility pop
-
-#pragma GCC visibility push(default)
-
-#pragma GCC visibility pop
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
@@ -715,12 +797,9 @@ void testFeatures() {
 }
 
 CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp, CorePkg, CorePkg_nicknames) {
-  //	testFeatures();
-  this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
 };
 
 void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses:
 #define EXPOSE_TO_CANDO
@@ -728,7 +807,7 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
 #define Use_ClPkg
 #define Use_ExtPkg
 #define INVOKE_REGISTER
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef INVOKE_REGISTER
 #undef Use_ExtPkg
 #undef Use_ClPkg
@@ -753,13 +832,6 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   break;
   case pythonClasses: {
     IMPLEMENT_MEF(BF("Handle other packages"));
-#define _DBG(x)
-#define EXPOSE_TO_PYTHON
-#define Use_CorePkg
-#include INIT_CLASSES_INC_H
-#undef Use_CorePkg
-#undef EXPOSE_TO_PYTHON
-#undef _DBG
   } break;
   case pythonFunctions:
 #ifdef USEBOOSTPYTHON
@@ -771,12 +843,12 @@ void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     break;
   }
 }
-
+#if 0
 gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_classes() {
-  _G();
-  LOG(BF("Initialize core classes by hand"));
   BootStrapCoreSymbolMap bootStrapSymbolMap;
-  Symbol_sp startSymbol;
+
+  initialize_clasp();
+
   // initialize classSymbol's only if they have not been done before
   if (IS_SYMBOL_UNDEFINED(T_O::static_classSymbol())) {
     _BLOCK_TRACE("Setting static classSymbols for core classes");
@@ -785,15 +857,9 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 // The following will set the static_ClassSymbol to the Symbol created
 // by BootStrapCoreSymbolMap for each core class
 //
-#define SET_SYMBOL
     {
       _BLOCK_TRACEF(BF("LOOKUP Symbol"));
-#undef LOOKUP_SYMBOL
-#define LOOKUP_SYMBOL(pkgName, symName) bootStrapSymbolMap.lookupSymbol(pkgName, symName)
-#define Use_CorePkg
-#include INIT_CLASSES_INC_H
-#undef Use_CorePkg
-#undef LOOKUP_SYMBOL
+//      set_static_class_symbols(bootStrapSymbolMap);
     }
   } else {
     THROW_HARD_ERROR(BF("You cannot initializes classes twice"));
@@ -804,82 +870,81 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 // it will also set its _WeakThis and _WeakLisp pointers
 // and set its InstanceClassSymbol variable
 // It will also put the Class instance into the Lisp class table
-
+#if 0
 #define CREATE_CLASS
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef Use_CorePkg
-  // Put core::Null_O::___staticClass into a global variable so that every
-  // class can access it from the _class() virtual function
-  // See object.h definition of Null_O___staticClass
-  //	Null_O___staticClass = core::Null_O::___staticClass;
-  {
-    _BLOCK_TRACEF(BF("Dump info on classes"));
-#define DUMP_INFO_CLASS
-#define Use_CorePkg
-#include INIT_CLASSES_INC_H
-#undef Use_CorePkg
-  }
-
-  Package_sp commonLispPackage = cl::initialize_commonLispPackage();
-  initializeAllClSymbols(commonLispPackage);
-  Package_sp keywordPackage = kw::initialize_keywordPackage();
-
+#endif
+#if 0
+    Package_sp commonLispPackage = cl::initialize_commonLispPackage();
+    initializeAllClSymbols(commonLispPackage);
+    Package_sp keywordPackage = kw::initialize_keywordPackage();
+#endif
   //	ASSERT_lt(classesHandInitialized, get_nextGlobalClassSymbol())
   //
   // Define the base class for every hand initialized class
   //
   //	classObject->_DirectSuperClasses.clear();
-  {
-    _BLOCK_TRACEF(BF("Define base classes"));
+#if 0
+    {
+      _BLOCK_TRACEF(BF("Define base classes"));
 #define Use_CorePkg
 #define DEFINE_BASE_CLASSES
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef Use_CorePkg
-  }
-  gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocateClass(_lisp);
-  Package_sp corePackage = coreExposerPtr->package();
-  _lisp->_Roots._CorePackage = corePackage;
-  _lisp->_Roots._KeywordPackage = keywordPackage;
-  _lisp->_Roots._CommonLispPackage = commonLispPackage;
-  ext::initialize_extensionPackage();
-  comp::initialize_compPackage();
-  clos::initialize_closPackage();
-  cleavirPrimops::initialize_cleavirPrimopsPackage();
-  cleavirEnv::initialize_cleavirEnvPackage();
-  gray::initialize_grayPackage();
-  cluser::initialize_commonLispUserPackage();
-  {
-    _BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
-    T_O::___staticClass->setInstanceBaseClasses(_Nil<T_O>());
-  }
-  {
-    _BLOCK_TRACEF(BF("Define class names"));
+        }
+    gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
+    Package_sp corePackage = coreExposerPtr->package();
+    _lisp->_Roots._CorePackage = _lisp->findPackage(CorePkg);
+    _lisp->_Roots._KeywordPackage = _lisp->findPackage(KeywordPkg);
+    _lisp->_Roots._CommonLispPackage = _lisp->findPackage(ClPkg);
+#endif
+//  ext::initialize_extensionPackage();
+//  comp::initialize_compPackage();
+//  clos::initialize_closPackage();
+//  cleavirPrimops::initialize_cleavirPrimopsPackage();
+//  cleavirEnv::initialize_cleavirEnvPackage();
+//  gray::initialize_grayPackage();
+//  cluser::initialize_commonLispUserPackage();
+//  {
+//    _BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
+//    T_O::___staticClass->setInstanceBaseClasses(_Nil<T_O>());
+//  }
+#if 0
+    {
+      _BLOCK_TRACEF(BF("Define class names"));
 #define DEFINE_CLASS_NAMES
-    string NSPkg = CorePkg;
+      string NSPkg = CorePkg;
 #define Use_CorePkg
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef Use_CorePkg
-  };
+    };
+#endif
   //
   // Finish setting up the symbols
   //
-  bootStrapSymbolMap.finish_setup_of_symbols();
-  reg::lisp_registerClassSymbol<Character_I>(cl::_sym_character);
-  reg::lisp_registerClassSymbol<Fixnum_I>(cl::_sym_fixnum);
-  reg::lisp_registerClassSymbol<SingleFloat_I>(cl::_sym_single_float);
-
-  return coreExposerPtr;
+//  bootStrapSymbolMap.finish_setup_of_symbols();
+#if 0
+    reg::lisp_registerClassSymbol<Character_I>(cl::_sym_character);
+    reg::lisp_registerClassSymbol<Fixnum_I>(cl::_sym_fixnum);
+    reg::lisp_registerClassSymbol<SingleFloat_I>(cl::_sym_single_float);
+#endif
+//    return coreExposerPtr;
 }
+#endif
 
+
+  
 void CoreExposer::define_essential_globals(Lisp_sp lisp) {
-  _G();
-
   {
+    this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) cname->exportYourself(export);
-#include SYMBOLS_SCRAPED_INC_H
+#define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
+#ifndef SCRAPING
+#include <generated/symbols_scraped_inc.h>
+#endif
 #undef DO_SYMBOL
 #undef CorePkg_EXPORT
   };
@@ -951,7 +1016,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, char_code_limit);
   cl::_sym_char_code_limit->defconstant(make_fixnum(CHAR_CODE_LIMIT));
   cl::_sym_STARgensym_counterSTAR->defparameter(make_fixnum(0));
-  cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(_Nil<T_O>());
+  cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(Pathname_O::create());
   cl::_sym_STARprint_arraySTAR->defparameter(_lisp->_true());
   cl::_sym_STARprint_baseSTAR->defparameter(make_fixnum(10));
   cl::_sym_STARprint_caseSTAR->defparameter(kw::_sym_upcase);
@@ -985,14 +1050,15 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARtrace_outputSTAR->defparameter(SynonymStream_O::make(ext::_sym__PLUS_processErrorOutput_PLUS_));
   cl::_sym_STARdebug_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
   cl::_sym_STARquery_ioSTAR->defparameter(TwoWayStream_O::make(stdin_stream, stdout_stream));
+  _sym_STARdocumentation_poolSTAR->defparameter(Cons_O::createList(HashTableEql_O::create_default(), Str_O::create("help_file.dat")));
+  _sym_STARdocumentation_poolSTAR->exportYourself();
   TwoWayStream_sp terminal = TwoWayStream_O::make(stdin_stream, stdout_stream);
   _lisp->_Roots._TerminalIO = terminal;
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
-  _sym_STARsharp_equal_final_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-  _sym_STARsharp_equal_temp_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-  _sym_STARsharp_equal_repl_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
+  _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
+
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_executableName_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
@@ -1010,7 +1076,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_internalTimeUnitsPerSecond->defparameter(make_fixnum(CLASP_INTERNAL_TIME_UNITS_PER_SECOND));
   _sym_STARstartRunTimeSTAR->defparameter(PosixTime_O::createNow());
   cl::_sym_MultipleValuesLimit->defconstant(make_fixnum(MultipleValues::MultipleValuesLimit));
-  _sym_STARprintStructureSTAR->defparameter(_Nil<T_O>());
+  _sym_STARprint_structureSTAR->defparameter(_Nil<T_O>());
   _sym_STARprintPackageSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_counterSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_stackSTAR->defparameter(_Nil<T_O>());
@@ -1038,6 +1104,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
   _sym_STARuseInterpreterForEvalSTAR->defparameter(_Nil<T_O>());
+  _sym_STARcxxDocumentationSTAR->defparameter(_Nil<T_O>());
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
@@ -1067,25 +1134,25 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
 #if 0
 
-	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
-	_sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
+  _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
+  _sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
 #endif
 
 #if 0 //Old system checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_TARGET_OS_DARWIN)
-	SYMBOL_SC_(KeywordPkg,target_os_darwin);
-	Symbol_sp target_os = kw::_sym_target_os_darwin;
+  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
+  Symbol_sp target_os = kw::_sym_target_os_darwin;
 #elif defined(_TARGET_OS_LINUX)
-	SYMBOL_SC_(KeywordPkg,target_os_linux);
-	Symbol_sp target_os = kw::_sym_target_os_linux;
+  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
+  Symbol_sp target_os = kw::_sym_target_os_linux;
 #endif
 
 #endif //End old system checking
 
 #if defined(__x86_64__)
 
-  SYMBOL_SC_(KeywordPkg, address_model_64);
+  SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;
 
 #if defined(__APPLE__) && defined(__MACH__)
@@ -1095,7 +1162,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #error Currently iPhone simulator and iOS are not supported
 #elif TARGET_OS_MAC == 1
 
-  SYMBOL_SC_(KeywordPkg, target_os_darwin);
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_darwin);
   Symbol_sp target_os = kw::_sym_target_os_darwin;
 
 #else
@@ -1104,7 +1171,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 
 #elif defined(__linux__)
 
-  SYMBOL_SC_(KeywordPkg, target_os_linux);
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
 #else
@@ -1113,12 +1180,12 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 
 #elif defined(__i386__)
 
-  SYMBOL_SC_(KeywordPkg, address_model_32);
+  SYMBOL_EXPORT_SC_(KeywordPkg, address_model_32);
   Symbol_sp address_model = kw::_sym_address_model_32;
 
 #if defined(__linux__)
 
-  SYMBOL_SC_(KeywordPkg, target_os_linux);
+  SYMBOL_EXPORT_SC_(KeywordPkg, target_os_linux);
   Symbol_sp target_os = kw::_sym_target_os_linux;
 
 #else
@@ -1139,11 +1206,11 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #if 0 //Old System checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_ADDRESS_MODEL_64)
-	SYMBOL_SC_(KeywordPkg,address_model_64);
-	Symbol_sp address_model = kw::_sym_address_model_64;
+  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
+  Symbol_sp address_model = kw::_sym_address_model_64;
 #elif defined(_ADDRESS_MODEL_32)
-	SYMBOL_SC_(KeywordPkg,address_model_32);
-	Symbol_sp address_model = kw::_sym_address_model_32;
+  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
+  Symbol_sp address_model = kw::_sym_address_model_32;
 #endif
 
 #endif //End old system checking
@@ -1160,7 +1227,6 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 }
 
 void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
-  _G();
   Cons_sp pair = Cons_O::create(access_fn, update_fn);
   List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair, list));
@@ -1170,6 +1236,6 @@ void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
 
 #define EXPAND_CLASS_MACROS
 #define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef _CLASS_MACRO
 #undef EXPAND_CLASS_MACROS

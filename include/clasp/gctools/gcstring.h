@@ -138,7 +138,7 @@ public:
 
 public:
   // Copy Ctor
-  GCString<T, Allocator>(const GCString<T, Allocator> &that) // : GCContainer(GCInfo<value_type>::Kind)
+  GCString<T, Allocator>(const GCString<T, Allocator> &that) 
   {
     if (that._Contents != NULL) {
       allocator_type alloc;
@@ -166,7 +166,7 @@ public:
       }
       if ((bool)that._Contents) {
         allocator_type alloc;
-        tagged_pointer_to_moveable vec = alloc.allocate(that._Contents->_Capacity);
+        tagged_pointer_to_moveable vec = alloc.allocate_kind(GCKind<impl_type>::Kind,that._Contents->_Capacity);
         memcpy(vec->_Data, that._Contents->_Data, that._Contents->_End * sizeof(value_type));
         vec->_End = that._Contents->_End;
         this->_Contents = vec;
@@ -217,7 +217,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n);
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       vec->_End = 0;
       this->_Contents = vec;
       GCTOOLS_ASSERT(newCapacity == this->_Contents->_Capacity);
@@ -228,7 +228,7 @@ public:
     if (n > this->_Contents->_Capacity) {
       tagged_pointer_to_moveable vec(this->_Contents);
       size_t newCapacity = n;
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
       vec->_End = this->_Contents->_End;
       //                pointer_to_moveable oldVec(this->_Contents);
@@ -256,7 +256,7 @@ public:
     if (!this->_Contents) {
       tagged_pointer_to_moveable vec;
       size_t newCapacity = (n == 0 ? GCStringPad : n * GCStringGrow);
-      vec = alloc.allocate(newCapacity);
+      vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
       // the array at newAddress is undefined - placement new to copy
       for (size_t i(0); i < n; ++i)
         (*vec)[i] = x;
@@ -276,7 +276,7 @@ public:
       if (n > this->_Contents->_Capacity) {
         // We need to expand
         size_t newCapacity = n * GCStringGrow;
-        vec = alloc.allocate(newCapacity);
+        vec = alloc.allocate_kind(GCKind<impl_type>::Kind,newCapacity);
         new (&*vec) GCString_moveable<T>(newCapacity);
         memcpy(vec->_Data, this->_Contents->_Data, this->_Contents->_End * sizeof(value_type));
         // fill the new elements with x

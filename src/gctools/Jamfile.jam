@@ -4,7 +4,7 @@ local dir = $(__file__:D) ;
 #
 #
 project internals/gctools : requirements
-	<cxxflags>-std=c++11
+#	<cxxflags>-std=c++11
 #	<cxxflags>-Wc++11-extensions
 	<cxxflags>-Wno-unused-variable
 	<cxxflags>-Wno-c++11-extensions
@@ -26,26 +26,36 @@ project internals/gctools : requirements
 	<target-os>darwin:<linkflags>"-dynamiclib"
 	;
 
-alias lib_boehm : $(APPRES-LIB-COMMON-LIB)/libgc.a $(APPRES-LIB-COMMON-LIB)/libatomic_ops.a ;
 
-alias gclib : lib_boehm : <gc>boehmdc ;
+lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc  ;
 
-alias gclib : lib_boehm : <gc>boehm ;
+obj mymps.o : mymps.c : <gc>mps <cflags>"-std=c89" ;
+alias gclib : mymps.o : <gc>mps ;
+alias gclib : mymps.o : <gc>mps-prep ;  # Was mymps.c
 
-alias gclib : mymps.c : <gc>mps ;
 
-alias gclib : mymps.c : <gc>mps-prep ;
+obj gc_boot.o : gc_boot.cc : <cxxflags>-std=c++11 ;
+obj gc_interface.o : gc_interface.cc : <cxxflags>-std=c++11 ;
+obj gcFunctions.o : gcFunctions.cc : <cxxflags>-std=c++11 ;
+obj gctoolsPackage.o : gctoolsPackage.cc : <cxxflags>-std=c++11 ;
+obj globals.o : globals.cc : <cxxflags>-std=c++11 ;
+obj gcStack.o : gcStack.cc : <cxxflags>-std=c++11 ;
+obj telemetry.o : telemetry.cc : <cxxflags>-std=c++11 ;
+obj gcalloc.o : gcalloc.cc : <cxxflags>-std=c++11 ;
+obj gcweak.o : gcweak.cc : <cxxflags>-std=c++11 ;
+obj memoryManagement.o : memoryManagement.cc : <cxxflags>-std=c++11 ;
 
 local sources =
-      gc_interface.cc
-      gcFunctions.cc
-	gctoolsPackage.cc
-        globals.cc
-        gcStack.cc
-        telemetry.cc
-        gcalloc.cc
-        gcweak.cc
-	memoryManagement.cc
+      gc_interface.o
+      gc_boot.o
+      gcFunctions.o
+	gctoolsPackage.o
+        globals.o
+        gcStack.o
+        telemetry.o
+        gcalloc.o
+        gcweak.o
+	memoryManagement.o
         ;
 
 alias gctools : $(sources)

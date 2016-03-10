@@ -34,6 +34,14 @@
 |#
 
 
+;;; This will print every form as its compiled
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "Starting fixup.lsp")
+  (setq *echo-repl-tpl-read* t)
+  (setq *load-print* t)
+  (setq *echo-repl-read* t))
+
 #+compare(print "MLOG ******* Entering fixup.lsp *********")
 #+compare(print "MLOG About to do first defmethod in fixup.lsp")
 #+compare(print "")

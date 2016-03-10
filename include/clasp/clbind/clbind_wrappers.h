@@ -236,8 +236,7 @@ template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 /*! Wrappers of unique_ptr need to be finalized */
@@ -250,8 +249,7 @@ template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace translate {
@@ -541,20 +539,17 @@ struct from_object<T *> {
       return;
     }
 
-#if 1
-    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nWhat follows may or may not be useful for diagnosing the problem.\nYou may need to write a from_object translator for the destination type\n",
+    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
            __FILE__, __LINE__, _rep_(o).c_str());
-    //            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
     printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
     printf("dynamic_cast<clbind::Derivable<T>*>(o.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T> *>(&(*o)));
     printf("o.px_ref() = %p\n", o.raw_());
     printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
     printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
-    printf("dynamic_cast<void*>(o.px_ref()) = %p\n", dynamic_cast<void *>(&(*o)));
+    printf("dynamic_cast<void*>(&(*o)) = %p\n", dynamic_cast<void *>(&(*o)));
     printf("Invoking o.px_ref()->describe(); /* A virtual function */\n");
-    (*o).describe(core::lisp_true());
-#endif
-    SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T *).name());
+    (*o).describe(cl::_sym_STARstandard_outputSTAR->symbolValue());
+    SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s\n") % _rep_(o) % typeid(o).name() % typeid(T *).name());
   }
 };
 

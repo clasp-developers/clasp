@@ -94,8 +94,7 @@ struct TargetClassifier {
 };
 
 class LambdaListHandler_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler");
+  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",T_O);
 
 public: // virtual functions inherited from Object
   void initialize();
@@ -150,7 +149,8 @@ public:
 
   /*! Create a simple LambdaListHandler that takes a fixed number of required arguments */
   static LambdaListHandler_sp create(int numArgs, const std::set<int> &pureOutValues = std::set<int>());
-
+ public:
+  void dump_keywords();
 public: // set up argument handling by hand
   /*! Use the declares to adjust the behavior of the LambdaListHandler.
 	  (declare (single-dispatch-on {target-symbol})) - sets {target-symbol} as the argument to single dispatch on
@@ -210,23 +210,32 @@ public:
 
   /*! Return true if the LambdaListHandler only has required arguments */
   bool requiredLexicalArgumentsOnlyP_() const;
-  inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
+CL_LISPIFY_NAME("lambdaListHandlerRequiredLexicalArgumentsOnlyP");
+CL_DEFMETHOD   inline bool requiredLexicalArgumentsOnlyP() const { return this->_RequiredLexicalArgumentsOnly; };
 
-  inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
-  int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
-  int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
+CL_LISPIFY_NAME("numberOfRequiredArguments");
+CL_DEFMETHOD   inline int numberOfRequiredArguments() const { return this->_RequiredArguments.size(); };
+CL_LISPIFY_NAME("numberOfOptionalArguments");
+CL_DEFMETHOD   int numberOfOptionalArguments() const { return this->_OptionalArguments.size(); };
+CL_LISPIFY_NAME("numberOfRestArguments");
+CL_DEFMETHOD   int numberOfRestArguments() const { return this->_RestArgument._ArgTarget.nilp() ? 0 : 1; };
   bool hasKeyFlag() const { return this->_KeyFlag.isTrue(); };
-  int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
-  int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
-  bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
+CL_LISPIFY_NAME("numberOfKeyArguments");
+CL_DEFMETHOD   int numberOfKeyArguments() const { return this->_KeywordArguments.size(); };
+CL_LISPIFY_NAME("numberOfAuxArguments");
+CL_DEFMETHOD   int numberOfAuxArguments() const { return this->_AuxArguments.size(); };
+CL_LISPIFY_NAME("allowOtherKeys");
+CL_DEFMETHOD   bool allowOtherKeys() const { return this->_AllowOtherKeys.notnilp(); };
 
   //	uint _numberOfRequiredArguments() const;
 
   /*! The total number of arguments that will be bound by this handler in a lexical ActivationFrame */
-  int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
+CL_LISPIFY_NAME("numberOfLexicalVariables");
+CL_DEFMETHOD   int numberOfLexicalVariables() const { return this->_NumberOfLexicalVariables; };
 
   /*! Return all of the symbols that this LambdaListHandler will fill classified as to whether they are special-var or lexical-var's */
-  List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
+CL_LISPIFY_NAME("classifiedSymbols");
+CL_DEFMETHOD   List_sp classifiedSymbols() const { return this->_ClassifiedSymbolList; };
 
   /*! Return a Cons of all lexical variable names extracted from this->_ClassifiedSymbolList
 	  in the order that they appear in _ClassifiedSymbolList - this is used for
@@ -288,8 +297,8 @@ template <>
 struct gctools::GCInfo<core::LambdaListHandler_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]
+   

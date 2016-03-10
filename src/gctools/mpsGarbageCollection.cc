@@ -25,7 +25,30 @@ THE SOFTWARE.
 */
 /* -^- */
 
-//#define MPS_LOVEMORE 1
+/*
+struct MemoryCode {
+Cmd _cmd;
+size_t _data;
+const char* _description;
+}
+
+enum Cmd {
+class_kind, class_size, field_fix,
+container_kind, container_jump_table_index,
+templated_class_kind, templated_class_jump_table_index,
+layout_end
+};
+class_kind, kind_value, name
+class_size, size, NULL
+field_fix, offset_words, name
+container_kind, kind_value, name
+container_jump_table_index, jump_table_index, NULL
+templated_class_kind, kind_value, name
+templated_class_jump_table_index, jump_table_index, NULL
+
+
+*/
+#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -43,6 +66,7 @@ THE SOFTWARE.
 
 extern "C" {
 #include "clasp/mps/code/mpscawl.h" // MVFF pool
+#include "clasp/mps/code/mpscmvff.h" // MVFF pool
 #include "clasp/mps/code/mpscamc.h" // AMC pool
 #include "clasp/mps/code/mpscsnc.h" // SNC pool
 };
@@ -77,6 +101,12 @@ MpsMetrics globalMpsMetrics;
    --------------------------------------------------
 */
 
+#ifdef DEBUG_MPS_UNDERSCANNING
+bool global_underscanning = DEBUG_MPS_UNDERSCANNING_INITIAL;
+#else
+bool global_underscanning = false;
+#endif
+
 mps_arena_t _global_arena;
 //    mps_pool_t _global_mvff_pool;
 mps_pool_t _global_amc_pool;
@@ -88,8 +118,58 @@ mps_ap_t _global_strong_link_allocation_point;
 mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 
 mps_pool_t global_non_moving_pool;
+mps_pool_t global_unmanaged_pool;
 mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
+
+#ifdef DEBUG_GUARD
+size_t random_tail_size() {
+  size_t ts = ((rand() % 8) + 1) * Alignment();
+  return ts;
+}
+
+#if defined(DEBUG_OBJECT_UNIQUE_ID)
+static uintptr_t global_next_uid = 0;
+#endif // #if defined(DEBUG_OBJECT_UNIQUE_ID)
+
+void Header_s::validate() const {
+  if ( this->kindP() ) {
+    if ( this->guard != 0x0FEEAFEEBFEECFEED) {
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      abort();
+    }
+    if ( this->kind() > KIND_max ) {
+      printf("%s:%d  INVALID object  this->kind()=%d > KIND_max=%d\n", __FILE__, __LINE__, this->kind(), KIND_max );
+      abort();
+    }
+    if ( this->tail_start & 0xffffffffff000000 ) {
+      printf("%s:%d   header->tail_start is not a reasonable value -> %p\n", this->tail_start);
+    }
+    if ( this->tail_size & 0xffffffffff000000 ) {
+      printf("%s:%d   header->tail_size is not a reasonable value -> %p\n", this->tail_size);
+    }
+    if ( this->data[0] != 0xDEADBEEF01234567 ) {
+      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],this->data[0],0xDEADBEEF01234567 );
+      abort();
+    }
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+      if (*cp!=0xcc) {
+        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
+        abort();
+      }
+    }
+  }
+}
+  
+#endif
+
+
+
+
+
+
+
 
 void rawHeaderDescribe(uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
@@ -99,7 +179,14 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf(" Not an object header!\n");
     break;
   case Header_s::kind_tag: {
-    printf("  0x%16l0X : 0x%16l0X 0x%16l0X <--- Valid objects have 0xDEADBEEF01234567 \n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+1), *(headerP+1));
+#ifdef DEBUG_GUARD
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+2), *(headerP+2));
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+3), *(headerP+3));
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+4), *(headerP+4));
+    printf("  0x%16l0X : 0x%16l0X\n", (headerP+5), *(headerP+5));
+#endif    
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
     fflush(stdout);
@@ -115,36 +202,21 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
     if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
       printf("   pad1_tag\n");
+      printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
     } else {
       printf("   pad_tag\n");
+      printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
+      printf("  0x%16l0X : 0x%16l0X\n", (headerP+1), *(headerP+1));
     }
     break;
   }
+#if DEBUG_GUARD
+  Header_s* header = (Header_s*)headerP;
+  header->validate();
+  printf("This object passed the validate() test\n");
+#endif
 };
 
-void headerDescribe(core::T_O *taggedClient) {
-  if (tagged_generalp(taggedClient) || tagged_consp(taggedClient)) {
-    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
-    // Currently this assumes that Conses and General objects share the same header
-    // this may not be true in the future
-    // conses may be moved into a separate pool and dealt with in a different way
-    uintptr_t *headerP;
-    if (tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_general(taggedClient)));
-    } else {
-      headerP = reinterpret_cast<uintptr_t *>(ClientPtrToBasePtr(untag_cons(taggedClient)));
-    }
-    rawHeaderDescribe(headerP);
-  } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
-#if 0
-    printf("    Trying to interpret as client pointer\n");
-    uintptr_t* headerP;
-    headerP = reinterpret_cast<uintptr_t*>(ClientPtrToBasePtr(taggedClient));
-    rawHeaderDescribe(headerP);
-#endif
-  }
-};
 
 string gcResultToString(GC_RESULT res) {
   switch (res) {
@@ -284,8 +356,8 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
         base = (char *)base + sz;
         break;
       default:
-        THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-        break;
+          printf("%s:%d stack_frame_scan Unexpected object on side-stack\n", __FILE__, __LINE__ );
+          abort();
       }
       STACK_TELEMETRY3(telemetry::label_stack_frame_scan,
                        (uintptr_t)original_base,
@@ -310,8 +382,9 @@ static mps_addr_t stack_frame_skip(mps_addr_t base) {
     base = (char *)base + sz;
     break;
   default:
-    THROW_HARD_ERROR(BF("Unexpected object on side-stack"));
-    break;
+      printf("%s:%d stack_frame_skip Unexpected object on side-stack\n", __FILE__, __LINE__ );
+      abort();
+      break;
   }
   STACK_TELEMETRY3(telemetry::label_stack_frame_skip,
                    (uintptr_t)original_base,
@@ -386,7 +459,7 @@ int processMpsMessages(void) {
   int mFinalize(0);
   int mGcStart(0);
   int mGc(0);
-  core::Number_sp startTime = gc::As<core::Number_sp>(core::cl_getInternalRunTime());
+  core::Number_sp startTime = gc::As<core::Number_sp>(core::cl__get_internal_run_time());
   mps_message_type_t type;
   while (mps_message_queue_type(&type, gctools::_global_arena)) {
     mps_message_t message;
@@ -422,7 +495,7 @@ int processMpsMessages(void) {
   }
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
-        core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
+        core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
         core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
         printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );
@@ -466,7 +539,7 @@ mps_addr_t dummyAwlFindDependent(mps_addr_t addr) {
 // Try something like
 // export CLASP_MPS_CONFIG="32 32 16 80 32 80"
 // to debug MPS
-bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent) {
+bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent) {
   char *cur = getenv("CLASP_MPS_CONFIG");
   size_t values[20];
   int numValues = 0;
@@ -510,6 +583,8 @@ bool parseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nu
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
+
+  
   if (Alignment() == 16) {
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
   }
@@ -525,7 +600,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   size_t generation1MortalityPercent = 50;
 
   // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80"   to debug MPS
-  parseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent);
+  maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent);
 
   double nurseryMortalityFraction = nurseryMortalityPercent / 100.0;
   double generation1MortalityFraction = generation1MortalityPercent / 100.0;
@@ -577,10 +652,20 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create amc chain");
 
+#ifdef DEBUG_MPS_FENCEPOST_FREE
+  mps_pool_debug_option_s debug_options = {
+      "fencepost", 9,
+      "free", 4,
+  };
+#endif
+  
   // Create the AMC pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+#ifdef DEBUG_MPS_FENCEPOST_FREE
+    MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
+#endif
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
     res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
   }
@@ -588,7 +673,29 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create amc pool");
 
-  /*! Use an AWL pool rather than and AMS pool until the AMS bug gets fixed */
+  /* Objects that can not move but are managed by the garbage collector
+     go in the global_non_moving_pool.  
+     Use an AWL pool rather than an AMS pool until the AMS pool becomes a production pool */
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create awl pool");
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    res = mps_ap_create_k(&global_non_moving_ap, global_non_moving_pool, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+
+
+/* ------------------------------------------------------------------------
+   Create a pool for objects that aren't moved and arent managed by the GC.
+*/
+#if 0   
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
     MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
@@ -605,7 +712,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   MPS_ARGS_END(args);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Couldn't create global_non_moving_ap");
+#endif
 
+  
   // Create the AMCZ pool
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
@@ -678,16 +787,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   // register the main thread stack scanner
   mps_root_t global_stack_root;
-#ifdef MPS_LOVEMORE
-  res = mps_root_create_reg(&global_stack_root,
-                            _global_arena,
-                            mps_rank_ambig(),
-                            0,
-                            global_thread,
-                            mps_stack_scan_ambig,
-                            _global_stack_marker,
-                            0);
-#else
   // use mask
   res = mps_root_create_stack(&global_stack_root,
                               _global_arena,
@@ -697,7 +796,6 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
                               gctools::pointer_tag_mask,
                               gctools::pointer_tag_eq,
                               _global_stack_marker);
-#endif
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
 
@@ -709,6 +807,10 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // register the main thread roots in static and heap space
 
   //#define TEST_MPS        1
+
+  for ( int i=0; i<global_symbol_count; ++i ) {
+    global_symbols[i].rawRef_() = (core::Symbol_O*)NULL;
+  }
 
   int exit_code = 0;
 
@@ -733,7 +835,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   printf("%s:%d   ... shutting down now\n", __FILE__, __LINE__);
   exit_code = 0;
 #else
+  #if 1
   exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
+  #else
+  printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
+  test_mps_allocation();
+  exit_code = 0;
+  #endif
 #endif
   processMpsMessages();
 
@@ -759,4 +867,64 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 
   return exit_code;
 };
+};
+
+
+namespace gctools {
+
+CL_DEFUN void gctools__enable_underscanning(bool us)
+{
+  global_underscanning = us;
+}
+
+};
+
+extern "C" {
+void client_validate(void *taggedClient) {
+  if ( gctools::tagged_generalp(taggedClient))
+  {
+    void* client = gctools::untag_general(taggedClient);
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+    header->validate();
+  } else if (gctools::tagged_consp(taggedClient)) {
+    void* client = gctools::untag_cons(taggedClient);
+    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
+    header->validate();
+  }    
+};
+
+
+void client_describe(void *taggedClient) {
+  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
+    printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
+    // Currently this assumes that Conses and General objects share the same header
+    // this may not be true in the future
+    // conses may be moved into a separate pool and dealt with in a different way
+    uintptr_t *headerP;
+    if (gctools::tagged_generalp(taggedClient)) {
+      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
+    } else {
+      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
+    }
+    gctools::rawHeaderDescribe(headerP);
+  } else {
+    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
+    printf("    Trying to interpret as client pointer\n");
+    uintptr_t* headerP;
+    headerP = reinterpret_cast<uintptr_t*>(gctools::ClientPtrToBasePtr(taggedClient));
+    gctools::rawHeaderDescribe(headerP);
+  }
+};
+
+void header_describe(gctools::Header_s* headerP) {
+  gctools::rawHeaderDescribe((uintptr_t*)headerP);
+};
+
+
+void check_all_clients() {
+  mps_arena_park(gctools::_global_arena);
+  // Add code to walk the pool and check everything
+  mps_arena_release(gctools::_global_arena);
+}
+
 };

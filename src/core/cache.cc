@@ -42,7 +42,7 @@ void Cache::setup(int keySize, int cacheSize) {
 }
 
 void Cache::removeOne(T_sp firstKey) {
-  // For multithreading ecl_cache_remove_one does an ecl_atomic_push
+  // For multithreading ecl_cache_remove_one does an ecl__atomic_push
   this->clearOneFromCache(firstKey);
 }
 
@@ -127,7 +127,7 @@ void Cache::search_cache(CacheRecord *&min_e) {
       }
       /* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-    } else if (argno == cl_length(gc::As<VectorObjects_sp>(hkey))) { // if (argno == hkey->vector.fillp) {
+    } else if (argno == cl__length(gc::As<VectorObjects_sp>(hkey))) { // if (argno == hkey->vector.fillp) {
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
         if (keys[n] != gc::As<VectorObjects_sp>(hkey)->operator[](n))
@@ -184,17 +184,14 @@ FOUND:
   }
 }
 
-#define ARGS_core_clearGenericFunctionDispatchCache "()"
-#define DECL_core_clearGenericFunctionDispatchCache ""
-#define DOCS_core_clearGenericFunctionDispatchCache "clearGenericFunctionDispatchCache"
-void core_clearGenericFunctionDispatchCache() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("clearGenericFunctionDispatchCache");
+CL_DEFUN void core__clear_generic_function_dispatch_cache() {
   printf("%s:%d Clearing generic function dispatch cache\n", __FILE__, __LINE__);
   _lisp->methodCachePtr()->empty();
 };
 
 void initialize_cache() {
-  _G();
-  CoreDefun(clearGenericFunctionDispatchCache);
 }
 };

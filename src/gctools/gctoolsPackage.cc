@@ -37,7 +37,7 @@ extern "C" {
 #include <stdint.h>
 
 #include <clasp/core/foundation.h>
-#include <clasp/gctools/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -46,7 +46,7 @@ extern "C" {
 using namespace core;
 
 namespace cl {
-extern core::Symbol_sp _sym_fixnum;
+extern core::Symbol_sp& _sym_fixnum;
 };
 
 namespace gctools {
@@ -58,28 +58,9 @@ bool _GlobalDebugAllocations = false;
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 
-#pragma GCC visibility push(default)
-#define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef GcToolsPkg_SYMBOLS
-#pragma GCC visibility pop
-
 void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
   switch (what) {
   case candoClasses: {
-
-#define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)                   \
-  {                                                                     \
-    gctools::cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
-    gctools::cname->exportYourself(exportp);                            \
-  }
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef GcToolsPkg_SYMBOLS
 
   } break;
   case candoFunctions: {
@@ -89,7 +70,6 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindsP);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindSymbols);
     initialize_gc_functions();
-    telemetry::initialize_telemetry_functions();
     //nothing
   };
       break;
@@ -105,12 +85,3 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 }
 };
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-#define _CLASS_MACRO(_U_) \
-  STATIC_CLASS_INFO(_U_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#include INIT_CLASSES_INC_H
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

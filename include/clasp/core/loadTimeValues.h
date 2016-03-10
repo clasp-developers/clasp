@@ -35,8 +35,7 @@ THE SOFTWARE.
 namespace core {
 class LoadTimeValues_O : public T_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues");
+  LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues",T_O);
 
 public: // Simple default ctor/dtor
   LoadTimeValues_O() : Base(){};
@@ -77,8 +76,7 @@ template <>
 struct gctools::GCInfo<core::LoadTimeValues_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = false; // THIS CANNOT MOVE - ALL COMPILED CODE DEPENDS ON THIS!!!
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
 };
 
 #if 0
@@ -120,8 +118,7 @@ TRANSLATE(core::MemoryLockedLoadTimeValuesPointer_O);
 template<> struct gctools::GCInfo<core::MemoryLockedLoadTimeValuesPointer_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
-    static bool constexpr Moveable = false;
-    static bool constexpr Atomic = false;
+    static GCInfo_policy constexpr Policy = unmanaged;
 };
 
 #endif

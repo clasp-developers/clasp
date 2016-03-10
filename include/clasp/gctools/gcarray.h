@@ -114,7 +114,7 @@ public:
   void allocate(size_t numExtraArgs, const value_type &initialElement, ARGS &&... args) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate(sizeof...(ARGS)+numExtraArgs);
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCKind<impl_type>::Kind,sizeof...(ARGS)+numExtraArgs);
     new (&*implAddress) GCArray_moveable<value_type, sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
       T *p = &((*implAddress)[i]);

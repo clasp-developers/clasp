@@ -36,19 +36,16 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, ArrayObjects_O);
 
-#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
-#define DECL_ArrayObjects_O_make ""
-#define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
-ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
-  _G();
+
+CL_LISPIFY_NAME(make-array-objects);
+CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;
   List_sp dim;
   if (dim_desig.nilp()) {
     dim = dim_desig;
-  } else if (cl_atom(dim_desig)) {
+  } else if (cl__atom(dim_desig)) {
     int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
     dim = Cons_O::create(make_fixnum(idim));
   } else {
@@ -58,17 +55,8 @@ ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp init
   return ((array));
 }
 
-void ArrayObjects_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ArrayObjects_O>();
-  Defun_maker(CorePkg, ArrayObjects);
-}
 
-void ArrayObjects_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ArrayObjects, "", "", _lisp);
-#endif
-}
+
 
 #if defined(XML_ARCHIVE)
 void ArrayObjects_O::archiveBase(::core::ArchiveP node) {
@@ -96,13 +84,11 @@ void ArrayObjects_O::initialize() {
 }
 
 void ArrayObjects_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   this->_Values[idx] = value;
 }
 
 T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
-  _G();
   this->_Values[idx] = value;
   return value;
 }
@@ -122,7 +108,7 @@ bool ArrayObjects_O::equalp(T_sp o) const {
         return false;
     }
     for (size_t i(0); i < size; ++i) {
-      if (!cl_equalp(this->rowMajorAref(i), other->rowMajorAref(i)))
+      if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i)))
         return false;
     }
     return true;
@@ -130,11 +116,11 @@ bool ArrayObjects_O::equalp(T_sp o) const {
   if (Vector_sp vec = o.asOrNull<Vector_O>()) {
     if (this->_Dimensions.size() != 1)
       return false;
-    if (this->_Dimensions[0] != cl_length(vec))
+    if (this->_Dimensions[0] != cl__length(vec))
       return false;
     size_t size = this->_Dimensions[0];
     for (int i(0); i < size; ++i) {
-      if (!cl_equalp(this->rowMajorAref(i), vec->aref_unsafe(i)))
+      if (!cl__equalp(this->rowMajorAref(i), vec->aref_unsafe(i)))
         return false;
     }
     return true;
@@ -143,7 +129,6 @@ bool ArrayObjects_O::equalp(T_sp o) const {
 }
 
 T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
-  _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   return ((this->_Values[idx]));
 };
@@ -190,7 +175,6 @@ T_sp ArrayObjects_O::deepCopy() const {
 }
 
 T_sp ArrayObjects_O::svref(int index) const {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     return ((this->_Values[index]));
@@ -199,7 +183,6 @@ T_sp ArrayObjects_O::svref(int index) const {
 }
 
 T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     this->_Values[index] = value;
@@ -211,7 +194,7 @@ T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
 LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   _OF();
   LongLongInt elements = 1;
-  int newRank = cl_length(dim);
+  int newRank = cl__length(dim);
   if (newRank >= CLASP_ARRAY_RANK_LIMIT) {
     SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
   }

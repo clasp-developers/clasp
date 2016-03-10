@@ -36,21 +36,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, ForwardReferencedClass_O);
 
-void ForwardReferencedClass_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ForwardReferencedClass_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void ForwardReferencedClass_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), ForwardReferencedClass, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 #if 0
     void ForwardReferencedClass_O::serialize(::serialize::SNodeP node)

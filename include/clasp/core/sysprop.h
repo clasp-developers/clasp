@@ -32,11 +32,11 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp af_put_sysprop(T_sp key, T_sp area, T_sp value);
+T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value);
 
-T_mv af_get_sysprop(T_sp key, T_sp area);
+T_mv core__get_sysprop(T_sp key, T_sp area);
 
-void initialize_sysprop();
+
 };
 
 #endif /* _core_sysprop_H */

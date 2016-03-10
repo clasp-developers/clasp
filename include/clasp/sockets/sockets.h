@@ -32,7 +32,6 @@ THE SOFTWARE.
 
 namespace sockets {
 
-void initialize_sockets();
 void initialize_sockets_globals();
 };
 #endif /* _core_ffi_H_ */

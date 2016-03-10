@@ -660,9 +660,9 @@ Boehm and MPS use a single pointer"
   (primitive          module "singleStepCallback" +void+ nil)
 
 
-  (primitive module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
+  (primitive-nounwind module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-nounwind module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-nounwind module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
 ;;  (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
 ;;  (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +t*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
@@ -674,7 +674,7 @@ Boehm and MPS use a single pointer"
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
 ;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
-  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
+  (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
 ;;  (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
 ;;  (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
@@ -790,7 +790,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_allowOtherKeywords" +i64+ (list +i64+ +t*+))
 ;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
-  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
+  (primitive-nounwind module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
   (primitive          module "cc_unwind" +void+ (list +t*+ +size_t+))
   (primitive          module "cc_throw" +void+ (list +t*+) :does-not-return t)

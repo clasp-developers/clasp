@@ -1,6 +1,0 @@
-! Look at callers and what they expect
-O_MonomerSet::getMonomerNamesAsString
-O_MonomerSet::getOnlyMonomerName
-O_MonomerSet::getMonomerNames
-O_MonomerSet::getKey
-O_MonomerSet::recognizesMonomerName

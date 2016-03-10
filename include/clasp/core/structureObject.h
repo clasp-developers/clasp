@@ -45,9 +45,8 @@ SMART(StandardClass);
 
 SMART(StructureObject);
 class StructureObject_O : public T_O {
-  LISP_META_CLASS(StructureClass);
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, StructureObject_O, "structure-object");
+  LISP_META_CLASS(core::StructureClass_O);
+  LISP_CLASS(core, ClPkg, StructureObject_O, "structure-object",T_O);
 
 public:
 #if defined(OLD_SERIALIZE)
@@ -93,12 +92,12 @@ public:
   virtual ~StructureObject_O(){};
 };
 
-T_sp af_makeStructure(T_sp type, List_sp slot_values);
-T_sp af_copyStructure(T_sp arg);
-T_sp af_structureRef(T_sp obj, Symbol_sp type, int idx);
-T_sp af_structureSet(T_sp obj, Symbol_sp type, int idx, T_sp val);
-bool af_structurep(T_sp arg);
-bool af_structureSubtypep(T_sp x, Symbol_sp y);
+T_sp core__make_structure(T_sp type, List_sp slot_values);
+T_sp cl__copy_structure(T_sp arg);
+T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx);
+T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val);
+bool core__structurep(T_sp arg);
+bool core__structure_subtypep(T_sp x, Symbol_sp y);
 };
 TRANSLATE(core::StructureObject_O);
 #endif //]

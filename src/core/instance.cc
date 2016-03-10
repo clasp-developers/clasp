@@ -39,11 +39,6 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp InstanceClosure::lambdaList() const {
-  printf("%s:%d InstanceClosure::lambdaList returning NIL\n", __FILE__, __LINE__);
-  return _Nil<T_O>();
-}
-
 LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
@@ -55,22 +50,17 @@ LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
   return (this->entryPoint)(this->instance, gfargs);
 }
 
-#define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
-#define DECL_clos_setFuncallableInstanceFunction ""
-#define DOCS_clos_setFuncallableInstanceFunction "setFuncallableInstanceFunction"
-T_sp clos_setFuncallableInstanceFunction(T_sp obj, T_sp func) {
-  _G();
+CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
   }
   SIMPLE_ERROR(BF("You can only setFuncallableInstanceFunction on instances - you tried to set it on a: %s") % _rep_(obj));
 };
 
-#define ARGS_af_instanceClassSet "(instance func)"
-#define DECL_af_instanceClassSet ""
-#define DOCS_af_instanceClassSet "instanceClassSet"
-T_sp af_instanceClassSet(T_sp obj, Class_sp mc) {
-  _G();
+CL_LAMBDA(instance func);
+CL_DECLARE();
+CL_DOCSTRING("instanceClassSet");
+CL_DEFUN T_sp core__instance_class_set(T_sp obj, Class_sp mc) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->instanceClassSet(mc);
   } else if (Class_sp cobj = obj.asOrNull<Class_O>()) {
@@ -79,11 +69,10 @@ T_sp af_instanceClassSet(T_sp obj, Class_sp mc) {
   SIMPLE_ERROR(BF("You can only instanceClassSet on Instance_O or Class_O - you tried to set it on a: %s") % _rep_(mc));
 };
 
-#define ARGS_core_copyInstance "(obj)"
-#define DECL_core_copyInstance ""
-#define DOCS_core_copyInstance "copy-instance returns a shallow copy of the instance"
-Instance_sp core_copyInstance(Instance_sp obj) {
-  _G();
+CL_LAMBDA(obj);
+CL_DECLARE();
+CL_DOCSTRING("copy-instance returns a shallow copy of the instance");
+CL_DEFUN Instance_sp core__copy_instance(Instance_sp obj) {
   Instance_sp cp = obj->copyInstance();
   return cp;
 };
@@ -122,7 +111,8 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
 }
 
 /*! See ECL>>instance.d>>si_allocate_raw_instance */
-T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
+CL_LISPIFY_NAME(allocateRawInstance);
+CL_DEFUN T_sp Instance_O::allocateRawInstance(T_sp orig, T_sp theClass, int numberOfSlots) {
   T_sp toutput = Instance_O::allocateInstance(theClass, numberOfSlots);
   Instance_sp output = toutput.asOrNull<Instance_O>();
   if (!output) {
@@ -190,28 +180,14 @@ T_sp Instance_O::instanceSig() const {
   return ((this->_Sig));
 }
 
-EXPOSE_CLASS(core, Instance_O);
 
-void Instance_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<Instance_O>();
 
-  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
-  ClosDefun(setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
-  Defun(instanceClassSet);
-  CoreDefun(copyInstance);
-}
 
-void Instance_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Instance, "", "", _lisp);
-#endif
-}
+
 
 T_sp Instance_O::instanceClassSet(Class_sp mc) {
-  _G();
   this->_Class = mc;
   return (this->sharedThis<Instance_O>());
 }
@@ -246,7 +222,7 @@ string Instance_O::__repr__() const {
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
-        if (cl_consp(obj)) {
+        if (cl__consp(obj)) {
           sslot << "CONS...";
           ss << sslot.str() << std::endl;
         } else if (Instance_sp inst = obj.asOrNull<Instance_O>()) {
@@ -278,7 +254,7 @@ T_sp Instance_O::copyInstance() const {
   iobj->_Slots = this->_Slots;
   if ((bool)(this->closure)) {
     auto ic = this->closure.as<InstanceClosure>();
-    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(*ic);
+    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(*ic);
   } else {
     iobj->closure.reset_();
   }
@@ -287,7 +263,6 @@ T_sp Instance_O::copyInstance() const {
 }
 
 void Instance_O::reshapeInstance(int delta) {
-  _G();
   int size = this->_Slots.size() + delta;
   this->_Slots.resize(size, _Unbound<T_O>());
 }
@@ -303,7 +278,7 @@ SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
   if (!(bool)(this->closure)) {
-    this->closure = gctools::ClassAllocator<InstanceClosure>::allocateClass(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
+    this->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
   } else {
     auto ic = this->closure.as<InstanceClosure>();
     ic->entryPoint = entryPoint;
@@ -311,7 +286,6 @@ void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
 };
 
 T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
-  _G();
   if (this->_isgf == ECL_USER_DISPATCH) {
     this->reshapeInstance(-1);
     this->_isgf = ECL_NOT_FUNCALLABLE;
@@ -342,7 +316,7 @@ T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
     //	    this->_Entry = &slotWriterDispatch;
     //Instance_O::ensureClosure(&generic_function_dispatch);
     Instance_O::ensureClosure(&slotReaderDispatch);
-  } else if (!cl_functionp(functionOrT)) {
+  } else if (!cl__functionp(functionOrT)) {
     TYPE_ERROR(functionOrT, cl::_sym_function);
     //SIMPLE_ERROR(BF("Wrong type argument: %s") % functionOrT->__repr__());
   } else {
@@ -369,7 +343,7 @@ bool Instance_O::equalp(T_sp obj) const {
     if (this->_Class != iobj->_Class)
       return false;
     for (int i(0), iEnd(this->_Slots.size()); i < iEnd; ++i) {
-      if (!cl_equalp(this->_Slots[i], iobj->_Slots[i])) {
+      if (!cl__equalp(this->_Slots[i], iobj->_Slots[i])) {
         return false;
       }
     }

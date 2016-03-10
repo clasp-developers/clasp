@@ -126,15 +126,15 @@ CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() {
   _lisp->debugLog().endNode(DEBUG_CPP_FUNCTION);
 };
 
-#define ARGS_af_signalSimpleError "(base-condition continue-message format-control format-args &rest args)"
-#define DECL_af_signalSimpleError ""
-#define DOCS_af_signalSimpleError "signalSimpleError"
-T_sp af_signalSimpleError(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
-  printf("%s:%d af_signalSimpleError  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
+CL_LAMBDA(base-condition continue-message format-control format-args &rest args);
+CL_DECLARE();
+CL_DOCSTRING("signalSimpleError");
+CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
+  printf("%s:%d core__signal_simple_error  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
   printf("%s\n", _rep_(baseCondition).c_str());
-  af_format(_lisp->_true(), formatControl, formatArgs);
-  dbg_hook("af_signalSimpleError");
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  cl__format(_lisp->_true(), formatControl, formatArgs);
+  dbg_hook("core__signal_simple_error");
+  core__invoke_internal_debugger(_Nil<core::T_O>());
   printf("%s:%d  Continuing...\n", __FILE__, __LINE__);
   return _Nil<T_O>();
 };
@@ -508,7 +508,6 @@ void DebugStream::setSuppressMessages(bool s) {
 }
 
 char *internalPrintf(const Lisp_sp &lisp, const char *fmt, va_list arg_ptr) {
-  _G();
   char *outBuffer;
   int n;
   n = vasprintf(&outBuffer, fmt, arg_ptr);
@@ -518,7 +517,7 @@ char *internalPrintf(const Lisp_sp &lisp, const char *fmt, va_list arg_ptr) {
   return outBuffer;
 }
 
-void _stackTraceEnter_WriteEntryToLog(int entryIndex) { // Dont use --> _G();
+void _stackTraceEnter_WriteEntryToLog(int entryIndex) {
   IMPLEMENT_ME();
 }
 
@@ -547,7 +546,6 @@ void _stackTraceDump() {
 void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
                         Symbol_sp function,
                         T_sp key, T_sp value, T_sp type) {
-  _G();
   stringstream message;
   message << "In ";
   if (function.nilp()) {
@@ -569,7 +567,6 @@ void af_wrongTypeKeyArg(const string &sourceFile, int lineno,
 #define DECL_af_wrongTypeOnlyArg ""
 #define DOCS_af_wrongTypeOnlyArg "wrongTypeOnlyArg"
 void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
-  _G();
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function,";
@@ -596,11 +593,10 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
   }
 };
 
-#define ARGS_af_wrongTypeArgument "(source-file lineno function narg value type)"
-#define DECL_af_wrongTypeArgument ""
-#define DOCS_af_wrongTypeArgument "wrongTypeArgument"
-void af_wrongTypeArgument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
-  _G();
+CL_LAMBDA(source-file lineno function narg value type);
+CL_DECLARE();
+CL_DOCSTRING("wrongTypeArgument");
+CL_DEFUN void core__wrong_type_argument(const string &sourceFile, int lineno, Symbol_sp function, T_sp value, T_sp type) {
   stringstream message;
   if (function.nilp()) {
     message << "In an anonymous function, "
@@ -627,10 +623,10 @@ void af_wrongTypeArgument(const string &sourceFile, int lineno, Symbol_sp functi
   }
 };
 
-#define ARGS_af_wrongTypeNthArg "(source-file lineno function narg value type)"
-#define DECL_af_wrongTypeNthArg ""
-#define DOCS_af_wrongTypeNthArg "wrongTypeNthArg"
-void af_wrongTypeNthArg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
+CL_LAMBDA(source-file lineno function narg value type);
+CL_DECLARE();
+CL_DOCSTRING("wrongTypeNthArg");
+CL_DEFUN void core__wrong_type_nth_arg(const string &sourceFile, int lineno, Symbol_sp function, int narg, T_sp value, T_sp type) {
   if (function.nilp()) {
     stringstream message;
     message << "In an anonymous function, "
@@ -658,10 +654,10 @@ void af_wrongTypeNthArg(const string &sourceFile, int lineno, Symbol_sp function
   }
 };
 
-#define ARGS_af_wrongIndex "(source-file lineno function narg value type)"
-#define DECL_af_wrongIndex ""
-#define DOCS_af_wrongIndex "wrongIndex"
-void af_wrongIndex(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
+CL_LAMBDA(source-file lineno function narg value type);
+CL_DECLARE();
+CL_DOCSTRING("wrongIndex");
+CL_DEFUN void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int nonincl_limit) {
   if (function.nilp()) {
     const char *message1 =
         "In an anonymous function, "
@@ -705,12 +701,11 @@ void af_wrongIndex(const string &sourceFile, int lineno, Symbol_sp function, T_s
   }
 };
 
-#define ARGS_af_readerError "(sourceFileName lineno functionName fmt fmtargs stream)"
-#define DECL_af_readerError ""
-#define DOCS_af_readerError "readerError"
-void af_readerError(const string &sourceFile, uint lineno, Symbol_sp function,
+CL_LAMBDA(sourceFileName lineno functionName fmt fmtargs stream);
+CL_DECLARE();
+CL_DOCSTRING("readerError");
+CL_DEFUN void cl__reader_error(const string &sourceFile, uint lineno, Symbol_sp function,
                     Str_sp fmt, List_sp fmtargs, T_sp stream) {
-  _G();
   if (stream.nilp()) {
     eval::funcall(_sym_signalSimpleError,
                   cl::_sym_parseError,
@@ -763,7 +758,7 @@ void FElibc_error(const char *msg, int nargs, ...) {
 }
 
 void FEcannot_open(T_sp fileName) {
-  cl_error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
+  cl__error(cl::_sym_fileError, Cons_O::createList(kw::_sym_pathname, fileName));
 }
 
 SYMBOL_EXPORT_SC_(CorePkg,argument_number_error);
@@ -771,7 +766,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg,supplied);
 SYMBOL_EXPORT_SC_(KeywordPkg,min);
 SYMBOL_EXPORT_SC_(KeywordPkg,max);
 void FEargument_number_error(T_sp supplied, T_sp min, T_sp max) {
-  cl_error(core::_sym_argument_number_error,
+  cl__error(core::_sym_argument_number_error,
            core::Cons_O::createList(kw::_sym_supplied, supplied,
                                     kw::_sym_min, min,
                                     kw::_sym_max, max));
@@ -834,12 +829,8 @@ void clasp_internal_error(const char *msg) {
   SIMPLE_ERROR(BF("Internal error: %s\n") % msg);
 }
 
-void initialize_exceptions() {
-  SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);
-  Defun(signalSimpleError);
-  SYMBOL_EXPORT_SC_(CorePkg, wrongTypeNthArg);
-  Defun(wrongTypeNthArg)
-      SYMBOL_EXPORT_SC_(CorePkg, wrongIndex);
-  Defun(wrongIndex)
-};
+SYMBOL_EXPORT_SC_(CorePkg, signalSimpleError);
+SYMBOL_EXPORT_SC_(CorePkg, wrongTypeNthArg);
+SYMBOL_EXPORT_SC_(CorePkg, wrongIndex);
+
 };

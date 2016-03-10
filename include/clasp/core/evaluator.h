@@ -34,25 +34,28 @@ THE SOFTWARE.
 #include <clasp/core/activationFrame.h>
 
 namespace cl {
-extern core::Symbol_sp _sym_findClass;
-extern core::Symbol_sp _sym_undefinedFunction;
+extern core::Symbol_sp& _sym_findClass;
+extern core::Symbol_sp& _sym_undefinedFunction;
 };
 namespace kw {
-extern core::Symbol_sp _sym_name;
+extern core::Symbol_sp& _sym_name;
 };
 
 namespace core {
+T_mv cl__apply(T_sp head, VaList_sp args);
+
 
 T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_function(Symbol_sp sym, T_sp env);
 T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env);
-T_sp core_lookup_symbol_macro(Symbol_sp sym, T_sp env);
+T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env);
+
+ /*! Evaluate within env.
+          See ecl/src/c/compiler.d:eval-with-env */
+T_mv core__eval_with_env_default(T_sp form, T_sp env);
 
 namespace eval {
 
-/*! Evaluate within env.
-          See ecl/src/c/compiler.d:eval-with-env */
-T_mv core_eval_with_env_default(T_sp form, T_sp env);
 
 extern List_sp evaluateList(List_sp args, T_sp environment);
 extern T_mv evaluateListReturnLast(List_sp args, T_sp environment);
@@ -87,7 +90,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
   int numArgsPassed = sizeof...(Args);
-  int numArgsPlus = cl_length(argsPLUS);
+  int numArgsPlus = cl__length(argsPLUS);
   int nargs = numArgsPassed + numArgsPlus;
   ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus, _Nil<ActivationFrame_O>(), args...));
   List_sp cur = argsPLUS;
@@ -100,11 +103,12 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
   return applyClosureToActivationFrame(closureP, frob);
 }
 
+
 inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
   gctools::tagged_pointer<Closure> ft = func->closure;
   // Either assume that the VaList_sp is not at the start or ensure that it always is
   // Here I'm assuming that it is not always at the start.   To do it the other way
-  // change cl_apply
+  // change cl__apply
   core::T_O *arg0;
   core::T_O *arg1;
   core::T_O *arg2;
@@ -156,7 +160,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
     // While booting, cl::_sym_findClass will apply'd before
     // it is bound to a symbol
     if (fn == cl::_sym_findClass) {
-      Class_mv cl = cl_findClass(gc::As<Symbol_sp>(arg0), false, _Nil<T_O>());
+      Class_mv cl = cl__find_class(gc::As<Symbol_sp>(arg0), false, _Nil<T_O>());
       T_sp res = cl;
       return Values(res);
     }

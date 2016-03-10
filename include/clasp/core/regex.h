@@ -37,8 +37,7 @@ namespace core {
 FORWARD(RegexMatch);
 class RegexMatch_O : public core::T_O {
   friend class Regex_O;
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(core, CorePkg, RegexMatch_O, "RegexMatch");
+  LISP_CLASS(core, CorePkg, RegexMatch_O, "RegexMatch",core::T_O);
   DEFAULT_CTOR_DTOR(RegexMatch_O);
 
 public:
@@ -60,16 +59,17 @@ public: // Functions here
   bool matched(int idx) const;
 
   /*! Return the prefix of the match */
-  string prefix() const { return this->_Match.prefix(); };
+CL_LISPIFY_NAME("regex-match-prefix");
+CL_DEFMETHOD   string prefix() const { return this->_Match.prefix(); };
 
   /*! Return the suffix of the match */
-  string suffix() const { return this->_Match.suffix(); };
+CL_LISPIFY_NAME("regex-match-suffix");
+CL_DEFMETHOD   string suffix() const { return this->_Match.suffix(); };
 };
 
 FORWARD(Regex);
 class Regex_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(core, CorePkg, Regex_O, "Regex");
+  LISP_CLASS(core, CorePkg, Regex_O, "Regex",core::T_O);
   //    DECLARE_ARCHIVE();
   DEFAULT_CTOR_DTOR(Regex_O);
 

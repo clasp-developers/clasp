@@ -1,8 +1,0 @@
-#!/bin/bash
-#PBS -A TG-CHE100059
-#PBS -l size=12
-#PBS -l walltime=00:01:00
-
-#export CANDO_DEBUG=ALL
-cd $PBS_O_WORKDIR
-aprun -n 12 /lustre/scratch/cschafme/tests/mpi/bmain

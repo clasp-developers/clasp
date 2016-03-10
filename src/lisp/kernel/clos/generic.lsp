@@ -134,7 +134,7 @@
 					     (or name :anonymous)))
 			      )
   (declare (ignore initargs slot-names)
-           (core:lambda-name 'shared-initialize-generic-function))
+           (core:lambda-name shared-initialize-generic-function))
   ;;
   ;; Check the validity of several fields.
   ;;
@@ -185,7 +185,7 @@
 (defmethod shared-initialize ((gfun standard-generic-function) slot-names
 			      &rest initargs)
   (declare (ignore initargs slot-names)
-           (core:lambda-name 'shared-initialize-standard-generic-function))
+           (core:lambda-name shared-initialize-standard-generic-function))
   (call-next-method)
   (when (generic-function-methods gfun)
     (compute-g-f-spec-list gfun))
@@ -199,12 +199,16 @@
     gfun))
 
 (defmethod ensure-generic-function-using-class
-    ((gfun generic-function) name &rest args &key
-     (method-class 'STANDARD-METHOD method-class-p)
-     (generic-function-class (class-of gfun))
-     (delete-methods nil))
+    ((gfun generic-function) name
+     &rest args
+     &key
+       #+clasp (lambda-list nil lambda-list-p)
+       (method-class 'STANDARD-METHOD method-class-p)
+       (generic-function-class (class-of gfun))
+       (delete-methods nil))
   #+compare(print "MLOG - entered ensure-generic-function-using-class (generic-function) generic.lsp 200")
   ;; modify the existing object
+  #+clasp(when lambda-list-p (core:setf-lambda-list gfun lambda-list))
   (setf args (copy-list args))
   (remf args :generic-function-class)
   (remf args :declare)
@@ -241,10 +245,12 @@
 
 (defmethod ensure-generic-function-using-class
     ((gfun null) name &rest args &key
-     (method-class 'STANDARD-METHOD method-class-p)
-     (generic-function-class 'STANDARD-GENERIC-FUNCTION)
-     (delete-methods nil))
+                                   #+clasp lambda-list
+                                   (method-class 'STANDARD-METHOD method-class-p)
+                                   (generic-function-class 'STANDARD-GENERIC-FUNCTION)
+                                   (delete-methods nil))
   (declare (ignore delete-methods gfun))
+  (gf-log "In ensure-generic-function-using-class")
   #+compare(print (list "MLOG - entered ensure-generic-function-using-class (gfun null) generic.lsp name:" name " args:" args ))
   ;; else create a new generic function object
   (setf args (copy-list args))
@@ -252,25 +258,32 @@
   (remf args :declare)
   (remf args :environment)
   (remf args :delete-methods)
+  (gf-log "About to test method-class-p")
   (when (and method-class-p (symbolp generic-function-class))
     (setf args (list* :method-class (find-class method-class) args)))
-  (apply #'make-instance generic-function-class :name name args))
-
-
-
+  (gf-log "About to make-instance (class-of generic-function-class) -> ~a" (class-of generic-function-class))
+  #+ecl(apply #'make-instance generic-function-class :name name args)
+  #+clasp(let ((gfun (apply #'make-instance generic-function-class :name name args)))
+           (gf-log "Did make-instance")
+           (core:setf-lambda-list gfun lambda-list)
+           gfun))
 
 (defun ensure-generic-function (name &rest args &key &allow-other-keys)
   #+compare(print (list "MLOG starting ensure-generic-function --> name: " name "  args: %" args))
+  (gf-log "ensure-generic-function")
   (let ((gfun (si::traced-old-definition name)))
+    (gf-log "  name = ~a  gfun = ~a" name gfun)
     (cond ((not (legal-generic-function-name-p name))
 	   (simple-program-error "~A is not a valid generic function name" name))
           ((not (fboundp name))
            #+compare(print (list "MLOG about to setf (fdefinition name) -generic-function --> name: " name "  args: %" args))
 ;;           (break "About to setf (fdefinition name)")
+           (gf-log "  (not (fboundp name))  About to ensure-generic-function-using-class")
 	   (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class gfun name args)))
           ((si::instancep (or gfun (setf gfun (fdefinition name))))
 	   #+compare(print "MLOG generic.lsp ensure-generic-function line 249")
+           (gf-log "   (si::instancep ...) About to ensure-generic-function-using-class")
 	   (let ((new-gf (apply #'ensure-generic-function-using-class gfun name args)))
 	     #+compare(print (list "MLOG generic.lsp leaving ensure-generic-function with gf "))
 	     new-gf))
@@ -280,6 +293,7 @@
 	   (simple-program-error "The symbol ~A is bound to a macro and is not a valid name for a generic function" name))
           ((not *clos-booted*)
 	   #+compare(print "MLOG generic.lsp ensure-generic-function line 256")
+           (gf-log "    (not *clos-booted*) About to ensure-generic-function-using-class")
            (setf (fdefinition name)
 		 (apply #'ensure-generic-function-using-class nil name args))
            (fdefinition name))

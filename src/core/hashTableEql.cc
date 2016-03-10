@@ -36,24 +36,12 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, HashTableEql_O);
 
-void HashTableEql_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<HashTableEql_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void HashTableEql_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), HashTableEql, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  _G();
   if (sz == 0)
     sz = 16;
   GC_ALLOCATE(HashTableEql_O, hashTable);
@@ -63,7 +51,6 @@ HashTableEql_sp HashTableEql_O::create(uint sz, Number_sp rehashSize, double reh
 
 SYMBOL_EXPORT_SC_(ClPkg, eql);
 HashTableEql_sp HashTableEql_O::create_default() {
-  _G();
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
   HashTableEql_sp ht = HashTableEql_O::create(16, rhs, 1.0);
   return ht;
@@ -86,7 +73,7 @@ void HashTableEql_O::archiveBase(::core::ArchiveP node) {
 
 bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   _OF();
-  return cl_eql(entryKey, searchKey);
+  return cl__eql(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {

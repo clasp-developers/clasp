@@ -35,24 +35,12 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, HashTableEq_O);
 
-void HashTableEq_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<HashTableEq_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void HashTableEq_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), HashTableEq, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 HashTableEq_sp HashTableEq_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  _G();
   GC_ALLOCATE(HashTableEq_O, hashTable);
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
@@ -105,8 +93,7 @@ void HashTableEq_O::archiveBase(::core::ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
-  _OF();
-  return cl_eq(entryKey, searchKey);
+  return cl__eq(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {

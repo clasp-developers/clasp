@@ -46,8 +46,7 @@ FORWARD(SNode);
 SNode_sp getOrCreateSNodeForObjectIncRefCount(T_sp val);
 
 class SNode_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, SNode_O, "SNode");
+  LISP_VIRTUAL_CLASS(core, CorePkg, SNode_O, "SNode",T_O);
 
 public: // Simple default ctor/dtor
         //	DEFAULT_CTOR_DTOR(SNode_O);
@@ -69,8 +68,10 @@ public: // info
   virtual bool leafSNodeP() { return false; };
   bool saving() const { return !this->loading(); };
   bool loading() const;
-  virtual T_sp object() const { SUBIMP(); };
-  virtual List_sp keys() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:object");
+CL_DEFMETHOD   virtual T_sp object() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:keys");
+CL_DEFMETHOD   virtual List_sp keys() const { SUBIMP(); };
   /*! Make the appropriate kind of SNode for the type of value */
 public:
   void incRefCount() { this->_RefCount++; };
@@ -88,14 +89,19 @@ public: // loading
     }
     return val;
   }
-  virtual Symbol_sp getKind() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:getNodeKind");
+CL_DEFMETHOD   virtual Symbol_sp getKind() const { SUBIMP(); };
   virtual void loadVectorSNodes(gctools::Vec0<T_sp> &vec) const { SUBIMP(); };
-  virtual List_sp getAttributes() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:getAttributes");
+CL_DEFMETHOD   virtual List_sp getAttributes() const { SUBIMP(); };
   virtual void addAttributeSNode(Symbol_sp name, SNode_sp node) { SUBIMP(); };
   virtual void addAttribute(Symbol_sp name, T_sp val) { SUBIMP(); };
-  virtual T_sp getUniqueId() const { return _Nil<T_O>(); };
-  virtual SNode_sp childWithUniqueId(Symbol_sp uid) const { return _Nil<SNode_O>(); };
-  virtual Vector_sp getVectorSNodes() const { SUBIMP(); };
+CL_LISPIFY_NAME("core:getUniqueId");
+CL_DEFMETHOD   virtual T_sp getUniqueId() const { return _Nil<T_O>(); };
+CL_LISPIFY_NAME("core:childWithUniqueId");
+CL_DEFMETHOD   virtual SNode_sp childWithUniqueId(Symbol_sp uid) const { return _Nil<SNode_O>(); };
+CL_LISPIFY_NAME("core:getVectorSNodes");
+CL_DEFMETHOD   virtual Vector_sp getVectorSNodes() const { SUBIMP(); };
   virtual SNode_sp &operator[](size_t i) { SUBIMP(); };
   int vectorSize() const { return this->getVectorSNodes()->length(); }
   virtual void loadVector(gctools::Vec0<T_sp> &vec) { SUBIMP(); };
@@ -106,9 +112,12 @@ public: // loading
   void needsFinalization() const;
 
 public: // saving
-  virtual void setKind(Symbol_sp kind) { SUBIMP(); };
-  virtual void setVectorSNodesUnsafe(Vector_sp vec) { SUBIMP(); };
-  virtual void setAttributesUnsafe(List_sp plist) { SUBIMP(); };
+CL_LISPIFY_NAME("core:setNodeKind");
+CL_DEFMETHOD   virtual void setKind(Symbol_sp kind) { SUBIMP(); };
+CL_LISPIFY_NAME("core:setVectorSNodes");
+CL_DEFMETHOD   virtual void setVectorSNodesUnsafe(Vector_sp vec) { SUBIMP(); };
+CL_LISPIFY_NAME("core:setAttributes");
+CL_DEFMETHOD   virtual void setAttributesUnsafe(List_sp plist) { SUBIMP(); };
 
   virtual void saveVector(gctools::Vec0<T_sp> const &vec) { SUBIMP(); };
   virtual void pushVectorSNode(SNode_sp obj) { SUBIMP(); };
@@ -438,8 +447,7 @@ public: // bidirectional
 };
 
 class LeafSNode_O : public SNode_O {
-  LISP_BASE1(SNode_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, LeafSNode_O, "LeafSNode");
+  LISP_VIRTUAL_CLASS(core, CorePkg, LeafSNode_O, "LeafSNode",SNode_O);
 GCPROTECTED:
   T_sp _Object;
 
@@ -475,8 +483,7 @@ public: // ctor/dtor for classes with shared virtual base
 };
 
 class BranchSNode_O : public SNode_O {
-  LISP_BASE1(SNode_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, BranchSNode_O, "BranchSNode");
+  LISP_VIRTUAL_CLASS(core, CorePkg, BranchSNode_O, "BranchSNode",SNode_O);
   friend class LoadArchive_O;
   friend class SNode_O;
   friend class SexpSaveArchive_O;
@@ -537,8 +544,7 @@ public:
  */
 SMART(Archive);
 class Archive_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Archive_O, "Archive");
+  LISP_CLASS(core, CorePkg, Archive_O, "Archive",core::T_O);
 GCPROTECTED:
   int _Version;
   gc::Nilable<BranchSNode_sp> _TopNode;
@@ -567,8 +573,7 @@ public:
 
 SMART(LoadArchive);
 class LoadArchive_O : public Archive_O {
-  LISP_BASE1(Archive_O);
-  LISP_CLASS(core, CorePkg, LoadArchive_O, "LoadArchive");
+  LISP_CLASS(core, CorePkg, LoadArchive_O, "LoadArchive",Archive_O);
 
 public:
   void initialize();
@@ -604,15 +609,13 @@ template <>
 struct gctools::GCInfo<core::LoadArchive_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 SMART(SaveArchive);
 class SaveArchive_O : public Archive_O {
-  LISP_BASE1(Archive_O);
-  LISP_CLASS(core, CorePkg, SaveArchive_O, "SaveArchive");
+  LISP_CLASS(core, CorePkg, SaveArchive_O, "SaveArchive",Archive_O);
 
 public:
   void initialize();
@@ -634,8 +637,7 @@ template <>
 struct gctools::GCInfo<core::SaveArchive_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif

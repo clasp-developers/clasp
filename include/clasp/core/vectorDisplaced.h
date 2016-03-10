@@ -36,8 +36,7 @@ namespace core {
 FORWARD(VectorDisplaced);
 class VectorDisplaced_O : public Vector_O {
   //  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, CorePkg, VectorDisplaced_O, "VectorDisplaced");
+  LISP_CLASS(core, CorePkg, VectorDisplaced_O, "VectorDisplaced",Vector_O);
 
 public:
   VectorDisplaced_O(){};
@@ -119,8 +118,7 @@ template <>
 struct gctools::GCInfo<core::VectorDisplaced_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorDisplaced_H */

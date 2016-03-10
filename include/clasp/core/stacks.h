@@ -227,8 +227,4 @@ public:
 
 #define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(gctools::tagged_pointer<core::Closure>(this), lcc_arglist);
 
-namespace core {
-void initialize_stacks();
-};
-
 #endif /* _core_stacks_H_ */

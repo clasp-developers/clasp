@@ -1,9 +1,7 @@
-
 # -*- mode: GNUmakefile; indent-tabs-mode: t -*-
 # Cleaned up by Shinmera October 13, 2015
 
-export CLASP_HOME := $(or $(wildcard $(CLASP_HOME)),\
-                          $(shell pwd))
+export CLASP_HOME ?= $(shell pwd)
 
 include $(wildcard $(CLASP_HOME)/local.config)
 
@@ -23,7 +21,6 @@ export LINK := $(or $(filter $(LINK), shared),\
                     $(filter $(LINK), static),\
                     $(error Invalid LINK: $(LINK)))
 
-
 export VARIANT ?= release
 export VARIANT := $(or $(filter $(VARIANT), debug),\
                        $(filter $(VARIANT), release),\
@@ -35,11 +32,20 @@ export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
                        $(filter $(TOOLSET), clang-darwin),\
                        $(error Invalid TOOLSET: $(TOOLSET)))
 
-export PYTHON2 := $(or $(wildcard $(PYTHON2)),\
-                       $(wildcard /usr/bin/python2.7),\
-                       $(wildcard /usr/bin/python2),\
-                       $(wildcard /usr/bin/python),\
-                       $(error Could not find python.))
+# From the GNU Make manual; portably search PATH for a program. We can't rely on `which` existing...
+# Use $(call pathsearch,foo) instead of $(shell which foo)
+pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
+
+
+export CLASP_SBCL := $(or $(CLASP_SBCL),\
+			$(call pathsearch, sbcl),\
+			$(error Could not find sbcl - it needs to be installed and in your path.))
+
+export PYTHON2 := $(or $(PYTHON2),\
+                       $(call pathsearch, python2.7),\
+                       $(call pathsearch, python2),\
+                       $(call pathsearch, python),\
+                       $(warning Could not find python.))
 
 export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
                               $(and $(filter $(TARGET_OS),Darwin), MacOS))
@@ -47,23 +53,47 @@ export EXECUTABLE_DIR ?= $(or $(and $(filter $(TARGET_OS),Linux), bin),\
 export DEVEMACS ?= $(or $(and $(filter $(TARGET_OS),Linux), emacs -nw ./),\
                         $(and $(filter $(TARGET_OS),Darwin), open -n -a /Applications/Emacs.app ./))
 
-export LLVM_CONFIG := $(or $(wildcard $(LLVM_CONFIG)),\
+ifneq ($(EXTERNALS_CLASP_DIR),)
+export LLVM_CONFIG := $(or $(LLVM_CONFIG),\
                            $(wildcard $(EXTERNALS_CLASP_DIR)/build/release/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config),\
-                           $(wildcard /usr/bin/llvm-config*),\
+                           $(error Could not find llvm-config (release build) in externals-clasp.))
+export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
+                                 $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/bin/llvm-config),\
+                                 $(warning Could not find llvm-config (debug build) in externals-clasp.),\
+                                 $(LLVM_CONFIG))
+else
+# XXX: confirm the necessity of llvm-config* pathsearch!
+export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config),\
+                           $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
+endif
 
 export GIT_COMMIT ?= $(shell git rev-parse --short HEAD || echo "unknown-commit")
 export CLASP_VERSION ?= $(shell git describe --always || echo "unknown-version")
 
 export LLVM_CONFIG_RELEASE ?= $(LLVM_CONFIG)
-export LLVM_CONFIG_DEBUG ?= $(or $(wildcard $(EXTERNALS_CLASP_DIR)/build/debug/bin/llvm-config),\
-                                 $(LLVM_CONFIG))
-
+export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
+# Not always the same as LLVM_BIN_DIR!
+
+export LLVM_VERSION := $(shell $(LLVM_CONFIG) --version)
+export LLVM_MAJOR_MINOR_VERSION := $(shell echo $(LLVM_VERSION) | sed 's/^\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)/\1.\2/')
+#$(info llvm-version is $(LLVM_VERSION))
+#$(info llvm-major-minor-version is $(LLVM_MAJOR_MINOR_VERSION))
+export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
+			$(wildcard $(LLVM_BIN_DIR)/clang),\
+			$(wildcard $(LLVM_BIN_DIR)/clang-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang),\
+			$(call pathsearch, clang-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(error Could not find clang - it needs to be installed and in your path.))
+export CLASP_CLANGXX_PATH := $(or $(CLASP_CLANGXX_PATH),\
+			$(wildcard $(LLVM_BIN_DIR)/clang++),\
+			$(wildcard $(LLVM_BIN_DIR)/clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang++),\
+			$(call pathsearch, clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(error Could not find clang - it needs to be installed and in your path.))
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
-
 export LIBATOMIC_OPS_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/libatomic_ops
 export BOEHM_SOURCE_DIR ?= $(CLASP_HOME)/src/boehm/bdwgc
 export BUILD ?= $(CLASP_HOME)/src/common/build
@@ -86,7 +116,6 @@ export CLASP_RELEASE_CXXFLAGS += -I$(shell $(LLVM_CONFIG_RELEASE) --includedir)
 export CLASP_RELEASE_LINKFLAGS += -L$(CLASP_RELEASE_LLVM_LIB_DIR)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --libs)
 export CLASP_RELEASE_LINKFLAGS += $(shell $(LLVM_CONFIG_RELEASE) --system-libs)
-
 ifneq ($(EXTERNALS_CLASP_DIR),)
   export CLASP_DEBUG_CXXFLAGS += -I$(EXTERNALS_CLASP_DIR)/build/common/include
   export CLASP_DEBUG_LINKFLAGS += -L$(EXTERNALS_CLASP_DIR)/build/common/lib -lgmp -lgmpxx -lreadline -lexpat
@@ -104,8 +133,8 @@ ifeq ($(TARGET_OS),Darwin)
 endif
 
 ifeq ($(TARGET_OS),Linux)
-  export BOEHM_CC = $(LLVM_BIN_DIR)/clang
-  export BOEHM_CXX = $(LLVM_BIN_DIR)/clang++
+  export BOEHM_CC = $(CLASP_CLANG_PATH)
+  export BOEHM_CXX = $(CLASP_CLANGXX_PATH)
 endif
 
 include_flags := $(foreach dir,$(INCLUDE_DIRS),$(and $(wildcard $(dir)),-I$(dir)))
@@ -127,18 +156,31 @@ ifneq ($(CXXFLAGS),)
   export USE_CXXFLAGS := cxxflags=$(CXXFLAGS)
 endif
 
+ifeq ($(NO_COLOR),)
+TPUT = $(call pathsearch,tput)
+ifneq ($(TPUT),)
+  COLOR_GREEN = $(shell $(TPUT) setaf 2 2>/dev/null)
+  COLOR_RESET = $(shell $(TPUT) sgr0    2>/dev/null)
+endif
+endif
 define varprint
-	@echo -e "\033[0;32m$(strip $(1))\033[0m: $($(strip $(1)))"
+	@echo -e "$(COLOR_GREEN)$(strip $(1))$(COLOR_RESET): $($(strip $(1)))"
 endef
 
 all:
+	make mps-all
+
+boehm-all:
 	make print-config
 	make submodules
 	make asdf
 	make boost_build
 	make boehm
+	install -d build/clasp/Contents/Resources
+	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
+	make executable-symlinks
 	make -C src/main min-boehm
 	make -C src/main bclasp-boehm-bitcode
 	make -C src/main bclasp-boehm-fasl
@@ -146,13 +188,54 @@ all:
 #	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-addons
+	make -C src/main mps-release-cxx
+	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
+	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	clasp_mps_o -f bclasp -e "(link-cclasp)" -e "(quit)"
+	make -C src/main link-cclasp-mps-addons
+	echo Clasp is now built
+
+
+mps-all:
+	make print-config
+	make submodules
+	make asdf
+	make boost_build
+	install -d build/clasp/Contents/Resources
+	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
+	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps bundle )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
+	make executable-symlinks
+	make -C src/main min-mps
+	make -C src/main bclasp-mps-bitcode
+	make -C src/main bclasp-mps-fasl
+	make -C src/main cclasp-from-bclasp-mps-bitcode
+#	make -C src/main cclasp-mps-fasl
+	make -C src/main cclasp-mps-fasl
+	make -C src/main cclasp-mps-addons
 	make executable-symlinks
 	echo Clasp is now built
 
+lisp-source:
+	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
+
+fixup:
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
+	make -C src/main cclasp-boehm-addons
+	make executable-symlinks
+	echo Fixed-up Clasp is now built
+
 mps-build:
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install )
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install )
-	make -C src/main link-min-mps
+	make print-config
+	make submodules
+	make asdf
+	make boost_build
+	install -d build/clasp/Contents/Resources
+	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
+	make -C src/main mps-debug-cxx
+	make -C src/main mps-release-cxx
+	make executable-symlinks
+
 
 boot:
 	make submodules
@@ -164,25 +247,16 @@ boot:
 	make -C src/main min-boehmdc
 	make -C src/main bclasp-boehmdc-bitcode
 	make -C src/main bclasp-boehmdc-fasl
-	make -C src/main bclasp-boehmdc-addons
+#	make -C src/main bclasp-boehmdc-addons
 
 boot-mps-interface:
 	make boot
-	make -C src/main mps-interface
+	make -C src/main mps-interface-boot
 #	make -C src/main bclasp-boehmdc
 #	make -C src/main bclasp-boehmdc-addons
 
 clasp-libraries:
 	(cd src/gctools; $(BJAM) link=$(LINK) program=clasp gctools install-lib)
-
-devbuild:
-	(cd src/main; $(BUILD) -j$(PJOBS) link=$(LINK) program=clasp gc=boehmdc release dist )
-
-$(BINDIR)/clasp_boehm_o : $(BINDIR)/release/boehm/clasp
-	@ln -s $(BINDIR)/release/boehm/clasp $(BINDIR)/clasp_boehm_o
-
-$(BINDIR)/clasp_mps_o : $(BINDIR)/release/boehm/clasp
-	echo $< $>
 
 executable-symlinks:
 	install -d $(BINDIR)
@@ -215,7 +289,7 @@ boehm-setup:
 		CXX=$(BOEHM_CXX) \
                 CFLAGS="-DUSE_MMAP -g" \
 		PKG_CONFIG_PATH=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR)/lib/pkgconfig/ \
-		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
+		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR) --with-libatomic-ops=yes;)
 
 boehm-compile:
 	(cd $(BOEHM_SOURCE_DIR); make -j$(PJOBS) | tee _boehm.log)
@@ -231,61 +305,28 @@ boehm:
 
 
 boehm-release-clbind:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install)
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp-clbind --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install)
 
 boehm-release-clbind-a:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install -a)
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp-clbind --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp-clbind-install -a)
 
 boehm-debug-clbind:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp-clbind-install)
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp-clbind --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp-clbind-install)
 
 boehm-debug-clbind-a:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp-clbind-install -a)
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp-clbind --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp-clbind-install -a)
 
 boehmdc-release-clbind:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp-clbind-install)
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp-clbind --prefix=$(CLASP_APP_EXECS)/boehmdc/release gc=boehmdc release clasp-clbind-install)
 
 mps-clbind:
-	(cd src/clbind; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp-clbind-install)
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp-clbind --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp-clbind-install)
 
 boehm-clean:
 	install -d $(BOEHM_SOURCE_DIR)
 	-(cd $(BOEHM_SOURCE_DIR); make clean )
 	if test -e $(LIBATOMIC_OPS_CONFIGURE); then rm $(LIBATOMIC_OPS_CONFIGURE) ; fi
 	if test	-e $(BDWGC_CONFIGURE); then rm $(BDWGC_CONFIGURE) ; fi
-
-cclasp-mps:
-	(cd src/main; make cclasp-mps)
-
-bclasp-only:
-	@echo Dumping local.config
-	cat local.config
-	make submodules
-	make asdf
-	make boost_build
-	make -C src/main scrape-all
-	$(BJAM) /internals/lisp//bundle
-	make clasp-boehm
-	make -C src/main bclasp-boehm-addons
-
-sub-prebuild:
-	make -C src/ $@
-
-fix-scraping:
-	for d in src/*/; do cd "$$d"; export PYTHONPATH="$$PWD:$$PYTHONPATH"; python ../../src/common/symbolScraper.py symbols_scraped.inc *.h *.cc *.scrape.inc; cd ../..; done
-
-fix-scraping2:
-	-(cd src/asttooling; bjam meta)
-	-(cd src/cffi; bjam meta)
-	-(cd src/clbind; bjam meta)
-	-(cd src/core; bjam meta)
-	-(cd src/gctools; bjam meta)
-	-(cd src/llvmo; bjam meta)
-	-(cd src/main; bjam meta)
-	-(cd src/mpip; bjam meta)
-	-(cd src/mps; bjam meta)
-	-(cd src/serveEvent; bjam meta)
-	-(cd src/sockets; bjam meta)
 
 pump:
 	(cd src/core; make pump)
@@ -309,17 +350,6 @@ submodules-mps:
 
 asdf:
 	(cd src/lisp/modules/asdf; make)
-
-only-boehm:
-	make submodules-boehm
-	make boost_build
-	make clasp-boehm
-
-boehm-build-mps-interface:
-	make submodules
-	make boost_build
-	make clasp-boehm
-	(cd src/main; make mps-interface)
 
 
 #
@@ -356,56 +386,6 @@ devshell-telemetry:
 	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR); export CLASP_MPS_CONFIG="32 32 16 80 32 80"; export CLASP_TELEMETRY_FILE=/tmp/clasp.tel; export CLASP_TELEMETRY_MASK=3; bash)
 
 
-testing:
-	which clang++
-
-clasp-mps-cpp:
-	$(BUILD) -j$(PJOBS) gc=mps link=$(LINK) program=clasp release src/main//dist
-
-clasp-boehm-cpp:
-	$(BUILD) -j$(PJOBS) gc=boehm link=$(LINK) program=clasp release src/main//dist
-
-clasp-mps:
-	$(MAKE) clasp-mps-cpp
-	(cd src/main; $(MAKE) mps)
-
-# Compile the CL sources for min-mps: and full-mps
-cl-mps:
-	(cd src/main; $(MAKE) mps)
-
-# Compile the CL sources for min-mps: using the existing min-mps: - FAST
-cl-min-mps-recompile:
-	(cd src/main; $(MAKE) min-mps-recompile)
-
-# Compile the CL sources for full-mps:
-cl-full-mps:
-	(cd src/main; $(MAKE) full-mps)
-
-
-clasp-boehm:
-	make clasp-boehm-cpp
-	$(BJAM) everything gc=boehm link=$(LINK) program=clasp release
-	(cd src/main; make boehm)
-
-cclasp-boehm:
-	(cd src/main; make cclasp-boehm)
-
-cclasp-boehm-addons:
-	(cd src/main; make cclasp-boehm-addons)
-
-
-# Compile the CL sources for min-boehm: and full-boehm
-cl-boehm:
-	(cd src/main; $(MAKE) boehm)
-
-# Compile the CL sources for min-boehm: using the existing min-boehm: - FAST
-cl-min-boehm-recompile:
-	(cd src/main; $(MAKE) min-boehm-recompile)
-
-# Compile the CL sources for full-boehm:
-cl-full-boehm:
-	(cd src/main; $(MAKE) full-boehm)
-
 boost_build:
 	@if test ! -e $(BOOST_BUILD_INSTALL)/bin/bjam ; then make boost_build-compile ; fi
 
@@ -413,13 +393,15 @@ boost_build-compile:
 	install -d $(BOOST_BUILD_INSTALL)
 	(cd $(BOOST_BUILD_SOURCE_DIR); export BOOST_BUILD_PATH=`pwd`; ./bootstrap.sh; ./b2 toolset=clang install --prefix=$(BOOST_BUILD_INSTALL) --ignore-site-config)
 
-compile-commands:
-	(cd src/main; $(MAKE) compile-commands)
 
+cloc-files:
+	find src/ -name '*.cc' -print >/tmp/files.cloc
+	find include/ -name '*.h' -print >>/tmp/files.cloc
 
 clean:
 	git submodule sync
 	make boehm-clean
+	(cd include/clasp/main/generated; rm *)
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)
@@ -463,6 +445,8 @@ print-config:
 	$(call varprint, LLVM_CONFIG_DEBUG)
 	$(call varprint, LLVM_CONFIG_RELEASE)
 	$(call varprint, LLVM_BIN_DIR)
+	$(call varprint, CLASP_CLANG_PATH)
+	$(call varprint, CLASP_CLANGXX_PATH)
 	$(call varprint, GIT_COMMIT)
 	$(call varprint, CLASP_VERSION)
 	$(call varprint, CLASP_INTERNAL_BUILD_TARGET_DIR)

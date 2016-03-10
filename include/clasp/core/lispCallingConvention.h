@@ -46,6 +46,8 @@ THE SOFTWARE.
 // Don't need lcc_arglist because no arguments are passed
 #define LCC_PASS_ARGS0_VA_LIST() NULL, NULL, 0, NULL, NULL, NULL
 #define LCC_PASS_ARGS1_VA_LIST(a0) NULL, lcc_arglist, 1, a0, NULL, NULL
+#define LCC_PASS_ENV_ARGS0_VA_LIST(_env) _env, NULL, 0, NULL, NULL, NULL
+#define LCC_PASS_ENV_ARGS1_VA_LIST(_env,a0) _env, lcc_arglist, 1, a0, NULL, NULL
 #if 0
 // To invoke "invoke" methods use these
 #define LCC_PASS_ARGS2_VA_LIST(a0, a1) NULL, lcc_arglist, 2, a0, a1, NULL

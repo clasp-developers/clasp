@@ -123,6 +123,14 @@ struct GCAllocationPoint;
 
 #include <clasp/gctools/tagged_cast.h>
 
+namespace gctools {
+    /*! This is the type of the tagged kind header that is the first
+word of every object in memory managed by the GC */
+  typedef uintptr_t kind_t;
+  typedef uintptr_t tagged_kind_t;
+
+};
+
 #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
@@ -132,69 +140,86 @@ struct GCAllocationPoint;
 
 namespace gctools {
 
-struct MonitorAllocations {
-  bool on;
-  bool stackDump;
-  int counter;
-  int start;
-  int end;
-  int backtraceDepth;
+  struct MonitorAllocations {
+    bool on;
+    bool stackDump;
+    int counter;
+    int start;
+    int end;
+    int backtraceDepth;
   MonitorAllocations() : on(false), stackDump(false), counter(0){};
-};
-extern MonitorAllocations global_monitorAllocations;
+  };
+  extern MonitorAllocations global_monitorAllocations;
 
-extern void monitorAllocation(GCKindEnum k, size_t sz);
+  extern void monitorAllocation(kind_t k, size_t sz);
+  extern uint64_t globalBytesAllocated;
 
+#ifdef TRACK_ALLOCATIONS
+  inline void monitor_allocation(kind_t k, size_t sz) {
+    globalBytesAllocated += sz;
 #ifdef GC_MONITOR_ALLOCATIONS
-#define MONITOR_ALLOCATION(k, sz)     \
-  if (global_monitorAllocations.on) { \
-    monitorAllocation(k, sz);         \
+    if ( global_monitorAllocations.on ) {
+      monitorAllocation(k,sz);
+    }
+#endif
   }
 #else
-#define MONITOR_ALLOCATION(k, sz)
+  inline void monitor_allocation(kind_t k, size_t sz) {};
 #endif
-}
+
+};
+
 extern "C" {
-char *obj_name(gctools::GCKindEnum kind);
-char *obj_kind_name(core::T_O *ptr);
+const char *obj_name(gctools::kind_t kind);
+const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-template <class OT>
-struct GCKind {
+  template <class OT>
+    struct GCKind {
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
-  static GCKindEnum const Kind = KIND_null;
+      static GCKindEnum const Kind = KIND_null;
 #else
   // We need a default Kind when running the gc-builder.lsp static analyzer
   // but we don't want a default Kind when compiling the mps version of the code
   // to force compiler errors when the Kind for an object hasn't been declared
-  static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
+      static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
-  static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
+      static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
 #else
                                             // We don't want a default Kind when compiling the boehm version of the code
                                             // to force compiler errors when the Kind for an object hasn't been declared
 // using clasp_gc.cc
 #endif // USE_CXX_DYNAMIC_CAST
 #endif
-};
+    };
 };
 
 namespace gctools {
 
+/*
+ * atomic == Object contains no internal tagged pointers, is collectable
+ * normal == Object contains internal tagged pointers, is collectable
+ * collectable_immobile == Object cannot be moved but is collectable
+ * unmanaged == Object cannot be moved and cannot be automatically collected
+ */
+  typedef enum { atomic,
+                 normal,
+                 collectable_immobile,
+                 unmanaged } GCInfo_policy;
+  
 template <class OT>
 struct GCInfo {
-  static constexpr bool Atomic = false;
+  static constexpr GCInfo_policy Policy = normal;
   static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
   static bool const NeedsFinalization = false;  // By default, nothing needs finalization
-  static constexpr bool Moveable = true;
 };
 };
 
@@ -244,10 +269,9 @@ GCStack *threadLocalStack();
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/gcalloc.h>
 
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate()
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate(__VA_ARGS__)
-
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::rootAllocate()
+#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind)
+#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,__VA_ARGS__)
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::root_allocate_kind(gctools::GCKind<_class_>::Kind)
 
 #define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
 
@@ -268,5 +292,18 @@ int handleFatalCondition();
        The main function is wrapped within this function */
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
 };
+
+
+extern "C" {
+// These must be provided the the garbage collector specific code
+
+//! Describe the header of the client
+void client_describe(void *taggedClient);
+//! Validate the client
+void client_validate(void *taggedClient);
+//! Describe the header
+void header_describe(gctools::Header_s* headerP);
+};
+
 
 #endif // _clasp_memoryManagement_H

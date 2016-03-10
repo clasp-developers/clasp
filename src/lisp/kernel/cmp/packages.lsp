@@ -34,6 +34,7 @@
           +i32+
           +i64+
           +i8*+
+          +i8+
           +mv-struct+
           +size_t+
           +t*+
@@ -58,6 +59,7 @@
           compiler-message-file
           compiler-message-file-position
           create-run-time-execution-engine
+          safe-system
           dbg-set-current-debug-location-here
           irc-add
           irc-add-clause

@@ -706,7 +706,6 @@
 	       (declare (core::lambda-name ,defun-name))
 	       ,@(if lambda-list
 		     `((let ,(mapcar #'(lambda (var)
-					 (declare (core:lambda-name ,defun-name))
 					 `(,var
 					   (,(intern (concatenate
 						      'string
@@ -781,7 +780,7 @@
 	 (defun-name (intern (concatenate 'string name "-FORMAT-INTERPRETER"))))
     `(%set-format-directive-interpreter ,char
        (lambda (stream ,directive ,directives orig-args args)
-	 (declare (ignorable stream orig-args args) (core::lambda-name ,defun-name))
+	 (declare (ignorable stream orig-args args) (core:lambda-name ,defun-name))
 	 ,@(if lambda-list
 	       `((let ,(mapcar #'(lambda (var)
 				   `(,var

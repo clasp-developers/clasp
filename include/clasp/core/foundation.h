@@ -38,7 +38,7 @@ THE SOFTWARE.
 //#define USE_BOEHM_MEMORY_MARKER
 #endif
 #ifndef APPLICATION_CONFIG
-#define APPLICATION_CONFIG < clasp / main / application.config >
+#define APPLICATION_CONFIG <clasp/main/application.config>
 #endif
 /*! Configure the application Clasp or Cando currently */
 #include APPLICATION_CONFIG
@@ -82,6 +82,12 @@ class type_info;
 
 //! Macro for attribute that causes symbols to be exposed
 #define ATTR_WEAK __attribute__((weak))
+
+#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
+#define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS() gctools::RecursiveAllocationCounter rac;
+#else
+#define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS()
+#endif
 
 #if defined(DEBUG_TELEMETRY)
 #define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind) clasp_mps_debug_allocation(poolName, addr, gcobject_addr, size, kind)
@@ -189,58 +195,9 @@ typedef std::size_t class_id;
 #endif //]
 #endif
 
-// Empty macros to scrape symbol and keyword symbol declarations from
-// the source code
-#define SYMBOL_EXPORT_SC_(p, x)
-#define SYMBOL_SC_(p, x)
-#define INTERN_(_p_, _x_) (_p_::_sym_##_x_)
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-#define DEFUN(pkg, x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
-
-#define Defun(x) core::af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, __FILE__, __LINE__);
-#define Defun_maker(pkg, x) core::af_def(pkg, "make-" #x, &(x##_O::make), ARGS_##x##_O_make, DECL_##x##_O_make, DOCS_##x##_O_make);
-
-#define ClDefun(x) core::af_def(CorePkg, "COMMON-LISP:" #x, &cl_##x, ARGS_cl_##x, DECL_cl_##x, DOCS_cl_##x, __FILE__, __LINE__);
-#define CompDefun(x) core::af_def(CompPkg, #x, &comp_##x, ARGS_comp_##x, DECL_comp_##x, DOCS_comp_##x, __FILE__, __LINE__);
-#define ExtDefun(x) core::af_def(ExtPkg, #x, &ext_##x, ARGS_ext_##x, DECL_ext_##x, DOCS_ext_##x, __FILE__, __LINE__);
-#define ClosDefun(x) core::af_def(ClosPkg, #x, &clos_##x, ARGS_clos_##x, DECL_clos_##x, DOCS_clos_##x, __FILE__, __LINE__);
-#define CoreDefun(x) core::af_def(CorePkg, #x, &core_##x, ARGS_core_##x, DECL_core_##x, DOCS_core_##x, __FILE__, __LINE__);
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_EXPORT(pkg,x) defun(pkg, #x, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_NAME(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x,  _lisp);
-
-/*! Use this used to bind the C++ function fn_##x that will have the name (x) in Lisp (with "_" converted to "-") */
-//#define DEFUN_NAME_EXPORT(pkg,x,lispname) defun(pkg, lispname, &fn_##x, ARGS_fn_##x, DECL_fn_##x, DOCS_fn_##x, LOCK_fn_##x, _lisp);
-
-#if 0
-/*! Define a PAIR of accessor functions, the getter and setter */
-#define DEFACCESSORS(x)                                                   \
-  af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DOCS_af_##x, LOCK_af_##x); \
-  _lisp->add_accessor_pair(_sym_##x, _sym_setf_##x);
-
-/*! Define a PAIR of accessor functions, the getter and setter */
-#define DEFACCESSORS_EXPORT(x)                                                         \
-  af_def(CurrentPkg, #x, &af_##x, ARGS_af_##x, DECL_af_##x, DOCS_af_##x, LOCK_af_##x); \
-  _lisp->add_accessor_pair(_sym_##x, _sym_setf_##x);
-#endif
-
 /*! Use this in initializeCandoPrimitives to define a function
   This is a little more complicated than it needs to be to try and avoid unused variable warnings */
 #define DEFGENERIC(pkg, x) defgeneric(pkg, #x, &gf_##x, ARGS_gf_##x, DOCS_gf_##x, _lisp);
-
-#if 0
-/*! Use this in initializeCandoPrimitives to attach methods to the generic function */
-#define DEFMETHOD(x, id) defmethod(_sym_##x, md_##x##id, ARGS_md_##x##id, DECL_md_##x##id, DOCS_md_##x##id, _lisp);
-#endif
-
-//
-// Define this if you want to debug energy evaluation
-//
-#define TURN_ENERGY_FUNCTION_DEBUG_ON 1
 
 //
 // For Production code set PRODUCTION_CODE to 1
@@ -319,11 +276,6 @@ const handleType UniqueIdHandle = 1;
   This is scraped out of the code by "registerClasses.py"
 */
 
-#define NAMESPACE_PACKAGE_ASSOCIATION(x, y, z) \
-  static const std::string y = z;              \
-  namespace x {                                \
-  static const std::string CurrentPkg = z;     \
-  }
 
 #define UndefinedUnsignedInt UINT_MAX
 #define UNDEF_UINT UndefinedUnsignedInt
@@ -358,24 +310,6 @@ const handleType UniqueIdHandle = 1;
  */
 /*@}*/
 
-//
-//
-//	For debugging memory
-//
-//
-#ifdef CDEBUG_FULL
-#define REFCOUNTDEBUG
-#endif
-
-#if 0
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <cstdio>
-#include <crtdbg.h>
-#define REFCOUNTDEBUG
-#endif
-#endif
 
 //
 // Trap failed BOOST_ASSERT invocations
@@ -550,7 +484,7 @@ struct registered_class<T const>
 
 namespace core {
 extern int _global_signalTrap;
-extern bool _global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core_exit!
+extern bool _global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
 void lisp_pollSignals();
 };
 #define SET_SIGNAL(s) \
@@ -607,6 +541,7 @@ namespace core {
 #undef LCC_MACROS
 };
 
+#include <clasp/core/scrape.h>
 #include <clasp/gctools/memoryManagement.h>
 
 namespace core {
@@ -820,10 +755,10 @@ class Package_O;
 typedef gctools::smart_ptr<Package_O> Package_sp;
 
 /* A few symbols associated with error handling that everything needs */
-extern Symbol_sp _sym_error;
-extern Symbol_sp _sym_setThrowPosition;
-extern Symbol_sp _sym_makeCondition;
-extern Symbol_sp _sym_simpleError;
+extern Symbol_sp& _sym_error;
+extern Symbol_sp& _sym_setThrowPosition;
+extern Symbol_sp& _sym_makeCondition;
+extern Symbol_sp& _sym_simpleError;
 /*! Search for multiple occurances of a string and replace it
  * \param str The string that is modified
  * \param search The string to search for
@@ -840,8 +775,8 @@ typedef void (*LispCallingConventionPtr)(T_mv *result, int nargs, T_sp arg1, T_s
 #include <clasp/core/core_globals.h>
 
 namespace kw {
-extern core::Symbol_sp _sym_formatControl;
-extern core::Symbol_sp _sym_formatArguments;
+extern core::Symbol_sp& _sym_formatControl;
+extern core::Symbol_sp& _sym_formatArguments;
 };
 
 // Can I get rid of this?
@@ -849,7 +784,7 @@ extern core::Symbol_sp _sym_formatArguments;
 #define IS_SYMBOL_UNDEFINED(x) (!x)
 #define UNDEFINED_SYMBOL (_Unbound<core::Symbol_O>())
 //#define UNDEFINED_SYMBOL _global_undefined_symbol
-//extern core::Symbol_sp _global_undefined_symbol;
+//extern core::Symbol_sp& _global_undefined_symbol;
 
 namespace core {
 
@@ -875,22 +810,6 @@ public:
 //
 //
 //
-
-//
-// These macros are scraped by an external program
-// and used to create "initClasses_inc.h" which includes
-// calls to initialize anything you want before the program
-// runs.
-//
-//		__INITIALIZE_PYTHON and __INITIALIZE_PYTHON_AFTER
-//		initialize the Python interface after all of the classes have been registered
-//
-//		__INITIALIZE and __INITIALIZE_AFTER
-//		initialize other stuff after all the Python interfaces have been registered
-#define __INITIALIZE_PYTHON(x)          // Do nothing
-#define __INITIALIZE_PYTHON_AFTER(x, y) // Do nothing
-#define __INITIALIZE(p, x)              // Do nothing
-#define __INITIALIZE_AFTER(x, y)        // Do nothing
 
 namespace core {
 
@@ -926,14 +845,21 @@ class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 }
 
+namespace gctools {
+  class Layout_code;
+  // Defined in clasp/src/gctools/gc_interface.cc
+  extern Layout_code* get_kind_layout_codes();
+};
+
 #if defined(USE_BOEHM)
-#define FRIEND_GC_SCANNER(nscl)
+#define FRIEND_GC_SCANNER(nscl) friend gctools::Layout_code* gctools::get_kind_layout_codes();
 #endif
 #if defined(USE_MPS)
 #ifdef RUNNING_GC_BUILDER
 #define FRIEND_GC_SCANNER(nscl)
 #else
-#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
+#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);\
+  friend gctools::Layout_code* gctools::get_kind_layout_codes();
 #endif
 #endif
 
@@ -961,10 +887,13 @@ string _rep_(T_sp obj);
 /*! Convert underscores to "-" and "STAR" to "*" and "AMP" to "&"
       to convert a C++ name to a lisp symbol */
 string lispify_symbol_name(string const &name);
+ string magic_name(const string& name, const string& optional_package="");
+void colon_split(const string& name, string& package_part, string& symbol_part);
+ 
 Symbol_sp lispify_intern_keyword(string const &name);
 //    Symbol_sp lispify_intern2(string const& name, string const& packageName);
 // lisp_lispifyAndInternWithPackageNameIfNotGiven
-Symbol_sp lispify_intern(const string &name, const string &packageName, bool exportSymbol = true);
+Symbol_sp lispify_intern(const string &name, const string &packageName = "", bool exportSymbol = true);
 //    Symbol_sp lispify_intern_export(string const& name, string const& packageName);
 Symbol_sp lisp_upcase_intern(string const &name, string const &packageName);
 Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageName);
@@ -1027,11 +956,6 @@ T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp args);
 List_sp lisp_parse_arguments(const string &packageName, const string &args);
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
 LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
-#if 0
-    void lisp_defun_lispify_name(const string& packageName, const string& name,
-				 Functoid*, const string& arguments="", const string& declarestring="",
-				 const string& docstring="", int locked=1, bool autoExport=true, int number_of_required_arguments=0 );
-#endif
 void lisp_defmacro(Symbol_sp name, const string &packageName,
                    gc::tagged_pointer<BuiltinClosure>, const string &arguments = "", const string &declarestring = "",
                    const string &docstring = "", bool autoExport = true);
@@ -1126,11 +1050,6 @@ core::Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal);
 /*! Register source info for the object in the current source database */
 core::T_sp lisp_registerSourceInfo(T_sp obj, SourceFileInfo_sp sfo, size_t filePos, int lineno, int column);
 core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
-#if 0    
-    core::SourcePosInfo_sp lisp_registerSourceInfoFromStream(T_sp obj
-                                                             , T_sp stream);
-
-#endif
 class Functoid {
   struct metadata_always_fix_pointers_to_derived_classes;
   FRIEND_GC_SCANNER(Functoid);
@@ -1159,7 +1078,54 @@ public:
   string nameAsString();
   virtual ~Functoid(){};
 };
+};
 
+namespace core {
+  class ClosureWithSlots : public Functoid {
+  public:
+    fnLispCallingConvention _FunctionPointer;
+    size_t _NumberOfSlots;
+    T_O* _Slots[0];
+    ClosureWithSlots(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
+      : Functoid(name)
+      , _FunctionPointer(fptr)
+      , _NumberOfSlots(num_slots) {}
+  };
+
+  inline CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {
+    return gctools::global_alignup_sizeof_header + gctools::AlignUp(sizeof(ClosureWithSlots)) + sizeof(T_O*)*numberOfSlots;
+  };
+
+  inline gctools::tagged_ptr<ClosureWithSlots> initialize_closure_with_slots(void* block, T_sp name, fnLispCallingConvention fptr, size_t num_slots, ... ) {
+    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(block);
+    ClosureWithSlots* closure = reinterpret_cast<ClosureWithSlots*>((char*)block+gctools::global_alignup_sizeof_header);
+    new(header) gctools::Header_s(gctools::GCKind<ClosureWithSlots>::Kind);
+    new(closure) ClosureWithSlots(name,fptr,num_slots);
+    va_list valist;
+    va_start(valist, num_slots);
+    for ( size_t i=0; i<num_slots; ++i ) {
+      closure->_Slots[i] = va_arg(valist,T_O*);
+    }
+    va_end(valist);
+    return gctools::tagged_ptr<ClosureWithSlots>((gctools::Tagged)gctools::tag_general<ClosureWithSlots*>(closure));
+  }
+
+  inline T_O* closure_with_slots_read_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index)
+  {
+    ClosureWithSlots* closure = gctools::untag_general(tagged_closure.theObject);
+    return closure->_Slots[index];
+  }
+
+  inline void closure_with_slots_write_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index, T_O* val)
+  {
+    ClosureWithSlots* closure = gctools::untag_general(tagged_closure.theObject);
+    closure->_Slots[index] = val;
+  }
+};
+
+
+
+namespace core { 
 class Closure : public Functoid {
 public:
   T_sp closedEnvironment;
@@ -1190,10 +1156,12 @@ public:
   virtual int column() const { return 0; };
   virtual LambdaListHandler_sp lambdaListHandler() const = 0;
   virtual T_sp lambdaList() const = 0;
+  virtual void setf_lambda_list(T_sp lambda_list) = 0;
   virtual T_sp docstring() const;
   virtual List_sp declares() const;
   virtual T_sp cleavir_ast() const;
   virtual void setf_cleavir_ast(T_sp ast);
+  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
 };
 };
 #include <clasp/core/exceptions.h>
@@ -1204,8 +1172,8 @@ public:
   void *operator new(size_t s, void *ptr) { return ptr; };
 
 namespace kw {
-extern core::Symbol_sp _sym_function;
-extern core::Symbol_sp _sym_macro;
+extern core::Symbol_sp& _sym_function;
+extern core::Symbol_sp& _sym_macro;
 };
 
 namespace core {
@@ -1236,7 +1204,7 @@ public:
   Symbol_sp getKind() const { return this->kind; };
   bool macroP() const;
   T_sp sourcePosInfo() const; // { return this->_SourcePosInfo; };
-  T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
+  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column);
   virtual int sourceFileInfoHandle() const;
   virtual size_t filePos() const;
   virtual int lineNumber() const;
@@ -1260,6 +1228,7 @@ public:
     this->kind = k;
   }
   virtual T_sp lambdaList() const;
+  virtual void setf_lambda_list(T_sp lambda_list);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "BuiltinClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
@@ -1272,16 +1241,17 @@ class InstanceClosure : public FunctionClosure {
 public:
   GenericFunctionPtr entryPoint;
   Instance_sp instance;
-
+  T_sp lambda_list;
 public:
   DISABLE_NEW();
   InstanceClosure(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
-      : FunctionClosure(name), entryPoint(ep), instance(inst){};
+    : FunctionClosure(name), entryPoint(ep), instance(inst), lambda_list(_Nil<T_O>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InstanceClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
   LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
-  T_sp lambdaList() const;
+  T_sp lambdaList() const { return this->lambda_list; };
+  void setf_lambda_list(T_sp ll) { this->lambda_list = ll; };
 };
 }
 
@@ -1337,13 +1307,6 @@ extern llvmAddSymbolCallbackType addSymbol;
 #include <clasp/core/clasp_gmpxx.h>
 
 namespace reg {
-#if 0
-    struct ClassSymbolsHolder {
-        gctools::Vec0<core::Symbol_sp>  _Symbols;
-    };
-
-    extern ClassSymbolsHolder   globalClassSymbolsVectorHolder;
-#endif
 
 void lisp_associateClassIdWithClassSymbol(class_id cid, core::Symbol_sp sym);
 
@@ -1375,10 +1338,6 @@ core::Symbol_sp lisp_classSymbol() {
 
 namespace boost_filesystem = boost::filesystem;
 
-namespace core {
-void initialize_foundation();
-}
-
 #define clasp_disable_interrupts()
 #define clasp_enable_interrupts()
 
@@ -1387,6 +1346,7 @@ void initialize_foundation();
 #ifdef DMALLOC
 #include <dmalloc.h>
 #endif
+
 
 namespace core {
 struct cl_env {};

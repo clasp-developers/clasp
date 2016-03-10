@@ -38,13 +38,13 @@ THE SOFTWARE.
 #include <clasp/core/lispList.h>
 
 namespace cl {
-extern core::Symbol_sp _sym_typeError;
-extern core::Symbol_sp _sym_Cons_O;
+extern core::Symbol_sp& _sym_typeError;
+extern core::Symbol_sp& _sym_Cons_O;
 };
 
 namespace kw {
-extern core::Symbol_sp _sym_datum;
-extern core::Symbol_sp _sym_expectedType;
+extern core::Symbol_sp& _sym_datum;
+extern core::Symbol_sp& _sym_expectedType;
 };
 
 namespace core {
@@ -116,15 +116,13 @@ template <>
 struct gctools::GCInfo<core::Cons_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 
 class Cons_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, Cons_O, "Cons");
+  LISP_CLASS(core, ClPkg, Cons_O, "Cons",T_O);
 #if defined(OLD_SERIALIZE)
   DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
@@ -178,14 +176,15 @@ public:
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7);
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
   static Cons_sp create(T_sp car, T_sp cdr) {
-    Cons_sp ll = gctools::GCObjectAllocator<Cons_O>::allocate(car, cdr);
-    //            ll.unsafe_cons()->setCar(car);
-    //            ll->setOCdr(cdr);
+    GC_ALLOCATE_VARIADIC( Cons_O, ll, car, cdr );
+#ifdef DEBUG_VALIDATE_GUARD
+    client_validate(ll->_Car.raw_());
+    client_validate(ll->_Cdr.raw_());
+#endif
     return ll;
   };
   static Cons_sp create(T_sp obj) {
-    Cons_sp ret = gctools::GCObjectAllocator<Cons_O>::allocate(obj, _Nil<T_O>());
-    return ret;
+    return create(obj,_Nil<T_O>());
   }
 
 public:
@@ -207,19 +206,25 @@ public:
   void sxhash_(HashGenerator &hg) const;
 
   /*! Depth first search to find a Cons with ParsePos information */
-  virtual List_sp walkToFindParsePos() const;
+//  virtual List_sp walkToFindParsePos() const;
 
   inline Cons_sp rplaca(T_sp o) {
     this->_Car = o;
+#ifdef DEBUG_VALIDATE_GUARD
+    client_validate(this->_Car.raw_());
+#endif
     return this->asSmartPtr();
   };
   inline Cons_sp rplacd(T_sp o) {
     this->_Cdr = o;
+#ifdef DEBUG_VALIDATE_GUARD
+    client_validate(this->_Cdr.raw_());
+#endif
     return this->asSmartPtr();
   };
 
-  virtual T_sp onth(int idx) const;
-  virtual List_sp onthcdr(int idx) const;
+  T_sp onth(int idx) const;
+  List_sp onthcdr(int idx) const;
 
   T_sp elt(int index) const;
   T_sp setf_elt(int index, T_sp value);
@@ -260,7 +265,8 @@ public:
     this->_Car = o;
   };
 
-  T_sp setf_car(T_sp o) {
+CL_LISPIFY_NAME("core:cons-setf-car");
+CL_DEFMETHOD   T_sp setf_car(T_sp o) {
     ANN(o);
     this->_Car = o;
     return o;
@@ -302,7 +308,8 @@ public:
   /*! Set the next pointer for this element */
   void setCdr(T_sp o);
 
-  T_sp setf_cdr(T_sp o) {
+CL_LISPIFY_NAME("core:cons-setf-cdr");
+CL_DEFMETHOD   T_sp setf_cdr(T_sp o) {
     this->setCdr(o);
     return o;
   };
@@ -445,14 +452,16 @@ typedef struct {
 inline T_sp cons_car(core::Cons_O *cur) { return cur->_Car; }
 inline T_sp cons_cdr(core::Cons_O *cur) { return cur->_Cdr; }
 
-inline T_sp oCar(List_sp obj) {
-  if (obj.consp())
-    return obj.unsafe_cons()->_Car;
-  if (obj.nilp())
-    return obj;
-  TYPE_ERROR(obj, cl::_sym_Cons_O);
-};
-inline T_sp oCdr(List_sp obj) {
+ CL_PKG_NAME(ClPkg,car);
+ CL_DEFUN inline T_sp oCar(List_sp obj) {
+   if (obj.consp())
+     return obj.unsafe_cons()->_Car;
+   if (obj.nilp())
+     return obj;
+   TYPE_ERROR(obj, cl::_sym_Cons_O);
+ };
+ CL_PKG_NAME(ClPkg,cdr);
+ CL_DEFUN inline T_sp oCdr(List_sp obj) {
   if (obj.consp())
     return obj.unsafe_cons()->_Cdr;
   if (obj.nilp())
@@ -460,47 +469,89 @@ inline T_sp oCdr(List_sp obj) {
   TYPE_ERROR(obj, cl::_sym_Cons_O);
 };
 
+ CL_DEFUN inline T_sp cl__rest(List_sp obj) {
+   return oCdr(obj);
+};
+
 // inline Cons_sp cCar(Cons_sp obj) { return obj->_Car.as<Cons_O>();};
 // inline Cons_sp cCdr(Cons_sp obj) { return obj->_Cdr.as<Cons_O>();};
 
-inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
-inline T_sp oCadr(T_sp o) { return oCar(oCdr(o)); };
-inline T_sp oCdar(T_sp o) { return oCdr(oCar(o)); };
-inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o)); };
-inline T_sp oCaaar(T_sp o) { return oCar(oCar(oCar(o))); };
-inline T_sp oCaadr(T_sp o) { return oCar(oCar(oCdr(o))); };
-inline T_sp oCadar(T_sp o) { return oCar(oCdr(oCar(o))); };
-inline T_sp oCaddr(T_sp o) { return oCar(oCdr(oCdr(o))); };
-inline T_sp oCdaar(T_sp o) { return oCdr(oCar(oCar(o))); };
-inline T_sp oCdadr(T_sp o) { return oCdr(oCar(oCdr(o))); };
-inline T_sp oCddar(T_sp o) { return oCdr(oCdr(oCar(o))); };
-inline T_sp oCdddr(T_sp o) { return oCdr(oCdr(oCdr(o))); };
-inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); };
-inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o)))); };
-inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o)))); };
-inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o)))); };
-inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o)))); };
-inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o)))); };
-inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o)))); };
-inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o)))); };
-inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); };
-inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o)))); };
-inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o)))); };
-inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
-inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o)))); };
-inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o)))); };
-inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o)))); };
-inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o)))); };
-inline T_sp oFirst(T_sp o) { return oCar(o); };
-inline T_sp oSecond(T_sp o) { return oCar(oCdr(o)); };
-inline T_sp oThird(T_sp o) { return oCar(oCdr(oCdr(o))); };
-inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
-inline T_sp oFifth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(o))))); };
-inline T_sp oSixth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))); };
-inline T_sp oSeventh(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))); };
-inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))); };
-inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); };
-inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
+ CL_PKG_NAME(ClPkg,caar);
+CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
+ CL_PKG_NAME(ClPkg,cadr);
+ CL_DEFUN inline T_sp oCadr(T_sp o) { return oCar(oCdr(o)); };
+ CL_PKG_NAME(ClPkg,cdar);
+ CL_DEFUN inline T_sp oCdar(T_sp o) { return oCdr(oCar(o)); };
+ CL_PKG_NAME(ClPkg,cddr);
+ CL_DEFUN inline T_sp oCddr(T_sp o) { return oCdr(oCdr(o)); };
+ CL_PKG_NAME(ClPkg,caaar);
+ CL_DEFUN inline T_sp oCaaar(T_sp o) { return oCar(oCar(oCar(o))); };
+ CL_PKG_NAME(ClPkg,caadr);
+ CL_DEFUN inline T_sp oCaadr(T_sp o) { return oCar(oCar(oCdr(o))); };
+ CL_PKG_NAME(ClPkg,cadar);
+ CL_DEFUN inline T_sp oCadar(T_sp o) { return oCar(oCdr(oCar(o))); };
+ CL_PKG_NAME(ClPkg,caddr);
+ CL_DEFUN inline T_sp oCaddr(T_sp o) { return oCar(oCdr(oCdr(o))); };
+ CL_PKG_NAME(ClPkg,cdaar);
+ CL_DEFUN inline T_sp oCdaar(T_sp o) { return oCdr(oCar(oCar(o))); };
+ CL_PKG_NAME(ClPkg,cdadr);
+ CL_DEFUN inline T_sp oCdadr(T_sp o) { return oCdr(oCar(oCdr(o))); };
+ CL_PKG_NAME(ClPkg,cddar);
+ CL_DEFUN inline T_sp oCddar(T_sp o) { return oCdr(oCdr(oCar(o))); };
+ CL_PKG_NAME(ClPkg,cdddr);
+ CL_DEFUN inline T_sp oCdddr(T_sp o) { return oCdr(oCdr(oCdr(o))); };
+ CL_PKG_NAME(ClPkg,caaaar);
+ CL_DEFUN inline T_sp oCaaaar(T_sp o) { return oCar(oCar(oCar(o))); };
+ CL_PKG_NAME(ClPkg,caadar);
+ CL_DEFUN inline T_sp oCaadar(T_sp o) { return oCar(oCar(oCdr(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,cadaar);
+ CL_DEFUN inline T_sp oCadaar(T_sp o) { return oCar(oCdr(oCar(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,caddar);
+ CL_DEFUN inline T_sp oCaddar(T_sp o) { return oCar(oCdr(oCdr(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,cdaaar);
+ CL_DEFUN inline T_sp oCdaaar(T_sp o) { return oCdr(oCar(oCar(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,cdadar);
+ CL_DEFUN inline T_sp oCdadar(T_sp o) { return oCdr(oCar(oCdr(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,cddaar);
+ CL_DEFUN inline T_sp oCddaar(T_sp o) { return oCdr(oCdr(oCar(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,cdddar);
+ CL_DEFUN inline T_sp oCdddar(T_sp o) { return oCdr(oCdr(oCdr(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,caaadr);
+ CL_DEFUN inline T_sp oCaaadr(T_sp o) { return oCar(oCar(oCar(oCar(o)))); };
+ CL_PKG_NAME(ClPkg,caaddr);
+ CL_DEFUN inline T_sp oCaaddr(T_sp o) { return oCar(oCar(oCdr(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,cadadr);
+ CL_DEFUN inline T_sp oCadadr(T_sp o) { return oCar(oCdr(oCar(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,cadddr);
+ CL_DEFUN inline T_sp oCadddr(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,cdaadr);
+ CL_DEFUN inline T_sp oCdaadr(T_sp o) { return oCdr(oCar(oCar(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,cdaddr);
+ CL_DEFUN inline T_sp oCdaddr(T_sp o) { return oCdr(oCar(oCdr(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,cddadr);
+ CL_DEFUN inline T_sp oCddadr(T_sp o) { return oCdr(oCdr(oCar(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,cddddr);
+ CL_DEFUN inline T_sp oCddddr(T_sp o) { return oCdr(oCdr(oCdr(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,First);
+ CL_DEFUN inline T_sp oFirst(T_sp o) { return oCar(o); };
+ CL_PKG_NAME(ClPkg,Second);
+ CL_DEFUN inline T_sp oSecond(T_sp o) { return oCar(oCdr(o)); };
+ CL_PKG_NAME(ClPkg,Third);
+ CL_DEFUN inline T_sp oThird(T_sp o) { return oCar(oCdr(oCdr(o))); };
+ CL_PKG_NAME(ClPkg,Fourth);
+ CL_DEFUN inline T_sp oFourth(T_sp o) { return oCar(oCdr(oCdr(oCdr(o)))); };
+ CL_PKG_NAME(ClPkg,Fifth);
+ CL_DEFUN inline T_sp oFifth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(o))))); };
+ CL_PKG_NAME(ClPkg,Sixth);
+ CL_DEFUN inline T_sp oSixth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))); };
+ CL_PKG_NAME(ClPkg,Seventh);
+ CL_DEFUN inline T_sp oSeventh(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))); };
+ CL_PKG_NAME(ClPkg,Eighth);
+ CL_DEFUN inline T_sp oEighth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))); };
+ CL_PKG_NAME(ClPkg,Ninth);
+ CL_DEFUN inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); };
+ CL_PKG_NAME(ClPkg,Tenth);
+ CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
 };
 
 TRANSLATE(core::Cons_O);
@@ -518,17 +569,6 @@ namespace core
 };
 #endif
 
-namespace core {
-/*! Create a Cons or a SourceCodeCons that that copies the source code location of looCons */
-Cons_sp Cons_create(T_sp car, Cons_sp locCons);
-
-/*! Create a Cons or a SourceCodeCons that that copies the source code location of locCons */
-Cons_sp Cons_create(T_sp car, T_sp cdr, Cons_sp locCons);
-
-Cons_sp Cons_create_loc(T_sp car, const char *fileName, int line);
-
-Cons_sp Cons_create_loc(T_sp car, T_sp cdr, const char *fileName, int line);
-};
 
 namespace core {
 
@@ -555,15 +595,15 @@ namespace core {
 /* Erase the entry with _key_ from the list. Return the new list. 
      In cases where the key was in the first entry the first entry is unhooked and the CDR is returned.
     In other cases the entry is unhooked from the inside of the alist*/
-List_sp alist_erase(List_sp alist, T_sp key);
+List_sp core__alist_erase(List_sp alist, T_sp key);
 
 /*! Push the key/val onto the alist.  This will shadow other entries with the same val */
-List_sp alist_push(List_sp alist, T_sp key, T_sp val);
+List_sp core__alist_push(List_sp alist, T_sp key, T_sp val);
 
 /*! Lookup the key and return the Cons containing the key/val pair - or return NIL if not found */
-List_sp alist_get(List_sp alist, T_sp key);
+List_sp core__alist_get(List_sp alist, T_sp key);
 
-string alist_asString(List_sp alist);
+string core__alist_asString(List_sp alist);
 };
 
 namespace core {
@@ -575,9 +615,9 @@ T_sp plistGetf(List_sp plist, T_sp key, T_sp defaultValue);
 namespace core {
 List_sp coerce_to_list(T_sp o);
 
-T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value);
-List_sp core_put_f(List_sp plist, T_sp value, T_sp indicator);
-T_mv core_rem_f(List_sp plist, Symbol_sp indicator);
+T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value);
+List_sp core__put_f(List_sp plist, T_sp value, T_sp indicator);
+T_mv core__rem_f(List_sp plist, Symbol_sp indicator);
 };
 
 namespace core {

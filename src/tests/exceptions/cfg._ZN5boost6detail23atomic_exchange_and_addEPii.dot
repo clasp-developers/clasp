@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN5boost6detail23atomic_exchange_and_addEPii' function" {
-	label="CFG for '_ZN5boost6detail23atomic_exchange_and_addEPii' function";
-
-	Node0x7fd441773410 [shape=record,label="{entry:\l  %pw.addr = alloca i32*, align 8\l  %dv.addr = alloca i32, align 4\l  %r = alloca i32, align 4\l  store i32* %pw, i32** %pw.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{i32** %pw.addr\}, metadata !20515), !dbg !20516\l  store i32 %dv, i32* %dv.addr, align 4\l  call void @llvm.dbg.declare(metadata !\{i32* %dv.addr\}, metadata !20517), !dbg !20516\l  call void @llvm.dbg.declare(metadata !\{i32* %r\}, metadata !20518), !dbg !20520\l  %0 = load i32** %pw.addr, align 8, !dbg !20521\l  %1 = load i32** %pw.addr, align 8, !dbg !20521\l  %2 = load i32* %dv.addr, align 4, !dbg !20521\l  %3 = call i32 asm sideeffect \"lock\\0A\\09xadd $1, $0\", \"=*m,=r,*m,1,~\{memory\},~\{cc\},~\{dirflag\},~\{fpsr\},~\{flags\}\"(i32* %0, i32* %1, i32 %2) nounwind, !dbg !20521, !srcloc !20522\l  store i32 %3, i32* %r, align 4, !dbg !20521\l  %4 = load i32* %r, align 4, !dbg !20523\l  ret i32 %4, !dbg !20523\l}"];
-}

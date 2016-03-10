@@ -35,9 +35,8 @@ namespace core {
 // set this class up by hand
 SMART(CxxObject);
 class CxxObject_O : public T_O // StandardObject_O
-                    {
-  LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, CxxObject_O, "CxxObject");
+{
+  LISP_CLASS(core, CorePkg, CxxObject_O, "CxxObject",T_O);
 
 public:
 public:

@@ -1,4 +1,0 @@
-(defun a ()
-  nil)
-
-(a)

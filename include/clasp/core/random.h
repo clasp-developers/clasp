@@ -37,8 +37,7 @@ namespace core {
 SMART(RandomState);
 
 class RandomState_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, ClPkg, RandomState_O, "random-state");
+  LISP_CLASS(core, ClPkg, RandomState_O, "random-state",T_O);
   //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor

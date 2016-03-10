@@ -43,20 +43,19 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-#define ARGS_cl_vector "(&rest args)"
-#define DECL_cl_vector ""
-#define DOCS_cl_vector "vector"
-Vector_sp cl_vector(List_sp args) {
-  _G();
-  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl_length(args), false, cl::_sym_T_O);
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("vector");
+CL_DEFUN Vector_sp cl__vector(List_sp args) {
+  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl__length(args), false, cl::_sym_T_O);
   return vec;
 };
-
-#define DOCS_core_make_vector "make_vector See si_make_vector in ecl>>array.d"
-#define ARGS_core_make_vector "(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents)"
-#define DECL_core_make_vector ""
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
-Vector_sp core_make_vector(T_sp element_type,
+
+CL_LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents);
+CL_DECLARE();
+CL_DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
+CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                            int dimension,
                            bool adjustable,
                            T_sp fill_pointer,
@@ -64,7 +63,6 @@ Vector_sp core_make_vector(T_sp element_type,
                            T_sp displaced_index_offset,
                            T_sp initial_element,
                            T_sp initialContents) {
-  _G();
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (element_type == cl::_sym_bit) {
@@ -74,10 +72,13 @@ Vector_sp core_make_vector(T_sp element_type,
         if (fill_pointer != cl::_sym_T_O)
           s_fill_ptr = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
       }
-      return BitVectorWithFillPtr_O::create(dimension, s_fill_ptr, adjustable);
+      return BitVectorWithFillPtr_O::make(dimension, s_fill_ptr, adjustable);
     }
-    return SimpleBitVector_O::create(dimension);
-  } else if (element_type == cl::_sym_base_char || element_type == cl::_sym_character || element_type == cl::_sym_standard_char || element_type == cl::_sym_extended_char) {
+    return SimpleBitVector_O::make(dimension);
+  } else if (element_type == cl::_sym_base_char
+             || element_type == cl::_sym_character
+             || element_type == cl::_sym_standard_char
+             || element_type == cl::_sym_extended_char) {
     // Currently any kind of Character vector is a Str or subclass
     // TODO: Maybe use other types of strings - unicode?
     char c = ' ';
@@ -94,7 +95,7 @@ Vector_sp core_make_vector(T_sp element_type,
     }
     return (Str_O::create(' ', dimension, initialContents));
   } else {
-    if (cl_consp(element_type)) {
+    if (cl__consp(element_type)) {
       // For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
       Cons_sp cet = gc::As<Cons_sp>(element_type);
       if (oCar(cet) == cl::_sym_UnsignedByte && initial_element.nilp()) {
@@ -115,11 +116,10 @@ Vector_sp core_make_vector(T_sp element_type,
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
 
-#define ARGS_core_adjustVector "(array dimensions initial-element initial-contents)"
-#define DECL_core_adjustVector ""
-#define DOCS_core_adjustVector "adjustVector"
-T_sp core_adjustVector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents) {
-  _G();
+CL_LAMBDA(array dimensions initial-element initial-contents);
+CL_DECLARE();
+CL_DOCSTRING("adjustVector");
+CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents) {
   if (VectorObjects_sp vo = array.asOrNull<VectorObjects_O>()) {
     vo->adjust(initial_element, initial_contents, new_dimensions);
     return vo;
@@ -155,7 +155,7 @@ bool Vector_O::equalp(T_sp o) const {
     if (other->arrayDimension(0) != my_size)
       return false;
     for (size_t i(0); i < my_size; ++i) {
-      if (!cl_equalp(this->svref(i), other->rowMajorAref(i)))
+      if (!cl__equalp(this->svref(i), other->rowMajorAref(i)))
         return false;
     }
     return true;
@@ -166,7 +166,7 @@ bool Vector_O::equalp(T_sp o) const {
     if (my_size != other_size)
       return false;
     for (int i(0); i < my_size; ++i) {
-      if (!cl_equalp(this->aref_unsafe(i), vec->aref_unsafe(i)))
+      if (!cl__equalp(this->aref_unsafe(i), vec->aref_unsafe(i)))
         return false;
     }
     return true;
@@ -221,51 +221,27 @@ T_sp Vector_O::nreverse() {
   return this->sharedThis<T_O>();
 }
 
-#define ARGS_cl_vectorPush "(newElement vector)"
-#define DECL_cl_vectorPush ""
-#define DOCS_cl_vectorPush "vectorPush"
-T_sp cl_vectorPush(T_sp newElement, Vector_sp vec) {
-  _G();
+CL_LAMBDA(newElement vector);
+CL_DECLARE();
+CL_DOCSTRING("vectorPush");
+CL_DEFUN T_sp cl__vector_push(T_sp newElement, Vector_sp vec) {
   return vec->vectorPush(newElement);
 };
 
-#define ARGS_cl_vectorPushExtend "(newElement vector &optional (exension 16))"
-#define DECL_cl_vectorPushExtend ""
-#define DOCS_cl_vectorPushExtend "vectorPushExtend"
-Fixnum_sp cl_vectorPushExtend(T_sp newElement, Vector_sp vec, int extension) {
-  _G();
+CL_LAMBDA(newElement vector &optional (exension 16));
+CL_DECLARE();
+CL_DOCSTRING("vectorPushExtend");
+CL_DEFUN Fixnum_sp cl__vector_push_extend(T_sp newElement, Vector_sp vec, int extension) {
   return vec->vectorPushExtend(newElement, extension);
 }
 
-EXPOSE_CLASS(core, Vector_O);
 
-void Vector_O::exposeCando(::core::Lisp_sp lisp) {
-  _G();
-  ::core::class_<Vector_O>()
-      .def("adjustableArrayP", &Vector_O::adjustableArrayP)
-      //	.initArgs("(self)")
-      ;
-  SYMBOL_SC_(CorePkg, make_vector);
-  CoreDefun(make_vector);
-  SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
-  CoreDefun(adjustVector);
-  SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
-  ClDefun(vectorPush);
-  SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
-  ClDefun(vectorPushExtend);
-  ClDefun(vector);
-}
 
-void Vector_O::exposePython(::core::Lisp_sp lisp) {
-//	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
-#ifdef USEBOOSTPYTHON
-  boost::python::class_<Vector_O,
-                        gctools::smart_ptr<Vector_O>,
-                        boost::python::bases<Vector_O::Bases::Base1, Vector_O::Bases::Base2>,
-                        boost::noncopyable>("Vector_O", boost::python::no_init)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+SYMBOL_SC_(CorePkg, make_vector);
+SYMBOL_EXPORT_SC_(CorePkg, adjustVector);
+SYMBOL_EXPORT_SC_(ClPkg, vectorPush);
+SYMBOL_EXPORT_SC_(ClPkg, vectorPushExtend);
+
+
 
 }; /* core */

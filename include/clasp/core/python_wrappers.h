@@ -49,7 +49,7 @@ extern PyObject *python_convertObject(core::T_sp obj, Lisp_sp lisp);
 };
 
 namespace kw {
-extern core::Symbol_sp _sym_function;
+extern core::Symbol_sp& _sym_function;
 };
 
 namespace boost {

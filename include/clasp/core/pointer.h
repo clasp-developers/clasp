@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_pointer_H_
-#define _core_pointer_H_
+#ifndef _core__pointer_H_
+#define _core__pointer_H_
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -33,8 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 class Pointer_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Pointer_O, "Pointer");
+  LISP_CLASS(core, CorePkg, Pointer_O, "Pointer",T_O);
   //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
@@ -66,4 +65,4 @@ public: // Functions here
 }; // core namespace
 TRANSLATE(core::Pointer_O);
 
-#endif /* _core_pointer_H_ */
+#endif /* _core__pointer_H_ */

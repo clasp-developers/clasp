@@ -40,8 +40,7 @@ namespace core {
 FORWARD(VectorObjects);
 class VectorObjects_O : public Vector_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects");
+  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
   DECLARE_INIT();
 
   void archiveBase(SNode_sp node);
@@ -131,8 +130,7 @@ template <>
 struct gctools::GCInfo<core::VectorObjects_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorObjects_H */

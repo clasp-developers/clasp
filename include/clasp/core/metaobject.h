@@ -46,9 +46,8 @@ namespace core {
 
 SMART(Metaobject);
 class Metaobject_O : public StandardObject_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, Metaobject_O, "metaobject");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, CorePkg, Metaobject_O, "metaobject",StandardObject_O);
 
 public:
   explicit Metaobject_O();

@@ -65,18 +65,9 @@ using namespace clbind::detail;
 
 namespace clbind {
 
-void ClassRep_O::exposeCando(core::Lisp_sp lisp) {
-  _G();
-  core::class_<ClassRep_O>();
-}
-void ClassRep_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ClassRep, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(clbind, ClassRep_O);
+
+
 
 ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
     : m_type(type), m_name(name)
@@ -99,7 +90,7 @@ ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool deriva
 	assert((r->cpp_class() != CL_NOREF) && "you must call clbind::open()");
 
 	cl_rawgeti(L, CL_REGISTRYINDEX, r->cpp_class());
-	cl_setmetatable(L, -2);
+	cl__setmetatable(L, -2);
 
 	cl_pushvalue(L, -1); // duplicate our user data
 	m_self_ref.set(L);
@@ -107,12 +98,12 @@ ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool deriva
 	m_instance_metatable = r->cpp_instance();
 
         cl_pushstring(L, "__clbind_cast_graph");
-        cl_gettable(L, CL_REGISTRYINDEX);
+        cl__gettable(L, CL_REGISTRYINDEX);
         m_casts = static_cast<cast_graph*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 
         cl_pushstring(L, "__clbind_class_id_map");
-        cl_gettable(L, CL_REGISTRYINDEX);
+        cl__gettable(L, CL_REGISTRYINDEX);
         m_classes = static_cast<class_id_map*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 #endif
@@ -139,19 +130,19 @@ ClassRep_O::ClassRep_O(const std::string &name, bool derivable)
 	assert((r->cpp_class() != CL_NOREF) && "you must call clbind::open()");
 
 	cl_rawgeti(L, CL_REGISTRYINDEX, r->cl_class());
-	cl_setmetatable(L, -2);
+	cl__setmetatable(L, -2);
 	cl_pushvalue(L, -1); // duplicate our user data
 	m_self_ref.set(L);
 
 	m_instance_metatable = r->cl_instance();
 
         cl_pushstring(L, "__clbind_cast_graph");
-        cl_gettable(L, CL_REGISTRYINDEX);
+        cl__gettable(L, CL_REGISTRYINDEX);
         m_casts = static_cast<cast_graph*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 
         cl_pushstring(L, "__clbind_class_id_map");
-        cl_gettable(L, CL_REGISTRYINDEX);
+        cl__gettable(L, CL_REGISTRYINDEX);
         m_classes = static_cast<class_id_map*>(cl_touserdata(L, -1));
         cl_pop(L, 1);
 #endif
@@ -183,7 +174,7 @@ ClassRep_O::~ClassRep_O() {
     {
         ClassRep_O* cls = static_cast<ClassRep_O*>(cl_touserdata(L, 1));
 
-        int args = cl_gettop(L);
+        int args = cl__gettop(L);
 
         push_new_instance(L, cls);
 
@@ -195,7 +186,7 @@ ClassRep_O::~ClassRep_O() {
             cl_pushvalue(L, 1);
             cl_pushvalue(L, -3);
             cl_pushcclosure(L, super_callback, 2);
-            cl_settable(L, CL_GLOBALSINDEX);
+            cl__settable(L, CL_GLOBALSINDEX);
         }
 
         cl_pushvalue(L, -1);
@@ -203,7 +194,7 @@ ClassRep_O::~ClassRep_O() {
 
         cls->get_table(L);
         cl_pushliteral(L, "__init");
-        cl_gettable(L, -2);
+        cl__gettable(L, -2);
 
         cl_insert(L, 1);
 
@@ -216,7 +207,7 @@ ClassRep_O::~ClassRep_O() {
         {
             cl_pushstring(L, "super");
             cl_pushnil(L);
-            cl_settable(L, CL_GLOBALSINDEX);
+            cl__settable(L, CL_GLOBALSINDEX);
         }
 
         return 1;
@@ -255,7 +246,7 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 
     int ClassRep_O::super_callback(cl_State* L)
     {
-	int args = cl_gettop(L);
+	int args = cl__gettop(L);
 		
 	ClassRep_O* crep = static_cast<ClassRep_O*>(cl_touserdata(L, cl_upvalueindex(1)));
 	ClassRep_O* base = crep->bases()[0].base;
@@ -264,7 +255,7 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 	{
             cl_pushstring(L, "super");
             cl_pushnil(L);
-            cl_settable(L, CL_GLOBALSINDEX);
+            cl__settable(L, CL_GLOBALSINDEX);
 	}
 	else
 	{
@@ -272,12 +263,12 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
             cl_pushlightuserdata(L, base);
             cl_pushvalue(L, cl_upvalueindex(2));
             cl_pushcclosure(L, super_callback, 2);
-            cl_settable(L, CL_GLOBALSINDEX);
+            cl__settable(L, CL_GLOBALSINDEX);
 	}
 
 	base->get_table(L);
 	cl_pushstring(L, "__init");
-	cl_gettable(L, -2);
+	cl__gettable(L, -2);
 	cl_insert(L, 1);
 	cl_pop(L, 1);
 
@@ -291,14 +282,14 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 	// have some kind of warning if the super global is used?
 	cl_pushstring(L, "super");
 	cl_pushnil(L);
-	cl_settable(L, CL_GLOBALSINDEX);
+	cl__settable(L, CL_GLOBALSINDEX);
 
 	return 0;
     }
 
 
 
-    int ClassRep_O::cl_settable_dispatcher(cl_State* L)
+    int ClassRep_O::cl__settable_dispatcher(cl_State* L)
     {
 	ClassRep_O* crep = static_cast<ClassRep_O*>(cl_touserdata(L, 1));
 
@@ -334,7 +325,7 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 	// look in the static function table
 	crep->get_default_table(L);
 	cl_pushvalue(L, 2);
-	cl_gettable(L, -2);
+	cl__gettable(L, -2);
 	if (!cl_isnil(L, -1)) return 1;
 	else cl_pop(L, 2);
 
@@ -364,7 +355,7 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
             msg += "'";
             cl_pushstring(L, msg.c_str());
 	}
-	cl_error(L);
+	cl__error(L);
 
 #endif
 
@@ -375,10 +366,10 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 
     bool clbind::detail::is_ClassRep_O(cl_State* L, int index)
     {
-	if (cl_getmetatable(L, index) == 0) return false;
+	if (cl__getmetatable(L, index) == 0) return false;
 
 	cl_pushstring(L, "__clbind_classrep");
-	cl_gettable(L, -2);
+	cl__gettable(L, -2);
 	if (cl_toboolean(L, -1))
 	{
             cl_pop(L, 2);
@@ -396,7 +387,7 @@ void ClassRep_O::add_base_class(core::Fixnum_sp pointer_offset, ClassRep_sp base
 //	cl_pushvalue(L, -1); // copy the object ref
 	crep->get_table(L);
         cl_pushliteral(L, "__finalize");
-	cl_gettable(L, -2);
+	cl__gettable(L, -2);
 	cl_remove(L, -2);
 
 	if (cl_isnil(L, -1))

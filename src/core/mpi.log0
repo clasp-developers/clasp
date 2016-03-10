@@ -1,7 +1,0 @@
-P0:Process with MPI rank 0 started
-P0:I'm the manager, waiting for 2 objects
-P0:Master received message from source: 1
-P0:      Received Rectangle: Rectangle(w:66.869084 h:94.576588)
-P0:Master received message from source: 2
-P0:      Received Rectangle: Rectangle(w:92.801244 h:25.528940)
-P0:Master done

@@ -41,7 +41,7 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, Record_O);
+
 
 T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
   return eval::funcall(_sym_circle_subst, replacement_table, tree);
@@ -67,7 +67,7 @@ void Record_O::errorIfInvalidArguments() {
     Cons_sp apair = gc::As<Cons_sp>(oCar(cur));
     T_sp argName = oCar(apair);
     bool found = false;
-    for (int i(0), iEnd(cl_length(seenvec)); i < iEnd; ++i) {
+    for (int i(0), iEnd(cl__length(seenvec)); i < iEnd; ++i) {
       if (oCar((*seenvec)[i]) == argName) {
         found = true;
         break;
@@ -82,11 +82,5 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
-void Record_O::exposeCando(Lisp_sp lisp) {
-  _G();
-  class_<Record_O>();
-}
-void Record_O::exposePython(Lisp_sp lisp) {
-  _G();
-}
+
 };

@@ -37,8 +37,7 @@ namespace core {
 
 SMART(SexpLoadArchive);
 class SexpLoadArchive_O : public LoadArchive_O {
-  LISP_BASE1(LoadArchive_O);
-  LISP_CLASS(core, CorePkg, SexpLoadArchive_O, "SexpLoadArchive");
+  LISP_CLASS(core, CorePkg, SexpLoadArchive_O, "SexpLoadArchive",LoadArchive_O);
 
 public:
   virtual void parseFromObject(T_sp object);
