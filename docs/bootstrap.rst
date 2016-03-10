@@ -75,3 +75,8 @@ Notes
 3. Cclasp *should* be complete at step 9 of the process.  An extra
    validation step would be to recompile everything with Cclasp and
    check that the binary results were the same as step 8.
+
+4. Compilers A, B, and C share the same ABI, so bitcode compiled from
+   them is compatible.  Code compiled by any compiler can call any
+   other.  And the bitcode can freely call and be called by the
+   interpreter.
