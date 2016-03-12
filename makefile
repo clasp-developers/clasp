@@ -260,12 +260,12 @@ clasp-libraries:
 
 executable-symlinks:
 	install -d $(BINDIR)
-	if [ -f ../Contents/execs/boehm/release/bin/clasp ]; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o fi
-	if [ -f ../Contents/execs/boehmdc/release/bin/clasp ]; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o fi
-	if [ -f ../Contents/execs/mps/release/bin/clasp ]; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o fi
-	if [ -f ../Contents/execs/boehm/debug/bin/clasp ]; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d fi
-	if [ -f ../Contents/execs/boehmdc/debug/bin/clasp ]; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d fi
-	if [ -f ../Contents/execs/mps/debug/bin/clasp ]; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d fi
+	if test -e ../Contents/execs/boehm/release/bin/clasp; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o ; fi
+	if test -e ../Contents/execs/boehmdc/release/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o ; fi
+	if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o ; fi
+	if test -e ../Contents/execs/boehm/debug/bin/clasp ; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d ; fi
+	if test -e ../Contents/execs/boehmdc/debug/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d ; fi
+	if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d ; fi
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
