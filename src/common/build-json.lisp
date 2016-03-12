@@ -52,6 +52,6 @@ if there were an empty string between them."
               (format fout "  \"file\" : ~s~%" source-file-name)
               (format fout "  }~a~%" (if rest "," ""))))
       (format fout "]~%"))
-    (format t "Wrote out ~d compilation commands~%" (length lines))))
+    (format t "Wrote out ~d compilation commands to ~a~%" (length lines) (truename db-pn))))
            
 
