@@ -31,29 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/standardObject.h>
 
-#if 0
-namespace core
-{
-    SMART(ExternalObjectManager);
-    c l a s s ExternalObjectManager_O : public General_O
-    {
-	L I S P _BASE1(T_O);
-	L I S P _CLASS(core,CorePkg,ExternalObjectManager_O,"ExternalObjectManager");
-	void	initialize();
-    private:
-	map<void*,ExternalObject_sp>	_ExternalPointersToObjects;
-    public:
-	void registerExternal(void* ptr, ExternalObject_sp obj, Lisp_sp lisp);
-	bool recognizesExternal(void* ptr);
-	ExternalObject_sp objectForExternal(void* ptr);
-
-	DEFAULT_CTOR_DTOR(ExternalObjectManager_O);
-    };
-TRANSLATE(core::ExternalObjectManager_O);
-
-};
-#endif
-
 namespace core {
 
 // set this class up by hand
@@ -100,10 +77,15 @@ namespace core {
   public: \
     typedef o_nameOfWrappedClassBase Base; \
   typedef LispBases1<Base> Bases; \
-  /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) public : typedef wrappedClass WrappedClass; \
+  /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) \
+  public : typedef wrappedClass WrappedClass; \
  public:                                                                                                                                  \
   /*Derived from StandardObject so it supports slots*/                                                                                   \
   static bool static_supportsSlots() { return true; };                                                                                   \
+  virtual core::Class_sp __class() const {                        \
+    return o_nameOfWrappedClass::static_class;                                  \ 
+  }                                                               \
+  
   /* end */
 
 #endif // SCRAPING

@@ -319,7 +319,6 @@ CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
 }
 
 void LambdaListHandler_O::initialize() {
-  _OF();
   this->_CreatesBindings = true;
   this->_DeclareSpecifierList = _Nil<T_O>();
   this->_RequiredArguments.clear();

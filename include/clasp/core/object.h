@@ -414,9 +414,9 @@ namespace core {
 #ifndef SCRAPING
 #define LISP_META_CLASS(x) // nothing
 
-#define LISP_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
+#define LISP_CLASS(aNamespace, aPackage, aClass, aClassName, aBaseClass) \
   public: \
-    typedef b1 Base; \
+    typedef aBaseClass Base; \
   typedef LispBases1<Base> Bases; \
   __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName); \
   virtual core::Class_sp __class() const {                        \

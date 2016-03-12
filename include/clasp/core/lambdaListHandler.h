@@ -93,8 +93,8 @@ struct TargetClassifier {
   void advanceLexicalIndex();
 };
 
-class LambdaListHandler_O : public T_O {
-  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",T_O);
+class LambdaListHandler_O : public General_O {
+  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",General_O);
 
 public: // virtual functions inherited from Object
   void initialize();

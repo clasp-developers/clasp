@@ -240,10 +240,11 @@
         (format sout "#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%")
         (dolist (exposed-class sorted-classes)
           (unless (string= (base% exposed-class) +root-dummy-class+)
-            (format sout "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::static_classSymbol());~%"
+            (format sout "~a->__setupStage3NameAndCalculateClassPrecedenceList(~a::~a::static_classSymbol());~%"
                     (as-var-name (tags:namespace% (class-tag% exposed-class))
                                  (tags:name% (class-tag% exposed-class)))
-                    (base% exposed-class))))
+                    (tags:namespace% (class-tag% exposed-class))
+                    (tags:name% (class-tag% exposed-class)))))
         (format sout "#endif //#ifdef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES~%"))
       (progn
         (format sout "#ifdef EXPOSE_CLASSES_AND_METHODS~%")

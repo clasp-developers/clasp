@@ -48,7 +48,9 @@ template <class OT>
 struct GCObjectInitializer<OT, true> {
   typedef smart_ptr<OT> smart_pointer_type;
   static void initializeIfNeeded(smart_pointer_type sp) {
-    if ( sp.generalp() ) sp.unsafe_general()->initialize();
+    if ( sp.generalp() ) {
+      sp.unsafe_general()->initialize();
+    }
   };
 };
 
