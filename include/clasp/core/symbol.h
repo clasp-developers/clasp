@@ -47,7 +47,7 @@ SMART(Package);
 SMART(Function);
 
 FORWARD(Symbol);
-class Symbol_O : public T_O {
+class Symbol_O : public General_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
 
@@ -66,7 +66,7 @@ private:
   friend class Class_O;
   friend class Package_O;
   friend class CoreExposer;
-  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",T_O);
+  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -88,7 +88,7 @@ public:
   // to by global variable _sym_XXX  and will never be collected
     Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate(true);
     n->setf_name(snm);
-    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
+//    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
     return n;
   };
 public:

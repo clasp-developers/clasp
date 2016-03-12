@@ -837,7 +837,7 @@ void Str_O::fillInitialContents(T_sp seq) {
   }
   return;
 ERROR:
-  SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl__length(seq) % _rep_(seq->__class()->className()) % this->size());
+  SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl__length(seq) % _rep_(cl__class_of(seq)->className()) % this->size());
 }
 
 void Str_O::__write__(T_sp stream) const {

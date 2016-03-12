@@ -47,8 +47,8 @@ namespace core {
   SYMBOL_EXPORT_SC_(CorePkg, _PLUS_sharp_marker_PLUS_);
 
 SMART(SharpEqualWrapper);
-class SharpEqualWrapper_O : public T_O {
-  LISP_CLASS(core, CorePkg, SharpEqualWrapper_O, "SharpEqualWrapper",T_O);
+class SharpEqualWrapper_O : public General_O {
+  LISP_CLASS(core, CorePkg, SharpEqualWrapper_O, "SharpEqualWrapper",General_O);
 
  private:
   T_sp   _Value;

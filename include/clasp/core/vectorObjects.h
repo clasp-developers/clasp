@@ -41,7 +41,6 @@ FORWARD(VectorObjects);
 class VectorObjects_O : public Vector_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
   LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
-  DECLARE_INIT();
 
   void archiveBase(SNode_sp node);
 

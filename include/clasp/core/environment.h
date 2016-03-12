@@ -48,8 +48,8 @@ namespace core {
 SMART(ObjectDictionary);
 SMART(Name);
 
-class Environment_O : public T_O {
-  LISP_CLASS(core, CorePkg, Environment_O, "Environment",T_O);
+class Environment_O : public General_O {
+  LISP_CLASS(core, CorePkg, Environment_O, "Environment",General_O);
 
 public:
   typedef enum { undeterminedValue,
@@ -648,7 +648,6 @@ namespace core {
 FORWARD(TagbodyEnvironment);
 class TagbodyEnvironment_O : public RuntimeVisibleEnvironment_O {
   LISP_CLASS(core, CorePkg, TagbodyEnvironment_O, "TagbodyEnvironment",RuntimeVisibleEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(TagbodyEnvironment_O);
@@ -706,7 +705,6 @@ namespace core {
 FORWARD(MacroletEnvironment);
 class MacroletEnvironment_O : public CompileTimeEnvironment_O {
   LISP_CLASS(core, CorePkg, MacroletEnvironment_O, "MacroletEnvironment",CompileTimeEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(MacroletEnvironment_O);
@@ -745,7 +743,6 @@ namespace core {
 FORWARD(SymbolMacroletEnvironment);
 class SymbolMacroletEnvironment_O : public CompileTimeEnvironment_O {
   LISP_CLASS(core, CorePkg, SymbolMacroletEnvironment_O, "SymbolMacroletEnvironment",CompileTimeEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(SymbolMacroletEnvironment_O);
@@ -787,7 +784,6 @@ namespace core {
 FORWARD(StackValueEnvironment);
 class StackValueEnvironment_O : public CompileTimeEnvironment_O {
   LISP_CLASS(core, CorePkg, StackValueEnvironment_O, "StackValueEnvironment",CompileTimeEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StackValueEnvironment_O);

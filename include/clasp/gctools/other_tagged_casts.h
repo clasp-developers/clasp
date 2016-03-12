@@ -55,23 +55,6 @@ struct TaggedCast<core::Closure *, FROM> {
   }
 };
 
-template <typename FROM>
-struct TaggedCast<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>> *, FROM> {
-  typedef gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>> *ToType;
-  typedef FROM FromType;
-  inline static bool isA(FromType tagged_client) {
-    if (tagged_generalp(tagged_client)) {
-      // Should I have more here?
-      return dynamic_cast<ToType>(untag_general(tagged_client)) != NULL;
-    }
-    return false;
-  }
-  inline static ToType castOrNULL(FromType client) {
-    if (TaggedCast<ToType, FromType>::isA(client))
-      return reinterpret_cast<ToType>(client);
-    return NULL;
-  }
-};
 
 template <typename FROM>
 struct TaggedCast<core::SequenceStepper *, FROM> {

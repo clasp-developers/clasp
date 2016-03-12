@@ -105,8 +105,11 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
   T_sp obj = allocatorP->allocate();
   ASSERT(obj);
   ASSERT(obj.notnilp());
-  obj->instanceClassSet(gc::As<Class_sp>(theClass));
-  obj->initializeSlots(numberOfSlots);
+  if (obj.generalp()) {
+    General_O* gp = (General_O*)obj.unsafe_general();
+    gp->instanceClassSet(gc::As<Class_sp>(theClass));
+    gp->initializeSlots(numberOfSlots);
+  }
   return (obj);
 }
 

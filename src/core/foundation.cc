@@ -698,6 +698,8 @@ Class_sp lisp_instance_class(T_sp o) {
     return core::Character_dummy_O::static_class;
   } else if (o.single_floatp()) {
     return core::SingleFloat_dummy_O::static_class;
+  } else if (o.consp()) {
+    return core::Cons_O::static_class;
   } else if (o.nilp()) {
     return core::Null_O::static_class;
   } else if (Instance_sp iobj = o.asOrNull<Instance_O>()) {
@@ -720,16 +722,17 @@ Class_sp lisp_instance_class(T_sp o) {
 }
 
 Class_sp lisp_static_class(T_sp o) {
-  if (o.nilp())
-    return core::Null_O::static_class;
-  if (o.unboundp()) {
-    SIMPLE_ERROR(BF("You cannot get the class of UNBOUND"));
-  } else if (!o) {
-    SIMPLE_ERROR(BF("You cannot get the class of _NULL"));
+  if ( o.generalp() ) {
+    General_sp go(o.unsafe_general());
+    if (go.nilp()) {
+      return core::Null_O::static_class;
+    }
+    return go->__class();
   }
-  return o->__class();
+  SIMPLE_ERROR(BF("Add support for more classes to lisp_static_class"));
 }
 
+#if 0
 bool lisp_fixnumP(T_sp o) {
   if (o.fixnump())
     return true;
@@ -747,24 +750,8 @@ Fixnum lisp_asFixnum(T_sp o) {
 bool lisp_characterP(T_sp o) {
   return cl__characterp(o);
 }
-
-#if 0
-T_sp lisp_apply(T_sp funcDesig, ActivationFrame_sp frame) {
-  return eval::applyToActivationFrame(funcDesig, frame);
-}
 #endif
 
-#if 0
-    string lisp_convertCNameToLispName(string const& cname, bool convertUnderscoreToDash)
-    {
-	if ( convertUnderscoreToDash )
-	{
-	    string lispName = searchAndReplaceString(cname,"_","-",_lisp);
-	    return lispName;
-	}
-	return cname;
-    }
-#endif
 
 string _rep_(T_sp obj) {
 //#define USE_WRITE_OBJECT
@@ -785,8 +772,12 @@ string _rep_(T_sp obj) {
     stringstream ss;
     ss << obj.unsafe_single_float();
     return ss.str();
-  } else if (obj.objectp()) {
-    return obj->__repr__(); // This is the only place where obj->__repr__() is allowed
+  } else if (obj.consp()) {
+    Cons_sp cobj(obj.unsafe_cons());
+    return cobj->__repr__();
+  } else if (obj.generalp()) {
+    General_sp gobj(obj.unsafe_general());
+    return gobj->__repr__(); // This is the only place where obj->__repr__() is allowed
   } else if (obj.valistp()) {
     return "VaList";
   } else if (obj.unboundp()) {
@@ -797,7 +788,7 @@ string _rep_(T_sp obj) {
 }
 
 void lisp_throwUnexpectedType(T_sp offendingObject, Symbol_sp expectedTypeId) {
-  Symbol_sp offendingTypeId = offendingObject->_instanceClass()->className();
+  Symbol_sp offendingTypeId = cl__class_of(offendingObject)->className();
   SIMPLE_ERROR(BF("Expected %s of class[%s] to be subclass of class[%s]") % _rep_(offendingObject) % _rep_(offendingTypeId) % _rep_(expectedTypeId));
 }
 

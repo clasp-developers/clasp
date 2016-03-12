@@ -48,7 +48,6 @@ struct BignumExportBuffer {
 
 class Bignum_O : public Integer_O {
   LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
-  //	DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(Bignum_O);

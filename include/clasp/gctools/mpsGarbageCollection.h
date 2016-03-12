@@ -306,6 +306,7 @@ namespace gctools {
 extern mps_arena_t _global_arena;
 
 extern mps_pool_t _global_amc_pool;
+extern mps_pool_t global_amc_cons_pool;
 //    extern mps_pool_t _global_mvff_pool;
 extern mps_pool_t _global_amcz_pool;
 extern mps_pool_t global_non_moving_pool;

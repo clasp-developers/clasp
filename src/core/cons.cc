@@ -295,14 +295,6 @@ T_sp Cons_O::append(List_sp x, List_sp y) {
 #endif
 
 
-void Cons_O::sxhash_(HashGenerator &hg) const {
-  _OF();
-  if (hg.isFilling())
-    hg.hashObject(this->_Car);
-  if (hg.isFilling())
-    hg.hashObject(this->_Cdr);
-}
-
 struct Tester {
   T_sp _item;
   Function_sp _test_func;
@@ -502,7 +494,7 @@ List_sp Cons_O::subseq(int start, T_sp end) const {
 //
 // Constructor
 //
-Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
+Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
 {
   ASSERTNOTNULL(this->_Car);
   ASSERTNOTNULL(this->_Cdr);
@@ -511,6 +503,7 @@ Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0
 /*! Write out all of the elements of this list as a list to
  * avoid excessive nesting
  */
+#if 0
 void Cons_O::archiveBase(ArchiveP node) {
 #if 1
   if (node->saving()) {
@@ -545,6 +538,8 @@ void Cons_O::archiveBase(ArchiveP node) {
   node->attributeIfNotNil("D", this->_Cdr); // use attributeIfNotNil
 #endif
 }
+#endif
+
 
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
@@ -913,6 +908,11 @@ CL_DEFMETHOD T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
   return ((this->olookupKeyObjectDefault(key, _Nil<T_O>())));
 }
 
+void Cons_O::describe(T_sp stream)
+{
+  clasp_write_string(this->__repr__(),stream);
+}
+
 string Cons_O::__repr__() const {
   Cons_sp start = this->asSmartPtr();
   T_sp cdr = start;
@@ -946,281 +946,6 @@ string Cons_O::__repr__() const {
 #endif
   return ((sout.str()));
 }
-
-#if 0
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return(SourceCodeCons_O::create(o1,SourceCodeCons_O::create(o2,_Nil<SourceCodeCons_O>(),ln,col,fileName),ln,col,fileName));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,ln,col,fileName),ln,col,fileName)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,o4,ln,col,fileName),ln,col,fileName)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,o4,o5,ln,col,fileName),ln,col,fileName)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,o4,o5,o6,ln,col,fileName),ln,col,fileName)));
-    }
-
-
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, const LispParserPos& pos, SourceFileInfo_sp fileName)
-    { return((SourceCodeCons_O::createList(o1,o2,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, const LispParserPos& pos, SourceFileInfo_sp fileName )
-    { return((SourceCodeCons_O::createList(o1,o2,o3,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, const LispParserPos& pos, SourceFileInfo_sp fileName )
-    { return((SourceCodeCons_O::createList(o1,o2,o3,o4,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, const LispParserPos& pos, SourceFileInfo_sp fileName )
-    { return((SourceCodeCons_O::createList(o1,o2,o3,o4,o5,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,const LispParserPos& pos, SourceFileInfo_sp fileName)
-    { return((SourceCodeCons_O::createList(o1,o2,o3,o4,o5,o6,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::create(T_sp car, Cons_sp cdr, const LispParserPos& pos, SourceFileInfo_sp fileName,Lisp_sp lisp)
-    { return((SourceCodeCons_O::create(car,cdr,pos.first_line,pos.first_column,fileName)));}
-
-    SourceCodeCons_sp SourceCodeCons_O::create(T_sp car, T_sp cdr,
-					       int lineNumber,
-					       int column,
-					       SourceFileInfo_sp fileName, Lisp_sp e )
-    {
-
-        GC_ALLOCATE(SourceCodeCons_O,ll );
-	    ll->setCar(car);
-	    ll->setOCdr(cdr);
-	    ll->_ParsePosLineNumber = lineNumber;
-	    ll->_ParsePosColumn = column;
-	    ll->_SourceFileInfo = fileName;
-	return((ll));
-    };
-
-
-
-    SourceCodeCons_sp SourceCodeCons_O::create(	int lineNumber,	int column,
-						SourceFileInfo_sp fileName, Lisp_sp e )
-    {
-        GC_ALLOCATE(SourceCodeCons_O,ll );
-	    ll->_ParsePosLineNumber = lineNumber;
-	    ll->_ParsePosColumn = column;
-	    ll->_SourceFileInfo = fileName;
-	return((ll));
-    };
-
-
-    SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp cdr,
-									  List_sp parsed)
-    {
-	int lineNumber, col;
-	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core__source_file_info(parsed);
-	return((SourceCodeCons_O::create(car,cdr,lineNumber,col,fileName,env)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp parsed, Lisp_sp lisp)
-    {
-	int lineNumber, col;
-	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core__source_file_info(parsed);
-	return((SourceCodeCons_O::create(car,_Nil<T_O>(),lineNumber,col,fileName,lisp)));
-    }
-
-
-    SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(Cons_sp parsed, Lisp_sp env)
-    {
-	if ( parsed.nilp() ) return((_Nil<SourceCodeCons_O>()));
-	int lineNumber, col;
-	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core__source_file_info(parsed);
-	return((SourceCodeCons_O::create(lineNumber,col,fileName,env)));
-    }
-
-
-    SourceCodeCons_O::SourceCodeCons_O(): T_O(), Base(), _SourceFileInfo(_Nil<SourceFileInfo_O>()) {};
-
-    SourceCodeCons_O::~SourceCodeCons_O() {};
-
-    void SourceCodeCons_O::initialize()
-    {
-	this->Base::initialize();
-	this->_SourceFileInfo = _Nil<SourceFileInfo_O>();
-    }
-
-    void SourceCodeCons_O::duplicateSourceCodeInfo(Cons_sp c)
-    {
-	int lineNumber, col;
-	string fileName;
-	c->getParsePos(lineNumber,col);
-	this->_SourceFileInfo = core__source_file_info(c);
-	this->_ParsePosLineNumber = lineNumber;
-	this->_ParsePosColumn = col;
-    }
-
-#if 0
-    bool SourceCodeCons_O::equal(T_sp obj) const
-    {_OF();
-	if ( this->eq(obj) ) return((true));
-	if ( !obj->sourceCodeConsP() ) return((false));
-	SourceCodeCons_sp other = obj.as<SourceCodeCons_O>();
-	if ( this->_FileName != other->_FileName ) return((false));
-	if ( this->_ParsePosLineNumber != other->_ParsePosLineNumber ) return((false));
-	if ( this->_ParsePosColumn != other->_ParsePosColumn ) return((false));
-	if ( !cl__equal(this->ocar(),other->ocar() ) ) return((false));
-	if ( !cl__equal(this->cdr(),other->cdr() ) ) return((false));
-	return((true));
-    }
-#endif
-
-
-    SourceFileInfo_sp SourceCodeCons_O::sourceFileInfo() const
-    {
-	return((this->_SourceFileInfo));
-    }
-
-    string	SourceCodeCons_O::__repr__() const
-    {
-	T_sp		op;
-	Cons_sp 	p;
-	stringstream	sout;
-//#define	DOT_NOTATION
-	sout << "( ";
-	p = this->asSmartPtr();
-	while ( p.notnilp() )
-	{
-	    T_sp obj = oCar(p);
-	    if ( !obj )
-	    {
-		sout << ">>>UNDEFINED OCAR<<<";
-	    } else if ( obj.nilp() )
-	    {
-		sout << "nil ";
-	    } else
-	    {
-		sout << _rep_(obj) << " ";
-	    }
-	    op = oCdr(p);
-	    if ( !op )
-	    {
-		sout << ">>>>> NULL CDR <<<<<<";
-		break;
-	    }
-	    if ( op.unboundp() )
-	    {
-		sout << ">>>>> UNBOUND CDR <<<<<<";
-		break;
-	    }
-	    if ( !cl__consp(op) )
-	    {
-		p = _Nil<T_O>();
-		if ( op.notnilp() )
-		{
-		    sout << " . " << _rep_(op);
-		}
-		break;
-	    }
-	    p = op;
-	}
-	if ( _sym_STARprint_source_code_consSTAR->symbolValue().isTrue() )
-	{
-	    sout << "#<@";
-	    if ( this->hasParsePos() )
-	    {
-		sout << "\"" << this->_SourceFileInfo->permanentFileName() << "\"";
-		sout << this->_ParsePosLineNumber;
-		sout << ":" << this->_ParsePosColumn;
-	    } else
-	    {
-		sout << "NO-POS";
-	    }
-	    sout << "@";
-	    sout << ">";
-	}
-	sout << ")";
-	return((sout.str()));
-    }
-
-
-    Cons_sp SourceCodeCons_O::walkToFindParsePos() const
-    {
-	if ( this->hasParsePos() ) return((this->asSmartPtr()));
-	return((this->Base::walkToFindParsePos()));
-    }
-
-#if defined(XML_ARCHIVE)
-    void	SourceCodeCons_O::archiveBase(::core::ArchiveP node)
-    {
-	this->Base::archiveBase(node);
-	node->attribute("ParsePosLineNumber",this->_ParsePosLineNumber);
-	node->attribute("ParsePosColumn",this->_ParsePosColumn);
-    }
-#endif // defined(XML_ARCHIVE)
-
-#if defined(OLD_SERIALIZE)
-    void SourceCodeCons_O::serialize(serialize::SNode node)
-    {_OF();
-	this->Base::serialize(node);
-	node->attribute("ParsePosLineNumber",this->_ParsePosLineNumber);
-	node->attribute("ParsePosColumn",this->_ParsePosColumn);
-    }
-#endif
-
-
-    Cons_sp SourceCodeCons_O::copyList() const
-    {_OF();
-	Cons_sp p = this->asSmartPtr();
-	ql::source_code_list list;
-	while ( p.notnilp() )
-	{
-	    T_sp obj = oCar(p);
-	    list << obj;
-	    list.set_tail_source_info(p);
-	    T_sp ocdr = oCdr(p);
-	    if ( !cl__consp(ocdr) )
-	    {
-		list.dot(ocdr);
-		break;
-	    }
-	    p = cCdr(p);
-	}
-	return((list.cons()));
-    }
-
-
-
-    Cons_sp SourceCodeCons_O::copyListCar() const
-    {_OF();
-	T_sp obj = this->_Car;
-	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<T_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
-	rootCopy->setCar(obj);
-	return((rootCopy));
-    }
-
-
-WORKING
-    List_sp SourceCodeCons_O::copyTreeCar() const
-    {_OF();
-	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<T_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
-	T_sp obj = this->_Car;
-	if ( cl__consp(obj) )
-	{
-	    Cons_sp carTree = obj.as<Cons_O>()->copyTree().as<Cons_O>();
-	    rootCopy->setCar(carTree);
-	} else
-	{
-	    rootCopy->setCar(obj);
-	}
-	return((rootCopy));
-    }
-
-#endif
 
 CL_DEFUN List_sp core__alist_erase(List_sp alist, T_sp key) {
   if (alist.nilp())

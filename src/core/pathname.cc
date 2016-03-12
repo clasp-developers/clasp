@@ -66,6 +66,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/character.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
 
@@ -1309,7 +1310,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
   if (output.nilp()) {
     SIMPLE_ERROR(BF("output is nil"));
   }
-  if (host.notnilp() && !gc::As<Pathname_sp>(output)->_Host->equal(host)) {
+  if (host.notnilp() && !cl__equal(gc::As<Pathname_sp>(output)->_Host,host)) {
     SIMPLE_ERROR(BF("The pathname %sS does not contain the required host %s.") % _rep_(thing) % _rep_(host));
   }
 OUTPUT:

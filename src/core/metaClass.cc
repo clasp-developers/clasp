@@ -189,7 +189,11 @@ T_sp Class_O::allocate_newNil() {
 
 T_sp Class_O::make_instance() {
   T_sp instance = this->allocate_newNil();
-  instance->initialize();
+  if (instance.generalp()) {
+    instance.unsafe_general()->initialize();
+  } else {
+    SIMPLE_ERROR(BF("Add support to make_instance of non general objects"));
+  }
   return instance;
 }
 

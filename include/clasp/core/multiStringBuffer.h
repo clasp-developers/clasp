@@ -70,8 +70,8 @@ public:
 };
 
 SMART(MultiStringBuffer);
-class MultiStringBuffer_O : public T_O {
-  LISP_CLASS(core, CorePkg, MultiStringBuffer_O, "MultiStringBuffer",T_O);
+class MultiStringBuffer_O : public General_O {
+  LISP_CLASS(core, CorePkg, MultiStringBuffer_O, "MultiStringBuffer",General_O);
 
 public: // virtual functions inherited from Object
   void initialize();

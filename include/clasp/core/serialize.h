@@ -45,8 +45,8 @@ FORWARD(SNode);
 
 SNode_sp getOrCreateSNodeForObjectIncRefCount(T_sp val);
 
-class SNode_O : public T_O {
-  LISP_VIRTUAL_CLASS(core, CorePkg, SNode_O, "SNode",T_O);
+class SNode_O : public General_O {
+  LISP_VIRTUAL_CLASS(core, CorePkg, SNode_O, "SNode",General_O);
 
 public: // Simple default ctor/dtor
         //	DEFAULT_CTOR_DTOR(SNode_O);
@@ -442,7 +442,7 @@ public: // bidirectional
 
   // utility
 
-  explicit SNode_O() : T_O(), _RefCount(0){};
+  explicit SNode_O() : _RefCount(0){};
   virtual ~SNode_O(){};
 };
 
@@ -543,8 +543,8 @@ public:
 /*! Virtual class
  */
 SMART(Archive);
-class Archive_O : public T_O {
-  LISP_CLASS(core, CorePkg, Archive_O, "Archive",core::T_O);
+class Archive_O : public General_O {
+  LISP_CLASS(core, CorePkg, Archive_O, "Archive",core::General_O);
 GCPROTECTED:
   int _Version;
   gc::Nilable<BranchSNode_sp> _TopNode;

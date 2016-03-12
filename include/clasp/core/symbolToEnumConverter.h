@@ -39,8 +39,8 @@ namespace core {
 SMART(Symbol);
 
 SMART(SymbolToEnumConverter);
-class SymbolToEnumConverter_O : public T_O {
-  LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter",T_O);
+class SymbolToEnumConverter_O : public General_O {
+  LISP_CLASS(core, CorePkg, SymbolToEnumConverter_O, "SymbolToEnumConverter",General_O);
 
 public:
   static SymbolToEnumConverter_sp create(const string &whatDoesEnumRepresent);

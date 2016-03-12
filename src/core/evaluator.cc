@@ -1233,7 +1233,7 @@ T_mv sp_throw(List_sp args, T_sp environment) {
   // I should search for the Catch frame for throwTag and
   // invoke an error if it doesn't exist
   CatchThrow catchThrow(frame);
-  printf("%s:%d Throwing core::CatchThrow exception@%p tag[%s] frame: %d\n", __FILE__, __LINE__, &catchThrow, (throwTag)->__repr__().c_str(), frame);
+  printf("%s:%d Throwing core::CatchThrow exception@%p tag[%s] frame: %d\n", __FILE__, __LINE__, &catchThrow, _rep_(throwTag).c_str(), frame);
   throw catchThrow;
 }
 

@@ -70,8 +70,8 @@ THE SOFTWARE.
 
 namespace llvmo {
 FORWARD(DebugInfo);
-class DebugInfo_O : public core::T_O {
-  LISP_CLASS(llvmo, LlvmoPkg, DebugInfo_O, "DebugInfo",core::T_O);
+class DebugInfo_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, DebugInfo_O, "DebugInfo",core::General_O);
 
 public:
   virtual operator llvm::DIDescriptor *() { SUBIMP(); };

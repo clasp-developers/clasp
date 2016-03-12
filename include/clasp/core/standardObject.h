@@ -43,10 +43,9 @@ SMART(StandardClass);
 // Set up this class differently
 
 SMART(StandardObject);
-class StandardObject_O : public T_O {
+class StandardObject_O : public General_O {
   LISP_META_CLASS(core::StandardClass_O);
-  LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",T_O);
-  DECLARE_INIT();
+  LISP_CLASS(core, ClPkg, StandardObject_O, "standard-object",General_O);
 
 public:
 #if defined(OLD_SERIALIZE)

@@ -32,7 +32,10 @@ namespace gctools {
 
   enum Layout_cmd {
       class_kind, class_size, field_fix,
-      container_kind, container_jump_table_index, container_content_size, container_field_fix,
+      container_kind, container_jump_table_index,
+      /*  */ container_regular_field_fix, 
+      /*  */ container_offset, container_end, container_capacity,
+      /*  */ container_content_size, container_content_field_fix,
       templated_class_kind, templated_class_jump_table_index, templated_class_field_fix,
       layout_end
   };

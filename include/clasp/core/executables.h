@@ -79,8 +79,8 @@ extern void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure>);
 namespace core {
 SMART(LambdaListHandler);
 SMART(Function);
-class Function_O : public T_O {
-  LISP_CLASS(core, ClPkg, Function_O, "Function",T_O);
+class Function_O : public General_O {
+  LISP_CLASS(core, ClPkg, Function_O, "Function",General_O);
 
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);

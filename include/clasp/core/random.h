@@ -36,9 +36,8 @@ namespace core {
 
 SMART(RandomState);
 
-class RandomState_O : public T_O {
-  LISP_CLASS(core, ClPkg, RandomState_O, "random-state",T_O);
-  //	DECLARE_INIT();
+class RandomState_O : public General_O {
+  LISP_CLASS(core, ClPkg, RandomState_O, "random-state",General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   boost::mt11213b _Producer;

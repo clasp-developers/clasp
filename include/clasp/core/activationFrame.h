@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/activationFrame.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/sequence.h>
 #include <clasp/core/holder.h>
 
 // may need more later
@@ -329,7 +330,6 @@ public:
   }
 
   static FunctionFrame_sp create(List_sp args, T_sp parent) {
-    _G();
     FunctionFrame_sp vf(FunctionFrame_O::create(cl__length(args), parent));
     //	    vf->allocateStorage(args->length());
     int idx = 0;

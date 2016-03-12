@@ -132,7 +132,7 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   return (Values(pathspec, _lisp->_true()));
 }
 
-Path_O::Path_O(Path_O const &other) : T_O(other) {
+Path_O::Path_O(Path_O const &other) : Base(other) {
   this->_Path = other._Path;
 }
 

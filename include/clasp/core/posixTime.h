@@ -49,9 +49,8 @@ SMART(PosixTime);
 SMART(PosixTimeDuration);
 
 SMART(PosixTime);
-class PosixTime_O : public T_O {
-  LISP_CLASS(core, CorePkg, PosixTime_O, "PosixTime",T_O);
-  DECLARE_INIT();
+class PosixTime_O : public General_O {
+  LISP_CLASS(core, CorePkg, PosixTime_O, "PosixTime",General_O);
 
 public: // virtual functions inherited from Object
   void initialize();
@@ -80,9 +79,8 @@ public:
 };
 
 SMART(PosixTimeDuration);
-class PosixTimeDuration_O : public T_O {
-  LISP_CLASS(core, CorePkg, PosixTimeDuration_O, "PosixTimeDuration",T_O);
-  DECLARE_INIT();
+class PosixTimeDuration_O : public General_O {
+  LISP_CLASS(core, CorePkg, PosixTimeDuration_O, "PosixTimeDuration",General_O);
   friend class PosixTime_O;
 
 public: // virtual functions inherited from Object

@@ -268,9 +268,8 @@ public:
 namespace core {
 
 SMART(Stream);
-class Stream_O : public T_O {
-  LISP_CLASS(core, ClPkg, Stream_O, "stream",T_O);
-  DECLARE_INIT_GLOBALS();
+class Stream_O : public General_O {
+  LISP_CLASS(core, ClPkg, Stream_O, "stream",General_O);
 
 public:
   FileOps ops;
@@ -312,7 +311,6 @@ namespace core {
 SMART(Stream);
 class AnsiStream_O : public Stream_O {
   LISP_CLASS(core, ExtPkg, AnsiStream_O, "AnsiStream",Stream_O);
-  DECLARE_INIT_GLOBALS();
 
 public:
   DEFAULT_CTOR_DTOR(AnsiStream_O);
@@ -324,7 +322,6 @@ class FileStream_O : public AnsiStream_O {
   friend T_sp &FileStreamFilename(T_sp);
   friend T_sp &FileStreamEltType(T_sp);
   LISP_CLASS(core, ClPkg, FileStream_O, "file-stream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   FileStream_O(){};
@@ -340,7 +337,6 @@ public: // Functions here
 class IOFileStream_O : public FileStream_O {
   friend int &IOFileStreamDescriptor(T_sp);
   LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream",FileStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOFileStream_O(){};
@@ -375,7 +371,6 @@ namespace core {
 class IOStreamStream_O : public FileStream_O {
   friend FILE *&IOStreamStreamFile(T_sp strm);
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream",FileStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOStreamStream_O(){};
@@ -408,7 +403,6 @@ struct gctools::GCInfo<core::IOStreamStream_O> {
 namespace core {
 class StringStream_O : public AnsiStream_O {
   LISP_CLASS(core, ClPkg, StringStream_O, "string-stream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringStream_O);
@@ -423,7 +417,6 @@ public: // Functions here
 class StringOutputStream_O : public StringStream_O {
   friend StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream",StringStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringOutputStream_O);
@@ -452,7 +445,6 @@ class StringInputStream_O : public StringStream_O {
   friend gctools::Fixnum &StringInputStreamInputLimit(T_sp strm);
   friend Str_sp &StringInputStreamInputString(T_sp strm);
   LISP_CLASS(core, CorePkg, StringInputStream_O, "string-input-stream",StringStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StringInputStream_O);
@@ -481,7 +473,6 @@ class SynonymStream_O : public AnsiStream_O {
   friend Symbol_sp &SynonymStreamSymbol(T_sp strm);
   friend T_sp SynonymStreamStream(T_sp);
   LISP_CLASS(core, ClPkg, SynonymStream_O, "synonym-stream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()){};
@@ -513,7 +504,6 @@ class TwoWayStream_O : public AnsiStream_O {
   friend T_sp &TwoWayStreamInput(T_sp);
   friend T_sp &TwoWayStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, TwoWayStream_O, "two-way-stream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   TwoWayStream_O() : _In(_Nil<T_O>()), _Out(_Nil<T_O>()){};
@@ -541,7 +531,6 @@ FORWARD(BroadcastStream);
 class BroadcastStream_O : public AnsiStream_O {
   friend T_sp &BroadcastStreamList(T_sp strm);
   LISP_CLASS(core, ClPkg, BroadcastStream_O, "BroadcastStream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(BroadcastStream_O);
@@ -564,7 +553,6 @@ namespace core {
 class ConcatenatedStream_O : public AnsiStream_O {
   friend T_sp &ConcatenatedStreamList(T_sp strm);
   LISP_CLASS(core, ClPkg, ConcatenatedStream_O, "ConcatenatedStream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(ConcatenatedStream_O);
@@ -587,7 +575,6 @@ class EchoStream_O : public AnsiStream_O {
   friend T_sp &EchoStreamInput(T_sp);
   friend T_sp &EchoStreamOutput(T_sp);
   LISP_CLASS(core, ClPkg, EchoStream_O, "EchoStream",AnsiStream_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(EchoStream_O);

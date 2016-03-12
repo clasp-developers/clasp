@@ -103,9 +103,13 @@ public:
     if (k > KIND_max) {
       printf("%s:%d Allocating object of kind: %zu - this is beyond KIND_max: %d\n", __FILE__, __LINE__, k, KIND_max);
     }
+#if defined(USE_BOEHM)&&defined(USE_CXX_DYNAMIC_CAST)
+    // nothing
+#else
     if (k == 0) {
       printf("%s:%d Allocating object of kind: %zu - this is not allowed except for maybe in boehmdc\n", __FILE__, __LINE__, k);
     }
+#endif
 #endif
   };
 

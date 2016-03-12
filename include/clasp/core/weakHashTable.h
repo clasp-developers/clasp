@@ -37,8 +37,8 @@ THE SOFTWARE.
 namespace core {
 
 FORWARD(WeakHashTable);
-class WeakHashTable_O : public T_O {
-  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",T_O);
+class WeakHashTable_O : public General_O {
+  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",General_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)

@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>

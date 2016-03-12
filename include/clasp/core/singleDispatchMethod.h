@@ -32,10 +32,9 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchMethod.fwd.h>
 
 namespace core {
-class SingleDispatchMethod_O : public T_O {
+class SingleDispatchMethod_O : public General_O {
   friend class SingleDispatchGenericFunctionClosure;
-  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",T_O);
-  DECLARE_INIT();
+  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",General_O);
   //    DECLARE_ARCHIVE();
 public:
   friend class SingleDispatchMethodPrimitive_O;

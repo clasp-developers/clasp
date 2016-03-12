@@ -90,44 +90,7 @@ bool cl__equalp(T_sp x, T_sp y);
 bool clasp_charEqual2(T_sp, T_sp);
 };
 
-/*! \page objects How to use the Object hierarchy
- *
- * The Object hierarchy consists of objects that contain a weak_ptr reference to themselves and can
- * be archived using the core::archive facility.
- *
- * To subclass into the Object hierarchy
- *
- * Within the header file...\n
- *
- * 	-# Make your object a subclass of Object or one of its subclasses.
- *	-# Add the following macro at the top of the class:\n
- *		- DEFI NE_CLASS( O_class, classNameString, O_superClass )
- *	-# Add a archive method with the form:\n
- *		- virtual void archive(core::ArchiveP node);
- *	-# If this is a base class then add a archive method with the form:\n
- *		- virtual void archiveBase(core::ArchiveP node);
- *
- * Within the code file...\n
- *
- *	-# Add the following macro at the top of the source file that contains the methods\n
- *		- REGISTER_CLASS(aNamespace,O_class);
- *	-# Use SIMPLE_PYTHON_INTERFACE(_className(No _O)) or...\n
- *		-# Remove all initializers from the boost::python::class_ template function using:\n
- *			- boost::python::no_init
- *		-# Set up the base class in the boost::python::class_ template function:\n
- *			- boost::python::bases<O_superClass>
- *		-# Create a function to allow python to create the object called:\n
- *			- boost::python::def("create_class",&RP_OLD_Create<O_class> );\n
- *			- Or create static methods that call RP_OLD_Create<O_className> and initialize the object.
- *
- * Within other files...\n
- *
- *	-# Use RP_OLD_Create<O_className> to create instances of the class.
- *
- * (This text is in object.h)
- */
 
-//----------------------------------------------------
 //----------------------------------------------------
 //----------------------------------------------------
 //
@@ -135,16 +98,17 @@ bool clasp_charEqual2(T_sp, T_sp);
 //
 //
 namespace core {
-SMART(Class);
-SMART(Record);
-SMART(BuiltInClass);
-SMART(StandardClass);
-SMART(Model);
-SMART(LambdaListHandler);
-SMART(Binder);
-SMART(Symbol);
-SMART(CandoDatabase);
-SMART(Cons);
+  FORWARD(Class);
+  FORWARD(Record);
+  FORWARD(BuiltInClass);
+  FORWARD(StandardClass);
+  FORWARD(Model);
+  FORWARD(LambdaListHandler);
+  FORWARD(Binder);
+  FORWARD(Symbol);
+  FORWARD(CandoDatabase);
+  FORWARD(Cons);
+  FORWARD(General);
 };
 
 #define NO_BASE_CLASS "-NOBASE-"
@@ -313,104 +277,100 @@ struct LispBases2 {
 
 namespace core {
 
-class KeyValueMapper {
-public:
+  class KeyValueMapper {
+  public:
   /*! Return true if the mapper should continue */
-  virtual bool mapKeyValue(T_sp key, T_sp value) = 0;
-};
+    virtual bool mapKeyValue(T_sp key, T_sp value) = 0;
+  };
 
 //#define DEBUG_HASH_GENERATOR
-class HashGenerator {
-  static const int MaxParts = 32;
+  class HashGenerator {
+    static const int MaxParts = 32;
 
-private:
-  int _NextPartIndex;
-  Fixnum _Parts[MaxParts];
+  private:
+    int _NextPartIndex;
+    Fixnum _Parts[MaxParts];
 #ifdef DEBUG_HASH_GENERATOR
-  bool _debug;
+    bool _debug;
 #endif
-public:
+  public:
   HashGenerator(bool debug = false) : _NextPartIndex(0)
 #ifdef DEBUG_HASH_GENERATOR
-                                      ,
-                                      _debug(debug)
+      ,
+      _debug(debug)
 #endif
-                                      {};
+      {};
 
-  bool addPart(Fixnum part) {
-    if (this->_NextPartIndex >= MaxParts)
-      return false;
-    this->_Parts[this->_NextPartIndex] = part;
-#ifdef DEBUG_HASH_GENERATOR
-    if (this->_debug) {
-      printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
-    }
-#endif
-    ++this->_NextPartIndex;
-    return true;
-  }
-
-  /*Add the bignum across multiple parts, return true if everything was added */
-  bool addPart(const mpz_class &bignum);
-
-  /*! Return true if not accepting any more parts */
-  bool isFull() const {
-    return this->_NextPartIndex >= MaxParts;
-  }
-
-  /*! Return true if can still accept parts */
-  bool isFilling() const {
-    return this->_NextPartIndex < MaxParts;
-  }
-
-  gc::Fixnum hash(gc::Fixnum bound = 0) const {
-    gc::Fixnum hash = 5381;
-    for (int i = 0; i < this->_NextPartIndex; i++) {
-      hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t) this->_Parts[i]);
+    bool addPart(Fixnum part) {
+      if (this->_NextPartIndex >= MaxParts)
+        return false;
+      this->_Parts[this->_NextPartIndex] = part;
 #ifdef DEBUG_HASH_GENERATOR
       if (this->_debug) {
-        printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
+        printf("%s:%d Added part[%d] --> %ld\n", __FILE__, __LINE__, this->_NextPartIndex, part);
       }
 #endif
-      //		hash = ((hash << 5) + hash) + this->_Parts[i];
+      ++this->_NextPartIndex;
+      return true;
     }
-    if (bound)
-      return ((cl_intptr_t)hash) % bound;
+
+  /*Add the bignum across multiple parts, return true if everything was added */
+    bool addPart(const mpz_class &bignum);
+
+  /*! Return true if not accepting any more parts */
+    bool isFull() const {
+      return this->_NextPartIndex >= MaxParts;
+    }
+
+  /*! Return true if can still accept parts */
+    bool isFilling() const {
+      return this->_NextPartIndex < MaxParts;
+    }
+
+    gc::Fixnum hash(gc::Fixnum bound = 0) const {
+      gc::Fixnum hash = 5381;
+      for (int i = 0; i < this->_NextPartIndex; i++) {
+        hash = (gc::Fixnum)hash_word((cl_intptr_t)hash, (cl_intptr_t) this->_Parts[i]);
 #ifdef DEBUG_HASH_GENERATOR
-    if (this->_debug) {
-      printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
-    }
+        if (this->_debug) {
+          printf("%s:%d  calculated hash = %lu with part[%d] --> %lu\n", __FILE__, __LINE__, hash, i, this->_Parts[i]);
+        }
 #endif
-    return hash;
-  }
-
-  string asString() const {
-    std::stringstream ss;
-    ss << "#<HashGenerator ";
-    for (int i = 0; i < this->_NextPartIndex; i++) {
-      ss << this->_Parts[i] << "-";
+      //		hash = ((hash << 5) + hash) + this->_Parts[i];
+      }
+      if (bound)
+        return ((cl_intptr_t)hash) % bound;
+#ifdef DEBUG_HASH_GENERATOR
+      if (this->_debug) {
+        printf("%s:%d  final hash = %lu\n", __FILE__, __LINE__, hash);
+      }
+#endif
+      return hash;
     }
-    ss << ">";
-    return ss.str();
-  }
 
-  void hashObject(T_sp obj);
-};
+    string asString() const {
+      std::stringstream ss;
+      ss << "#<HashGenerator ";
+      for (int i = 0; i < this->_NextPartIndex; i++) {
+        ss << this->_Parts[i] << "-";
+      }
+      ss << ">";
+      return ss.str();
+    }
+
+    void hashObject(T_sp obj);
+  };
 
 //    extern Symbol_sp _sym_list;
 //    extern Symbol_sp _sym_nil;
 //    extern Symbol_sp _sym_t;
-class T_O : public _RootDummyClass {
-public:
-  ~T_O(){};
 
-private:
-  friend class CoreExposer;
 
-#define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
+
+  #define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
   FRIEND_GC_SCANNER(oNamespace::oClass);                                                                               \
                                                                                                                        \
-public:                                                                                                                \
+  public:                                                                                                              \
   template <class DestClass> gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const {                \
     oClass *not_const_this_gc_safe = const_cast<oClass *>(this); /* Should be GC-safe because this should be a root */ \
     return gctools::smart_ptr<DestClass>(not_const_this_gc_safe);                                                      \
@@ -421,38 +381,31 @@ public:                                                                         
   gctools::smart_ptr<oClass> asSmartPtr() const { return this->const_sharedThis<oClass>(); };                          \
   gctools::smart_ptr<oClass> asSmartPtr() { return this->sharedThis<oClass>(); };                                      \
                                                                                                                        \
-public:                                                                                                                \
-  /*    static gctools::smart_ptr<oClass> nil(core::Lisp_sp lisp);	*/                                                  \
+  public:                                                                                                              \
+  /*    static gctools::smart_ptr<oClass> nil(core::Lisp_sp lisp);	*/                                             \
   typedef oClass ThisClass;                                                                                            \
   typedef gctools::smart_ptr<oClass> smart_ptr;                                                                        \
                                                                                                                        \
-public:                                                                                                                \
-  static core::Symbol_sp static_class_symbol;                                                                         \
-  static core::Class_sp static_class;                                                                                \
+  public:                                                                                                              \
+  static core::Symbol_sp static_class_symbol;                                                                          \
+  static core::Class_sp static_class;                                                                                  \
   static gctools::tagged_pointer<core::Creator> static_creator;                                                        \
   static int static_Kind;                                                                                              \
-  /* static gctools::smart_ptr<oClass> _nil; depreciate this in favor of _Nil<oClass>()? */                            \
-  /* static gctools::smart_ptr<oClass> _unbound; depreciate this in favor of _Unbound<oClass>()? */                    \
-  /*    static oClass* ___staticDereferencedNilInstance;	*/                                                     \
-  /*    static oClass* ___staticDereferencedUnboundInstance; */                                                        \
-public:                                                                                                                \
-  static void set_static_class_symbol(core::Symbol_sp i) { oClass::static_class_symbol = i; };                      \
-  static void set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };       \
+  public:                                                                                                              \
+  static void set_static_class_symbol(core::Symbol_sp i) { oClass::static_class_symbol = i; };                         \
+  static void set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };          \
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
-  static core::Symbol_sp static_classSymbol() { return oClass::static_class_symbol; };                                \
+  static core::Symbol_sp static_classSymbol() { return oClass::static_class_symbol; };                                 \
   static string Package() { return oClass::static_packageName(); };                                                    \
   static string Pkg() { return Package(); };                                                                           \
-    virtual core::Class_sp __class() const {                                                                             \
-    return oClass::static_class;                                                                                     \
-  }                                                                                                                    \
   static void expose_to_clasp();
 
-#define __COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)   \
-  __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName) \
-  static gctools::smart_ptr<oClass> create() {                           \
-    GC_ALLOCATE(oClass, obj);                                            \
-    return obj;                                                          \
+#define __COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)     \
+  __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)   \
+    static gctools::smart_ptr<oClass> create() {                           \
+    GC_ALLOCATE(oClass, obj);                                              \
+    return obj;                                                            \
   };
 
 #define LISP_TEMPLATE_CLASS(oClass) \
@@ -465,8 +418,14 @@ public:                                                                         
   public: \
     typedef b1 Base; \
   typedef LispBases1<Base> Bases; \
-  __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
+  __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName); \
+  virtual core::Class_sp __class() const {                        \
+    return aClass::static_class;                                  \ 
+  }                                                               \
+  /* end LISP_CLASS */
 
+
+    
 #define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
   public: \
     typedef b1 Base; \
@@ -474,439 +433,17 @@ public:                                                                         
   __COMMON_VIRTUAL_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
 #endif
 
-  LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
-
 #define DECLARE_INIT_GLOBALS() \
-public:                        \
-  static void lisp_initGlobals(core::Lisp_sp lisp);
-
-#define DECLARE_INIT()
-
-#define DECLARE_MAKE_INIT()
-
-protected: // T_O instance variables, these use memory
-           /*! Every object points to its class
-		 */
-public:
-  virtual core::Lisp_sp lisp();
-  virtual core::Lisp_sp lisp() const;
-
-public:
-  //	void invoke__init__(core::Function_sp e, core::List_sp args, core::Environment_sp environment, core::Lisp_sp lisp);
-
-public:
-  /*! Return a shallow copy of the object */
-  virtual T_sp shallowCopy() const;
-  /*! Return a deep copy of the object */
-  virtual T_sp deepCopy() const;
-
-public:
-  virtual void sxhash_(HashGenerator &hg) const;
-
-public:
-public:
-  string className() const;
-
-public: // ----------------
-  void setTrackName(const string &nm);
-  void setTrackNameUsingAddress();
-
-  //! Initialize member variables and those that depend on sharedThis
-  virtual void initialize();
-
-  //	void	__setClass(Class_sp mc) { this->_Class = mc.get(); };
-  //	void	__setClass_using_Symbol(Symbol_sp mcSym);
-  //	void    __setClassPointer(core::Class_O* mcp) { this->_Class = mcp;};
-  //	void	__resetInitializationOwner() { this->_InitializationOwner.reset();};
-
-public: // Introspection stuff -----------------------------
-        //    core::Class_sp baseClass();
-
-  virtual bool isStandardObject() { return false; };
-
-  /*! Return true if this object is assignable from obj
-	 * or if this isADescendant of obj
-	 * in the default environment hierarchy
-	 */
-  bool isAInstanceOf(core::Class_sp mc);
-
-  /*! Return true if this isADescendant of obj
-	 * in the given environment hierarchy
-	 */
-  //	    bool hierarchy_isA(core::Hierarchy_sp h, T_sp obj);
-
-  //	bool isOfClassByClassSymbol(Symbol_sp cid);
-  //	template <class o_class> bool isOfClass() { return this->isOfClassByClassSymbol(o_class::static_classSymbol()); };
-  /*! Check if this is a subclass of cid */
-
-  bool isAssignableToByClassSymbol(Symbol_sp cid) const;
-  bool isAssignableToClass(core::Class_sp mc) const;
-
-  template <class o_class>
-  bool isAssignableTo() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol()); }
+  public:                        \
+    static void lisp_initGlobals(core::Lisp_sp lisp);
 
 
-  /*! If this object can render itself into a graphics object then
-	 * return true
-	 */
-  //	virtual bool canRender() { return false; };
-  /*! If this object can render itself into a graphics object then
-	 * return the graphics
-	 */
-  //	virtual core::Render_sp rendered(core::List_sp options) {_G(); THROW_HARD_ERROR(BF("Sub-class(%s) must implement") % this->className() ); };
-  /*! Return the center of geometry of the object.
-	 * If it doesn't have one then return nil
-	 */
-  //	virtual core::OVector3_sp centerOfRenderedGeometry();
-
-  //	core::Render_sp boost_rendered();
-
-public: // predicates
-public: // Serialization stuff -----------------------------
-        /*! New serializer that uses s-exp */
-#if defined(OLD_SERIALIZE)
-  virtual void serialize(serialize::SNode node);
-#endif
-
-  //! Serialize a base object of an object .
-  //Only called by subclasses that want to archive their base
-  virtual void archiveBase(core::ArchiveP node);
-
-  /*! Finalize an object loaded from an archive.
-	 * objects that need to finalize their contents once the entire archive
-	 * has loaded can register with the loadArchive
-	 * that they want loadFinalize called once everything is loaded
-	 * Return true if finalization was successful.
-	 * Return false if it was not.
-	 *
-	 * The node is passed only for throwing errors in finalization that can be traced back to a node
-	 */
-  virtual bool loadFinalize(core::ArchiveP node);
-
-  //! Save an object to an archive.
-  //If you implement archive you don't need to implement this.
-  virtual void save(core::ArchiveP node) {
-    _OF();
-    HARD_SUBCLASS_MUST_IMPLEMENT();
-  };
-
-  bool sameAs(T_sp obj) {
-    _OF();
-    SIMPLE_ERROR(BF("Seriously???? Am I still using this?"));
-    //	    return ( this == obj.get() );
-  };
-
-  virtual string asXmlString() const;
-
-#if defined(XML_ARCHIVE)
-  virtual string asXmlStringWrap(const string &nodeName, const string &rawAttributes);
-  void saveXmlAs(const string &fileName, const string &uid);
-
-#endif // defined(XML_ARCHIVE)
-
-  /*! Objects can catch signals from Models
-	 * but only Model's and subclasses can send them
-	 */
-  virtual void catchSignal(core::Symbol_sp signal, core::Model_sp sender, core::List_sp data) { _G(); /*Do nothing*/ };
-  virtual void propagateSignal(core::Symbol_sp signal){}; // Objects don't propagate signals
-
-public: // Description stuff
-        //! A technical string representation
-  virtual string description() const;
-  //! Just describe the contents
-  virtual string descriptionOfContents() const;
-  //! A pretty-print representation
-  virtual string descriptionNoConst() { return this->description(); };
-  //! A pretty-print representation
-  virtual string __repr__() const { return this->description(); };
-  //! Common Lisp __write__(T_sp strm)
-  virtual void __write__(T_sp strm) const;
-  //! A pretty-print representation
-  virtual string __str__() { return _rep_(this->sharedThis<T_O>()); };
-  virtual void describe(T_sp stream);
-  virtual void dump() { this->describe(lisp_true()); };
-
-public:
-  //! Encode this object as an a-list
-  virtual core::List_sp encode();
-  //! Decode this object from an a-list
-  virtual void decode(core::List_sp);
-  virtual void initialize(core::List_sp alist);
-  virtual bool fieldsp() const { return false; };
-  virtual void fields(Record_sp record) { SUBIMP(); };
-
-public:
-  string descriptionNonConst();
-
-public:
-  /* Return true if the two objects equal each other
-	 * "equal" means different things for different objects.
-	 * For instance strings compare their string values
-	 * Integers will compare integer values
-	 * other objects will punt and just compare their pointers to
-	 * see if they are identical.
-	 *
-	 * Lisp’s equality operators are:
-	 *
-	 * = compares only numbers, regardless of type.
-	 * eq compares object addresses. Two objects are eq iff they are actually the
-	 * same object in memory. Don’t use it for numbers and characters.
-	 * eql compares symbols similarly to eq, numbers (type sensitive) and characters (case sensitive)
-	 * equal compares more general objects. Two objects are equal iff they are eql,
-	 * strings of eql characters, bit vectors of the same contents, or lists of equal objects.
-	 * For anything else, eq is used.
-	 * equalp is like equal, just more advanced. Comparison of numbers is type insensitive.
-	 * Comparison of chars and strings is case insensitive.
-	 * Lists, hashes, arrays and structures are equalp if their members are equalp. For anything else, eq is used.
-	 */
-  /*! Return true iff the two objects are the same object.
-	 * Meaning their memory addresses are identical
-	 */
-  inline bool eq(T_sp obj) const { return obj.objectp() && (this == obj.get()); };
-  /*! Return true if the two objects are the same object.
-	 * If they aren't the same object for numbers and values
-	 * the values are compared.
-	 */
-  virtual bool eql_(T_sp obj) const;
-
-  /*! Only compares numbers. Return true if the two numbers are equivalent ignoring type.
-	 * If they aren't the same object for numbers and values
-	 * the values are compared.
-	 */
-  //	virtual bool eqn(T_sp obj) const;
-  /*! Return true the two objects are equivalent or structuraly simular
-	 * regardless of where they are located in memory.
-	 * This works like Common LISP's "equal"
-	 */
-  virtual bool equal(T_sp obj) const;
-  /*! Return true the two objects are equivalent or structuraly simular
-	 * regardless of where they are located in memory.
-	 * It uses "==" (which is type insensitive for numbers).
-	 * This works like Common LISP's "equalp"
-	 */
-  virtual bool equalp(T_sp obj) const;
-
-  /*! Return true if the this is less than obj
-	 * All other relative comparisons call this one
-	 * so if you define this in a subclass then all the other comparisons
-	 * will work
-	 * but you can define the others if you want
-	 *
-	 * -lt- is the only one that has to be defined if you want relative comparisons
-	 * but the others can be defined to improve efficiency
-	 */
-  virtual bool operator<(T_sp obj) const {
-    _OF();
-    SUBCLASS_MUST_IMPLEMENT();
-  }; // This is the only one that absolutely has to be defined in a subclass
-  virtual bool operator<=(T_sp obj) const {
-    if (cl__eql(this->asSmartPtr(), obj))
-      return true;
-    return this->operator<(obj);
-  };
-  virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
-  virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
-
-  virtual void validate() const {};
-  
-public: // Instance protocol
-  //! Some Class objects will create instances of classes different from themselves
-  virtual core::Class_sp _instanceClass() const { return this->__class(); };
-
-  virtual T_sp instanceClassSet(Class_sp mc);
-
-  /*! Allocate space for (slots) slots and initialize them */
-  virtual void initializeSlots(int slots);
-
-  /*! ECL slot handling, slots are indexed with integers */
-  virtual T_sp instanceRef(int idx) const;
-  /*! ECL slot handling, slots are indexed with integers */
-  virtual T_sp instanceSet(int idx, T_sp val);
-
-  /*! Set the signature (metaclass slot definitions) for the instance */
-  virtual T_sp instanceSigSet();
-  /*! Get the signature (metaclass slot definitions) for the instance */
-  virtual T_sp instanceSig() const;
-
-  /*! Return number of slots if instance of Instance_O or StructureObject_O class
-	  otherwise return nil */
-  virtual T_sp oinstancepSTAR() const { return _Nil<T_O>(); };
-  /*! Return number of slots if instance of Instance_O otherwise return nil */
-  virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
-  bool instancep() const { return oinstancep().isTrue(); };
-  virtual bool environmentp() const { return false; };
-  virtual bool genericFunctionP() const { return false; };
-  /*! Return number of slots if instance of Instance_O otherwise return nil */
-  virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
-  bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
-
-public:
-  /*! Some objects can return contained objects references by class and name
-	 */
-  //  virtual T_sp oGetReference(core::ObjRef_sp ref) { return _Nil<T_O>(); };
-};
-
-inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
-  if (obj.fixnump()) {
-    hg.addPart(obj.unsafe_fixnum());
-    return;
-  } else if (obj.single_floatp()) {
-    hg.addPart((gc::Fixnum)std::abs(::floor(obj.unsafe_single_float())));
-    return;
-  } else if (obj.characterp()) {
-    hg.addPart(obj.unsafe_character());
-    return;
-  }
-  obj->sxhash_(hg);
-};
-};
-
-namespace core {
-
-CL_LAMBDA(x y);
-CL_DECLARE();
-CL_DOCSTRING("eq");
-inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
-  return (x == y);
-};
-
-CL_LAMBDA(x y);
-CL_DECLARE();
-CL_DOCSTRING("eql");
-inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
-  if (x.fixnump()) {
-    return x.raw_() == y.raw_();
-  } else if (x.single_floatp()) {
-    if (y.single_floatp()) {
-      return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
-    }
-    return false;
-  } else if (x.characterp()) {
-    if (y.characterp()) {
-      return x.unsafe_character() == y.unsafe_character();
-    }
-    return false;
-  }
-  return x->eql_(y);
-};
-
-CL_LAMBDA(x y);
-CL_DECLARE();
-CL_DOCSTRING("equal");
-inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
-  if (x.fixnump()) {
-    return x.raw_() == y.raw_();
-  } else if (x.single_floatp()) {
-    if (y.single_floatp()) {
-      return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
-    }
-    return false;
-  } else if (x.characterp()) {
-    if (y.characterp()) {
-      return x.unsafe_character() == y.unsafe_character();
-    }
-    return false;
-  }
-  return x->equal(y);
-};
-
-extern int basic_compare(Number_sp na, Number_sp nb);
-
- CL_LAMBDA(x y);
- CL_DECLARE();
- CL_DOCSTRING("equalp");
-inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
-  if (x.fixnump()) {
-    if (y.fixnump()) {
-      return x.raw_() == y.raw_();
-    } else if (y.single_floatp()) {
-      return (x.unsafe_fixnum() == y.unsafe_single_float());
-    } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-      return basic_compare(x, y) == 0;
-    }
-    return false;
-  } else if (x.single_floatp()) {
-    if (y.single_floatp()) {
-      return x.unsafe_single_float() == y.unsafe_single_float();
-    } else if (y.fixnump()) {
-      return x.unsafe_single_float() == y.unsafe_fixnum();
-    } else if (Number_sp ny = y.asOrNull<Number_O>()) {
-      return basic_compare(x, y);
-    }
-    return false;
-  } else if (x.characterp()) {
-    return clasp_charEqual2(x, y);
-  }
-  return x->equalp(y);
-};
-};
-
-namespace core {
-
-template <class _W_>
-class LispObjectCreator : public core::Creator {
-public:
-  typedef core::Creator TemplatedBase;
-
-public:
-  DISABLE_NEW();
-  size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>); };
-  virtual void describe() const {
-    printf("LispObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
-  }
-  virtual core::T_sp allocate() {
-    GC_ALLOCATE(_W_, obj);
-    return obj;
-  }
-  virtual void searcher(){};
-};
-};
-
-template <typename T>
-class gctools::GCKind<core::LispObjectCreator<T>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
-};
-
-namespace core {
-template <class oclass>
-T_sp new_LispObject() {
-  _G();
-  T_sp obj = oclass::static_creator->allocate();
-  //	GC_ALLOCATE(oclass,obj );
-  return obj;
-};
-}
-
-template <class o_class>
-inline gctools::smart_ptr<o_class> downcast(core::T_sp c) {
-  return c.as<o_class>();
-}
-// ------------------------------------------------------------
-//
-// New way of declaring and registering classes
-//
-// To define a class use:
-//
-//
-// Within the cc file that contains the code and within
-// the namespace of the class use:
-// INITIALIZE_CLASS(_class_)
-//
-// That's it, everything else will be taken care of
-
-#if defined(XML_ARCHIVE)
+  #if defined(XML_ARCHIVE)
 #define DECLARE_ARCHIVE() \
 public:                   \
   void archiveBase(core::ArchiveP node);
 #endif // defined(XML_ARCHIVE)
 
-#define DECLARE_STANDARD_LISP_FUNCTIONS() \
-  DECLARE_ARCHIVE();                      \
-  DECLARE_INIT();                         \
-                                          \
-public:                                   \
-  void initialize();
 
 #define __DEFAULT_INITIALIZATION() \
 public:                            \
@@ -933,127 +470,330 @@ public:                                                      \
   DEFAULT_DTOR(oClass);                                           \
 /*end*/
 
-//------------------------------------------------------------
-//------------------------------------------------------------
-//------------------------------------------------------------
-//------------------------------------------------------------
-//
-//
-// Register classes
-//
-//
-//
-
-/*! Register all classes with this method
- */
+  
+  class T_O : public _RootDummyClass {
+  public:
+    ~T_O(){};
+  private:
+    friend class CoreExposer;
+    LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
+  public:
+  public: // ----------------
+//    void setTrackName(const string &nm);
+//    void setTrackNameUsingAddress();
+    bool isAInstanceOf(core::Class_sp mc);
 #if 0
-template <class oClass>
-inline void registerClass() {
-  string nobase;
-  core::Symbol_sp classSymbol;
-  if (oClass::static_classSymbol() != core::T_O::static_classSymbol()) {
-    if (!oClass::Bases::baseClassSymbolsDefined()) {
-      THROW_HARD_ERROR(boost::format("You are trying to register class(%s) "
-                                     "but you have not registered its baseClass") %
-                       oClass::static_className());
-    }
-  }
-  // If the class is already initialized then skip assigning it a classSymbol
-  //    if ( oClass::static_classSymbol() == UndefinedUnsignedInt )
-  if (!IS_SYMBOL_DEFINED(oClass::static_classSymbol())) {
-    core::Symbol_sp classSymbol = core::lisp_intern(oClass::static_className(), oClass::static_packageName());
-    oClass::___set_static_ClassSymbol(classSymbol);
-    if (!oClass::static_creator) {
-      gctools::tagged_pointer<core::LispObjectCreator<oClass>> lispObjectCreator = gctools::ClassAllocator<core::LispObjectCreator<oClass>>::allocate_class_kind(gctools::GCKind<core::LispObjectCreator<oClass>>::Kind);
-      oClass::___set_static_creator(lispObjectCreator);
-    }
-  }
-  oClass::expose_to_clasp();
-};
+    bool isAssignableToByClassSymbol(Symbol_sp cid) const;
+    bool isAssignableToClass(core::Class_sp mc) const;
+
+    template <class o_class>
+      bool isAssignableTo() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol()); }
 #endif
+  public:
+    inline bool eq(T_sp obj) const { return obj.objectp() && (this == obj.get()); };
+  };
+
+};
+
+#include <clasp/core/cons.h>
 
 
-
-// ^^^^^^^^^^^^
-// ^^^^^^^^^^^^
-// ^^^^^^^^^^^^
-
+//------------------------------------------------------------
+//------------------------------------------------------------
 //
-// Defines the class method that defines nil for this class
-// and avoids the static initialization fiasco
 //
-// uint oClass::static_class_symbol; = UndefinedUnsignedInt;
-#define _REGISTER_CLASS_HEADER_COMMON(oClass)   \
-  core::Symbol_sp oClass::static_class_symbol; \
-  core::Class_sp oClass::static_class;        \
-  int oClass::static_Kind;                      \
-  gctools::tagged_pointer<core::Creator> oClass::static_creator;
+namespace core {
 
-#define STATIC_CLASS_INFO(oClass)                            \
-/*	oClass* oClass::___staticDereferencedNilInstance;	*/      \
-/*  oClass* oClass::___staticDereferencedUnboundInstance;	*/ \
-/* gctools::smart_ptr<oClass> oClass::_nil; */               \
-/* gctools::smart_ptr<oClass> oClass::_unbound;	*/
+  Class_sp instance_class(T_sp obj);
 
-#define _REGISTER_CLASS_HEADER(ns, oClass)                      \
-  _REGISTER_CLASS_HEADER_COMMON(oClass);                        \
-  void Call_exposePython_##ns##__##oClass(core::Lisp_sp lisp) { \
-    oClass::exposePython(lisp);                                 \
-  }                                                             \
-  void Register_##ns##__##oClass(core::Lisp_sp lisp)
+  class General_O : public T_O {
+    LISP_CLASS(core, CorePkg, General_O, "General", T_O );
+  public:
+    virtual void sxhash_(HashGenerator &hg) const;
+      //! Initialize member variables and those that depend on sharedThis
+    virtual void initialize();
+    virtual bool isStandardObject() { return false; };
+  /*! Objects can catch signals from Models
+	 * but only Model's and subclasses can send them
+	 */
+    virtual void catchSignal(core::Symbol_sp signal, core::Model_sp sender, core::List_sp data) { _G(); /*Do nothing*/ };
+    virtual void propagateSignal(core::Symbol_sp signal){}; // Objects don't propagate signals
 
-/*! Register a class.
- * Return True if it could be registered otherwise False.
- * If this class depends on other classes being registered
- * then return False and classes will be repeatedly registered until they
- * are all registered.
- */
-#define REGISTER_CLASS(ns,oClass)  _REGISTER_CLASS_HEADER_COMMON(oClass);
-/*end*/
+    string className() const;
 
-/*! Do nothing - this is now generated by the scraper
-*/
-#define EXPOSE_CLASS(ns,oClass) 
-//#define EXPOSE_CLASS(ns,oClass) REGISTER_CLASS(ns,oClass)
+    T_sp deepCopy() const;
+    
+        //! A technical string representation
+    virtual string description() const;
+  //! Just describe the contents
+    virtual string descriptionOfContents() const;
+  //! A pretty-print representation
+    virtual string descriptionNoConst() { return this->description(); };
+  //! A pretty-print representation
+    virtual string __repr__() const { return this->description(); };
+  //! Common Lisp __write__(T_sp strm)
+    virtual void __write__(T_sp strm) const;
+  //! A pretty-print representation
+    virtual string __str__() { return _rep_(this->sharedThis<T_O>()); };
+    virtual void describe(T_sp stream);
+    virtual void dump() { this->describe(lisp_true()); };
 
-/*!
- * Create a default python interface
- *
- * Don't use the initArgs string, just pass arguments through to the __init__ function
- */
-#define PYTHON__init__(pkgName, className, docString) \
-  {}
+  public:
+  //! Encode this object as an a-list
+    virtual core::List_sp encode();
+  //! Decode this object from an a-list
+    virtual void decode(core::List_sp);
+    virtual void initialize(core::List_sp alist);
+    virtual bool fieldsp() const { return false; };
+    virtual void fields(Record_sp record) { SUBIMP(); };
+  /*! Return true if the two objects are the same object.
+	 * If they aren't the same object for numbers and values
+	 * the values are compared.
+	 */
+    virtual bool eql_(T_sp obj) const;
 
-#define PYTHON_CLASS(pkgName, className, initArgs, docString, ___lisp) \
-  PYTHON__init__(pkgName, className, docString);                       \
-  boost::python::class_<className##_O,                                 \
-                        gctools::smart_ptr<className##_O>,             \
-                        boost::python::bases<className##_O::Base>,     \
-                        boost::noncopyable>(#className "_O", boost::python::no_init)
+  /*! Return true the two objects are equivalent or structuraly simular
+	 * regardless of where they are located in memory.
+	 * This works like Common LISP's "equal"
+	 */
+    virtual bool equal(T_sp obj) const;
+  /*! Return true the two objects are equivalent or structuraly simular
+	 * regardless of where they are located in memory.
+	 * It uses "==" (which is type insensitive for numbers).
+	 * This works like Common LISP's "equalp"
+	 */
+    virtual bool equalp(T_sp obj) const;
 
-#define PYTHON_CLASS_2BASES(pkgName, className, initArgs, docString, ___lisp)                           \
-  PYTHON__init__(pkgName, className, docString);                                                        \
-  boost::python::class_<className##_O,                                                                  \
-                        gctools::smart_ptr<className##_O>,                                              \
-                        boost::python::bases<className##_O::Bases::Base1, className##_O::Bases::Base2>, \
-                        boost::noncopyable>(#className "_O", boost::python::no_init)
+  /*! Return true if the this is less than obj
+	 * All other relative comparisons call this one
+	 * so if you define this in a subclass then all the other comparisons
+	 * will work
+	 * but you can define the others if you want
+	 *
+	 * -lt- is the only one that has to be defined if you want relative comparisons
+	 * but the others can be defined to improve efficiency
+	 */
+    virtual bool operator<(T_sp obj) const {
+      _OF();
+      SUBCLASS_MUST_IMPLEMENT();
+    }; // This is the only one that absolutely has to be defined in a subclass
+    virtual bool operator<=(T_sp obj) const {
+      if (cl__eql(this->asSmartPtr(), obj))
+        return true;
+      return this->operator<(obj);
+    };
+    virtual bool operator>(T_sp obj) const { return !this->operator<=(obj); };
+    virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
-/*!
- * Create a default python interface with an init
- */
-#define PYTHON_INIT(className)                                             \
-  boost::python::def("create_" #className, &RP_OLD_Create<className##_O>); \
-  boost::python::class_<className##_O,                                     \
-                        gctools::smart_ptr<className##_O>,                 \
-                        boost::python::bases<className##_O::Base>,         \
-                        boost::noncopyable>(#className, init<core::Lisp_sp>)
+    virtual void validate() const {};
+  
+  public: // Instance protocol
+  //! Some Class objects will create instances of classes different from themselves
+    virtual core::Class_sp _instanceClass() const { return this->__class(); };
+
+    virtual T_sp instanceClassSet(Class_sp mc);
+
+  /*! Allocate space for (slots) slots and initialize them */
+    virtual void initializeSlots(int slots);
+
+  /*! ECL slot handling, slots are indexed with integers */
+    virtual T_sp instanceRef(int idx) const;
+  /*! ECL slot handling, slots are indexed with integers */
+    virtual T_sp instanceSet(int idx, T_sp val);
+
+  /*! Set the signature (metaclass slot definitions) for the instance */
+    virtual T_sp instanceSigSet();
+  /*! Get the signature (metaclass slot definitions) for the instance */
+    virtual T_sp instanceSig() const;
+
+  /*! Return number of slots if instance of Instance_O or StructureObject_O class
+	  otherwise return nil */
+    virtual T_sp oinstancepSTAR() const { return _Nil<T_O>(); };
+  /*! Return number of slots if instance of Instance_O otherwise return nil */
+    virtual T_sp oinstancep() const { return _Nil<T_O>(); }; //
+    bool instancep() const { return oinstancep().isTrue(); };
+    virtual bool environmentp() const { return false; };
+    virtual bool genericFunctionP() const { return false; };
+  /*! Return number of slots if instance of Instance_O otherwise return nil */
+    virtual T_sp ofuncallableInstanceP() const { return _Nil<T_O>(); }; //
+    bool funcallableInstanceP() const { return ofuncallableInstanceP().isTrue(); };
+  };
+};
+
+#include <clasp/core/functor.h>
+#include <clasp/gctools/gcweak.h>
 
 namespace core {
-Class_sp cl__class_of(T_sp obj);
-bool cl__eq(T_sp x, T_sp y);
-bool cl__eql(T_sp x, T_sp y);
-bool cl__equal(T_sp x, T_sp y);
-bool cl__equalp(T_sp x, T_sp y);
+  template <class _W_>
+    class LispObjectCreator : public core::Creator {
+  public:
+    typedef core::Creator TemplatedBase;
+
+  public:
+    DISABLE_NEW();
+    size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>); };
+    virtual void describe() const {
+      printf("LispObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
+    }
+    virtual core::T_sp allocate() {
+      GC_ALLOCATE(_W_, obj);
+      return obj;
+    }
+    virtual void searcher(){};
+  };
+};
+
+template <typename T>
+class gctools::GCKind<core::LispObjectCreator<T>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
+};
+
+namespace core {
+template <class oclass>
+T_sp new_LispObject() {
+  _G();
+  T_sp obj = oclass::static_creator->allocate();
+  //	GC_ALLOCATE(oclass,obj );
+  return obj;
+};
+}
+
+template <class o_class>
+inline gctools::smart_ptr<o_class> downcast(core::T_sp c) {
+  return c.as<o_class>();
+}
+
+namespace core {
+
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING("eq");
+  inline CL_DEFUN bool cl__eq(T_sp x, T_sp y) {
+    return (x == y);
+  };
+
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING("eql");
+  inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
+    if (x.fixnump()) {
+      return x.raw_() == y.raw_();
+    } else if (x.single_floatp()) {
+      if (y.single_floatp()) {
+        return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
+      }
+      return false;
+    } else if (x.characterp()) {
+      if (y.characterp()) {
+        return x.unsafe_character() == y.unsafe_character();
+      }
+      return false;
+    } else if ( x.consp() ) {
+      return x.raw_() == y.raw_();
+    } else if ( x.generalp() ) {
+      General_O* general = x.unsafe_general();
+      return general->eql_(y);
+    }
+    SIMPLE_ERROR(BF("Bad eql comparison"));
+  };
+
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING("equal");
+  inline CL_DEFUN bool cl__equal(T_sp x, T_sp y) {
+    if (x.fixnump()) {
+      return x.raw_() == y.raw_();
+    } else if (x.single_floatp()) {
+      if (y.single_floatp()) {
+        return gc::tagged_single_float_masked(x.raw_()) == gc::tagged_single_float_masked(y.raw_());
+      }
+      return false;
+    } else if (x.characterp()) {
+      if (y.characterp()) {
+        return x.unsafe_character() == y.unsafe_character();
+      }
+      return false;
+    } else if (x.consp() ) {
+      Cons_O* cons = x.unsafe_cons();
+      return cons->equal(y);
+    } else if (x.generalp() ) {
+      General_O* general = x.unsafe_general();
+      return general->equal(y);
+    }
+    SIMPLE_ERROR(BF("Bad equal comparison"));
+  };
+
+  extern int basic_compare(Number_sp na, Number_sp nb);
+
+  CL_LAMBDA(x y);
+  CL_DECLARE();
+  CL_DOCSTRING("equalp");
+  inline CL_DEFUN bool cl__equalp(T_sp x, T_sp y) {
+    if (x.fixnump()) {
+      if (y.fixnump()) {
+        return x.raw_() == y.raw_();
+      } else if (y.single_floatp()) {
+        return (x.unsafe_fixnum() == y.unsafe_single_float());
+      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+        return basic_compare(x, y) == 0;
+      }
+      return false;
+    } else if (x.single_floatp()) {
+      if (y.single_floatp()) {
+        return x.unsafe_single_float() == y.unsafe_single_float();
+      } else if (y.fixnump()) {
+        return x.unsafe_single_float() == y.unsafe_fixnum();
+      } else if (Number_sp ny = y.asOrNull<Number_O>()) {
+        return basic_compare(x, y);
+      }
+      return false;
+    } else if (x.characterp()) {
+      return clasp_charEqual2(x, y);
+    } else if (x.consp() ) {
+      Cons_O* cons = x.unsafe_cons();
+      return cons->equalp(y);
+    } else if ( x.generalp() ) {
+      General_O* genx = x.unsafe_general();
+      return genx->equalp(y);
+    }
+    SIMPLE_ERROR(BF("Bad equalp comparison"));
+  };
+};
+
+
+namespace core {
+  inline void clasp_sxhash(T_sp obj, HashGenerator &hg) {
+    if (obj.fixnump()) {
+      hg.addPart(obj.unsafe_fixnum());
+      return;
+    } else if (obj.single_floatp()) {
+      hg.addPart((gc::Fixnum)std::abs(::floor(obj.unsafe_single_float())));
+      return;
+    } else if (obj.characterp()) {
+      hg.addPart(obj.unsafe_character());
+      return;
+    } else if (obj.consp() ) {
+      Cons_O* cons = obj.unsafe_cons();
+      cons->sxhash_(hg);
+      return;
+    } else if ( obj.generalp() ) {
+      General_O* general = obj.unsafe_general();
+      general->sxhash_(hg);
+      return;
+    }
+    SIMPLE_ERROR(BF("Handle sxhash_ for object"));
+  };
+};
+
+namespace core {
+  Class_sp cl__class_of(T_sp obj);
+  bool cl__eq(T_sp x, T_sp y);
+  bool cl__eql(T_sp x, T_sp y);
+  bool cl__equal(T_sp x, T_sp y);
+  bool cl__equalp(T_sp x, T_sp y);
+
+  List_sp encode(T_sp);
 };
 
 #include <clasp/core/glue.h>

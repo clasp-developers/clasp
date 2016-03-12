@@ -87,6 +87,7 @@ typedef int mode_t;
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/wrappers.h>
 

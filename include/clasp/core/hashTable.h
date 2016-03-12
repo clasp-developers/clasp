@@ -37,9 +37,9 @@ namespace core {
 T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
 
 FORWARD(HashTable);
-class HashTable_O : public T_O {
+class HashTable_O : public General_O {
   struct metadata_bootstrap_class {};
-  LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable",core::T_O);
+  LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable",core::General_O);
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 

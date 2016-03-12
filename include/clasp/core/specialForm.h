@@ -40,7 +40,6 @@ namespace core {
 SMART(SpecialForm);
 class SpecialForm_O : public Function_O {
   LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm",Function_O);
-  DECLARE_INIT();
 
 public: // virtual functions inherited from Object
   void initialize();

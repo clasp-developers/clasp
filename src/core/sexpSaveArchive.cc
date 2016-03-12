@@ -56,6 +56,8 @@ const char *keywords_saveArchive[] = {":debug", ""};
 
 
 void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream) {
+  DEPRECIATED();
+#if 0
   if (snode->refCount() > 1) {
     T_sp ref = snodeToRef->gethash(snode, _Nil<T_O>());
     if (ref.notnilp()) {
@@ -103,6 +105,7 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
     }
     clasp_write_char(')', stream);
   }
+#endif
 }
 
 CL_LISPIFY_NAME("sexpSaveArchiveWrite");

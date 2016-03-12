@@ -50,6 +50,8 @@ SYMBOL_EXPORT_SC_(KeywordPkg, podSymbolMap);
 
 
 SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
+  DEPRECIATED();
+#if 0
   if (val.nilp() ||
       gc::IsA<Fixnum_sp>(val) ||
       gc::IsA<Number_sp>(val) ||
@@ -61,11 +63,12 @@ SNode_sp SNode_O::makeAppropriateSNode(T_sp val, HashTable_sp objToSNodeMap) {
     return lnode;
   }
   BranchSNode_sp branchSNode = BranchSNode_O::create();
-  branchSNode->_Kind = val->_instanceClass()->className();
+  branchSNode->_Kind = cl__class_of(val)->className();
   branchSNode->incRefCount();
   objToSNodeMap->hash_table_setf_gethash(val, branchSNode);
-  val->archiveBase(branchSNode);
+  val.as<General_O>()->archiveBase(branchSNode);
   return branchSNode;
+#endif
 }
 
 
@@ -216,6 +219,8 @@ void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const &vec) {
 }
 
 T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
+  DEPRECIATED();
+#if 0
   SYMBOL_EXPORT_SC_(CorePkg, serialize);
   Class_sp cl = cl__find_class(this->_Kind);
   BranchSNode_sp me = this->asSmartPtr();
@@ -223,6 +228,7 @@ T_sp BranchSNode_O::createObject(HashTable_sp snodeToObject) {
   snodeToObject->hash_table_setf_gethash(me, obj);
   obj->archiveBase(me);
   return obj;
+#endif
 };
 
 string BranchSNode_O::__repr__() const {
@@ -396,15 +402,12 @@ void LoadArchive_O::needsFinalization(SNode_sp node) {
 }
 
 void LoadArchive_O::finalizeObjects() {
+  DEPRECIATED();
+#if 0
   T_sp obj;
   this->_NodesToFinalize->mapHash([&obj](T_sp node, T_sp dummy) {
                 gc::As<SNode_sp>(node)->object()->loadFinalize(gc::As<SNode_sp>(node));
   });
-#if 0
-	this->_NodesToFinalize.map( [] (gctools::smart_ptr<SNode_O> node)  {
-		T_sp obj = node->object();
-		obj->loadFinalize(node);
-	    });
 #endif
 }
 

@@ -1198,7 +1198,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("USE-MPS"), features);
 #ifdef USE_AMC_POOL
   // Informs that the Automatic-Mostly-Copying Pool is being used
-  printf("%s:%d  USE-AMC-POOL is turned on\n", __FILE__, __LINE__);
   features = Cons_O::create(_lisp->internKeyword("USE-AMC-POOL"), features);
 #endif
 #endif
@@ -1861,7 +1860,10 @@ CL_DEFUN T_sp cl__apropos(Str_sp string_desig, T_sp package_desig) {
 class OrderByLessThan {
 public:
   bool operator()(T_sp x, T_sp y) {
-    return x->operator<(y);
+    if (x.generalp()) {
+      return x.unsafe_general()->operator<(y);
+    }
+    SIMPLE_ERROR(BF("Add support for operator< for class: %s") % _rep_(cl__class_of(x)));
   }
 };
 
@@ -2213,6 +2215,7 @@ CL_DEFUN void cl__cerror(T_sp cformat, T_sp eformat, List_sp arguments) {
   __END_DOC
 */
 
+#if 0
 CL_LAMBDA(tag secondArgument);
 CL_DECLARE();
 CL_DOCSTRING("isAssignableTo");
@@ -2221,6 +2224,7 @@ CL_DEFUN T_mv core__is_assignable_to(T_sp tag, Class_sp mc) {
   bool io = (tag->isAssignableToByClassSymbol(mc->name()));
   return (Values(_lisp->_boolean(io)));
 }
+#endif
 
 /*
   __BEGIN_DOC(candoScript.general.isSubClassOf,isSubClassOf)
@@ -2315,7 +2319,13 @@ T_sp Lisp_O::createObjectOfClass(T_sp mc) {
     LOG(BF("createObjectOfClass(%s)") % _rep_(mc));
     IMPLEMENT_ME();
     T_sp obj = gc::As<Class_sp>(mc)->allocate_newNil();
-    obj->initialize();
+    if ( obj.generalp() ) {
+      obj.unsafe_general()->initialize();
+    } else if ( obj.consp() ) {
+      // Nothing
+    } else {
+      SIMPLE_ERROR(BF("Add support to initialize %s") % _rep_(cl__class_of(obj)));
+    }
     return obj;
   }
   SIMPLE_ERROR(BF("Handle createObjectOfClass when mc is not a Class"));

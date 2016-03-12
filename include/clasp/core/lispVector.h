@@ -37,7 +37,6 @@ namespace core {
 FORWARD(Vector);
 
 /*! A one dimensional vector of objects */
-// class Vector_O : public Array_O, public T_O
 class Vector_O : public Array_O {
   LISP_CLASS(core, ClPkg, Vector_O, "vector",Array_O);
 
@@ -111,7 +110,7 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
 TRANSLATE(core::Vector_O);
 
 namespace cl {
-  extern core::Symbol_sp& _sym_T_O;
+  extern core::Symbol_sp& _sym_General_O;
 };
 
 namespace core {

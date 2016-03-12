@@ -39,8 +39,8 @@ namespace core {
 
 SMART(IntArray);
 SMART(IntArray);
-class IntArray_O : public T_O {
-  LISP_CLASS(core, CorePkg, IntArray_O, "IntArray",T_O);
+class IntArray_O : public General_O {
+  LISP_CLASS(core, CorePkg, IntArray_O, "IntArray",General_O);
 
 public:
   void initialize();

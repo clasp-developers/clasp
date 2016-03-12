@@ -386,24 +386,27 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
       if (hg.isFilling())
         HashTable_O::sxhash_equalp(hg, oCdr(cobj), ld);
       return;
-    } else if (obj->instancep()) {
-      Instance_sp iobj = gc::As<Instance_sp>(obj);
-      if (hg.isFilling())
-        HashTable_O::sxhash_equalp(hg, iobj->_Class->className(), ld);
-      for (int i(0), iEnd(iobj->_Slots.size()); i < iEnd; ++i) {
-        if (!iobj->_Slots[i].unboundp() && hg.isFilling())
-          HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
+    } else if ( obj.generalp() ) {
+      General_sp gobj = General_sp((gctools::Tagged)obj.raw_());
+      if (gobj->instancep()) {
+        Instance_sp iobj = gc::As<Instance_sp>(gobj);
+        if (hg.isFilling())
+          HashTable_O::sxhash_equalp(hg, iobj->_Class->className(), ld);
+        for (int i(0), iEnd(iobj->_Slots.size()); i < iEnd; ++i) {
+          if (!iobj->_Slots[i].unboundp() && hg.isFilling())
+            HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
+        }
+        return;
+      } else if (BitVector_sp bv_obj = gobj.asOrNull<Array_O>()) {
+        (void)bv_obj; // silence warning
+        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
+      } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {
+        (void)aobj; // silence warning
+        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for Arrays"));
+      } else if (HashTable_sp hobj = gobj.asOrNull<HashTable_O>()) {
+        (void)hobj; // silence warning
+        IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
       }
-      return;
-    } else if (BitVector_sp bv_obj = obj.asOrNull<Array_O>()) {
-      (void)bv_obj; // silence warning
-      IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
-    } else if (Array_sp aobj = obj.asOrNull<Array_O>()) {
-      (void)aobj; // silence warning
-      IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for Arrays"));
-    } else if (HashTable_sp hobj = obj.asOrNull<HashTable_O>()) {
-      (void)hobj; // silence warning
-      IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for HashTables"));
     }
   }
   volatile void* address = &(*obj);

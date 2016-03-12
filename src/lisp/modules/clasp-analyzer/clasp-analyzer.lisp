@@ -1700,9 +1700,6 @@ so that they don't have to be constantly recalculated"
     (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
     )))
 
-
-
-
 (defun scanner-for-gccontainer (dest enum anal)
   (check-type enum simple-enum)
   (let* ((alloc (simple-enum-alloc enum))
@@ -1727,23 +1724,23 @@ so that they don't have to be constantly recalculated"
               (cond
                 ((smart-ptr-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
-                 (format fh "{ container_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                 (format fh "{ container_content_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((pointer-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
-                 (format fh "{ container_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                 (format fh "{ container_content_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((tagged-pointer-ctype-p parm0-ctype)
                  (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype))
-                 (format fh "{ container_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
+                 (format fh "{ container_content_field_fix, 0, \"~a-only\" },~%" (fix-macro-name parm0-ctype)))
                 ((cxxrecord-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (scanner-code-for-instance-var fout fh "container"
+                     (scanner-code-for-instance-var fout fh "container_content"
                                                     (format nil "~a::value_type" key)
                                                     "it" instance-var))))
                 ((class-template-specialization-ctype-p parm0-ctype)
                  (let ((all-instance-variables (fix-code (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
                    (dolist (instance-var all-instance-variables)
-                     (scanner-code-for-instance-var fout fh "container"
+                     (scanner-code-for-instance-var fout fh "container_content"
                                                     (format nil "~a::value_type" key)
                                                     "it" instance-var))))
                 (t (error "Write code to scan ~a" parm0-ctype)))

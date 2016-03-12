@@ -54,7 +54,8 @@ T_sp ActivationFrame_O::getActivationFrame() const {
 string ActivationFrame_O::clasp_asString(T_sp af) {
   if (af.nilp()) {
     stringstream ss;
-    ss << "#<" << af->_instanceClass()->classNameAsString() << " NIL>";
+    General_sp gaf(af.unsafe_general());
+    ss << "#<" << gaf->_instanceClass()->classNameAsString() << " NIL>";
     return ((ss.str()));
   }
   return gc::As<ActivationFrame_sp>(af)->asString();

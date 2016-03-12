@@ -934,7 +934,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                          :epilogue-form epilogue-form)))
 (export '(link-system)) ;; core
 
-(export '(compile-mino))
+(export '(compile-min))
 (defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
   (if (out-of-date-bitcodes :init :cmp)
       (progn

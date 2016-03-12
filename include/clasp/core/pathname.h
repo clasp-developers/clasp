@@ -81,8 +81,8 @@ Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 namespace core {
 
 SMART(Pathname);
-class Pathname_O : public T_O {
-  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",T_O);
+class Pathname_O : public General_O {
+  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",General_O);
 
   friend bool cl__wild_pathname_p(T_sp tpathname, T_sp component);
   friend Pathname_sp core__coerce_to_physical_pathname(T_sp x);

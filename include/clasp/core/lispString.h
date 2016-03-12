@@ -38,7 +38,6 @@ FORWARD(String);
 class String_O : public Vector_O {
   LISP_CLASS(core, ClPkg, String_O, "String",Vector_O);
 
-  DECLARE_INIT();
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)

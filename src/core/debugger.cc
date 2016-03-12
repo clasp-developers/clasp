@@ -465,7 +465,7 @@ extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
-  printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
+  printf("dbg_describe object class--> %s\n", _rep_(cl__class_of(obj)->className()).c_str());
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
   fflush(stdout);
@@ -504,7 +504,7 @@ void dbg_describeTPtr(uintptr_t raw) {
   printf("dbg_describeTPtr Raw pointer value: %p\n", obj.raw_());
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
-  printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
+  printf("dbg_describe object class--> %s\n", _rep_(lisp_instance_class(obj)->className()).c_str());
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
   fflush(stdout);
@@ -516,7 +516,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
-  clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(obj->__class()->className())).str(), sout);
+  clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->className())).str(), sout);
   fflush(stdout);
   write_ugly_object(obj, sout);
   clasp_force_output(sout);

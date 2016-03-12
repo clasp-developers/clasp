@@ -161,8 +161,8 @@ void initializePythonPrimitives(Lisp_sp lisp);
 
 namespace core {
 FORWARD(InvocationHistoryFrameIterator);
-class InvocationHistoryFrameIterator_O : public T_O {
-  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",T_O);
+class InvocationHistoryFrameIterator_O : public General_O {
+  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",General_O);
 
 private: // instance variables here
   InvocationHistoryFrame *_Frame;

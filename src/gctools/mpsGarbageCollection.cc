@@ -110,6 +110,7 @@ bool global_underscanning = false;
 mps_arena_t _global_arena;
 //    mps_pool_t _global_mvff_pool;
 mps_pool_t _global_amc_pool;
+mps_pool_t global_amc_cons_pool;
 mps_pool_t _global_amcz_pool;
 mps_pool_t _global_awl_pool;
 mps_ap_t _global_weak_link_allocation_point;
@@ -321,6 +322,63 @@ static void obj_pad(mps_addr_t base, size_t size) {
   } else {
     header->setPad(Header_s::pad_tag);
     header->setPadSize(size);
+  }
+}
+
+GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
+  Cons_O* cons = reinterpret_cast<Cons_O*>(client);
+  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+    while (client<limit) {
+      if ( !cons->isGCEntry() ) {
+        POINTER_FIX(cons->_Car);
+        POINTER_FIX(cons->_Cdr);
+        client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(Cons_O));
+      } else if (cons->fwdP()) {
+        client = (char *)(client) + sizeof(Cons_O);
+      } else if (cons->pad1P()) {
+        client = (char *)(client) + Alignment();
+      } else if (cons->padP()) {
+        client = (char *)(client) + sizeof(Cons_O);
+      } else {
+        BAD_HEADER("cons_scan",client);
+        abort();
+      }
+    };
+  } MPS_SCAN_END(GC_SCAN_STATE);
+  return MPS_RES_OK;
+};
+
+mps_addr_t cons_skip(mps_addr_t client) {
+  Cons_O* cons = reinterpret_cast<Cons_O*>(client);
+  if ( cons->pad1P() ) {
+    return reinterpret_cast<mps_addr_t>((char*)client+Alignment());
+  }
+  return reinterpret_cast<mps_addr_t>((char*)client + sizeof(Cons_O));
+}
+
+
+static void cons_fwd(mps_addr_t old_client, mps_addr_t new_client) {
+  // I'm assuming both old and new client pointers have valid headers at this point
+  mps_addr_t limit = cons_skip(old_client);
+  size_t size = (char *)limit - (char *)old_client;
+  Cons_O* cons = reinterpret_cast<Cons_O*>(old_client);
+  cons->setFwdPointer(new_client);
+}
+
+static mps_addr_t cons_isfwd(mps_addr_t client) {
+  Cons_O* cons = reinterpret_cast<Cons_O*>(old_client);
+  if (cons->fwdP()) return r->fwdPointer();
+  return NULL;
+}
+
+static void cons_pad(mps_addr_t base, size_t size) {
+  size_t alignment = Alignment();
+  assert(size >= alignment);
+  Cons_O* cons = reinterpret_cast<Cons_O*>(base);
+  if (size == alignment) {
+    cons->setPad(Header_s::pad1_tag);
+  } else {
+    cons->setPad(Header_s::pad_tag);
   }
 }
 
@@ -687,6 +745,49 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create amc pool");
 
+
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+  // Pool for CONS objects
+
+  mps_fmt_t cons_fmt;
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, Alignment());
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, cons_scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, cons_skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, cons_fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, cons_isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, cons_pad);
+    res = mps_fmt_create_k(&cons_fmt, _global_arena, args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create cons format");
+
+  mps_chain_t cons_chain;
+  res = mps_chain_create(&cons_chain,
+                         _global_arena,
+                         LENGTH(gen_params),
+                         gen_params);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Couldn't create cons_chain");
+  // Create the AMC CONS pool
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, cons_fmt);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, cons_chain);
+#ifdef DEBUG_MPS_FENCEPOST_FREE
+    MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
+#endif
+    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendBy*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendBy*1024);
+    res = mps_pool_create_k(&global_amc_cons_pool, _global_arena, mps_class_amc(), args);
+  }
+  MPS_ARGS_END(args);
+  if (res != MPS_RES_OK)
+    GC_RESULT_ERROR(res, "Could not create amc cons pool");
+
+  
   /* Objects that can not move but are managed by the garbage collector
      go in the global_non_moving_pool.  
      Use an AWL pool rather than an AMS pool until the AMS pool becomes a production pool */
@@ -872,6 +973,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(_global_amcz_pool);
   mps_ap_destroy(global_non_moving_ap);
   mps_pool_destroy(global_non_moving_pool);
+  mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(_global_amc_pool);
   mps_arena_park(_global_arena);
   mps_chain_destroy(only_chain);

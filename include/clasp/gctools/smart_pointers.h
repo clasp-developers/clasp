@@ -164,6 +164,10 @@ public:
     GCTOOLS_ASSERT(this->consp());
     return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
+  core::General_O *unsafe_general() const {
+    GCTOOLS_ASSERT(this->generalp());
+    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
+  };
 
   Fixnum asFixnum() const {
     GCTOOLS_ASSERT(this->fixnump());
@@ -217,11 +221,11 @@ public:
 namespace gctools {
 template <class T>
 class smart_ptr /*: public tagged_ptr<T>*/ {
-public:
+ public:
   typedef T Type;
   Type *theObject;
 
-public:
+ public:
   //Default constructor, set theObject to NULL
   inline smart_ptr() : theObject(NULL){};
   //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
@@ -241,7 +245,7 @@ public:
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
 
   template <class From>
-  inline smart_ptr(smart_ptr<From> const &rhs) {
+    inline smart_ptr(smart_ptr<From> const &rhs) {
     if (TaggedCast<Type *, From *>::isA(rhs.theObject)) {
       this->theObject = TaggedCast<Type *, From *>::castOrNULL(rhs.theObject); //reinterpret_cast<From*>(rhs.raw_()));
       return;
@@ -251,7 +255,7 @@ public:
 
   uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
 
-public:
+ public:
   /*! Get the pointer typcast to an integer quantity for hashing */
   cl_intptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
 
@@ -265,21 +269,21 @@ public:
   };
 
   template <class o_class>
-  inline smart_ptr<o_class> asOrNull() {
+    inline smart_ptr<o_class> asOrNull() {
     o_class *cast = gctools::TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
     smart_ptr<o_class> ret((Tagged)cast);
     return ret;
   }
 
   template <class o_class>
-  inline smart_ptr<o_class> asOrNull() const {
+    inline smart_ptr<o_class> asOrNull() const {
     o_class *cast = gctools::TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
     smart_ptr<o_class> ret((Tagged)cast);
     return ret;
   }
 
   template <class o_class>
-  inline smart_ptr<o_class> as() {
+    inline smart_ptr<o_class> as() {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
@@ -287,7 +291,7 @@ public:
   }
 
   template <class o_class>
-  inline smart_ptr<o_class> as() const {
+    inline smart_ptr<o_class> as() const {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
@@ -295,13 +299,13 @@ public:
   }
 
   template <class o_class>
-  inline bool isA() {
+    inline bool isA() {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     return ((bool)ret);
   }
 
   template <class o_class>
-  inline bool isA() const {
+    inline bool isA() const {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     return ((bool)ret);
   }
@@ -365,6 +369,10 @@ public:
 #endif
   bool objectp() const { return this->generalp() || this->consp(); };
   bool generalp() const { return tagged_generalp<Type *>(this->theObject); };
+  core::General_O *unsafe_general() const {
+    GCTOOLS_ASSERT(this->generalp());
+    return reinterpret_cast<core::General_O *>(reinterpret_cast<uintptr_t>(this->theObject) - general_tag);
+  };
   bool consp() const { return tagged_consp<Type *>(this->theObject); };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
@@ -375,8 +383,6 @@ public:
   int unsafe_character() const { return untag_character(this->theObject); };
   bool single_floatp() const { return tagged_single_floatp<Type *>(this->theObject); };
   float unsafe_single_float() const { return untag_single_float<Type *>(this->theObject); };
-  // This replaces pointerp()
-
   Fixnum asFixnum() const {
     GCTOOLS_ASSERT(this->fixnump());
     return untag_fixnum<Type *>(this->theObject);
@@ -409,15 +415,15 @@ public:
   }
 
   template <class U>
-  inline bool operator==(smart_ptr<U> const other) const {
-    return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
+    inline bool operator==(smart_ptr<U> const other) const {
+      return reinterpret_cast<uintptr_t>(this->theObject) == reinterpret_cast<uintptr_t>(other.theObject);
   }
 
   template <class U>
-  inline bool operator!=(smart_ptr<U> const other) const {
+    inline bool operator!=(smart_ptr<U> const other) const {
     return reinterpret_cast<uintptr_t>(this->theObject) != reinterpret_cast<uintptr_t>(other.theObject);
   }
-};
+ };
 };
 
 namespace gctools {

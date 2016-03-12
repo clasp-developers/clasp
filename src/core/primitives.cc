@@ -425,9 +425,9 @@ like CL:DESCRIBE)doc");
 CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
 {
   if (obj.generalp()) {
-    obj->describe(stream);
+    obj.unsafe_general()->describe(stream);
   } else if (obj.consp()) {
-    obj->describe(stream);
+    obj.unsafe_cons()->describe(stream);
   }
   SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
 };
@@ -833,9 +833,6 @@ CL_DECLARE();
 CL_DOCSTRING("return class of object - see CLHS");
 CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   Class_sp result = lisp_instance_class(obj);
-#if DEBUG_CLOS >= 3
-  printf("\nMLOG classOf %s ---> %s\n", obj->__repr__().c_str(), result->__repr__().c_str());
-#endif
   return (result);
 }
 
@@ -1031,8 +1028,9 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
       this->_Steppers.push_back(cP);
     } else if (obj.nilp()) {
       goto EMPTY;
-    } else {
-      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(obj) % obj->_instanceClass()->classNameAsString());
+    } else if (obj.generalp()) {
+      General_sp gobj((gctools::Tagged)obj.raw_());
+      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->classNameAsString());
     }
   }
   this->_AtEnd = false;
@@ -1387,47 +1385,50 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #pragma clang diagnostic ignored "-Wunused-variable"
   if (x.fixnump())
     return (Values(cl::_sym_fixnum));
-  else if (Character_sp ccx = x.asOrNull<Character_O>())
+  else if ( x.characterp() )
     return (Values(cl::_sym_character));
-  else if (SingleFloat_sp sfx = x.asOrNull<SingleFloat_O>())
+  else if ( x.single_floatp() ) 
     return (Values(cl::_sym_single_float));
-  else if (x.nilp())
-    return (Values(cl::_sym_Symbol_O)); // Return _sym_null??
-  else if (Symbol_sp sx = x.asOrNull<Symbol_O>())
-    return (Values(cl::_sym_Symbol_O));
   else if (x.consp())
     return (Values(cl::_sym_list));
-  else if (DoubleFloat_sp dfx = x.asOrNull<DoubleFloat_O>())
-    return (Values(cl::_sym_DoubleFloat_O));
-  else if (Bignum_sp bnx = x.asOrNull<Bignum_O>())
-    return (Values(cl::_sym_Bignum_O));
-  else if (Ratio_sp rx = x.asOrNull<Ratio_O>())
-    return (Values(cl::_sym_Ratio_O));
+  else if (x.generalp()) {
+    General_sp gx(x.unsafe_general());
+    if (DoubleFloat_sp dfx = gx.asOrNull<DoubleFloat_O>())
+      return (Values(cl::_sym_DoubleFloat_O));
+    else if (Symbol_sp sx = gx.asOrNull<Symbol_O>())
+      return (Values(cl::_sym_Symbol_O));
+    else if (gx.nilp())
+      return (Values(cl::_sym_Symbol_O)); // Return _sym_null??
+    else if (Bignum_sp bnx = gx.asOrNull<Bignum_O>())
+      return (Values(cl::_sym_Bignum_O));
+    else if (Ratio_sp rx = gx.asOrNull<Ratio_O>())
+      return (Values(cl::_sym_Ratio_O));
 #ifdef CLASP_LONG_FLOAT
-  else if (LongFloat_sp lfx = x.asOrNull<LongFloat_O>())
-    return (Values(cl::_sym_LongFloat_O));
+    else if (LongFloat_sp lfx = gx.asOrNull<LongFloat_O>())
+      return (Values(cl::_sym_LongFloat_O));
 #endif
-  else if (Complex_sp cx = x.asOrNull<Complex_O>())
-    return (Values(cl::_sym_Complex_O));
-  else if (Package_sp px = x.asOrNull<Package_O>())
-    return (Values(cl::_sym_Package_O));
-  else if (HashTable_sp htx = x.asOrNull<HashTable_O>())
-    return (Values(cl::_sym_HashTable_O));
-  else if (Vector_sp vx = x.asOrNull<Vector_O>())
-    return (Values(cl::_sym_Vector_O));
-  else if (BitVector_sp bvx = x.asOrNull<BitVector_O>())
-    return (Values(cl::_sym_BitVector_O));
-  else if (Array_sp ax = x.asOrNull<Array_O>())
-    return (Values(cl::_sym_Array_O));
-  else if (Str_sp strx = x.asOrNull<Str_O>())
-    return (Values(cl::_sym_String_O));
+    else if (Complex_sp cx = gx.asOrNull<Complex_O>())
+      return (Values(cl::_sym_Complex_O));
+    else if (Package_sp px = gx.asOrNull<Package_O>())
+      return (Values(cl::_sym_Package_O));
+    else if (HashTable_sp htx = gx.asOrNull<HashTable_O>())
+      return (Values(cl::_sym_HashTable_O));
+    else if (Vector_sp vx = gx.asOrNull<Vector_O>())
+      return (Values(cl::_sym_Vector_O));
+    else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
+      return (Values(cl::_sym_BitVector_O));
+    else if (Array_sp ax = gx.asOrNull<Array_O>())
+      return (Values(cl::_sym_Array_O));
+    else if (Str_sp strx = gx.asOrNull<Str_O>())
+      return (Values(cl::_sym_String_O));
   //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
-  else if (Stream_sp streamx = x.asOrNull<Stream_O>())
-    return (Values(cl::_sym_Stream_O));
-  else if (ReadTable_sp rtx = x.asOrNull<ReadTable_O>())
-    return (Values(cl::_sym_ReadTable_O));
-  return Values(x->__class()->className());
-  SIMPLE_ERROR(BF("Add af_type_to_symbol support for type: %s") % x->_instanceClass()->classNameAsString());
+    else if (Stream_sp streamx = gx.asOrNull<Stream_O>())
+      return (Values(cl::_sym_Stream_O));
+    else if (ReadTable_sp rtx = gx.asOrNull<ReadTable_O>())
+      return (Values(cl::_sym_ReadTable_O));
+    return Values(gx->__class()->className());
+  }
+  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->classNameAsString());
 #pragma clang diagnostic pop
 }
 

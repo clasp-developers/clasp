@@ -41,26 +41,33 @@ public:
   typedef T *iterator;
   typedef T const *const_iterator;
 
-  GCArray_moveable(size_t num) : _Capacity(num), _Alive(false){};
+ GCArray_moveable(size_t num) : _Capacity(num) {
+  for ( size_t i=0; i<this->_Capacity; ++ i ) {
+    new(&(this->_Data[i])) value_type();
+  };
+ }
 
   template <typename... ARGS>
-  GCArray_moveable(size_t numExtraArgs, ARGS &&... args) : _Capacity(numExtraArgs + sizeof...(ARGS)), _Alive(false), _Data{args...} {};
-  GCArray_moveable() : _Capacity(0), _Alive(false){};
+  GCArray_moveable(size_t numExtraArgs, ARGS &&... args) : _Capacity(numExtraArgs + sizeof...(ARGS)), _Data{args...} {
+      for ( size_t i(sizeof...(ARGS)); i<this->_Capacity; ++i ) {
+          new(&(this->_Data[i])) value_type();
+      }
+  }
+  GCArray_moveable() : _Capacity(0) {};
 
   size_t _Capacity; // Index one beyond the total number of elements allocated
-  bool _Alive;      // Indicate if the data is scannable or not
   T _Data[SZ];      // Store _Capacity numbers of T structs/classes starting here
 
 public:
-  size_t size() const { return this->capacity(); };
-  size_t capacity() const { return this->_Alive ? this->_Capacity : 0; };
+inline size_t size() const { return this->capacity(); };
+inline size_t capacity() const { this->_Capacity; };
   value_type *data() { return this->_Data; };
   value_type &operator[](size_t i) { return this->_Data[i]; };
   const value_type &operator[](size_t i) const { return this->_Data[i]; };
   iterator begin() { return &this->_Data[0]; };
-  iterator end() { return this->_Alive ? &this->_Data[this->_Capacity] : &this->_Data[0]; };
+  iterator end() { return &this->_Data[this->_Capacity]; };
   const_iterator begin() const { return &this->_Data[0]; };
-  const_iterator end() const { return this->_Alive ? &this->_Data[this->_Capacity] : &this->_Data[0]; };
+  const_iterator end() const { return &this->_Data[this->_Capacity]; };
 };
 
 template <class T, typename Allocator>
@@ -120,13 +127,12 @@ public:
       T *p = &((*implAddress)[i]);
       alloc.construct(p, initialElement);
     }
-    implAddress->_Alive = true;
     this->_Contents = implAddress;
   }
 
   size_t size() const { return this->capacity(); };
   size_t capacity() const { return this->_Contents ? this->_Contents->_Capacity : 0; };
-  bool alivep() const { return this->_Contents ? this->_Contents->_Alive : false; };
+  bool alivep() const { return true; };
 
   T &operator[](size_t n) { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
   const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
@@ -142,7 +148,7 @@ public:
 
 template <typename Array>
 void Array0_dump(const Array &v, const char *head = "") {
-  printf("%s Array0@%p _Alive[%d] _C[%zu]", head, v.contents(), v.alivep(), v.capacity());
+  printf("%s Array0@%p _C[%zu]", head, v.contents(), v.capacity());
   size_t i;
   for (i = 0; i < v.capacity(); ++i) {
     printf("[%zu]=", i);

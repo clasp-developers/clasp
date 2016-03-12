@@ -133,6 +133,8 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
     return kind_single_float;
   } else if (obj.characterp()) {
     return kind_character;
+  } else if (obj.consp()) {
+    return kind_cons;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   return core::clasp_make_fixnum(-1);
@@ -589,6 +591,7 @@ bool debugging_configuration(stringstream& ss) {
   bool use_amc_pool = false;
 #ifdef USE_AMC_POOL
   use_amc_pool = true;
+#else
   debugging = true;
 #endif
   ss << (BF("USE_AMC_POOL = %s\n") % (use_amc_pool ? "defined" : "undefined") ).str();

@@ -1019,7 +1019,7 @@ void throwCatchThrow(core::T_sp *tagP) {
     core::CatchThrow catchThrow(frame);
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, (*tagP)->__repr__().c_str(), frame);
+      printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, _rep_(*tagP).c_str(), frame);
       printf("   %s\n", _lisp->exceptionStack().summary().c_str());
     }
 #endif

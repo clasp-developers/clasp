@@ -359,7 +359,7 @@ struct CxxFunctionInvocationLogger {
 
 #define SUBCLASS_MUST_IMPLEMENT() \
   SIMPLE_ERROR(                   \
-      BF("File(%s) lineNumber(%d): Subclass[%s] must implement method[%s] ") % __FILE__ % __LINE__ % lisp_classNameAsString(this->_instanceClass()) % __FUNCTION__);
+               BF("File(%s) lineNumber(%d): Subclass[%s] must implement method[%s] ") % __FILE__ % __LINE__ % lisp_classNameAsString(core::instance_class(this->asSmartPtr())) % __FUNCTION__);
 
 #define SUBIMP() \
   _G();          \

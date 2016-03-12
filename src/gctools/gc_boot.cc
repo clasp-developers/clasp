@@ -89,7 +89,7 @@ void build_kind_field_layout_tables()
     case container_content_size:
         // ignore for now
         break;
-    case container_field_fix:
+    case container_content_field_fix:
         // ignore for now
         break;
     case templated_class_kind:

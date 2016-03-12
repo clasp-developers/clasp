@@ -162,6 +162,7 @@ void ArrayObjects_O::arrayFill(T_sp val) {
   }
 }
 
+#if 0
 T_sp ArrayObjects_O::deepCopy() const {
   _OF();
   GC_ALLOCATE(ArrayObjects_O, narray);
@@ -173,6 +174,8 @@ T_sp ArrayObjects_O::deepCopy() const {
   }
   return ((narray));
 }
+#endif
+
 
 T_sp ArrayObjects_O::svref(int index) const {
   if (this->_Dimensions.size() == 1) {

@@ -441,7 +441,7 @@ T_sp SourceManager_O::registerSourceInfo(T_sp key,
                                          uint lineno,
                                          uint column) {
   if (_sym_STARmonitorRegisterSourceInfoSTAR->symbolValue().notnilp()) {
-    printf("%s:%d  registerSourceInfo  sourceFile: %s:%d:%d  --> %s\n", __FILE__, __LINE__, sourceFile->__repr__().c_str(), lineno, column, _rep_(key).c_str());
+    printf("%s:%d  registerSourceInfo  sourceFile: %s:%d:%d  --> %s\n", __FILE__, __LINE__, sourceFile.as<General_O>()->__repr__().c_str(), lineno, column, _rep_(key).c_str());
     printf("%s:%d        *source-database* =\n", __FILE__, __LINE__);
     core__dump_source_manager(_lisp->_true());
   }

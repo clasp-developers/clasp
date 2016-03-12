@@ -48,7 +48,7 @@ template <class OT>
 struct GCObjectInitializer<OT, true> {
   typedef smart_ptr<OT> smart_pointer_type;
   static void initializeIfNeeded(smart_pointer_type sp) {
-    sp->initialize();
+    if ( sp.generalp() ) sp.unsafe_general()->initialize();
   };
 };
 
@@ -89,6 +89,31 @@ class root_allocator : public traceable_allocator<T> {};
 namespace gctools {
 
 #ifdef USE_MPS
+  template <typename Cons, typename... ARGS>
+    inline smart_ptr<Cons> cons_mps_allocation(mps_ap_t& allocation_point,
+                                        const char* ap_name,
+                                        size_t& globalMpsMetrics_countAllocations,
+                                        ARGS &&... args) {
+    mps_addr_t addr;
+    gc::smart_ptr<Cons> tagged_obj;
+    Cons* cons;
+    do {
+      mps_res_t res = mps_reserve(&addr, allocation_point, sizeof(Cons));
+      if ( res != MPS_RES_OK ) {
+        printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
+      }
+      cons = reinterpret_cast<Cons*>(addr);
+      new (cons) Cons(std::forward<ARGS>(args)...);
+      tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
+    } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
+    DEBUG_MPS_ALLOCATION(ap_name,addr,cons,sizeof(Cons),KIND_CONS);
+    DEBUG_MPS_UNDERSCANNING_TESTS();
+    POLL_SIGNALS();
+    globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
+    ++globalMpsMetrics_countAllocations;
+    return tagged_obj;
+  };
+
   template <class PTR_TYPE, typename... ARGS>
     inline PTR_TYPE do_mps_allocation(kind_t the_kind,
                                       size_t size,
@@ -223,6 +248,29 @@ namespace gctools {
       };
     };
 
+  template <class Cons>
+  struct ConsAllocator {
+    template <class... ARGS>
+    static smart_ptr<Cons> allocate(ARGS &&... args) {
+#ifdef USE_BOEHM
+      monitor_allocation(kind_cons,sizeof(Cons));
+      Cons* cons = reinterpret_cast<Cons*>(GC_MALLOC(sizeof(Cons)));
+      new (cons) Cons(std::forward<ARGS>(args)...);
+      POLL_SIGNALS();
+      return smart_ptr<Cons>((Tagged)tag_cons(cons));
+#endif
+#ifdef USE_MPS
+        monitor_allocation(kind_cons,sizeof(Cons));
+        mps_ap_t obj_ap = global_amc_cons_allocator;
+        smart_ptr<Cons> obj =
+          cons_mps_allocation(obj_ap,"CONS",
+                              globalMpsMetrics.consAllocations,
+                              std::forward<ARGS>(args)...);
+        return obj;
+#endif
+    }
+  };
+  
   template <class T>
     struct ClassAllocator {
 

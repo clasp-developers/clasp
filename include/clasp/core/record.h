@@ -16,8 +16,8 @@ namespace core {
   T_sp record_circle_subst(T_sp repl_table, T_sp tree);
 
 SMART(Record);
-class Record_O : public T_O {
-  LISP_VIRTUAL_CLASS(core, CorePkg, Record_O, "Record",T_O);
+class Record_O : public General_O {
+  LISP_VIRTUAL_CLASS(core, CorePkg, Record_O, "Record",General_O);
 
 public:
   typedef enum { initializing,

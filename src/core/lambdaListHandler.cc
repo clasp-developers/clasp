@@ -320,7 +320,6 @@ CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
 
 void LambdaListHandler_O::initialize() {
   _OF();
-  this->Base::initialize();
   this->_CreatesBindings = true;
   this->_DeclareSpecifierList = _Nil<T_O>();
   this->_RequiredArguments.clear();
@@ -1070,7 +1069,7 @@ string LambdaListHandler_O::partsAsString() const {
 string LambdaListHandler_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << cl__class_of(this->asSmartPtr())->classNameAsString();
   {
     ss << this->partsAsString();
   }

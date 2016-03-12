@@ -35,9 +35,9 @@ THE SOFTWARE.
 namespace core {
 
 FORWARD(RegexMatch);
-class RegexMatch_O : public core::T_O {
+class RegexMatch_O : public core::General_O {
   friend class Regex_O;
-  LISP_CLASS(core, CorePkg, RegexMatch_O, "RegexMatch",core::T_O);
+  LISP_CLASS(core, CorePkg, RegexMatch_O, "RegexMatch",core::General_O);
   DEFAULT_CTOR_DTOR(RegexMatch_O);
 
 public:
@@ -68,8 +68,8 @@ CL_DEFMETHOD   string suffix() const { return this->_Match.suffix(); };
 };
 
 FORWARD(Regex);
-class Regex_O : public core::T_O {
-  LISP_CLASS(core, CorePkg, Regex_O, "Regex",core::T_O);
+class Regex_O : public core::General_O {
+  LISP_CLASS(core, CorePkg, Regex_O, "Regex",core::General_O);
   //    DECLARE_ARCHIVE();
   DEFAULT_CTOR_DTOR(Regex_O);
 

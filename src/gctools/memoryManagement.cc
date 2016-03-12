@@ -47,6 +47,11 @@ std::vector<Immediate_info> get_immediate_info() {
   info.push_back(Immediate_info(kind_fixnum,"FIXNUM"));
   info.push_back(Immediate_info(kind_single_float,"SINGLE_FLOAT"));
   info.push_back(Immediate_info(kind_character,"CHARACTER"));
+  info.push_back(Immediate_info(kind_cons,"CONS"));
+  if ( info.size() != kind_first_general ) {
+    printf("get_immediate_info does not set up all of the immediate types\n");
+    abort();
+  }
   return info;
 };
 };

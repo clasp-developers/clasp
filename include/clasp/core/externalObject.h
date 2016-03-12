@@ -35,7 +35,7 @@ THE SOFTWARE.
 namespace core
 {
     SMART(ExternalObjectManager);
-    c l a s s ExternalObjectManager_O : public T_O
+    c l a s s ExternalObjectManager_O : public General_O
     {
 	L I S P _BASE1(T_O);
 	L I S P _CLASS(core,CorePkg,ExternalObjectManager_O,"ExternalObjectManager");
@@ -57,52 +57,55 @@ TRANSLATE(core::ExternalObjectManager_O);
 namespace core {
 
 // set this class up by hand
-SMART(ExternalObject);
-class ExternalObject_O : public T_O
-{
-  LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject",T_O);
-GCPRIVATE:
-  Class_sp _Class;
+  SMART(ExternalObject);
+  class ExternalObject_O : public General_O
+  {
+    LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject",General_O);
+  private:
+    Class_sp _Class;
 
-public:
-  virtual bool eql_(T_sp obj) const;
-CL_LISPIFY_NAME("isUndefined");
-CL_DEFMETHOD   virtual bool isUndefined() const { return this->externalObject() == NULL; };
-  virtual void *externalObject() const {
-    _OF();
-    SUBCLASS_MUST_IMPLEMENT();
-  };
-  virtual void set_externalObject(void *ptr) {
-    _OF();
-    SUBCLASS_MUST_IMPLEMENT();
+  public:
+    virtual bool eql_(T_sp obj) const;
+    CL_LISPIFY_NAME("isUndefined");
+    CL_DEFMETHOD   virtual bool isUndefined() const { return this->externalObject() == NULL; };
+    virtual void *externalObject() const {
+      _OF();
+      SUBCLASS_MUST_IMPLEMENT();
+    };
+    virtual void set_externalObject(void *ptr) {
+      _OF();
+      SUBCLASS_MUST_IMPLEMENT();
+    };
+
+  public:
+    explicit ExternalObject_O() : Base(), _Class(_Nil<Class_O>()){};
+    virtual ~ExternalObject_O(){};
   };
 
-public:
-  explicit ExternalObject_O() : Base(), _Class(_Nil<Class_O>()){};
-  virtual ~ExternalObject_O(){};
+  template <class OT, class WT>
+    gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr) {
+    _G();
+    GC_ALLOCATE(OT, wrapper);
+    wrapper->set_wrapped(ptr);
+    return wrapper;
+  }
+
+
 };
-
-template <class OT, class WT>
-gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr) {
-  _G();
-  GC_ALLOCATE(OT, wrapper);
-  wrapper->set_wrapped(ptr);
-  return wrapper;
-}
 
 // public:
 
 #ifndef SCRAPING
 #define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, o_nameOfWrappedClass, nameOfWrappedClass, o_nameOfWrappedClassBase)      \
   public: \
-  typedef o_nameOfWrappedClassBase Base; \
+    typedef o_nameOfWrappedClassBase Base; \
   typedef LispBases1<Base> Bases; \
   /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) public : typedef wrappedClass WrappedClass; \
  public:                                                                                                                                  \
   /*Derived from StandardObject so it supports slots*/                                                                                   \
   static bool static_supportsSlots() { return true; };                                                                                   \
   /* end */
-};
+
 #endif // SCRAPING
 TRANSLATE(core::ExternalObject_O);
 

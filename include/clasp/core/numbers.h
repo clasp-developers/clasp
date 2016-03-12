@@ -145,8 +145,8 @@ Number_sp contagen_div(Number_sp na, Number_sp nb);
 int basic_compare(Number_sp na, Number_sp nb);
 
 SMART(Number);
-class Number_O : public T_O {
-  LISP_CLASS(core, ClPkg, Number_O, "number",T_O);
+class Number_O : public General_O {
+  LISP_CLASS(core, ClPkg, Number_O, "number",General_O);
 
 public:
   static Number_sp create(double val);

@@ -37,8 +37,8 @@ THE SOFTWARE.
 namespace core {
 
 SMART(Iterator);
-class Iterator_O : public T_O {
-  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",T_O);
+class Iterator_O : public General_O {
+  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",General_O);
 
 public:
 #if defined(XML_ARCHIVE)

@@ -1000,8 +1000,7 @@ nil)
             (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
             (translate hir abi))))
     (cc-dbg-when *debug-log*
-                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))
-    ))
+                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))))
 
 ;; Set this to T to watch cleavir-compile-t1expr run
 (defvar *cleavir-compile-verbose* nil)

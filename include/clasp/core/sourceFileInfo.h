@@ -39,9 +39,8 @@ THE SOFTWARE.
 #include <clasp/core/sourceFileInfo.fwd.h>
 
 namespace core {
-class SourceFileInfo_O : public T_O {
-  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",T_O);
-  DECLARE_INIT();
+class SourceFileInfo_O : public General_O {
+  LISP_CLASS(core, CorePkg, SourceFileInfo_O, "SourceFileInfo",General_O);
 
 public:
   static SourceFileInfo_sp create(Pathname_sp path, int handle, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
@@ -81,11 +80,11 @@ CL_DEFMETHOD   size_t sourceDebugOffset() const { return this->_SourceDebugOffse
 }; // SourceFileInfo class
 
 FORWARD(SourcePosInfo);
-class SourcePosInfo_O : public T_O {
+class SourcePosInfo_O : public General_O {
   friend class SourceManager_O;
   friend T_mv core__source_file_info(T_sp sourceFile, T_sp truename, size_t offset, bool useLineno);
 
-  LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",T_O);
+  LISP_CLASS(core, CorePkg, SourcePosInfo_O, "SourcePosInfo",General_O);
 
 public:
 public:                                                                                    // ctor/dtor for classes with shared virtual base
@@ -155,9 +154,8 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 };
 
 namespace core {
-class SourceManager_O : public T_O {
-  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager",T_O);
-  DECLARE_INIT();
+class SourceManager_O : public General_O {
+  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager",General_O);
   void initialize();
 
 public: // ctor/dtor for classes with shared virtual base

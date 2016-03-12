@@ -3,65 +3,97 @@ namespace gctools {
 // Cast assumes that the client pointer is untagged already
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
-template <typename TOPTR, typename FROMPTR>
-struct Cast {
-  typedef TOPTR ToType;
-  typedef FROMPTR FromType;
-  inline static bool isA(FromType client) {
-    return (dynamic_cast<ToType>(client) != NULL);
-  }
-};
+  template <typename TOPTR, typename FROMPTR>
+    struct Cast {
+      typedef TOPTR ToType;
+      typedef FROMPTR FromType;
+      inline static bool isA(FromType client) {
+        printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
+        return false;
+      }
+    };
+
+  template <typename TOPTR>
+    struct Cast<TOPTR,core::General_O*> {
+    typedef TOPTR ToType;
+    typedef core::General_O* FromType;
+    inline static bool isA(core::General_O* client) {
+      return (dynamic_cast<ToType>(client) != NULL);
+    }
+  };
+
+  template <>
+    struct Cast<core::Cons_O*,core::Cons_O*> {
+    typedef core::Cons_O* ToType;
+    typedef core::Cons_O* FromType;
+    inline static bool isA(core::Cons_O* client) {
+      return true;
+    }
+  };
+
+  /*! The template class above catches Cons->Cons */
+  template <typename TOPTR>
+    struct Cast<TOPTR,core::Cons_O*> {
+    typedef TOPTR ToType;
+    typedef core::Cons_O* FromType;
+    inline static bool isA(core::Cons_O* client) {
+      return false;
+    }
+  };
+
 #else
-template <typename TOPTR, typename FROMPTR>
-struct Cast {
-  typedef TOPTR ToType;
-  typedef FROMPTR FromType;
+  template <typename TOPTR, typename FROMPTR>
+    struct Cast {
+      typedef TOPTR ToType;
+      typedef FROMPTR FromType;
   // Very few Cast's should default back to this one.
   // Maybe keep a count of how often it gets called?
-  inline static bool isA(FromType client) {
-    return (dynamic_cast<ToType>(client) != NULL);
-  }
-};
+      inline static bool isA(FromType client) {
+        printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
+        return false;
+    //return (dynamic_cast<ToType>(client) != NULL);
+      }
+    };
 #endif
 #endif
 #ifdef USE_MPS
-template <typename TOPTR, typename FROMPTR>
-struct Cast {
-  typedef TOPTR ToType;
-  typedef FROMPTR FromType;
+  template <typename TOPTR, typename FROMPTR>
+    struct Cast {
+      typedef TOPTR ToType;
+      typedef FROMPTR FromType;
   // No default methods for isA or castOrNULL are provided for MPS - they must all be provided by clasp_gc.cc
-  inline static bool isA(FromType client) {
-    printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
-    return false;
-  }
-};
+      inline static bool isA(FromType client) {
+        printf("%s:%d Add support for Cast::isA for this type\n", __FILE__, __LINE__);
+        return false;
+      }
+    };
 #endif // USE_MPS
 
-template <typename TOPTR, typename FROMPTR>
-struct TaggedCast {
-  typedef TOPTR ToType;
-  typedef FROMPTR FromType;
-  inline static bool isA(FromType client) {
-    if (tagged_generalp(client)) {
-      return Cast<ToType, FromType>::isA(untag_general<FromType>(client));
-    } else if (tagged_consp(client)) {
-      return Cast<ToType, FromType>::isA(untag_cons(client));
-    }
-    return false; //THROW_HARD_ERROR(BF("An immediate should never be isA tested by this function - it should have a specialized version")); // Must be specialized
-  }
-  inline static ToType castOrNULL(FromType client) {
-    if (tagged_generalp(client)) {
-      if (Cast<ToType, FromType>::isA(untag_general(client)))
-        return reinterpret_cast<ToType>(client);
-      return NULL;
-    } else if (tagged_consp(client)) {
-      if (Cast<ToType, FromType>::isA(untag_cons(client)))
-        return reinterpret_cast<ToType>(client);
-      return NULL;
-    }
-    return NULL; // handle with specializations
-  }
-};
+  template <typename TOPTR, typename FROMPTR>
+    struct TaggedCast {
+      typedef TOPTR ToType;
+      typedef FROMPTR FromType;
+      inline static bool isA(FromType client) {
+        if (tagged_generalp(client)) {
+          return Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general<FromType>(client));
+        } else if (tagged_consp(client)) {
+          return Cast<ToType, core::Cons_O*>::isA((core::Cons_O*)untag_cons<FromType>(client));
+        }
+        return false; //THROW_HARD_ERROR(BF("An immediate should never be isA tested by this function - it should have a specialized version")); // Must be specialized
+      }
+      inline static ToType castOrNULL(FromType client) {
+        if (tagged_generalp(client)) {
+          if (Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general(client)))
+            return reinterpret_cast<ToType>(client);
+          return NULL;
+        } else if (tagged_consp(client)) {
+          if (Cast<ToType, core::Cons_O*>::isA((core::Cons_O*)untag_cons(client)))
+            return reinterpret_cast<ToType>(client);
+          return NULL;
+        }
+        return NULL; // handle with specializations
+      }
+    };
 
 };
 
@@ -143,7 +175,7 @@ struct TaggedCast<core::Integer_O *, FROM> {
   typedef core::Integer_O *ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || (tagged_generalp(ptr) && (Cast<ToType, FromType>::isA(untag_general(ptr))));
+    return tagged_fixnump(ptr) || (tagged_generalp(ptr) && (Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -165,7 +197,7 @@ struct TaggedCast<core::Rational_O *, FROM> {
   typedef core::Rational_O *ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || (tagged_generalp(ptr) && (Cast<ToType, FromType>::isA(untag_general(ptr))));
+    return tagged_fixnump(ptr) || (tagged_generalp(ptr) && (Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -211,7 +243,7 @@ struct TaggedCast<core::Real_O *, FROM> {
   typedef core::Real_O *ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_generalp(ptr) && (Cast<ToType, FromType>::isA(untag_general(ptr))));
+    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_generalp(ptr) && (Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -259,7 +291,9 @@ struct TaggedCast<core::Number_O *, FROM> {
   typedef core::Number_O *ToType;
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
-    return tagged_fixnump(ptr) || tagged_single_floatp(ptr) || (tagged_generalp(ptr) && (Cast<ToType, FromType>::isA(untag_general(ptr))));
+    return tagged_fixnump(ptr)
+      || tagged_single_floatp(ptr)
+      || (tagged_generalp(ptr) && (Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
@@ -370,7 +404,7 @@ struct TaggedCast<core::Float_O *, FROM> {
   typedef FROM FromType;
   inline static bool isA(FromType ptr) {
     return tagged_single_floatp(ptr) ||
-           (tagged_generalp(ptr) && (Cast<ToType, FromType>::isA(untag_general(ptr))));
+      (tagged_generalp(ptr) && (Cast<ToType, core::General_O*>::isA((core::General_O*)untag_general(ptr))));
   }
   inline static ToType castOrNULL(FromType client) {
     if (TaggedCast<core::Float_O *, FromType>::isA(client)) {
@@ -416,20 +450,20 @@ struct TaggedCast<core::Cons_O *, FP> {
   }
 };
 
-template <typename FROM>
-struct TaggedCast<core::VaList_S *, FROM> {
-  typedef core::VaList_S *ToType;
-  typedef FROM FromType;
-  inline static bool isA(FromType ptr) {
-    return tagged_valistp(ptr);
-  }
-  inline static ToType castOrNULL(FromType client) {
+ template <typename FROM>
+   struct TaggedCast<core::VaList_S *, FROM> {
+   typedef core::VaList_S *ToType;
+   typedef FROM FromType;
+   inline static bool isA(FromType ptr) {
+     return tagged_valistp(ptr);
+   }
+   inline static ToType castOrNULL(FromType client) {
     if (TaggedCast<ToType, FromType>::isA(client))
       return reinterpret_cast<ToType>(client);
     return NULL;
-  }
-};
-
+   }
+ };
+ 
 }; // namespace gctools
 
 // more specializations in clasp/include/clasp/core/tagged_cast_specializations.h

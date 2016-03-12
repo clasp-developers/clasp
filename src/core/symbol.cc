@@ -149,8 +149,7 @@ CL_DEFUN Symbol_mv cl__make_symbol(Str_sp name) {
 namespace core {
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
-Symbol_O::Symbol_O(bool dummy) : T_O(),
-                                 _HomePackage(_Nil<T_O>()),
+Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _Value(_Unbound<T_O>()),
                                  _Function(_Unbound<T_O>()),
                                  _SetfFunction(_Unbound<T_O>()),
