@@ -29,7 +29,7 @@
 
 (defun add-extra-classes (additional-classes)
   (dolist (class-symbol additional-classes)
-    (format t "Adding extra-class ~a~%" class-symbol)
+;;    (format t "Adding extra-class ~a~%" class-symbol)
     (add-cxx-class class-symbol)))
 
 

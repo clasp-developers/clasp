@@ -111,7 +111,7 @@ struct ArgTypeTraits<unsigned> {
 ///
 /// Provides a \c create() method that constructs the matcher from the provided
 /// arguments.
-class MatcherDescriptor {
+ class MatcherDescriptor : public core::General_O {
   struct metadata_always_fix_pointers_to_derived_classes;
 
 public:
@@ -451,28 +451,16 @@ GCPRIVATE:
 template <typename ReturnType>
 gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(),
                                                               core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocate_class(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
-#else
-  return new FixedArgCountMatcherDescriptor(
-      matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func),
-      MatcherName);
-#endif
 }
 
 /// \brief 1-arg overload
 template <typename ReturnType, typename ArgType1>
 gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
                                                               core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocate_class(
       matcherMarshall1<ReturnType, ArgType1>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
-#else
-  return new FixedArgCountMatcherDescriptor(
-      matcherMarshall1<ReturnType, ArgType1>,
-      reinterpret_cast<void (*)()>(Func), MatcherName);
-#endif
 }
 
 /// \brief 2-arg overload
@@ -480,15 +468,9 @@ template <typename ReturnType, typename ArgType1, typename ArgType2>
 gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
                                                                                  ArgType2),
                                                               core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
   return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocate_class(
       matcherMarshall2<ReturnType, ArgType1, ArgType2>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
-#else
-  return new FixedArgCountMatcherDescriptor(
-      matcherMarshall2<ReturnType, ArgType1, ArgType2>,
-      reinterpret_cast<void (*)()>(Func), MatcherName);
-#endif
 }
 
 /// \brief Variadic overload.
@@ -497,13 +479,8 @@ template <typename ResultT, typename ArgT,
 gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
                         core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
   return gctools::ClassAllocator<FreeFuncMatcherDescriptor>::allocate_class(
       &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
-#else
-  return new FreeFuncMatcherDescriptor(
-      &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
-#endif
 }
 
 /// \brief Argument adaptative overload.
@@ -516,11 +493,7 @@ makeMatcherAutoMarshall(clang::ast_matchers::internal::ArgumentAdaptingMatcherFu
   gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Overloads;
   AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes, ToTypes>(MatcherName,
                                                                     Overloads);
-#ifndef USE_NEW
   return gctools::ClassAllocator<OverloadedMatcherDescriptor>::allocate_class(Overloads);
-#else
-  return new OverloadedMatcherDescriptor(Overloads);
-#endif
 }
 
 template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
@@ -538,13 +511,8 @@ template <unsigned MinCount, unsigned MaxCount>
 gc::tagged_pointer<MatcherDescriptor>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
                         core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
   return gctools::ClassAllocator<VariadicOperatorMatcherDescriptor>::allocate_class(MinCount, MaxCount, Func.Op,
                                                                                    MatcherName);
-#else
-  return new VariadicOperatorMatcherDescriptor(MinCount, MaxCount, Func.Func,
-                                               MatcherName);
-#endif
 }
 
 } // namespace internal

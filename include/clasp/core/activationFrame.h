@@ -150,7 +150,6 @@ GCPROTECTED:
 
 public:
   static ValueFrame_sp createForMultipleValues(const T_sp &parent) {
-    _G();
     GC_ALLOCATE(ValueFrame_O, vf);
     MultipleValues &mv = core::lisp_callArgs();
     vf->allocate(mv.getSize());
@@ -159,26 +158,18 @@ public:
       vf->_Objects[i].setRaw_(reinterpret_cast<gc::Tagged>(mv[i]));
     }
     vf->_ParentFrame = parent;
-#if 0
-	    vf->_OwnArgs = false;
-	    vf->_NumArgs = nargs;
-	    vf->_Args = argArray;
-#endif
     return vf;
   }
   static ValueFrame_sp create(T_sp parent) {
-    _G();
     GC_ALLOCATE(ValueFrame_O, vf);
     vf->_ParentFrame = parent;
     return vf;
   }
 
   static ValueFrame_sp create(int numArgs, const T_sp &parent) {
-    _G();
     GC_ALLOCATE(ValueFrame_O, vf);
     vf->_ParentFrame = parent;
     vf->allocate(numArgs);
-    //	    vf->allocateStorage(numArgs);
     return vf;
   }
 
@@ -260,7 +251,6 @@ public:
 
   /*! Set one entry of the activation frame */
   void set_entry(uint idx, T_sp obj) {
-    _G();
     this->_Objects[idx] = obj;
   }
 
@@ -269,12 +259,6 @@ public:
     return this->_Objects[idx];
   }
 
-#if 0
-	virtual T_sp& entryReference(int idx) const
-	{_G();
-            return this->_Objects.entryReference(idx);
-	}
-#endif
   /*! Fill the activation frame starting at entry istart with values.
 	  DO NOT OVERFLOW THE ValueFrame!!!! */
   void fillRestOfEntries(int istart, List_sp values);

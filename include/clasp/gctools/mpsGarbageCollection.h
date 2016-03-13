@@ -64,6 +64,7 @@ namespace gctools {
 struct MpsMetrics {
   size_t finalizationRequests = 0;
   size_t movingAllocations = 0;
+  size_t consAllocations = 0;
   size_t movingZeroRankAllocations = 0;
   size_t nonMovingAllocations = 0;
   size_t unknownAllocations = 0;
@@ -313,6 +314,7 @@ extern mps_pool_t global_non_moving_pool;
 extern mps_pool_t global_unmanaged_pool;
 
 extern mps_ap_t _global_automatic_mostly_copying_allocation_point;
+extern mps_ap_t global_amc_cons_allocation_point;
 //    extern mps_ap_t _global_mvff_allocation_point;
 extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 extern mps_ap_t global_non_moving_ap;

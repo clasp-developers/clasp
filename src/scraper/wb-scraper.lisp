@@ -18,8 +18,8 @@
      "bin/all-commands.txt"
      "bin/commands.txt")
   :run-preprocessor nil
-  :regenerate-sifs nil)
-
+  :regenerate-sifs t)
+(print "Done")
 (cscrape::split-type-name "const string &name")
 
 

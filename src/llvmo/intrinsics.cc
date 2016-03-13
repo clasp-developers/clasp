@@ -268,6 +268,81 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }
+
+ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, int numargs, int id)
+{
+  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
+  valueFrame->setEnvironmentId(id);
+  (*resultActivationFrameP) = valueFrame;
+}
+
+ALWAYS_INLINE void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
+{
+  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
+  (*resultP) = tagbodyFrame;
+}
+
+ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx) {
+  ASSERT(frameP != NULL);
+  ASSERT((*frameP));
+  ASSERTF(idx >= 0 && idx < ((*frameP)->length()), BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
+  core::ValueFrame_sp frame((gctools::Tagged)(*frameP).raw_());
+  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
+  return pos_gc_safe;
+}
+
+ALWAYS_INLINE core::T_sp *valueFrameReferenceWithOffset(core::ActivationFrame_sp *frameP, int idx, int offset) {
+  int ridx = idx + offset;
+  ASSERT(frameP != NULL);
+  ASSERT(*frameP);
+  ASSERT(ridx >= 0 && ridx < (*frameP)->length());
+  core::ValueFrame_sp frame((gctools::Tagged)(*frameP).raw_());
+//  core::ValueFrame_sp frame = gc::As<core::ValueFrame_sp>((*frameP));
+  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(ridx));
+  return pos_gc_safe;
+}
+
+
+
+
+ALWAYS_INLINE core::T_O *cc_makeCell() {
+  core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
+#ifdef DEBUG_CC
+  printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
+#endif
+  return res.raw_();
+}
+
+ALWAYS_INLINE void cc_writeCell(core::T_O *cell, core::T_O *val) {
+  //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
+  ASSERT(gctools::tagged_consp(cell));
+  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
+//  core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
+#ifdef DEBUG_CC
+  printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
+#endif
+  cp->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
+}
+
+ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell) {
+  core::Cons_O* cp = reinterpret_cast<core::Cons_O*>(gctools::untag_cons(cell));
+  core::T_sp val = cp->ocar();
+#ifdef DEBUG_CC
+  printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px);
+#endif
+  return val.raw_();
+}
+
+core::T_O *cc_fetch(core::T_O *array, std::size_t idx) {
+  //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
+  core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>((gc::Tagged)array);
+#ifdef DEBUG_CC
+  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].raw_());
+#endif
+  ASSERT(a.notnilp());
+  return (*a)[idx].raw_();
+}
+
 };
 
 namespace llvmo {

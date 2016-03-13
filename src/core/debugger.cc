@@ -474,7 +474,7 @@ void dbg_describe(T_sp obj) {
 void dbg_describe_cons(Cons_sp obj) {
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
-  printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
+  printf("dbg_describe object class--> CONS\n");
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
 }

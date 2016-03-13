@@ -290,14 +290,14 @@
       (built-in-class
        :metaclass nil ; Special-cased in boot.lsp
        :direct-slots #.+standard-class-slots+)
-      #+clasp(core:general
-              :direct-superclasses (t))
       (standard-direct-slot-definition
        :direct-slots #3=#.+slot-definition-slots+)
       (standard-effective-slot-definition
        :direct-slots #3#)
       (t
        :index 0)
+      #+clasp(core:general
+              :direct-superclasses (t))
       (standard-object
        :direct-superclasses (t))
       #+clasp(core:cxx-object

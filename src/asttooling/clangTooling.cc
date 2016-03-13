@@ -403,7 +403,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   }
   vector<clang::tooling::Range> vranges;
   clang::tooling::deduplicate(vreps, vranges);
-  core::Cons_sp firstRep = core::Cons_O::create();
+  core::Cons_sp firstRep = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
   core::Cons_sp curRep = firstRep;
   for (auto i : vreps) {
     clang::tooling::Replacement *rp = new clang::tooling::Replacement(i);
@@ -412,7 +412,7 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
     curRep->setCdr(oneRepCons);
     curRep = oneRepCons;
   }
-  core::Cons_sp firstRang = core::Cons_O::create();
+  core::Cons_sp firstRang = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
   core::Cons_sp curRang = firstRang;
   for (auto j : vranges) {
     // Why does Range not have a Copy constructor?????

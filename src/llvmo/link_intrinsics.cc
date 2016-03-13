@@ -603,54 +603,13 @@ void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::Activa
 
 extern "C" {
 
-extern void makeValueFrame(core::T_sp *resultActivationFrameP, int numargs, int id)
-// was ActivationFrame_sp
-{
-  ASSERT(resultActivationFrameP != NULL);
-  core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
-  valueFrame->setEnvironmentId(id);
-  (*resultActivationFrameP) = valueFrame;
-  //        printf("%s:%d makeValueFrame address &result->%p (&result)->px->%p valueFrame->%p\n", __FILE__, __LINE__, resultActivationFrameP, resultActivationFrameP->px_ref(), valueFrame.px_ref() );
-}
-
-extern void makeTagbodyFrame(core::ActivationFrame_sp *resultP)
-// was ActivationFrame_sp
-{
-  ASSERT(resultP != NULL);
-  core::TagbodyFrame_sp tagbodyFrame(core::TagbodyFrame_O::create(_Nil<core::T_O>()));
-  (*resultP) = tagbodyFrame;
-  ASSERTNOTNULL(*resultP);
-}
-
-#if 0
-extern void makeValueFrameFromReversedCons(core::ActivationFrame_sp *afP, core::T_sp *consP, uint id) {
-  core::List_sp cons = (*consP);
-  core::ValueFrame_sp vf = core::ValueFrame_O::createFromReversedCons(cons, _Nil<core::T_O>());
-  vf->setEnvironmentId(id);
-  (*afP) = vf;
-  ASSERTNOTNULL(*afP);
-}
-#endif
 extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *parentP) {
   if (resultP->valistp()) {
     SIMPLE_ERROR(BF("I don't support frames anymore"));
-#if 0
-    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
-    return;
-#endif
   }
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT((*resultP).isA<ActivationFrame_O>());
   ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
   af->setParentFrame(parentP);
-  return;
-#else
-  if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
-    af->setParentFrame(parentP);
-    return;
-  }
-  intrinsic_error(llvmo::destinationMustBeActivationFrame);
-#endif
 }
 
 extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
@@ -660,18 +619,10 @@ extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp
     //    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
     return;
   }
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT((*resultP).isA<ActivationFrame_O>());
   ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
   af->setParentFrame(parentP);
   return;
-#else
-  if (ActivationFrame_sp af = gc::As<ActivationFrame_sp>((*resultP))) {
-    af->setParentFrame(parentP);
-    return;
-  }
-  intrinsic_error(llvmo::destinationMustBeActivationFrame);
-#endif
 }
 
 extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
@@ -679,38 +630,14 @@ extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
   ASSERT(resultP != NULL);
   ASSERT(debuggingInfoP != NULL);
   ASSERT((*resultP));
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT((*resultP).isA<ValueFrame_O>());
   ASSERT((*debuggingInfoP).isA<VectorObjects_O>());
   core::ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O, T_O>((*resultP));
   core::VectorObjects_sp vo = gc::reinterpret_cast_smart_ptr<core::VectorObjects_O, T_O>((*debuggingInfoP));
   vf->attachDebuggingInfo(vo);
-#else
-  core::ValueFrame_sp vf = gc::As<core::ValueFrame_sp>((*resultP));
-  core::VectorObjects_sp vo = gc::As<core::VectorObjects_sp>((*debuggingInfoP));
-  ASSERTF(vf->length() == vo->length(), BF("There is a mismatch between the size of the ValueFrame[%d] and the number of Symbols[%d] attaching to it") % vf->length() % vo->length());
-  vf->attachDebuggingInfo(vo);
-#endif
 }
 
-ALWAYS_INLINE extern core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  ASSERT(frameP != NULL);
-  ASSERT((*frameP));
-  ASSERTF(idx >= 0 && idx < ((*frameP)->length()), BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
-  core::ValueFrame_sp frame = gc::As<core::ValueFrame_sp>((*frameP));
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
-  return pos_gc_safe;
-}
 
-ALWAYS_INLINE extern core::T_sp *valueFrameReferenceWithOffset(core::ActivationFrame_sp *frameP, int idx, int offset) {
-  int ridx = idx + offset;
-  ASSERT(frameP != NULL);
-  ASSERT(*frameP);
-  ASSERT(ridx >= 0 && ridx < (*frameP)->length());
-  core::ValueFrame_sp frame = gc::As<core::ValueFrame_sp>((*frameP));
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(ridx));
-  return pos_gc_safe;
-}
 
 extern void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, core::ActivationFrame_sp *parentP)
 // was ActivationFrame_sp
@@ -1324,14 +1251,12 @@ void ltv_findBuiltInClass(core::T_sp *resultP, core::T_sp *symbolP) {
 
 void ltv_makeCons(core::T_sp *resultP) {
   ASSERT(resultP != NULL);
-  (*resultP) = core::Cons_O::create();
-  ASSERTNOTNULL(*resultP);
+  (*resultP) = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 }
 
 void ltv_makeComplex(core::T_sp *resultP) {
   ASSERT(resultP != NULL);
   (*resultP) = core::Complex_O::create();
-  ASSERTNOTNULL(*resultP);
 }
 
 void ltv_setRealpart(core::T_sp *resultP, core::T_sp *carP) {
@@ -1574,41 +1499,6 @@ void cc_setTmvToNil(core::T_mv *sharedP) {
   *sharedP = Values(_Nil<core::T_O>());
 }
 
-core::T_O *cc_makeCell() {
-  core::Cons_sp res = core::Cons_O::create();
-#ifdef DEBUG_CC
-  printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
-#endif
-  return res.raw_();
-}
-
-void cc_writeCell(core::T_O *cell, core::T_O *val) {
-  //	core::Cons_sp c = gctools::smart_ptr<core::Cons_O>(reinterpret_cast<core::Cons_O*>(cell));
-  core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
-#ifdef DEBUG_CC
-  printf("%s:%d writeCell cell[%p]  val[%p]\n", __FILE__, __LINE__, cell, val);
-#endif
-  c->setCar(gctools::smart_ptr<core::T_O>((gc::Tagged)val));
-}
-
-core::T_O *cc_readCell(core::T_O *cell) {
-  core::Cons_sp c = gctools::smart_ptr<core::Cons_O>((gc::Tagged)cell);
-  core::T_sp val = c->ocar();
-#ifdef DEBUG_CC
-  printf("%s:%d readCell cell[%p] --> value[%p]\n", __FILE__, __LINE__, cell, val.px);
-#endif
-  return val.raw_();
-}
-
-core::T_O *cc_fetch(core::T_O *array, std::size_t idx) {
-  //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-  core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>((gc::Tagged)array);
-#ifdef DEBUG_CC
-  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].raw_());
-#endif
-  ASSERT(a.notnilp());
-  return (*a)[idx].raw_();
-}
 
 #define PROTO_cc_setSymbolValue "void (t* t*)"
 #define CATCH_cc_setSymbolValue false

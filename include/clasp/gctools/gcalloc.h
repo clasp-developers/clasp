@@ -263,9 +263,9 @@ namespace gctools {
 #endif
 #ifdef USE_MPS
         monitor_allocation(kind_cons,sizeof(Cons));
-        mps_ap_t obj_ap = global_amc_cons_allocator;
+        mps_ap_t obj_ap = global_amc_cons_allocation_point;
         smart_ptr<Cons> obj =
-          cons_mps_allocation(obj_ap,"CONS",
+          cons_mps_allocation<Cons>(obj_ap,"CONS",
                               globalMpsMetrics.consAllocations,
                               std::forward<ARGS>(args)...);
         return obj;

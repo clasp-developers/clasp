@@ -35,12 +35,10 @@ namespace core {
   class ClosureWithSlots : public Functoid {
   public:
     fnLispCallingConvention _FunctionPointer;
-    size_t _NumberOfSlots;
-    T_O* _Slots[0];
+    gctools::GCArray_moveable<T_O*,0> _Slots;
     ClosureWithSlots(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
       : Functoid(name)
-      , _FunctionPointer(fptr)
-      , _NumberOfSlots(num_slots) {}
+      , _Slots(num_slots) {}
   };
 
   inline CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {

@@ -24,6 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+//
+// This is an optimization where a static_cast is used
+// for the environment rather than a dynamic cast.
+// beach found that a lot of time was spent in dynamic_cast if
+// this is not set
 #define USE_STATIC_CAST_FOR_ENVIRONMENT 1
 
 #define DEBUG_LEVEL_FULL
@@ -140,19 +145,9 @@ CL_DEFUN T_mv core__lexical_macro_function(T_sp name, T_sp env) {
 #define DECL_af_updateValue ""
 #define DOCS_af_updateValue "updateValue"
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_updateValue(sym, val);
-#else
-  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    return eenv->_updateValue(sym, val);
-  }
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Cannot update value of %s in nil lexical environment") % _rep_(sym));
-  }
-  NOT_ENVIRONMENT_ERROR(env);
-#endif
 };
 
 
@@ -348,67 +343,28 @@ CL_DEFMETHOD T_mv Environment_O::localMetadata(Symbol_sp key) const {
 }
 
 T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
   return eenv->_lookupValue(depth, index);
-#else
-  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    return eenv->_lookupValue(depth, index);
-  }
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
-  }
-  NOT_ENVIRONMENT_ERROR(env);
-#endif
 }
 
 T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
 // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env && env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->lookupValueReference(depth, index);
-#else
-  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    return eenv->lookupValueReference(depth, index);
-  } else if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup value in top level environment"));
-  }
-  NOT_ENVIRONMENT_ERROR(env);
-#endif
 }
 
 Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_lookupFunction(depth, index);
-#else
-  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    return eenv->_lookupFunction(depth, index);
-  }
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could not lookup Function in top level environment"));
-  }
-  NOT_ENVIRONMENT_ERROR(env);
-#endif
 }
 
 T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
-#if USE_STATIC_CAST_FOR_ENVIRONMENT == 1
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_lookupTagbodyId(depth, index);
-#else
-  if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
-    return eenv->_lookupTagbodyId(depth, index);
-  }
-  if (env.nilp()) {
-    SIMPLE_ERROR(BF("Could find lookupTagbodyId after encountering top level environment"));
-  }
-  NOT_ENVIRONMENT_ERROR(env);
-#endif
 }
 
 T_sp Environment_O::_lookupValue(int depth, int index) {

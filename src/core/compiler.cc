@@ -669,7 +669,7 @@ T_sp bitOLogicWithObjects() {
 };
 
 T_sp allocCons() {
-  Cons_sp fn = Cons_O::create();
+  Cons_sp fn = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
   return fn;
 }
 

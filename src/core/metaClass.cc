@@ -538,6 +538,9 @@ T_sp Class_O::instanceClassSet(Class_sp mc) {
 
 void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
   this->setName(className);
+  // Initialize some of the class slots
+  this->instanceSet(REF_DIRECT_SLOTS,_Nil<T_O>());
+  this->instanceSet(REF_DEFAULT_INITARGS,_Nil<T_O>());
   T_sp tmc = this->_instanceClass();
   ASSERTNOTNULL(tmc);
   Class_sp mc = gc::As<Class_sp>(tmc);

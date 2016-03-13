@@ -151,6 +151,8 @@ core__pathname_translations(core::Str_O::create("source-main"), _lisp->_true(), 
 
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
                                    // Set the stack size
+
+  printf("%s:%d sizeof(Cons_O) = %d\n", __FILE__, __LINE__, sizeof(core::Cons_O));
   rlimit rl;
   rl.rlim_max = 16 * 1024 * 1024;
   rl.rlim_cur = 15 * 1024 * 1024;
