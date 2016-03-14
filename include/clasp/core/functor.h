@@ -32,19 +32,45 @@ public:
 };
 
 namespace core {
-  class ClosureWithSlots : public Functoid {
+  struct FixedData {
+    T_sp _XPtr;
+    T_sp _YPtr;
+    double _DoubleZ;
+  };
+  struct SlotData {
+    T_sp _APtr;
+    T_sp _BPtr;
+    double _C;
+  };
+  struct ClosureWithRecords : public Functoid {
+    typedef SlotData value_type;
   public:
+    T_sp   _DummyT_OPtr;
+    FixedData _Fixed;
     fnLispCallingConvention _FunctionPointer;
-    gctools::GCArray_moveable<T_O*,0> _Slots;
-    ClosureWithSlots(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
-      : Functoid(name)
+    gctools::GCArray_moveable<value_type,0> _Slots;
+  ClosureWithRecords(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
+    : Functoid(name)
+      , _Slots(num_slots) {}
+  };
+
+  struct ClosureWithSlots : public Functoid {
+    typedef T_sp value_type;
+  public:
+    T_sp   _DummyT_OPtr;
+    FixedData _Fixed;
+    fnLispCallingConvention _FunctionPointer;
+    gctools::GCArray_moveable<value_type,0> _Slots;
+  ClosureWithSlots(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
+    : Functoid(name)
       , _Slots(num_slots) {}
   };
 
   inline CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {
-    return gctools::global_alignup_sizeof_header + gctools::AlignUp(sizeof(ClosureWithSlots)) + sizeof(T_O*)*numberOfSlots;
+    return gctools::global_alignup_sizeof_header + gctools::AlignUp(sizeof(ClosureWithSlots)) + sizeof(ClosureWithSlots::value_type)*numberOfSlots;
   };
 
+#if 0
   inline gctools::tagged_ptr<ClosureWithSlots> initialize_closure_with_slots(void* block, T_sp name, fnLispCallingConvention fptr, size_t num_slots, ... ) {
     gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(block);
     ClosureWithSlots* closure = reinterpret_cast<ClosureWithSlots*>((char*)block+gctools::global_alignup_sizeof_header);
@@ -53,23 +79,24 @@ namespace core {
     va_list valist;
     va_start(valist, num_slots);
     for ( size_t i=0; i<num_slots; ++i ) {
-      closure->_Slots[i] = va_arg(valist,T_O*);
+      closure->_Slots[i] = ClosureWithSlots::value_type(va_arg(valist,T_O*));
     }
     va_end(valist);
     return gctools::tagged_ptr<ClosureWithSlots>((gctools::Tagged)gctools::tag_general<ClosureWithSlots*>(closure));
   }
 
-  inline T_O* closure_with_slots_read_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index)
+  inline ClosureWithSlots::value_type closure_with_slots_read_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index)
   {
     ClosureWithSlots* closure = gctools::untag_general(tagged_closure.theObject);
     return closure->_Slots[index];
   }
 
-  inline void closure_with_slots_write_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index, T_O* val)
+  inline void closure_with_slots_write_slot(gctools::tagged_ptr<ClosureWithSlots> tagged_closure, size_t index, ClosureWithSlots::value_type val)
   {
     ClosureWithSlots* closure = gctools::untag_general(tagged_closure.theObject);
     closure->_Slots[index] = val;
   }
+#endif
 };
 
 

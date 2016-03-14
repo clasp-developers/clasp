@@ -233,7 +233,7 @@ mps-interface-clasp:
 compile-commands:
 	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	clasp_boehm_o -f bclasp \
+	clasp_boehmdc_o -f bclasp \
 		-l $(CLASP_HOME)/src/common/build-json.lisp \
 		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
 		-e "(quit)"

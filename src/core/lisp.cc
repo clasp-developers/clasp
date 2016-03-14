@@ -387,6 +387,7 @@ void testStrings() {
 void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   { // Trap symbols as they are interned
     stringstream sdebug;
+    gctools::get_immediate_info(); // discard result, just testing
     bool debugging = gctools::debugging_configuration(sdebug);
     if ( debugging ) {
       printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
