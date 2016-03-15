@@ -30,19 +30,23 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 namespace gctools {
 
+  enum Data_types {
+      SMART_PTR_OFFSET,
+      TAGGED_POINTER_OFFSET,
+      last_data_type };
+  
   enum Layout_cmd {
-      class_kind, class_size, field_fix,
-      container_kind, container_jump_table_index,
-      /*  */ container_regular_field_fix, 
-      /*  */ container_offset, container_end, container_capacity,
-      /*  */ container_content_size, container_content_field_fix,
-      templated_class_kind, templated_class_jump_table_index, templated_class_field_fix,
+      class_kind, container_kind, templated_kind,
+      fixed_field,
+      variable_array0, variable_capacity, variable_field,
       layout_end
   };
 
   struct Layout_code {
     Layout_cmd    cmd;
-    uintptr_t     data;
+    uintptr_t     data0;
+    uintptr_t     data1;
+    uintptr_t     data2;
     const char*   description;
   };
 
@@ -54,30 +58,33 @@ namespace gctools {
     const char*    field_name;
   };
 
-  struct Class_layout {
+  struct Container_info {
+    const char*    field_name;
+  };
+
+  struct Container_layout {
     Field_layout*  field_layout_start; // Points into global_field_layout_table
+    uint            element_size;
     uint            number_of_fields;
-    uint            size;
+    uint            data_offset;
+    uint            end_offset;
+    uint            capacity_offset;
   };
 
-  struct Jump_table_layout {
-    uint        jump_table_index;
-  };
-
-  enum Layout_operation { class_operation, jump_table_operation };
+  enum Layout_operation { class_container_op, templated_op };
   struct Kind_info {
     Layout_operation    layout_op;
     const char*   name;
     Field_info*   field_info_ptr; // Only applies to classes
+    Container_info* container_info_ptr; // 
   };
 
   struct Kind_layout {
-    Layout_operation    layout_operation; // One of class_kind, templated_class_kind, container_kind
-  // Union of the layout info for each layout_cmd
-    union {
-      Class_layout class_;
-      Jump_table_layout jump;
-    };
+    Layout_operation    layout_op; // One of class_kind, templated_class_kind, container_kind
+    Field_layout*  field_layout_start; // Points into global_field_layout_table
+    uint            number_of_fields;
+    uint            size;
+    Container_layout* container_layout;
   };
 
   extern Layout_code* get_kind_layout_codes();

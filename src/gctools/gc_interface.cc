@@ -199,7 +199,7 @@ Layout_code* get_kind_layout_codes() {
 #undef GC_OBJ_SCAN_HELPERS
 #endif // #ifndef RUNNING_GC_BUILDER
 #endif // #if defined(USE_MPS) || (defined(USE_BOEHM) && !defined(USE_CXX_DYNAMIC_CAST))
-      {layout_end, 0, "" }
+      {layout_end, 0, 0, 0, "" }
   };
   return &codes[0];
 };
@@ -374,38 +374,32 @@ mps_addr_t obj_skip(mps_addr_t client) {
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
 #ifdef DEBUG_VALIDATE_GUARD
-      header->validate();
+  header->validate();
 #endif
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
     const Kind_layout& kind_layout = global_kind_layout[kind];
-    if (kind_layout.layout_operation == class_operation) {
-      const Class_layout& class_layout = kind_layout.class_;
-      size = class_layout.size;
-#ifndef DEBUG_GUARD
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-#else
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
-#endif
-    } else {
-          // Container or templated_class - special case - use jump table
-      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
 #ifndef RUNNING_GC_BUILDER
-      goto *(OBJ_SKIP_table[jump_table_index]);
-#define GC_OBJ_SKIP
-#include "clasp_gc.cc"
-#undef GC_OBJ_SKIP
-    DONE:
-#ifndef DEBUG_GUARD
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-#else
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
-#endif
-#else
-      return NULL;
-#endif
+    if ( kind_layout.layout_operation == class_container_op ) {
+      if ( kind_layout.field_layout_start ) {
+        size = class_layout.size;
+      }
+      if ( kind_layout.container_layout ) {
+        Container_layout& container_layout = *kind_layout.container_layout;
+        size_t capacity = *(size_t)((const char*)client + container_layout.capacity_offset);
+        size += container_layout.element_size*capacity;
+      }
+    } else {
+      size = ((core::General_O*)client)->templatedSizeof();
     }
+#ifndef DEBUG_GUARD
+    client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+    client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
+          // Here add tail
+#endif // #ifndef RUNNING_GC_BUILDER
   } else if (header->fwdP()) {
     client = (char *)(client) + header->fwdSize();
   } else if (header->pad1P()) {
@@ -439,7 +433,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
                 (uintptr_t)client,
                 (uintptr_t)limit);
   mps_addr_t original_client;
-  size_t size;  // Used to store the size of the object
+  size_t size = 0;  // Used to store the size of the object
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
 #include "clasp_gc.cc"
@@ -458,40 +452,48 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       if (header->kindP()) {
         kind = header->kind();
         const Kind_layout& kind_layout = global_kind_layout[kind];
-        if (kind_layout.layout_operation == class_operation) {
 #ifndef RUNNING_GC_BUILDER
-          const Class_layout& class_layout = kind_layout.class_;
+        if ( kind_layout.field_layout_start ) {
           size = class_layout.size;
-          int num_fields = class_layout.number_of_fields;
-          Field_layout* field_layout_cur = class_layout.field_layout_start;
+          int num_fields = kind_layout.number_of_fields;
+          Field_layout* field_layout_cur = kind_layout.field_layout_start;
           for ( int i=0; i<num_fields; ++i ) {
             core::T_O** field = (core::T_O**)((const char*)client + field_layout_cur->field_offset);
             POINTER_FIX(field);
             ++field_layout_cur;
           }
+        }
+        if ( kind_layout.container_layout ) {
+          Container_layout& container_layout = *kind_layout.container_layout;
+          size_t capacity = *(size_t)((const char*)client + container_layout.capacity_offset);
+          size += container_layout.element_size*capacity;
+          size_t end = *(size_t)((const char*)client + container_layout.end_offset);
+          for ( int i=0; i<end; ++i ) {
+            field_layout_cur = container_layout;
+            const char* element = ((const char*)client + container_layout.data_offset + container_layout.element_size*i);
+            for ( int j=0; j<container_layout.number_of_fields; ++j ) {
+              core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
+              POINTER_FIX(field);
+              ++field_layout_cur;
+            }
+          }
+        }
+        if (kind_layout.layout_operation == class_container_op) {
 #ifndef DEBUG_GUARD
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
 #else
           client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
 #endif
+        } else {
+          size = ((core::General_O*)client)->templatedSizeof();
+#ifndef DEBUG_GUARD
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
+#else
+          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+#endif
+        }
           // Here add tail
 #endif // #ifndef RUNNING_GC_BUILDER
-        } else {
-          // Container or templated_class - special case - use jump table
-          size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
-#ifndef RUNNING_GC_BUILDER
-          goto *(OBJ_SCAN_table[jump_table_index]);
-#define GC_OBJ_SCAN
-#include "clasp_gc.cc"
-#undef GC_OBJ_SCAN
-        SCAN_ADVANCE:
-#ifndef DEBUG_GUARD
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-#else
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
-#endif
-#endif // #ifndef RUNNING_GC_BUILDER
-        }
       } else if (header->fwdP()) {
         client = (char *)(client) + header->fwdSize();
       } else if (header->pad1P()) {
