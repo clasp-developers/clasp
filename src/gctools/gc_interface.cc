@@ -176,7 +176,7 @@ typedef bool _Bool;
 to macros unless they are wrapped in this.
 eg: offsetof(MACRO_SAFE_TYPE(a<b,c>),d)
 */
-#define MACRO_SAFE_TYPE(...) __VA_ARGS__
+#define SAFE_TYPE_MACRO(...) __VA_ARGS__
 
 #ifdef _TARGET_OS_DARWIN
 // The OS X offsetof macro is defined as __offsetof which is defined as __builtin_offsetof - take out one level of macro so that the MACRO_SAFE_TYPE hack works
