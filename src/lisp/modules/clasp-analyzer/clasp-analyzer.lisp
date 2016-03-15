@@ -461,6 +461,8 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 (defclass tagged-pointer-offset (offset) ())
 
+(defclass pointer-offset (offset) ())
+
 (defclass pod-offset (offset) ())
 
 (defmethod layout-type ((x pod-offset))
@@ -646,11 +648,11 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
     ((or (gcvector-moveable-ctype-p pointee)
          (gcarray-moveable-ctype-p pointee)
          (gcstring-moveable-ctype-p pointee))
-        (make-pointer-offset :field x))
+        (make-instance 'pointer-offset :base base :offset-type x))
     ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
-     (make-pointer-offset :field x))
+     (make-instance 'pointer-offset :base base :offset-type x))
     ((fixable-pointee-p (pointer-ctype-pointee x))
-     (make-pointer-offset :field x))
+     (make-instance 'pointer-offset :base base :offset-type x))
     ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
     (t
      ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)

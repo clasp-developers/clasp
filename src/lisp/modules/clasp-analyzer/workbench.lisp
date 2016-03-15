@@ -14,6 +14,11 @@
 
 (clasp-analyzer:search/generate-code *db*)
 
+
+(defparameter *db*
+  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+   #P"app-resources:build-databases;clasp_compile_commands.json"
+))
 (analyze-only *db*)
 (search "bc" "abcdefg")
 
