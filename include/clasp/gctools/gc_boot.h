@@ -33,12 +33,26 @@ namespace gctools {
   enum Data_types {
       SMART_PTR_OFFSET,
       TAGGED_POINTER_OFFSET,
+      ARRAY_OFFSET,
+      POINTER_OFFSET,
+      ctype_double,
+      ctype_float,
+      ctype_int,
+      ctype_unsigned_long,
+      ctype_unsigned_int,
+      ctype_long,
+      ctype_long_long,
+      ctype_char,
+      ctype_enum_core__StreamMode,
+      ctype_core__FrameKind,
       last_data_type };
   
   enum Layout_cmd {
-      class_kind, container_kind, templated_kind,
-      fixed_field,
-      variable_array0, variable_capacity, variable_field,
+      class_kind=0, container_kind=1, templated_kind=2,
+      fixed_field=3,
+      variable_array0=4, variable_capacity=5, variable_field=6,
+      templated_class_jump_table_index=7,
+      container_jump_table_index=8,
       layout_end
   };
 
@@ -51,7 +65,7 @@ namespace gctools {
   };
 
   struct Field_layout {
-    int            field_offset;
+    size_t            field_offset;
   };
 
   struct Field_info {
@@ -64,11 +78,11 @@ namespace gctools {
 
   struct Container_layout {
     Field_layout*  field_layout_start; // Points into global_field_layout_table
-    uint            element_size;
-    uint            number_of_fields;
-    uint            data_offset;
-    uint            end_offset;
-    uint            capacity_offset;
+    size_t            element_size;
+    size_t            number_of_fields;
+    size_t            data_offset;
+    size_t            end_offset;
+    size_t            capacity_offset;
   };
 
   enum Layout_operation { class_container_op, templated_op };
@@ -82,8 +96,8 @@ namespace gctools {
   struct Kind_layout {
     Layout_operation    layout_op; // One of class_kind, templated_class_kind, container_kind
     Field_layout*  field_layout_start; // Points into global_field_layout_table
-    uint            number_of_fields;
-    uint            size;
+    size_t            number_of_fields;
+    size_t            size;
     Container_layout* container_layout;
   };
 

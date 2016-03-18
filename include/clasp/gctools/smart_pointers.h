@@ -449,7 +449,9 @@ inline static smart_ptr<Type> make_tagged_sameAsKey() { return smart_ptr<Type>((
 namespace core {
 
 class List_V {}; // Virtual class representing Common Lisp LIST
+ class Sequence_V {}; // Virtual class representing SEQUENCE
 typedef gctools::smart_ptr<T_O> T_sp;
+typedef gctools::smart_ptr<Sequence_V> Sequence_sp;
 typedef gctools::smart_ptr<List_V> List_sp;
 
 extern gctools::smart_ptr<T_O> cons_car(Cons_O *cur);

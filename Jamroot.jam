@@ -147,18 +147,13 @@ project clasp : requirements
 ### USE_AMC_POOL  --- controls if certain objects (Closures) are allocated in a non-moving pool or AMC
      <define>USE_AMC_POOL
 
-### DEBUG_HASH_TABLE_AS_ALIST    ---- hash-tables become one big alist to debug hashing and GC
-#    <define>DEBUG_HASH_TABLE_AS_ALIST
-
-### DEBUG_HASH_TABLE_REHASH_EVERY_GC  ---- hash-tables are rehashed every GC
-    <define>DEBUG_HASH_TABLE_REHASH_EVERY_GC
-
-### DEBUG_OBJECT_UNIQUE_ID  --- give every allocated object a unique id
-###                             used to debug hash tables
-    <define>DEBUG_OBJECT_UNIQUE_ID
 
 #### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
-        <define>DEBUG_SPLAT_FORWARD
+#        <define>DEBUG_SPLAT_FORWARD
+#### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory
+     <define>DEBUG_GUARD
+#### DEBUG_VALIDATE_GUARD  - Test the memory guards in lots of places - requires DEBUG_GUARD to be defined.
+     <define>DEBUG_VALIDATE_GUARD
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
 #        <define>DEBUG_TELEMETRY_DUMP       # dump telemetry information as it is generated
 #	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
@@ -173,10 +168,6 @@ project clasp : requirements
 #        <define>DEBUG_MPS_UNDERSCANNING_INITIAL="true"
 #### DEBUG_PROGRESS - Print startup progress
 #     <define>DEBUG_PROGRESS
-#### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory
-#     <define>DEBUG_GUARD
-#### DEBUG_VALIDATE_GUARD  - Test the memory guards in lots of places - requires DEBUG_GUARD to be defined.
-#     <define>DEBUG_VALIDATE_GUARD
 
 #### DEBUG_RECURSIVE_ALLOCATIONS - Inexpensive test for allocations that invoke other allocations
 ####                               This is not allowed in the MPS

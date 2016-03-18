@@ -94,8 +94,7 @@ T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
 }
 
 bool ArrayObjects_O::equalp(T_sp o) const {
-  if (this->eq(o))
-    return true;
+  if (this->eq(o)) return true;
   if (ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>()) {
     const std::vector<cl_index> &my_dimensions = this->_Dimensions;
     const std::vector<cl_index> &other_dimensions = other->_Dimensions;

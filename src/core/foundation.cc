@@ -198,21 +198,6 @@ void lisp_errorUnexpectedNil(class_id expectedTyp) {
   TYPE_ERROR(_Nil<core::T_O>(), expectedSym);
 }
 
-#if defined(USE_MPS)
-namespace gctools {
-mps_ap_t _global_automatic_mostly_copying_allocation_point;
-mps_ap_t _global_automatic_mark_sweep_allocation_point;
-};
-#endif //!defined(USE_MPS)
-
-void clasp_mps_debug_allocation(const char *poolName, void *base, void *client, int size, int kind) {
-  GC_TELEMETRY4(telemetry::label_allocation,
-                (uintptr_t)base,
-                (uintptr_t)client,
-                (uintptr_t)((char *)base + size),
-                kind);
-}
-
 namespace boost {
 using namespace core;
 void assertion_failed(char const *expr, char const *function, char const *file, long line) {

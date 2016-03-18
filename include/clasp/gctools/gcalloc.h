@@ -108,7 +108,11 @@ namespace gctools {
       new (cons) Cons(std::forward<ARGS>(args)...);
       tagged_obj = smart_ptr<Cons>((Tagged)tag_cons(cons));
     } while (!mps_commit(allocation_point, addr, sizeof(Cons)));
-    DEBUG_MPS_ALLOCATION(ap_name,addr,cons,sizeof(Cons),KIND_CONS);
+    GC_TELEMETRY4(telemetry::label_cons_allocation,
+                  (uintptr_t)addr,
+                  (uintptr_t)cons,
+                  (uintptr_t)((char*)addr+sizeof(Cons)),
+                  KIND_CONS);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     globalMpsMetrics.totalMemoryAllocated += sizeof(Cons);
@@ -126,6 +130,7 @@ namespace gctools {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
+    GCTOOLS_ASSERT(the_kind>=kind_first_general);
     PTR_TYPE tagged_obj;
     T* obj;
     size_t true_size = size;
@@ -149,7 +154,11 @@ namespace gctools {
       new (obj) (typename PTR_TYPE::Type)(std::forward<ARGS>(args)...);
       tagged_obj = PTR_TYPE(obj);
     } while (!mps_commit(allocation_point, addr, true_size));
-    DEBUG_MPS_ALLOCATION(ap_name,addr,obj,true_size,the_kind);
+    GC_TELEMETRY4(telemetry::label_allocation,
+                  (uintptr_t)addr,
+                  (uintptr_t)obj,
+                  (uintptr_t)((char*)addr+true_size),
+                  the_kind);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     globalMpsMetrics.totalMemoryAllocated += true_size;
@@ -180,7 +189,11 @@ namespace gctools {
       new (myAddress) T(std::forward<ARGS>(args)...);
       tagged_obj = PTR_TYPE(myAddress);
     } while (!mps_commit(allocation_point, addr, size));
-    DEBUG_MPS_ALLOCATION(ap_name, addr, myAddress, size, /*gctools::*/ KIND_null);
+    GC_TELEMETRY4(telemetry::label_allocation,
+                  (uintptr_t)addr,
+                  (uintptr_t)myAddress,
+                  (uintptr_t)((char*)addr+size),
+                  KIND_null);
     DEBUG_MPS_UNDERSCANNING_TESTS();
     if (!myAddress)
       THROW_HARD_ERROR(BF("Could not allocate from GCBucketAllocator<Buckets<VT,VT,WeakLinks>>"));

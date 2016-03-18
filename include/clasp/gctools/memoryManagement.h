@@ -121,8 +121,6 @@ struct GCAllocationPoint;
 
 #include <clasp/gctools/pointer_tagging.h>
 
-#include <clasp/gctools/tagged_cast.h>
-
 namespace gctools {
     /*! This is the type of the tagged kind header that is the first
 word of every object in memory managed by the GC */
@@ -137,6 +135,10 @@ word of every object in memory managed by the GC */
 #ifdef USE_MPS
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
+
+#include <clasp/gctools/cast.h>
+#include <clasp/gctools/tagged_cast.h>
+
 
 namespace gctools {
 

@@ -117,6 +117,7 @@ mps_ap_t _global_weak_link_allocation_point;
 mps_ap_t _global_strong_link_allocation_point;
 //    mps_ap_t _global_mvff_allocation_point;
 mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
+mps_ap_t _global_automatic_mostly_copying_allocation_point;
 mps_ap_t global_amc_cons_allocation_point;
 
 mps_pool_t global_non_moving_pool;
@@ -130,18 +131,20 @@ size_t random_tail_size() {
   return ts;
 }
 
-#if defined(DEBUG_OBJECT_UNIQUE_ID)
-static uintptr_t global_next_uid = 0;
-#endif // #if defined(DEBUG_OBJECT_UNIQUE_ID)
-
 void Header_s::validate() const {
-  if ( this->kindP() ) {
+  if ( this->invalidP() ) {
+    printf("%s:%d Invalid object header does not have a real tag\n", __FILE__, __LINE__ );
+    telemetry::global_telemetry_flush();
+    abort();
+  } else if ( this->kindP() ) {
     if ( this->guard != 0x0FEEAFEEBFEECFEED) {
       printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      telemetry::global_telemetry_flush();
       abort();
     }
     if ( this->kind() > KIND_max ) {
       printf("%s:%d  INVALID object  this->kind()=%d > KIND_max=%d\n", __FILE__, __LINE__, this->kind(), KIND_max );
+      telemetry::global_telemetry_flush();
       abort();
     }
     if ( this->tail_start & 0xffffffffff000000 ) {
@@ -152,12 +155,28 @@ void Header_s::validate() const {
     }
     if ( this->data[0] != 0xDEADBEEF01234567 ) {
       printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],this->data[0],0xDEADBEEF01234567 );
+      telemetry::global_telemetry_flush();
       abort();
     }
     for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
             *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
       if (*cp!=0xcc) {
         printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
+        telemetry::global_telemetry_flush();
+        abort();
+      }
+    }
+  } else if ( this->fwdP() ) {
+    if ( this->guard != 0x0FEEAFEEBFEECFEED) {
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      telemetry::global_telemetry_flush();
+      abort();
+    }
+    for ( unsigned char *cp=((unsigned char*)(this)+this->tail_start), 
+            *cpEnd((unsigned char*)(this)+this->tail_start+this->tail_size); cp < cpEnd; ++cp ) {
+      if (*cp!=0xcc) {
+        printf("%s:%d INVALID tail header@%p bad tail byte@%p -> %x\n", __FILE__, __LINE__, (void*)this, cp, *cp );
+        telemetry::global_telemetry_flush();
         abort();
       }
     }
@@ -327,10 +346,20 @@ static void obj_pad(mps_addr_t base, size_t size) {
 }
 
 GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
-  core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
+//  printf("%s:%d in cons_scan\n", __FILE__, __LINE__ );
+  mps_addr_t original_client = client;
+  GC_TELEMETRY2(telemetry::label_cons_scan_start,
+                (uintptr_t)client,
+                (uintptr_t)limit);
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     while (client<limit) {
+      core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
       if ( !cons->hasGcTag() ) {
+#if DEBUG_VALIDATE_GUARD
+        client_validate(cons->_Car.raw_());
+        client_validate(cons->_Cdr.raw_());
+#endif
+        core::T_O* old_car = cons->_Car.raw_();
         SMART_PTR_FIX(cons->_Car);
         SMART_PTR_FIX(cons->_Cdr);
         client = reinterpret_cast<mps_addr_t>((char*)client+sizeof(core::Cons_O));
@@ -345,23 +374,39 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         abort();
       }
     };
+    GC_TELEMETRY3(telemetry::label_cons_scan,
+                  (uintptr_t)original_client,
+                  (uintptr_t)client,
+                  (uintptr_t)kind_cons);
   } MPS_SCAN_END(GC_SCAN_STATE);
   return MPS_RES_OK;
 };
 
 mps_addr_t cons_skip(mps_addr_t client) {
+//  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
+  mps_addr_t oldClient = client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
   if ( cons->pad1P() ) {
-    return reinterpret_cast<mps_addr_t>((char*)client+Alignment());
+    client = reinterpret_cast<mps_addr_t>((char*)client+Alignment());
   } else if (cons->padP() ) {
-    return reinterpret_cast<mps_addr_t>((char*)client + cons->padSize());
+    client = reinterpret_cast<mps_addr_t>((char*)client + cons->padSize());
+  } else {
+    client = reinterpret_cast<mps_addr_t>((char*)client + sizeof(core::Cons_O));
   }
-  return reinterpret_cast<mps_addr_t>((char*)client + sizeof(core::Cons_O));
+  GC_TELEMETRY3(telemetry::label_cons_skip,
+                (uintptr_t)oldClient,
+                (uintptr_t)client,
+                (uintptr_t)((char *)client - (char *)oldClient));
+  return client;
 }
 
 
 static void cons_fwd(mps_addr_t old_client, mps_addr_t new_client) {
+//  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   // I'm assuming both old and new client pointers have valid headers at this point
+  GC_TELEMETRY2(telemetry::label_cons_fwd,
+                (uintptr_t)old_client,
+                (uintptr_t)new_client);
   mps_addr_t limit = cons_skip(old_client);
   size_t size = (char *)limit - (char *)old_client;
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(old_client);
@@ -369,13 +414,31 @@ static void cons_fwd(mps_addr_t old_client, mps_addr_t new_client) {
 }
 
 static mps_addr_t cons_isfwd(mps_addr_t client) {
+//  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(client);
-  if (cons->fwdP()) return cons->fwdPointer();
+  if (cons->fwdP()) {
+#ifdef DEBUG_TELEMETRY
+    GC_TELEMETRY3(telemetry::label_cons_isfwd_true,
+                  (uintptr_t)client,
+                  (uintptr_t)client,
+                  (uintptr_t)cons->fwdPointer());
+#endif
+    return cons->fwdPointer();
+  }
+#ifdef DEBUG_TELEMETRY
+  GC_TELEMETRY2(telemetry::label_cons_isfwd_false,
+                (uintptr_t)client,
+                (uintptr_t)client);
+#endif
   return NULL;
 }
 
 static void cons_pad(mps_addr_t base, size_t size) {
+//  printf("%s:%d in %s\n", __FILE__, __LINE__, __FUNCTION__ );
   size_t alignment = Alignment();
+  GC_TELEMETRY2(telemetry::label_cons_pad,
+                (uintptr_t)base,
+                (uintptr_t)size);
   assert(size >= alignment);
   core::Cons_O* cons = reinterpret_cast<core::Cons_O*>(base);
   if (size == alignment) {
@@ -652,6 +715,15 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
   return false;
 }
 
+
+void run_quick_tests()
+{
+  core::List_sp l1 = core::Cons_O::create(core::clasp_make_fixnum(1),_Nil<core::T_O>());
+  core::List_sp l2 = core::Cons_O::create(core::clasp_make_fixnum(1),l1);
+  core::List_sp l3 = core::Cons_O::create(core::clasp_make_fixnum(1),l2);
+  core::List_sp l4 = core::Cons_O::create(core::clasp_make_fixnum(1),l3);
+}
+  
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -660,7 +732,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (Alignment() == 16) {
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
   }
-  global_sizeof_fwd = AlignUp(sizeof(Header_s) + sizeof(uintptr_t));
+  global_sizeof_fwd = AlignUp(sizeof(Header_s));
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
 #define CHAIN_SIZE 6400*5 // 256 // 6400
@@ -717,8 +789,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create obj format");
 
-  mps_chain_t only_chain;
-  res = mps_chain_create(&only_chain,
+  mps_chain_t main_chain;
+  res = mps_chain_create(&main_chain,
                          _global_arena,
                          LENGTH(gen_params),
                          gen_params);
@@ -735,7 +807,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the AMC pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
 #ifdef DEBUG_MPS_FENCEPOST_FREE
     MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
 #endif
@@ -816,7 +888,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #if 0   
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent);
     res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
   }
@@ -837,7 +909,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
     res = mps_pool_create_k(&_global_amcz_pool, _global_arena, mps_class_amcz(), args);
   }
   MPS_ARGS_END(args);
@@ -861,7 +933,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the AWL pool for weak hash tables here
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, only_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent);
     res = mps_pool_create_k(&_global_awl_pool, _global_arena, mps_class_awl(), args);
   }
@@ -959,6 +1031,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   exit_code = 0;
 #else
   #if 1
+  run_quick_tests();
   exit_code = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
   #else
   printf("%s:%d Skipping startupFn\n", __FILE__, __LINE__ );
@@ -985,9 +1058,11 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(_global_amc_pool);
   mps_arena_park(_global_arena);
-  mps_chain_destroy(only_chain);
+  mps_chain_destroy(cons_chain);
+  mps_chain_destroy(main_chain);
   mps_fmt_destroy(weak_obj_fmt);
   mps_fmt_destroy(obj_fmt);
+  mps_fmt_destroy(cons_fmt);
   mps_arena_destroy(_global_arena);
 
   return exit_code;
@@ -1012,9 +1087,7 @@ void client_validate(void *taggedClient) {
     gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
     header->validate();
   } else if (gctools::tagged_consp(taggedClient)) {
-    void* client = gctools::untag_cons(taggedClient);
-    gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(gctools::ClientPtrToBasePtr(client));
-    header->validate();
+    // Nothing can be done to validate CONSes, they are too compact.
   }    
 };
 

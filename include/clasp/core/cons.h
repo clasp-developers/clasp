@@ -117,40 +117,43 @@ class Cons_O : public T_O {
   friend T_sp oCdr(List_sp o);
 #ifdef USE_MPS
  public: // Garbage collector functions
+  uintptr_t& rawRef(int idx) {return *(uintptr_t*)((uintptr_t*)this+idx);};
+  uintptr_t& rawRef(int idx) const {return *(uintptr_t*)((uintptr_t*)this+idx);};
+    
   bool hasGcTag() const {
-    return (((uintptr_t)(this->_Car.raw_())&gctools::tag_mask == gctools::gc_tag));
+    return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag));
   }
   bool fwdP() const {
-    return (((uintptr_t)(this->_Car.raw_())&gctools::tag_mask == gctools::gc_tag)
-            && ((uintptr_t)(this->_Cdr.raw_())&gctools::tag_mask == gctools::Header_s::fwd_tag));
+    return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
+            && (((uintptr_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::fwd_tag));
   }
   bool pad1P() const {
-    return ((uintptr_t)(this->_Car.raw_()) == gctools::gc_tag);
+    return ((uintptr_t)(this->rawRef(0)) == gctools::gc_tag);
   }
   bool padP() const {
-    return (((uintptr_t)(this->_Car.raw_())&gctools::tag_mask == gctools::gc_tag)
-            && ((uintptr_t)(this->_Cdr.raw_())&gctools::tag_mask == gctools::Header_s::pad_tag));
+    return ((((uintptr_t)(this->rawRef(0))&gctools::tag_mask) == gctools::gc_tag)
+            && (((uintptr_t)(this->rawRef(1))&gctools::tag_mask) == gctools::Header_s::pad_tag));
   }
   size_t padSize() const {
-    size_t sz = (size_t)(((uintptr_t)this->_Cdr.raw_()) >> gctools::tag_shift);
+    size_t sz = (size_t)(((uintptr_t)this->rawRef(1)) >> gctools::tag_shift);
     return sz;
   }
   void setFwdPointer(void* ptr) {
-    this->_Car.rawRef_() = (T_O*)((uintptr_t)(ptr) | gctools::gc_tag);
-    this->_Cdr.rawRef_() = (T_O*)(gctools::Header_s::fwd_tag);
+    this->rawRef(0) = (uintptr_t)((uintptr_t)(ptr) | gctools::gc_tag);
+    this->rawRef(1) = (uintptr_t)(gctools::Header_s::fwd_tag);
   }
   void* fwdPointer() {
-    return (void*)((uintptr_t)(this->_Car.raw_()) & gctools::ptr_mask);
+    return (void*)((uintptr_t)(this->rawRef(0)) & gctools::ptr_mask);
   }
   void setPad1()
   {
     // Just a gc_tag means pad1
-    this->_Car.rawRef_() = (T_O*)(gctools::gc_tag | 0);
+    this->rawRef(0) = (uintptr_t)(gctools::gc_tag | 0);
   }
   void setPad(size_t sz)
   {
-    this->_Car.rawRef_() = (T_O*)(gctools::gc_tag | gctools::ptr_mask);
-    this->_Cdr.rawRef_() = (T_O*)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift));
+    this->rawRef(0) = (uintptr_t)(gctools::gc_tag | gctools::ptr_mask);
+    this->rawRef(1) = (uintptr_t)(gctools::Header_s::pad_tag | (sz << gctools::tag_shift));
   }
 #endif
 
@@ -190,10 +193,6 @@ public:
   static Cons_sp createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, T_sp o7, T_sp o8);
   inline static Cons_sp create(T_sp car, T_sp cdr) {
     gctools::smart_ptr<Cons_O> ll = gctools::ConsAllocator<Cons_O>::allocate(car,cdr);
-#ifdef DEBUG_VALIDATE_GUARD
-    client_validate(ll->_Car.raw_());
-    client_validate(ll->_Cdr.raw_());
-#endif
     return ll;
   };
   inline static Cons_sp create(T_sp obj) {
@@ -430,6 +429,12 @@ CL_DEFMETHOD   T_sp setf_cdr(T_sp o) {
 	 */
   //	void setOwnerOfAllEntries(T_sp obj);
 
+  inline bool eq(T_sp o) const {
+    if (o.consp()) {
+      return this == o.unsafe_cons();
+    }
+    return false;
+  }
    List_sp subseq(int start, T_sp end) const;
    T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {
     _G();

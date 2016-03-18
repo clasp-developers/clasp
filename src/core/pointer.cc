@@ -47,8 +47,7 @@ Pointer_sp Pointer_O::create(void *p) {
 
 
 bool Pointer_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
+  if (this->eq(obj)) return true;
   if (Pointer_sp pobj = obj.asOrNull<Pointer_O>()) {
     return (this->_Pointer == pobj->_Pointer);
   }

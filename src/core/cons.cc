@@ -562,10 +562,8 @@ void Cons_O::serialize(serialize::SNode node) {
 #endif
 
 bool Cons_O::equal(T_sp obj) const {
-  if (!obj.consp())
-    return false;
-  if (this->eq(obj))
-    return ((true));
+  if (!obj.consp()) return false;
+  if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
   if (!cl__equal(this->_Car, oCar(other)))
     return false;
@@ -575,10 +573,8 @@ bool Cons_O::equal(T_sp obj) const {
 }
 
 bool Cons_O::equalp(T_sp obj) const {
-  if (!obj.consp())
-    return false;
-  if (this->eq(obj))
-    return true;
+  if (!obj.consp()) return false;
+  if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
   if (!cl__equalp(this->_Car, oCar(other)))
     return false;

@@ -538,7 +538,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
   (dolist (one (fixed-part layout))
     (format stream "{  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
             (layout-type one)
-            (layout-ctype one)
+            (or (layout-ctype one) "void")
             (layout-base-ctype one)
             (layout-field-names one)
             (layout-field-names one)))

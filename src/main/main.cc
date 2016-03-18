@@ -148,10 +148,24 @@ void create_source_main_host()
 core__pathname_translations(core::Str_O::create("source-main"), _lisp->_true(), pts);
 }
 
+class DummyClass { };
+
+class EmptyClass : public DummyClass { // : public gctools::GCObject {
+private:
+public:
+  static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
+  static void set_static_creator(gc::tagged_pointer<core::Creator> cb){};
+
+public:
+  explicit EmptyClass();
+};
 
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
-                                   // Set the stack size
-
+  srand(1);
+  printf("%s:%d setting srand(1)\n", __FILE__, __LINE__ );
+  printf("%s:%d sizeof(EmptyClass) = %d\n", __FILE__, __LINE__, sizeof(EmptyClass)); 
+  printf("%s:%d sizeof(_RootDummyClass) = %d\n", __FILE__, __LINE__, sizeof(_RootDummyClass));
+  printf("%s:%d sizeof(T_O) = %d\n", __FILE__, __LINE__, sizeof(core::T_O));
   printf("%s:%d sizeof(Cons_O) = %d\n", __FILE__, __LINE__, sizeof(core::Cons_O));
   rlimit rl;
   rl.rlim_max = 16 * 1024 * 1024;

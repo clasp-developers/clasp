@@ -37,6 +37,14 @@ constexpr Handle label_stack_push = 20;
 constexpr Handle label_stack_allocate = 21;
 constexpr Handle label_stack_pop = 22;
 constexpr Handle label_obj_deallocate_unmanaged_instance = 23;
+ constexpr Handle label_cons_allocation = 24;
+ constexpr Handle  label_cons_pad = 25;
+ constexpr Handle  label_cons_scan_start = 26;
+ constexpr Handle  label_cons_scan = 27;
+ constexpr Handle  label_cons_isfwd_true = 28;
+ constexpr Handle  label_cons_isfwd_false = 29;
+ constexpr Handle  label_cons_skip = 30;
+ constexpr Handle  label_cons_fwd = 31;
 
 struct Telemetry {
   typedef size_t Header;
@@ -181,6 +189,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word data0) {
+#ifdef DEBUG_TELEMETRY_DUMP
+    this->dump_entry_varargs(label,1,data0);
+#endif
     if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
@@ -192,6 +203,9 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word data0, Word data1) {
+#ifdef DEBUG_TELEMETRY_DUMP
+    this->dump_entry_varargs(label,2,data0,data1);
+#endif
     if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
@@ -204,10 +218,10 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word data0, const std::string &msg) {
-    if ((this->_Mask & kind) && this->_File) {
 #ifdef DEBUG_TELEMETRY_DUMP
       this->dump_entry_varargs(label,1,data0);
 #endif
+    if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 2;
@@ -224,10 +238,10 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word data0, Word data1, Word data2) {
-    if ((this->_Mask & kind) && this->_File) {
 #ifdef DEBUG_TELEMETRY_DUMP
       this->dump_entry_varargs(label,3,data0,data1,data2);
 #endif
+    if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 3;
@@ -240,10 +254,10 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3) {
-    if ((this->_Mask & kind) && this->_File) {
 #ifdef DEBUG_TELEMETRY_DUMP
       this->dump_entry_varargs(label,4,d0,d1,d2,d3);
 #endif
+    if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 4;
@@ -257,10 +271,10 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4) {
-    if ((this->_Mask & kind) && this->_File) {
 #ifdef DEBUG_TELEMETRY_DUMP
       this->dump_entry_varargs(label,5,d0,d1,d2,d3,d4);
 #endif
+    if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 5;
@@ -275,10 +289,10 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4, Word d5) {
-    if ((this->_Mask & kind) && this->_File) {
 #ifdef DEBUG_TELEMETRY_DUMP
       this->dump_entry_varargs(label,6,d0,d1,d2,d3,d4,d5);
 #endif
+    if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 6;
@@ -294,10 +308,10 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
   }
 
   void write(size_t kind, Handle label, Word d0, Word d1, Word d2, Word d3, Word d4, Word d5, Word d6) {
-    if ((this->_Mask & kind) && this->_File) {
 #ifdef DEBUG_TELEMETRY_DUMP
       this->dump_entry_varargs(label,7,d0,d1,d2,d3,d4,d5,d6);
 #endif
+    if ((this->_Mask & kind) && this->_File) {
       this->write_header(data_header);
       this->write_handle(label);
       size_t size = 7;

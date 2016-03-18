@@ -33,6 +33,8 @@ THE SOFTWARE.
 #include <boost/utility/binary.hpp>
 #include <clasp/gctools/telemetry.h>
 
+
+
 extern "C" {
 typedef struct SegStruct *Seg;
 typedef mps_arena_t Arena;
@@ -42,6 +44,7 @@ extern int SegOfAddr(Seg *segReturn, Arena arena, Addr addr);
 extern void ShieldExpose(Arena arena, Seg seg);
 extern void ShieldCover(Arena arena, Seg seg);
 };
+
 
 namespace gctools {
 
@@ -93,13 +96,7 @@ extern MpsMetrics globalMpsMetrics;
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss
 
-class GCObject {
-public:
-  //	bool isNil() const { return false;};
-  //	bool isUnbound() const { return false;};
-  //	bool isObject() const { return true;};
-  virtual ~GCObject(){};
-};
+class GCObject {};
 
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
@@ -191,8 +188,8 @@ public:
   tagged_kind_t header;
 #ifdef DEBUG_GUARD
   tagged_kind_t guard;
-  size_t tail_start;
-  size_t tail_size;
+  int tail_start;
+  int tail_size;
 #endif
   tagged_kind_t data[1]; // After this is where the client pointer starts
 public:
@@ -268,6 +265,12 @@ public:
 };
 
 };
+
+
+
+
+
+
 
 namespace gctools {
 
@@ -392,30 +395,6 @@ inline T *BasePtrToMostDerivedPtr(void *base) {
 }
 };
 
-namespace core {
-class T_O;
-class WrappedPointer_O;
-class Functoid;
-class Creator;
-class Iterator_O;
-};
-namespace clbind {
-class ConstructorCreator;
-};
-
-#ifndef RUNNING_GC_BUILDER
-#define DECLARE_FORWARDS
-#include "clasp_gc.cc"
-#undef DECLARE_FORWARDS
-#endif
-
-namespace gctools {
-#if !defined(RUNNING_GC_BUILDER)
-#define GC_DYNAMIC_CAST
-#include "clasp_gc.cc" // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
-#endif
-};
 
 namespace gctools {
 template <typename T>

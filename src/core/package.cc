@@ -667,11 +667,6 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
 #endif
   Str_sp nameKey = Str_O::create(symName);
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
-#if 0
-    if (sym.notnilp() && this == &(*(_lisp->commonLispPackage()))) {
-      throwIfNotValidClSymbol(sym->symbolName()->get());
-    }
-#endif
     this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
   } else {
     this->_InternalSymbols->hash_table_setf_gethash(nameKey, sym);

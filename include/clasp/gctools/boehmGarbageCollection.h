@@ -53,14 +53,16 @@ THE SOFTWARE.
 #define STL_VECTOR_KEYWORD_ARGUMENT_FIX(_vec_)
 #define STL_VECTOR_AUX_ARGUMENT_FIX(_vec_)
 
+
+
+
+
+
 namespace gctools {
 class GCObject;
 class GCLinkedList;
 
-class GCObject {
-public:
-  GCObject &operator=(const GCObject &) { return *this; };
-};
+class GCObject {};
 
 /*! GCKindEnum has one integer value for each type allocated by the GC.
 This value is written into the Header_s of every allocated object.
@@ -175,6 +177,9 @@ inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + Align
 };
 
 
+
+
+
 namespace gctools {
 
 inline void *ClientPtrToBasePtr(void *mostDerived) {
@@ -197,30 +202,6 @@ inline T *BasePtrToMostDerivedPtr(void *base) {
 }
 };
 
-namespace core {
-class T_O;
-class WrappedPointer_O;
-class Functoid;
-class Creator;
-class Iterator_O;
-};
-namespace clbind {
-class ConstructorCreator;
-};
-
-#ifndef USE_CXX_DYNAMIC_CAST
-#define DECLARE_FORWARDS
-#include "clasp_gc.cc"
-#undef DECLARE_FORWARDS
-#endif
-
-namespace gctools {
-#ifndef USE_CXX_DYNAMIC_CAST
-#define GC_DYNAMIC_CAST
-#include "clasp_gc.cc" // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
-#endif
-};
 
 namespace gctools {
 /*! Initialize the memory pool system and call the startup function which

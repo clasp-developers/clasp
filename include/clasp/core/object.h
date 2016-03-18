@@ -200,7 +200,6 @@ public:
 
 public:
   explicit _RootDummyClass();
-  ~_RootDummyClass(){};
 };
 
 template <class T_Base>
@@ -472,25 +471,11 @@ public:                                                      \
 
   
   class T_O : public _RootDummyClass {
-  public:
-    ~T_O(){};
   private:
     friend class CoreExposer;
     LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
   public:
-  public: // ----------------
-//    void setTrackName(const string &nm);
-//    void setTrackNameUsingAddress();
     bool isAInstanceOf(core::Class_sp mc);
-#if 0
-    bool isAssignableToByClassSymbol(Symbol_sp cid) const;
-    bool isAssignableToClass(core::Class_sp mc) const;
-
-    template <class o_class>
-      bool isAssignableTo() const { return this->isAssignableToByClassSymbol(o_class::static_classSymbol()); }
-#endif
-  public:
-    inline bool eq(T_sp obj) const { return obj.objectp() && (this == obj.get()); };
   };
 
 };
@@ -509,7 +494,11 @@ namespace core {
   class General_O : public T_O {
     LISP_CLASS(core, CorePkg, General_O, "General", T_O );
   public:
+//    General_O& &operator=(const General_O &) { return *this; };
+
     virtual void sxhash_(HashGenerator &hg) const;
+    virtual size_t templatedSizeof() const { SUBIMP(); };
+
       //! Initialize member variables and those that depend on sharedThis
     virtual void initialize();
     virtual bool isStandardObject() { return false; };
@@ -522,7 +511,10 @@ namespace core {
     string className() const;
 
     T_sp deepCopy() const;
-    
+
+    inline bool eq(T_sp o) const {
+      return (o.generalp() && this == o.unsafe_general());
+    }
         //! A technical string representation
     virtual string description() const;
   //! Just describe the contents

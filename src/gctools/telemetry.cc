@@ -309,6 +309,15 @@ void Telemetry::initialize() {
   this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
   this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);
   this->intern("obj_deallocate_unmanaged_instance addr@%p", label_obj_deallocate_unmanaged_instance);
+  this->intern("cons_mps_allocation base @%p client@%p client_end@%p kind: %lu", label_cons_allocation);
+    this->intern("cons_pad base@%p size: %lu", label_cons_pad);
+  this->intern("cons_scan_start client@%p limit@%p", label_cons_scan_start);
+  this->intern("cons_scan client@%p after_client@%p kind: %lu", label_cons_scan);
+  this->intern("cons_isfwd == TRUE client@%p base@%p forward@%p", label_cons_isfwd_true);
+  this->intern("cons_isfwd == FALSE client@%p base@%p", label_cons_isfwd_false);
+  this->intern("cons_skip in-client@%p  out-client@%p size=%lu", label_cons_skip);
+  this->intern("cons_fwd old-client@%p new-client@%p", label_cons_fwd);
+
 };
 
 void initialize_telemetry_functions() {
@@ -317,6 +326,8 @@ void initialize_telemetry_functions() {
 
 extern "C" {
 void global_telemetry_flush() {
+#ifdef DEBUG_TELEMETRY
   telemetry::global_telemetry_search->flush();
+#endif
 };
 };

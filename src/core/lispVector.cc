@@ -146,8 +146,7 @@ List_sp Vector_O::arrayDimensions() const {
 }
 
 bool Vector_O::equalp(T_sp o) const {
-  if (this->eq(o))
-    return true;
+  if ( this->eq(o) ) return true;
   if (Array_sp other = o.asOrNull<Array_O>()) {
     if (other->rank() != 1)
       return false;

@@ -210,6 +210,7 @@ extern __thread ThreadInfo *threadLocalInfoPtr;
 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
+  friend gctools::Layout_code* gctools::get_kind_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
       {
     //! A pool of strings for string manipulation - must be per thread

@@ -365,7 +365,7 @@ using namespace gctools;
 /*! I'm using a format_header so MPS gives me the object-pointer */
 mps_addr_t obj_skip(mps_addr_t client) {
   mps_addr_t oldClient = client;
-  size_t size;
+  size_t size = 0;
 // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
@@ -381,24 +381,21 @@ mps_addr_t obj_skip(mps_addr_t client) {
     gctools::GCKindEnum kind = header->kind();
     const Kind_layout& kind_layout = global_kind_layout[kind];
 #ifndef RUNNING_GC_BUILDER
-    if ( kind_layout.layout_operation == class_container_op ) {
-      if ( kind_layout.field_layout_start ) {
-        size = class_layout.size;
-      }
+    if ( kind_layout.layout_op == class_container_op ) {
+      size = kind_layout.size;
       if ( kind_layout.container_layout ) {
         Container_layout& container_layout = *kind_layout.container_layout;
-        size_t capacity = *(size_t)((const char*)client + container_layout.capacity_offset);
-        size += container_layout.element_size*capacity;
+        size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
+        size = container_layout.element_size*capacity + container_layout.data_offset;
       }
     } else {
       size = ((core::General_O*)client)->templatedSizeof();
     }
-#ifndef DEBUG_GUARD
-    client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-#else
-    client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
+        client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s))
+#ifdef DEBUG_GUARD
+                              + header->tail_size
 #endif
-          // Here add tail
+                              );
 #endif // #ifndef RUNNING_GC_BUILDER
   } else if (header->fwdP()) {
     client = (char *)(client) + header->fwdSize();
@@ -453,8 +450,8 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         kind = header->kind();
         const Kind_layout& kind_layout = global_kind_layout[kind];
 #ifndef RUNNING_GC_BUILDER
+        size = kind_layout.size;
         if ( kind_layout.field_layout_start ) {
-          size = class_layout.size;
           int num_fields = kind_layout.number_of_fields;
           Field_layout* field_layout_cur = kind_layout.field_layout_start;
           for ( int i=0; i<num_fields; ++i ) {
@@ -465,11 +462,12 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
         }
         if ( kind_layout.container_layout ) {
           Container_layout& container_layout = *kind_layout.container_layout;
-          size_t capacity = *(size_t)((const char*)client + container_layout.capacity_offset);
-          size += container_layout.element_size*capacity;
-          size_t end = *(size_t)((const char*)client + container_layout.end_offset);
+          size_t capacity = *(size_t*)((const char*)client + container_layout.capacity_offset);
+          size = container_layout.element_size*capacity + container_layout.data_offset;
+          size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
           for ( int i=0; i<end; ++i ) {
-            field_layout_cur = container_layout;
+            Field_layout* field_layout_cur = container_layout.field_layout_start;
+            ASSERT(field_layout_cur);
             const char* element = ((const char*)client + container_layout.data_offset + container_layout.element_size*i);
             for ( int j=0; j<container_layout.number_of_fields; ++j ) {
               core::T_O** field = (core::T_O**)((const char*)element + field_layout_cur->field_offset);
@@ -478,20 +476,14 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
             }
           }
         }
-        if (kind_layout.layout_operation == class_container_op) {
-#ifndef DEBUG_GUARD
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-#else
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
-#endif
-        } else {
+        if (kind_layout.layout_op != class_container_op) {
           size = ((core::General_O*)client)->templatedSizeof();
-#ifndef DEBUG_GUARD
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)));
-#else
-          client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s)) + header->tail_size);
-#endif
         }
+        client = (mps_addr_t)((char*)client + AlignUp(size + sizeof(Header_s))
+#ifdef DEBUG_GUARD
+                              + header->tail_size
+#endif
+                              );
           // Here add tail
 #endif // #ifndef RUNNING_GC_BUILDER
       } else if (header->fwdP()) {

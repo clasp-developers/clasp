@@ -1342,8 +1342,7 @@ bool Number_O::operator>=(T_sp obj) const {
 }
 
 bool Number_O::equal(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
+  if ( this->eq(obj) ) return true;
   return cl__eql(this->asSmartPtr(), obj);
 }
 
@@ -1801,8 +1800,7 @@ void ShortFloat_O::sxhash_(HashGenerator &hg) const {
 }
 
 bool ShortFloat_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
+  if (this->eq(obj)) return true;
   if (gc::IsA<Number_sp>(obj)) {
     Number_sp num = gc::As<Number_sp>(obj);
     return this->get() == clasp_to_double(num);
@@ -2062,8 +2060,7 @@ void DoubleFloat_O::sxhash_(HashGenerator &hg) const {
 }
 
 bool DoubleFloat_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
+  if (this->eq(obj)) return true;
   if (DoubleFloat_sp other = obj.asOrNull<DoubleFloat_O>()) {
     ASSERT(sizeof(this->_Value) == sizeof(int64_t));
     int64_t me = *(int64_t *)(&this->_Value);
@@ -2259,8 +2256,7 @@ Number_sp Ratio_O::abs_() const {
 }
 
 bool Ratio_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
+  if (this->eq(obj)) return true;
   if (Ratio_sp other = obj.asOrNull<Ratio_O>()) {
     if (!cl__eql(this->_numerator, other->_numerator))
       return false;
@@ -2388,8 +2384,7 @@ void Complex_O::sxhash_(HashGenerator &hg) const {
     }
 #endif
 bool Complex_O::eql_(T_sp o) const {
-  if (this->eq(o))
-    return true;
+  if (this->eq(o)) return true;
   if (Complex_sp other = o.asOrNull<Complex_O>()) {
     if (!cl__eql(this->_real, other->_real))
       return false;

@@ -378,7 +378,7 @@ bool General_O::equalp(T_sp obj) const {
   return this->equal(obj);
 }
 #if 0
-bool T_O::isAInstanceOf(Class_sp mc) {
+bool General_O::isAInstanceOf(Class_sp mc) {
   if (this->eq(mc))
     return true;
   Symbol_sp classSymbol = mc->className();
@@ -387,7 +387,6 @@ bool T_O::isAInstanceOf(Class_sp mc) {
   return false;
 }
 #endif
-
 
 void HashGenerator::hashObject(T_sp obj) {
   clasp_sxhash(obj, *this);

@@ -89,12 +89,6 @@ class type_info;
 #define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS()
 #endif
 
-#if defined(DEBUG_TELEMETRY)
-#define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind) clasp_mps_debug_allocation(poolName, addr, gcobject_addr, size, kind)
-#else
-#define DEBUG_MPS_ALLOCATION(poolName, addr, gcobject_addr, size, kind)
-//#define DEBUG_MPS_FIX1_BEFORE(base,smartaddr)
-#endif
 
 #define clasp_unlikely(x) __builtin_expect(!!(x), 0)
 #define clasp_likely(x) __builtin_expect(!!(x), 1)

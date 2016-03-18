@@ -338,10 +338,8 @@ bool Instance_O::genericFunctionP() const {
 }
 
 bool Instance_O::equalp(T_sp obj) const {
-  if (obj.nilp())
-    return false;
-  if (this->eq(obj))
-    return true;
+  if (!obj.generalp()) return false;
+  if (this == obj.unsafe_general()) return true;
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     if (this->_Class != iobj->_Class)
       return false;
