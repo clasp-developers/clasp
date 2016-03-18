@@ -117,7 +117,7 @@ for a CONS cell*/
 static const uintptr_t ptr_mask    = ~BOOST_BINARY(111);
 static const uintptr_t general_tag =  BOOST_BINARY(001); // means a GENERAL pointer
 static const uintptr_t cons_tag    =  BOOST_BINARY(011);    // means a CONS cell pointer
-                                                        /*! A test for pointers has the form (potential_ptr&pointer_and)==pointer_eq */
+                                                        /*! A test for pointers has the form (potential_ptr&pointer_tag_mask)==pointer_tag_eq */
 static const uintptr_t pointer_tag_mask = BOOST_BINARY(101);
 static const uintptr_t pointer_tag_eq   = BOOST_BINARY(001);
  /*! code_tag is a tag for a raw code in memory - remove the tag and call the resulting pointer

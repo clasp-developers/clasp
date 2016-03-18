@@ -197,6 +197,8 @@ public:
 	  gcweak.h>>Buckets::set
 	  intrinsics.cc>>cc_loadTimeValueReference
           record.h>>field specialized on gc::smart_ptr<OT>&
+          SMART_PTR_FIX and smart_ptr fixing in general when SMART_PTR_FIX is replaced
+                  with a direct call to the fixing template function
 	*/
   Type *&rawRef_() { return this->theObject; };
 
