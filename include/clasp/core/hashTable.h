@@ -63,6 +63,8 @@ protected: // instance variables here
   uint _HashTableCount;
 #ifdef USE_MPS
   mps_ld_s _LocationDependencyTracker;
+#else
+  void* _LocationDependencyTracker; // Need to have a field here to match MPS  
 #endif
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults

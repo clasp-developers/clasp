@@ -114,7 +114,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
     return reinterpret_cast<Fixnum>(&typeid(*obj));
 #else
-    return gctools::GCKind<core::Cons_O>::Kind;
+    return gctools::kind_cons;
 #endif
   } else if (obj.generalp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
