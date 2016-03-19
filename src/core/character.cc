@@ -309,7 +309,7 @@ const char* OrderedCharacterNames[] = {
     "NUL",
     "SOH", "STX", "ETX", "EOT",
     "ENQ", "ACK", "BEL", "BACKSPACE",
-    "TAB", "NEWLINE", "LINEFEED", "VT",
+    "TAB", "NEWLINE", "VT",
     "PAGE", "RETURN", "SO", "SI",
     "DLE", "DC1", "DC2", "DC3",
     "DC4", "NAK", "SYN", "ETB",
@@ -353,6 +353,7 @@ void CharacterInfo::initialize() {
     this->gCharacterNames[fci] = Str_O::create(name);
   }
   gNamesToCharacterIndex["NULL"] = 0;
+  gNamesToCharacterIndex["LINEFEED"] = 10;
 }
 
 CL_LAMBDA(ch);
