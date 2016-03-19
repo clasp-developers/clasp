@@ -368,7 +368,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       } else if (cons->pad1P()) {
         client = (char *)(client) + Alignment();
       } else if (cons->padP()) {
-        client = (char *)(client) + sizeof(core::Cons_O);
+        client = (char *)(client) + cons->padSize();
       } else {
         printf("Bad object in cons_scan");
         abort();
