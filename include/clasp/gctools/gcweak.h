@@ -299,6 +299,8 @@ public:
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
 #ifdef USE_MPS
   mps_ld_s _LocationDependency;
+#else
+  void* _LocationDependency; // Must have a field to match MPS
 #endif
 
 public:

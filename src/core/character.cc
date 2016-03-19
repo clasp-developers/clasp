@@ -304,148 +304,57 @@ Character_sp clasp_character_create_from_name(string const &name) {
 };
 namespace core {
 
+void CharacterInfo::add_char(const char* name, int fci ) {
+  string upcase_name = stringUpper(name);
+  this->gNamesToCharacterIndex[upcase_name] = fci;
+  this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
+  this->gCharacterNames[fci] = Str_O::create(upcase_name);
+};
+
+const char* OrderedCharacterNames[] = {
+    "NULL", "NUL",
+    "SOH", "STX", "ETX", "EOT",
+    "ENQ", "ACK", "BEL", "BACKSPACE",
+    "TAB", "NEWLINE", "LINEFEED", "VT",
+    "PAGE", "RETURN", "SO", "SI",
+    "DLE", "DC1", "DC2", "DC3",
+    "DC4", "NAK", "SYN", "ETB",
+    "CAN", "EM", "SUB", "ESC",
+    "FS", "GS", "RS", "US",
+    "SPACE", "EXCLAMATION_MARK", "QUOTATION_MARK", "NUMBER_SIGN",
+    "DOLLAR_SIGN", "PERCENT_SIGN", "AMPERSAND", "APOSTROPHE",
+    "LEFT_PARENTHESIS", "RIGHT_PARENTHESIS", "ASTERISK", "PLUS_SIGN",
+    "COMMA", "HYPHEN-MINUS", "FULL_STOP", "SOLIDUS",
+    "DIGIT_ZERO", "DIGIT_ONE", "DIGIT_TWO", "DIGIT_THREE",
+    "DIGIT_FOUR", "DIGIT_FIVE", "DIGIT_SIX", "DIGIT_SEVEN",
+    "DIGIT_EIGHT", "DIGIT_NINE", "COLON", "SEMICOLON",
+    "LESS-THAN_SIGN", "EQUALS_SIGN", "GREATER-THAN_SIGN", "QUESTION_MARK",
+    "COMMERCIAL_AT", "LATIN_CAPITAL_LETTER_A", "LATIN_CAPITAL_LETTER_B", "LATIN_CAPITAL_LETTER_C",
+    "LATIN_CAPITAL_LETTER_D", "LATIN_CAPITAL_LETTER_E", "LATIN_CAPITAL_LETTER_F", "LATIN_CAPITAL_LETTER_G",
+    "LATIN_CAPITAL_LETTER_H", "LATIN_CAPITAL_LETTER_I", "LATIN_CAPITAL_LETTER_J", "LATIN_CAPITAL_LETTER_K",
+    "LATIN_CAPITAL_LETTER_L", "LATIN_CAPITAL_LETTER_M", "LATIN_CAPITAL_LETTER_N", "LATIN_CAPITAL_LETTER_O",
+    "LATIN_CAPITAL_LETTER_P", "LATIN_CAPITAL_LETTER_Q", "LATIN_CAPITAL_LETTER_R", "LATIN_CAPITAL_LETTER_S",
+    "LATIN_CAPITAL_LETTER_T", "LATIN_CAPITAL_LETTER_U", "LATIN_CAPITAL_LETTER_V", "LATIN_CAPITAL_LETTER_W",
+    "LATIN_CAPITAL_LETTER_X", "LATIN_CAPITAL_LETTER_Y", "LATIN_CAPITAL_LETTER_Z", "LEFT_SQUARE_BRACKET",
+    "REVERSE_SOLIDUS", "RIGHT_SQUARE_BRACKET", "CIRCUMFLEX_ACCENT", "LOW_LINE",
+    "GRAVE_ACCENT", "LATIN_SMALL_LETTER_A", "LATIN_SMALL_LETTER_B", "LATIN_SMALL_LETTER_C",
+    "LATIN_SMALL_LETTER_D", "LATIN_SMALL_LETTER_E", "LATIN_SMALL_LETTER_F", "LATIN_SMALL_LETTER_G",
+    "LATIN_SMALL_LETTER_H", "LATIN_SMALL_LETTER_I", "LATIN_SMALL_LETTER_J", "LATIN_SMALL_LETTER_K",
+    "LATIN_SMALL_LETTER_L", "LATIN_SMALL_LETTER_M", "LATIN_SMALL_LETTER_N", "LATIN_SMALL_LETTER_O",
+    "LATIN_SMALL_LETTER_P", "LATIN_SMALL_LETTER_Q", "LATIN_SMALL_LETTER_R", "LATIN_SMALL_LETTER_S",
+    "LATIN_SMALL_LETTER_T", "LATIN_SMALL_LETTER_U", "LATIN_SMALL_LETTER_V", "LATIN_SMALL_LETTER_W",
+    "LATIN_SMALL_LETTER_X", "LATIN_SMALL_LETTER_Y", "LATIN_SMALL_LETTER_Z", "LEFT_CURLY_BRACKET",
+    "VERTICAL_LINE", "RIGHT_CURLY_BRACKET", "TILDE", "RUBOUT"
+};
+
 void CharacterInfo::initialize() {
   this->gCharacterNames.resize(256, _Nil<T_O>());
   this->gIndexedCharacters.resize(256, _Nil<T_O>());
-#define ADD_CHAR(name, char_index)                                      \
-  {                                                                     \
-    string upcase_name = stringUpper(name);                             \
-    int fci = char_index;                                               \
-    gNamesToCharacterIndex[upcase_name] = fci;                          \
-    gIndexedCharacters[fci] = clasp_make_standard_character((char)fci); \
-    gCharacterNames[fci] = Str_O::create(upcase_name);                  \
-  }
   int ci = 0;
   gNamesToCharacterIndex["NULL"] = 0;
-  ADD_CHAR("Nul", ci++);
-  ADD_CHAR("Soh", ci++);       //1
-  ADD_CHAR("Stx", ci++);       //2
-  ADD_CHAR("Etx", ci++);       //3
-  ADD_CHAR("Eot", ci++);       //4
-  ADD_CHAR("Enq", ci++);       //5
-  ADD_CHAR("Ack", ci++);       //6
-  ADD_CHAR("Bel", ci++);       //7
-  ADD_CHAR("Backspace", ci++); //8
-  ADD_CHAR("Tab", ci++);       //9
-  ADD_CHAR("Newline", ci++);   //10
-  ADD_CHAR("Linefeed", 10);    //10
-  ADD_CHAR("Vt", ci++);        //11
-  ADD_CHAR("Page", ci++);      //12
-  ADD_CHAR("Return", ci++);    //13
-  ADD_CHAR("So", ci++);
-  ADD_CHAR("Si", ci++);
-  ADD_CHAR("Dle", ci++);
-  ADD_CHAR("Dc1", ci++);
-  ADD_CHAR("Dc2", ci++);
-  ADD_CHAR("Dc3", ci++);
-  ADD_CHAR("Dc4", ci++);
-  ADD_CHAR("Nak", ci++);
-  ADD_CHAR("Syn", ci++);
-  ADD_CHAR("Etb", ci++);
-  ADD_CHAR("Can", ci++);
-  ADD_CHAR("Em", ci++);
-  ADD_CHAR("Sub", ci++);
-  ADD_CHAR("Esc", ci++);
-  ADD_CHAR("Fs", ci++);
-  ADD_CHAR("Gs", ci++);
-  ADD_CHAR("Rs", ci++);
-  ADD_CHAR("Us", ci++);
-  ADD_CHAR("Space", ci++);
-  ADD_CHAR("EXCLAMATION_MARK", ci++);
-  ADD_CHAR("QUOTATION_MARK", ci++);
-  ADD_CHAR("NUMBER_SIGN", ci++);
-  ADD_CHAR("DOLLAR_SIGN", ci++);
-  ADD_CHAR("PERCENT_SIGN", ci++);
-  ADD_CHAR("AMPERSAND", ci++);
-  ADD_CHAR("APOSTROPHE", ci++);
-  ADD_CHAR("LEFT_PARENTHESIS", ci++);
-  ADD_CHAR("RIGHT_PARENTHESIS", ci++);
-  ADD_CHAR("ASTERISK", ci++);
-  ADD_CHAR("PLUS_SIGN", ci++);
-  ADD_CHAR("COMMA", ci++);
-  ADD_CHAR("HYPHEN-MINUS", ci++);
-  ADD_CHAR("FULL_STOP", ci++);
-  ADD_CHAR("SOLIDUS", ci++);
-  ADD_CHAR("DIGIT_ZERO", ci++);
-  ADD_CHAR("DIGIT_ONE", ci++);
-  ADD_CHAR("DIGIT_TWO", ci++);
-  ADD_CHAR("DIGIT_THREE", ci++);
-  ADD_CHAR("DIGIT_FOUR", ci++);
-  ADD_CHAR("DIGIT_FIVE", ci++);
-  ADD_CHAR("DIGIT_SIX", ci++);
-  ADD_CHAR("DIGIT_SEVEN", ci++);
-  ADD_CHAR("DIGIT_EIGHT", ci++);
-  ADD_CHAR("DIGIT_NINE", ci++);
-  ADD_CHAR("COLON", ci++);
-  ADD_CHAR("SEMICOLON", ci++);
-  ADD_CHAR("LESS-THAN_SIGN", ci++);
-  ADD_CHAR("EQUALS_SIGN", ci++);
-  ADD_CHAR("GREATER-THAN_SIGN", ci++);
-  ADD_CHAR("QUESTION_MARK", ci++);
-  ADD_CHAR("COMMERCIAL_AT", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_A", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_B", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_C", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_D", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_E", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_F", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_G", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_H", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_I", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_J", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_K", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_L", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_M", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_N", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_O", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_P", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_Q", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_R", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_S", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_T", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_U", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_V", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_W", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_X", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_Y", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_Z", ci++);
-  ADD_CHAR("LEFT_SQUARE_BRACKET", ci++);
-  ADD_CHAR("REVERSE_SOLIDUS", ci++);
-  ADD_CHAR("RIGHT_SQUARE_BRACKET", ci++);
-  ADD_CHAR("CIRCUMFLEX_ACCENT", ci++);
-  ADD_CHAR("LOW_LINE", ci++);
-  ADD_CHAR("GRAVE_ACCENT", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_A", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_B", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_C", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_D", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_E", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_F", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_G", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_H", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_I", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_J", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_K", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_L", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_M", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_N", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_O", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_P", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_Q", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_R", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_S", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_T", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_U", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_V", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_W", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_X", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_Y", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_Z", ci++);
-  ADD_CHAR("LEFT_CURLY_BRACKET", ci++);
-  ADD_CHAR("VERTICAL_LINE", ci++);
-  ADD_CHAR("RIGHT_CURLY_BRACKET", ci++);
-  ADD_CHAR("TILDE", ci++);
-  ADD_CHAR("Rubout", ci++);
+  for ( size_t i=0; i<sizeof(OrderedCharacterNames)/sizeof(OrderedCharacterNames[0]); ++i ) {
+    this->add_char(OrderedCharacterNames[i], i+1);
+  }
 }
 
 CL_LAMBDA(ch);

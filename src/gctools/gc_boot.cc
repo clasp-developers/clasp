@@ -57,17 +57,19 @@ void build_kind_field_layout_tables()
   // now that we know the size of everything
   global_kind_info = (Kind_info*)malloc(sizeof(Kind_info)*(global_kind_max+1));
   global_kind_layout = (Kind_layout*)malloc(sizeof(Kind_layout)*(global_kind_max+1));
-  global_field_info = (Field_info*)malloc(sizeof(Field_info)*(number_of_fixable_fields+1));
-  global_field_layout = (Field_layout*)malloc(sizeof(Field_layout)*(number_of_fixable_fields+1));
+  global_field_layout = (Field_layout*)malloc(sizeof(Field_layout)*number_of_fixable_fields);
+  Field_layout* cur_field_layout= global_field_layout;
+  Field_layout* max_field_layout = (Field_layout*)((char*)global_field_layout + sizeof(Field_layout)*number_of_fixable_fields);
+  global_field_info = (Field_info*)malloc(sizeof(Field_info)*(number_of_fixable_fields));
+  Field_info* cur_field_info = global_field_info;
+  Field_info* max_field_info = (Field_info*)((char*)global_field_info + sizeof(Field_info)*number_of_fixable_fields);
   global_container_layout = (Container_layout*)malloc(sizeof(Container_layout)*(number_of_containers+1));
   global_container_info = (Container_info*)malloc(sizeof(Container_info)*(number_of_containers+1));
   // Fill in the immediate kinds
   // Traverse the global_kind_layout_codes again and fill the tables
   codes = get_kind_layout_codes();
-  Field_layout* cur_field_layout= global_field_layout;
-  Field_info* cur_field_info= global_field_info;
-  Container_layout* cur_container_layout = global_container_layout;
-  Container_info* cur_container_info = global_container_info;
+  size_t cur_container_layout_idx = 0;
+  size_t cur_container_info_idx = 0;
   int cur_kind=0;
   idx = 0;
   for ( idx=0; idx<num_codes; ++idx ) {
@@ -89,11 +91,13 @@ void build_kind_field_layout_tables()
         if ( !(codes[idx].data0 == SMART_PTR_OFFSET
                || codes[idx].data0 == TAGGED_POINTER_OFFSET
                || codes[idx].data0 == POINTER_OFFSET )) continue;
+        GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
         if ( global_kind_layout[cur_kind].field_layout_start == NULL )
           global_kind_layout[cur_kind].field_layout_start = cur_field_layout;
         ++global_kind_layout[cur_kind].number_of_fields;
         cur_field_layout->field_offset = codes[idx].data2;
         ++cur_field_layout;
+        GCTOOLS_ASSERT(cur_field_info<max_field_info);
         if ( global_kind_info[cur_kind].field_info_ptr == NULL )
           global_kind_info[cur_kind].field_info_ptr = cur_field_info;
         cur_field_info->field_name = codes[idx].description;
@@ -111,8 +115,8 @@ void build_kind_field_layout_tables()
         global_kind_info[cur_kind].container_info_ptr = NULL;
         break;
     case variable_array0:
-        global_kind_layout[cur_kind].container_layout = cur_container_layout;
-        ++cur_container_layout;
+        global_kind_layout[cur_kind].container_layout = &global_container_layout[cur_container_layout_idx++];
+        GCTOOLS_ASSERT(cur_container_layout_idx<=number_of_containers);
         global_kind_layout[cur_kind].container_layout->data_offset = codes[idx].data2;
         break;
     case variable_capacity:
@@ -126,13 +130,14 @@ void build_kind_field_layout_tables()
         if ( !(codes[idx].data0 == SMART_PTR_OFFSET
                || codes[idx].data0 == TAGGED_POINTER_OFFSET
                || codes[idx].data0 == POINTER_OFFSET )) continue;
+        GCTOOLS_ASSERT(cur_field_layout<max_field_layout);
         cur_field_layout->field_offset = codes[idx].data2;
         ++cur_field_layout;
         ++global_kind_layout[cur_kind].container_layout->number_of_fields;
-        if ( global_kind_info[cur_kind].container_info_ptr == NULL )
-          global_kind_info[cur_kind].container_info_ptr = cur_container_info;
-        cur_container_info->field_name = codes[idx].description;
-        ++cur_container_info;
+        if ( global_kind_info[cur_kind].container_info_ptr == NULL ) 
+          global_kind_info[cur_kind].container_info_ptr = &global_container_info[cur_container_info_idx++];
+        GCTOOLS_ASSERT(cur_container_info_idx<=number_of_containers);
+        global_kind_info[cur_kind].container_info_ptr->field_name = codes[idx].description;
         break;
     case templated_kind:
         cur_kind = codes[idx].data0;
