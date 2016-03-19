@@ -37,7 +37,6 @@ struct CharacterInfo {
   const char *repr() const { return "CharacterInfo"; };
   CharacterInfo() {};
   void initialize();
-  void add_char(const char*, int index );
 };
 
 Character_sp clasp_make_character(claspCharacter c);
