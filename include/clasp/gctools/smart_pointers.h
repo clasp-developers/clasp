@@ -120,8 +120,10 @@ public:
     } else if (this->consp()) {
       return untag_cons<Type *>(this->theObject);
     }
+#ifdef DEBUG_ASSERTS
     lisp_errorDereferencedNonPointer(this->theObject);
     HARD_UNREACHABLE();
+#endif
   }
 
   /*! Dereferencing operator - remove the other tag */
@@ -559,11 +561,13 @@ inline To_SP AsOrNull(From_SP const &rhs) {
     To_SP ret((Tagged)tag_cons<typename To_SP::Type *>(cast));
     return ret;
   }
+#ifdef DEBUG_ASSERTS
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
   lisp_errorBadCast(expected_typ, this_typ, rhs.raw_());
   // unreachable
   HARD_UNREACHABLE();
+#endif
 };
 template <typename To_SP, typename From_SP>
 inline To_SP As(From_SP const &rhs) {
@@ -571,10 +575,12 @@ inline To_SP As(From_SP const &rhs) {
     To_SP ret((Tagged)rhs.raw_());
     return ret;
   }
+#ifdef DEBUG_ASSERTS
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
   lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.raw_()));
   HARD_UNREACHABLE();
+#endif
 }
 template <typename To_SP>
 inline To_SP As(const return_type &rhs) {
@@ -583,10 +589,12 @@ inline To_SP As(const return_type &rhs) {
     To_SP ret((Tagged)rhs.ret0);
     return ret;
   }
+#ifdef DEBUG_ASSERTS
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<core::T_O *>::id;
   lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0));
   HARD_UNREACHABLE();
+#endif
 }
 
  // Cast the type without any concern if it is appropriate
