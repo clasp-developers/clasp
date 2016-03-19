@@ -304,15 +304,9 @@ Character_sp clasp_character_create_from_name(string const &name) {
 };
 namespace core {
 
-void CharacterInfo::add_char(const char* name, int fci ) {
-  string upcase_name = stringUpper(name);
-  this->gNamesToCharacterIndex[upcase_name] = fci;
-  this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
-  this->gCharacterNames[fci] = Str_O::create(upcase_name);
-};
 
 const char* OrderedCharacterNames[] = {
-    "NULL", "NUL",
+    "NUL",
     "SOH", "STX", "ETX", "EOT",
     "ENQ", "ACK", "BEL", "BACKSPACE",
     "TAB", "NEWLINE", "LINEFEED", "VT",
@@ -348,13 +342,17 @@ const char* OrderedCharacterNames[] = {
 };
 
 void CharacterInfo::initialize() {
-  this->gCharacterNames.resize(256, _Nil<T_O>());
-  this->gIndexedCharacters.resize(256, _Nil<T_O>());
-  int ci = 0;
-  gNamesToCharacterIndex["NULL"] = 0;
-  for ( size_t i=0; i<sizeof(OrderedCharacterNames)/sizeof(OrderedCharacterNames[0]); ++i ) {
-    this->add_char(OrderedCharacterNames[i], i+1);
+  int num_chars = sizeof(OrderedCharacterNames)/sizeof(OrderedCharacterNames[0]);
+  this->gCharacterNames.resize(num_chars, _Nil<T_O>());
+  this->gIndexedCharacters.resize(num_chars, _Nil<T_O>());
+  for ( size_t fci=0; fci<num_chars; ++fci) {
+    const char* name = OrderedCharacterNames[fci];
+//    printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name, fci);
+    this->gNamesToCharacterIndex[name] = fci;
+    this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
+    this->gCharacterNames[fci] = Str_O::create(name);
   }
+  gNamesToCharacterIndex["NULL"] = 0;
 }
 
 CL_LAMBDA(ch);
