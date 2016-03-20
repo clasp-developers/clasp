@@ -43,7 +43,6 @@ public:
   int _ArgTargetFrameIndex;
   explicit Argument() : _ArgTarget(_Nil<T_O>()), _ArgTargetFrameIndex(UNDEFINED_TARGET) {}
   explicit Argument(T_sp target) : _ArgTarget(target), _ArgTargetFrameIndex(UNDEFINED_TARGET){};
-  DECLARE_onHeapScanGCRoots();
   int targetFrameIndex() const {
     return this->_ArgTargetFrameIndex;
   }
@@ -70,7 +69,6 @@ public:
   T_sp _Default;
   ArgumentWithDefault() : _Default(_Nil<T_O>()){};
   ArgumentWithDefault(T_sp target, T_sp def) : Argument(target), _Default(def){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -80,7 +78,6 @@ public:
   RequiredArgument(){};
   RequiredArgument(T_sp target) : Argument(target){};
   RequiredArgument(T_sp target, int frameIndex) : Argument(target) { this->_ArgTargetFrameIndex = frameIndex; };
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -90,7 +87,6 @@ public:
   Argument _Sensor;
   OptionalArgument(){};
   OptionalArgument(T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target, def), _Sensor(sensor){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -100,7 +96,6 @@ public:
   typedef Argument Base;
   explicit RestArgument() : Argument(), VaRest(false){};
   explicit RestArgument(T_sp target) : Argument(target), VaRest(false){};
-  DECLARE_onHeapScanGCRoots();
   void setTarget(T_sp target) { this->_ArgTarget = target; };
   string asString() const;
 };
@@ -112,7 +107,6 @@ public:
   Argument _Sensor;
   KeywordArgument() : ArgumentWithDefault(), _Keyword(_Nil<T_O>()), _Sensor(){};
   KeywordArgument(T_sp keyword, T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target, def), _Keyword(keyword), _Sensor(sensor){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -122,7 +116,6 @@ public:
   T_sp _Expression;
   AuxArgument() : Argument(_Nil<T_O>()), _Expression(_Nil<T_O>()){};
   AuxArgument(T_sp target, T_sp exp) : Argument(target), _Expression(exp){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 

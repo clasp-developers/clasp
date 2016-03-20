@@ -326,16 +326,9 @@ inline bool tagged_objectp(T ptr) {
    
 template <class Type>
 inline Type untag_object(Type tagged_obj) {
-  if (gctools::tagged_generalp<Type>(tagged_obj)) {
-    return gctools::untag_general<Type>(tagged_obj);
-  } else if (gctools::tagged_consp<Type>(tagged_obj)) {
-    return gctools::untag_cons<Type>(tagged_obj);
-#ifdef DEBUG_ASSERTS
-  } else {
-   THROW_HARD_ERROR(BF("Trying to untag non-general or non-cons: %p") % (void *)(tagged_obj));
-#endif
-  }
-};
+  GCTOOLS_ASSERT(tagged_objectp(tagged_obj));
+  return reinterpret_cast<Type>((uintptr_t)tagged_obj & ptr_mask);
+ }
 };
 
 #endif // pointer_tagging

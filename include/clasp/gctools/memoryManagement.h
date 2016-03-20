@@ -33,10 +33,6 @@ THE SOFTWARE.
 
 #include <clasp/gctools/hardErrors.h>
 
-#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
-
-#define USE_WEAK_POINTER
-
 #ifdef USE_BOEHM
 #include <clasp/gc/gc.h>
 #include <clasp/gc/gc_allocator.h>
@@ -138,6 +134,81 @@ word of every object in memory managed by the GC */
 
 #include <clasp/gctools/cast.h>
 #include <clasp/gctools/tagged_cast.h>
+
+namespace gctools {
+
+  constexpr size_t Alignment() {
+//  return sizeof(Header_s);
+    return alignof(Header_s);
+  };
+  inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+
+  // ----------------------------------------------------------------------
+  //! Calculate the size of an object + header for allocation
+  template <class T>
+    inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
+
+
+/*! Size of containers given the number of elements */
+  template <typename Cont_impl>
+    size_t sizeof_container(size_t n) {
+    size_t classSz = sizeof(Cont_impl);
+    size_t dataSz = sizeof(typename Cont_impl::value_type) * n;
+    size_t totalSz = classSz + dataSz;
+    return AlignUp(totalSz);
+  };
+
+  template <class T>
+    inline size_t sizeof_container_with_header(size_t num) {
+    return sizeof_container<T>(num) + sizeof(Header_s);
+  };
+
+
+/* Align size upwards and ensure that it's big enough to store a
+ * forwarding pointer.
+ * This is used by the obj_scan and obj_skip methods
+ */
+/*   Replaces this macro...
+     #define ALIGN(size)                                                \
+    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
+     ? AlignUp<Header_s>(size)                              \
+     : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
+*/
+
+
+  extern size_t global_sizeof_fwd;
+  inline size_t Align(size_t size) {
+    return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
+  };
+};
+
+
+namespace gctools {
+
+  inline void *ClientPtrToBasePtr(void *mostDerived) {
+    void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
+    return ptr;
+  }
+
+  inline Header_s* header_pointer(void* client_pointer)
+  {
+    Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client_pointer) - sizeof(Header_s));
+    return header;
+  }
+  
+  inline void throwIfInvalidClient(core::T_O *client) {
+    Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
+    if (header->invalidP()) {
+      THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void *)client);
+    }
+  }
+
+  template <typename T>
+    inline T *BasePtrToMostDerivedPtr(void *base) {
+    T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
+    return ptr;
+  }
+};
 
 
 namespace gctools {
@@ -241,27 +312,6 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 }
 };
 
-#define DECLARE_onHeapScanGCRoots()
-#define DECLARE_onStackScanGCRoots()
-
-namespace gctools {
-
-/*! Size of containers given the number of elements */
-template <typename Cont_impl>
-size_t sizeof_container(size_t n) {
-  size_t headerSz = sizeof(Cont_impl);
-  size_t dataSz = sizeof(typename Cont_impl::value_type) * n;
-  size_t totalSz = headerSz + dataSz;
-  GC_LOG(("headerSz[%lu] + ( value_size[%lu] * n[%lu] -> dataSz[%lu] ) --> totalSz[%lu]\n",
-          headerSz, sizeof(typename Cont_impl::value_type), n, dataSz, totalSz));
-  return AlignUp(totalSz);
-};
-
-template <class T>
-inline size_t sizeof_container_with_header(size_t num) {
-  return sizeof_container<T>(num) + sizeof(Header_s);
-};
-};
 
 namespace gctools {
 class GCStack;
@@ -271,20 +321,18 @@ GCStack *threadLocalStack();
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/gcalloc.h>
 
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind)
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,__VA_ARGS__)
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::root_allocate_kind(gctools::GCKind<_class_>::Kind)
+#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,gctools::sizeof_with_header<_class_>())
+#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,gctools::sizeof_with_header<_class_>(),__VA_ARGS__)
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate_kind(gctools::GCKind<_class_>::Kind,gctools::sizeof_with_header<_class_>())
 
-#define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
+#define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 
 /*! These don't do anything at the moment
   but may be used in the future to create unsafe-gc points
 */
 
-#define SUPPRESS_GC() \
-  {}
-#define ENABLE_GC() \
-  {}
+#define SUPPRESS_GC()  {}
+#define ENABLE_GC() {}
 
 namespace gctools {
 

@@ -51,7 +51,6 @@ public:
   TestingClass() : x(0){};
   TestingClass(int i) : x(i){};
   void dump() const { printf("%d ", x); };
-  DECLARE_onHeapScanGCRoots();
 };
 
 void gctools__cleanup();

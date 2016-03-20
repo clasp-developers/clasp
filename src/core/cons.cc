@@ -986,12 +986,6 @@ CL_DEFUN string core__alist_asString(List_sp alist) {
   return ss.str();
 }
 
-void dummy_function()
-{
-  gc::tagged_pointer<ClosureWithSlots> cw = gctools::ClassAllocator<ClosureWithSlots>::allocate_class_kind(gctools::GCKind<ClosureWithSlots>::Kind,_Nil<T_O>(),(fnLispCallingConvention)NULL,2);
-  
-};
-
 
   SYMBOL_EXPORT_SC_(ClPkg, make_list);
   SYMBOL_EXPORT_SC_(ClPkg, cons);

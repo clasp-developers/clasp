@@ -137,6 +137,27 @@ T_sp varArgsList(int n_args, ...) {
   return first;
 }
 
+
+CL_DEFUN T_sp core__closure_with_slots(size_t capacity, T_sp name)
+{
+  T_sp obj = gctools::GC<ClosureWithSlots>::allocate_container(capacity, name);
+  return obj;
+}
+
+CL_DEFUN void core__closure_with_slots_set_unsafe(T_sp x, int idx, T_sp obj)
+{
+  gctools::tagged_ptr<ClosureWithSlots> cws((gctools::Tagged)x.raw_());
+  cws->_Slots[idx] = obj;
+}
+
+CL_DEFUN T_sp core__closure_with_slots_get_unsafe(T_sp x, int idx)
+{
+  gctools::tagged_ptr<ClosureWithSlots> cws((gctools::Tagged)x.raw_());
+  return cws->_Slots[idx];
+}
+
+
+
 CL_LAMBDA(object &optional is_function);
 CL_DECLARE();
 CL_DOCSTRING("mangleName");

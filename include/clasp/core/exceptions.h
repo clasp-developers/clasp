@@ -222,7 +222,6 @@ private:
   T_mv _ReturnedObject;
 
 public:
-  DECLARE_onHeapScanGCRoots();
   CatchThrow(T_sp thrownTag, T_mv ret) {
     this->_ThrownTag = thrownTag;
     this->_ReturnedObject = ret;

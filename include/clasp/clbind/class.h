@@ -179,7 +179,7 @@ public:
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
   gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DummyCreator>::allocate_class_kind(gctools::GCKind<Creator>::Kind,core::lisp_symbolNameAsString(className));
+    return gctools::ClassAllocator<DummyCreator>::allocate_class(core::lisp_symbolNameAsString(className));
   }
 };
 

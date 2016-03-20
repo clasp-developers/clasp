@@ -285,9 +285,6 @@ public:
   Symbol_sp _className;
 
 public:
-  DECLARE_onHeapScanGCRoots();
-
-public:
   DISABLE_NEW();
   InstanceCreator(Symbol_sp className) : _className(className){};
   void describe() const {

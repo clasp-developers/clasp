@@ -137,8 +137,8 @@ extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t 
 
 namespace gctools {
 
-template <class T>
-inline size_t sizeof_with_header();
+  template <class T>
+    inline size_t sizeof_with_header();
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -172,136 +172,99 @@ inline size_t sizeof_with_header();
     */
 
  
-class Header_s {
-public:
-  static const tagged_kind_t tag_mask = BOOST_BINARY(11);
-  static const tagged_kind_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
-  static const tagged_kind_t fwd_tag = BOOST_BINARY(10);
-  static const tagged_kind_t pad_mask = BOOST_BINARY(111);
-  static const tagged_kind_t pad_test = BOOST_BINARY(011);
-  static const tagged_kind_t pad_tag = BOOST_BINARY(011);
-  static const tagged_kind_t pad1_tag = BOOST_BINARY(111);
-  static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
+  class Header_s {
+  public:
+    static const tagged_kind_t tag_mask = BOOST_BINARY(11);
+    static const tagged_kind_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
+    static const tagged_kind_t fwd_tag = BOOST_BINARY(10);
+    static const tagged_kind_t pad_mask = BOOST_BINARY(111);
+    static const tagged_kind_t pad_test = BOOST_BINARY(011);
+    static const tagged_kind_t pad_tag = BOOST_BINARY(011);
+    static const tagged_kind_t pad1_tag = BOOST_BINARY(111);
+    static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
   //        static const tagged_kind_t  fwd2_tag        = BOOST_BINARY(001);
 
-public:
-  tagged_kind_t header;
+  public:
+    tagged_kind_t header;
 #ifdef DEBUG_GUARD
-  tagged_kind_t guard;
-  int tail_start;
-  int tail_size;
+    tagged_kind_t guard;
+    int tail_start;
+    int tail_size;
 #endif
-  tagged_kind_t data[1]; // After this is where the client pointer starts
-public:
+    tagged_kind_t data[1]; // After this is where the client pointer starts
+  public:
 #ifndef DEBUG_GUARD
- Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag)
-    ,data{0xDEADBEEF01234567} {};
-  void validate() const {};
+  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag)
+      ,data{0xDEADBEEF01234567} {};
+    void validate() const {};
 #else
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
- Header_s(kind_t k,size_t tstart, size_t tsize) 
-   : header((((kind_t)k) << 2) | kind_tag),
+  Header_s(kind_t k,size_t tstart, size_t tsize) 
+    : header((((kind_t)k) << 2) | kind_tag),
       data{0xDEADBEEF01234567},
       tail_start(tstart),
-      tail_size(tsize),
-      guard(0x0FEEAFEEBFEECFEED)
-      {
-        this->fill_tail();
-      };
+        tail_size(tsize),
+        guard(0x0FEEAFEEBFEECFEED)
+        {
+          this->fill_tail();
+        };
 
       void validate() const;
 #endif
 
-  bool invalidP() const { return (this->header & tag_mask) == 0; };
-  bool kindP() const { return (this->header & tag_mask) == kind_tag; };
-  bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
-  bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
-  bool padP() const { return (this->header & pad_mask) == pad_tag; };
-  bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
+      bool invalidP() const { return (this->header & tag_mask) == 0; };
+      bool kindP() const { return (this->header & tag_mask) == kind_tag; };
+      bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
+      bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
+      bool padP() const { return (this->header & pad_mask) == pad_tag; };
+      bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
 
   /*! No sanity checking done - this function assumes kindP == true */
-  GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
-  void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
+      GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
+      void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
   /*! No sanity checking done - this function assumes fwdP == true */
-  void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
+      void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-  void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
-  tagged_kind_t fwdSize() const { return this->data[0]; };
+      void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
+      tagged_kind_t fwdSize() const { return this->data[0]; };
   /*! This writes into the first tagged_kind_t sized word of the client data. */
-  void setFwdSize(size_t sz) { this->data[0] = sz; };
+      void setFwdSize(size_t sz) { this->data[0] = sz; };
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
-  void setPad(tagged_kind_t p) { this->header = p; };
+      void setPad(tagged_kind_t p) { this->header = p; };
   /*! Return the pad1 size */
-  tagged_kind_t pad1Size() const { return alignof(Header_s); };
+      tagged_kind_t pad1Size() const { return alignof(Header_s); };
   /*! Return the size of the pad block - without the header */
-  tagged_kind_t padSize() const { return ((uintptr_t*)this)[1]; };
+      tagged_kind_t padSize() const { return ((uintptr_t*)this)[1]; };
   /*! This writes into the first tagged_kind_t sized word of the client data. */
-  void setPadSize(size_t sz) { ((uintptr_t*)this)[1] = sz; };
-  string description() const {
-    if (this->kindP()) {
-      std::stringstream ss;
-      ss << "Header=" << (void *)(this->header);
-      ss << "/";
-      ss << obj_name(this->kind());
-      return ss.str();
-    } else if (this->fwdP()) {
-      std::stringstream ss;
-      ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
-      return ss.str();
-    } else if (this->pad1P()) {
-      return "Pad1";
-    } else if (this->padP()) {
-      stringstream ss;
-      ss << "Pad/sz=" << this->padSize();
-      return ss.str();
-    }
-    stringstream ss;
-    ss << "IllegalHeader=";
-    ss << (void *)(this->header);
-    printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
-    return ss.str();
-    ;
-  }
+      void setPadSize(size_t sz) { ((uintptr_t*)this)[1] = sz; };
+      string description() const {
+        if (this->kindP()) {
+          std::stringstream ss;
+          ss << "Header=" << (void *)(this->header);
+          ss << "/";
+          ss << obj_name(this->kind());
+          return ss.str();
+        } else if (this->fwdP()) {
+          std::stringstream ss;
+          ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
+          return ss.str();
+        } else if (this->pad1P()) {
+          return "Pad1";
+        } else if (this->padP()) {
+          stringstream ss;
+          ss << "Pad/sz=" << this->padSize();
+          return ss.str();
+        }
+        stringstream ss;
+        ss << "IllegalHeader=";
+        ss << (void *)(this->header);
+        printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
+        return ss.str();
+        ;
+      }
+  };
 };
 
-};
-
-
-
-
-
-
-
-namespace gctools {
-
-constexpr size_t Alignment() {
-//  return sizeof(Header_s);
-  return alignof(Header_s);
-};
-inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
-
-template <class T>
-inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
-
-};
-
-/* Align size upwards and ensure that it's big enough to store a
- * forwarding pointer.
- * This is used by the obj_scan and obj_skip methods
- */
-/*   Replaces this macro...
-     #define ALIGN(size)                                                \
-    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
-     ? AlignUp<Header_s>(size)                              \
-     : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
-*/
-namespace gctools {
-extern size_t global_sizeof_fwd;
-//extern size_t global_alignup_sizeof_header;
-inline size_t Align(size_t size) {
-  return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
-};
-};
 
 namespace gctools {
 
@@ -367,33 +330,6 @@ struct allocation_point<core::Cons_O> {
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) ((_smartptr_).pbase_ref())
 #define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
-namespace gctools {
-
-inline void *ClientPtrToBasePtr(void *mostDerived) {
-  void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
-  return ptr;
-}
-
- inline Header_s* header_pointer(void* client_pointer)
- {
-   Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client_pointer) - sizeof(Header_s));
-   return header;
- }
-   
-   
-inline void throwIfInvalidClient(core::T_O *client) {
-  Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
-  if (header->invalidP()) {
-    THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void *)client);
-  }
-}
-
-template <typename T>
-inline T *BasePtrToMostDerivedPtr(void *base) {
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
-  return ptr;
-}
-};
 
 
 namespace gctools {

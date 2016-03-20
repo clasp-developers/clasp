@@ -114,16 +114,7 @@ public:
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
   inline Type *untag_object() const {
-    GCTOOLS_ASSERT(this->generalp() || this->consp());
-    if (this->generalp()) {
-      return untag_general<Type *>(this->theObject);
-    } else if (this->consp()) {
-      return untag_cons<Type *>(this->theObject);
-    }
-#ifdef DEBUG_ASSERTS
-    lisp_errorDereferencedNonPointer(this->theObject);
-    HARD_UNREACHABLE();
-#endif
+    return ::gctools::untag_object(this->theObject);
   }
 
   /*! Dereferencing operator - remove the other tag */
@@ -274,14 +265,14 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
   template <class o_class>
     inline smart_ptr<o_class> asOrNull() {
-    o_class *cast = gctools::TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
+    o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
     smart_ptr<o_class> ret((Tagged)cast);
     return ret;
   }
 
   template <class o_class>
     inline smart_ptr<o_class> asOrNull() const {
-    o_class *cast = gctools::TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
+    o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
     smart_ptr<o_class> ret((Tagged)cast);
     return ret;
   }
@@ -780,13 +771,13 @@ public:
 
   template <class o_class>
   inline smart_ptr<o_class> asOrNull() {
-    o_class *cast = gctools::TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
+    o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
     return smart_ptr<o_class>((Tagged)cast);
   }
 
   template <class o_class>
   inline smart_ptr<o_class> asOrNull() const {
-    o_class *cast = gctools::TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
+    o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
     return smart_ptr<o_class>((Tagged)cast);
   }
 
@@ -1775,15 +1766,6 @@ public:
     }
     return smart_ptr<core::T_O>(*this);
   }
-#if 0
-	// Convert Nilable<Foo> to smart_ptr<Foo> - signal error if it was NIL
-	operator smart_ptr<Type>() const {
-	    if ( !tagged_nilp(this->theObject) ) return smart_ptr<Type>(*this);
-	    class_id this_typ = reg::registered_class<Type>::id;
-	    lisp_errorUnexpectedNil(this_typ);
-	    HARD_UNREACHABLE();
-	}
-#endif
 };
 };
 

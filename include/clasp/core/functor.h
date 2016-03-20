@@ -49,19 +49,20 @@ namespace core {
     FixedData _Fixed;
     fnLispCallingConvention _FunctionPointer;
     gctools::GCArray_moveable<value_type,0> _Slots;
-  ClosureWithRecords(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
+    ClosureWithRecords(size_t capacity, T_sp name )
     : Functoid(name)
-      , _Slots(num_slots) {}
+      , _Slots(capacity) {}
   };
 
   struct ClosureWithSlots : public Functoid {
+  public:
     typedef T_sp value_type;
   public:
     T_sp   _DummyT_OPtr;
     FixedData _Fixed;
     fnLispCallingConvention _FunctionPointer;
     gctools::GCArray_moveable<value_type,0> _Slots;
-  ClosureWithSlots(T_sp name, fnLispCallingConvention fptr, size_t num_slots )
+  ClosureWithSlots(size_t num_slots, T_sp name, fnLispCallingConvention fptr=NULL )
     : Functoid(name)
       , _Slots(num_slots) {}
   };

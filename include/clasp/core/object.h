@@ -113,68 +113,6 @@ namespace core {
 
 #define NO_BASE_CLASS "-NOBASE-"
 
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-//
-// Environment stuff
-//
-
-// #if 0 // moving this functionality into intrusiveRefCountGarbageCollection
-
-// /*!
-//  * Template function for creating objects of a specific class
-//  *
-//  * See gctools/brclMemoryPoolSystem.h for GC_RESERVE_TRY/GC_RESERVE_GET
-//  */
-// template <class oClass>
-// gctools::smart_ptr<oClass> RP_OLD_Create(bool initialize)
-// {_G();
-//     gctools::smart_ptr<oClass> obj= gctools::smart_ptr<oClass>(new oClass()); // (new oClass(mc));
-// //    if (initialize) obj->initialize(); // Initialize instance everything that depends on class hierarchy
-//     return obj;
-// }
-
-// /*!
-//  * Template function for creating objects of a specific class
-//  *
-//  * See gctools/brclMemoryPoolSystem.h for GC_RESERVE_TRY/GC_RESERVE_GET
-//  */
-// template <class oClass, class... ARGS>
-// gctools::smart_ptr<oClass> RP_OLD_Create_VARIADIC(bool initialize,ARGS&&... args)
-// {_G();
-//     gctools::smart_ptr<oClass> obj= gctools::smart_ptr<oClass>(new oClass(args...)); // (new oClass(mc));
-// //    if (initialize) obj->initialize(); // Initialize instance everything that depends on class hierarchy
-//     return obj;
-// }
-
-// /*!
-//  * Set to true once all of the Classes have been initialized
-//  */
-
-// template <class o_class>
-// core::T_sp	copy_Object(const o_class* cur)
-// {_G();
-//     core::T_sp	obj;
-//     obj = (gctools::smart_ptr<o_class>)(new o_class(*cur));
-//     // Any further initialization should be handled by a copy or deepCopy method
-//     return obj;
-// }
-
-// template <class Dumb_Class>
-// gctools::smart_ptr<Dumb_Class> RP_OLD_Copy(const Dumb_Class* c)
-// {
-//     return gctools::dynamic_pointer_cast<Dumb_Class>(copy_Object<Dumb_Class>(c));
-// }
-
-// template <class Dumb_Class>
-// gctools::smart_ptr<Dumb_Class> RP_OLD_Copy(gctools::smart_ptr<Dumb_Class> c)
-// {
-//     return gctools::dynamic_pointer_cast<Dumb_Class>(copy_Object<Dumb_Class>(c.get()));
-// }
-
-// #endif
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -201,7 +139,6 @@ public:
 public:
   explicit _RootDummyClass();
 };
-
 template <class T_Base>
 struct LispBases1 {
   typedef T_Base Base1;
@@ -221,61 +158,8 @@ struct LispBases1 {
   }
 };
 
-template <class T_VirtualBase0, class T_Base1, class T_Base2>
-struct LispVirtualBases2 {
-  typedef T_VirtualBase0 VirtualBase0;
-  typedef T_Base1 Base1;
-  typedef T_Base2 Base2;
-
-  static inline bool baseClassSymbolsDefined() {
-    if (IS_SYMBOL_UNDEFINED(Base1::static_classSymbol())) {
-      core::Symbol_sp base1ClassSymbol = Base1::static_classSymbol();
-      THROW_HARD_ERROR(BF("Base1 class[%d] is not defined yet") % base1ClassSymbol);
-    }
-    if (IS_SYMBOL_UNDEFINED(Base2::static_classSymbol())) {
-      core::Symbol_sp base2ClassSymbol = Base2::static_classSymbol();
-      THROW_HARD_ERROR(BF("Base2 class[%d] is not defined yet") % base2ClassSymbol);
-    }
-    return true;
-  }
-
-  static inline core::Symbol_sp baseClass1Id() {
-    return Base1::static_classSymbol();
-  }
-
-  static inline core::Symbol_sp baseClass2Id() {
-    return Base2::static_classSymbol();
-  }
-};
-
-template <class T_Base1, class T_Base2>
-struct LispBases2 {
-  typedef T_Base1 Base1;
-  typedef T_Base2 Base2;
-
-  static inline bool baseClassSymbolsDefined() {
-    if (IS_SYMBOL_UNDEFINED(Base1::static_classSymbol())) {
-      core::Symbol_sp base1ClassSymbol = Base1::static_classSymbol();
-      THROW_HARD_ERROR(BF("Base1 class[%d] is not defined yet") % base1ClassSymbol);
-    }
-    if (IS_SYMBOL_UNDEFINED(Base2::static_classSymbol())) {
-      core::Symbol_sp base2ClassSymbol = Base2::static_classSymbol();
-      THROW_HARD_ERROR(BF("Base2 class[%d] is not defined yet") % base2ClassSymbol);
-    }
-    return true;
-  }
-
-  static inline core::Symbol_sp baseClass1Id() {
-    return Base1::static_classSymbol();
-  }
-
-  static inline core::Symbol_sp baseClass2Id() {
-    return Base2::static_classSymbol();
-  }
-};
 
 namespace core {
-
   class KeyValueMapper {
   public:
   /*! Return true if the mapper should continue */
@@ -360,13 +244,8 @@ namespace core {
     void hashObject(T_sp obj);
   };
 
-//    extern Symbol_sp _sym_list;
-//    extern Symbol_sp _sym_nil;
-//    extern Symbol_sp _sym_t;
 
-
-
-  #define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
+#define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
   FRIEND_GC_SCANNER(oNamespace::oClass);                                                                               \
                                                                                                                        \
   public:                                                                                                              \
@@ -642,19 +521,16 @@ public:
 };
 
 namespace core {
-template <class oclass>
-T_sp new_LispObject() {
-  _G();
-  T_sp obj = oclass::static_creator->allocate();
+  template <class oclass>
+    inline T_sp new_LispObject() {
+    _G();
+    T_sp obj = oclass::static_creator->allocate();
   //	GC_ALLOCATE(oclass,obj );
-  return obj;
+    return obj;
+  };
 };
-}
 
-template <class o_class>
-inline gctools::smart_ptr<o_class> downcast(core::T_sp c) {
-  return c.as<o_class>();
-}
+
 
 namespace core {
 

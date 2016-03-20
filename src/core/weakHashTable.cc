@@ -155,7 +155,7 @@ CL_DECLARE();
 CL_DOCSTRING("makeWeakKeyHashTable");
 CL_DEFUN WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size) {
   int sz = unbox_fixnum(size);
-  WeakKeyHashTable_sp ht = gctools::GCObjectAllocator<WeakKeyHashTable_O>::allocate(sz);
+  WeakKeyHashTable_sp ht = gctools::GC<WeakKeyHashTable_O>::allocate(sz);
   return ht;
 }
 

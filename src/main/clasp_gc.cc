@@ -7287,1491 +7287,1491 @@ static void* OBJ_FINALIZE_table[] = {
 obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_asttooling__RegMap__RegistryMaps:
 {
     asttooling::RegMap::RegistryMaps* obj_gc_safe = reinterpret_cast<asttooling::RegMap::RegistryMaps*>(client);
-    GCObjectAllocator<asttooling::RegMap::RegistryMaps>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::RegMap::RegistryMaps>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 {
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
-    GCObjectAllocator<clbind::detail::class_map>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<clbind::detail::class_map>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__T_O:
 {
     core::T_O* obj_gc_safe = reinterpret_cast<core::T_O*>(client);
-    GCObjectAllocator<core::T_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::T_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VaList_dummy_O:
 {
     core::VaList_dummy_O* obj_gc_safe = reinterpret_cast<core::VaList_dummy_O*>(client);
-    GCObjectAllocator<core::VaList_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::VaList_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Cons_O:
 {
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
-    GCObjectAllocator<core::Cons_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Cons_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__General_O:
 {
     core::General_O* obj_gc_safe = reinterpret_cast<core::General_O*>(client);
-    GCObjectAllocator<core::General_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::General_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MultiStringBuffer_O:
 {
     core::MultiStringBuffer_O* obj_gc_safe = reinterpret_cast<core::MultiStringBuffer_O*>(client);
-    GCObjectAllocator<core::MultiStringBuffer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::MultiStringBuffer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ReadTable_O:
 {
     core::ReadTable_O* obj_gc_safe = reinterpret_cast<core::ReadTable_O*>(client);
-    GCObjectAllocator<core::ReadTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ReadTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Number_O:
 {
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
-    GCObjectAllocator<core::Number_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Number_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Complex_O:
 {
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
-    GCObjectAllocator<core::Complex_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Complex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Real_O:
 {
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
-    GCObjectAllocator<core::Real_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Real_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Rational_O:
 {
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
-    GCObjectAllocator<core::Rational_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Rational_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Integer_O:
 {
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
-    GCObjectAllocator<core::Integer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Integer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Bignum_O:
 {
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
-    GCObjectAllocator<core::Bignum_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Bignum_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Fixnum_dummy_O:
 {
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
-    GCObjectAllocator<core::Fixnum_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Fixnum_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Ratio_O:
 {
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
-    GCObjectAllocator<core::Ratio_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Ratio_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Float_O:
 {
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
-    GCObjectAllocator<core::Float_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Float_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DoubleFloat_O:
 {
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
-    GCObjectAllocator<core::DoubleFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::DoubleFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LongFloat_O:
 {
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
-    GCObjectAllocator<core::LongFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LongFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleFloat_dummy_O:
 {
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
-    GCObjectAllocator<core::SingleFloat_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SingleFloat_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ShortFloat_O:
 {
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
-    GCObjectAllocator<core::ShortFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ShortFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStatus_O:
 {
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
-    GCObjectAllocator<core::FileStatus_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::FileStatus_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakHashTable_O:
 {
     core::WeakHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakHashTable_O*>(client);
-    GCObjectAllocator<core::WeakHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::WeakHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyHashTable_O:
 {
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
-    GCObjectAllocator<core::WeakKeyHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::WeakKeyHashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Environment_O:
 {
     core::Environment_O* obj_gc_safe = reinterpret_cast<core::Environment_O*>(client);
-    GCObjectAllocator<core::Environment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Environment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ActivationFrame_O:
 {
     core::ActivationFrame_O* obj_gc_safe = reinterpret_cast<core::ActivationFrame_O*>(client);
-    GCObjectAllocator<core::ActivationFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ActivationFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TagbodyFrame_O:
 {
     core::TagbodyFrame_O* obj_gc_safe = reinterpret_cast<core::TagbodyFrame_O*>(client);
-    GCObjectAllocator<core::TagbodyFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::TagbodyFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ValueFrame_O:
 {
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
-    GCObjectAllocator<core::ValueFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ValueFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionFrame_O:
 {
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
-    GCObjectAllocator<core::FunctionFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::FunctionFrame_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LexicalEnvironment_O:
 {
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
-    GCObjectAllocator<core::LexicalEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LexicalEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O:
 {
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
-    GCObjectAllocator<core::RuntimeVisibleEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::RuntimeVisibleEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionValueEnvironment_O:
 {
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
-    GCObjectAllocator<core::FunctionValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::FunctionValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ValueEnvironment_O:
 {
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
-    GCObjectAllocator<core::ValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TagbodyEnvironment_O:
 {
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
-    GCObjectAllocator<core::TagbodyEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::TagbodyEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompileTimeEnvironment_O:
 {
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
-    GCObjectAllocator<core::CompileTimeEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CompileTimeEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UnwindProtectEnvironment_O:
 {
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
-    GCObjectAllocator<core::UnwindProtectEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::UnwindProtectEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O:
 {
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
-    GCObjectAllocator<core::SymbolMacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SymbolMacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionContainerEnvironment_O:
 {
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
-    GCObjectAllocator<core::FunctionContainerEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::FunctionContainerEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StackValueEnvironment_O:
 {
     core::StackValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::StackValueEnvironment_O*>(client);
-    GCObjectAllocator<core::StackValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StackValueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BlockEnvironment_O:
 {
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
-    GCObjectAllocator<core::BlockEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BlockEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroletEnvironment_O:
 {
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
-    GCObjectAllocator<core::MacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::MacroletEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CatchEnvironment_O:
 {
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
-    GCObjectAllocator<core::CatchEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CatchEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__GlueEnvironment_O:
 {
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
-    GCObjectAllocator<core::GlueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::GlueEnvironment_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Array_O:
 {
     core::Array_O* obj_gc_safe = reinterpret_cast<core::Array_O*>(client);
-    GCObjectAllocator<core::Array_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Array_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ArrayObjects_O:
 {
     core::ArrayObjects_O* obj_gc_safe = reinterpret_cast<core::ArrayObjects_O*>(client);
-    GCObjectAllocator<core::ArrayObjects_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ArrayObjects_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ArrayDisplaced_O:
 {
     core::ArrayDisplaced_O* obj_gc_safe = reinterpret_cast<core::ArrayDisplaced_O*>(client);
-    GCObjectAllocator<core::ArrayDisplaced_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ArrayDisplaced_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Vector_O:
 {
     core::Vector_O* obj_gc_safe = reinterpret_cast<core::Vector_O*>(client);
-    GCObjectAllocator<core::Vector_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Vector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BitVector_O:
 {
     core::BitVector_O* obj_gc_safe = reinterpret_cast<core::BitVector_O*>(client);
-    GCObjectAllocator<core::BitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SimpleBitVector_O:
 {
     core::SimpleBitVector_O* obj_gc_safe = reinterpret_cast<core::SimpleBitVector_O*>(client);
-    GCObjectAllocator<core::SimpleBitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SimpleBitVector_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BitVectorWithFillPtr_O:
 {
     core::BitVectorWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::BitVectorWithFillPtr_O*>(client);
-    GCObjectAllocator<core::BitVectorWithFillPtr_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BitVectorWithFillPtr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VectorDisplaced_O:
 {
     core::VectorDisplaced_O* obj_gc_safe = reinterpret_cast<core::VectorDisplaced_O*>(client);
-    GCObjectAllocator<core::VectorDisplaced_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::VectorDisplaced_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__String_O:
 {
     core::String_O* obj_gc_safe = reinterpret_cast<core::String_O*>(client);
-    GCObjectAllocator<core::String_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::String_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Str_O:
 {
     core::Str_O* obj_gc_safe = reinterpret_cast<core::Str_O*>(client);
-    GCObjectAllocator<core::Str_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Str_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StrWithFillPtr_O:
 {
     core::StrWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::StrWithFillPtr_O*>(client);
-    GCObjectAllocator<core::StrWithFillPtr_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StrWithFillPtr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VectorObjects_O:
 {
     core::VectorObjects_O* obj_gc_safe = reinterpret_cast<core::VectorObjects_O*>(client);
-    GCObjectAllocator<core::VectorObjects_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::VectorObjects_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O:
 {
     core::VectorObjectsWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
-    GCObjectAllocator<core::VectorObjectsWithFillPtr_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::VectorObjectsWithFillPtr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethod_O:
 {
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
-    GCObjectAllocator<core::SingleDispatchMethod_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SingleDispatchMethod_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RandomState_O:
 {
     core::RandomState_O* obj_gc_safe = reinterpret_cast<core::RandomState_O*>(client);
-    GCObjectAllocator<core::RandomState_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::RandomState_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O:
 {
     core::WrappedPointer_O* obj_gc_safe = reinterpret_cast<core::WrappedPointer_O*>(client);
-    GCObjectAllocator<core::WrappedPointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::WrappedPointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DebugLoc_O:
 {
     llvmo::DebugLoc_O* obj_gc_safe = reinterpret_cast<llvmo::DebugLoc_O*>(client);
-    GCObjectAllocator<llvmo::DebugLoc_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DebugLoc_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Attribute_O:
 {
     llvmo::Attribute_O* obj_gc_safe = reinterpret_cast<llvmo::Attribute_O*>(client);
-    GCObjectAllocator<llvmo::Attribute_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Attribute_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RegexMatch_O:
 {
     core::RegexMatch_O* obj_gc_safe = reinterpret_cast<core::RegexMatch_O*>(client);
-    GCObjectAllocator<core::RegexMatch_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::RegexMatch_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakPointer_O:
 {
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
-    GCObjectAllocator<core::WeakPointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::WeakPointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardObject_O:
 {
     core::StandardObject_O* obj_gc_safe = reinterpret_cast<core::StandardObject_O*>(client);
-    GCObjectAllocator<core::StandardObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StandardObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Metaobject_O:
 {
     core::Metaobject_O* obj_gc_safe = reinterpret_cast<core::Metaobject_O*>(client);
-    GCObjectAllocator<core::Metaobject_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Metaobject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Specializer_O:
 {
     core::Specializer_O* obj_gc_safe = reinterpret_cast<core::Specializer_O*>(client);
-    GCObjectAllocator<core::Specializer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Specializer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Class_O:
 {
     core::Class_O* obj_gc_safe = reinterpret_cast<core::Class_O*>(client);
-    GCObjectAllocator<core::Class_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Class_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StdClass_O:
 {
     core::StdClass_O* obj_gc_safe = reinterpret_cast<core::StdClass_O*>(client);
-    GCObjectAllocator<core::StdClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StdClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardClass_O:
 {
     core::StandardClass_O* obj_gc_safe = reinterpret_cast<core::StandardClass_O*>(client);
-    GCObjectAllocator<core::StandardClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StandardClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FuncallableStandardClass_O:
 {
     core::FuncallableStandardClass_O* obj_gc_safe = reinterpret_cast<core::FuncallableStandardClass_O*>(client);
-    GCObjectAllocator<core::FuncallableStandardClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::FuncallableStandardClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StructureClass_O:
 {
     core::StructureClass_O* obj_gc_safe = reinterpret_cast<core::StructureClass_O*>(client);
-    GCObjectAllocator<core::StructureClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StructureClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ForwardReferencedClass_O:
 {
     core::ForwardReferencedClass_O* obj_gc_safe = reinterpret_cast<core::ForwardReferencedClass_O*>(client);
-    GCObjectAllocator<core::ForwardReferencedClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ForwardReferencedClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxClass_O:
 {
     core::CxxClass_O* obj_gc_safe = reinterpret_cast<core::CxxClass_O*>(client);
-    GCObjectAllocator<core::CxxClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CxxClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__BuiltInClass_O:
 {
     core::BuiltInClass_O* obj_gc_safe = reinterpret_cast<core::BuiltInClass_O*>(client);
-    GCObjectAllocator<core::BuiltInClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BuiltInClass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRep_O:
 {
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
-    GCObjectAllocator<clbind::ClassRep_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<clbind::ClassRep_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ExternalObject_O:
 {
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
-    GCObjectAllocator<core::ExternalObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ExternalObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Value_O:
 {
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
-    GCObjectAllocator<llvmo::Value_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Value_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Argument_O:
 {
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
-    GCObjectAllocator<llvmo::Argument_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Argument_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__User_O:
 {
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
-    GCObjectAllocator<llvmo::User_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::User_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Instruction_O:
 {
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
-    GCObjectAllocator<llvmo::Instruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Instruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicRMWInst_O:
 {
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
-    GCObjectAllocator<llvmo::AtomicRMWInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::AtomicRMWInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LandingPadInst_O:
 {
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
-    GCObjectAllocator<llvmo::LandingPadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::LandingPadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PHINode_O:
 {
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
-    GCObjectAllocator<llvmo::PHINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::PHINode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CallInst_O:
 {
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
-    GCObjectAllocator<llvmo::CallInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::CallInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StoreInst_O:
 {
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
-    GCObjectAllocator<llvmo::StoreInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::StoreInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnaryInstruction_O:
 {
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
-    GCObjectAllocator<llvmo::UnaryInstruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::UnaryInstruction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LoadInst_O:
 {
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
-    GCObjectAllocator<llvmo::LoadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::LoadInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AllocaInst_O:
 {
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
-    GCObjectAllocator<llvmo::AllocaInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::AllocaInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VAArgInst_O:
 {
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
-    GCObjectAllocator<llvmo::VAArgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::VAArgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O:
 {
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
-    GCObjectAllocator<llvmo::AtomicCmpXchgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::AtomicCmpXchgInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TerminatorInst_O:
 {
     llvmo::TerminatorInst_O* obj_gc_safe = reinterpret_cast<llvmo::TerminatorInst_O*>(client);
-    GCObjectAllocator<llvmo::TerminatorInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::TerminatorInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnreachableInst_O:
 {
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
-    GCObjectAllocator<llvmo::UnreachableInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::UnreachableInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SwitchInst_O:
 {
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
-    GCObjectAllocator<llvmo::SwitchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::SwitchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ReturnInst_O:
 {
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
-    GCObjectAllocator<llvmo::ReturnInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ReturnInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ResumeInst_O:
 {
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
-    GCObjectAllocator<llvmo::ResumeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ResumeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BranchInst_O:
 {
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
-    GCObjectAllocator<llvmo::BranchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::BranchInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InvokeInst_O:
 {
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
-    GCObjectAllocator<llvmo::InvokeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::InvokeInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IndirectBrInst_O:
 {
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
-    GCObjectAllocator<llvmo::IndirectBrInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::IndirectBrInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FenceInst_O:
 {
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
-    GCObjectAllocator<llvmo::FenceInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::FenceInst_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Constant_O:
 {
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
-    GCObjectAllocator<llvmo::Constant_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Constant_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BlockAddress_O:
 {
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
-    GCObjectAllocator<llvmo::BlockAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::BlockAddress_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalValue_O:
 {
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
-    GCObjectAllocator<llvmo::GlobalValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::GlobalValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalVariable_O:
 {
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
-    GCObjectAllocator<llvmo::GlobalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::GlobalVariable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Function_O:
 {
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
-    GCObjectAllocator<llvmo::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantArray_O:
 {
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
-    GCObjectAllocator<llvmo::ConstantArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantInt_O:
 {
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
-    GCObjectAllocator<llvmo::ConstantInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataSequential_O:
 {
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
-    GCObjectAllocator<llvmo::ConstantDataSequential_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantDataSequential_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataArray_O:
 {
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
-    GCObjectAllocator<llvmo::ConstantDataArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantDataArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantStruct_O:
 {
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
-    GCObjectAllocator<llvmo::ConstantStruct_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantStruct_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantFP_O:
 {
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
-    GCObjectAllocator<llvmo::ConstantFP_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantFP_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UndefValue_O:
 {
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
-    GCObjectAllocator<llvmo::UndefValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::UndefValue_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantPointerNull_O:
 {
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
-    GCObjectAllocator<llvmo::ConstantPointerNull_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantPointerNull_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantExpr_O:
 {
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
-    GCObjectAllocator<llvmo::ConstantExpr_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ConstantExpr_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BasicBlock_O:
 {
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
-    GCObjectAllocator<llvmo::BasicBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::BasicBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilderBase_O:
 {
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
-    GCObjectAllocator<llvmo::IRBuilderBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::IRBuilderBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilder_O:
 {
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
-    GCObjectAllocator<llvmo::IRBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::IRBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBuilder_O:
 {
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
-    GCObjectAllocator<llvmo::DIBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Metadata_O:
 {
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
-    GCObjectAllocator<llvmo::Metadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Metadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ValueAsMetadata_O:
 {
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
-    GCObjectAllocator<llvmo::ValueAsMetadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ValueAsMetadata_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDNode_O:
 {
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
-    GCObjectAllocator<llvmo::MDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::MDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDString_O:
 {
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
-    GCObjectAllocator<llvmo::MDString_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::MDString_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ExecutionEngine_O:
 {
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
-    GCObjectAllocator<llvmo::ExecutionEngine_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ExecutionEngine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APFloat_O:
 {
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
-    GCObjectAllocator<llvmo::APFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::APFloat_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBuilder_O:
 {
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
-    GCObjectAllocator<llvmo::PassManagerBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::PassManagerBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayout_O:
 {
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
-    GCObjectAllocator<llvmo::DataLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DataLayout_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Triple_O:
 {
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
-    GCObjectAllocator<llvmo::Triple_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Triple_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APInt_O:
 {
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
-    GCObjectAllocator<llvmo::APInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::APInt_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBase_O:
 {
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
-    GCObjectAllocator<llvmo::PassManagerBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::PassManagerBase_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPassManager_O:
 {
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
-    GCObjectAllocator<llvmo::FunctionPassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::FunctionPassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManager_O:
 {
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
-    GCObjectAllocator<llvmo::PassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::PassManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetMachine_O:
 {
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
-    GCObjectAllocator<llvmo::TargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::TargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O:
 {
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
-    GCObjectAllocator<llvmo::LLVMTargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::LLVMTargetMachine_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetOptions_O:
 {
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
-    GCObjectAllocator<llvmo::TargetOptions_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::TargetOptions_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Type_O:
 {
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
-    GCObjectAllocator<llvmo::Type_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Type_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IntegerType_O:
 {
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
-    GCObjectAllocator<llvmo::IntegerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::IntegerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CompositeType_O:
 {
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
-    GCObjectAllocator<llvmo::CompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::CompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SequentialType_O:
 {
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
-    GCObjectAllocator<llvmo::SequentialType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::SequentialType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VectorType_O:
 {
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
-    GCObjectAllocator<llvmo::VectorType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::VectorType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PointerType_O:
 {
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
-    GCObjectAllocator<llvmo::PointerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::PointerType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ArrayType_O:
 {
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
-    GCObjectAllocator<llvmo::ArrayType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ArrayType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StructType_O:
 {
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
-    GCObjectAllocator<llvmo::StructType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::StructType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionType_O:
 {
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
-    GCObjectAllocator<llvmo::FunctionType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::FunctionType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__NamedMDNode_O:
 {
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
-    GCObjectAllocator<llvmo::NamedMDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::NamedMDNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Linker_O:
 {
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
-    GCObjectAllocator<llvmo::Linker_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Linker_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Pass_O:
 {
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
-    GCObjectAllocator<llvmo::Pass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Pass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPass_O:
 {
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
-    GCObjectAllocator<llvmo::FunctionPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::FunctionPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ModulePass_O:
 {
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
-    GCObjectAllocator<llvmo::ModulePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ModulePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ImmutablePass_O:
 {
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
-    GCObjectAllocator<llvmo::ImmutablePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::ImmutablePass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayoutPass_O:
 {
     llvmo::DataLayoutPass_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayoutPass_O*>(client);
-    GCObjectAllocator<llvmo::DataLayoutPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DataLayoutPass_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetLibraryInfo_O:
 {
     llvmo::TargetLibraryInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfo_O*>(client);
-    GCObjectAllocator<llvmo::TargetLibraryInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::TargetLibraryInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O:
 {
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
-    GCObjectAllocator<llvmo::MCSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::MCSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O:
 {
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
-    GCObjectAllocator<llvmo::TargetSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::TargetSubtargetInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Module_O:
 {
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
-    GCObjectAllocator<llvmo::Module_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Module_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__EngineBuilder_O:
 {
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
-    GCObjectAllocator<llvmo::EngineBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::EngineBuilder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ForeignData_O:
 {
     core::ForeignData_O* obj_gc_safe = reinterpret_cast<core::ForeignData_O*>(client);
-    GCObjectAllocator<core::ForeignData_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ForeignData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMContext_O:
 {
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
-    GCObjectAllocator<llvmo::LLVMContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::LLVMContext_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Target_O:
 {
     llvmo::Target_O* obj_gc_safe = reinterpret_cast<llvmo::Target_O*>(client);
-    GCObjectAllocator<llvmo::Target_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::Target_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadTimeValues_O:
 {
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
-    GCObjectAllocator<core::LoadTimeValues_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LoadTimeValues_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Binder_O:
 {
     core::Binder_O* obj_gc_safe = reinterpret_cast<core::Binder_O*>(client);
-    GCObjectAllocator<core::Binder_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Binder_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IntArray_O:
 {
     core::IntArray_O* obj_gc_safe = reinterpret_cast<core::IntArray_O*>(client);
-    GCObjectAllocator<core::IntArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::IntArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceManager_O:
 {
     core::SourceManager_O* obj_gc_safe = reinterpret_cast<core::SourceManager_O*>(client);
-    GCObjectAllocator<core::SourceManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SourceManager_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O:
 {
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
-    GCObjectAllocator<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_TEMPLATED_CLASSALLOC_core__Creator:
 {
     core::Creator* obj_gc_safe = reinterpret_cast<core::Creator*>(client);
-    GCObjectAllocator<core::Creator>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Creator>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_clbind__DummyCreator:
 {
     clbind::DummyCreator* obj_gc_safe = reinterpret_cast<clbind::DummyCreator*>(client);
-    GCObjectAllocator<clbind::DummyCreator>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<clbind::DummyCreator>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__InstanceCreator:
 {
     core::InstanceCreator* obj_gc_safe = reinterpret_cast<core::InstanceCreator*>(client);
-    GCObjectAllocator<core::InstanceCreator>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::InstanceCreator>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_TEMPLATED_CLASSALLOC_clbind__ConstructorCreator:
 {
     clbind::ConstructorCreator* obj_gc_safe = reinterpret_cast<clbind::ConstructorCreator*>(client);
-    GCObjectAllocator<clbind::ConstructorCreator>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<clbind::ConstructorCreator>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LightUserData_O:
 {
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
-    GCObjectAllocator<core::LightUserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LightUserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UserData_O:
 {
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
-    GCObjectAllocator<core::UserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::UserData_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Symbol_O:
 {
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
-    GCObjectAllocator<core::Symbol_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Symbol_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Null_O:
 {
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
-    GCObjectAllocator<core::Null_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Null_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourcePosInfo_O:
 {
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
-    GCObjectAllocator<core::SourcePosInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SourcePosInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Iterator_O:
 {
     core::Iterator_O* obj_gc_safe = reinterpret_cast<core::Iterator_O*>(client);
-    GCObjectAllocator<core::Iterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Iterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryIterator_O:
 {
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
-    GCObjectAllocator<core::DirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::DirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O:
 {
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
-    GCObjectAllocator<core::RecursiveDirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::RecursiveDirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Regex_O:
 {
     core::Regex_O* obj_gc_safe = reinterpret_cast<core::Regex_O*>(client);
-    GCObjectAllocator<core::Regex_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Regex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTimeDuration_O:
 {
     core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
-    GCObjectAllocator<core::PosixTimeDuration_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::PosixTimeDuration_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
 {
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
-    GCObjectAllocator<core::SymbolToEnumConverter_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SymbolToEnumConverter_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CandoException_O:
 {
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
-    GCObjectAllocator<core::CandoException_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CandoException_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Stream_O:
 {
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
-    GCObjectAllocator<core::Stream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Stream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AnsiStream_O:
 {
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
-    GCObjectAllocator<core::AnsiStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::AnsiStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStream_O:
 {
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
-    GCObjectAllocator<core::FileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::FileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOStreamStream_O:
 {
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
-    GCObjectAllocator<core::IOStreamStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::IOStreamStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOFileStream_O:
 {
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
-    GCObjectAllocator<core::IOFileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::IOFileStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConcatenatedStream_O:
 {
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
-    GCObjectAllocator<core::ConcatenatedStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ConcatenatedStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringStream_O:
 {
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
-    GCObjectAllocator<core::StringStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StringStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringInputStream_O:
 {
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
-    GCObjectAllocator<core::StringInputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StringInputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringOutputStream_O:
 {
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
-    GCObjectAllocator<core::StringOutputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StringOutputStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SynonymStream_O:
 {
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
-    GCObjectAllocator<core::SynonymStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SynonymStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__EchoStream_O:
 {
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
-    GCObjectAllocator<core::EchoStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::EchoStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TwoWayStream_O:
 {
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
-    GCObjectAllocator<core::TwoWayStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::TwoWayStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BroadcastStream_O:
 {
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
-    GCObjectAllocator<core::BroadcastStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BroadcastStream_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Reader_O:
 {
     core::Reader_O* obj_gc_safe = reinterpret_cast<core::Reader_O*>(client);
-    GCObjectAllocator<core::Reader_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Reader_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SharpEqualWrapper_O:
 {
     core::SharpEqualWrapper_O* obj_gc_safe = reinterpret_cast<core::SharpEqualWrapper_O*>(client);
-    GCObjectAllocator<core::SharpEqualWrapper_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SharpEqualWrapper_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Archive_O:
 {
     core::Archive_O* obj_gc_safe = reinterpret_cast<core::Archive_O*>(client);
-    GCObjectAllocator<core::Archive_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Archive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SaveArchive_O:
 {
     core::SaveArchive_O* obj_gc_safe = reinterpret_cast<core::SaveArchive_O*>(client);
-    GCObjectAllocator<core::SaveArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SaveArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpSaveArchive_O:
 {
     core::SexpSaveArchive_O* obj_gc_safe = reinterpret_cast<core::SexpSaveArchive_O*>(client);
-    GCObjectAllocator<core::SexpSaveArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SexpSaveArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadArchive_O:
 {
     core::LoadArchive_O* obj_gc_safe = reinterpret_cast<core::LoadArchive_O*>(client);
-    GCObjectAllocator<core::LoadArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LoadArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpLoadArchive_O:
 {
     core::SexpLoadArchive_O* obj_gc_safe = reinterpret_cast<core::SexpLoadArchive_O*>(client);
-    GCObjectAllocator<core::SexpLoadArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SexpLoadArchive_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTable_O:
 {
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
-    GCObjectAllocator<core::HashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::HashTable_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEq_O:
 {
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
-    GCObjectAllocator<core::HashTableEq_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::HashTableEq_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqualp_O:
 {
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
-    GCObjectAllocator<core::HashTableEqualp_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::HashTableEqualp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEql_O:
 {
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
-    GCObjectAllocator<core::HashTableEql_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::HashTableEql_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqual_O:
 {
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
-    GCObjectAllocator<core::HashTableEqual_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::HashTableEqual_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_cffi__Pointer_O:
 {
     cffi::Pointer_O* obj_gc_safe = reinterpret_cast<cffi::Pointer_O*>(client);
-    GCObjectAllocator<cffi::Pointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<cffi::Pointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxObject_O:
 {
     core::CxxObject_O* obj_gc_safe = reinterpret_cast<core::CxxObject_O*>(client);
-    GCObjectAllocator<core::CxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CxxObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyMapping_O:
 {
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
-    GCObjectAllocator<core::WeakKeyMapping_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::WeakKeyMapping_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LambdaListHandler_O:
 {
     core::LambdaListHandler_O* obj_gc_safe = reinterpret_cast<core::LambdaListHandler_O*>(client);
-    GCObjectAllocator<core::LambdaListHandler_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LambdaListHandler_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InsertPoint_O:
 {
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
-    GCObjectAllocator<llvmo::InsertPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::InsertPoint_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceFileInfo_O:
 {
     core::SourceFileInfo_O* obj_gc_safe = reinterpret_cast<core::SourceFileInfo_O*>(client);
-    GCObjectAllocator<core::SourceFileInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SourceFileInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SNode_O:
 {
     core::SNode_O* obj_gc_safe = reinterpret_cast<core::SNode_O*>(client);
-    GCObjectAllocator<core::SNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LeafSNode_O:
 {
     core::LeafSNode_O* obj_gc_safe = reinterpret_cast<core::LeafSNode_O*>(client);
-    GCObjectAllocator<core::LeafSNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LeafSNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BranchSNode_O:
 {
     core::BranchSNode_O* obj_gc_safe = reinterpret_cast<core::BranchSNode_O*>(client);
-    GCObjectAllocator<core::BranchSNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BranchSNode_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Path_O:
 {
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
-    GCObjectAllocator<core::Path_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Path_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
-    GCObjectAllocator<asttooling::AstVisitor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::AstVisitor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AttributeSet_O:
 {
     llvmo::AttributeSet_O* obj_gc_safe = reinterpret_cast<llvmo::AttributeSet_O*>(client);
-    GCObjectAllocator<llvmo::AttributeSet_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::AttributeSet_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureObject_O:
 {
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
-    GCObjectAllocator<core::StructureObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::StructureObject_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O:
 {
     core::InvocationHistoryFrameIterator_O* obj_gc_safe = reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(client);
-    GCObjectAllocator<core::InvocationHistoryFrameIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::InvocationHistoryFrameIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Package_O:
 {
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
-    GCObjectAllocator<core::Package_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Package_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryEntry_O:
 {
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
-    GCObjectAllocator<core::DirectoryEntry_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::DirectoryEntry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O:
 {
     core::Character_dummy_O* obj_gc_safe = reinterpret_cast<core::Character_dummy_O*>(client);
-    GCObjectAllocator<core::Character_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Character_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O:
 {
     core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
-    GCObjectAllocator<core::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O:
 {
     core::CompiledFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledFunction_O*>(client);
-    GCObjectAllocator<core::CompiledFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CompiledFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O:
 {
     core::SingleDispatchGenericFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunction_O*>(client);
-    GCObjectAllocator<core::SingleDispatchGenericFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SingleDispatchGenericFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SpecialForm_O:
 {
     core::SpecialForm_O* obj_gc_safe = reinterpret_cast<core::SpecialForm_O*>(client);
-    GCObjectAllocator<core::SpecialForm_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SpecialForm_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O:
 {
     core::SingleDispatchEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
-    GCObjectAllocator<core::SingleDispatchEffectiveMethodFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SingleDispatchEffectiveMethodFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Instance_O:
 {
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
-    GCObjectAllocator<core::Instance_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Instance_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pointer_O:
 {
     core::Pointer_O* obj_gc_safe = reinterpret_cast<core::Pointer_O*>(client);
-    GCObjectAllocator<core::Pointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Pointer_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRegistry_O:
 {
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
-    GCObjectAllocator<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<clbind::ClassRegistry_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DebugInfo_O:
 {
     llvmo::DebugInfo_O* obj_gc_safe = reinterpret_cast<llvmo::DebugInfo_O*>(client);
-    GCObjectAllocator<llvmo::DebugInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DebugInfo_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIDerivedType_O:
 {
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
-    GCObjectAllocator<llvmo::DIDerivedType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIDerivedType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIArray_O:
 {
     llvmo::DIArray_O* obj_gc_safe = reinterpret_cast<llvmo::DIArray_O*>(client);
-    GCObjectAllocator<llvmo::DIArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBasicType_O:
 {
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
-    GCObjectAllocator<llvmo::DIBasicType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIBasicType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubprogram_O:
 {
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
-    GCObjectAllocator<llvmo::DISubprogram_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DISubprogram_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlock_O:
 {
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
-    GCObjectAllocator<llvmo::DILexicalBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DILexicalBlock_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompileUnit_O:
 {
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
-    GCObjectAllocator<llvmo::DICompileUnit_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DICompileUnit_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIDescriptor_O:
 {
     llvmo::DIDescriptor_O* obj_gc_safe = reinterpret_cast<llvmo::DIDescriptor_O*>(client);
-    GCObjectAllocator<llvmo::DIDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIType_O:
 {
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
-    GCObjectAllocator<llvmo::DIType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubroutineType_O:
 {
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
-    GCObjectAllocator<llvmo::DISubroutineType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DISubroutineType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompositeType_O:
 {
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
-    GCObjectAllocator<llvmo::DICompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DICompositeType_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DITypeArray_O:
 {
     llvmo::DITypeArray_O* obj_gc_safe = reinterpret_cast<llvmo::DITypeArray_O*>(client);
-    GCObjectAllocator<llvmo::DITypeArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DITypeArray_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIFile_O:
 {
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
-    GCObjectAllocator<llvmo::DIFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIFile_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIScope_O:
 {
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
-    GCObjectAllocator<llvmo::DIScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::DIScope_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMultimap_O:
 {
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
-    GCObjectAllocator<core::SmallMultimap_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SmallMultimap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pathname_O:
 {
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
-    GCObjectAllocator<core::Pathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Pathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LogicalPathname_O:
 {
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
-    GCObjectAllocator<core::LogicalPathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::LogicalPathname_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTime_O:
 {
     core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
-    GCObjectAllocator<core::PosixTime_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::PosixTime_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMap_O:
 {
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
-    GCObjectAllocator<core::SmallMap_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SmallMap_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__Cache:
 {
     core::Cache* obj_gc_safe = reinterpret_cast<core::Cache*>(client);
-    GCObjectAllocator<core::Cache>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Cache>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
-    GCObjectAllocator<core::Lisp_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::Lisp_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__tagged_pointer_core__SequenceStepper__:
@@ -8786,7 +8786,7 @@ obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__SingleDispatchGenericFunctionClosure:
 {
     core::SingleDispatchGenericFunctionClosure* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure*>(client);
-    GCObjectAllocator<core::SingleDispatchGenericFunctionClosure>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::SingleDispatchGenericFunctionClosure>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__:
@@ -8801,7 +8801,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_llvmo__CompiledClosure:
 {
     llvmo::CompiledClosure* obj_gc_safe = reinterpret_cast<llvmo::CompiledClosure*>(client);
-    GCObjectAllocator<llvmo::CompiledClosure>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<llvmo::CompiledClosure>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
@@ -8810,7 +8810,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor:
 {
     asttooling::internal::VariadicOperatorMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::VariadicOperatorMatcherDescriptor*>(client);
-    GCObjectAllocator<asttooling::internal::VariadicOperatorMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::internal::VariadicOperatorMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
@@ -8819,7 +8819,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_asttooling__internal__OverloadedMatcherDescriptor:
 {
     asttooling::internal::OverloadedMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::OverloadedMatcherDescriptor*>(client);
-    GCObjectAllocator<asttooling::internal::OverloadedMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::internal::OverloadedMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
@@ -8831,13 +8831,13 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_astto
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__ClosureWithSlots:
 {
     core::ClosureWithSlots* obj_gc_safe = reinterpret_cast<core::ClosureWithSlots*>(client);
-    GCObjectAllocator<core::ClosureWithSlots>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ClosureWithSlots>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_asttooling__internal__FixedArgCountMatcherDescriptor:
 {
     asttooling::internal::FixedArgCountMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FixedArgCountMatcherDescriptor*>(client);
-    GCObjectAllocator<asttooling::internal::FixedArgCountMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::internal::FixedArgCountMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
@@ -8846,19 +8846,19 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_asttooling__internal__FreeFuncMatcherDescriptor:
 {
     asttooling::internal::FreeFuncMatcherDescriptor* obj_gc_safe = reinterpret_cast<asttooling::internal::FreeFuncMatcherDescriptor*>(client);
-    GCObjectAllocator<asttooling::internal::FreeFuncMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::internal::FreeFuncMatcherDescriptor>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__MacroClosure:
 {
     core::MacroClosure* obj_gc_safe = reinterpret_cast<core::MacroClosure*>(client);
-    GCObjectAllocator<core::MacroClosure>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::MacroClosure>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__ConsStepper:
 {
     core::ConsStepper* obj_gc_safe = reinterpret_cast<core::ConsStepper*>(client);
-    GCObjectAllocator<core::ConsStepper>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::ConsStepper>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
@@ -8885,7 +8885,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__InstanceClosure:
 {
     core::InstanceClosure* obj_gc_safe = reinterpret_cast<core::InstanceClosure*>(client);
-    GCObjectAllocator<core::InstanceClosure>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::InstanceClosure>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__:
@@ -8894,7 +8894,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
 {
     asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
-    GCObjectAllocator<asttooling::DerivableFrontendActionFactory>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::DerivableFrontendActionFactory>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__1_:
@@ -8903,7 +8903,7 @@ obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
 {
     asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
-    GCObjectAllocator<asttooling::DerivableMatchCallback>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::DerivableMatchCallback>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
@@ -8912,7 +8912,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_astto
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
-    GCObjectAllocator<asttooling::DerivableASTFrontendAction>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::DerivableASTFrontendAction>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
@@ -8927,7 +8927,7 @@ obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__CoreExposer:
 {
     core::CoreExposer* obj_gc_safe = reinterpret_cast<core::CoreExposer*>(client);
-    GCObjectAllocator<core::CoreExposer>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::CoreExposer>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
@@ -8936,7 +8936,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
-    GCObjectAllocator<asttooling::DerivableSyntaxOnlyAction>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<asttooling::DerivableSyntaxOnlyAction>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
@@ -8951,7 +8951,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
 obj_deallocate_unmanaged_instance_KIND_TEMPLATED_CLASSALLOC_core__BuiltinClosure:
 {
     core::BuiltinClosure* obj_gc_safe = reinterpret_cast<core::BuiltinClosure*>(client);
-    GCObjectAllocator<core::BuiltinClosure>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::BuiltinClosure>::deallocate_unmanaged_instance(obj_gc_safe);
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
 {
@@ -8959,7 +8959,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__InterpretedClosure:
 {
     core::InterpretedClosure* obj_gc_safe = reinterpret_cast<core::InterpretedClosure*>(client);
-    GCObjectAllocator<core::InterpretedClosure>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::InterpretedClosure>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_core__SlotData_0_:
@@ -8971,7 +8971,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
 obj_deallocate_unmanaged_instance_KIND_CLASSALLOC_core__VectorStepper:
 {
     core::VectorStepper* obj_gc_safe = reinterpret_cast<core::VectorStepper*>(client);
-    GCObjectAllocator<core::VectorStepper>::deallocate_unmanaged_instance(obj_gc_safe);
+    GC<core::VectorStepper>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__:

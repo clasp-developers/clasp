@@ -82,7 +82,7 @@ CL_DEFMETHOD   virtual T_sp currentObject() {
     SUBCLASS_MUST_IMPLEMENT();
   };
   template <typename OType>
-  gctools::smart_ptr<OType> current() { return downcast<OType>(this->currentObject()); };
+    gctools::smart_ptr<OType> current() { return gctools::As<OType>(this->currentObject()); };
 
   //	Iterator_O( const Iterator_O& ss ); //!< Copy constructor
 

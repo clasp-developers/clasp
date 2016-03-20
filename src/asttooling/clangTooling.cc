@@ -197,96 +197,23 @@ SYMBOL_EXPORT_SC_(AstToolingPkg, onStartOfTranslationUnit);
 SYMBOL_EXPORT_SC_(AstToolingPkg, onEndOfTranslationUnit);
 };
 
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::comments::Comment>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::comments::FullComment>);
-
+#if 0
 typedef clbind::Wrapper<clang::tooling::CompilationDatabase> CompilationDatabase_wrapper;
 typedef clbind::Wrapper<clang::tooling::JSONCompilationDatabase> JSONCompilationDatabase_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(CompilationDatabase_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(JSONCompilationDatabase_wrapper);
 typedef clbind::Wrapper<clang::tooling::ClangTool> ClangTool_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangTool_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::tooling::RefactoringTool>);
-
 typedef clbind::Wrapper<clang::FrontendAction> FrontendAction_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(FrontendAction_wrapper);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::tooling::FrontendActionFactory>);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ASTConsumer>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::CompilerInstance>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<const clang::LangOptions>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<const clang::SourceManager>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::SourceManager>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::SourceLocation>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::PresumedLoc>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::SourceRange>);
-
 typedef clbind::Wrapper<clang::SourceLocation, std::unique_ptr<clang::SourceLocation>> SourceLocation_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(SourceLocation_unique_ptr_wrapper)
 typedef clbind::Wrapper<clang::PresumedLoc, std::unique_ptr<clang::PresumedLoc>> PresumedLoc_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(PresumedLoc_unique_ptr_wrapper)
-
 typedef clbind::Wrapper<clang::SourceRange, std::unique_ptr<clang::SourceRange>> SourceRange_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(SourceRange_unique_ptr_wrapper)
-
 typedef clbind::Wrapper<clang::CharSourceRange, std::unique_ptr<clang::CharSourceRange>> CharSourceRange_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(CharSourceRange_unique_ptr_wrapper);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::Lexer>);
-
 typedef clbind::Wrapper<clang::tooling::ArgumentsAdjuster> ArgumentsAdjuster_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ArgumentsAdjuster_wrapper);
-
-//typedef clbind::Wrapper<clang::tooling::ClangSyntaxOnlyAdjuster> ClangSyntaxOnlyAdjuster_wrapper;
-//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangSyntaxOnlyAdjuster_wrapper);
-//typedef clbind::Wrapper<clang::tooling::ClangStripOutputAdjuster> ClangStripOutputAdjuster_wrapper;
-//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(ClangStripOutputAdjuster_wrapper);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<asttooling::Diagnostics>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<asttooling::ParserValue>);
-
-typedef clbind::Wrapper<clang::ast_matchers::dynamic::VariantValue, std::unique_ptr<clang::ast_matchers::dynamic::VariantValue>> VariantValue_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(VariantValue_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::dynamic::VariantValue>);
-
+typedef clbind::Wrapper<clang::ast_matchers::dynamic::VariantValue, std::unique_ptr<clang::ast_matchers::dynamic::VariantValue>> VariantValue_wrapvper;
 typedef clbind::Wrapper<clang::ast_matchers::dynamic::VariantMatcher, std::unique_ptr<clang::ast_matchers::dynamic::VariantMatcher>> VariantMatcher_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(VariantMatcher_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::dynamic::VariantMatcher>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::MatchFinder>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher const>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::internal::DynTypedMatcher>);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::MatchFinder::MatchCallback>);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::MatchFinder::MatchResult>);
-//INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::BoundNodes>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::BoundNodes const>);
 typedef clbind::Wrapper<clang::ast_matchers::BoundNodes, std::unique_ptr<clang::ast_matchers::BoundNodes>> BoundNodes_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(BoundNodes_wrapper);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ast_matchers::MatchFinder::MatchResult const>);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::ASTUnit>);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::tooling::Replacement>);
-
 typedef clbind::Wrapper<clang::tooling::Replacement, std::unique_ptr<clang::tooling::Replacement>> Replacement_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Replacement_unique_ptr_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::tooling::Range>);
 typedef clbind::Wrapper<clang::tooling::Range, std::unique_ptr<clang::tooling::Range>> Range_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Range_unique_ptr_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::Rewriter>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<clang::tooling::Replacements>);
-
 typedef clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>> CompileCommand_unique_ptr_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(CompileCommand_unique_ptr_wrapper);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableArgumentsAdjuster);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableMatchCallback);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableASTFrontendAction);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableSyntaxOnlyAction);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(asttooling::DerivableFrontendActionFactory);
+#endif
 
 namespace asttooling {
 
