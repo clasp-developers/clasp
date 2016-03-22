@@ -131,6 +131,7 @@ public:
 
 template <>
 struct gctools::GCInfo<core::ValueFrame_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -272,6 +273,7 @@ public:
 
 template <>
 struct gctools::GCInfo<core::FunctionFrame_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -397,6 +399,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::TagbodyFrame_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

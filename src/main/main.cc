@@ -69,13 +69,13 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 
 #if 1
 
-    gctools::GcToolsExposer GcToolsPkg(_lisp);
-    clbind::ClbindExposer ClbindPkg(_lisp);
-    llvmo::LlvmoExposer llvmopkg(_lisp);
-    cffi::CffiExposer cffipkg(_lisp);
-    sockets::SocketsExposer SocketsPkg(_lisp);
-    serveEvent::ServeEventExposer ServeEventPkg(_lisp);
-    asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
+    gctools::GcToolsExposer_O GcToolsPkg(_lisp);
+    clbind::ClbindExposer_O ClbindPkg(_lisp);
+    llvmo::LlvmoExposer_O llvmopkg(_lisp);
+    cffi::CffiExposer_O cffipkg(_lisp);
+    sockets::SocketsExposer_O SocketsPkg(_lisp);
+    serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
+    asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
     lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
     _lisp->installPackage(&GcToolsPkg);
     _lisp->installPackage(&ClbindPkg);
@@ -154,7 +154,7 @@ class EmptyClass : public DummyClass { // : public gctools::GCObject {
 private:
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
-  static void set_static_creator(gc::tagged_pointer<core::Creator> cb){};
+  static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
 
 public:
   explicit EmptyClass();

@@ -75,7 +75,7 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
   (functionDesignator) can be a Symbol or an Function
 */
 
-extern T_mv applyClosureToActivationFrame(gctools::tagged_pointer<Closure> closureP, ActivationFrame_sp af);
+extern T_mv applyClosureToActivationFrame(Closure_sp closureP, ActivationFrame_sp af);
 
 extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
 
@@ -98,14 +98,14 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
     frob->operator[](i) = oCar(cur);
     cur = oCdr(cur);
   }
-  gctools::tagged_pointer<Closure> closureP = func->closure;
+  Closure_sp closureP = func->closure;
   ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
   return applyClosureToActivationFrame(closureP, frob);
 }
 
 
 inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
-  gctools::tagged_pointer<Closure> ft = func->closure;
+  Closure_sp ft = func->closure;
   // Either assume that the VaList_sp is not at the start or ensure that it always is
   // Here I'm assuming that it is not always at the start.   To do it the other way
   // change cl__apply
@@ -132,7 +132,7 @@ inline LCC_RETURN funcall(T_sp fn) {
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  gctools::tagged_pointer<Closure> ft = func->closure;
+  Closure_sp ft = func->closure;
   return (*ft)(LCC_PASS_ARGS0_ELLIPSIS());
 }
 
@@ -145,7 +145,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  gctools::tagged_pointer<Closure> ft = func->closure;
+  Closure_sp ft = func->closure;
   return (*ft)(LCC_PASS_ARGS1_ELLIPSIS(arg0.raw_()));
 }
 
@@ -168,7 +168,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   }
   Function_sp func = tfunc.asOrNull<Function_O>();
   ASSERT(func);
-  gctools::tagged_pointer<Closure> ft = func->closure;
+  Closure_sp ft = func->closure;
   return (*ft)(LCC_PASS_ARGS2_ELLIPSIS(arg0.raw_(), arg1.raw_()));
 }
 
@@ -181,7 +181,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  gctools::tagged_pointer<Closure> ft = func->closure;
+  Closure_sp ft = func->closure;
   return (*ft)(LCC_PASS_ARGS3_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
 
@@ -195,7 +195,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  gctools::tagged_pointer<Closure> ft = func->closure;
+  Closure_sp ft = func->closure;
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
   return (*ft)(NULL, NULL, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), std::forward<ARGS>(args).raw_()...);

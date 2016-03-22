@@ -203,7 +203,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
   if (!cb->compiledP()) {
     SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
   }
-  auto cc = cb.as<llvmo::CompiledClosure>();
+  auto cc = cb.as<core::CompiledClosure_O>();
   core::T_sp funcs = cc->associatedFunctions;
   if (cl__consp(funcs)) {
     core::List_sp cfuncs = funcs;
@@ -227,7 +227,7 @@ CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
 CL_LAMBDA(fn &optional only);
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction->closure.as<CompiledClosure>()) {
+  if (auto cl = compiledFunction->closure.as<core::CompiledClosure_O>()) {
     core::T_sp funcs = cl->associatedFunctions;
     if (cl__consp(funcs)) {
       core::List_sp cfuncs = funcs;
@@ -248,7 +248,7 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
 
 ;
 
-void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
+void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   //
   // Initialize the intrinsic functions in intrinsics.cc
   //

@@ -107,7 +107,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   if (last.nilp()) {
     // Nil as last argument
     LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args, lenArgs - 1);
-    gctools::tagged_pointer<Closure> ft = func->closure;
+    Closure_sp ft = func->closure;
     core::T_O *arg0;
     core::T_O *arg1;
     core::T_O *arg2;
@@ -244,7 +244,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       List_sp code;
       eval::parse_lambda_body(body, declares, docstring, code);
       LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
-      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(cl::_sym_lambda, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+      InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(cl::_sym_lambda, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       Function_sp proc = Function_O::make(ic);
       return proc;
 #if 0
@@ -1319,7 +1319,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
       printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
     }
   }
-  gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
+  Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
   Function_sp proc = Function_O::make(ic);
   return proc;
 }
@@ -1549,7 +1549,7 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
       parse_lambda_body(outer_body, declares, docstring, code);
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
       printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
-      gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+      Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
       outer_func = Function_O::make(ic);
     }
     LOG(BF("func = %s") % outer_func_cons->__repr__());
@@ -1601,7 +1601,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  oCadr(declares),
                                                                  cl::_sym_function);
     printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
-    gctools::tagged_pointer<InterpretedClosure> ic = gctools::ClassAllocator<InterpretedClosure>::allocate_class(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+    InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
     Function_sp outer_func = Function_O::make(ic);
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);
@@ -1705,7 +1705,7 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
-T_mv applyClosureToActivationFrame(gctools::tagged_pointer<Closure> func, ActivationFrame_sp args) {
+T_mv applyClosureToActivationFrame(Closure_sp func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   T_sp *frame = args->argArray();
   switch (nargs) {
@@ -1718,7 +1718,7 @@ T_mv applyClosureToActivationFrame(gctools::tagged_pointer<Closure> func, Activa
 }
 
 #if 0
-T_mv applyClosureToStackFrame(gctools::tagged_pointer<Closure> func, T_sp stackFrame) {
+T_mv applyClosureToStackFrame(Closure_sp func, T_sp stackFrame) {
 IMPLEMENT_MEF(BF("Handle new valist"));
 #if 0
 T_mv result;
@@ -1742,7 +1742,7 @@ T_mv applyToStackFrame(T_sp head, T_sp stackFrame) {
   ASSERT(stackFrame.valistp());
   Function_sp fn = lookupFunction(head, stackFrame);
   ASSERT(fn.notnilp());
-  gctools::tagged_pointer<Closure> closureP = fn->closure;
+  Closure_sp closureP = fn->closure;
   ASSERTF((closureP), BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
   return applyClosureToStackFrame(closureP, stackFrame);
 }
@@ -1759,7 +1759,7 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
     SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
   }
   Function_sp ffn = gc::As<Function_sp>(tfn);
-  gctools::tagged_pointer<Closure> closureP = ffn->closure;
+  Closure_sp closureP = ffn->closure;
   if (closureP) {
     return applyClosureToActivationFrame(closureP, args);
   }

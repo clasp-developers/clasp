@@ -381,8 +381,6 @@ typedef T_O FIXNUM;
 typedef T_O STACK_FRAME;
 class Cons_O;
 class General_O;
- class Functoid;
- class Closure;
 class Pointer_O;
 class Vector_O;
 class VectorObjects_O;
@@ -399,10 +397,11 @@ class WeakKeyHashTable_O;
 class WeakKeyMapping_O;
 class DynamicScopeManager;
 
-class Functoid;
-class FunctionClosure;
-class BuiltinClosure;
-class InterpretedClosure;
+class Functor_O;
+ class Closure_O;
+class FunctionClosure_O;
+class BuiltinClosure_O;
+class InterpretedClosure_O;
 };
 void dbg_hook(const char *errorString);
 
@@ -550,6 +549,8 @@ typedef gctools::smart_ptr<VectorObjects_O> VectorObjects_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;
 typedef gctools::smart_ptr<SourceFileInfo_O> SourceFileInfo_sp;
+typedef gctools::smart_ptr<Closure_O> Closure_sp;
+typedef gctools::smart_ptr<BuiltinClosure_O> BuiltinClosure_sp;
 };
 
 #include <clasp/gctools/containers.h>
@@ -818,6 +819,9 @@ class Function_O;
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 
+ class Functor_O;
+ typedef gctools::smart_ptr<Functor_O> Functor_sp;
+ 
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
 }
@@ -900,11 +904,12 @@ string symbol_symbolName(Symbol_sp);
 string symbol_packageName(Symbol_sp);
 string symbol_repr(Symbol_sp);
 Symbol_sp lisp_symbolNil();
+ void lisp_errorCannotAllocateInstanceWithNoArguments(T_sp theClass);
 T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp sym);
 void lisp_exposeClass(const string &className, ExposeCandoFunction exposeCandoFunction, ExposePythonFunction exposePythonFunction);
-void lisp_addClass(Symbol_sp classSymbol, gctools::tagged_pointer<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
+ void lisp_addClass(Symbol_sp classSymbol, gctools::smart_ptr<Creator_O> cb, Symbol_sp baseClassSymbol1); //, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
 void lisp_addClass(Symbol_sp classSymbol);
-void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::tagged_pointer<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
+//void lisp_addClassAndInitialize(Symbol_sp classSymbol, gctools::smart_ptr<Creator> cb, Symbol_sp baseClassSymbol1, Symbol_sp baseClassSymbol2 = UNDEFINED_SYMBOL, Symbol_sp baseClassSymbol3 = UNDEFINED_SYMBOL);
 void lisp_throwIfBuiltInClassesNotInitialized();
 string lisp_classNameFromClassSymbol(Symbol_sp classSymbol);
 Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol);
@@ -934,18 +939,18 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args);
 List_sp lisp_parse_declares(const string &packageName, const string &declarestring);
 LambdaListHandler_sp lisp_function_lambda_list_handler(List_sp lambda_list, List_sp declares, std::set<int> pureOutValues = std::set<int>());
 void lisp_defmacro(Symbol_sp name, const string &packageName,
-                   gc::tagged_pointer<BuiltinClosure>, const string &arguments = "", const string &declarestring = "",
+                   BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                    const string &docstring = "", bool autoExport = true);
 void lisp_defun(Symbol_sp name, const string &packageName,
-                gc::tagged_pointer<BuiltinClosure>, const string &arguments = "", const string &declarestring = "",
+                BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                 const string &docstring = "", const string &sourceFile = "", int sourceLine = 0, bool autoExport = true, int number_of_required_arguments = 0, const std::set<int> &skipIndices = std::set<int>());
 void lisp_defgeneric(const string &packageName, const string &name,
-                     Functoid *, const string &arguments = "", const string &docstring = "", bool autoExport = true);
-void lisp_defmethod(Symbol_sp gfSymbol, Functoid *func, const string &arguments, const string &docstring);
+                     Functor_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
+void lisp_defmethod(Symbol_sp gfSymbol, Functor_sp, const string &arguments, const string &docstring);
 
 void lisp_defineSingleDispatchMethod(Symbol_sp name,
                                      Symbol_sp classSymbol,
-                                     gc::tagged_pointer<BuiltinClosure>,
+                                     BuiltinClosure_sp,
                                      int TemplateDispatchOn = 0,
                                      const string &lambda_list = "",
                                      const string &declares = "",
@@ -955,10 +960,10 @@ void lisp_defineSingleDispatchMethod(Symbol_sp name,
                                      std::set<int> pureOutIndices = std::set<int>());
 
 void lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string &name, Symbol_sp classSymbol,
-                                      Functoid *, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
+                                      Functor_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
 
-void lisp_defsetf(Lisp_sp lisp, const string &name, Symbol_sp classSymbol,
-                  Functoid *, const string &arguments = "", const string &docstring = "", bool autoExport = true);
+void lisp_defsetf(const string &name, Symbol_sp classSymbol,
+                  Functor_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
 
 core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 

@@ -116,6 +116,7 @@ public: // Functions here
 TRANSLATE(core::VectorDisplaced_O);
 template <>
 struct gctools::GCInfo<core::VectorDisplaced_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

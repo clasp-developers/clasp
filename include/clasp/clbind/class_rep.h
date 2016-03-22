@@ -193,6 +193,7 @@ bool is_class_rep(core::Lisp_sp L, int index);
 }
 template <>
 struct gctools::GCInfo<clbind::ClassRep_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

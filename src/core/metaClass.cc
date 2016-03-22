@@ -59,10 +59,10 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_gctools_mem
 
+#if 0
 namespace translate {
-
 template <>
-struct to_object<core::Creator *> {
+struct to_object<core::Creator_sp> {
   typedef core::Creator *GivenType;
   static core::T_sp convert(GivenType v) {
     if (v)
@@ -71,7 +71,7 @@ struct to_object<core::Creator *> {
   }
 };
 };
-
+#endif
 namespace core {
 
 const int Class_O::NumberOfClassSlots;
@@ -113,11 +113,6 @@ void Class_O::initializeSlots(int slots) {
   this->instanceSet(REF_FINALIZED, cl::_sym_T_O);
 }
 
-T_sp InstanceCreator::allocate() {
-  GC_ALLOCATE(Instance_O, output);
-  return output;
-};
-
 gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
   if (aClass->cxxClassP()) {
     if (aClass->cxxDerivableClassP()) {
@@ -158,13 +153,11 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   }
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
-    gc::tagged_pointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
-    // gctools::StackRootedPointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
-    gc::tagged_pointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
-    //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
+    Creator_sp aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
+    Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocate_class(this->name());
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->name());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }

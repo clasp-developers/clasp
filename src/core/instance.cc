@@ -39,16 +39,6 @@ THE SOFTWARE.
 
 namespace core {
 
-LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
-// Copy the arguments passed in registers into the multiple_values array and those
-// will be processed by the generic function
-#ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
-#endif
-  VaList_sp gfargs((gc::Tagged)lcc_arglist);
-  //  LCC_SKIP_ARG(gfargs);
-  return (this->entryPoint)(this->instance, gfargs);
-}
 
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
@@ -101,8 +91,8 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
   if (!cl->hasCreator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  gc::tagged_pointer<core::Creator> allocatorP = (cl->getCreator());
-  T_sp obj = allocatorP->allocate();
+  Creator_sp allocator = (cl->getCreator());
+  T_sp obj = allocator->allocate();
   ASSERT(obj);
   ASSERT(obj.notnilp());
   if (obj.generalp()) {
@@ -256,8 +246,8 @@ T_sp Instance_O::copyInstance() const {
   iobj->_isgf = this->_isgf;
   iobj->_Slots = this->_Slots;
   if ((bool)(this->closure)) {
-    auto ic = this->closure.as<InstanceClosure>();
-    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(*ic);
+    auto ic = this->closure.as<InstanceClosure_O>();
+    iobj->closure = gc::GC<InstanceClosure_O>::allocate(*ic);
   } else {
     iobj->closure.reset_();
   }
@@ -281,9 +271,9 @@ SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
   if (!(bool)(this->closure)) {
-    this->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
+    this->closure = gc::GC<InstanceClosure_O>::allocate(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
   } else {
-    auto ic = this->closure.as<InstanceClosure>();
+    auto ic = this->closure.as<InstanceClosure_O>();
     ic->entryPoint = entryPoint;
   }
 };

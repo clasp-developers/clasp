@@ -23,12 +23,12 @@ namespace cast {
     class Sequence_V;
     class List_V;
     class WrappedPointer_O;
-    class Functoid;
-    class Creator;
+    class Functor_O;
+    class Creator_O;
     class Iterator_O;
   };
   namespace clbind {
-    class ConstructorCreator;
+    class ConstructorCreator_O;
   };
 
 #ifdef USE_BOEHM

@@ -83,7 +83,7 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
   SingleDispatchGenericFunction_sp gf = gc::As<SingleDispatchGenericFunction_sp>(gfname->symbolFunction());
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname, receiver_class, lambda_list_handler, declares, docstring, body);
   ASSERT(lambda_list_handler.notnilp());
-  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gf->closure.as<SingleDispatchGenericFunctionClosure>();
+  SingleDispatchGenericFunctionClosure_sp gfc = gf->closure.as<SingleDispatchGenericFunctionClosure_O>();
   LambdaListHandler_sp gf_llh = gfc->_lambdaListHandler;
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
@@ -107,15 +107,15 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 // ----------------------------------------------------------------------
 //
 
-T_sp SingleDispatchGenericFunctionClosure::lambdaList() const {
+T_sp SingleDispatchGenericFunctionClosure_O::lambdaList() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
-void SingleDispatchGenericFunctionClosure::setf_lambda_list(T_sp ll) {
+void SingleDispatchGenericFunctionClosure_O::setf_lambda_list(T_sp ll) {
   // Do nothing
 };
 
-void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp method) {
+void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp method) {
   _OF();
   // Look to see if the method is already defined
   LOG(BF("defmethod for symbol[%s] called with method with receiverClass[%s]") % _rep_(this->name) % _rep_(method->receiver_class()));
@@ -142,9 +142,9 @@ void SingleDispatchGenericFunctionClosure::addMethod(SingleDispatchMethod_sp met
 /*! I think this fills the role of the lambda returned by
       std-compute-discriminating-function (gf) AMOP-303 top
     */
-LCC_RETURN SingleDispatchGenericFunctionClosure::LISP_CALLING_CONVENTION() {
+LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   Function_sp func;
-  gc::tagged_pointer<Cache> cache(_lisp->singleDispatchMethodCachePtr());
+  Cache_sp cache = _lisp->singleDispatchMethodCachePtr();
   gctools::Vec0<T_sp> &vektor = cache->keys();
   vektor[0] = this->name;
   Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());
@@ -178,7 +178,7 @@ public:
   }
 };
 
-Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) {
+Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc) {
   _OF();
   LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc));
   gctools::Vec0<SingleDispatchMethod_sp> applicableMethods;
@@ -221,7 +221,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) 
 }
 
 #if 0
-    Function_sp SingleDispatchGenericFunctionClosure::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
+    Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
     {_OF();
         SingleDispatchMethod_sp cur_method = applicableMethods[0];
         ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
@@ -242,7 +242,7 @@ Function_sp SingleDispatchGenericFunctionClosure::slowMethodLookup(Class_sp mc) 
 
 SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
   GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);
-  gctools::tagged_pointer<SingleDispatchGenericFunctionClosure> gfc = gctools::ClassAllocator<SingleDispatchGenericFunctionClosure>::allocate_class(name);
+  SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(name);
   gfc->finishSetup(llh, kw::_sym_function);
   gf->closure = gfc;
   return gf;

@@ -157,14 +157,12 @@ class shared_ptr;
 
 namespace clbind {
 
-class DummyCreator : public core::Creator {
+class DummyCreator_O : public core::Creator_O {
   string _name;
 
 public:
-  DummyCreator(const string &name) : _name(name){};
-
+  DummyCreator_O(const string &name) : _name(name){};
 public:
-  DISABLE_NEW();
   virtual bool allocates() const { return false; };
   virtual void describe() const {
     printf("DummyCreator for: %s\n", this->_name.c_str());
@@ -172,8 +170,8 @@ public:
   virtual core::T_sp allocate() {
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
-  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DummyCreator>::allocate_class(core::lisp_symbolNameAsString(className));
+  Creator_sp duplicateForClassName(core::Symbol_sp className) {
+    return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));
   }
 };
 

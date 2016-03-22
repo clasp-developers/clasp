@@ -30,14 +30,14 @@ $var ConstTypeCount = 1
                         template <typename Pols, typename OT $if ret==RetVoid [[]] $else [[, typename RT ]] $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
                         class IndirectVariadicMethoid
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-                        : public core::Functoid {
+                        : public core::Functor_O {
                         public:
 			    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
                         typedef $if ret==RetVoid [[void]] $else [[RT]] (*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                         Type mptr;
                         public:
                         enum { NumParams = $numArgs };
-                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functoid(name), mptr(ptr) {};
+                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
                     DISABLE_NEW();
 
                     inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -46,7 +46,7 @@ $var ConstTypeCount = 1
                       $if numArgs>0 [[
                         STACK_FRAME(buff,frame,$numArgs);
                         core::StackFrameDynamicScopeManager scope(frame);
-                        lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                        lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                       ]]
                       // translate::from_object<OT*> objPtr(frame.arg(0));
                       OT* objPtr = gc::As<core::WrappedPointer_sp>(frame.arg(0))->cast<OT>();

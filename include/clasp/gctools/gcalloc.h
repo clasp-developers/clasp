@@ -62,6 +62,7 @@ struct GCObjectInitializer<OT, false> {
   };
 };
 
+#ifdef TAGGED_POINTER
 template <class OT>
 struct GCObjectInitializer<tagged_pointer<OT>, true> {
   typedef tagged_pointer<OT> functor_pointer_type;
@@ -76,6 +77,7 @@ struct GCObjectInitializer<tagged_pointer<OT>, false> {
       // initialize not needed
   };
 };
+#endif // end TAGGED_POINTER
 }
 
 #if defined(USE_BOEHM) || defined(USE_MPS)
@@ -201,7 +203,8 @@ namespace gctools {
     return tagged_obj;
   }
 #endif // #ifdef USE_MPS
-    
+
+#ifdef TAGGED_POINTER
 /*! Allocate regular C++ classes that are considered roots */
   template <class T>
     struct RootClassAllocator {
@@ -260,7 +263,8 @@ namespace gctools {
 #endif
       };
     };
-
+#endif // end TAGGED_POINTER
+  
   template <class Cons>
   struct ConsAllocator {
     template <class... ARGS>
@@ -283,7 +287,8 @@ namespace gctools {
 #endif
     }
   };
-  
+
+#if 0
   template <class T>
     struct ClassAllocator {
       template <class... ARGS>
@@ -315,6 +320,7 @@ namespace gctools {
 #endif
       }
     };
+#endif
 };
 
 namespace gctools {
@@ -512,100 +518,140 @@ struct GCObjectFinalizer<OT, false> {
 };
 }
 
+
 namespace gctools {
 
-template <class OT>
-class GC {
- public:
-  typedef OT value_type;
-  typedef OT *pointer_type;
-  typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
- public:
-  template <typename... ARGS>
-    static smart_pointer_type root_allocate(ARGS &&... args) {
-    return root_allocate_kind(GCKind<OT>::Kind,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
-  }
-  template <typename... ARGS>
-    static smart_pointer_type root_allocate_kind(kind_t the_kind, size_t size, ARGS &&... args) {
+  template <class OT>
+    class GCObjectAllocator {
+  public:
+    typedef OT value_type;
+    typedef OT *pointer_type;
+    typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
+  public:
+    template <typename... ARGS>
+      static smart_pointer_type root_allocate(ARGS &&... args) {
+      return root_allocate_kind(GCKind<OT>::Kind,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+    }
+    template <typename... ARGS>
+      static smart_pointer_type root_allocate_kind(kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-    monitor_allocation(the_kind,size);
-    Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(size));
-    new (base) Header_s(the_kind);
-    pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
-    new (ptr) OT(std::forward<ARGS>(args)...);
-    smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
-    GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-    return sp;
+      monitor_allocation(the_kind,size);
+      Header_s *base = reinterpret_cast<Header_s *>(GC_MALLOC_UNCOLLECTABLE(size));
+      new (base) Header_s(the_kind);
+      pointer_type ptr = BasePtrToMostDerivedPtr<OT>(base);
+      new (ptr) OT(std::forward<ARGS>(args)...);
+      smart_pointer_type sp = /*gctools::*/ smart_ptr<value_type>(ptr);
+      GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      return sp;
 #endif
 #ifdef USE_MPS
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,size,std::forward<ARGS>(args)...);
-    GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-    POLL_SIGNALS();
-    return sp;
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,size,std::forward<ARGS>(args)...);
+      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      POLL_SIGNALS();
+      return sp;
 #endif
-  };
+    };
 
-  template <typename... ARGS>
-    static smart_pointer_type allocate_kind(kind_t the_kind, size_t size, ARGS &&... args) {
+    template <typename... ARGS>
+      static smart_pointer_type allocate_kind(kind_t the_kind, size_t size, ARGS &&... args) {
 #ifdef USE_BOEHM
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,size,std::forward<ARGS>(args)...);
-    GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind(the_kind,size,std::forward<ARGS>(args)...);
+      GCObjectInitializer<OT, /*gctools::*/ GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-    POLL_SIGNALS();
-    return sp;
+      POLL_SIGNALS();
+      return sp;
 #endif
 #ifdef USE_MPS
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, size, std::forward<ARGS>(args)...);
-    GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, size, std::forward<ARGS>(args)...);
+      GCObjectInitializer<OT, GCInfo<OT>::NeedsInitialization>::initializeIfNeeded(sp);
+      GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-    POLL_SIGNALS();
-    return sp;
+      POLL_SIGNALS();
+      return sp;
 #endif
+    };
+
+    static smart_pointer_type copy_kind(kind_t the_kind, size_t size, const OT &that) {
+#ifdef USE_BOEHM
+    // Copied objects must be allocated in the appropriate pool
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, size, that);
+    // Copied objects are not initialized.
+    // Copied objects are finalized if necessary
+      GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      return sp;
+#endif
+#ifdef USE_MPS
+    // Copied objects must be allocated in the appropriate pool
+      smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, size, that);
+    // Copied objects are not initialized.
+    // Copied objects are finalized if necessary
+      GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
+      return sp;
+#endif
+    }
   };
+};
 
-  template <typename... ARGS>
-    static smart_pointer_type allocate( ARGS &&... args) {
-    return allocate_kind(GCKind<OT>::Kind, sizeof_with_header<OT>(), std::forward<ARGS>(args)...);
-  }
-
-  template <typename... ARGS>
-    static smart_pointer_type allocate_container(size_t capacity, ARGS&...args) {
-    return allocate_kind(GCKind<OT>::Kind,sizeof_container_with_header<OT>(capacity),capacity,std::forward<ARGS>(args)...);
-  }
 
   
+namespace gctools {
+  template <class OT, bool CanAllocateWithNoArguments = true>
+    struct GCNoArgumentAllocator {};
 
-  static smart_pointer_type copy(const OT &that) {
-    return copy_kind(GCKind<OT>::Kind,sizeof_with_header<OT>(),that);
-  }
+  template <class OT>
+    struct GCNoArgumentAllocator<OT,true> {
+    static smart_ptr<OT> allocate() {
+      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind, sizeof_with_header<OT>());
+    }
+  };
 
-  static smart_pointer_type copy_kind(kind_t the_kind, size_t size, const OT &that) {
-#ifdef USE_BOEHM
-    // Copied objects must be allocated in the appropriate pool
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, size, that);
-    // Copied objects are not initialized.
-    // Copied objects are finalized if necessary
-    GCObjectFinalizer<OT, /*gctools::*/ GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-    return sp;
-#endif
-#ifdef USE_MPS
-    // Copied objects must be allocated in the appropriate pool
-    smart_pointer_type sp = GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::allocate_in_appropriate_pool_kind( the_kind, size, that);
-    // Copied objects are not initialized.
-    // Copied objects are finalized if necessary
-    GCObjectFinalizer<OT, GCInfo<OT>::NeedsFinalization>::finalizeIfNeeded(sp);
-    return sp;
-#endif
-  }
+  template <class OT>
+    struct GCNoArgumentAllocator<OT,false> {
+    static smart_ptr<OT> allocate() {
+      lisp_errorCannotAllocateInstanceWithNoArguments(OT::static_class);
+    }
+  };
+};
 
-  static void deallocate_unmanaged_instance(OT* obj) {
-    GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(obj);
-  }
- };
+namespace gctools {
+  /*! This is the public interface to the GCObjectAllocator */
+  template <class OT>
+    class GC {
+  public:
+    typedef OT value_type;
+    typedef OT *pointer_type;
+    typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
+  public:
+    template <typename... ARGS>
+      static smart_pointer_type root_allocate(ARGS &&... args) {
+      return GCObjectAllocator<OT>::root_allocate_kind(GCKind<OT>::Kind,sizeof_with_header<OT>(),std::forward<ARGS>(args)...);
+    }
+
+    template <typename... ARGS>
+      static smart_pointer_type allocate( ARGS &&... args) {
+      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind, sizeof_with_header<OT>(), std::forward<ARGS>(args)...);
+    }
+
+    template <typename... ARGS>
+      static smart_pointer_type allocate_container(size_t capacity, ARGS&...args) {
+      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,sizeof_container_with_header<OT>(capacity),capacity,std::forward<ARGS>(args)...);
+    }
+
+    static smart_pointer_type allocate_with_no_arguments() {
+      return GCNoArgumentAllocator<OT,GCInfo<OT>::CanAllocateWithNoArguments>::allocate();
+    }
+
+    static smart_pointer_type copy(const OT &that) {
+      return GCObjectAllocator<OT>::copy_kind(GCKind<OT>::Kind,sizeof_with_header<OT>(),that);
+    }
+
+    static void deallocate_unmanaged_instance(OT* obj) {
+      GCObjectAppropriatePoolAllocator<OT, GCInfo<OT>::Policy>::deallocate(obj);
+    }
+  };
 };
 
 namespace gctools {

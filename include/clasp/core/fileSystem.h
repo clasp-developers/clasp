@@ -157,6 +157,7 @@ public:
 
 template <>
 struct gctools::GCInfo<core::DirectoryIterator_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
@@ -197,6 +198,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::RecursiveDirectoryIterator_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
@@ -228,6 +230,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::DirectoryEntry_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;

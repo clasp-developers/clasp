@@ -104,7 +104,7 @@ CL_DECLARE();
 CL_DOCSTRING("interpretedFunctionP");
 CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
   if (gc::IsA<Function_sp>(arg)) {
-    if (auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure>()) {
+    if (auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure_O>()) {
       (void)intfunc;
       return true;
     }

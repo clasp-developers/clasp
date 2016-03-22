@@ -14,17 +14,17 @@ $var NumArgs = 8
                 // numArgs = $numArgs
                 /* Specialization */
                 template <typename Pols, typename Pointer, typename T $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
-                class VariadicConstructorFunctoid
+                class VariadicConstructorFunctor_O
                  < Pols, Pointer, T, constructor<$for Args_ , [[ARG$Args_]]> >
-                : public core::BuiltinClosure {
+                : public core::BuiltinClosure_O {
                 public:
-                        typedef core::BuiltinClosure TemplatedBase;
+                        typedef core::BuiltinClosure_O TemplatedBase;
                 public:
                     typedef Wrapper<T,Pointer>  WrapperType;
                 public:
-		    virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+		    virtual const char* describe() const { return "VariadicConstructorFunctor"; };
                     enum { NumParams = $numArgs };
-                    VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+                    VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
                     DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
                     inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -33,7 +33,7 @@ $var NumArgs = 8
                         $if numArgs>0 [[
                           STACK_FRAME(buff,frame,$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                          lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                       $for Args_ [[
                         translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));

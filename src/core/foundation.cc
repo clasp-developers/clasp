@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
+#include <clasp/core/functor.h>
 #include <clasp/core/reader.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
@@ -207,10 +208,10 @@ void assertion_failed(char const *expr, char const *function, char const *file, 
 
 extern "C" {
 
-void closure_dump(core::Closure *closureP) {
-  core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
+void closure_dump(core::Closure_sp closure) {
+  core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closure->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
   std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
-  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closureP->name).c_str(), namestring.c_str(), closureP->lineNumber());
+  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->name).c_str(), namestring.c_str(), closure->lineNumber());
 }
 };
 
@@ -238,37 +239,6 @@ namespace core {
 void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
   VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(vec);
   vvec->vectorPushExtend(obj);
-}
-
-Functoid::Functoid(T_sp n) : name(n) {
-  if (n.nilp()) {
-    SIMPLE_ERROR(BF("Functoids must have a non-nil name"));
-  }
-}
-
-int Closure::sourceFileInfoHandle() const {
-  return 0;
-}
-
-T_sp Closure::docstring() const {
-  SIMPLE_ERROR(BF("Closure does not support docstring"));
-}
-
-List_sp Closure::declares() const {
-  SIMPLE_ERROR(BF("Closure does not support declares"));
-}
-
-T_sp Closure::cleavir_ast() const {
-  SIMPLE_ERROR(BF("Subclass of Closure must support cleavir_ast"));
-}
-
-T_sp Closure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column)
-{
-  SIMPLE_ERROR(BF("Subclass of Closure must support this method"));
-}
-
-void Closure::setf_cleavir_ast(T_sp ast) {
-  SIMPLE_ERROR(BF("Subclass of Closure must support setf_cleavir_ast"));
 }
 };
 
@@ -311,30 +281,6 @@ void lisp_pollSignals() {
 #endif
 }
 
-string Functoid::nameAsString() {
-  if (this->name.nilp()) {
-    return "Function-name(NIL)";
-  } else if (Symbol_sp sname = this->name.asOrNull<Symbol_O>()) {
-    stringstream ss;
-    ss << "Function-name(";
-    ss << sname->symbolNameAsString();
-    ss << ")";
-    return ss.str();
-  } else if (Cons_sp cname = this->name.asOrNull<Cons_O>()) {
-    stringstream ss;
-    ss << "Function-name(setf ";
-    ss << gc::As<Symbol_sp>(oCadr(cname))->symbolNameAsString();
-    ss << ")";
-    return ss.str();
-  } else if (Str_sp strname = this->name.asOrNull<Str_O>()) {
-    stringstream ss;
-    ss << "Function-name(string-";
-    ss << strname->get();
-    ss << ")";
-    return ss.str();
-  }
-  THROW_HARD_ERROR(BF("Cannot get name as string of Functoid"));
-}
 
 char *clasp_alloc_atomic(size_t buffer) {
   return (char *)malloc(buffer);
@@ -878,13 +824,13 @@ T_sp lisp_boot_findClassBySymbolOrNil(Symbol_sp classSymbol) {
 // }
 
 void lisp_addClass(Symbol_sp classSymbol,
-                   gctools::tagged_pointer<Creator> cb,
-                   Symbol_sp base1ClassSymbol,
-                   Symbol_sp base2ClassSymbol,
-                   Symbol_sp base3ClassSymbol) {
-  _lisp->addClass(classSymbol, cb, base1ClassSymbol, base2ClassSymbol);
+                   gctools::smart_ptr<Creator_O> cb,
+                   Symbol_sp base1ClassSymbol)
+//                   Symbol_sp base2ClassSymbol,
+//                   Symbol_sp base3ClassSymbol) {
+{
+  _lisp->addClass(classSymbol, cb, base1ClassSymbol); //, base2ClassSymbol);
 }
-
 void lisp_addClass(Symbol_sp classSymbol) {
   DEPRECIATED();
   //	_lisp->addClass(classSymbol);
@@ -941,7 +887,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      Symbol_sp classSymbol,
-                                     gctools::tagged_pointer<BuiltinClosure> methoid,
+                                     BuiltinClosure_sp methoid,
                                      int TemplateDispatchOn,
                                      const string &raw_arguments,
                                      const string &declares,
@@ -1049,7 +995,7 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
 
 void lisp_defun(Symbol_sp sym,
                 const string &packageName,
-                gctools::tagged_pointer<BuiltinClosure> fc,
+                BuiltinClosure_sp fc,
                 const string &arguments,
                 const string &declarestring,
                 const string &docstring,
@@ -1094,7 +1040,7 @@ void lisp_defun(Symbol_sp sym,
 
 void lisp_defmacro(Symbol_sp sym,
                    const string &packageName,
-                   gctools::tagged_pointer<BuiltinClosure> f,
+                   BuiltinClosure_sp f,
                    const string &arguments,
                    const string &declarestring,
                    const string &docstring,
@@ -1119,7 +1065,7 @@ void lisp_defmacro(Symbol_sp sym,
 
 void lisp_defgeneric(const string &packageName,
                      const string &cname,
-                     Functoid *f,
+                     Functor_sp f,
                      const string &arguments,
                      const string &docstring,
                      bool autoExport) {
@@ -1512,6 +1458,11 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6) { ret
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7) { return Cons_O::createList(a1, a2, a3, a4, a5, a6, a7); }
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8) { return Cons_O::createList(a1, a2, a3, a4, a5, a6, a7, a8); }
 
+void lisp_errorCannotAllocateInstanceWithNoArguments(T_sp aclass)
+{
+  Class_sp cclass = aclass.as<Class_O>();
+  SIMPLE_ERROR(BF("You cannot allocate a %s with a default constructor") % _rep_(cclass->className()));
+}
 void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
   TYPE_ERROR(datum, typeSym);
 }

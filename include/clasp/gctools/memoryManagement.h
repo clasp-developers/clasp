@@ -290,9 +290,10 @@ namespace gctools {
   
 template <class OT>
 struct GCInfo {
-  static constexpr GCInfo_policy Policy = normal;
+  static bool const CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
   static bool const NeedsFinalization = false;  // By default, nothing needs finalization
+  static constexpr GCInfo_policy Policy = normal;
 };
 };
 
@@ -321,9 +322,9 @@ GCStack *threadLocalStack();
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/gcalloc.h>
 
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,gctools::sizeof_with_header<_class_>())
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,gctools::sizeof_with_header<_class_>(),__VA_ARGS__)
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate_kind(gctools::GCKind<_class_>::Kind,gctools::sizeof_with_header<_class_>())
+#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_with_no_arguments()
+#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate(__VA_ARGS__)
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate()
 
 #define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 

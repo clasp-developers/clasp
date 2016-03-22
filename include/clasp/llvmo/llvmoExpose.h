@@ -1305,38 +1305,6 @@ struct to_object<llvm::DataLayout *> {
 };
     ;
 
-namespace llvmo {
-class CompiledClosure : public core::FunctionClosure {
-  friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
-
-public:
-  core::T_sp llvmFunction;
-  core::CompiledClosure_fptr_type fptr;
-  core::T_sp associatedFunctions;
-  core::T_sp _lambdaList;
-  // constructor
-public:
-  virtual const char *describe() const { return "CompiledClosure"; };
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void *functionAddress() const { return (void *)this->fptr; }
-
-public:
-  CompiledClosure(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
-                  core::T_sp ll, SOURCE_INFO)
-      : FunctionClosure(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
-  void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
-  bool compiledP() const { return true; };
-  core::T_sp lambdaList() const;
-  void setf_lambda_list(core::T_sp lambda_list);
-  core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
-  DISABLE_NEW();
-  inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    core::InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist, this->closedEnvironment);
-    core::T_O *closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
-    return (*(this->fptr))(LCC_PASS_ARGS_ENV(closedEnv));
-  };
-};
-};
 
 namespace llvmo {
 FORWARD(Constant);
@@ -2318,6 +2286,7 @@ struct from_object<const llvm::APFloat &, std::true_type> {
 #if 0
 template <>
 struct gctools::GCInfo<llvmo::APFloat_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
@@ -2363,6 +2332,7 @@ struct from_object<const llvm::APInt &, std::true_type> {
 #if 0
  template <>
 struct gctools::GCInfo<llvmo::APInt_O> {
+   static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
@@ -4065,7 +4035,6 @@ namespace translate {
 template <>
 struct to_object<llvm::CompositeType *> {
   static core::T_sp convert(llvm::CompositeType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::CompositeType_O, llvm::CompositeType *>(ptr)));
   };
 };

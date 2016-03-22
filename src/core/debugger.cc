@@ -247,7 +247,7 @@ CL_DEFUN void core__low_level_backtrace() {
   printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    gctools::tagged_pointer<Closure> closure = cur->closure;
+    Closure_sp closure = cur->closure;
     if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
@@ -264,7 +264,7 @@ CL_DEFUN void core__low_level_backtrace() {
     if (sfi.notnilp()) {
       sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
     }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure, name.c_str(), closure->lineNumber(), sourceName.c_str());
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
   }
   printf("----Done\n");
 }

@@ -282,6 +282,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::LexicalEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -311,6 +312,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::RuntimeVisibleEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -405,6 +407,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::ValueEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -452,6 +455,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::FunctionValueEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -528,6 +532,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::UnwindProtectEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -572,6 +577,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::BlockEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -600,6 +606,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::CatchEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -637,6 +644,7 @@ public:
 };
 template <>
 struct gctools::GCInfo<core::FunctionContainerEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -694,6 +702,7 @@ public:
 }; // core namespace
 template <>
 struct gctools::GCInfo<core::TagbodyEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -732,6 +741,7 @@ public:
 }; // core namespace
 template <>
 struct gctools::GCInfo<core::MacroletEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -772,6 +782,7 @@ public:
 }; // core namespace
 template <>
 struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -813,6 +824,7 @@ public:
 }; // core namespace
 template <>
 struct gctools::GCInfo<core::StackValueEnvironment_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

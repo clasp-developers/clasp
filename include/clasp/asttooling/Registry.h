@@ -52,31 +52,26 @@ THE SOFTWARE.
 
 namespace asttooling {
 namespace internal {
-class MatcherDescriptor;
+class MatcherDescriptor_O;
 };
 };
 
 namespace asttooling {
 namespace RegMap {
-class SymbolMatcherDescriptorPair {
+  class SymbolMatcherDescriptorPair_O : public core::General_O {
 public:
-  SymbolMatcherDescriptorPair(core::Symbol_sp k, /*const*/ gctools::tagged_pointer<internal::MatcherDescriptor> v) : Name(k), matcher(v){};
+  SymbolMatcherDescriptorPair_O(core::Symbol_sp k, gctools::smart_ptr<internal::MatcherDescriptor_O> v) : Name(k), matcher(v){};
   core::Symbol_sp Name;
-  gctools::tagged_pointer<internal::MatcherDescriptor> matcher;
+  gctools::smart_ptr<internal::MatcherDescriptor_O> matcher;
 };
 
-class RegistryMaps {
-  struct metadata_always_fix_pointers_to_derived_classes;
-  FRIEND_GC_SCANNER(asttooling::RegMap::RegistryMaps);
+  class RegistryMaps_O : public core::General_O  {
   friend class SymbolMatcherDescriptorPair;
-
 public:
-  RegistryMaps();
-  ~RegistryMaps();
-
+  RegistryMaps_O();
+  ~RegistryMaps_O();
   void lazyInitialize() const;
-
-  typedef gctools::Vec0<SymbolMatcherDescriptorPair> ConstructorMap;
+  typedef gctools::Vec0<SymbolMatcherDescriptorPair_O> ConstructorMap;
   typedef ConstructorMap::iterator iterator;
   typedef ConstructorMap::const_iterator const_iterator;
   iterator begin() {
@@ -113,14 +108,14 @@ public:
   }
 
 private:
-  void _registerMatcher(core::Symbol_sp MatcherName, gctools::tagged_pointer<internal::MatcherDescriptor> Callback) const;
+  void _registerMatcher(core::Symbol_sp MatcherName, gctools::smart_ptr<internal::MatcherDescriptor_O> Callback) const;
 /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
-GCPRIVATE:
+private:
   bool Initialized;
   mutable ConstructorMap Constructors;
 };
 
-extern gctools::tagged_pointer<RegistryMaps> RegistryData; // defined in Registry.cc
+extern gctools::smart_ptr<RegistryMaps_O> RegistryData; // defined in Registry.cc
 };
 
 class Registry {

@@ -71,7 +71,7 @@ CL_DECLARE();
 CL_DOCSTRING("functionSourcePosInfo");
 CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
   Function_sp func = coerce::functionDesignator(functionDesignator);
-  gctools::tagged_pointer<Closure> closure = func->closure;
+  Closure_sp closure = func->closure;
   gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
   return sourcePosInfo;
 }
@@ -83,81 +83,6 @@ CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   fn->closure->setKind(kind);
 };
 
-bool FunctionClosure::macroP() const {
-  return this->kind == kw::_sym_macro;
-}
-int FunctionClosure::sourceFileInfoHandle() const {
-  return this->_sourceFileInfoHandle;
-};
-
-size_t FunctionClosure::filePos() const {
-  return this->_filePos;
-}
-
-int FunctionClosure::lineNumber() const {
-  return this->_lineno;
-}
-
-int FunctionClosure::column() const {
-  return this->_column;
-}
-
-T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
-  SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
-  this->_sourceFileInfoHandle = gc::As<Fixnum_sp>(sfi.valueGet(1)).unsafe_fixnum();
-  this->_filePos = filePos;
-  this->_lineno = lineno;
-  this->_column = column;
-  SourcePosInfo_sp spi = SourcePosInfo_O::create(this->_sourceFileInfoHandle, filePos, lineno, column);
-  return spi;
-}
-
-T_sp FunctionClosure::sourcePosInfo() const {
-  SourcePosInfo_sp spi = SourcePosInfo_O::create(this->_sourceFileInfoHandle, this->_filePos, this->_lineno, this->_column);
-  return spi;
-}
-
-T_sp BuiltinClosure::lambdaList() const {
-  return this->_lambdaListHandler->lambdaList();
-}
-
-void BuiltinClosure::setf_lambda_list(T_sp lambda_list) {
-  // Do nothing
-}
-
-LCC_RETURN BuiltinClosure::LISP_CALLING_CONVENTION() {
-  IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
-};
-
-InterpretedClosure::InterpretedClosure(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-  : FunctionClosure(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
-}
-
-T_sp InterpretedClosure::lambdaList() const {
-  return this->lambdaListHandler()->lambdaList();
-}
-
-void InterpretedClosure::setf_lambda_list(T_sp lambda_list) {
-  // Do nothing - setting the lambdaListHandler is all that's needed
-}
-
-LCC_RETURN InterpretedClosure::LISP_CALLING_CONVENTION() {
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->closedEnvironment);
-  ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-  InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist);
-  lambdaListHandler_createBindings(gctools::tagged_pointer<Closure>(this), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
-  ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
-  VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
-  newActivationFrame->attachDebuggingInfo(debuggingInfo);
-  //        InvocationHistoryFrame _frame(this,newActivationFrame);
-  _frame.setActivationFrame(newActivationFrame);
-#if 0
-  if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
-    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
-  }
-#endif
-  return eval::sp_progn(this->_code, newValueEnvironment).as_return_type();
-};
 
 T_mv Function_O::lambdaList() {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
@@ -244,7 +169,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
-void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure> closure) {
+void handleArgumentHandlingExceptions(Closure_sp closure) {
   Function_sp func = Function_O::make(closure);
   try {
     throw;
@@ -272,8 +197,8 @@ CL_LAMBDA(fn);
 CL_DECLARE();
 CL_DOCSTRING("functionSourceCode");
 CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
-  gctools::tagged_pointer<Closure> closure = fn->closure;
-  if (auto ic = closure.as<InterpretedClosure>()) {
+  Closure_sp closure = fn->closure;
+  if (auto ic = closure.as<InterpretedClosure_O>()) {
     return ic->code();
   }
   return _Nil<T_O>();

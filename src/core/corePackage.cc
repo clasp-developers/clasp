@@ -796,10 +796,10 @@ void testFeatures() {
   testConses();
 }
 
-CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp, CorePkg, CorePkg_nicknames) {
+CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg, CorePkg_nicknames) {
 };
 
-void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
+void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   switch (what) {
   case candoClasses:
 #define EXPOSE_TO_CANDO
@@ -936,7 +936,7 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 
 
   
-void CoreExposer::define_essential_globals(Lisp_sp lisp) {
+void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   {
     this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));

@@ -37,11 +37,11 @@ namespace gctools {
 
 extern bool _GlobalDebugAllocations;
 
-class GcToolsExposer : public core::Exposer {
+class GcToolsExposer_O : public core::Exposer_O {
 private:
 public:
   DISABLE_NEW();
-  GcToolsExposer(core::Lisp_sp lisp) : Exposer(lisp, GcToolsPkg){};
+  GcToolsExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, GcToolsPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
 

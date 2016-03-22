@@ -39,7 +39,7 @@ using namespace core;
 
 namespace cffi {
 
-void CffiExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
+void CffiExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
 #if 0

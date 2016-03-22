@@ -31,16 +31,16 @@ $for isConst [[
               template <typename Pols, typename OT $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[, typename UPRT ]] $else [[, typename RT ]] $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
               class IndirectVariadicMethoid
               < Pols,OT $if ret==RetVoid [[,void]] $elif ret==Ret_unique_ptr [[, std::unique_ptr<UPRT> ]] $else [[,RT ]](OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-              : public core::BuiltinClosure {
+              : public core::BuiltinClosure_O {
               public:
-                  typedef BuiltinClosure TemplatedBase;
+                  typedef BuiltinClosure_O TemplatedBase;
               public:
 		    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
               typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[std::unique_ptr<UPRT>]] $else [[RT]] (OT::*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
               Type mptr;
               public:
               enum { NumParams = $numArgs };
-              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+              IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
               DISABLE_NEW();
               virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -50,7 +50,7 @@ $for isConst [[
                 $if numArgs>0 [[
                   STACK_FRAME(buff,frame,$numArgs);
                   core::StackFrameDynamicScopeManager scope(frame);
-                  lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                  lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                 ]]
                 translate::from_object<OT*> objPtr(frame.arg(0));
                 $for Args_ [[

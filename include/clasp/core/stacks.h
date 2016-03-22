@@ -56,14 +56,14 @@ public:
   InvocationHistoryStack *_Stack;
   InvocationHistoryFrame *_Previous;
   int _Bds;
-  gc::tagged_pointer<Closure> closure;
+  Closure_sp closure;
   T_sp environment;
   size_t _NumberOfArguments;
   core::T_O **_RegisterArguments;
   core::T_O **_StackArguments;
 
 public:
-  InvocationHistoryFrame(gctools::tagged_pointer<Closure> fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
+  InvocationHistoryFrame(Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
   ATTR_WEAK virtual ~InvocationHistoryFrame();
   InvocationHistoryFrame *previous() { return this->_Previous; };
@@ -73,7 +73,7 @@ public:
   void dump() const;
   virtual void setActivationFrame(T_sp af) { this->environment = af; };
   virtual string asString() const;
-  string asStringLowLevel(gctools::tagged_pointer<Closure> closure) const;
+  string asStringLowLevel(Closure_sp closure) const;
   virtual T_sp activationFrame() const { return this->environment; };
   virtual int bds() const { return this->_Bds; };
 
@@ -225,6 +225,6 @@ public:
 };
 };
 
-#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(gctools::tagged_pointer<core::Closure>(this), lcc_arglist);
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this->asSmartPtr(), lcc_arglist);
 
 #endif /* _core_stacks_H_ */

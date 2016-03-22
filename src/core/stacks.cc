@@ -87,7 +87,7 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
-InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O *valist_sptr, T_sp env)
+InvocationHistoryFrame::InvocationHistoryFrame(Closure_sp c, core::T_O *valist_sptr, T_sp env)
     : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL) {
   if (valist_sptr != NULL) {
     VaList_sp arguments(reinterpret_cast<core::VaList_S *>(gc::untag_valist(valist_sptr)));
@@ -151,7 +151,7 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   return strres->get();
 }
 
-string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure) const {
+string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure) const {
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };

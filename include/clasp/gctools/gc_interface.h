@@ -34,18 +34,18 @@ THE SOFTWARE.
 namespace core {
 class T_O;
 class WrappedPointer_O;
-class Functoid;
-class Creator;
+class Functor_O;
+class Creator_O;
 class Iterator_O;
-class SequenceStepper;
+class SequenceStepper_O;
 };
 namespace asttooling {
 namespace internal {
-class MatcherDescriptor;
+  class MatcherDescriptor_O;
 };
 };
 namespace clbind {
-class ConstructorCreator;
+class ConstructorCreator_O;
 };
 
 

@@ -148,6 +148,7 @@ inline core::Fixnum safe_column(T_sp spi) {
 };
 template <>
 struct gctools::GCInfo<core::SourcePosInfo_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

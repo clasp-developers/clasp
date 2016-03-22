@@ -25,6 +25,7 @@ project internals/core : requirements
 #
 
 local sources =
+      functor.cc
       sharpEqualWrapper.cc
       vectorDisplaced.cc
       stacks.cc

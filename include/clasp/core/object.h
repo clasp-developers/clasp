@@ -134,7 +134,7 @@ class _RootDummyClass : public gctools::GCObject {
 private:
 public:
   static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
-  static void set_static_creator(gc::tagged_pointer<core::Creator> cb){};
+  static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
 
 public:
   explicit _RootDummyClass();
@@ -267,11 +267,11 @@ namespace core {
   public:                                                                                                              \
   static core::Symbol_sp static_class_symbol;                                                                          \
   static core::Class_sp static_class;                                                                                  \
-  static gctools::tagged_pointer<core::Creator> static_creator;                                                        \
+  static gctools::smart_ptr<core::Creator_O> static_creator;                                                        \
   static int static_Kind;                                                                                              \
   public:                                                                                                              \
   static void set_static_class_symbol(core::Symbol_sp i) { oClass::static_class_symbol = i; };                         \
-  static void set_static_creator(gctools::tagged_pointer<core::Creator> al) { oClass::static_creator = al; };          \
+  static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) { oClass::static_creator = al; };          \
   static string static_packageName() { return oPackage; };                                                             \
   static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
   static core::Symbol_sp static_classSymbol() { return oClass::static_class_symbol; };                                 \
@@ -282,8 +282,7 @@ namespace core {
 #define __COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)     \
   __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)   \
     static gctools::smart_ptr<oClass> create() {                           \
-    GC_ALLOCATE(oClass, obj);                                              \
-    return obj;                                                            \
+    return gctools::GC<oClass>::allocate_with_no_arguments();              \
   };
 
 #define LISP_TEMPLATE_CLASS(oClass) \
@@ -494,31 +493,6 @@ namespace core {
 #include <clasp/core/functor.h>
 #include <clasp/gctools/gcweak.h>
 
-namespace core {
-  template <class _W_>
-    class LispObjectCreator : public core::Creator {
-  public:
-    typedef core::Creator TemplatedBase;
-
-  public:
-    DISABLE_NEW();
-    size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>); };
-    virtual void describe() const {
-      printf("LispObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
-    }
-    virtual core::T_sp allocate() {
-      GC_ALLOCATE(_W_, obj);
-      return obj;
-    }
-    virtual void searcher(){};
-  };
-};
-
-template <typename T>
-class gctools::GCKind<core::LispObjectCreator<T>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
-};
 
 namespace core {
   template <class oclass>

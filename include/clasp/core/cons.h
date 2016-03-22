@@ -100,6 +100,7 @@ SMART(Cons);
 
 template <>
 struct gctools::GCInfo<core::Cons_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

@@ -68,24 +68,6 @@ THE SOFTWARE.
 
 namespace core {
 
-#if 0 // moved to foundation.h
-/*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
-class InstanceClosure : public FunctionClosure {
-public:
-  GenericFunctionPtr entryPoint;
-  Instance_sp instance;
-
-public:
-  DISABLE_NEW();
-  InstanceClosure(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
-      : FunctionClosure(name), entryPoint(ep), instance(inst){};
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual const char *describe() const { return "InstanceClosure"; };
-  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
-  LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
-  T_sp lambdaList() const;
-};
-#endif
 
 class Instance_O : public Function_O {
   LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
@@ -184,6 +166,7 @@ public: // Functions here
 }; // core namespace
 template <>
 struct gctools::GCInfo<core::Instance_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

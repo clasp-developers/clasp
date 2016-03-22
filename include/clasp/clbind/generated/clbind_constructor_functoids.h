@@ -9,17 +9,17 @@
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,
     typename ARG5,typename ARG6,typename ARG7 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 8 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -27,7 +27,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
@@ -83,17 +83,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,
     typename ARG5,typename ARG6 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 7 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -101,7 +101,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
@@ -152,17 +152,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,
     typename ARG5 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4, ARG5> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 6 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -170,7 +170,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
@@ -215,17 +215,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 // numArgs = 5
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3, ARG4> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 5 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -233,7 +233,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
@@ -273,17 +273,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 // numArgs = 4
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2, ARG3> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 4 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -291,7 +291,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
@@ -326,17 +326,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 // numArgs = 3
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1,typename ARG2 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1, ARG2> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 3 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -344,7 +344,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
@@ -374,17 +374,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 // numArgs = 2
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0,typename ARG1 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0, ARG1> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 2 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -392,7 +392,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
 T* naked_ptr(new T(a0._v,a1._v));
@@ -417,17 +417,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 // numArgs = 1
 /* Specialization */
 template <typename Pols, typename Pointer, typename T ,typename ARG0 >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<ARG0> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 1 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -435,7 +435,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
 T* naked_ptr(new T(a0._v));
 gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);
@@ -455,17 +455,17 @@ return LCC_RETURN(retval.raw_(),oidx);
 // numArgs = 0
 /* Specialization */
 template <typename Pols, typename Pointer, typename T  >
-class VariadicConstructorFunctoid
+class VariadicConstructorFunctor_O
 < Pols, Pointer, T, constructor<> >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef Wrapper<T,Pointer>  WrapperType;
 public:
-virtual const char* describe() const { return "VariadicConstructorFunctoid"; };
+virtual const char* describe() const { return "VariadicConstructorFunctor"; };
 enum { NumParams = 0 };
-VariadicConstructorFunctoid(core::T_sp name) : core::BuiltinClosure(name) {};
+VariadicConstructorFunctor_O(core::T_sp name) : core::BuiltinClosure_O(name) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()

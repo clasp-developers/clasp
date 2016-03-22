@@ -72,6 +72,7 @@ public:
 TRANSLATE(core::BuiltInClass_O);
 template <>
 struct gctools::GCInfo<core::BuiltInClass_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

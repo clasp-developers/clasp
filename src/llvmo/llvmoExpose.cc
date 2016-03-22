@@ -88,16 +88,9 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-core::T_sp CompiledClosure::lambdaList() const {
-  return this->_lambdaList;
-}
-
-void CompiledClosure::setf_lambda_list(core::T_sp lambda_list) {
-  this->_lambdaList = lambda_list;
-}
 
 CL_DEFUN void compiler__setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs) {
-  auto closure = cf->closure.as<CompiledClosure>();
+  auto closure = cf->closure.as<core::CompiledClosure_O>();
   closure->setAssociatedFunctions(associatedFuncs);
 };
 
@@ -2812,7 +2805,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::tagged_pointer<CompiledClosure> functoid = gctools::ClassAllocator<CompiledClosure>::allocate_class(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
   core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
   ASSERT(func);
   return func;
@@ -2820,7 +2813,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 
 CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  auto closure = func->closure.as<llvmo::CompiledClosure>();
+  auto closure = func->closure.as<core::CompiledClosure_O>();
   llvmo::Function_sp llvm_func = closure->llvmFunction;
   void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);

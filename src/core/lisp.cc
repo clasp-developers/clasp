@@ -423,7 +423,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   this->_EnvironmentId = 0;
   this->_Roots._CommandLineArguments.reset_();
   this->_Bundle = bundle;
-  gctools::tagged_pointer<CoreExposer> coreExposerPtr;
+  CoreExposer_sp coreExposer;
   BuiltInClass_sp classDummy;
   {
     _BLOCK_TRACE("Initialize core classes");
@@ -433,8 +433,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     _lisp->_Roots._KeywordPackage->setKeywordPackage(true);
     _lisp->_Roots._CommonLispPackage = gc::As<Package_sp>(_lisp->findPackage(ClPkg));
     initializeAllClSymbols(_lisp->_Roots._CommonLispPackage);
-    coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
-    coreExposerPtr->define_essential_globals(_lisp);
+    coreExposer = gc::GC<CoreExposer_O>::allocate(_lisp);
+    coreExposer->define_essential_globals(_lisp);
     this->_PackagesInitialized = true;
   }
   {
@@ -495,7 +495,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 #ifdef DEBUG_CL_SYMBOLS
     initializeAllClSymbolsFunctions();
 #endif
-    coreExposerPtr->expose(_lisp, Exposer::candoClasses);
+    coreExposer->expose(_lisp, Exposer_O::candoClasses);
     //	    initializeCandoClos(_lisp);
   }
   {
@@ -601,8 +601,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     create_source_main_host();
 #endif
   }
-  coreExposerPtr->expose(_lisp, Exposer::candoFunctions);
-  coreExposerPtr->expose(_lisp, Exposer::candoGlobals);
+  coreExposer->expose(_lisp, Exposer_O::candoFunctions);
+  coreExposer->expose(_lisp, Exposer_O::candoGlobals);
   {
     _BLOCK_TRACE("Call global initialization callbacks");
     for (vector<InitializationCallback>::iterator ic = this->_GlobalInitializationCallbacks.begin();
@@ -646,14 +646,14 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   };
   {
     _BLOCK_TRACE("Creating Caches for SingleDispatchGenericFunctions");
-    this->_Roots._SingleDispatchMethodCachePtr = gctools::ClassAllocator<Cache>::allocate_class();
+    this->_Roots._SingleDispatchMethodCachePtr = gc::GC<Cache_O>::allocate();
     this->_Roots._SingleDispatchMethodCachePtr->setup(2, SingleDispatchMethodCacheSize);
   }
   {
     _BLOCK_TRACE("Creating Caches for CLOS");
-    this->_Roots._MethodCachePtr = gctools::ClassAllocator<Cache>::allocate_class();
+    this->_Roots._MethodCachePtr = gctools::GC<Cache_O>::allocate();
     this->_Roots._MethodCachePtr->setup(MaxFunctionArguments, ClosCacheSize);
-    this->_Roots._SlotCachePtr = gctools::ClassAllocator<Cache>::allocate_class();
+    this->_Roots._SlotCachePtr = gctools::GC<Cache_O>::allocate();
     this->_Roots._SlotCachePtr->setup(MaxClosSlots, ClosCacheSize);
   }
   {
@@ -830,7 +830,7 @@ CL_DEFUN T_sp core__list_of_all_special_operators() {
   return sos;
 }
 
-void Lisp_O::installPackage(const Exposer *pkg) {
+void Lisp_O::installPackage(const Exposer_O *pkg) {
   _OF();
   LOG(BF("Installing package[%s]") % pkg->packageName());
   int firstNewGlobalCallback = this->_GlobalInitializationCallbacks.end() - this->_GlobalInitializationCallbacks.begin();
@@ -838,7 +838,7 @@ void Lisp_O::installPackage(const Exposer *pkg) {
   //    this->inPackage(pkg->packageName());
   {
     _BLOCK_TRACE("Initializing classes");
-    pkg->expose(_lisp, Exposer::candoClasses);
+    pkg->expose(_lisp, Exposer_O::candoClasses);
   }
   {
     _BLOCK_TRACE("Creating nils for built-in classes");
@@ -847,11 +847,11 @@ void Lisp_O::installPackage(const Exposer *pkg) {
   }
   {
     _BLOCK_TRACE("Initializing functions");
-    pkg->expose(_lisp, Exposer::candoFunctions);
+    pkg->expose(_lisp, Exposer_O::candoFunctions);
   }
   {
     _BLOCK_TRACE("Initializing globals");
-    pkg->expose(_lisp, Exposer::candoGlobals);
+    pkg->expose(_lisp, Exposer_O::candoGlobals);
   }
 
   {
@@ -885,11 +885,12 @@ void Lisp_O::addClassNameToPackageAsDynamic(const string &package, const string 
 /*! Add the class with (className) to the current package
  */
 void Lisp_O::addClass(Symbol_sp classSymbol,
-                      gctools::tagged_pointer<Creator> alloc,
-                      Symbol_sp base1ClassSymbol,
-                      Symbol_sp base2ClassSymbol,
-                      Symbol_sp base3ClassSymbol) {
-  DEPRECIATED();
+                      Creator_sp alloc,
+                      Symbol_sp base1ClassSymbol )
+//  ,
+//                      Symbol_sp base2ClassSymbol,
+//                      Symbol_sp base3ClassSymbol) {
+{
   LOG(BF("Lisp_O::addClass classSymbol(%s) baseClassSymbol1(%u) baseClassSymbol2(%u)") % _rep_(classSymbol) % base1ClassSymbol % base2ClassSymbol);
   ASSERTP(IS_SYMBOL_DEFINED(BuiltInClass_O::static_classSymbol()),
           "You cannot create a BuiltInClass before the BuiltIn!Class is defined");
@@ -907,19 +908,20 @@ void Lisp_O::addClass(Symbol_sp classSymbol,
   } else {
     SIMPLE_ERROR(BF("There must be one base class"));
   }
+#if 0
   if (IS_SYMBOL_DEFINED(base2ClassSymbol)) {
     cc->addInstanceBaseClass(base2ClassSymbol);
   }
   if (IS_SYMBOL_DEFINED(base3ClassSymbol)) {
     cc->addInstanceBaseClass(base3ClassSymbol);
   }
+#endif
   ASSERTF((bool)alloc, BF("_creator for %s is NULL!!!") % _rep_(classSymbol));
   cc->setCreator(alloc);
 }
-
 /*! Add the class with (className) to the current package
  */
-void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, gc::tagged_pointer<Creator> allocator) {
+void Lisp_O::addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp allocator) {
   //	printf("%s:%d:%s  Adding class with symbol %s -- _allocator=%p unless we initialize it properly\n", __FILE__,__LINE__,__FUNCTION__,_rep_(classSymbol).c_str(), allocator );
   LOG(BF("Lisp_O::addClass classSymbol(%s)") % _rep_(classSymbol));
   //	printf("%s:%d --> Adding class[%s]\n", __FILE__, __LINE__, _rep_(classSymbol).c_str() );
@@ -1927,7 +1929,7 @@ CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
-  gctools::tagged_pointer<Closure> closure = frame->closure;
+  Closure_sp closure = frame->closure;
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
   Path_sp path = Path_O::create(sourcePath);
@@ -1940,7 +1942,7 @@ CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
   InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
-  gctools::tagged_pointer<Closure> closure = frame->closure;
+  Closure_sp closure = frame->closure;
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }
 
@@ -2862,7 +2864,7 @@ LispHolder::~LispHolder() {
   this->_Lisp->shutdownLispEnvironment();
 }
 
-Exposer::Exposer(Lisp_sp lisp, const string &packageName, const char *nicknames[]) {
+Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName, const char *nicknames[]) {
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;
     for (int i = 0; strcmp(nicknames[i], "") != 0; i++) {
@@ -2876,7 +2878,7 @@ Exposer::Exposer(Lisp_sp lisp, const string &packageName, const char *nicknames[
   this->_PackageName = packageName;
 }
 
-Exposer::Exposer(Lisp_sp lisp, const string &packageName) {
+Exposer_O::Exposer_O(Lisp_sp lisp, const string &packageName) {
   if (!lisp->recognizesPackage(packageName)) {
     list<string> lnnames;
     list<string> lpkgs;
@@ -2887,7 +2889,7 @@ Exposer::Exposer(Lisp_sp lisp, const string &packageName) {
   this->_PackageName = packageName;
 }
 
-Exposer::~Exposer(){};
+Exposer_O::~Exposer_O(){};
 
 
 

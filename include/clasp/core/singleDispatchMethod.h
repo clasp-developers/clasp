@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 class SingleDispatchMethod_O : public General_O {
-  friend class SingleDispatchGenericFunctionClosure;
+  friend class SingleDispatchGenericFunctionClosure_O;
   LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",General_O);
   //    DECLARE_ARCHIVE();
 public:
@@ -90,6 +90,7 @@ CL_DEFMETHOD   T_sp singleDispatchMethodDocstring() const { return this->_docstr
 }; // core namespace
 template <>
 struct gctools::GCInfo<core::SingleDispatchMethod_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -102,7 +103,8 @@ namespace core {
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-class Lambda_method_function : public BuiltinClosure {
+#if 0
+class Lambda_method_function : public BuiltinClosure_O {
   FRIEND_GC_SCANNER(core::Lambda_method_function);
 
 private:
@@ -114,7 +116,7 @@ public:
 
 public:
   Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
-      : BuiltinClosure(name) {
+      : BuiltinClosure_O(name) {
     _G();
     this->_method = method;
     this->_temporary_function = _Nil<Function_O>();
@@ -128,7 +130,10 @@ public:
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
   void LISP_INVOKE();
 };
+#endif
 
+
+ 
  void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
 
 

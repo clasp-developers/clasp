@@ -133,9 +133,7 @@ public:
      the clasp stuff and then the python interface creates another one and
      gets the Package_sp for the core package from lisp and then 
      exposes the python classes/functions/globals */
-class Exposer {
-  FRIEND_GC_SCANNER(core::Exposer);
-
+ class Exposer_O : public General_O {
 public:
   typedef enum { candoClasses,
                  candoFunctions,
@@ -143,21 +141,20 @@ public:
                  pythonClasses,
                  pythonFunctions,
                  pythonGlobals } WhatToExpose;
-GCPRIVATE:
+ private:
   // The package is put here
   Package_sp _Package;
   string _PackageName;
-
 public:
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - allows nicknames */
-  Exposer(Lisp_sp lisp, const string &packageName, const char *nicknames[]);
+  Exposer_O(Lisp_sp lisp, const string &packageName, const char *nicknames[]);
 
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - no nicknames allowed */
-  Exposer(Lisp_sp lisp, const string &packageName);
+  Exposer_O(Lisp_sp lisp, const string &packageName);
 
-  virtual ~Exposer();
+  virtual ~Exposer_O();
 
   /*! Return the packageName */
   string packageName() const { return this->_PackageName; };
@@ -257,12 +254,12 @@ class Lisp_O {
     T_sp _TrueObject;
 
     /*! SingleDispatchGenericFunction cache */
-    gc::tagged_pointer<Cache> _SingleDispatchMethodCachePtr;
+    Cache_sp _SingleDispatchMethodCachePtr;
 #if CLOS
     /*! Generic functions method cache */
-    gc::tagged_pointer<Cache> _MethodCachePtr;
+        Cache_sp _MethodCachePtr;
     /*! Generic functions slot cache */
-    gc::tagged_pointer<Cache> _SlotCachePtr;
+        Cache_sp _SlotCachePtr;
 #endif
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
@@ -348,7 +345,7 @@ public:
   /*! Raw argv */
   vector<string> _Argv;
 
-private:
+public:
   /*! Map source file path strings to SourceFileInfo_sp */
   map<string, int> _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
   uint _Mode;
@@ -539,9 +536,9 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-  gc::tagged_pointer<Cache> singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
-  gc::tagged_pointer<Cache> methodCachePtr() const { return this->_Roots._MethodCachePtr; };
-  gc::tagged_pointer<Cache> slotCachePtr() const { return this->_Roots._SlotCachePtr; };
+  Cache_sp singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
+  Cache_sp methodCachePtr() const { return this->_Roots._MethodCachePtr; };
+  Cache_sp slotCachePtr() const { return this->_Roots._SlotCachePtr; };
 
 public:
   /*! Setup makePackage and exportSymbol callbacks */
@@ -774,7 +771,7 @@ public:
   void setBuiltInClassesInitialized(bool b) { this->_BuiltInClassesInitialized = b; };
   void throwIfBuiltInClassesNotInitialized();
 
-  void defineMethod(const string &name, Symbol_sp classSymbol, Functoid *methoid, const string &arguments, const string &docString, bool autoExport);
+  void defineMethod(const string &name, Symbol_sp classSymbol, Functor_sp methoid, const string &arguments, const string &docString, bool autoExport);
 
 public:
   Symbol_sp errorUndefinedSymbol(const char *symbolName);
@@ -810,7 +807,7 @@ public:
 	void	popConditionHandlers();
 #endif
   /*! Install a package using the newer Exposer idiom */
-  void installPackage(const Exposer *package);
+  void installPackage(const Exposer_O *package);
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
   /*! When global initialization is locked then no more callbacks can be added
@@ -970,8 +967,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, gc::tagged_pointer<Creator> creator, Symbol_sp base1ClassSymbol, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, gc::tagged_pointer<Creator> creator);
+  void addClass(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp creator);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;

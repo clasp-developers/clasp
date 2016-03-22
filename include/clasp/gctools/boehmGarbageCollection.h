@@ -139,7 +139,8 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
       return "TypeIdUnavailable";
 #endif
     };
-    bool kindP() const { return true; };
+    bool invalidP() const { return false; };
+      bool kindP() const { return true; };
     GCKindEnum kind() const { return (GCKindEnum) this->Kind; };
     bool markerMatches(int m) const {
 #ifdef USE_BOEHM_MEMORY_MARKER

@@ -33,11 +33,11 @@ NAMESPACE_PACKAGE_ASSOCIATION(asttooling, AstToolingPkg, "AST-TOOLING");
 
 namespace asttooling {
 
-class AsttoolingExposer : public core::Exposer {
+class AsttoolingExposer_O : public core::Exposer_O {
 private:
 public:
   DISABLE_NEW();
-  AsttoolingExposer(core::Lisp_sp lisp) : Exposer(lisp, AstToolingPkg){
+  AsttoolingExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, AstToolingPkg){
 
                                           };
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;

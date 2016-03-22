@@ -182,7 +182,8 @@ void va_fillActivationFrameWithRequiredVarargs(core::ActivationFrame_sp *afP, in
 }
 #endif
 
-Closure *va_coerceToClosure(core::T_sp *argP) {
+T_O *va_coerceToClosure(core::T_sp *argP) {
+  IMPLEMENT_MEF(BF("Previously I returned Closure* - what should I return now?"));
   if (!(*argP).objectp()) {
     intrinsic_error(llvmo::couldNotCoerceToClosure, *argP);
   }
@@ -205,7 +206,7 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   return func->closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure *closure, core::T_sp *argsP) {
+ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure_O *closure, core::T_sp *argsP) {
   List_sp args(*argsP);
   size_t nargs = core::cl__length(args);
   STACK_FRAME(buff, fargs, nargs);
@@ -217,11 +218,11 @@ ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure *closure, core
   return result;
 }
 
-ALWAYS_INLINE void mv_FUNCALL_argsInReversedList(core::T_mv *resultP, core::Closure *closure, core::T_sp *argsP) {
+ALWAYS_INLINE void mv_FUNCALL_argsInReversedList(core::T_mv *resultP, core::Closure_O *closure, core::T_sp *argsP) {
   (*resultP) = FUNCALL_argsInReversedList(closure, argsP);
 }
 
-ALWAYS_INLINE void sp_FUNCALL_argsInReversedList(core::T_sp *resultP, core::Closure *closure, core::T_sp *argsP) {
+ALWAYS_INLINE void sp_FUNCALL_argsInReversedList(core::T_sp *resultP, core::Closure_O *closure, core::T_sp *argsP) {
   (*resultP) = FUNCALL_argsInReversedList(closure, argsP);
 }
 
@@ -489,7 +490,7 @@ void makeLongFloat(core::T_sp *fnP, LongFloat s) {
 
 core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
-  gctools::tagged_pointer<core::Closure> closure = gctools::ClassAllocator<llvmo::CompiledClosure>::allocate_class(*functionNameP, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
+  core::Closure_sp closure = gctools::GC<core::CompiledClosure_O>::allocate(*functionNameP, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
   core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
   return compiledFunction;
 };
@@ -515,11 +516,12 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             core::LoadTimeValues_O **ltvPP) {
   ActivationFrame_sp frame = (*frameP);
   core::Str_sp name = core::Str_O::create(cpname);
-  BuiltinClosure tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
   STACK_FRAME(buff, no_args, 0);
   VaList_S empty_valist(no_args);
   core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
-  core::InvocationHistoryFrame invFrame(gctools::tagged_pointer<core::Closure>(&tempClosure), empty_valist_ptr, *frameP);
+  core::BuiltinClosure_sp tc(&tempClosure);
+  core::InvocationHistoryFrame invFrame(tc, empty_valist_ptr, *frameP);
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
 #define TIME_TOP_LEVEL_FUNCTIONS
@@ -1530,22 +1532,22 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
     va_end(argp);
     vo = vf;
   }
-  gctools::tagged_pointer<llvmo::CompiledClosure> functoid =
-      gctools::ClassAllocator<llvmo::CompiledClosure>::allocate_class(tlambdaName // functionName - make this something useful!
-                                                                     ,
-                                                                     kw::_sym_function // fn-type
-                                                                     ,
-                                                                     llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
-                                                                     ,
-                                                                     _Nil<core::T_O>() // llvm-func
-                                                                     ,
-                                                                     vo // renv
-                                                                     ,
-                                                                     _Nil<T_O>() // assocFuncs
-                                                                     ,
-                                                                     _Nil<T_O>() // lambdaList
-                                                                     ,
-                                                                     *sourceFileInfoHandleP, filePos, lineno, column);
+  gctools::smart_ptr<core::CompiledClosure_O> functoid =
+      gctools::GC<core::CompiledClosure_O>::allocate(tlambdaName // functionName - make this something useful!
+                                                    ,
+                                                    kw::_sym_function // fn-type
+                                                    ,
+                                                    llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
+                                                    ,
+                                                    _Nil<core::T_O>() // llvm-func
+                                                    ,
+                                                    vo // renv
+                                                    ,
+                                                    _Nil<T_O>() // assocFuncs
+                                                    ,
+                                                    _Nil<T_O>() // lambdaList
+                                                    ,
+                                                    *sourceFileInfoHandleP, filePos, lineno, column);
   core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
   core::T_sp res = cf;
   return res.raw_();
@@ -1564,9 +1566,9 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   }
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
-  core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
-  ASSERT(tagged_func != NULL);
-  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
+  core::Function_sp tagged_func((gctools::Tagged)tfunc);
+  ASSERT(tagged_func);
+  core::Closure_sp closure = (tagged_func)->closure;
   core::T_O *lcc_fixed_arg0 = mvargs[0];
   core::T_O *lcc_fixed_arg1 = mvargs[1];
   core::T_O *lcc_fixed_arg2 = mvargs[2];
@@ -1596,8 +1598,8 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
 	  in cmpintrinsics.lsp it is set to require a landing pad */
 void cc_invoke_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
-  core::Function_O *tagged_func = gctools::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(tfunc);
-  ASSERT(tagged_func != NULL);
+  core::Function_sp tagged_func = tfunc.asOrNull<core::Function_O>();
+  ASSERT(tagged_func);
   auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
   IMPLEMENT_MEF(BF("Handle multiple argument calls"));
 //  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
@@ -1694,9 +1696,9 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
   }
 #endif
   try {
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(thunk);
-    ASSERT(func!=NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    core::Function_sp func = thunk.asOrNull<core::Function_O>();
+    ASSERT(func);
+    auto closure = func->closure;
     *resultP = closure->invoke(LCC_PASS_ARGS0());
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
@@ -1738,9 +1740,9 @@ void cc_throw(T_O* tag, T_O* result_func)
   }
 #endif
   T_mv result;
-  core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(result_func);
-  ASSERT(func!=NULL);
-  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+  core::Function_sp func = result_func.asOrNull<core::Function_O>();
+  ASSERT(func);
+  auto closure = func->closure;
   closure->invoke(&result,LCC_PASS_ARGS0());
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
@@ -1855,9 +1857,9 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_start(argp,numFuns);
   for (; numFuns; --numFuns) {
     core::T_O* tfunc = va_arg(argp,core::T_O*);
-    core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-    ASSERT(func!=NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    core::Function_sp func = tfunc.asOrNull<core::Function_O>();
+    ASSERT(func);
+    auto closure = func->closure;
     T_mv result;
     closure->invoke(&result,LCC_PASS_ARGS0());
     mvAccumulate[idx] = result.raw_();
@@ -1870,8 +1872,8 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_end(argp);
   ASSERT(idx < MultipleValues::MultipleValuesLimit);
   mvAccumulate._Size = idx;
-  core::Function_O* func = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(funcDesignator);
-  ASSERT(func!=NULL);
+  core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
+  ASSERT(func);
   auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
   core::T_O** a = &mvAccumulate[0];
   MultipleValues &mvThreadLocal = lisp_multipleValues();
@@ -1883,18 +1885,18 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
 
 T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
   MultipleValues mvFunc1;
-  core::Function_O* func1 = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc1);
-  ASSERT(func1!=NULL);
-  auto closure1 = gc::untag_general<core::Function_O *>(func1)->closure.as<core::Closure>();
+  core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
+  ASSERT(func1);
+  core::Closure_sp closure1 = func1->closure;
   closure1->invoke(result,LCC_PASS_ARGS0());
   mvFunc1._Size = result->number_of_values();
   mvFunc1[0] = result->raw_();
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
   T_mv resultTemp;
-  core::Function_O* func2 = gc::TaggedCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc2);
-  ASSERT(func2!=NULL);
-  auto closure2 = gc::untag_general<core::Function_O *>(func2)->closure.as<core::Closure>();
+  core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
+  ASSERT(func2);
+  core::Closure_sp closure2 = func2->closure;
   closure2->invoke(&resultTemp,LCC_PASS_ARGS0());
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
 }

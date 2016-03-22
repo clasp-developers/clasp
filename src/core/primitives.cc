@@ -805,9 +805,9 @@ CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T
       err << "lambda_list: " << _rep_(llh) << std::endl;
       err << "Passing argument 1: " << _rep_(form) << std::endl;
       err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-      gctools::tagged_pointer<Closure> closure = macro_function->closure;
+      Closure_sp closure = macro_function->closure;
       err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
-      if (auto ic = closure.as<InterpretedClosure>()) {
+      if (auto ic = closure.as<InterpretedClosure_O>()) {
         err << "code: " << _rep_(ic->code());
       } else {
         err << "macro_function is not an interpreted function";
@@ -990,29 +990,6 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 /* -------------------------------------------------------- */
 /*     Sequence primitives                                  */
 
-#if 0
-GC_RESULT VectorStepper::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-{
-#ifdef USE_MPS
-  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-    SMART_PTR_FIX(this->_Domain);
-  } MPS_SCAN_END(GC_SCAN_STATE);
-#endif
-  return GC_RES_OK;
-}
-#endif
-
-#if 0
-GC_RESULT ConsStepper::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-{
-#ifdef USE_MPS
-  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-    SMART_PTR_FIX(this->_Cur);
-  } MPS_SCAN_END(GC_SCAN_STATE);
-#endif
-  return GC_RES_OK;
-}
-#endif
 
 ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
   this->_AtEnd = false;
@@ -1021,10 +998,10 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
     if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
       if (cl__length(vobj) == 0)
         goto EMPTY;
-      gctools::tagged_pointer<VectorStepper> vP(gctools::ClassAllocator<VectorStepper>::allocate_class(vobj));
+      VectorStepper_sp  vP(gc::GC<VectorStepper_O>::allocate(vobj));
       this->_Steppers.push_back(vP);
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocate_class(cobj));
+      ConsStepper_sp cP(gc::GC<ConsStepper_O>::allocate(cobj));
       this->_Steppers.push_back(cP);
     } else if (obj.nilp()) {
       goto EMPTY;
@@ -1069,7 +1046,7 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
     if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocate_class(cobj));
+      ConsStepper_sp  cP(gc::GC<ConsStepper_O>::allocate(cobj));
       this->_Steppers.push_back(cP);
     } else {
       goto EMPTY;
@@ -1619,7 +1596,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure;
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1631,7 +1608,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure;
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1649,7 +1626,7 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure;
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }

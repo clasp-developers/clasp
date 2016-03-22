@@ -334,6 +334,8 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   };
 
   Type *untag_object() const {
+    return ::gctools::untag_object(this->theObject);
+#if 0    
     GCTOOLS_ASSERT(this->generalp() || this->consp());
     if (this->generalp()) {
       return untag_general<Type *>(this->theObject);
@@ -341,6 +343,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
       return untag_cons<Type *>(this->theObject);
     }
     THROW_HARD_ERROR(BF("This should never happen"));
+#endif
   }
 
   Type *get() const { return this->untag_object(); };
@@ -810,6 +813,8 @@ public:
   };
 
   Type *untag_object() const {
+    return ::gctools::untag_object(this->theObject);
+#if 0
     GCTOOLS_ASSERT(this->generalp() || this->consp());
     if (this->generalp()) {
       return untag_general<Type *>(this->theObject);
@@ -817,6 +822,7 @@ public:
       return untag_cons<Type *>(this->theObject);
     }
     THROW_HARD_ERROR(BF("This should never happen"));
+#endif
   }
 
   Type *get() const { return this->untag_object(); };
@@ -949,8 +955,11 @@ public:
   //	operator smart_ptr<core::List_V>() const { return smart_ptr<core::List_V>((Tagged)const_cast<core::T_O* const>(reinterpret_cast<core::T_O*>(this->theObject)));};
 
   inline core::Cons_O *untag_object() const {
+    return ::gctools::untag_object(this->theObject);
+#if 0
     GCTOOLS_ASSERT(this->consp());
     return untag_cons<core::Cons_O *>(this->theObject);
+#endif
   }
 
   inline void swap(smart_ptr<core::Cons_O> &other) {
@@ -1073,6 +1082,8 @@ public:
   };
 
   Type *untag_object() const {
+    return ::gctools::untag_object(this->theObject);
+#if 0
     GCTOOLS_ASSERT(this->generalp() || this->consp());
     if (this->consp()) {
       return untag_cons<Type *>(this->theObject);
@@ -1083,6 +1094,7 @@ public:
     }
     THROW_HARD_ERROR(BF("Figure out what to do when untag_object doesn't have "
                         "a Cons_O or NIL"));
+#endif
   }
 
   inline void swap(smart_ptr<core::List_V> &other) {
@@ -1406,6 +1418,8 @@ public:
 };
 #endif
 
+
+#ifdef TAGGED_POINTER
 namespace gctools {
 /*! Maintain tagged pointers to stretchable arrays */
 template <typename T>
@@ -1529,6 +1543,7 @@ public:
   }
 };
 };
+#endif // end TAGGED_POINTER
 
 namespace gctools {
 

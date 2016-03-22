@@ -124,6 +124,7 @@ inline void clasp_string_push_extend(StrWithFillPtr_sp str, Fixnum c) {
 };
 template <>
 struct gctools::GCInfo<core::StrWithFillPtr_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

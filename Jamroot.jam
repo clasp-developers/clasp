@@ -78,6 +78,8 @@ project clasp : requirements
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
+#### Define this until we get rid of tagged_pointer<...>
+        <define>TAGGED_POINTER 
         <warnings>off
         <toolset>clang-darwin:<cxxflags>"-ferror-limit=999"
         <toolset>clang-linux:<cxxflags>"-ferror-limit=999"

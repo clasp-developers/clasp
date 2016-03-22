@@ -108,6 +108,7 @@ public:
 
 template <>
 struct gctools::GCInfo<core::StructureClass_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -115,6 +116,7 @@ struct gctools::GCInfo<core::StructureClass_O> {
 
 namespace core {
 
+#if 0
 class StructureClassInitializationFunctoid : public Functoid {
 private:
   StructureClass_sp _StructureClass;
@@ -126,6 +128,7 @@ public:
   StructureClassInitializationFunctoid(T_sp name, StructureClass_sp c) : Functoid(name) { this->_StructureClass = c; };
   virtual ~StructureClassInitializationFunctoid(){};
 };
+#endif
 };
 TRANSLATE(core::StructureClass_O);
 #endif //]

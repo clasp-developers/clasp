@@ -42,9 +42,9 @@ typedef enum { no_default_constructor } no_default_constructor_type;
 
 typedef constructor<> default_constructor;
 
-class ConstructorCreator : public core::Creator {
+class ConstructorCreator_O : public core::Creator_O {
 public:
-  ConstructorCreator(core::Symbol_sp c) : _mostDerivedClassSymbol(c){};
+  ConstructorCreator_O(core::Symbol_sp c) : _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
 };
 };
@@ -52,10 +52,9 @@ public:
 namespace clbind {
 
 template <typename T, typename Pointer>
-class DefaultConstructorCreator : public ConstructorCreator {
+class DefaultConstructorCreator_O : public ConstructorCreator_O {
 public:
-  typedef ConstructorCreator TemplatedBase;
-
+  typedef ConstructorCreator_O TemplatedBase;
 public:
   typedef Wrapper<T, Pointer> WrapperType;
   int _Kind;
@@ -65,28 +64,16 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-#if 0
-        virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-        {
-#ifdef USE_MPS
-            MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-                SMART_PTR_FIX(this->_mostDerivedClassSymbol);
-            } MPS_SCAN_END(GC_SCAN_STATE);
-#endif
-            return GC_RES_OK;
-        }
-#endif
 public:
-  DISABLE_NEW();
-  DefaultConstructorCreator() : ConstructorCreator(reg::lisp_classSymbol<T>())
-#ifdef USE_MPS
+  DefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>())
+#ifndef USE_CXX_DYNAMIC_CAST
                                 ,
                                 _Kind(gctools::GCKind<WrapperType>::Kind)
 #endif
                                 ,
                                 _duplicationLevel(0){};
-  DefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
-      : ConstructorCreator(cn), _Kind(kind), _duplicationLevel(dupnum){};
+  DefaultConstructorCreator_O(core::Symbol_sp cn, int kind, int dupnum)
+      : ConstructorCreator_O(cn), _Kind(kind), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
@@ -106,56 +93,42 @@ public:
     //            clbind::support_enable_wrapper_from_this<T,Pointer>(retval,naked_ptr,naked_ptr);
     return retval;
   }
-  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    gc::tagged_pointer<Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<T, Pointer>>::allocate_class(className, this->_Kind, this->_duplicationLevel + 1);
+  core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
+    core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_Kind, this->_duplicationLevel + 1);
     return allocator;
   }
 };
 };
 
 template <typename T, typename Pointer>
-class gctools::GCKind<clbind::DefaultConstructorCreator<T, Pointer>> {
+class gctools::GCKind<clbind::DefaultConstructorCreator_O<T, Pointer>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DefaultConstructorCreator<T, Pointer>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DefaultConstructorCreator_O<T, Pointer>::TemplatedBase>::Kind;
 };
 
 namespace clbind {
 
 template <typename T>
-class DerivableDefaultConstructorCreator : public ConstructorCreator {
+class DerivableDefaultConstructorCreator_O : public ConstructorCreator_O {
 public:
-  typedef ConstructorCreator TemplatedBase;
-
+  typedef ConstructorCreator_O TemplatedBase;
 public:
   int _Kind;
   int _duplicationLevel;
-
 public:
   DISABLE_NEW();
-
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-#if 0
-        virtual GC_RESULT onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-        {
-#ifdef USE_MPS
-            MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-                SMART_PTR_FIX(this->_mostDerivedClassSymbol);
-            } MPS_SCAN_END(GC_SCAN_STATE);
-#endif
-            return GC_RES_OK;
-        }
-#endif
 public:
-  DerivableDefaultConstructorCreator() : ConstructorCreator(reg::lisp_classSymbol<T>())
-#ifdef USE_MPS
+  DerivableDefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>())
+#ifdef USE_CXX_DYNAMIC_CAST
                                          ,
                                          _Kind(gctools::GCKind<T>::Kind)
 #endif
                                          ,
                                          _duplicationLevel(0){};
-  DerivableDefaultConstructorCreator(core::Symbol_sp cn, int kind, int dupnum)
-      : ConstructorCreator(cn), _Kind(kind), _duplicationLevel(dupnum){};
+  DerivableDefaultConstructorCreator_O(core::Symbol_sp cn, int kind, int dupnum)
+      : ConstructorCreator_O(cn), _Kind(kind), _duplicationLevel(dupnum){};
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
@@ -172,63 +145,43 @@ public:
     GC_ALLOCATE(T, obj);
     return obj;
   }
-  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<T>>::allocate_class(className, this->_Kind, this->_duplicationLevel + 1);
+  core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
+    return gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(className, this->_Kind, this->_duplicationLevel + 1);
   }
 };
 };
 
 template <typename T>
-class gctools::GCKind<clbind::DerivableDefaultConstructorCreator<T>> {
+class gctools::GCKind<clbind::DerivableDefaultConstructorCreator_O<T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorCreator<T>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorCreator_O<T>::TemplatedBase>::Kind;
 };
 
 namespace clbind {
 template <typename Policies, typename T>
-class DerivableDefaultConstructorFunctoid : public core::Functoid {
+class DerivableDefaultConstructorFunctor_O : public core::Functor_O {
 public:
-  typedef core::Functoid TemplatedBase;
-
+  typedef core::Functor_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctoid(core::T_sp name) : core::Functoid(name){};
-
+  DerivableDefaultConstructorFunctor_O(core::T_sp name) : core::Functor_O(name){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-
 public:
-  DISABLE_NEW();
-#if 0
-        core::T_mv activate( core::ActivationFrame_sp closedOverFrame, int numArgs, ArgArray args )
-        {
-            int countPureOutValues = CountPureOutValues<Policies>::value;
-            if ( numArgs != (NumParams-countPureOutValues) )
-            {
-                core::wrongNumberOfArguments(numArgs,(NumParams-countPureOutValues));
-            }
-            GC_ALLOCATE(T,obj_gc_safe);
-            printf("%s:%d Allocating instance of Derivable class: %s\n", __FILE__, __LINE__, this->_Name.c_str() );
-            int oidx = 1;
-            return gctools::multiple_values<core::T_O>(obj_gc_safe,oidx);
-        }
-#endif
 };
 };
 
 template <typename Policies, typename T>
-class gctools::GCKind<clbind::DerivableDefaultConstructorFunctoid<Policies, T>> {
+class gctools::GCKind<clbind::DerivableDefaultConstructorFunctor_O<Policies, T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorFunctoid<Policies, T>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorFunctor_O<Policies, T>::TemplatedBase>::Kind;
 };
 
 namespace clbind {
 
-template <typename Pols, typename Pointer, typename T, typename Sig>
-class VariadicConstructorFunctoid : public core::BuiltinClosure {
+template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunctor_O : public core::BuiltinClosure_O {
 public:
-  typedef core::BuiltinClosure TemplatedBase;
-
+  typedef core::BuiltinClosure_O TemplatedBase;
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
@@ -237,9 +190,9 @@ public:
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>
-class gctools::GCKind<clbind::VariadicConstructorFunctoid<Pols, Pointer, T, Sig>> {
+class gctools::GCKind<clbind::VariadicConstructorFunctor_O<Pols, Pointer, T, Sig>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicConstructorFunctoid<Pols, Pointer, T, Sig>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicConstructorFunctor_O<Pols, Pointer, T, Sig>::TemplatedBase>::Kind;
 };
 
 #endif

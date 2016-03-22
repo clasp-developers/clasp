@@ -55,7 +55,7 @@ using namespace core;
 
 namespace asttooling {
 
-void AsttoolingExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
+void AsttoolingExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
     
