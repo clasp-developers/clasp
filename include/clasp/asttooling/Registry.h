@@ -66,6 +66,7 @@ public:
 };
 
   class RegistryMaps_O : public core::General_O  {
+    FRIEND_GC_SCANNER(RegistryMaps_O);
   friend class SymbolMatcherDescriptorPair;
 public:
   RegistryMaps_O();

@@ -110,11 +110,9 @@ template <>
 namespace core {
 class VectorStepper_O : public SequenceStepper_O {
   LISP_CLASS(core,CorePkg,VectorStepper_O,"VectorStepper",SequenceStepper_O);
-  FRIEND_GC_SCANNER(core::VectorStepper);
-GCPRIVATE:
+private:
   Vector_sp _Domain;
   int _Index;
-
 public:
   VectorStepper_O(Vector_sp domain) : _Domain(domain), _Index(0){};
   virtual bool advance() {
@@ -140,11 +138,9 @@ template <>
 
 namespace core {
 class ConsStepper_O : public SequenceStepper_O {
-  FRIEND_GC_SCANNER(core::ConsStepper);
   LISP_CLASS(core,CorePkg,ConsStepper_O,"ConsStepper",SequenceStepper_O);
 public: //private
   List_sp _Cur;
-
 public:
   ConsStepper_O(List_sp first) : _Cur(first){};
   virtual bool advance() {

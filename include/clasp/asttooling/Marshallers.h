@@ -164,8 +164,6 @@ GCPRIVATE:
 /// functions as we want, reducing the number of symbols and size of the
 /// object file.
 class FreeFuncMatcherDescriptor_O : public MatcherDescriptor_O {
-  FRIEND_GC_SCANNER(asttooling::internal::FreeFuncMatcherDescriptor);
-
 public:
   typedef VariantMatcher (*RunFunc)(core::Symbol_sp MatcherName,
                                     core::Cons_sp NameRange,

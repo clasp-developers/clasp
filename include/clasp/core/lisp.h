@@ -134,6 +134,7 @@ public:
      gets the Package_sp for the core package from lisp and then 
      exposes the python classes/functions/globals */
  class Exposer_O : public General_O {
+   FRIEND_GC_SCANNER(Exposer_O);
 public:
   typedef enum { candoClasses,
                  candoFunctions,

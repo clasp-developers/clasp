@@ -945,9 +945,11 @@ can be saved and reloaded within the project for later analysis"
       (with-open-file (fout (project-pathname "project" "dat") :direction :output)
         (prin1 project fout))))
 
-(defun load-project ()
-  (let ((project (load-data (project-pathname "project" "dat"))))
-    project))
+(defun load-project (db)
+  (clang-tool:with-compilation-tool-database db
+    (let ((project (load-data (project-pathname "project" "dat"))))
+      (setq *project* project)
+      project)))
         
 
 

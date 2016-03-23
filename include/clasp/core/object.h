@@ -247,7 +247,6 @@ namespace core {
 
 #define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
   FRIEND_GC_SCANNER(oNamespace::oClass);                                                                               \
-                                                                                                                       \
   public:                                                                                                              \
   template <class DestClass> gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const {                \
     oClass *not_const_this_gc_safe = const_cast<oClass *>(this); /* Should be GC-safe because this should be a root */ \

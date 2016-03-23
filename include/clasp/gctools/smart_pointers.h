@@ -280,16 +280,14 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   template <class o_class>
     inline smart_ptr<o_class> as() {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
-    if (ret)
-      return ret;
+    if (ret) return ret;
     lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
     inline smart_ptr<o_class> as() const {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
-    if (ret)
-      return ret;
+    if (ret) return ret;
     lisp_errorCast<o_class, Type>(this->theObject);
   }
 
@@ -555,13 +553,12 @@ inline To_SP AsOrNull(From_SP const &rhs) {
     To_SP ret((Tagged)tag_cons<typename To_SP::Type *>(cast));
     return ret;
   }
-#ifdef DEBUG_ASSERTS
+  // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
   lisp_errorBadCast(expected_typ, this_typ, rhs.raw_());
   // unreachable
   HARD_UNREACHABLE();
-#endif
 };
 template <typename To_SP, typename From_SP>
 inline To_SP As(From_SP const &rhs) {
@@ -569,12 +566,11 @@ inline To_SP As(From_SP const &rhs) {
     To_SP ret((Tagged)rhs.raw_());
     return ret;
   }
-#ifdef DEBUG_ASSERTS
+  // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
   lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.raw_()));
   HARD_UNREACHABLE();
-#endif
 }
 template <typename To_SP>
 inline To_SP As(const return_type &rhs) {
@@ -583,12 +579,11 @@ inline To_SP As(const return_type &rhs) {
     To_SP ret((Tagged)rhs.ret0);
     return ret;
   }
-#ifdef DEBUG_ASSERTS
+  // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<core::T_O *>::id;
   lisp_errorBadCast(expected_typ, this_typ, reinterpret_cast<core::T_O *>(rhs.ret0));
   HARD_UNREACHABLE();
-#endif
 }
 
  // Cast the type without any concern if it is appropriate

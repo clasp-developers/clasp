@@ -839,8 +839,8 @@ namespace gctools {
 #ifdef RUNNING_GC_BUILDER
 #define FRIEND_GC_SCANNER(nscl)
 #else
-#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);\
-  friend gctools::Layout_code* gctools::get_kind_layout_codes();
+//#define FRIEND_GC_SCANNER(theclass) friend GC_RESULT gctools::obj_scan_helper<theclass>(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps_word_t & _mps_ufs, mps_word_t _mps_wt, mps_addr_t & client);
+#define FRIEND_GC_SCANNER(dummy) friend gctools::Layout_code* gctools::get_kind_layout_codes();
 #endif
 #endif
 

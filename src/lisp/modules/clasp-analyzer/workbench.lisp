@@ -9,10 +9,17 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*clangTool.*\.cc.*"
-))
+   :selection-pattern ".*functor.cc.*"
+   ))
+
+
 
 (clasp-analyzer:search/generate-code *db*)
+
+(time (clasp-analyzer:load-project *db*))
+clasp-analyzer::*project*
+(print "Done Loading")
+(gethash "core::Functor_O" *project*)
 
 
 (defparameter *db*
