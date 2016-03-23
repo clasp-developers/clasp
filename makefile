@@ -213,7 +213,6 @@ mps-all:
 #	make -C src/main cclasp-mps-fasl
 	make -C src/main cclasp-mps-fasl
 	make -C src/main cclasp-mps-addons
-	make executable-symlinks
 	echo Clasp is now built
 
 lisp-source:

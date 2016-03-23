@@ -189,16 +189,13 @@ cclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
 
 cclasp-mps-fasl:
-	$(BCLASP_MPS) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
-
+	$(BCLASP_MPS) -e "(link-cclasp :force t)" -e "(quit)"
 
 aclasp-mps-fasl:
-	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
+	$(CLASP_MPS) -I -f ecl-min -e "(link-min)" -e "(quit)"
 
 bclasp-mps-fasl:
-	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
-
-
+	$(CLASP_MPS) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
 clasp-gc-interface:
 	$(BCLASP_BOEHM) -l "buildClaspGC.lsp"
