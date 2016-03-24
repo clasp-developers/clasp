@@ -80,7 +80,7 @@ struct gctools::GCInfo<core::Creator_O> {
 
 namespace core {
   class Functor_O : public General_O {
-    LISP_CLASS(core,CorePkg,Functor_O,"Functor",General_O);
+    LISP_ABSTRACT_CLASS(core,CorePkg,Functor_O,"Functor",General_O);
 public:
   virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };
   inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {

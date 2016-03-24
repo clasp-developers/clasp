@@ -51,7 +51,7 @@ namespace core {
 
 namespace core {
 class VaList_dummy_O : public T_O {
-  LISP_VIRTUAL_CLASS(core, CorePkg, VaList_dummy_O, "VA-LIST",T_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, VaList_dummy_O, "VA-LIST",T_O);
 };
 };
 #endif /* _core_List_H */

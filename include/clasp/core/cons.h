@@ -109,7 +109,7 @@ struct gctools::GCInfo<core::Cons_O> {
 namespace core {
 
 class Cons_O : public T_O {
-  LISP_VIRTUAL_CLASS(core, ClPkg, Cons_O, "Cons",T_O);
+  LISP_ABSTRACT_CLASS(core, ClPkg, Cons_O, "Cons",T_O);
 
   friend T_sp cons_car(core::Cons_O *cur);
   friend T_sp cons_cdr(core::Cons_O *cur);

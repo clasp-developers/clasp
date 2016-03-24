@@ -243,89 +243,88 @@ namespace core {
 
     void hashObject(T_sp obj);
   };
+};
 
-
-#define __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)                                         \
-  FRIEND_GC_SCANNER(oNamespace::oClass);                                                                               \
-  public:                                                                                                              \
-  template <class DestClass> gctools::smart_ptr</* TODO: const */ DestClass> const_sharedThis() const {                \
-    oClass *not_const_this_gc_safe = const_cast<oClass *>(this); /* Should be GC-safe because this should be a root */ \
-    return gctools::smart_ptr<DestClass>(not_const_this_gc_safe);                                                      \
-  };                                                                                                                   \
-  template <class DestClass> gctools::smart_ptr<DestClass> sharedThis() {                                              \
-    return gctools::smart_ptr<DestClass>(this);                                                                        \
-  };                                                                                                                   \
-  gctools::smart_ptr<oClass> asSmartPtr() const { return this->const_sharedThis<oClass>(); };                          \
-  gctools::smart_ptr<oClass> asSmartPtr() { return this->sharedThis<oClass>(); };                                      \
-                                                                                                                       \
-  public:                                                                                                              \
-  /*    static gctools::smart_ptr<oClass> nil(core::Lisp_sp lisp);	*/                                             \
-  typedef oClass ThisClass;                                                                                            \
-  typedef gctools::smart_ptr<oClass> smart_ptr;                                                                        \
-                                                                                                                       \
-  public:                                                                                                              \
-  static core::Symbol_sp static_class_symbol;                                                                          \
-  static core::Class_sp static_class;                                                                                  \
-  static gctools::smart_ptr<core::Creator_O> static_creator;                                                        \
-  static int static_Kind;                                                                                              \
-  public:                                                                                                              \
-  static void set_static_class_symbol(core::Symbol_sp i) { oClass::static_class_symbol = i; };                         \
-  static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) { oClass::static_creator = al; };          \
-  static string static_packageName() { return oPackage; };                                                             \
-  static string static_className() { return core::lispify_symbol_name(oclassName); };                                  \
-  static core::Symbol_sp static_classSymbol() { return oClass::static_class_symbol; };                                 \
-  static string Package() { return oClass::static_packageName(); };                                                    \
-  static string Pkg() { return Package(); };                                                                           \
+#define COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName) \
+  FRIEND_GC_SCANNER(oNamespace::oClass);                                \
+ public:                                                                \
+  template <class DestClass>                                            \
+    gctools::smart_ptr<DestClass> const_sharedThis() const {            \
+    oClass *not_const_this_gc_safe = const_cast<oClass *>(this);        \
+    return gctools::smart_ptr<DestClass>(not_const_this_gc_safe);       \
+  };                                                                    \
+  template <class DestClass> gctools::smart_ptr<DestClass> sharedThis() { \
+    return gctools::smart_ptr<DestClass>(this);                         \
+  };                                                                    \
+  gctools::smart_ptr<oClass> asSmartPtr() const                         \
+  { return this->const_sharedThis<oClass>(); };                         \
+  gctools::smart_ptr<oClass> asSmartPtr()                               \
+  { return this->sharedThis<oClass>(); };                               \
+ public:                                                                \
+  typedef oClass ThisClass;                                             \
+  typedef gctools::smart_ptr<oClass> smart_ptr;                         \
+ public:                                                                \
+  static core::Symbol_sp static_class_symbol;                           \
+  static core::Class_sp static_class;                                   \
+  static gctools::smart_ptr<core::Creator_O> static_creator;            \
+  static int static_Kind;                                               \
+ public:                                                                \
+  static void set_static_class_symbol(core::Symbol_sp i)                \
+  { oClass::static_class_symbol = i; };                                 \
+  static void set_static_creator(gctools::smart_ptr<core::Creator_O> al) \
+  { oClass::static_creator = al; };                                     \
+  static string static_packageName() { return oPackage; };              \
+  static string static_className()                                      \
+  { return core::lispify_symbol_name(oclassName); };                    \
+  static core::Symbol_sp static_classSymbol()                           \
+  { return oClass::static_class_symbol; };                              \
+  static string Package() { return oClass::static_packageName(); };     \
+  static string Pkg() { return Package(); };                            \
+  static void register_class_with_redeye() {                            \
+    gctools::GCObjectAllocator<oClass>::register_class_with_redeye();   \
+  }                                                                     \
   static void expose_to_clasp();
 
-#define __COMMON_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)     \
-  __COMMON_VIRTUAL_CLASS_PARTS(oNamespace, oPackage, oClass, oclassName)   \
-    static gctools::smart_ptr<oClass> create() {                           \
-    return gctools::GC<oClass>::allocate_with_no_arguments();              \
-  };
-
 #define LISP_TEMPLATE_CLASS(oClass) \
-  __COMMON_VIRTUAL_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
+  COMMON_CLASS_PARTS(CurrentPkg, oClass, typeid(oClass).name())
 
 #ifndef SCRAPING
 #define LISP_META_CLASS(x) // nothing
 
 #define LISP_CLASS(aNamespace, aPackage, aClass, aClassName, aBaseClass) \
-  public: \
-    typedef aBaseClass Base; \
-  typedef LispBases1<Base> Bases; \
-  __COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName); \
-  virtual core::Class_sp __class() const {                        \
-    return aClass::static_class;                                  \ 
-  }                                                               \
+  public:                                                               \
+    typedef aBaseClass Base;                                            \
+  typedef LispBases1<Base> Bases;                                       \
+  COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);         \
+  static gctools::smart_ptr<aClass> create() {                          \
+      return gctools::GC<aClass>::allocate_with_default_constructor();  \
+    };                                                                  \
+  virtual core::Class_sp __class() const {                              \
+    return aClass::static_class;                                        \
+  }                                                                     \
   /* end LISP_CLASS */
-
-
     
-#define LISP_VIRTUAL_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
-  public: \
-    typedef b1 Base; \
-  typedef LispBases1<Base> Bases; \
-  __COMMON_VIRTUAL_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName);
+#define LISP_ABSTRACT_CLASS(aNamespace, aPackage, aClass, aClassName,b1) \
+  public:                                                               \
+    typedef b1 Base;                                                    \
+  typedef LispBases1<Base> Bases;                                       \
+  COMMON_CLASS_PARTS(aNamespace, aPackage, aClass, aClassName); 
 #endif
 
+#if 0
 #define DECLARE_INIT_GLOBALS() \
   public:                        \
     static void lisp_initGlobals(core::Lisp_sp lisp);
+#endif
 
-
-  #if defined(XML_ARCHIVE)
-#define DECLARE_ARCHIVE() \
-public:                   \
-  void archiveBase(core::ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-
-
+#if 0
 #define __DEFAULT_INITIALIZATION() \
 public:                            \
   inline void initialize() {       \
     this->Base::initialize();      \
   }
+#endif
+
 
 #define DEFAULT_CTOR(oClass) \
 public:                      \
@@ -338,19 +337,21 @@ public:                      \
   DEFAULT_DTOR(oClass);           \
 /*end*/
 
-#define DEFAULT_CTOR_WITH_VIRTUAL_BASE(oClass, oVirtualBase) \
-public:                                                      \
-  explicit oClass() : oVirtualBase(), oClass::Base(){}; /* default ctor */
-#define DEFAULT_CTOR_DTOR_WITH_VIRTUAL_BASE(oClass, oVirtualBase) \
-  DEFAULT_CTOR_WITH_VIRTUAL_BASE(oClass, oVirtualBase);           \
-  DEFAULT_DTOR(oClass);                                           \
-/*end*/
 
-  
+
+template <>
+struct gctools::GCInfo<core::T_O> {
+  static bool constexpr CanAllocateWithNoArguments = false;
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
   class T_O : public _RootDummyClass {
   private:
     friend class CoreExposer;
-    LISP_VIRTUAL_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
+    LISP_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
   public:
     bool isAInstanceOf(core::Class_sp mc);
   };

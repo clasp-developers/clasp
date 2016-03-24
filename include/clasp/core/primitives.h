@@ -91,7 +91,7 @@ template <>
 
 namespace core {
  class SequenceStepper_O : public General_O {
-   LISP_VIRTUAL_CLASS(core,CorePkg,SequenceStepper_O,"SequenceStepper",General_O);
+   LISP_ABSTRACT_CLASS(core,CorePkg,SequenceStepper_O,"SequenceStepper",General_O);
 public:
   virtual bool advance() = 0;
   virtual T_sp element() const = 0;

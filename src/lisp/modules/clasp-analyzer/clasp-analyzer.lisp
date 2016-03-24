@@ -103,6 +103,7 @@
   "Represent an instance variable, it's name, it's source-location and it's classified type"
   field-name
   location
+  access
   ctype
   )
 
@@ -238,22 +239,24 @@
     enum-p))
 
 
+(defun notify-base-names (class-name base-names analysis)
+  (when (> (length base-names) 1)
+    (format t "Class ~a has multiple bases: ~a - clasp doesn't support this~%" class-name base-names))
+  (dolist (class-base-name base-names)
+    (multiple-value-bind (parent-enum parent-enum-p)
+        (gethash class-base-name (analysis-enums analysis))
+      (when parent-enum-p
+        (push class-name (enum-children parent-enum))
+        #+(or)(format t "Not informing ~a that it has the child ~a because it is outside of the enum hierarchy~%" class-base-name class-name))
+      )))
+  
 (defun notify-parents (class-name analysis)
   (let* ((project (analysis-project analysis))
          (class (gethash class-name (project-classes project)))
          (base-names (append (cclass-bases class) (cclass-vbases class))))
     (if (and base-names (not (string= class-name "core::T_O")))
-        (progn
-          (when (> (length base-names) 1)
-            (format t "Class ~a has multiple bases: ~a~%" class-name base-names))
-          (dolist (class-base-name base-names)
-            (multiple-value-bind (parent-enum parent-enum-p)
-                (gethash class-base-name (analysis-enums analysis))
-              (if parent-enum-p
-                  (push class-name (enum-children parent-enum))
-                  #+(or)(format t "Not informing ~a that it has the child ~a because it is outside of the enum hierarchy~%" class-base-name class-name))
-              )))
-      (push class-name (analysis-enum-roots analysis)))))
+        (notify-base-names class-name base-names analysis)
+        (push class-name (analysis-enum-roots analysis)))))
 
 (defun build-hierarchy (analysis)
   (format t "------Analyzing class hierarchy~%")
@@ -504,7 +507,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
   
 
 
-(defun codegen-variable-part (stream variable-fields)
+(defun codegen-variable-part (stream variable-fields analysis)
     (let* ((array (offset-field-with-name variable-fields "_Data"))
            (capacity (offset-field-with-name variable-fields "_Capacity"))
            (end (or (offset-field-with-name variable-fields "_End") capacity)))
@@ -534,7 +537,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 
 
-(defun codegen-full (stream layout)
+(defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
     (format stream "{  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
             (layout-type one)
@@ -544,12 +547,12 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
             (layout-field-names one)))
   (let* ((variable-part (variable-part layout)))
     (when variable-part
-      (codegen-variable-part stream (fixed-fields variable-part)))))
+      (codegen-variable-part stream (fixed-fields variable-part) analysis))))
 
 
-(defun codegen-lisp-layout (stream enum key layout)
+(defun codegen-lisp-layout (stream enum key layout analysis)
   (format stream "{ class_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
-  (codegen-full stream layout))
+  (codegen-full stream layout analysis))
 
 (defun codegen-container-layout (stream enum key layout)
   (format stream "{ container_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
@@ -1047,6 +1050,7 @@ can be saved and reloaded within the project for later analysis"
                           (push (make-instance-variable
                                  :location (clang-tool:mtag-loc-start minfo :field)
                                  :field-name (clang-tool:mtag-name minfo :field)
+                                 :access (clang-ast:get-access (clang-tool:mtag-node minfo :field))
                                  :ctype (let ((*debug-info* (make-debug-info :name (clang-tool:mtag-name minfo :field)
                                                                              :location (clang-tool:mtag-loc-start minfo :field))))
                                           (classify-ctype (to-canonical-type type))))
@@ -1630,18 +1634,13 @@ so that they don't have to be constantly recalculated"
   (mapc (lambda (template-arg) (expand-forwards-with-template-arguments forwards (gc-template-argument-ctype template-arg)))
         (class-template-specialization-ctype-arguments alloc-ctype)))
 
-(defun fill-forward-declarations (forwards enum)
+(defun fill-forward-declarations (forwards enum analysis)
   (when (simple-enum-p enum)
     (expand-forwards-with-template-arguments forwards (alloc-ctype (simple-enum-alloc enum)))))
-  
 
 (defun generate-forward-declarations (&optional (analysis *analysis*))
   (let* ((forwards (analysis-forwards analysis)))
-    (maphash (lambda (key enum) (fill-forward-declarations forwards enum)) (analysis-enums analysis))))
-
-
-
-
+    (maphash (lambda (key enum) (fill-forward-declarations forwards enum analysis)) (analysis-enums analysis))))
 
 (defun compact-enum-value (species-num alloc-num)
   (logior (ash species-num 16) alloc-num))
@@ -1676,16 +1675,8 @@ so that they don't have to be constantly recalculated"
          (name2 (nsubstitute #\O #\( name1))
          (name3 (nsubstitute #\C #\) name2))
          (name4 (nsubstitute #\A #\& name3))
-         (name name4)
-         )
+         (name name4))
     name))
-
-
-
-
-
-
-
 
 (defstruct species
   name
@@ -1733,8 +1724,7 @@ so that they don't have to be constantly recalculated"
         (funcall (manager-ignore-discriminator manager) aclass))
        nil)
       (t (error " Could not identify species for ~a" aclass)
-         nil))
-    ))
+         nil))))
 
 (defun alloc-template-specializer-p (alloc analysis)
   (let ((alloc-class (gethash (alloc-key alloc) (project-classes (analysis-project analysis)))))
@@ -1803,8 +1793,7 @@ so that they don't have to be constantly recalculated"
     (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-lispallocs project))
     (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-containerallocs project))
     (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-classallocs project))
-    (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-rootclassallocs project))
-    ))
+    (maphash (lambda (k alloc) (analyze-alloc-and-assign-species-and-enum alloc analysis)) (project-rootclassallocs project))))
 
 
 
@@ -1869,7 +1858,7 @@ so that they don't have to be constantly recalculated"
     (let ((fh (destination-helper-stream dest)))
       (let ((layout
              (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-        (codegen-lisp-layout fh enum-name key layout)))))
+        (codegen-lisp-layout fh enum-name key layout anal)))))
 
 (defun skipper-for-lispallocs (dest enum anal)
   (assert (simple-enum-p enum))
@@ -1990,41 +1979,13 @@ so that they don't have to be constantly recalculated"
          (decl (containeralloc-ctype alloc))
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
-    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
-      (let ((fh (destination-helper-stream dest)))
-        (if (cxxrecord-ctype-p decl)
-            (progn
-              (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
-            (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-              (codegen-container-layout fh enum-name key layout))
-            #+(or)(let* ((parms (class-template-specialization-ctype-arguments decl))
-                         (parm0 (car parms))
-                         (parm0-ctype (gc-template-argument-ctype parm0)))
-                    ;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
-                    #+(or)(format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
-                    #+(or)(format fout "    for (~a::iterator it = ~a->begin(); it!=~a->end(); ++it) {~%" key +ptr-name+ +ptr-name+)
-                    ;;          (format fout "        // A scanner for ~a~%" parm0-ctype)
-                    #+(or)(cond
-                            ((smart-ptr-ctype-p parm0-ctype)
-                             (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
-                            ((pointer-ctype-p parm0-ctype)
-                             (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
-                            ((tagged-pointer-ctype-p parm0-ctype)
-                             (format fout "          ~a(*it);~%" (fix-macro-name parm0-ctype)))
-                            ((cxxrecord-ctype-p parm0-ctype)
-                             (let ((all-instance-variables (class-layout (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
-                               (dolist (instance-var all-instance-variables)
-                                 (scanner-code-for-instance-var fout 
-                                                                "it" instance-var))))
-                            ((class-template-specialization-ctype-p parm0-ctype)
-                             (let ((all-instance-variables (class-layout (gethash (ctype-key parm0-ctype) (project-classes (analysis-project anal))) anal)))
-                               (dolist (instance-var all-instance-variables)
-                                 (scanner-code-for-instance-var fout 
-                                                                "it" instance-var))))
-                            (t (error "Write code to scan ~a" parm0-ctype)))
-                    (format fout "    }~%")
-                    (format fout "    typedef typename ~A type_~A;~%" key enum-name)
-                    (format fout "    size = sizeof_container<type_~a>(~a->capacity());" enum-name +ptr-name+)))))))
+    ;;    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
+    (let ((fh (destination-helper-stream dest)))
+      (if (cxxrecord-ctype-p decl)
+          (progn
+            (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
+          (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
+            (codegen-container-layout fh enum-name key layout))))))
 
 
 (defun skipper-for-gccontainer (dest enum anal)
@@ -2122,13 +2083,10 @@ so that they don't have to be constantly recalculated"
          (key (alloc-key alloc))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
-      (let ((fh (destination-helper-stream dest)))
-        (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-          (codegen-container-layout fh enum-name key layout))
-        #+(or)(format fh "{ container_kind, ~d, ~s },~%" enum-name key)
-        (format fh "{ container_jump_table_index, ~d, 0, 0, \"\" },~%" jump-table-index))
-      (format fout "    // Should never be invoked~%"))))
+    ;;(with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
+    (let ((fh (destination-helper-stream dest)))
+      (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
+        (codegen-container-layout fh enum-name key layout)))))
 
 
 
@@ -2941,23 +2899,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     (format stream "#if defined(GC_KIND_SELECTORS)~%")
                     (generate-gckind-for-enums stream analysis)
                     (format stream "#endif // defined(GC_KIND_SELECTORS)~%")
-    ;;; This info is provided by kind info tables
 		    #+(or)(do-generator stream analysis
-                                        :table-name "KIND_NAME_MAP"
-                                        :function-declaration "const char* ~a()"
-                                        :function-prefix "kind_name"
-                                        :function-table-type "const char* (*KIND_NAME_MAP_table[])()"
-                                        :generator #'impl-generate-kind-name-map)
-    ;; This info isn't needed anymore                    
-		    #+(or)(do-generator stream analysis
-				  :table-name "OBJ_DUMP_MAP"
-				  :function-declaration "string ~a(mps_addr_t client)"
-				  :function-prefix "obj_dump"
-				  :function-table-type "string (*OBJ_DUMP_MAP_table[])(mps_addr_t client)"
-				  :generator (lambda (dest anal)
-					       (dolist (enum (analysis-sorted-enums anal))
-						 (funcall (species-dump (enum-species enum)) dest enum anal))))
-		    (do-generator stream analysis
 				  :table-name "OBJ_SKIP"
 				  :function-declaration "mps_addr_t ~a(mps_addr_t client)"
 				  :function-prefix "obj_skip"

@@ -573,7 +573,9 @@ namespace gctools {
       return sp;
 #endif
     };
-
+    static smart_pointer_type register_class_with_redeye() {
+      THROW_HARD_ERROR(BF("Never call this - it's only used to register with the redeye static analyzer"));
+    }
     static smart_pointer_type copy_kind(kind_t the_kind, size_t size, const OT &that) {
 #ifdef USE_BOEHM
     // Copied objects must be allocated in the appropriate pool
@@ -599,19 +601,19 @@ namespace gctools {
   
 namespace gctools {
   template <class OT, bool CanAllocateWithNoArguments = true>
-    struct GCNoArgumentAllocator {};
+    struct GCObjectDefaultConstructorAllocator {};
 
   template <class OT>
-    struct GCNoArgumentAllocator<OT,true> {
+    struct GCObjectDefaultConstructorAllocator<OT,true> {
     static smart_ptr<OT> allocate() {
       return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind, sizeof_with_header<OT>());
     }
   };
 
   template <class OT>
-    struct GCNoArgumentAllocator<OT,false> {
+    struct GCObjectDefaultConstructorAllocator<OT,false> {
     static smart_ptr<OT> allocate() {
-      lisp_errorCannotAllocateInstanceWithNoArguments(OT::static_class);
+      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_class);
     }
   };
 };
@@ -640,8 +642,9 @@ namespace gctools {
       return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,sizeof_container_with_header<OT>(capacity),capacity,std::forward<ARGS>(args)...);
     }
 
-    static smart_pointer_type allocate_with_no_arguments() {
-      return GCNoArgumentAllocator<OT,GCInfo<OT>::CanAllocateWithNoArguments>::allocate();
+    static smart_pointer_type allocate_with_default_constructor() {
+//      return GCObjectDefaultConstructorAllocator<OT,GCInfo<OT>::CanAllocateWithNoArguments>::allocate();
+      return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate();
     }
 
     static smart_pointer_type copy(const OT &that) {

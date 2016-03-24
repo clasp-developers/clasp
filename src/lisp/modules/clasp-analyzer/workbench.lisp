@@ -13,13 +13,14 @@
    ))
 
 
-
 (clasp-analyzer:search/generate-code *db*)
 
 (time (clasp-analyzer:load-project *db*))
-clasp-analyzer::*project*
+
 (print "Done Loading")
-(gethash "core::Functor_O" *project*)
+(gethash "core::Functor_O" (project-classes *project*))
+
+(setf *print-pretty* nil)
 
 
 (defparameter *db*
@@ -32,7 +33,8 @@ clasp-analyzer::*project*
 (maphash (lambda (k v) (when (search "Wrap" k) (print k))) (project-lispallocs *project*))
 *project*
 
-(gethash "gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>" *classes*)
+(gethash "core::Cons_O" (project-classes *project*))#S(CCLASS :KEY "core::Cons_O" :TEMPLATE-SPECIALIZER NIL :LOCATION "/Users/meister/Development/clasp/include/clasp/core/cons.h:111:1" :BASES ("core::T_O") :VBASES NIL :FIELDS (#S(INSTANCE-VARIABLE :FIELD-NAME "_Cdr" :LOCATION "/Users/meister/Development/clasp/include/clasp/core/cons.h:169:3" :CTYPE #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O")) #S(INSTANCE-VARIABLE :FIELD-NAME "_Car" :LOCATION "/Users/meister/Development/clasp/include/clasp/core/cons.h:168:3" :CTYPE #S(SMART-PTR-CTYPE :KEY "gctools::smart_ptr<core::T_O>" :SPECIALIZER "class core::T_O"))) :SIZE NIL :METHOD-NAMES ("NO-NAME" "NO-NAME" "NO-NAME" "NO-NAME" "NO-NAME" "NO-NAME" "NO-NAME" "getf" "setf_subseq" "subseq" "eq" "booleanAnd" "booleanOr" "min" "max" "product" "__write__" "__repr__" "describe" "exactlyMatches" "assoc" "member" "member1" "memberEql" "memberEq" "olookupKeyObjectDefault" "olookupKeyObject" "olistrefArgument" "olistref" "fastUnsafeLength" "length" "copyTreeCar" "copyTree" "copyListCar" "copyList" "last" "setf_cdr" "setCdr" "nreconc" "revappend" "nreverse" "reverse" "extend" "filterOutNil" "setf_nth" "equalp" "equal" "setf_car" "setCar" "ocaddr" "ocadr" "ocar" "cdr" "cdrPtr" "setf_elt" "elt" "onthcdr" "onth" "rplacd" "rplaca" "sxhash_" "append" "appendInto" "cdr_offset" "car_offset" "create" "create" "createList" "createList" "createList" "createList" "createList" "createList" "createList" "createList" "createFrom_va_list" "setPad" "setPad1" "fwdPointer" "setFwdPointer" "padSize" "padP" "pad1P" "fwdP" "hasGcTag" "rawRef" "rawRef" "expose_to_clasp" "register_class_with_redeye" "Pkg" "Package" "static_classSymbol" "static_className" "static_packageName" "set_static_creator" "set_static_class_symbol" "asSmartPtr" "asSmartPtr") :METADATA NIL)
+T
 
 
 
@@ -93,8 +95,7 @@ clasp-analyzer::*project*
 
 ((class-layout *cws* *analysis*)
 (defparameter *analysis* (analyze-project *project*))
-(fix-code *cws* *analysis*)
-*cws*
 
-(defparameter *cons* (gethash "core::Cons_O" *classes*))
-(code-for-class-layout (cclass-key *cons*) (class-layout *cons* *analysis*))
+
+(gethash "core::LogicalPathname_O" (analysis-enums *analysis*))
+T

@@ -49,14 +49,11 @@ namespace core {
 
 // TODO: ActivationFrame should adopt the _findValue behaviors of RuntimeVisibleEnvironment
 // TODO: and it should inherit from Environment_O not RuntimeVisibleEnvironment_O
-class ActivationFrame_O : public Environment_O // RuntimeVisibleEnvironment_O
-                          {
-  LISP_VIRTUAL_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
-
+class ActivationFrame_O : public Environment_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
 protected:
 public:
   static string clasp_asString(T_sp af);
-
 public:
   ActivationFrame_O() : Base(){};
   virtual ~ActivationFrame_O(){};

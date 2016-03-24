@@ -30,7 +30,7 @@ THE SOFTWARE.
 
 #ifndef CLBIND_FUNCTION2_081014_HPP
 #define CLBIND_FUNCTION2_081014_HPP
-
+#include <clasp/clbind/clbindPackage.h>
 #include <clasp/clbind/policies.h>
 #include <clasp/clbind/details.h>
 #include <clasp/clbind/scope.h>

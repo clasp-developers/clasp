@@ -73,19 +73,21 @@ namespace core {
 // public:
 
 #ifndef SCRAPING
-#define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, o_nameOfWrappedClass, nameOfWrappedClass, o_nameOfWrappedClassBase)      \
-  public: \
-    typedef o_nameOfWrappedClassBase Base; \
-  typedef LispBases1<Base> Bases; \
-  /* */ __COMMON_CLASS_PARTS(oNamespace, oPackage, o_nameOfWrappedClass, nameOfWrappedClass) \
-  public : typedef wrappedClass WrappedClass; \
- public:                                                                                                                                  \
-  /*Derived from StandardObject so it supports slots*/                                                                                   \
-  static bool static_supportsSlots() { return true; };                                                                                   \
-  virtual core::Class_sp __class() const {                        \
-    return o_nameOfWrappedClass::static_class;                                  \ 
-  }                                                               \
-  
+#define LISP_EXTERNAL_CLASS(oNamespace, oPackage, wrappedClass, aClass, nameOfWrappedClass, aClassBase) \
+  public:                                                               \
+    typedef aClassBase Base;                                            \
+  typedef LispBases1<Base> Bases;                                       \
+  COMMON_CLASS_PARTS(oNamespace, oPackage, aClass, nameOfWrappedClass)  \
+  static gctools::smart_ptr<aClass> create() {                          \
+      return gctools::GC<aClass>::allocate_with_default_constructor();  \
+    };                                                                  \
+  typedef wrappedClass WrappedClass;                                    \
+ public:                                                                \
+  /*Derived from StandardObject so it supports slots*/                  \
+  static bool static_supportsSlots() { return true; };                  \
+  virtual core::Class_sp __class() const {                              \
+    return aClass::static_class;                                        \
+  }
   /* end */
 
 #endif // SCRAPING

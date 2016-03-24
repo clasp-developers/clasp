@@ -17,7 +17,7 @@ namespace core {
 
 SMART(Record);
 class Record_O : public General_O {
-  LISP_VIRTUAL_CLASS(core, CorePkg, Record_O, "Record",General_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, Record_O, "Record",General_O);
 
 public:
   typedef enum { initializing,

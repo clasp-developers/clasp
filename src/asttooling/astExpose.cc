@@ -771,15 +771,15 @@ clang::QualType af_makeQualType(clang::Type *ty) {
 };
 };
 
+SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
+SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
+SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangAccessSpecifierSTAR);
 CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateArgument::ArgKind, asttooling::_sym_STARclangTemplateArgumentArgKindSTAR);
 CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateSpecializationKind, asttooling::_sym_STARclangTemplateSpecializationKindSTAR);
+CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::AccessSpecifier, asttooling::_sym_STARclangAccessSpecifierSTAR);
 
 namespace asttooling {
-
-
 void initialize_astExpose() {
-  SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
-  SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
   core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::Str_O::create("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
@@ -790,6 +790,13 @@ void initialize_astExpose() {
         .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
         .def("getLocStart", &clang::Decl::getLocStart)
         .def("getLocEnd", &clang::Decl::getLocEnd)
+    .def("getAccess",&clang::Decl::getAccess)
+    .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
+      value("AS_public", clang::AS_public),
+      value("AS_protected", clang::AS_protected),
+      value("AS_private", clang::AS_private),
+      value("AS_none", clang::AS_none)
+      ]
 #define CLASS_DECL(_Class_, _Base_) class_<_Class_##Decl, _Base_>(#_Class_ "Decl", no_default_constructor)
     ,
     CLASS_DECL(AccessSpec, Decl),

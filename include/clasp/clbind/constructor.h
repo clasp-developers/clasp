@@ -159,12 +159,12 @@ public:
 
 namespace clbind {
 template <typename Policies, typename T>
-class DerivableDefaultConstructorFunctor_O : public core::Functor_O {
+class DerivableDefaultConstructorFunctor : public core::Functor_O {
 public:
   typedef core::Functor_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctor_O(core::T_sp name) : core::Functor_O(name){};
+  DerivableDefaultConstructorFunctor(core::T_sp name) : core::Functor_O(name){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:
@@ -172,9 +172,9 @@ public:
 };
 
 template <typename Policies, typename T>
-class gctools::GCKind<clbind::DerivableDefaultConstructorFunctor_O<Policies, T>> {
+class gctools::GCKind<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorFunctor_O<Policies, T>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::Kind;
 };
 
 namespace clbind {

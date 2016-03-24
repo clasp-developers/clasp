@@ -24,6 +24,9 @@
 
 (clasp-cleavir::cleavir-compile nil '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug t)
 
+(clasp-cleavir::cleavir-compile nil '(lambda () (defun foo (x) (declare (dynamic-extent x)))) :debug t)
+(clasp-cleavir::cleavir-compile nil '(lambda () (defun foo (x) )) :debug t)
+
 
 (apropos "cleavir-compile-file")
 
