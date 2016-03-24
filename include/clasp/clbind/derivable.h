@@ -89,7 +89,6 @@ public:
 
 template <class T>
 struct gctools::GCInfo<clbind::Derivable<T>> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;

@@ -35,7 +35,6 @@ THE SOFTWARE.
 
 template <>
 struct gctools::GCInfo<core::SingleDispatchGenericFunctionClosure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

@@ -163,7 +163,6 @@ namespace asttooling {
 
 template <>
 struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;

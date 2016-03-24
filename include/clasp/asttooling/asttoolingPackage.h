@@ -34,7 +34,7 @@ NAMESPACE_PACKAGE_ASSOCIATION(asttooling, AstToolingPkg, "AST-TOOLING");
 namespace asttooling {
 
 class AsttoolingExposer_O : public core::Exposer_O {
-private:
+   LISP_CLASS(asttooling,AstToolingPkg,AsttoolingExposer_O,"AsttoolingExposer",core::Exposer_O);
 public:
   DISABLE_NEW();
   AsttoolingExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, AstToolingPkg){

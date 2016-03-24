@@ -132,7 +132,13 @@ namespace gctools {
     mps_addr_t addr;
     typedef typename PTR_TYPE::Type T;
     typedef typename GCHeader<T>::HeaderType HeadT;
-    GCTOOLS_ASSERT(the_kind>=kind_first_general);
+    GCTOOLS_ASSERTF(the_kind>=kind_first_general,\
+                    BF("The kind value[%d] must be > %d - if the type being allocated is a templated type then it should have the same kind as its TemplateBase ... eg:\n"\
+"template <typename T>\n"\
+"class gctools::GCKind<clbind::Wrapper<T, T *>> {\n"\
+"public:\n"\
+"  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::Wrapper<T, T *>::TemplatedBase>::Kind;\n"\
+"};") % the_kind % kind_first_general );
     PTR_TYPE tagged_obj;
     T* obj;
     size_t true_size = size;
@@ -600,8 +606,8 @@ namespace gctools {
 
   
 namespace gctools {
-  template <class OT, bool CanAllocateWithNoArguments = true>
-    struct GCObjectDefaultConstructorAllocator {};
+  template <class OT,bool Can>
+  struct GCObjectDefaultConstructorAllocator {};
 
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,true> {
@@ -643,7 +649,6 @@ namespace gctools {
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
-//      return GCObjectDefaultConstructorAllocator<OT,GCInfo<OT>::CanAllocateWithNoArguments>::allocate();
       return GCObjectDefaultConstructorAllocator<OT,std::is_default_constructible<OT>::value>::allocate();
     }
 

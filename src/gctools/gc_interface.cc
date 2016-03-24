@@ -793,7 +793,7 @@ NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
   TheClass::static_class = class_val;
   TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
-  gctools::smart_ptr<core::LispObjectCreator_O<TheClass>> cb = gctools::GC<core::LispObjectCreator_O<TheClass>>::allocate();
+  gctools::smart_ptr<core::LispObjectCreator<TheClass>> cb = gctools::GC<core::LispObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);
   class_val->setCreator(TheClass::static_creator);
   return class_val;

@@ -135,6 +135,7 @@ public:
      exposes the python classes/functions/globals */
  class Exposer_O : public General_O {
    FRIEND_GC_SCANNER(Exposer_O);
+   LISP_ABSTRACT_CLASS(core,CorePkg,Exposer_O,"Exposer",General_O);
 public:
   typedef enum { candoClasses,
                  candoFunctions,

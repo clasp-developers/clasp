@@ -83,7 +83,6 @@ namespace core {
 
 template <>
   struct gctools::GCInfo<core::SequenceStepper_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -101,7 +100,6 @@ public:
 
 template <>
   struct gctools::GCInfo<core::VectorStepper_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -130,7 +128,6 @@ public:
 };
 template <>
   struct gctools::GCInfo<core::ConsStepper_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

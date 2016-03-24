@@ -94,7 +94,6 @@ public:
 
 template <>
 struct gctools::GCInfo<core::FuncallableStandardClass_O> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

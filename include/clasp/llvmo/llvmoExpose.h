@@ -2286,7 +2286,6 @@ struct from_object<const llvm::APFloat &, std::true_type> {
 #if 0
 template <>
 struct gctools::GCInfo<llvmo::APFloat_O> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
@@ -2332,7 +2331,6 @@ struct from_object<const llvm::APInt &, std::true_type> {
 #if 0
  template <>
 struct gctools::GCInfo<llvmo::APInt_O> {
-   static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;

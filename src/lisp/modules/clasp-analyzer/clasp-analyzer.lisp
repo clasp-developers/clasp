@@ -438,7 +438,7 @@
 * Description 
 Convert the string into a C++ identifier, convert spaces, dashes and colons to underscores"
   (let ((cid (make-array (length str) :element-type 'character)))
-    (loop :for i :upto (length str)
+    (loop :for i :below (length str)
        :for x = (elt str i)
        :do (if (or (eql x #\space)
                    (eql x #\:)
@@ -505,7 +505,14 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
           when (string= (instance-variable-field-name (car (last (fields x)))) name)
           collect x)))
   
-
+(defun maybe-fixup-type (type container-type)
+  (if type
+      type
+      (cond
+        ((string= container-type "gctools::GCVector_moveable<core::T_O *>")
+         "core::T_O*")
+        (t (warn "I don't know how to fixup type ~a in ~a" type container-type)
+           type))))
 
 (defun codegen-variable-part (stream variable-fields analysis)
     (let* ((array (offset-field-with-name variable-fields "_Data"))
@@ -516,7 +523,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
               (layout-field-names array)
               (layout-field-names array))
       (format stream "{  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), NULL },~%"
-              (ctype-key (element-type array))
+              (maybe-fixup-type (ctype-key (element-type array)) (layout-base-ctype array))
               (layout-base-ctype array)
               (layout-field-names end)
               (layout-base-ctype array)
@@ -526,7 +533,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
           (if field-names
               (format stream "{    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
                       (layout-type one)
-                      (ctype-key (offset-type one))
+                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
                       (ctype-key (base one))
                       (layout-field-names one)
                       (layout-field-names one))
@@ -554,13 +561,13 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
   (format stream "{ class_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
   (codegen-full stream layout analysis))
 
-(defun codegen-container-layout (stream enum key layout)
+(defun codegen-container-layout (stream enum key layout analysis)
   (format stream "{ container_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
-  (codegen-variable-part stream (fixed-part layout)))
+  (codegen-variable-part stream (fixed-part layout) analysis))
 
-(defun codegen-templated-layout (stream enum key layout)
+(defun codegen-templated-layout (stream enum key layout analysis)
   (format stream "{ templated_kind, ~a, sizeof(~a), 0, \"~a\" },~%" enum key key )
-  (codegen-full stream layout))
+  (codegen-full stream layout analysis))
 
 
 (defgeneric linearize-class-layout-impl (x base analysis))
@@ -1916,7 +1923,7 @@ so that they don't have to be constantly recalculated"
     (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
       (let ((fh (destination-helper-stream dest)))
         (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-          (codegen-templated-layout fh enum-name key layout))
+          (codegen-templated-layout fh enum-name key layout anal))
         (progn
           #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" enum-name key)
           (format fh "{ templated_class_jump_table_index, ~d, 0, 0, \"\" },~%" jti))
@@ -1985,7 +1992,7 @@ so that they don't have to be constantly recalculated"
           (progn
             (format fout "    THROW_HARD_ERROR(BF(\"Should never scan ~a\"));~%" (cxxrecord-ctype-key decl)))
           (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-            (codegen-container-layout fh enum-name key layout))))))
+            (codegen-container-layout fh enum-name key layout anal))))))
 
 
 (defun skipper-for-gccontainer (dest enum anal)
@@ -2086,7 +2093,7 @@ so that they don't have to be constantly recalculated"
     ;;(with-jump-table (fout jump-table-index dest enum "goto SCAN_ADVANCE")
     (let ((fh (destination-helper-stream dest)))
       (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
-        (codegen-container-layout fh enum-name key layout)))))
+        (codegen-container-layout fh enum-name key layout anal)))))
 
 
 

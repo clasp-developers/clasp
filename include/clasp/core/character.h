@@ -113,7 +113,6 @@ namespace core {
     };
 };
 template<> struct gctools::GCInfo<core::StandardChar_O> {
-  static bool constexpr CanAllocateWithNoArguments = true;
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static GCInfo_policy constexpr Policy = normal;
@@ -139,7 +138,6 @@ namespace core {
     };
 };
 template<> struct gctools::GCInfo<core::ExtendedChar_O> {
-  static bool constexpr CanAllocateWithNoArguments = true;
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = false;
     static GCInfo_policy constexpr Policy = normal;

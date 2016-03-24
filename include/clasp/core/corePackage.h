@@ -36,6 +36,7 @@ namespace core {
 extern const char *CorePkg_nicknames[];
  FORWARD(CoreExposer);
 class CoreExposer_O : public core::Exposer_O {
+  LISP_CLASS(core,CorePkg,CoreExposer_O,"CoreExposer",core::Exposer_O);
 public:
   CoreExposer_O(Lisp_sp lisp);
  public:

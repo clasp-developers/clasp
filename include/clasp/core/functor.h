@@ -15,14 +15,12 @@ namespace core {
 
 template <>
 struct gctools::GCInfo<core::Functor_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::Closure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -30,49 +28,42 @@ struct gctools::GCInfo<core::Closure_O> {
 
 template <>
 struct gctools::GCInfo<core::InstanceCreator_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::FunctionClosure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::BuiltinClosure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::InstanceClosure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::InterpretedClosure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::CompiledClosure_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 template <>
 struct gctools::GCInfo<core::Creator_O> {
-  static bool constexpr CanAllocateWithNoArguments = false;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -214,12 +205,12 @@ namespace core {
 
 
     template <class _W_>
-    class LispObjectCreator_O : public core::Creator_O {
+    class LispObjectCreator : public core::Creator_O {
   public:
     typedef core::Creator_O TemplatedBase;
   public:
     DISABLE_NEW();
-    size_t templatedSizeof() const { return sizeof(LispObjectCreator_O<_W_>); };
+    size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>); };
     virtual void describe() const {
       printf("LispObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
     }
@@ -229,9 +220,25 @@ namespace core {
     }
     virtual void searcher(){};
   };
+};
 
+template <typename T>
+class gctools::GCKind<core::LispObjectCreator<T>> {
+ public:
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
+};
+template <typename T>
+struct gctools::GCInfo<core::LispObjectCreator<T>> {
+  static bool constexpr CanAllocateWithNoArguments = true;
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 
     class InstanceCreator_O : public Creator_O {
+      LISP_CLASS(core,CorePkg,InstanceCreator_O,"InstanceCreator",Creator_O);
 public:
   Symbol_sp _className;
 public:

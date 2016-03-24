@@ -265,7 +265,6 @@ CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
 };
 template <>
 struct gctools::GCInfo<core::Class_O> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;

@@ -234,7 +234,6 @@ public:
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, T *>> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -248,7 +247,6 @@ public:
 };
 template <typename T>
 struct gctools::GCInfo<clbind::Wrapper<T, std::unique_ptr<T>>> {
-  static bool constexpr CanAllocateWithNoArguments = true;
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;

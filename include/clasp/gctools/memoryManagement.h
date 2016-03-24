@@ -290,7 +290,6 @@ namespace gctools {
   
 template <class OT>
 struct GCInfo {
-  static bool const CanAllocateWithNoArguments = true;
   static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
   static bool const NeedsFinalization = false;  // By default, nothing needs finalization
   static constexpr GCInfo_policy Policy = normal;
