@@ -44,8 +44,12 @@ class GCArray_moveable : public GCContainer {
  template <typename... ARGS>
    GCArray_moveable(size_t numExtraArgs, const T& initial_element, ARGS &&... args) : _Capacity(numExtraArgs + sizeof...(ARGS))/*, _Data{args...}*/ {
 #if 0
-   this->_Data = {args...};
+   // It would be so much better if I could initialize _Data[] this way or
+   // in the initializer list above rather than assigning everything to a temporary
+   // array and copying it
+   this->_Data[] = {args...};
 #else
+   // This is stupid - see comment above
    T temp_Data[sizeof...(ARGS)] = {args...};
    for ( size_t h(0); h<sizeof...(ARGS); ++h ) {
      this->_Data[h] = temp_Data[h];

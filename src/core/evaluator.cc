@@ -439,10 +439,12 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
     int depth, index;
     Environment_O::ValueKind valueKind;
     T_sp value;
+#if 0
     printf("%s:%d Looking for %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
       e->dump();
     }
+#endif
     bool found = Environment_O::clasp_findValue(env, sym, depth, index, valueKind, value);
     if (found) {
       switch (valueKind) {

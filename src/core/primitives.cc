@@ -1062,7 +1062,9 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
 
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
   ListOfSequenceSteppers steppers(sequences);
-  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<ActivationFrame_O>()));
+  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<T_O>()));
+//  printf("%s:%d  %s  frame->length() = %d\n", __FILE__, __LINE__, __FUNCTION__,frame->length());
+//  printf("        frame->_Objects.capacity() = %d\n", frame->_Objects.capacity());
   if (steppers.atEnd())
     goto FALLTHROUGH; // return elementReturn;
   while (!steppers.atEnd()) {

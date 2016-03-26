@@ -994,9 +994,11 @@ void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, T_s
       this->defineSpecialBinding(sym);
     }
   }
+#if 0
   if (numberOfLexicals>0 ) {
     printf("%s:%d  Creating ValueFrame_O with numberOfLexicals: %d\n", __FILE__, __LINE__, numberOfLexicals );
   }
+#endif
   this->_ActivationFrame = ValueFrame_O::create(numberOfLexicals, clasp_getActivationFrame(clasp_currentVisibleEnvironment(parent)));
 }
 
