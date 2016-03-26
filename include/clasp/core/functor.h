@@ -257,7 +257,7 @@ public:
 
 namespace core {
 class FunctionClosure_O : public Closure_O {
-  LISP_CLASS(core,CorePkg,FunctionClosure_O,"FunctionClosure",General_O);
+  LISP_CLASS(core,CorePkg,FunctionClosure_O,"FunctionClosure",Closure_O);
  public:
   //  T_sp _SourcePosInfo;
   Symbol_sp kind;
