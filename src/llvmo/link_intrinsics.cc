@@ -700,33 +700,20 @@ extern void throwIfExcessKeywordArguments(char *fnName, core::ActivationFrame_sp
   ASSERT(frameP != NULL);
   ASSERT(frameP->objectp());
   ASSERT(argIdx >= 0);
-  if (argIdx >= (*frameP)->length())
-    return;
+  core::ValueFrame_sp vframe = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
+  if (argIdx >= vframe->length()) return;
   stringstream ss;
-  for (int i(0); i < (*frameP)->length(); ++i) {
-    ss << _rep_((*frameP)->entry(i)) << " ";
+  for (int i(0); i < (vframe)->length(); ++i) {
+    ss << _rep_(vframe->entry(i)) << " ";
   }
   SIMPLE_ERROR(BF("Excess keyword arguments fnName: %s argIdx: %d  args: %s") % fnName % argIdx % ss.str());
-//      core::throwUnrecognizedKeywordArgumentError((*frameP)->argArray()[argIdx]);
-#if 0
-	core::ActivationFrame_sp frame = (*frameP).as<core::ActivationFrame_O>();
-	if ( argIdx >= frame->length() ) return;
-	stringstream ss;
-	for ( int ii = argIdx; ii < frame->length(); ii+=2 )
-	{
-	    core::T_sp& keyRef = frame->entryReference(ii);
-	    if ( keyRef == kw::_sym_allow_other_keys ) continue;
-	    ss << _rep_(keyRef) << " ";
-	}
-	SIMPLE_ERROR(BF("In %s extraneous keyword arguments: %s") % fnName % ss.str() );
-#endif
 }
 
 extern void throwIfExcessArguments(core::T_sp *frameP, int argIdx) {
   ASSERT(frameP != NULL);
   ASSERT(frameP->objectp());
   ASSERT(argIdx >= 0);
-  core::ActivationFrame_sp frame = gc::As<core::ActivationFrame_sp>((*frameP));
+  core::ValueFrame_sp frame = gc::As_unsafe<core::ValueFrame_sp>((*frameP));
   if (argIdx < frame->length()) {
     stringstream serr;
     for (int i = argIdx; i < frame->length(); i++) {

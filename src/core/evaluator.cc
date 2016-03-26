@@ -439,6 +439,10 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
     int depth, index;
     Environment_O::ValueKind valueKind;
     T_sp value;
+    printf("%s:%d Looking for %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+    if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
+      e->dump();
+    }
     bool found = Environment_O::clasp_findValue(env, sym, depth, index, valueKind, value);
     if (found) {
       switch (valueKind) {
@@ -1717,39 +1721,11 @@ T_mv applyClosureToActivationFrame(Closure_sp func, ActivationFrame_sp args) {
   };
 }
 
-#if 0
-T_mv applyClosureToStackFrame(Closure_sp func, T_sp stackFrame) {
-IMPLEMENT_MEF(BF("Handle new valist"));
-#if 0
-T_mv result;
-  ASSERT(stackFrame.valistp());
-  core::T_O **frameImpl(stackFrame.unsafe_frame());
-  size_t nargs = frame::ValuesArraySize(frameImpl);
-  T_O **frame = frame::ValuesArray(frameImpl);
-  switch (nargs) {
-#define APPLY_TO_TAGGED_FRAME
-#include <clasp/core/generated/applyToActivationFrame.h>
-#undef APPLY_TO_TAGGED_FRAME
-  default:
-      SIMPLE_ERROR(BF("Illegal number of arguments: %d") % nargs);
-  };
-#endif
-}
-#endif
 
-#if 0
-T_mv applyToStackFrame(T_sp head, T_sp stackFrame) {
-  ASSERT(stackFrame.valistp());
-  Function_sp fn = lookupFunction(head, stackFrame);
-  ASSERT(fn.notnilp());
-  Closure_sp closureP = fn->closure;
-  ASSERTF((closureP), BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-  return applyClosureToStackFrame(closureP, stackFrame);
-}
-#endif
 
-T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
-  T_sp tfn = lookupFunction(head, args);
+T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
+  T_sp tfn = lookupFunction(head, targs);
+  ValueFrame_sp args = gctools::As_unsafe<ValueFrame_sp>(targs);
   if (tfn.nilp()) {
     if (head == cl::_sym_findClass) {
       // When booting, cl::_sym_findClass may be apply'd but not
@@ -1766,18 +1742,6 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp args) {
   SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(ffn) % _rep_(args));
 }
 
-#if 0
-void apply_fill_frame_from_list(core::T_O** frameImpl, int offset, int nargs, List_sp elements)
-{
-IMPLEMENT_MEF(BF("Handle new valist"));
-#if 0
-  for (int i(0); i < nargs; ++i) {
-    frame::ValuesArray(frameImpl)[i+offset] = oCar(elements).raw_();
-    elements = oCdr(elements);
-  }
-#endif
-}
-#endif
 
 /*!
  * This method:
@@ -2266,11 +2230,13 @@ void evaluateIntoActivationFrame(ActivationFrame_sp af,
     // Iterate through each car in exp and
     // evaluate it (handling Nil objects and results)
     // and string the results into a linked list
+    ValueFrame_sp vframe = af.as<ValueFrame_O>();
     for (auto p : args) {
       T_sp inObj = oCar(p);
       T_sp result = eval::evaluate(inObj, environment);
       LOG(BF("After evaluation result = %s") % _rep_(result));
-      af->set_entry(idx, result);
+      ValueFrame_sp vf = gctools::As_unsafe<ValueFrame_sp>(af);
+      vf->set_entry(idx, result);
       ++idx;
     }
   }

@@ -172,9 +172,13 @@ void InterpretedClosure_O::setf_lambda_list(T_sp lambda_list) {
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->closedEnvironment);
+//  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
+//  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
   InvocationHistoryFrame _frame(this->asSmartPtr(), lcc_arglist);
   lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
+//  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
+//  newValueEnvironment->dump();
   ValueFrame_sp newActivationFrame = gc::As<ValueFrame_sp>(newValueEnvironment->getActivationFrame());
   VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
   newActivationFrame->attachDebuggingInfo(debuggingInfo);

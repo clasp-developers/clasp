@@ -84,7 +84,7 @@ extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp a
 	  So we move argsPLUS up to be the second argument (after the function designator) and list
 	  the variadic arguments following it */
 template <class... Args>
-inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
+inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
@@ -92,7 +92,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args... args) {
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = cl__length(argsPLUS);
   int nargs = numArgsPassed + numArgsPlus;
-  ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus, _Nil<ActivationFrame_O>(), args...));
+  ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus, _Nil<T_O>(), std::forward<Args>(args)...));
   List_sp cur = argsPLUS;
   for (int i = numArgsPassed; i < nargs; ++i) {
     frob->operator[](i) = oCar(cur);

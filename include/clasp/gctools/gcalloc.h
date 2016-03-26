@@ -644,8 +644,8 @@ namespace gctools {
     }
 
     template <typename... ARGS>
-      static smart_pointer_type allocate_container(size_t capacity, ARGS&...args) {
-      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,sizeof_container_with_header<OT>(capacity),capacity,std::forward<ARGS>(args)...);
+      static smart_pointer_type allocate_container(size_t capacity, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
+      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,sizeof_container_with_header<OT>(capacity),capacity,/*initial_element,*/std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {

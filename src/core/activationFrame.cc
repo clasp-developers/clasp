@@ -125,7 +125,7 @@ namespace core {
 
 string ValueFrame_O::summaryOfContents() const {
   stringstream ss;
-  ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << " :len " << this->length() << std::endl;
+  ss << "---" << this->_instanceClass()->classNameAsString() << " :len " << this->length() << std::endl;
   T_sp debuggingInfo = _Nil<T_O>();
   if (this->_DebuggingInfo.notnilp()) {
     debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
@@ -154,16 +154,6 @@ string ValueFrame_O::summaryOfContents() const {
 
 string ValueFrame_O::asString() const {
   return this->summaryOfContents();
-}
-
-T_sp &ValueFrame_O::operator[](int index) {
-  ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
-  return ((this->_Objects[index]));
-}
-
-const T_sp &ValueFrame_O::operator[](int index) const {
-  ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
-  return ((this->_Objects[index]));
 }
 
 T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
@@ -295,19 +285,6 @@ Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
 }
 
-T_sp FunctionFrame_O::entry(int idx) const {
-  ASSERTF(idx < this->_Objects.capacity(), BF("index[%d] out of range for writing to activation frame with %d slots") % idx % this->_Objects.capacity());
-  return (this->_Objects[idx]);
-}
-
-const T_sp &FunctionFrame_O::entryReference(int idx) const {
-  ASSERTF(idx < this->_Objects.capacity(), BF("index[%d] out of range for writing to activation frame with %d slots") % idx % this->_Objects.capacity());
-  return (this->_Objects[idx]);
-}
-
-
-
-
 
 };
 
@@ -323,22 +300,14 @@ T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
 
 string TagbodyFrame_O::summaryOfContents() const {
   stringstream ss;
-  ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << std::endl;
+  ss << "---" << this->_instanceClass()->classNameAsString()
+     << std::endl;
   return (ss.str());
 }
 
 string TagbodyFrame_O::asString() const {
   return this->summaryOfContents();
 }
-
-TagbodyFrame_sp TagbodyFrame_O::create(T_sp parent) {
-  GC_ALLOCATE(TagbodyFrame_O, vf);
-  vf->_ParentFrame = parent;
-  return (vf);
-}
-
-
-
 
 
 };

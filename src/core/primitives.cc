@@ -1020,8 +1020,9 @@ void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_
   if (this->_AtEnd)
     SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
   int idx = 0;
+  ValueFrame_sp vframe = frame.as<ValueFrame_O>();
   for (auto rit = this->_Steppers.begin(); rit != this->_Steppers.end(); rit++) {
-    frame->set_entry(idx, (*rit)->element());
+    vframe->set_entry(idx, (*rit)->element());
     ++idx;
   }
 }

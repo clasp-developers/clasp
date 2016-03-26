@@ -6,8 +6,13 @@
 /// of every object allocated while that marker is set.
 /// Then you can use (room t <int>) to dump only those objects marked with the marker
 
-#define USE_BOEHM_MEMORY_MARKER
+//#define USE_BOEHM_MEMORY_MARKER
 
+#ifdef USE_BOEHM
+ #ifdef USE_CXX_DYNAMIC_CAST
+  #define BIG_BOEHM_HEADER
+ #endif
+#endif
 
 /// Define USE_ALLOCA_FOR_FRAME to use alloca to create Lisp stack frames within the C++ stack
 /// otherwise use the garbage collector to maintain a separate stack for lisp frames

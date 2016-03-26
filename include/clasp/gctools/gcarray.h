@@ -29,45 +29,51 @@ THE SOFTWARE.
 
 namespace gctools {
 
-template <class T, int SZ = 0>
+template <class T>
 class GCArray_moveable : public GCContainer {
-
-public:
-  template <class U, typename Allocator>
-  friend class GCArray;
-  typedef T value_type;
-  typedef T *pointer_type;
-  typedef value_type &reference;
-  typedef T *iterator;
-  typedef T const *const_iterator;
-
- GCArray_moveable(size_t num) : _Capacity(num) {
-  for ( size_t i=0; i<this->_Capacity; ++ i ) {
-    new(&(this->_Data[i])) value_type();
-  };
+ public:
+ template <class U, typename Allocator>
+ friend class GCArray;
+ typedef T value_type;
+ typedef T *pointer_type;
+ typedef value_type &reference;
+ typedef T *iterator;
+ typedef T const *const_iterator;
+ size_t _Capacity; // Index one beyond the total number of elements allocated
+ T _Data[];      // Store _Capacity numbers of T structs/classes starting here
+ template <typename... ARGS>
+   GCArray_moveable(size_t numExtraArgs, const T& initial_element, ARGS &&... args) : _Capacity(numExtraArgs + sizeof...(ARGS))/*, _Data{args...}*/ {
+#if 0
+   this->_Data = {args...};
+#else
+   T temp_Data[sizeof...(ARGS)] = {args...};
+   for ( size_t h(0); h<sizeof...(ARGS); ++h ) {
+     this->_Data[h] = temp_Data[h];
+   }
+#endif
+   for ( size_t i(sizeof...(ARGS)); i<this->_Capacity; ++i ) {
+     new(&(this->_Data[i])) value_type(initial_element);
+   }
+ }
+ GCArray_moveable() : _Capacity(0) {};
+ GCArray_moveable(size_t num,const T& initial_element) : _Capacity(num) {
+   for ( size_t i=0; i<this->_Capacity; ++ i ) {
+     new(&(this->_Data[i])) value_type(initial_element);
+   };
  }
 
-  template <typename... ARGS>
-  GCArray_moveable(size_t numExtraArgs, ARGS &&... args) : _Capacity(numExtraArgs + sizeof...(ARGS)), _Data{args...} {
-      for ( size_t i(sizeof...(ARGS)); i<this->_Capacity; ++i ) {
-          new(&(this->_Data[i])) value_type();
-      }
-  }
-  GCArray_moveable() : _Capacity(0) {};
 
-  size_t _Capacity; // Index one beyond the total number of elements allocated
-  T _Data[SZ];      // Store _Capacity numbers of T structs/classes starting here
 
-public:
-inline size_t size() const { return this->capacity(); };
-inline size_t capacity() const { this->_Capacity; };
-  value_type *data() { return this->_Data; };
-  value_type &operator[](size_t i) { return this->_Data[i]; };
-  const value_type &operator[](size_t i) const { return this->_Data[i]; };
-  iterator begin() { return &this->_Data[0]; };
-  iterator end() { return &this->_Data[this->_Capacity]; };
-  const_iterator begin() const { return &this->_Data[0]; };
-  const_iterator end() const { return &this->_Data[this->_Capacity]; };
+ public:
+ inline size_t size() const { return this->capacity(); };
+ inline size_t capacity() const { return this->_Capacity; };
+ value_type *data() { return this->_Data; };
+ value_type &operator[](size_t i) { return this->_Data[i]; };
+ const value_type &operator[](size_t i) const { return this->_Data[i]; };
+ iterator begin() { return &this->_Data[0]; };
+ iterator end() { return &this->_Data[this->_Capacity]; };
+ const_iterator begin() const { return &this->_Data[0]; };
+ const_iterator end() const { return &this->_Data[this->_Capacity]; };
 };
 
 template <class T, typename Allocator>
@@ -118,15 +124,17 @@ public:
   void clear() { this->_Contents = NULL; };
 
   template <typename... ARGS>
-  void allocate(size_t numExtraArgs, const value_type &initialElement, ARGS &&... args) {
+  void allocate(size_t numExtraArgs, const value_type &initial_element, ARGS &&... args) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
     tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCKind<impl_type>::Kind,sizeof...(ARGS)+numExtraArgs);
-    new (&*implAddress) GCArray_moveable<value_type, sizeof...(ARGS)>(numExtraArgs, std::forward<ARGS>(args)...);
+    new (&*implAddress) GCArray_moveable<value_type>(numExtraArgs, initial_element, std::forward<ARGS>(args)...);
+#if 0
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
       T *p = &((*implAddress)[i]);
       alloc.construct(p, initialElement);
     }
+#endif
     this->_Contents = implAddress;
   }
 

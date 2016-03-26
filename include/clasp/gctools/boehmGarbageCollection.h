@@ -82,7 +82,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 #include "clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
-#endif
+#endif // #else USE_CXX_DYNAMIC_CAST
 
 //#define BIG_BOEHM_HEADER
 
@@ -93,12 +93,10 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
   public:
   Header_s(kind_t k) : Kind(k)
 #ifdef BIG_BOEHM_HEADER
-      ,
-      ValidStamp(0xDEADBEEF), TypeidName(name)
+      , ValidStamp(0xBEEFDEADDEADBEEF)
 #endif
 #ifdef USE_BOEHM_MEMORY_MARKER
-      ,
-      Marker(globalBoehmMarker)
+      , Marker(globalBoehmMarker)
 #endif
       {
 #ifdef _DEBUG_BUILD
@@ -119,7 +117,6 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
     kind_t Kind;
 #ifdef BIG_BOEHM_HEADER
     uintptr_t ValidStamp;
-    const char *TypeidName;
 #endif
 #ifdef USE_BOEHM_MEMORY_MARKER // defined in foundation.h
     int Marker;
@@ -130,13 +127,6 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
       return this->ValidStamp == 0xDEADBEEF;
 #else
       return true;
-#endif
-    };
-    const char *name() const {
-#ifdef BIG_BOEHM_HEADER
-      return this->TypeidName;
-#else
-      return "TypeIdUnavailable";
 #endif
     };
     bool invalidP() const { return false; };

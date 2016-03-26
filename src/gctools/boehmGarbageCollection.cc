@@ -39,7 +39,10 @@ int globalBoehmMarker = 0;
 
 void rawHeaderDescribe(uintptr_t *rawheaderP) {
   Header_s *headerP = reinterpret_cast<Header_s *>(rawheaderP);
-  printf("  0x%p : Kind: 0x%p  vtable: 0x%p\n", headerP, *headerP, *(headerP + 1));
+  printf("  0x%p : Kind: 0x%p\n", headerP, *headerP);
+#ifdef BIG_BOEHM_HEADER
+  printf("  0x%p :   ValidStamp: 0x%p\n", headerP+1, *(headerP + 1));
+#endif
   gctools::GCKindEnum kind = headerP->kind();
   printf(" Kind tag - kind: %d\n", kind);
   fflush(stdout);
@@ -57,10 +60,10 @@ void client_describe(void *taggedClient) {
     uintptr_t *headerP;
     if (gctools::tagged_generalp(taggedClient)) {
       headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_general(taggedClient)));
-    } else {
-      headerP = reinterpret_cast<uintptr_t *>(gctools::ClientPtrToBasePtr(gctools::untag_cons(taggedClient)));
+      gctools::rawHeaderDescribe(headerP);
+    } else if (gctools::tagged_consp(taggedClient)) {
+      printf("%s:%d A cons pointer\n", __FILE__, __LINE__ );
     }
-    gctools::rawHeaderDescribe(headerP);
   } else {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
   };

@@ -236,11 +236,13 @@ void ActivationFrameDynamicScopeManager::new_binding(const Argument &argument, T
     return;
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  this->_Frame->set_entry(argument._ArgTargetFrameIndex, val);
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_Frame);
+  vframe->set_entry(argument._ArgTargetFrameIndex, val);
 }
 
 bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
-  return ((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_Frame);
+  return ((vframe->boundp_entry(argument._ArgTargetFrameIndex)));
 }
 
 T_sp ActivationFrameDynamicScopeManager::lexenv() const {

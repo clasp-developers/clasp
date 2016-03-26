@@ -55,10 +55,6 @@ public:
   typedef enum { undeterminedValue,
                  specialValue,
                  /*stackValue,*/ lexicalValue } ValueKind;
-
-protected:
-  uint _EnvId;
-
 public:
   static T_sp clasp_currentVisibleEnvironment(T_sp env);
   static T_sp clasp_getActivationFrame(T_sp env);
@@ -88,8 +84,6 @@ protected:
 
 public:
   void dump();
-  uint environmentId() const { return this->_EnvId; };
-  void setEnvironmentId(uint id) { this->_EnvId = id; };
   virtual bool environmentp() const { return true; }
 CL_LISPIFY_NAME("lexicalEnvironmentP");
 CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
@@ -233,7 +227,7 @@ public: // extend the environment with forms
 
   virtual int countFunctionContainerEnvironments() const;
 
-  Environment_O() : Base(), _EnvId(0){};
+  Environment_O() : Base(){};
   virtual ~Environment_O(){};
 };
 };
@@ -325,7 +319,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
 GCPROTECTED:
   /*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
   HashTableEq_sp _SymbolIndex;
-  ActivationFrame_sp _ActivationFrame;
+  ValueFrame_sp _ActivationFrame;
 
 public:
   static ValueEnvironment_sp createSingleTopLevelEnvironment();

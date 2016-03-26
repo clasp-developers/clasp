@@ -103,10 +103,10 @@ namespace core {
     typedef T_sp value_type;
   public:
     fnLispCallingConvention _FunctionPointer;
-    gctools::GCArray_moveable<value_type,0> _Slots;
+    gctools::GCArray_moveable<value_type> _Slots;
   ClosureWithSlots_O(size_t num_slots, T_sp name, fnLispCallingConvention fptr=NULL )
     : Functor_O(name)
-      , _Slots(num_slots) {}
+      , _Slots(num_slots,_Unbound<T_O>()) {}
   };
 
   inline CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {
@@ -372,7 +372,7 @@ public:
   core::T_sp _lambdaList;
   //! Slots must be the last field
   typedef core::T_sp value_type;
-  gctools::GCArray_moveable<value_type,0> _Slots;
+  gctools::GCArray_moveable<value_type> _Slots;
  public:
   virtual const char *describe() const { return "CompiledClosure"; };
   virtual size_t templatedSizeof() const { return sizeof(*this); };

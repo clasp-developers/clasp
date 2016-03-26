@@ -290,17 +290,15 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     if (ret) return ret;
     lisp_errorCast<o_class, Type>(this->theObject);
   }
-
+ 
   template <class o_class>
     inline bool isA() {
-    smart_ptr<o_class> ret = this->asOrNull<o_class>();
-    return ((bool)ret);
+    return TaggedCast<o_class*,Type*>::isA(this->theObject);
   }
 
   template <class o_class>
     inline bool isA() const {
-    smart_ptr<o_class> ret = this->asOrNull<o_class>();
-    return ((bool)ret);
+    return TaggedCast<o_class*,Type*>::isA(this->theObject);
   }
 
   /*! Return the offset in bytes between this.px and this - you need to modify the base
@@ -591,6 +589,9 @@ inline To_SP As(const return_type &rhs) {
  // See src/core/record.h
  template <typename To_SP, typename From_SP>
    inline To_SP As_unsafe(From_SP const &rhs) {
+#ifdef DEBUG_ASSERTS
+   GCTOOLS_ASSERT(rhs.template isA<typename To_SP::Type>());
+#endif
    To_SP ret((Tagged)rhs.raw_());
    return ret;
  }

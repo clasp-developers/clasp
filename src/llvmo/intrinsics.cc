@@ -272,7 +272,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
 ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, int numargs, int id)
 {
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
-  valueFrame->setEnvironmentId(id);
+//  valueFrame->setEnvironmentId(id);   // I don't use id anymore
   (*resultActivationFrameP) = valueFrame;
 }
 
@@ -286,7 +286,7 @@ ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, 
   ASSERT(frameP != NULL);
   ASSERT((*frameP));
   ASSERTF(idx >= 0 && idx < ((*frameP)->length()), BF("Illegal value of idx[%d] must be in range [0<=idx<%d]") % idx % (*frameP)->length());
-  core::ValueFrame_sp frame((gctools::Tagged)(*frameP).raw_());
+  core::ValueFrame_sp frame = gctools::As_unsafe<core::ValueFrame_sp>(*frameP);
   core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
   return pos_gc_safe;
 }
@@ -296,8 +296,7 @@ ALWAYS_INLINE core::T_sp *valueFrameReferenceWithOffset(core::ActivationFrame_sp
   ASSERT(frameP != NULL);
   ASSERT(*frameP);
   ASSERT(ridx >= 0 && ridx < (*frameP)->length());
-  core::ValueFrame_sp frame((gctools::Tagged)(*frameP).raw_());
-//  core::ValueFrame_sp frame = gc::As<core::ValueFrame_sp>((*frameP));
+  core::ValueFrame_sp frame = gc::As_unsafe<core::ValueFrame_sp>((*frameP));
   core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(ridx));
   return pos_gc_safe;
 }
