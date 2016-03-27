@@ -348,8 +348,14 @@
 
 
 (defstruct ctype key)
-(defstruct (cloned-ctype (:include ctype)))
-(defstruct (simple-ctype (:include cloned-ctype)))
+(defstruct (simple-ctype (:include ctype)))
+(defstruct (function-proto-ctype (:include ctype)))
+(defstruct (lvalue-reference-ctype (:include ctype)))
+(defstruct (template-type-parm-ctype (:include ctype)))
+(defstruct (rvalue-reference-ctype (:include ctype)))
+(defstruct (dependent-name-ctype (:include ctype)))
+(defstruct (enum-ctype (:include ctype)))
+(defstruct (builtin-ctype (:include ctype)))
 (defstruct (unclassified-ctype (:include simple-ctype)))
 (defstruct (uninteresting-ctype (:include simple-ctype)))
 (defstruct (unknown-ctype (:include simple-ctype)))
@@ -373,6 +379,8 @@
 (defstruct (constant-array-ctype (:include ctype))
   element-type)
 
+(defstruct (incomplete-array-ctype (:include ctype))
+  element-type)
 
 (defstruct (cxxrecord-ctype (:include record-ctype)))
 
@@ -431,7 +439,8 @@
 (defclass offset ()
   ((offset-type :initarg :offset-type :accessor offset-type)
    (fields :initform nil :accessor fields)
-   (base :initarg :base :accessor base)))
+   (base :initarg :base :accessor base)
+   (instance-variable :accessor instance-variable)))
 
 (defun c++identifier (str)
   "* Arguments
@@ -471,23 +480,11 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 (defmethod layout-type ((x pod-offset))
   (let ((type (offset-type x)))
-    (format nil "ctype_~a" (c++identifier (unclassified-ctype-key type)))))
+    (format nil "ctype_~a" (c++identifier (ctype-key type)))))
 
 (defclass array-offset (offset)
   ((element-type :initarg :element-type :accessor element-type)
    (elements :initarg :elements :accessor elements)))
-
-(defgeneric array-element-type (x analysis))
-
-(defmethod array-element-type ((x array-offset) analysis)
-  (ctype-key (element-type x)))
-
-(defmethod array-element-type ((x pod-offset) analysis)
-  (let ((key (ctype-key (offset-type x))))
-    key)
-  #+(or)(if (string= key "gctools::smart_ptr<core::T_O> []")
-            (gethash "gctools::smart_ptr<core::T_O>" (project-classes (analysis-project analysis)))
-            (error "Add support for array-element-type with pod-offset key: ~a" key)))
 
 (defclass pointer-fixer (offset) ())
 
@@ -536,12 +533,12 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
               (layout-field-names array)
               (layout-field-names array))
       (format stream "{  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), NULL },~%"
-              (maybe-fixup-type (array-element-type array analysis) (layout-base-ctype array))
+              (maybe-fixup-type (ctype-key (element-type array)) (layout-base-ctype array))
               (layout-base-ctype array)
               (layout-field-names end)
               (layout-base-ctype array)
               (layout-field-names capacity))
-      (dolist (one (array-elements array))
+      (dolist (one (elements array))
         (let ((field-names (layout-field-names one)))
           (if field-names
               (format stream "{    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
@@ -559,12 +556,19 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
-    (format stream "{  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
-            (layout-type one)
-            (or (layout-ctype one) "void")
-            (layout-base-ctype one)
-            (layout-field-names one)
-            (layout-field-names one)))
+    (let ((fixable (fixable-instance-variables (instance-variable one) analysis))
+          (public (eq (instance-variable-access (instance-variable one)) 'ast-tooling:as-public))
+          (good-name (null (find "NO-NAME" (layout-field-names one) :test #'string=))))
+      (when (and (or public fixable) good-name)
+        (format stream "{  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+                (layout-type one)
+                (or (layout-ctype one) "void")
+                (layout-base-ctype one)
+                (layout-field-names one)
+                (layout-field-names one)
+                public
+                fixable
+                good-name))))
   (let* ((variable-part (variable-part layout)))
     (when variable-part
       (codegen-variable-part stream (fixed-fields variable-part) analysis))))
@@ -586,7 +590,10 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 (defgeneric linearize-class-layout-impl (x base analysis))
 
 (defmethod linearize-class-layout-impl ((x instance-variable) base analysis)
-  (linearize-class-layout-impl (instance-variable-ctype x) base analysis))
+  (let ((offset (linearize-class-layout-impl (instance-variable-ctype x) base analysis)))
+    (when (and offset (atom offset))
+      (setf (instance-variable offset) x))
+    offset))
 
 (defmethod linearize-class-layout-impl ((x gcarray-moveable-ctype) base analysis)
   (let ((nodes (call-next-method)))
@@ -637,6 +644,14 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
                      :base base
                      :offset-type x)))
 
+(defmethod linearize-class-layout-impl ((x enum-ctype) base analysis)
+  nil)
+(defmethod linearize-class-layout-impl ((x builtin-ctype) base analysis)
+  (if (ignorable-ctype-p x)
+      nil
+      (make-instance 'pod-offset
+                     :base base
+                     :offset-type x)))
 
 (defmethod linearize-class-layout-impl ((x cxxrecord-ctype) base analysis)
   (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
@@ -658,6 +673,17 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 (defmethod linearize-class-layout-impl ((x constant-array-ctype) base analysis)
   (let* ((element-type (constant-array-ctype-element-type x))
+         (elements (maybe-list (linearize-class-layout-impl element-type element-type analysis))))
+    (make-instance 'array-offset
+                   :base base
+                   :element-type element-type
+                   :elements elements
+                   :offset-type x)))
+
+
+(defvar *x*)
+(defmethod linearize-class-layout-impl ((x incomplete-array-ctype) base analysis)
+  (let* ((element-type (incomplete-array-ctype-element-type x))
          (elements (maybe-list (linearize-class-layout-impl element-type element-type analysis))))
     (make-instance 'array-offset
                    :base base
@@ -860,13 +886,7 @@ can be saved and reloaded within the project for later analysis"
        (warn "Add support for classify-ctype ~a" decl-key)
        (make-unknown-ctype :key decl-key)
        ))))
-
-
-
 (defgeneric classify-ctype (type))
-
-
-
 
 (defmethod classify-ctype ((x cast:record-type))
   (let* ((decl (cast:get-decl x)))
@@ -918,14 +938,39 @@ can be saved and reloaded within the project for later analysis"
 (defmethod classify-ctype ((x cast:constant-array-type))
   (make-constant-array-ctype :element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
 
+(defmethod classify-ctype ((x cast:incomplete-array-type))
+  (let ((element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
+    (format t "In classify-ctype ((x cast:incomplete-array-type)) x: ~a  element-type: ~a~%" x element-type)
+    (make-incomplete-array-ctype :key (record-key x) :element-type element-type)))
+
 
 (defmethod classify-ctype ((x cast:paren-type))
   (make-paren-ctype :inner (classify-ctype (cast:get-type-ptr-or-null (cast:get-inner-type x)))))
 
+(defmethod classify-ctype ((x builtin-type))
+  (make-builtin-ctype :key (record-key x)))
+
+(defmethod classify-ctype ((x function-proto-type))
+  (make-function-proto-ctype :key (record-key x)))
+
+(defmethod classify-ctype ((x lvalue-reference-type))
+  (make-lvalue-reference-ctype :key (record-key x)))
+
+(defmethod classify-ctype ((x template-type-parm-type))
+  (make-template-type-parm-ctype :key (record-key x)))
+
+(defmethod classify-ctype ((x dependent-name-type))
+  (make-dependent-name-ctype :key (record-key x)))
+
+(defmethod classify-ctype ((x rvalue-reference-type))
+  (make-rvalue-reference-ctype :key (record-key x)))
+
+(defmethod classify-ctype ((x enum-type))
+  (make-enum-ctype :key (record-key x)))
 
 (defmethod classify-ctype ((x t))
   (let ((key (record-key x)))
-;;    (warn "Add support for classify-ctype to recognize ~a  key: ~a~%" x key)
+    (warn "Add support for classify-ctype to recognize ~a key: ~a~%" x key)
     (make-unclassified-ctype :key key)))
 
 ;;; Convert a clang::Type or clang::QualType to the canonical clang::Type
@@ -1562,6 +1607,9 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x constant-array-ctype) project)
   (contains-fixptr-impl-p (constant-array-ctype-element-type x) project))
 
+(defmethod contains-fixptr-impl-p ((x incomplete-array-ctype) project)
+  (contains-fixptr-impl-p (incomplete-array-ctype-element-type x) project))
+
 (defmethod contains-fixptr-impl-p ((x cxxrecord-ctype) project)
   (cond
     ((string= (cxxrecord-ctype-key x) "(my-anonymous-class-name)") nil)
@@ -1573,6 +1621,7 @@ so that they don't have to be constantly recalculated"
 
 (defmethod contains-fixptr-impl-p ((x injected-class-name-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x builtin-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-template-specialization-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x smart-ptr-ctype) project) t)
 (defmethod contains-fixptr-impl-p ((x gc-template-argument) project)
@@ -1638,7 +1687,9 @@ so that they don't have to be constantly recalculated"
 
 ;;; Most of these methods may be unnecessary now that we only consider simple allocs and not templated ones
 (defgeneric expand-forwards-with-template-arguments (forwards alloc-ctype))
-; don't need anything for cxxrecord-ctype
+                                        ; don't need anything for cxxrecord-ctype
+(defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype t))
+  (warn "expand-forwards-with-template-arguments most general  alloc-ctype--> ~a~%" alloc-ctype))
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype cxxrecord-ctype)) nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype null)) nil)
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype unclassified-ctype)) nil)
@@ -1649,7 +1700,6 @@ so that they don't have to be constantly recalculated"
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype pointer-ctype))
   (expand-forwards-with-template-arguments forwards (pointer-ctype-pointee alloc-ctype)))
 
-                                                    
 (defmethod expand-forwards-with-template-arguments (forwards (alloc-ctype class-template-specialization-ctype))
   (mapc (lambda (template-arg) (expand-forwards-with-template-arguments forwards (gc-template-argument-ctype template-arg)))
         (class-template-specialization-ctype-arguments alloc-ctype)))
@@ -2436,7 +2486,7 @@ Otherwise return nil."
 
 (defgeneric fixable-instance-variables-impl (x analysis))
 (defmethod fixable-instance-variables-impl ((x instance-variable) analysis)
-  "fixable-instance-variables-impl for instance-variable")
+  (fixable-instance-variables-impl (instance-variable-ctype x) analysis))
 
 (defmethod fixable-instance-variables-impl ((x cclass) analysis)
   (let* ((project (analysis-project analysis))
@@ -2463,6 +2513,7 @@ Otherwise return nil."
     (when vbase-code (setq result (append result vbase-code)))
     (when field-code (setq result (append result field-code)))
     result))
+(defmethod fixable-instance-variables-impl ((x builtin-ctype) analysis) nil)
 
 
 (defmethod fixable-instance-variables-impl ((x unclassified-ctype) analysis)
@@ -2523,6 +2574,8 @@ Otherwise return nil."
 
 (defgeneric ignorable-ctype-p (ctype))
 
+(defmethod ignorable-ctype-p ((ctype builtin-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype function-proto-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype tagged-pointer-ctype)) nil)
 
@@ -2812,8 +2865,12 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defgeneric fix-variable-p (var analysis))
 (defmethod fix-variable-p ((var global-variable) analysis)
   (fix-variable-p (global-variable-ctype var) analysis))
-(defmethod fix-variable-p ((var unclassified-ctype) analysis)
-  nil)
+(defmethod fix-variable-p ((var unclassified-ctype) analysis) nil)
+(defmethod fix-variable-p ((var lvalue-reference-ctype) analysis) nil)
+(defmethod fix-variable-p ((var builtin-ctype) analysis) nil)
+(defmethod fix-variable-p ((var dependent-name-ctype) analysis) nil)
+(defmethod fix-variable-p ((var template-type-parm-ctype) analysis) nil)
+(defmethod fix-variable-p ((var enum-ctype) analysis) nil)
 (defmethod fix-variable-p ((var smart-ptr-ctype) analysis) t)
 (defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
 (defmethod fix-variable-p ((var class-template-specialization-ctype) analysis) nil)

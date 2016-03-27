@@ -184,6 +184,9 @@ public:
   };
 public:
   inline void attachDebuggingInfo(core::T_sp debuggingInfo) {
+    if (!debuggingInfo) {
+      printf("%s:%d attachDebuggingInfo being set to NULL!\n", __FILE__, __LINE__);
+    }
     this->_DebuggingInfo = debuggingInfo;
   }
 
