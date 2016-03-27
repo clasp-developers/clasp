@@ -612,7 +612,7 @@ Boehm and MPS use a single pointer"
 
 
   (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
-  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
+  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i64+))
 ;;  (primitive-nounwind module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
   (primitive-nounwind module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))

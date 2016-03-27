@@ -110,6 +110,7 @@ void Class_O::initializeSlots(int slots) {
   }
   this->_MetaClassSlots.resize(slots, _Unbound<T_O>());
   this->instanceSet(REF_DIRECT_SUPERCLASSES, _Nil<T_O>());
+  this->instanceSet(REF_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
   this->instanceSet(REF_FINALIZED, cl::_sym_T_O);
 }
 

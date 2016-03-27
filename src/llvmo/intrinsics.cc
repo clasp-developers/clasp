@@ -269,7 +269,7 @@ ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   return closure->invoke_va_list(LCC_PASS_ARGS);
 }
 
-ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, int numargs, int id)
+ALWAYS_INLINE void makeValueFrame(core::T_sp *resultActivationFrameP, size_t numargs)
 {
   core::ValueFrame_sp valueFrame(core::ValueFrame_O::create(numargs, _Nil<core::T_O>()));
 //  valueFrame->setEnvironmentId(id);   // I don't use id anymore

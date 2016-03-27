@@ -239,7 +239,8 @@ bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &value
     return ((this->Base::_findValue(sym, depth, index, valueKind, value)));
   }
   if (!this->_DebuggingInfo) {
-    THROW_HARD_ERROR(BF("The debugging info was NULL!!!!! Why is this happening?"));
+    printf("%s:%d The debugging info was NULL!!!!! Why is this happening?\n",__FILE__,__LINE__);
+    return ((this->Base::_findValue(sym, depth, index, valueKind, value)));
   }
   Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   int i = 0;

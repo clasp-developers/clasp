@@ -177,6 +177,7 @@ public:
   template <typename...ARGS>
     ValueFrame_O(size_t size, /*const T_sp& initial_element,*/ T_sp parent, ARGS && ...args)
     : Base(parent)
+    , _DebuggingInfo(_Nil<T_O>())
     ,_Objects(size,_Unbound<T_O>()/*initial_element*/,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {};
   virtual ~ValueFrame_O(){
       //            printf("%s::%d dtor ValueFrame@%p\n", __FILE__, __LINE__, this);

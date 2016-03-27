@@ -32,10 +32,6 @@
 (in-package :compiler)
 
 
-(defun irc-next-environment-id ()
-    (prog1 *next-environment-id*
-      (incf *next-environment-id*)))
-
 (defun irc-single-step-callback (env)
   (irc-intrinsic "singleStepCallback" ))
 
@@ -918,7 +914,7 @@ Within the _irbuilder_ dynamic environment...
     :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
 
 (defun irc-make-value-frame (result-af size)
-  (irc-intrinsic "makeValueFrame" result-af (jit-constant-i32 size) (jit-constant-i32 (irc-next-environment-id))))
+  (irc-intrinsic "makeValueFrame" result-af (jit-constant-size_t size)))
 
 (defun irc-make-tagbody-frame (env result-af)
   (irc-intrinsic "makeTagbodyFrame" result-af))

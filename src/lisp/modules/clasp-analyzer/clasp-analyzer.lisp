@@ -122,7 +122,8 @@
 
 
 (defclass class-layout ()
-  ((fixed-part :initarg :fixed-part :accessor fixed-part)
+  ((layout-class :initarg :layout-class :accessor layout-class)
+   (fixed-part :initarg :fixed-part :accessor fixed-part)
    (variable-part :initarg :variable-part :accessor variable-part)))
 
 (defstruct enum
@@ -476,6 +477,18 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
   ((element-type :initarg :element-type :accessor element-type)
    (elements :initarg :elements :accessor elements)))
 
+(defgeneric array-element-type (x analysis))
+
+(defmethod array-element-type ((x array-offset) analysis)
+  (ctype-key (element-type x)))
+
+(defmethod array-element-type ((x pod-offset) analysis)
+  (let ((key (ctype-key (offset-type x))))
+    key)
+  #+(or)(if (string= key "gctools::smart_ptr<core::T_O> []")
+            (gethash "gctools::smart_ptr<core::T_O>" (project-classes (analysis-project analysis)))
+            (error "Add support for array-element-type with pod-offset key: ~a" key)))
+
 (defclass pointer-fixer (offset) ())
 
 (defclass container-offset (offset)
@@ -523,12 +536,12 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
               (layout-field-names array)
               (layout-field-names array))
       (format stream "{  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), NULL },~%"
-              (maybe-fixup-type (ctype-key (element-type array)) (layout-base-ctype array))
+              (maybe-fixup-type (array-element-type array analysis) (layout-base-ctype array))
               (layout-base-ctype array)
               (layout-field-names end)
               (layout-base-ctype array)
               (layout-field-names capacity))
-      (dolist (one (elements array))
+      (dolist (one (array-elements array))
         (let ((field-names (layout-field-names one)))
           (if field-names
               (format stream "{    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
@@ -2384,6 +2397,7 @@ so that they don't have to be constantly recalculated"
     (when (> (length variable) 1)
       (analysis-error "Class ~a has more than one GCVector/GCArray/GCString part" (cclass-key x)))
     (make-instance 'class-layout
+                   :layout-class x
                    :fixed-part fixed
                    :variable-part (first variable))))
 
