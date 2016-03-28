@@ -19,6 +19,9 @@
 
 (analyze-only *db*)
 
+(find "aNO-NAME" '("a" "b" "NO-NAME" "c") :test #'string=)
+(null (search "NO-NAME" "_PackageName.__r_.__first_.NO-NAME.__l.__cap_"))
+
 (print "Done Loading")
 (gethash "core::Functor_O" (project-classes *project*))
 

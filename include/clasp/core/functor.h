@@ -275,6 +275,11 @@ public:
   FunctionClosure_O(T_sp name)
       : Closure_O(name, _Nil<T_O>()), kind(kw::_sym_function), _cleavir_ast(_Nil<T_O>()), _sourceFileInfoHandle(0), _filePos(0), _lineno(0), _column(0){};
 
+  static FunctionClosure_sp create(T_sp name, T_sp function_kind, SOURCE_INFO ) {
+    FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(name,function_kind,_Nil<T_O>(),SOURCE_INFO_PASS);
+    return fc;
+  }
+                                                                     
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   virtual const char *describe() const { return "FunctionClosure"; };
@@ -290,6 +295,9 @@ public:
   virtual int column() const;
   virtual T_sp cleavir_ast() const { return this->_cleavir_ast; };
   virtual void setf_cleavir_ast(T_sp ast) { this->_cleavir_ast = ast; };
+  virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
+  virtual T_sp lambdaList() const {SUBIMP();};
+  virtual void setf_lambda_list(T_sp lambda_list) {SUBIMP();};
 };
 
 class BuiltinClosure_O : public FunctionClosure_O {

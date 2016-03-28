@@ -516,11 +516,20 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             core::LoadTimeValues_O **ltvPP) {
   ActivationFrame_sp frame = (*frameP);
   core::Str_sp name = core::Str_O::create(cpname);
-  BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+#if 1
+  FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+#else
+  // When I used tagged_pointer<...> I stack allocated the BuiltinClosure_O
+  // I can't do that now that Closure_O is under General_O in the
+  // class hierarchy.  I'm leaving this code in here in case I need
+  // anything from it.
+  // Once this code works - delete this #else clause
+ BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  core::BuiltinClosure_sp tc(&tempClosure);
+#endif
   STACK_FRAME(buff, no_args, 0);
   VaList_S empty_valist(no_args);
   core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
-  core::BuiltinClosure_sp tc(&tempClosure);
   core::InvocationHistoryFrame invFrame(tc, empty_valist_ptr, *frameP);
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
