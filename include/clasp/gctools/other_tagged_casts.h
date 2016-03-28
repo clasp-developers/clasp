@@ -11,7 +11,7 @@ namespace core {
 
 namespace gctools {
 
-  #if 0
+#if 0
 template <typename FROM>
 struct TaggedCast<core::BuiltinClosure_O *, FROM> {
   typedef core::BuiltinClosure_O *ToType;

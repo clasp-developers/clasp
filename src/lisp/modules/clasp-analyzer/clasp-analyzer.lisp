@@ -524,6 +524,18 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
         (t (warn "I don't know how to fixup type ~a in ~a" type container-type)
            type))))
 
+(defun is-bad-special-case-variable-name (name-list)
+  "* Arguments
+- name-list :: A list of strings.
+* Description
+Return T if the name-list contains special-case variable names that we don't want
+to expose."
+  (cond
+    ((find "NO-NAME" name-list :test #'string=) t)
+    ((find "_LocationDependency" name-list :test #'string=) t)
+    (t nil)))
+  
+
 (defun codegen-variable-part (stream variable-fields analysis)
     (let* ((array (offset-field-with-name variable-fields "_Data"))
            (capacity (offset-field-with-name variable-fields "_Capacity"))
@@ -544,7 +556,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
                 (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
                        (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
                        (all-public (every #'identity public))
-                       (good-name (null (find "NO-NAME" (layout-field-names one) :test #'string=)))
+                       (good-name (not (is-bad-special-case-variable-name (layout-field-names one))))
                        (expose-it (and (or all-public fixable) good-name)))
                   (format stream "~a {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
                           (if expose-it "" "// not-exposed-yet ")
@@ -569,7 +581,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
     (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
            (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
            (all-public (every #'identity public))
-           (good-name (null (find "NO-NAME" (layout-field-names one) :test #'string=)))
+           (good-name (not (is-bad-special-case-variable-name (layout-field-names one))))
            (expose-it (and (or all-public fixable) good-name)))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it "" "// not-exposing")
