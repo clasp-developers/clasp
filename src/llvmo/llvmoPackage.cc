@@ -210,7 +210,8 @@ void dump_funcs(core::Function_sp compiledFunction) {
     for (auto cur : cfuncs) {
       core::T_sp func = oCar(cur);
       if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-        f->dump();
+        printf("%s:%d Dumping function\n", __FILE__, __LINE__ );
+        f->describe(cl::_sym_STARstandard_outputSTAR->symbolValue());
       } else {
         printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
       }
