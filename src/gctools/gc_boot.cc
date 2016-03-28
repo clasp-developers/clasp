@@ -159,7 +159,6 @@ void build_kind_field_layout_tables()
         THROW_HARD_ERROR(BF("The Layout_code table contained an illegal command: %d\n") % codes[idx].cmd);
     }
   }
-  printf("%s:%d  Done building kind_layout tables\n", __FILE__, __LINE__ );
 }
 };
 

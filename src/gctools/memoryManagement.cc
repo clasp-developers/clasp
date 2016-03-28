@@ -201,6 +201,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 
   { // Debugging info
     size_t alignment = Alignment();
+#if 0
     printf("%s:%d Alignment() = %lu\n", __FILE__, __LINE__, alignment);
 #ifdef USE_MPS
     printf("%s:%d Align(1) = %lu\n", __FILE__, __LINE__, Align(1));
@@ -209,6 +210,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
     printf("%s:%d Alignup(1) = %lu\n", __FILE__, __LINE__, AlignUp(1));
     printf("%s:%d Alignup(Alignment()) = %lu\n", __FILE__, __LINE__, AlignUp(Alignment()));
     printf("%s:%d global_alignup_sizeof_header = %lu\n", __FILE__, __LINE__, global_alignup_sizeof_header );
+#endif
   }
 
   build_kind_field_layout_tables();
