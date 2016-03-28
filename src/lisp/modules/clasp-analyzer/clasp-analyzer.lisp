@@ -440,7 +440,7 @@
   ((offset-type :initarg :offset-type :accessor offset-type)
    (fields :initform nil :accessor fields)
    (base :initarg :base :accessor base)
-   (instance-variable :accessor instance-variable)))
+   #+(or)(instance-variable :accessor instance-variable)))
 
 (defun c++identifier (str)
   "* Arguments
@@ -540,35 +540,47 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
               (layout-field-names capacity))
       (dolist (one (elements array))
         (let ((field-names (layout-field-names one)))
-          (if field-names
-              (format stream "{    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
-                      (layout-type one)
-                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
-                      (ctype-key (base one))
-                      (layout-field-names one)
-                      (layout-field-names one))
-              (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
-                      (layout-type one)
-                      (ctype-key (offset-type one))
-                      (ctype-key (base one))))))))
+            (if field-names
+                (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+                       (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
+                       (all-public (every #'identity public))
+                       (good-name (null (find "NO-NAME" (layout-field-names one) :test #'string=)))
+                       (expose-it (and (or all-public fixable) good-name)))
+                  (format stream "~a {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+                          (if expose-it "" "// not-exposed-yet ")
+                          (layout-type one)
+                          (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                          (ctype-key (base one))
+                          (layout-field-names one)
+                          (layout-field-names one)
+                          public
+                          fixable
+                          good-name))
+                  (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
+                          (layout-type one)
+                          (maybe-fixup-type (ctype-key (element-type array)) (layout-base-ctype array))
+                          ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
+                          (ctype-key (base one))))))))
 
 
 
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
-    (let ((fixable (fixable-instance-variables (instance-variable one) analysis))
-          (public (eq (instance-variable-access (instance-variable one)) 'ast-tooling:as-public))
-          (good-name (null (find "NO-NAME" (layout-field-names one) :test #'string=))))
-      (when (and (or public fixable) good-name)
-        (format stream "{  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
-                (layout-type one)
-                (or (layout-ctype one) "void")
-                (layout-base-ctype one)
-                (layout-field-names one)
-                (layout-field-names one)
-                public
-                fixable
-                good-name))))
+    (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
+           (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
+           (all-public (every #'identity public))
+           (good-name (null (find "NO-NAME" (layout-field-names one) :test #'string=)))
+           (expose-it (and (or all-public fixable) good-name)))
+      (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+              (if expose-it "" "// not-exposing")
+              (layout-type one)
+              (or (layout-ctype one) "UnknownType")
+              (layout-base-ctype one)
+              (layout-field-names one)
+              (layout-field-names one)
+              public
+              fixable
+              good-name)))
   (let* ((variable-part (variable-part layout)))
     (when variable-part
       (codegen-variable-part stream (fixed-fields variable-part) analysis))))
@@ -591,8 +603,6 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 
 (defmethod linearize-class-layout-impl ((x instance-variable) base analysis)
   (let ((offset (linearize-class-layout-impl (instance-variable-ctype x) base analysis)))
-    (when (and offset (atom offset))
-      (setf (instance-variable offset) x))
     offset))
 
 (defmethod linearize-class-layout-impl ((x gcarray-moveable-ctype) base analysis)
@@ -1622,6 +1632,9 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x injected-class-name-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x builtin-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x enum-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x lvalue-reference-ctype) project) nil)
+(defmethod contains-fixptr-impl-p ((x function-proto-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x unclassified-template-specialization-ctype) project) nil)
 (defmethod contains-fixptr-impl-p ((x smart-ptr-ctype) project) t)
 (defmethod contains-fixptr-impl-p ((x gc-template-argument) project)
@@ -1871,6 +1884,7 @@ so that they don't have to be constantly recalculated"
 
 (defgeneric fixer-macro-name (fixer-head))
 (defmethod fixer-macro-name ((x (eql :smart-ptr-fix))) "SMART_PTR_FIX")
+(defmethod fixer-macro-name ((x (eql :raw-tagged-pointer-fix))) "RAW_TAGGED_POINTER_FIX")
 (defmethod fixer-macro-name ((x (eql :tagged-pointer-fix))) "TAGGED_POINTER_FIX")
 
 
@@ -1983,18 +1997,18 @@ so that they don't have to be constantly recalculated"
   (let* ((key (enum-key enum))
          (enum-name (enum-name enum)))
     (gclog "build-mps-scan-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
-    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
+;;    (with-jump-table (fout jti dest enum "goto SCAN_ADVANCE")
       (let ((fh (destination-helper-stream dest)))
         (let ((layout (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
           (codegen-templated-layout fh enum-name key layout anal))
         (progn
           #+(or)(format fh "{ templated_class_kind, ~d, ~s },~%" enum-name key)
-          (format fh "{ templated_class_jump_table_index, ~d, 0, 0, \"\" },~%" jti))
+          #+(or)(format fh "{ templated_class_jump_table_index, ~d, 0, 0, \"\" },~%" jti))
         #+(or)(format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
         #+(or)(let ((all-instance-variables (class-layout (gethash key (project-classes (analysis-project anal))) anal)))
                 (dolist (instance-var all-instance-variables)
                   (scanner-code-for-instance-var fout +ptr-name+ instance-var)))
-        #+(or)(format fout "    size = ~a->templatedSizeof();" +ptr-name+)))))
+        #+(or)(format fout "    size = ~a->templatedSizeof();" +ptr-name+))))
 
 
 (defun skipper-for-templated-lispallocs (dest enum anal)
@@ -2544,19 +2558,22 @@ Otherwise return nil."
 
 (defmethod fixable-instance-variables-impl ((x pointer-ctype) analysis )
   (let ((pointee (pointer-ctype-pointee x)))
+    (format t "pointee: ~a~%" pointee)
     (cond
-    ((or (gcvector-moveable-ctype-p pointee)
-         (gcarray-moveable-ctype-p pointee)
-         (gcstring-moveable-ctype-p pointee))
-        (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
-     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((fixable-pointee-p (pointer-ctype-pointee x))
-     (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
-    ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
-    (t
-     ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
-      nil))))
+      ((or (gcvector-moveable-ctype-p pointee)
+           (gcarray-moveable-ctype-p pointee)
+           (gcstring-moveable-ctype-p pointee)) :raw-tagged-pointer-fix)
+;;       (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+      ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
+       :raw-tagged-pointer-fix)
+;;       (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+      ((fixable-pointee-p (pointer-ctype-pointee x))
+       :raw-tagged-pointer-fix)
+;;       (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
+      ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
+      (t
+       ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
+       nil))))
 
 
 
@@ -2574,8 +2591,9 @@ Otherwise return nil."
 
 (defgeneric ignorable-ctype-p (ctype))
 
-(defmethod ignorable-ctype-p ((ctype builtin-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype builtin-ctype)) t)
 (defmethod ignorable-ctype-p ((ctype function-proto-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype dependent-name-ctype)) t)
 (defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype tagged-pointer-ctype)) nil)
 

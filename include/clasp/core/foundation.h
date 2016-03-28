@@ -242,6 +242,7 @@ typedef std::size_t class_id;
 #include <cstddef>
 
 typedef unsigned int uint;
+typedef size_t UnknownType;
 typedef unsigned char byte;
 typedef size_t _Index; //
 

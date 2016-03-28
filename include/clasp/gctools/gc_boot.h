@@ -43,6 +43,7 @@ namespace gctools {
       ctype_long,
       ctype_long_long,
       ctype_char,
+      ctype__Bool,
       ctype_enum_core__StreamMode,
       ctype_core__FrameKind,
       last_data_type };
