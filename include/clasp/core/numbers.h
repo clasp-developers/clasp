@@ -931,7 +931,7 @@ inline Number_sp clasp_log1p(Number_sp x) {
     return clasp_make_single_float(_log1p(f));
   } else if (x.single_floatp()) {
     float f = x.unsafe_single_float();
-    if (::isnan(f))
+    if (std::isnan(f))
       return x;
     if (f < -1)
       return clasp_log1_complex_inner(clasp_one_plus(x), clasp_make_fixnum(0));
