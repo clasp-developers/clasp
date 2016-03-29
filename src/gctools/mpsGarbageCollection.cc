@@ -736,7 +736,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
 #define CHAIN_SIZE 6400*5 // 256 // 6400
-  size_t arenaSizeMb = 16000;
+  size_t arenaSizeMb = 1600;
   size_t spareCommitLimitMb = 320;
   size_t nurseryKb = CHAIN_SIZE;
   size_t nurseryMortalityPercent = 80;
