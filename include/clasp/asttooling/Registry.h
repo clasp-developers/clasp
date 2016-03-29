@@ -51,18 +51,16 @@ THE SOFTWARE.
 #include <llvm/ADT/StringRef.h>
 
 namespace asttooling {
-namespace internal {
 class MatcherDescriptor_O;
-};
 };
 
 namespace asttooling {
 namespace RegMap {
   class SymbolMatcherDescriptorPair_O : public core::General_O {
 public:
-  SymbolMatcherDescriptorPair_O(core::Symbol_sp k, gctools::smart_ptr<internal::MatcherDescriptor_O> v) : Name(k), matcher(v){};
+  SymbolMatcherDescriptorPair_O(core::Symbol_sp k, gctools::smart_ptr<MatcherDescriptor_O> v) : Name(k), matcher(v){};
   core::Symbol_sp Name;
-  gctools::smart_ptr<internal::MatcherDescriptor_O> matcher;
+  gctools::smart_ptr<MatcherDescriptor_O> matcher;
 };
 
   class RegistryMaps_O : public core::General_O  {
@@ -109,7 +107,7 @@ public:
   }
 
 private:
-  void _registerMatcher(core::Symbol_sp MatcherName, gctools::smart_ptr<internal::MatcherDescriptor_O> Callback) const;
+  void _registerMatcher(core::Symbol_sp MatcherName, gctools::smart_ptr<MatcherDescriptor_O> Callback) const;
 /*! This is used to replace the map<Symbol_sp,const MatcherDescriptor*> that used to be a ConstructorMap */
 private:
   bool Initialized;
