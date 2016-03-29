@@ -3286,7 +3286,7 @@ Number_sp Rational_O::log1_() const {
     Number_sp SingleFloat_O::log1() const
     {
         float f = this->as_float_();
-        if (::isnan(f)) return this->asSmartPtr();
+        if (std::isnan(f)) return this->asSmartPtr();
         if (f < 0) return clasp_log1_complex_inner(this->asSmartPtr(),
 						  clasp_make_fixnum(0));
         return clasp_make_single_float(logf(f));
@@ -3294,7 +3294,7 @@ Number_sp Rational_O::log1_() const {
 #endif
 Number_sp DoubleFloat_O::log1_() const {
   double f = this->as_double_();
-  if (::isnan(f))
+  if (std::isnan(f))
     return this->asSmartPtr();
   if (f < 0)
     return clasp_log1_complex_inner(this->asSmartPtr(),
@@ -3305,7 +3305,7 @@ Number_sp DoubleFloat_O::log1_() const {
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::log1() const {
   LongFloat f = this->as_long_float();
-  if (::isnan(f))
+  if (std::isnan(f))
     return this->asSmartPtr();
   if (f < 0)
     return clasp_log1_complex_inner(this->asSmartPtr(),
@@ -3335,14 +3335,14 @@ Number_sp Rational_O::log1p_() const {
     Number_sp SingleFloat_O::log1p() const
     {
 	float f = this->as_float_();
-	if (::isnan(f)) return this->asSmartPtr();
+	if (std::isnan(f)) return this->asSmartPtr();
 	if (f < -1) return this->Base::log1p();
 	return clasp_make_single_float(_log1p(f));
     }
 #endif
 Number_sp DoubleFloat_O::log1p_() const {
   double f = this->as_double_();
-  if (::isnan(f))
+  if (std::isnan(f))
     return this->asSmartPtr();
   if (f < -1)
     return clasp_log1_complex_inner(clasp_one_plus(this->asSmartPtr()), clasp_make_fixnum(0));
@@ -3352,7 +3352,7 @@ Number_sp DoubleFloat_O::log1p_() const {
 #ifdef CLASP_LONG_FLOAT
 Number_sp LongFloat_O::log1p() const {
   LongFloat f = this->as_long_float();
-  if (::isnan(f))
+  if (std::isnan(f))
     return this->asSmartPtr();
   if (f < -1)
     return clasp_log1_complex_inner(clasp_one_plus(this->asSmartPtr()), clasp_make_fixnum(0));
