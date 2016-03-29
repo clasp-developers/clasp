@@ -5035,10 +5035,10 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::SourceFileInfo_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SourceFileInfo_O>), 0, "only" },
-{ class_kind, KIND_LISPALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor_O, sizeof(asttooling::internal::VariadicOperatorMatcherDescriptor_O), 0, "asttooling::internal::VariadicOperatorMatcherDescriptor_O" },
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::internal::VariadicOperatorMatcherDescriptor_O),MinCount), "MinCount" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::internal::VariadicOperatorMatcherDescriptor_O),MaxCount), "MaxCount" }, // public: (T) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::internal::VariadicOperatorMatcherDescriptor_O),MatcherName), "MatcherName" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor_O, sizeof(asttooling::VariadicOperatorMatcherDescriptor_O), 0, "asttooling::VariadicOperatorMatcherDescriptor_O" },
+ {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::VariadicOperatorMatcherDescriptor_O),MinCount), "MinCount" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::VariadicOperatorMatcherDescriptor_O),MaxCount), "MaxCount" }, // public: (T) fixable: NIL good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::VariadicOperatorMatcherDescriptor_O),MatcherName), "MatcherName" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
 {  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
@@ -5058,10 +5058,10 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::T_O*), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_asttooling__internal__MatcherDescriptor_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>),_Data), "_Data" },
-{  variable_capacity, sizeof(gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>),_Capacity), NULL },
-{    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>), 0, "only" },
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_asttooling__internal__MatcherDescriptor_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>),_Data), "_Data" },
+{  variable_capacity, sizeof(gctools::smart_ptr<asttooling::MatcherDescriptor_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>),_Capacity), NULL },
+{    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<asttooling::MatcherDescriptor_O>), 0, "only" },
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_, sizeof(gctools::GCVector_moveable<core::AuxArgument>), 0, "gctools::GCVector_moveable<core::AuxArgument>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::AuxArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), NULL },
@@ -5073,10 +5073,10 @@ public:
 {  variable_capacity, sizeof(asttooling::ParserValue), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ParserValue>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ParserValue>),_Capacity), NULL },
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), offsetof(SAFE_TYPE_MACRO(asttooling::ParserValue),Range), "Range" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposed-yet  {    variable_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(asttooling::ParserValue),Value.Value.Unsigned), "Value.Value.Unsigned" }, // public: (T NIL T) fixable: NIL good-name: T
-{ class_kind, KIND_LISPALLOC_asttooling__internal__FreeFuncMatcherDescriptor_O, sizeof(asttooling::internal::FreeFuncMatcherDescriptor_O), 0, "asttooling::internal::FreeFuncMatcherDescriptor_O" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::internal::FreeFuncMatcherDescriptor_O),MatcherName), "MatcherName" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_asttooling__internal__FixedArgCountMatcherDescriptor_O, sizeof(asttooling::internal::FixedArgCountMatcherDescriptor_O), 0, "asttooling::internal::FixedArgCountMatcherDescriptor_O" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::internal::FixedArgCountMatcherDescriptor_O),MatcherName), "MatcherName" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_asttooling__internal__FreeFuncMatcherDescriptor_O, sizeof(asttooling::FreeFuncMatcherDescriptor_O), 0, "asttooling::FreeFuncMatcherDescriptor_O" },
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::FreeFuncMatcherDescriptor_O),MatcherName), "MatcherName" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_asttooling__internal__FixedArgCountMatcherDescriptor_O, sizeof(asttooling::FixedArgCountMatcherDescriptor_O), 0, "asttooling::FixedArgCountMatcherDescriptor_O" },
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::FixedArgCountMatcherDescriptor_O),MatcherName), "MatcherName" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), NULL },
@@ -5117,8 +5117,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Slots._Vector._Contents), "_Slots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_asttooling__internal__OverloadedMatcherDescriptor_O, sizeof(asttooling::internal::OverloadedMatcherDescriptor_O), 0, "asttooling::internal::OverloadedMatcherDescriptor_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>>), offsetof(SAFE_TYPE_MACRO(asttooling::internal::OverloadedMatcherDescriptor_O),Overloads._Vector._Contents), "Overloads._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_asttooling__internal__OverloadedMatcherDescriptor_O, sizeof(asttooling::OverloadedMatcherDescriptor_O), 0, "asttooling::OverloadedMatcherDescriptor_O" },
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>>), offsetof(SAFE_TYPE_MACRO(asttooling::OverloadedMatcherDescriptor_O),Overloads._Vector._Contents), "Overloads._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_, sizeof(gctools::GCVector_moveable<asttooling::ErrorContent>), 0, "gctools::GCVector_moveable<asttooling::ErrorContent>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ErrorContent>),_Data), "_Data" },
 {  variable_capacity, sizeof(asttooling::ErrorContent), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ErrorContent>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ErrorContent>),_Capacity), NULL },
@@ -6786,7 +6786,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__S
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
 obj_finalize_KIND_LISPALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor_O:
 {
-    asttooling::internal::VariadicOperatorMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::VariadicOperatorMatcherDescriptor_O*>(client);
+    asttooling::VariadicOperatorMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::VariadicOperatorMatcherDescriptor_O*>(client);
     obj_gc_safe->~VariadicOperatorMatcherDescriptor_O();
     return;
 }
@@ -6804,7 +6804,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_asttooling__internal__MatcherDescriptor_O__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
@@ -6813,13 +6813,13 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ParserValue_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<asttooling::ParserValue>"));}
 obj_finalize_KIND_LISPALLOC_asttooling__internal__FreeFuncMatcherDescriptor_O:
 {
-    asttooling::internal::FreeFuncMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::FreeFuncMatcherDescriptor_O*>(client);
+    asttooling::FreeFuncMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::FreeFuncMatcherDescriptor_O*>(client);
     obj_gc_safe->~FreeFuncMatcherDescriptor_O();
     return;
 }
 obj_finalize_KIND_LISPALLOC_asttooling__internal__FixedArgCountMatcherDescriptor_O:
 {
-    asttooling::internal::FixedArgCountMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::FixedArgCountMatcherDescriptor_O*>(client);
+    asttooling::FixedArgCountMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::FixedArgCountMatcherDescriptor_O*>(client);
     obj_gc_safe->~FixedArgCountMatcherDescriptor_O();
     return;
 }
@@ -6855,7 +6855,7 @@ obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
 }
 obj_finalize_KIND_LISPALLOC_asttooling__internal__OverloadedMatcherDescriptor_O:
 {
-    asttooling::internal::OverloadedMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::OverloadedMatcherDescriptor_O*>(client);
+    asttooling::OverloadedMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::OverloadedMatcherDescriptor_O*>(client);
     obj_gc_safe->~OverloadedMatcherDescriptor_O();
     return;
 }
@@ -8811,8 +8811,8 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__internal__VariadicOperatorMatcherDescriptor_O:
 {
-    asttooling::internal::VariadicOperatorMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::VariadicOperatorMatcherDescriptor_O*>(client);
-    GC<asttooling::internal::VariadicOperatorMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    asttooling::VariadicOperatorMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::VariadicOperatorMatcherDescriptor_O*>(client);
+    GC<asttooling::VariadicOperatorMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
@@ -8829,7 +8829,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_asttooling__internal__MatcherDescriptor_O__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<asttooling::internal::MatcherDescriptor_O>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<asttooling::MatcherDescriptor_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
@@ -8838,14 +8838,14 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_astto
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<asttooling::ParserValue>"));}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__internal__FreeFuncMatcherDescriptor_O:
 {
-    asttooling::internal::FreeFuncMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::FreeFuncMatcherDescriptor_O*>(client);
-    GC<asttooling::internal::FreeFuncMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    asttooling::FreeFuncMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::FreeFuncMatcherDescriptor_O*>(client);
+    GC<asttooling::FreeFuncMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__internal__FixedArgCountMatcherDescriptor_O:
 {
-    asttooling::internal::FixedArgCountMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::FixedArgCountMatcherDescriptor_O*>(client);
-    GC<asttooling::internal::FixedArgCountMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    asttooling::FixedArgCountMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::FixedArgCountMatcherDescriptor_O*>(client);
+    GC<asttooling::FixedArgCountMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__:
@@ -8880,8 +8880,8 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallb
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__internal__OverloadedMatcherDescriptor_O:
 {
-    asttooling::internal::OverloadedMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::internal::OverloadedMatcherDescriptor_O*>(client);
-    GC<asttooling::internal::OverloadedMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    asttooling::OverloadedMatcherDescriptor_O* obj_gc_safe = reinterpret_cast<asttooling::OverloadedMatcherDescriptor_O*>(client);
+    GC<asttooling::OverloadedMatcherDescriptor_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
