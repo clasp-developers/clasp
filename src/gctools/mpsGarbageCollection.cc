@@ -663,7 +663,7 @@ mps_addr_t dummyAwlFindDependent(mps_addr_t addr) {
 // Try something like
 // export CLASP_MPS_CONFIG="32 32 16 80 32 80 64"
 // to debug MPS
-bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent, size_t &keyExtendBy ) {
+bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_t &nurseryKb, size_t &nurseryMortalityPercent, size_t &generation1Kb, size_t &generation1MortalityPercent, size_t &keyExtendByKb ) {
   char *cur = getenv("CLASP_MPS_CONFIG");
   size_t values[20];
   int numValues = 0;
@@ -675,7 +675,7 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
            nurseryMortalityPercent,
            generation1Kb,
            generation1MortalityPercent,
-           keyExtendBy );
+           keyExtendByKb );
     printf("Changed to CLASP_MPS_CONFIG = %s\n", cur);
     while (*cur && numValues < 20) {
       values[numValues] = strtol(cur, &cur, 10);
@@ -685,7 +685,7 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
       numValues = 7;
     switch (numValues) {
     case 7:
-        keyExtendBy = values[6];
+        keyExtendByKb = values[6];
     case 6:
         generation1MortalityPercent = values[5];
     case 5:
@@ -705,7 +705,7 @@ bool maybeParseClaspMpsConfig(size_t &arenaMb, size_t &spareCommitLimitMb, size_
         printf("    nurseryMortalityPercent = %lu\n", nurseryMortalityPercent);
         printf("              generation1Kb = %lu\n", generation1Kb);
         printf("generation1MortalityPercent = %lu\n", generation1MortalityPercent);
-        printf("                keyExtendBy = %lu\n", keyExtendBy );
+        printf("              keyExtendByKb = %lu\n", keyExtendByKb );
         return true;
         break;
     default:
@@ -736,16 +736,16 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 //  global_alignup_sizeof_header = AlignUp(sizeof(Header_s));
 
 #define CHAIN_SIZE 6400*5 // 256 // 6400
-  size_t arenaSizeMb = 320;
+  size_t arenaSizeMb = 16000;
   size_t spareCommitLimitMb = 320;
   size_t nurseryKb = CHAIN_SIZE;
   size_t nurseryMortalityPercent = 80;
   size_t generation1Kb = CHAIN_SIZE * 4;
   size_t generation1MortalityPercent = 50;
-  size_t keyExtendBy = 64;  // 64K
+  size_t keyExtendByKb = 64;  // 64K
   
   // Try something like   export CLASP_MPS_CONFIG="32 32 16 80 32 80 64"   to debug MPS
-  maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent, keyExtendBy );
+  maybeParseClaspMpsConfig(arenaSizeMb, spareCommitLimitMb, nurseryKb, nurseryMortalityPercent, generation1Kb, generation1MortalityPercent, keyExtendByKb );
 
   double nurseryMortalityFraction = nurseryMortalityPercent / 100.0;
   double generation1MortalityFraction = generation1MortalityPercent / 100.0;
@@ -789,8 +789,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create obj format");
 
-  mps_chain_t main_chain;
-  res = mps_chain_create(&main_chain,
+  mps_chain_t general_chain;
+  res = mps_chain_create(&general_chain,
                          _global_arena,
                          LENGTH(gen_params),
                          gen_params);
@@ -807,13 +807,13 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the AMC pool
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
 #ifdef DEBUG_MPS_FENCEPOST_FREE
     MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
 #endif
     MPS_ARGS_ADD(args, MPS_KEY_INTERIOR, 1);
-    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendBy*1024);
-    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendBy*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
     res = mps_pool_create_k(&_global_amc_pool, _global_arena, mps_class_amc(), args);
   }
   MPS_ARGS_END(args);
@@ -854,8 +854,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #ifdef DEBUG_MPS_FENCEPOST_FREE
     MPS_ARGS_ADD(args, MPS_KEY_POOL_DEBUG_OPTIONS, &debug_options);
 #endif
-    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendBy*1024);
-    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendBy*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY,keyExtendByKb*1024);
+    MPS_ARGS_ADD(args, MPS_KEY_LARGE_SIZE,keyExtendByKb*1024);
     res = mps_pool_create_k(&global_amc_cons_pool, _global_arena, mps_class_amc(), args);
   }
   MPS_ARGS_END(args);
@@ -888,7 +888,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #if 0   
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, dummyAwlFindDependent);
     res = mps_pool_create_k(&global_non_moving_pool, _global_arena, mps_class_awl(), args);
   }
@@ -909,7 +909,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_t _global_amcz_pool;
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     res = mps_pool_create_k(&_global_amcz_pool, _global_arena, mps_class_amcz(), args);
   }
   MPS_ARGS_END(args);
@@ -933,7 +933,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // Create the AWL pool for weak hash tables here
   MPS_ARGS_BEGIN(args) {
     MPS_ARGS_ADD(args, MPS_KEY_FORMAT, weak_obj_fmt);
-    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, main_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, general_chain);
     MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, awlFindDependent);
     res = mps_pool_create_k(&_global_awl_pool, _global_arena, mps_class_awl(), args);
   }
@@ -1059,7 +1059,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_pool_destroy(_global_amc_pool);
   mps_arena_park(_global_arena);
   mps_chain_destroy(cons_chain);
-  mps_chain_destroy(main_chain);
+  mps_chain_destroy(general_chain);
   mps_fmt_destroy(weak_obj_fmt);
   mps_fmt_destroy(obj_fmt);
   mps_fmt_destroy(cons_fmt);
