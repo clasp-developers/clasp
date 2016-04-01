@@ -619,7 +619,7 @@ namespace gctools {
   template <class OT>
     struct GCObjectDefaultConstructorAllocator<OT,false> {
     static smart_ptr<OT> allocate() {
-      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_class);
+      lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(OT::static_classSymbol());
     }
   };
 };

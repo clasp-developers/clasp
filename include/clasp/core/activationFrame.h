@@ -135,8 +135,6 @@ public:
   typedef T_sp value_type;
   gctools::GCArray_moveable<value_type> _Objects;
 public:
-
-
   template <class... ARGS>
   static ValueFrame_sp create_fill_numExtraArgs(int numExtraArgs, T_sp parent, ARGS &&... args) {
     ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(numExtraArgs,parent,std::forward<ARGS>(args)...);

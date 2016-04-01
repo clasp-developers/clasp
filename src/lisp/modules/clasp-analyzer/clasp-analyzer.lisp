@@ -260,7 +260,6 @@
         (push class-name (analysis-enum-roots analysis)))))
 
 (defun build-hierarchy (analysis)
-  (format t "------Analyzing class hierarchy~%")
   (maphash #'(lambda (node-name enum)
                (notify-parents node-name analysis))
            (analysis-enums analysis)))
@@ -514,7 +513,11 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
   (car (loop for x in fields
           when (string= (instance-variable-field-name (car (last (fields x)))) name)
           collect x)))
-  
+
+(defun offset-field-names (fields)
+  (loop for x in fields
+     collect (instance-variable-field-name (car (last (fields x))))))
+
 (defun maybe-fixup-type (type container-type)
   (if type
       type
@@ -540,6 +543,8 @@ to expose."
     (let* ((array (offset-field-with-name variable-fields "_Data"))
            (capacity (offset-field-with-name variable-fields "_Capacity"))
            (end (or (offset-field-with-name variable-fields "_End") capacity)))
+      (unless capacity
+        (error "Could not find _Capacity in the variable-fields: ~a with names: ~a of ~a" variable-fields (offset-field-names variable-fields) (mapcar (lambda (x) (offset-type x)) variable-fields)))
       (format stream "{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
               (layout-base-ctype array)
               (layout-field-names array)
@@ -557,7 +562,8 @@ to expose."
                        (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
                        (all-public (every #'identity public))
                        (good-name (not (is-bad-special-case-variable-name (layout-field-names one))))
-                       (expose-it (and (or all-public fixable) good-name)))
+                       (expose-it (and (or all-public fixable) good-name))
+                       (*print-pretty* nil))
                   (format stream "~a {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
                           (if expose-it "" "// not-exposed-yet ")
                           (layout-type one)
@@ -582,7 +588,8 @@ to expose."
            (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
            (all-public (every #'identity public))
            (good-name (not (is-bad-special-case-variable-name (layout-field-names one))))
-           (expose-it (and (or all-public fixable) good-name)))
+           (expose-it (and (or all-public fixable) good-name))
+           (*print-pretty* nil))
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it "" "// not-exposing")
               (layout-type one)
@@ -625,12 +632,12 @@ to expose."
                     :return arg))
            (arg0-ctype (gc-template-argument-ctype arg0)))
       #+(or)(fixed (linearize-code-for-field (gethash (gcarray-moveable-ctype-key x) (project-classes (analysis-project analysis))) base analysis))
-         (make-instance 'gcarray-offset
-                        :base base
-                        :fixed-fields nodes
-                        :offset-type arg0-ctype
-                        :elements-base arg0-ctype
-                        :elements (maybe-list (linearize-class-layout-impl arg0-ctype arg0-ctype analysis))))))
+      (make-instance 'gcarray-offset
+                     :base base
+                     :fixed-fields nodes
+                     :offset-type arg0-ctype
+                     :elements-base arg0-ctype
+                     :elements (maybe-list (linearize-class-layout-impl arg0-ctype arg0-ctype analysis))))))
 
 (defmethod linearize-class-layout-impl ((x cclass) base analysis)
   (let* ((project (analysis-project analysis))
@@ -962,7 +969,6 @@ can be saved and reloaded within the project for later analysis"
 
 (defmethod classify-ctype ((x cast:incomplete-array-type))
   (let ((element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
-    (format t "In classify-ctype ((x cast:incomplete-array-type)) x: ~a  element-type: ~a~%" x element-type)
     (make-incomplete-array-ctype :key (record-key x) :element-type element-type)))
 
 
@@ -2496,7 +2502,6 @@ Otherwise return nil."
   (let ((var-part (variable-part cclass-layout)))
     (when var-part
       (format stream "~a,~%" (field-data key var-part "variable_array0"))
-      (format t "var-part: ~a~%" var-part)
       (let* ((ctype (instance-variable-ctype (car var-part)))
              (ctype-key (container-key ctype))
              (container-cclass (gethash ctype-key (project-classes project)))
@@ -2603,7 +2608,7 @@ Otherwise return nil."
 
 (defgeneric ignorable-ctype-p (ctype))
 
-(defmethod ignorable-ctype-p ((ctype builtin-ctype)) t)
+(defmethod ignorable-ctype-p ((ctype builtin-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype function-proto-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype dependent-name-ctype)) t)
 (defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
