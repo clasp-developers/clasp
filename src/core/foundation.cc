@@ -220,9 +220,6 @@ namespace llvm_interface {
 ::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
 };
 
-/*! A Symbol that is always undefined */
-//core::Symbol_sp	_global_undefined_symbol;
-
 void dbg_hook(const char *error) {
   // Do nothing
   // set a break point here to catch every error
@@ -244,40 +241,39 @@ void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
 
 namespace core {
 
-// _global_debuggerOnSIGABRT
 // false == SIGABRT invokes debugger, true == terminate (used in core__exit)
-bool _global_debuggerOnSIGABRT = true;
+bool global_debuggerOnSIGABRT = true;
 
-int _global_signalTrap = 0;
-int _global_pollTicksGC = 0;
+int global_signalTrap = 0;
+int global_pollTicksGC = 0;
 
 void lisp_pollSignals() {
-  if (core::_global_signalTrap) {
-    int signo = core::_global_signalTrap;
-    SET_SIGNAL(0);
-    if (signo == SIGINT) {
-      printf("You pressed Ctrl+C\n");
-      try {
-        core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
-      } catch (...) {
-        throw;
-      }
-      //    core__invoke_internal_debugger(_Nil<core::T_O>());
-      printf("Resuming after Ctrl+C\n");
-    } else if (signo == SIGCHLD) {
-      //            printf("A child terminated\n");
-    } else if (signo == SIGABRT) {
-      printf("ABORT was called!!!!!!!!!!!!\n");
-      core__invoke_internal_debugger(_Nil<core::T_O>());
-      //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
+  int signo = core::global_signalTrap;
+  SET_SIGNAL(0);
+  if (signo == SIGINT) {
+    printf("You pressed Ctrl+C\n");
+    try {
+      core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
+    } catch (...) {
+      throw;
     }
+      //    core__invoke_internal_debugger(_Nil<core::T_O>());
+    printf("Resuming after Ctrl+C\n");
+  } else if (signo == SIGCHLD) {
+      //            printf("A child terminated\n");
+  } else if (signo == SIGABRT) {
+    printf("ABORT was called!!!!!!!!!!!!\n");
+    core__invoke_internal_debugger(_Nil<core::T_O>());
+      //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
   }
+#if 0
 #ifdef USE_MPS
-  ++_global_pollTicksGC;
-  if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && _global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue())) {
-    _global_pollTicksGC = 0;
+  ++global_pollTicksGC;
+  if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue())) {
+    global_pollTicksGC = 0;
     gctools::gctools__cleanup();
   }
+#endif
 #endif
 }
 

@@ -136,19 +136,21 @@ public:
   gctools::GCArray_moveable<value_type> _Objects;
 public:
   template <class... ARGS>
-  static ValueFrame_sp create_fill_numExtraArgs(int numExtraArgs, T_sp parent, ARGS &&... args) {
-    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(numExtraArgs,parent,std::forward<ARGS>(args)...);
+  static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
+    ASSERT(sizeof...(ARGS) <= capacity);
+    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(capacity,parent,std::forward<ARGS>(args)...);
     return vf;
   }
 
+#if 0
   template <class... ARGS>
   static ValueFrame_sp create_fill_args(T_sp parent, ARGS &&... args) {
     ValueFrame_sp vf = create_fill_numExtraArgs(0,parent,std::forward<ARGS>(args)...);
     return vf;
   }
-
+#endif
   static ValueFrame_sp create(int numArgs, const T_sp &parent) {
-    ValueFrame_sp vf = create_fill_numExtraArgs(numArgs,parent);
+    ValueFrame_sp vf = create_fill_capacity(numArgs,parent);
     return vf;
   }
 
@@ -173,10 +175,12 @@ public:
   ValueFrame_O() = delete;
  public:
   template <typename...ARGS>
-    ValueFrame_O(size_t size, /*const T_sp& initial_element,*/ T_sp parent, ARGS && ...args)
+    ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, ARGS && ...args)
     : Base(parent)
     , _DebuggingInfo(_Nil<T_O>())
-    ,_Objects(size,_Unbound<T_O>()/*initial_element*/,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {};
+    ,_Objects(capacity,_Unbound<T_O>()/*initial_element*/,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {
+    ASSERT(sizeof...(ARGS)<=capacity);
+  };
   virtual ~ValueFrame_O(){
       //            printf("%s::%d dtor ValueFrame@%p\n", __FILE__, __LINE__, this);
   };
@@ -193,8 +197,8 @@ public:
   }
 
 public:
-  inline T_sp &operator[](int idx) { return this->_Objects[idx];};
-  inline const T_sp &operator[](int idx) const { return this->_Objects[idx];};
+  inline T_sp &operator[](int idx) { ASSERT(idx>=0 && idx<this->_Objects._Capacity);return this->_Objects[idx];};
+  inline const T_sp &operator[](int idx) const { ASSERT(idx>=0 && idx<this->_Objects._Capacity);return this->_Objects[idx];};
 
   T_sp *argArray() { return this->_Objects.data(); };
 

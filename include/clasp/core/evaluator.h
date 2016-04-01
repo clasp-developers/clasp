@@ -92,7 +92,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = cl__length(argsPLUS);
   int nargs = numArgsPassed + numArgsPlus;
-  ValueFrame_sp frob(ValueFrame_O::create_fill_numExtraArgs(numArgsPlus, _Nil<T_O>(), std::forward<Args>(args)...));
+  ValueFrame_sp frob(ValueFrame_O::create_fill_capacity(nargs, _Nil<T_O>(), std::forward<Args>(args)...));
   List_sp cur = argsPLUS;
   for (int i = numArgsPassed; i < nargs; ++i) {
     frob->operator[](i) = oCar(cur);

@@ -1464,7 +1464,7 @@ CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
 CL_DOCSTRING("exit");
 CL_DEFUN void core__exit(int exitValue) {
-  _global_debuggerOnSIGABRT = false;
+  global_debuggerOnSIGABRT = false;
   throw(ExitProgram(exitValue));
 };
 
