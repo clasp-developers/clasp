@@ -480,13 +480,12 @@ struct registered_class<T const>
 #define BF boost::format
 
 namespace core {
-extern int _global_signalTrap;
-extern bool _global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
+extern int global_signalTrap;
+extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
 void lisp_pollSignals();
 };
-#define SET_SIGNAL(s) \
-  { core::_global_signalTrap = s; }
-#define POLL_SIGNALS() core::lisp_pollSignals();
+#define SET_SIGNAL(s) { core::global_signalTrap = s; }
+#define POLL_SIGNALS() if (core::global_signalTrap) core::lisp_pollSignals();
 
 void lisp_errorDereferencedNonPointer(core::T_O *objP);
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
@@ -782,8 +781,6 @@ extern core::Symbol_sp& _sym_formatArguments;
 #define IS_SYMBOL_DEFINED(x) (x)
 #define IS_SYMBOL_UNDEFINED(x) (!x)
 #define UNDEFINED_SYMBOL (_Unbound<core::Symbol_O>())
-//#define UNDEFINED_SYMBOL _global_undefined_symbol
-//extern core::Symbol_sp& _global_undefined_symbol;
 
 
 //

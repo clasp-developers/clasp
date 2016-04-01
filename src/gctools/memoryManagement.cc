@@ -99,7 +99,7 @@ void handle_signals(int signo) {
   //
   SET_SIGNAL(signo);
   telemetry::global_telemetry_search->flush();
-  if (signo == SIGABRT && core::_global_debuggerOnSIGABRT) {
+  if (signo == SIGABRT && core::global_debuggerOnSIGABRT) {
     printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
     core::LispDebugger debugger(_Nil<core::T_O>());
     debugger.invoke();
