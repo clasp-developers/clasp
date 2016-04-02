@@ -54,7 +54,7 @@ THE SOFTWARE.
 namespace asttooling {
 namespace RegMap {
 
-using asttooling::internal::MatcherDescriptor_O;
+using asttooling::MatcherDescriptor_O;
 
 void RegistryMaps_O::_registerMatcher(core::Symbol_sp MatcherName,
                                     gctools::smart_ptr<MatcherDescriptor_O> Callback) const {
@@ -68,19 +68,19 @@ void RegistryMaps_O::_registerMatcher(core::Symbol_sp MatcherName,
 
 #define REGISTER_MATCHER(name)                                                             \
   _registerMatcher(core::lispify_intern_keyword(#name), \
-                   internal::makeMatcherAutoMarshall( ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
+                   makeMatcherAutoMarshall( ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)            \
   static_cast<::clang::ast_matchers::name##_Type##Id>( \
       ::clang::ast_matchers::name)
 #define REGISTER_OVERLOADED_2(name) \
   do { \
     gctools::smart_ptr<MatcherDescriptor_O> Callbacks[] = { \
-        internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), \
+        makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), \
                                           core::lispify_intern_keyword(#name)), \
-        internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
+        makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
                                           core::lispify_intern_keyword(#name))}; \
     _registerMatcher(core::lispify_intern_keyword(#name), \
-                     gctools::GC<internal::OverloadedMatcherDescriptor_O>::allocate(Callbacks) /*new internal::OverloadedMatcherDescriptor(Callbacks)*/); \
+                     gctools::GC<OverloadedMatcherDescriptor_O>::allocate(Callbacks) /*new OverloadedMatcherDescriptor(Callbacks)*/); \
   } while (0)
 
 /// \brief Generate a registry map with all the known matchers.
@@ -377,9 +377,9 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(cor
   clang::ast_matchers::dynamic::VariantMatcher Out = constructMatcher(MatcherName, NameRange, Args, Error);
   if (Out.isNull())
     return Out;
-  llvm::Optional<internal::DynTypedMatcher> Result = Out.getSingleMatcher();
+  llvm::Optional<DynTypedMatcher> Result = Out.getSingleMatcher();
   if (Result.hasValue()) {
-    llvm::Optional<internal::DynTypedMatcher> Bound = Result->tryBind(BindID);
+    llvm::Optional<DynTypedMatcher> Bound = Result->tryBind(BindID);
     if (Bound.hasValue()) {
       return clang::ast_matchers::dynamic::VariantMatcher::SingleMatcher(*Bound);
     }

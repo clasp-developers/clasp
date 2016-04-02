@@ -135,8 +135,6 @@ public:
   typedef T_sp value_type;
   gctools::GCArray_moveable<value_type> _Objects;
 public:
-
-
   template <class... ARGS>
   static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
     ASSERT(sizeof...(ARGS) <= capacity);

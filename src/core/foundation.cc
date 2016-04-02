@@ -1454,10 +1454,11 @@ T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6) { ret
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7) { return Cons_O::createList(a1, a2, a3, a4, a5, a6, a7); }
 T_sp lisp_createList(T_sp a1, T_sp a2, T_sp a3, T_sp a4, T_sp a5, T_sp a6, T_sp a7, T_sp a8) { return Cons_O::createList(a1, a2, a3, a4, a5, a6, a7, a8); }
 
-void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass)
+void lisp_errorCannotAllocateInstanceWithMissingDefaultConstructor(T_sp aclass_symbol)
 {
-  Class_sp cclass = aclass.as<Class_O>();
-  SIMPLE_ERROR(BF("You cannot allocate a %s with no arguments because it is missing a default constructor") % _rep_(cclass->className()));
+  ASSERT(aclass_symbol);
+  Symbol_sp cclassSymbol = aclass_symbol.as<Symbol_O>();
+  SIMPLE_ERROR(BF("You cannot allocate a %s with no arguments because it is missing a default constructor") % _rep_(cclassSymbol));
 }
 void lisp_errorExpectedTypeSymbol(Symbol_sp typeSym, T_sp datum) {
   TYPE_ERROR(datum, typeSym);

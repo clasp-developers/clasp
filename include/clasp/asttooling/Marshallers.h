@@ -57,8 +57,6 @@ THE SOFTWARE.
 
 namespace asttooling {
 
-namespace internal {
-
 using namespace clang::ast_matchers::dynamic;
 
 /// \brief Helper template class to just from argument type to the right is/get
@@ -114,7 +112,7 @@ struct ArgTypeTraits<unsigned> {
  FORWARD(MatcherDescriptor);
  class MatcherDescriptor_O : public core::General_O {
   struct metadata_always_fix_pointers_to_derived_classes;
-//   L I S P _VIRTUAL_CLASS(asttooling,AstToolingPkg,MatcherDescriptor_O,"MatcherDescriptor",core::General_O);
+  LISP_ABSTRACT_CLASS(asttooling,AstToolingPkg,MatcherDescriptor_O,"MatcherDescriptor",core::General_O);
 public:
   virtual ~MatcherDescriptor_O() {}
   virtual VariantMatcher create(core::Cons_sp NameRange,
@@ -129,7 +127,7 @@ public:
 /// The marshaller is in charge of taking the VariantValue arguments, checking
 /// their types, unpacking them and calling the underlying function.
 class FixedArgCountMatcherDescriptor_O : public MatcherDescriptor_O {
-
+  LISP_CLASS(asttooling,AstToolingPkg,FixedArgCountMatcherDescriptor_O,"FixedArgCountMatcherDescriptor",MatcherDescriptor_O);
 public:
   typedef VariantMatcher (*MarshallerType)(void (*Func)(),
                                            core::Symbol_sp MatcherName,
@@ -164,6 +162,7 @@ GCPRIVATE:
 /// functions as we want, reducing the number of symbols and size of the
 /// object file.
 class FreeFuncMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,FreeFuncMatcherDescriptor_O,"FreeFuncMatcherDescriptor",MatcherDescriptor_O);
 public:
   typedef VariantMatcher (*RunFunc)(core::Symbol_sp MatcherName,
                                     core::Cons_sp NameRange,
@@ -172,7 +171,7 @@ public:
 
   FreeFuncMatcherDescriptor_O(RunFunc Func, core::Symbol_sp MatcherName)
       : Func(Func), MatcherName(MatcherName) {}
-
+  
   VariantMatcher create(core::Cons_sp NameRange,
                         ArrayRef<ParserValue> Args,
                         Diagnostics *Error) const {
@@ -349,6 +348,7 @@ private:
 /// It will try every overload and generate appropriate errors for when none or
 /// more than one overloads match the arguments.
 class OverloadedMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,OverloadedMatcherDescriptor_O,"OverloadedMatcherDescriptor",MatcherDescriptor_O);
   FRIEND_GC_SCANNER(asttooling::internal::OverloadedMatcherDescriptor);
 
 public:
@@ -401,6 +401,7 @@ GCPRIVATE:
 
 /// \brief Variadic operator marshaller function.
 class VariadicOperatorMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,VariadicOperatorMatcherDescriptor_O,"VariadicOperatorMatcherDescriptor",MatcherDescriptor_O);
 public:
   typedef clang::ast_matchers::internal::DynTypedMatcher::VariadicOperator VarOp;
   VariadicOperatorMatcherDescriptor_O(unsigned MinCount, unsigned MaxCount,
@@ -511,7 +512,6 @@ makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFu
                                                                                    MatcherName);
 }
 
-} // namespace internal
 } // namespace asttooling
 
 #endif // LLVM_CLANG_AST_MATCHERS_DYNAMIC_MARSHALLERS_H
