@@ -161,7 +161,7 @@ public:
     ValueFrame_sp vf = ValueFrame_O::create(mv.getSize(),parent);
     // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
     for (int i(0); i < mv.getSize(); ++i) {
-      vf->_Objects[i].setRaw_(reinterpret_cast<gc::Tagged>(mv[i]));
+      (*vf)[i].setRaw_(reinterpret_cast<gc::Tagged>(mv[i]));
     }
     return vf;
   }
@@ -180,7 +180,7 @@ public:
     ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, ARGS && ...args)
     : Base(parent)
     , _DebuggingInfo(_Nil<T_O>())
-    ,_Objects(capacity,_Unbound<T_O>()/*initial_element*/,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {
+    ,_Objects(_Unbound<T_O>(),capacity,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {
     ASSERT(sizeof...(ARGS)<=capacity);
   };
   virtual ~ValueFrame_O(){
@@ -199,10 +199,26 @@ public:
   }
 
 public:
-  inline T_sp &operator[](int idx) { ASSERT(idx>=0 && idx<this->_Objects._Capacity);return this->_Objects[idx];};
-  inline const T_sp &operator[](int idx) const { ASSERT(idx>=0 && idx<this->_Objects._Capacity);return this->_Objects[idx];};
+  inline T_sp &operator[](int idx) {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
+  inline const T_sp &operator[](int idx) const {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
 
-  T_sp *argArray() { return this->_Objects.data(); };
+//  T_sp *argArray() { return this->_Objects.data(); };
 
   /*! Return the number of arguments */
   size_t length() const { return this->_Objects.capacity(); };
@@ -214,18 +230,20 @@ public:
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
 
   inline bool boundp_entry(uint idx) const {
-    return !this->_Objects[idx].unboundp();
+    return !(*this)[idx].unboundp();
   }
 
   /*! Set one entry of the activation frame */
   void set_entry(uint idx, T_sp obj) {
-    this->_Objects[idx] = obj;
+    (*this)[idx] = obj;
   }
 
   inline T_sp entry(int idx) const {
-    return this->_Objects[idx];
+    return (*this)[idx];
   }
-  inline const T_sp &entryReference(int idx) const { return this->_Objects[idx];};
+  inline const T_sp &entryReference(int idx) const {
+    return (*this)[idx];
+  };
 
   /*! Fill the activation frame starting at entry istart with values.
 	  DO NOT OVERFLOW THE ValueFrame!!!! */
@@ -262,7 +280,7 @@ public:
     //	    vf->allocateStorage(args->length());
     int idx = 0;
     for (auto cur : args) {
-      vf->_Objects[idx] = oCar(cur); // n e w (&(vf->_Args[idx])) T_sp(oCar(cur));
+      (*vf)[idx] = oCar(cur);
       ++idx;
     }
     return vf;
@@ -277,7 +295,7 @@ public:
   FunctionFrame_O() = delete;
  public:
   template <typename...ARGS>
-    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(size,_Unbound<T_O>(),std::forward<ARGS>(args)...) {};
+    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(_Unbound<T_O>(),size,std::forward<ARGS>(args)...) {};
   /*! FunctionFrames must always be initialized with _Unbound !!!!! */
   virtual ~FunctionFrame_O() {}
 public:
@@ -285,16 +303,36 @@ public:
   size_t length() const { return this->_Objects.capacity(); };
   //	T_sp* argArray() { return this->_Objects.argArray(); };
 
+
+  inline T_sp &operator[](int idx) {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
+  inline const T_sp &operator[](int idx) const {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
+
   bool boundp_entry(uint idx) const {
-    return !this->_Objects[idx].unboundp();
+    return !(*this)[idx].unboundp();
   }
 
   /*! Set one entry of the activation frame */
   void set_entry(uint idx, T_sp obj) {
-    this->_Objects[idx] = obj;
+    (*this)[idx] = obj;
   }
-  T_sp entry(int idx) const { return this->_Objects[idx];};
-  const T_sp &entryReference(int idx) const { return this->_Objects[idx];};
+  T_sp entry(int idx) const { return (*this)[idx];};
+  const T_sp &entryReference(int idx) const { return (*this)[idx];};
 
   string asString() const;
 

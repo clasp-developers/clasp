@@ -106,7 +106,7 @@ namespace core {
     gctools::GCArray_moveable<value_type> _Slots;
   ClosureWithSlots_O(size_t num_slots, T_sp name, fnLispCallingConvention fptr=NULL )
     : Functor_O(name)
-      , _Slots(num_slots,_Unbound<T_O>()) {}
+      , _Slots(_Unbound<T_O>(),num_slots) {}
   };
 
   inline CL_DEFUN size_t core__sizeof_header_and_closure_with_slots(size_t numberOfSlots) {

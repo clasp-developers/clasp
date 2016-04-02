@@ -668,6 +668,20 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
 
+  bool debug_guard = false;
+#ifdef DEBUG_GUARD
+  debug_guard = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "defined" : "undefined") ).str();
+
+  bool debug_validate_guard = false;
+#ifdef DEBUG_VALIDATE_GUARD
+  debug_validate_guard = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
+
 
   return debugging;
 }

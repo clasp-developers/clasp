@@ -199,13 +199,18 @@ namespace gctools {
     void validate() const {};
 #else
     inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
-  Header_s(kind_t k,size_t tstart, size_t tsize) 
+  Header_s(kind_t k,size_t tstart, size_t tsize, size_t total_size) 
     : header((((kind_t)k) << 2) | kind_tag),
       data{0xDEADBEEF01234567},
       tail_start(tstart),
         tail_size(tsize),
         guard(0x0FEEAFEEBFEECFEED)
         {
+#if 0
+          if ( tstart == 88 && k == 31 ) {
+            printf("%s:%d @%p  tstart == %lu tsize=%lu k == %d total_size=%lu \n", __FILE__, __LINE__, (void*)this, tstart, tsize, k, total_size  );
+          }
+#endif
           this->fill_tail();
         };
 

@@ -792,33 +792,21 @@ public:
   /*! Dereferencing operator - remove the other tag */
   Type *operator->() {
     GCTOOLS_ASSERT(this->generalp());
-    GCTOOLS_ASSERT(!this->unboundp());
     return untag_general(this->theObject);
   };
 
   Type *operator->() const {
     GCTOOLS_ASSERT(this->generalp());
-    GCTOOLS_ASSERT(!this->unboundp());
     return untag_general(this->theObject);
   };
 
   Type &operator*() const {
     GCTOOLS_ASSERT(this->objectp());
-    GCTOOLS_ASSERT(!this->unboundp());
     return *(this->untag_object());
   };
 
   Type *untag_object() const {
     return ::gctools::untag_object(this->theObject);
-#if 0
-    GCTOOLS_ASSERT(this->generalp() || this->consp());
-    if (this->generalp()) {
-      return untag_general<Type *>(this->theObject);
-    } else if (this->consp()) {
-      return untag_cons<Type *>(this->theObject);
-    }
-    THROW_HARD_ERROR(BF("This should never happen"));
-#endif
   }
 
   Type *get() const { return this->untag_object(); };

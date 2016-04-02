@@ -1713,11 +1713,14 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
 
 T_mv applyClosureToActivationFrame(Closure_sp func, ActivationFrame_sp args) {
   size_t nargs = args->length();
-  T_sp *frame = args->argArray();
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(args);
+#define frame (*vframe)
+//  T_sp *frame = args->argArray();
   switch (nargs) {
 #define APPLY_TO_ACTIVATION_FRAME
 #include <clasp/core/generated/applyToActivationFrame.h>
 #undef APPLY_TO_ACTIVATION_FRAME
+#undef frame
   default:
     SIMPLE_ERROR(BF("Illegal number of arguments in call: %s") % nargs);
   };

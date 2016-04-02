@@ -42,7 +42,8 @@ class GCArray_moveable : public GCContainer {
  size_t _Capacity; // Index one beyond the total number of elements allocated
  T _Data[];      // Store _Capacity numbers of T structs/classes starting here
  template <typename... ARGS>
-   GCArray_moveable(size_t numExtraArgs, const T& initial_element, ARGS &&... args) : _Capacity(numExtraArgs + sizeof...(ARGS))/*, _Data{args...}*/ {
+   GCArray_moveable(const T& initial_element, size_t capacity, ARGS &&... args) : _Capacity(capacity)/*, _Data{args...}*/ {
+   GCTOOLS_ASSERT(sizeof...(ARGS)<=capacity);
 #if 0
    // It would be so much better if I could initialize _Data[] this way or
    // in the initializer list above rather than assigning everything to a temporary
@@ -60,7 +61,7 @@ class GCArray_moveable : public GCContainer {
    }
  }
  GCArray_moveable() : _Capacity(0) {};
- GCArray_moveable(size_t num,const T& initial_element) : _Capacity(num) {
+ GCArray_moveable(const T& initial_element,size_t capacity) : _Capacity(capacity) {
    for ( size_t i=0; i<this->_Capacity; ++ i ) {
      new(&(this->_Data[i])) value_type(initial_element);
    };
@@ -128,11 +129,11 @@ public:
   void clear() { this->_Contents = NULL; };
 
   template <typename... ARGS>
-  void allocate(size_t numExtraArgs, const value_type &initial_element, ARGS &&... args) {
+  void allocate(const value_type &initial_element, size_t capacity, ARGS &&... args) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCKind<impl_type>::Kind,sizeof...(ARGS)+numExtraArgs);
-    new (&*implAddress) GCArray_moveable<value_type>(numExtraArgs, initial_element, std::forward<ARGS>(args)...);
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCKind<impl_type>::Kind,capacity);
+    new (&*implAddress) GCArray_moveable<value_type>(initial_element, capacity, std::forward<ARGS>(args)...);
 #if 0
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {
       T *p = &((*implAddress)[i]);

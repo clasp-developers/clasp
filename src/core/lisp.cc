@@ -307,6 +307,9 @@ void Lisp_O::setupSpecialSymbols() {
   gctools::global_tagged_Symbol_OP_unbound = reinterpret_cast<Symbol_O *>(symbol_unbound.raw_());
   gctools::global_tagged_Symbol_OP_deleted = reinterpret_cast<Symbol_O *>(symbol_deleted.raw_());
   gctools::global_tagged_Symbol_OP_sameAsKey = reinterpret_cast<Symbol_O *>(symbol_sameAsKey.raw_());
+  symbol_unbound->_HomePackage = symbol_nil;
+  symbol_deleted->_HomePackage = symbol_nil;
+  symbol_sameAsKey->_HomePackage = symbol_nil;
 }
 
 void Lisp_O::finalizeSpecialSymbols() {

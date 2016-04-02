@@ -146,15 +146,16 @@ namespace gctools {
     size_t tail_size = ((rand()%8)+1)*Alignment();
     true_size += tail_size;
 #endif
+    HeadT *header;
     do {
       mps_res_t res = mps_reserve(&addr, allocation_point, true_size);
       if ( res != MPS_RES_OK ) {
         printf("%s:%d Bad mps_reserve\n", __FILE__, __LINE__ );
       }
-      HeadT *header = reinterpret_cast<HeadT *>(addr);
+      header = reinterpret_cast<HeadT *>(addr);
 #ifdef DEBUG_GUARD
       memset(header,0x00,true_size);
-      new (header) HeadT(the_kind,size,tail_size);
+      new (header) HeadT(the_kind,size,tail_size, true_size);
 #else
       new (header) HeadT(the_kind);
 #endif
@@ -167,6 +168,9 @@ namespace gctools {
                   (uintptr_t)obj,
                   (uintptr_t)((char*)addr+true_size),
                   the_kind);
+#ifdef DEBUG_VALIDATE_GUARD
+    header->validate();
+#endif
     DEBUG_MPS_UNDERSCANNING_TESTS();
     POLL_SIGNALS();
     globalMpsMetrics.totalMemoryAllocated += true_size;
@@ -645,7 +649,18 @@ namespace gctools {
 
     template <typename... ARGS>
       static smart_pointer_type allocate_container(size_t capacity, /*const typename OT::value_type& initial_element,*/ ARGS &&... args) {
-      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,sizeof_container_with_header<OT>(capacity),capacity,/*initial_element,*/std::forward<ARGS>(args)...);
+      size_t size = sizeof_container_with_header<OT>(capacity);
+#if 0
+      if ( GCKind<OT>::Kind == 31 && size == 88 ) {
+        printf("%s:%d allocate_container  kind = 31\n", __FILE__, __LINE__ );
+        printf("        capacity --> %lu,  sizeof_container_with_header --> %lu\n", capacity, size );
+        printf("        sizeof(Header_s) --> %lu\n", sizeof(Header_s) );
+        printf("        sizeof(OT) --> %lu\n", sizeof(OT) );
+        printf("        sizeof(typename OT::value_type) --> %lu\n", sizeof(typename OT::value_type));
+        printf("        sizeof_container<T>(capacity) --> %lu\n", sizeof_container<OT>(capacity) );
+      }
+#endif
+      return GCObjectAllocator<OT>::allocate_kind(GCKind<OT>::Kind,size,capacity,/*initial_element,*/std::forward<ARGS>(args)...);
     }
 
     static smart_pointer_type allocate_with_default_constructor() {
