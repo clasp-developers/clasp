@@ -992,6 +992,7 @@ nil)
           (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
           (cleavir-ir:hir-to-mir hir clasp-system nil nil)
           (when *debug-cleavir* (draw-mir hir)) ;; comment out
+          (clasp-cleavir:optimize-stack-enclose hir)
           (cc-mir:assign-mir-instruction-datum-ids hir)
           (setf *ast* hoisted-ast
                 *hir* hir)
@@ -1038,7 +1039,8 @@ nil)
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
-              (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+              (cleavir-ir:hir-to-mir hir clasp-system nil nil) 
+              (clasp-cleavir:optimize-stack-enclose hir)
               (cc-mir:assign-mir-instruction-datum-ids hir)
               #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
               (setf *ast* hoisted-ast

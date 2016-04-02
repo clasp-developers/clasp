@@ -22,10 +22,10 @@
 
 (defmethod cleavir-ir-graphviz:draw-instruction ((instruction stack-enclose-instruction) stream)
   (format stream "   ~a [label = \"stack-enclose\"];~%"
-	  (instruction-id instruction))
+	  (cleavir-ir-graphviz::instruction-id instruction))
   (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-	  (gethash (code instruction) *instruction-table*)
-	  (instruction-id instruction)))
+	  (gethash (class-of instruction) cleavir-ir-graphviz::*instruction-table*)
+	  (cleavir-ir-graphviz::instruction-id instruction)))
 
 
 

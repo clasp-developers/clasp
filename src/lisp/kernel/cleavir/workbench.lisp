@@ -22,43 +22,54 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(clasp-cleavir::cleavir-compile nil '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))))
+(clasp-cleavir::cleavir-compile nil '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug t)
 
-
+(apropos "slot-")
+(mapcar (lambda (x) (clos::slot-definition-name x)) (clos::class-slots (find-class 'cc-mir:stack-enclose-instruction)))
 (clasp-cleavir::cleavir-compile nil '(lambda () (defun foo (x) (declare (dynamic-extent x)))) :debug t)
 (clasp-cleavir::cleavir-compile nil '(lambda () (defun foo (x) )) :debug t)
 
 
 
-(defmacro predicate-let* (setup test-form &rest cont-forms)
+(defmacro predicate-let* ((setup test-form) &rest cont-forms)
   `(let* ,setup
      (when ,test-form
        ,@cont-forms)))
 
 (apropos "defining-instruction")
 (defun find-potential-stack-enclose (top-instruction)
-  (cleavir-ir:map-instructions
-   (lambda (i)
-     (predicate-let*
-      ()
-      (typep i 'cleavir-ir:funcall-instruction)
-      (predicate-let*
-       ((input1 (car (cleavir-ir:inputs i)))
-        (fdefs (cleavir-ir:defining-instructions input1))
-        (fdef (car fdefs)))
-       (and (= (length fdefs) 1) (typep fdef 'cleavir-ir:fdefinition-instruction))
-       (predicate-let*
-        ((fdef-input (car (cleavir-ir:inputs fdef)))
-         (cwvb (car (cleavir-ir:defining-instructions fdef-input))))
-        (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction)
-        (let ((orig (clasp-cleavir-hir:precalc-symbol-instruction-original-object cwvb)))
-          (format t "   precalc-symbol-instruction original-object: ~a package: ~a~%" orig
-                  (symbol-package orig)))
-        (and (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction)
-             (eq (clasp-cleavir-hir:precalc-symbol-instruction-original-object cwvb)
-                 'cleavir-primop:call-with-variable-bound)
-             t)))))
-   top-instruction))
+  (let (encloses)
+    (cleavir-ir:map-instructions
+     (lambda (i)
+       (let ((enclose
+              (predicate-let*
+               (()
+                (typep i 'cleavir-ir:funcall-instruction))
+               (predicate-let*
+                (((input1 (car (cleavir-ir:inputs i)))
+                  (input4 (fourth (cleavir-ir:inputs i)))
+                  (fdefs (cleavir-ir:defining-instructions input1))
+                  (fencs (and input4 (cleavir-ir:defining-instructions input4)))
+                  (fdef (car fdefs))
+                  (enclose (car fencs)))
+                 (and (= (length fdefs) 1)
+                      (typep fdef 'cleavir-ir:fdefinition-instruction)
+                      (= (length fencs) 1)
+                      (typep enclose 'cleavir-ir:enclose-instruction)))
+                (predicate-let*
+                 (((fdef-input (car (cleavir-ir:inputs fdef)))
+                   (cwvb (car (cleavir-ir:defining-instructions fdef-input))))
+                  (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction))
+                 (let ((orig (cadr (clasp-cleavir-hir:precalc-symbol-instruction-original-object cwvb))))
+                   (and (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction)
+                        (eq orig
+                            'cleavir-primop:call-with-variable-bound))))
+                enclose))))
+         (when enclose
+           (format t "   found enclose: ~a~%" i)
+           (push enclose encloses))))
+     top-instruction)
+    encloses))
 (apropos "call-with-variable-bound")
 (find-potential-stack-enclose clasp-cleavir::*hir*)
 
