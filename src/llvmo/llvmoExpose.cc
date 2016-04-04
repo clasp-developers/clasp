@@ -1980,6 +1980,12 @@ CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
   return this->_value.toString(radix, isigned);
 }
 
+CL_LISPIFY_NAME("toInteger");
+CL_DEFMETHOD core::Integer_sp APInt_O::toInteger(bool issigned) const {
+  string s = this->toString(10,issigned);
+  return core::Integer_O::create(s);
+}
+
 string APInt_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " ";

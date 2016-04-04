@@ -376,6 +376,7 @@
   pointee)
 
 (defstruct (constant-array-ctype (:include ctype))
+  array-size
   element-type)
 
 (defstruct (incomplete-array-ctype (:include ctype))
@@ -965,7 +966,9 @@ can be saved and reloaded within the project for later analysis"
   (make-pointer-ctype :pointee (classify-ctype (cast:get-type-ptr-or-null (cast:get-pointee-type x)))))
 
 (defmethod classify-ctype ((x cast:constant-array-type))
-  (make-constant-array-ctype :element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
+  (make-constant-array-ctype
+   :array-size (core:to-integer (cast:get-size x))
+   :element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
 
 (defmethod classify-ctype ((x cast:incomplete-array-type))
   (let ((element-type (classify-ctype (cast:get-type-ptr-or-null (cast:get-element-type x)))))
