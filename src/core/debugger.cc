@@ -251,9 +251,9 @@ CL_DEFUN void core__low_level_backtrace() {
     if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
-      if (closure->name.notnilp()) {
+      if (closure->_name.notnilp()) {
         try {
-          name = _rep_(closure->name);
+          name = _rep_(closure->_name);
         } catch (...) {
           name = "-BAD-NAME-";
         }

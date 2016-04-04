@@ -638,6 +638,9 @@ namespace core {
 };
 
 #include <clasp/core/glue.h>
+
+TRANSLATE(core::Function_O);
+
 #include <clasp/core/conditions.h>
 
 TRANSLATE(core::T_O);

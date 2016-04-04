@@ -103,11 +103,9 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("interpretedFunctionP");
 CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
-  if (gc::IsA<Function_sp>(arg)) {
-    if (auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure_O>()) {
-      (void)intfunc;
-      return true;
-    }
+  if ( auto intfunc = arg.asOrNull<InterpretedClosure_O>() ) {
+    (void)intfunc;
+    return true;
   }
   return false;
 };
@@ -273,7 +271,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("singleDispatchGenericFunctionP");
 CL_DEFUN bool core__single_dispatch_generic_function_p(T_sp obj) {
-  return gc::IsA<SingleDispatchGenericFunction_sp>(obj);
+  return gc::IsA<SingleDispatchGenericFunctionClosure_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -316,9 +314,9 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("compiled_function_p");
 CL_DEFUN bool cl__compiled_function_p(T_sp o) {
-  if (Function_sp fn = o.asOrNull<Function_O>()) {
+  if (Closure_sp fn = o.asOrNull<Closure_O>()) {
     (void)fn;
-    return fn->closure->compiledP();
+    return fn->compiledP();
   }
   return false;
 };

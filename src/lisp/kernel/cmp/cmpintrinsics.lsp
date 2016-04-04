@@ -664,7 +664,6 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
   (primitive-nounwind module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
 ;;  (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
-;;  (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +t*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +t*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)

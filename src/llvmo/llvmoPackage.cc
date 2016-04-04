@@ -199,12 +199,11 @@ CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Mod
 }
 
 void dump_funcs(core::Function_sp compiledFunction) {
-  auto cb = compiledFunction->closure;
-  if (!cb->compiledP()) {
+  CompiledClosure_sp cb = compiledFunction.asOrNull<CompiledClosure_O>();
+  if (!(cb)) {
     SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
   }
-  auto cc = cb.as<core::CompiledClosure_O>();
-  core::T_sp funcs = cc->associatedFunctions;
+  core::T_sp funcs = cb->associatedFunctions;
   if (cl__consp(funcs)) {
     core::List_sp cfuncs = funcs;
     for (auto cur : cfuncs) {
@@ -228,7 +227,7 @@ CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
 CL_LAMBDA(fn &optional only);
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction->closure.as<core::CompiledClosure_O>()) {
+  if (auto cl = compiledFunction.as<core::CompiledClosure_O>()) {
     core::T_sp funcs = cl->associatedFunctions;
     if (cl__consp(funcs)) {
       core::List_sp cfuncs = funcs;

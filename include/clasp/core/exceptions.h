@@ -365,7 +365,8 @@ struct CxxFunctionInvocationLogger {
   SUBCLASS_MUST_IMPLEMENT();
 
 #define HALT(bfmsg) THROW_HARD_ERROR(BF("%s:%d HALTED --- %s\n") % __FILE__ % __LINE__ % (bfmsg).str());
-#define N_A_() THROW_HARD_ERROR(BF("%s:%d->%s not applicable for this class") % __FILE__ % __LINE__ % __FUNCTION__);
+#define NOT_APPLICABLE() THROW_HARD_ERROR(BF("%s:%d->%s not applicable for this class") % __FILE__ % __LINE__ % __FUNCTION__);
+#define N_A_() NOT_APPLICABLE()
 #define INCOMPLETE(bf) SIMPLE_ERROR(BF("Finish implementing me!!!! function(%s) file(%s) lineNumber(%s): %s") % __FUNCTION__ % __FILE__ % __LINE__ % (bf).str())
 #define FIX_ME() SIMPLE_ERROR(BF("Fix me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);
 #define IMPLEMENT_ME() SIMPLE_ERROR(BF("Implement me!!! function(%s) file(%s) lineNumber(%s)") % __FUNCTION__ % __FILE__ % __LINE__);

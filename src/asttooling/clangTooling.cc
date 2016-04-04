@@ -146,10 +146,10 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
-      core::Closure_sp closure = func->closure;
-      if (auto compiledClosure = closure.asOrNull<core::CompiledClosure_O>()) {
+      if (auto compiledClosure = func.asOrNull<core::CompiledClosure_O>()) {
         core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
-        core::T_O* closedEnvironment = compiledClosure->closedEnvironment.raw_();
+        core::T_O* closedEnvironment = compiledClosure->closedEnvironment().raw_();
+        printf("%s:%d WARNING - getting environment from compiledClosure - this won't work with new closures\n", __FILE__, __LINE__ );
         this->_v = [fptr,closedEnvironment](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
 			core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
@@ -169,7 +169,9 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
         };
         return;
       } else {
-        SIMPLE_ERROR(BF("Figure out what to do with the %s Closure %s ") % closure->describe() % _rep_(closure->name));
+        auto closure = func.asOrNull<core::Functor_O>();
+        ASSERT(closure);
+        SIMPLE_ERROR(BF("Figure out what to do with the %s Closure %s ") % closure->describe() % _rep_(closure->name()));
       }
     } else if (clang::tooling::ArgumentsAdjuster *argAdj = gc::As<core::WrappedPointer_sp>(o)->cast<clang::tooling::ArgumentsAdjuster>()) {
       this->_v = *argAdj;

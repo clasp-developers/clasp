@@ -88,7 +88,7 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
-  Function_sp func = gc::As<Function_sp>(tfunc);
+  Closure_sp func = gc::As<Closure_sp>(tfunc);
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = cl__length(argsPLUS);
   int nargs = numArgsPassed + numArgsPlus;
@@ -98,14 +98,11 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
     frob->operator[](i) = oCar(cur);
     cur = oCdr(cur);
   }
-  Closure_sp closureP = func->closure;
-  ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-  return applyClosureToActivationFrame(closureP, frob);
+  return applyClosureToActivationFrame(func, frob);
 }
 
 
 inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
-  Closure_sp ft = func->closure;
   // Either assume that the VaList_sp is not at the start or ensure that it always is
   // Here I'm assuming that it is not always at the start.   To do it the other way
   // change cl__apply
@@ -116,7 +113,7 @@ inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
   LCC_VA_LIST_INDEXED_ARG(arg0, valist_s, 0);
   LCC_VA_LIST_INDEXED_ARG(arg1, valist_s, 1);
   LCC_VA_LIST_INDEXED_ARG(arg2, valist_s, 2);
-  gc::return_type res = (*ft).invoke_va_list(NULL,
+  gc::return_type res = (*func).invoke_va_list(NULL,
                                              args.raw_(),
                                              LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
                                              arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
@@ -132,8 +129,7 @@ inline LCC_RETURN funcall(T_sp fn) {
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  Closure_sp ft = func->closure;
-  return (*ft)(LCC_PASS_ARGS0_ELLIPSIS());
+  return (*func)(LCC_PASS_ARGS0_ELLIPSIS());
 }
 
 template <class ARG0>
@@ -145,8 +141,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0) {
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  Closure_sp ft = func->closure;
-  return (*ft)(LCC_PASS_ARGS1_ELLIPSIS(arg0.raw_()));
+  return (*func)(LCC_PASS_ARGS1_ELLIPSIS(arg0.raw_()));
 }
 
 template <class ARG0, class ARG1>
@@ -168,8 +163,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1) {
   }
   Function_sp func = tfunc.asOrNull<Function_O>();
   ASSERT(func);
-  Closure_sp ft = func->closure;
-  return (*ft)(LCC_PASS_ARGS2_ELLIPSIS(arg0.raw_(), arg1.raw_()));
+  return (*func)(LCC_PASS_ARGS2_ELLIPSIS(arg0.raw_(), arg1.raw_()));
 }
 
 template <class ARG0, class ARG1, class ARG2>
@@ -181,8 +175,7 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2) {
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  Closure_sp ft = func->closure;
-  return (*ft)(LCC_PASS_ARGS3_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
+  return (*func)(LCC_PASS_ARGS3_ELLIPSIS(LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2)));
 }
 
 // Do I need a variadic funcall???
@@ -195,10 +188,9 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
   Function_sp func = gc::As<Function_sp>(tfunc);
-  Closure_sp ft = func->closure;
   size_t vnargs = sizeof...(ARGS);
   size_t nargs = vnargs + LCC_FIXED_NUM;
-  return (*ft)(NULL, NULL, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), std::forward<ARGS>(args).raw_()...);
+  return (*func)(NULL, NULL, nargs, LCC_FROM_SMART_PTR(arg0), LCC_FROM_SMART_PTR(arg1), LCC_FROM_SMART_PTR(arg2), std::forward<ARGS>(args).raw_()...);
 }
 };
 };

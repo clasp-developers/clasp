@@ -174,22 +174,17 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
   //        core::throwUnrecognizedKeywordArgumentError(argArray[argIdx]);
 }
 
-#if 0
-void va_fillActivationFrameWithRequiredVarargs(core::ActivationFrame_sp *afP, int nargs, core::T_sp *ap) {
-  for (int i = 0; i < nargs; ++i) {
-    (*afP)->operator[](i) = ap[i];
-  }
-}
-#endif
 
+#if 0
 T_O *va_coerceToClosure(core::T_sp *argP) {
   IMPLEMENT_MEF(BF("Previously I returned Closure* - what should I return now?"));
   if (!(*argP).objectp()) {
     intrinsic_error(llvmo::couldNotCoerceToClosure, *argP);
   }
   core::Function_sp func = core::coerce::functionDesignator((*argP));
-  return &(*func->closure);
+  return &closure);
 }
+#endif
 
 ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
   core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
@@ -203,7 +198,7 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
   core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_func));
-  return func->closure->invoke_va_list(LCC_PASS_ARGS);
+  return func->invoke_va_list(LCC_PASS_ARGS);
 }
 
 ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure_O *closure, core::T_sp *argsP) {
@@ -491,8 +486,7 @@ void makeLongFloat(core::T_sp *fnP, LongFloat s) {
 core::T_sp proto_makeCompiledFunction(fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
   // TODO: If a pointer to an integer was passed here we could write the sourceName SourceFileInfo_sp index into it for source line debugging
   core::Closure_sp closure = gctools::GC<core::CompiledClosure_O>::allocate(*functionNameP, kw::_sym_function, funcPtr, _Nil<core::T_O>(), *frameP, *compiledFuncsP, *lambdaListP, *sourceFileInfoHandleP, filePos, lineno, column);
-  core::CompiledFunction_sp compiledFunction = core::CompiledFunction_O::make(closure);
-  return compiledFunction;
+  return closure;
 };
 extern "C" {
 void sp_makeCompiledFunction(core::T_sp *resultCompiledFunctionP, fnLispCallingConvention funcPtr, int *sourceFileInfoHandleP, size_t filePos, size_t lineno, size_t column, core::T_sp *functionNameP, core::T_sp *compiledFuncsP, core::ActivationFrame_sp *frameP, core::T_sp *lambdaListP) {
@@ -1544,9 +1538,7 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                                                     _Nil<T_O>() // lambdaList
                                                     ,
                                                     *sourceFileInfoHandleP, filePos, lineno, column);
-  core::CompiledFunction_sp cf = core::CompiledFunction_O::make(functoid);
-  core::T_sp res = cf;
-  return res.raw_();
+  return functoid.raw_();
 }
 
 /*! Take the multiple-value inputs from the thread local MultipleValues and call tfunc with them.
@@ -1562,9 +1554,8 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   }
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
-  core::Function_sp tagged_func((gctools::Tagged)tfunc);
-  ASSERT(tagged_func);
-  core::Closure_sp closure = (tagged_func)->closure;
+  core::Function_sp func((gctools::Tagged)tfunc);
+  ASSERT(func);
   core::T_O *lcc_fixed_arg0 = mvargs[0];
   core::T_O *lcc_fixed_arg1 = mvargs[1];
   core::T_O *lcc_fixed_arg2 = mvargs[2];
@@ -1572,16 +1563,16 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   LCC_RETURN retval(NULL, 0);
   switch (lcc_nargs) {
   default:
-    retval = closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist, lcc_nargs, mvargs[0], mvargs[1], mvargs[2]));
+    retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist, lcc_nargs, mvargs[0], mvargs[1], mvargs[2]));
     break;
   case 2:
-    retval = closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0], mvargs[1]));
+    retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0], mvargs[1]));
     break;
   case 1:
-    retval = closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
+    retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
     break;
   case 0:
-    retval = closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
+    retval = func->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
     break;
   };
   return retval;

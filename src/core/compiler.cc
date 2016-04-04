@@ -155,8 +155,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
-  Closure_sp  closure = fsym->closure;
-  if ( BuiltinClosure_sp  bcc = closure.asOrNull<BuiltinClosure_O>()) {
+  if ( BuiltinClosure_sp  bcc = fsym.asOrNull<BuiltinClosure_O>()) {
     (void)bcc; // suppress warning
     return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
@@ -422,7 +421,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   Symbol_sp name = _lisp->intern(ss.str());
   InterpretedClosure_sp ic =
     gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
-  Function_sp thunk = Function_O::make(ic);
+  Function_sp thunk = ic;
   return eval::funcall(thunk);
 };
 
@@ -918,9 +917,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
       printf("   %s\n", _lisp->exceptionStack().summary().c_str());
     }
 #endif
-    core::Function_sp func = protected_fn.asOrNull<core::Function_O>();
-    ASSERT(func);
-    Closure_sp closure = func->closure;
+    Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
+    ASSERT(closure);
     result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
@@ -947,9 +945,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     tresult.saveToVec0(savemv);
 #endif
     {
-      Function_sp func = cleanup_fn.asOrNull<Function_O>();
-      ASSERT(func);
-      auto closure = func->closure; //gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+      Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
+      ASSERT(closure);
       T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
     }
 #if 1 // See comment above about 22a8d7b1
@@ -974,9 +971,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
   result.saveToVec0(savemv);
   {
     T_mv tresult;
-    Function_sp func = cleanup_fn.asOrNull<Function_O>();
-    ASSERT(func);
-    auto closure = func->closure; // gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
+    ASSERT(closure);
     tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   }
   result.loadFromVec0(savemv);
@@ -1004,7 +1000,8 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   }
   accArgs.setLength(idx);
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  Closure_sp func = fmv->closure;
+  Closure_sp func = fmv.asOrNull<Closure_O>();
+  ASSERT(func);
   LCC_CALL_WITH_ARGS_IN_FRAME(result, func, accArgs);
   return T_mv(result);
 }
@@ -1015,7 +1012,7 @@ CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple va
 CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp func2) {
   MultipleValues mvFunc1;
   T_mv result;
-  ASSERT(func1.notnilp() && func1->closure);
+  ASSERT((func1) && func1.notnilp());
   result = eval::funcall(func1);
   mvFunc1._Size = result.number_of_values();
   mvFunc1[0] = result.raw_();
@@ -1044,9 +1041,8 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   }
 #endif
   try {
-    core::Function_sp func = thunk.asOrNull<Function_O>();
-    ASSERT(func);
-    Closure_sp closure = func->closure;
+    core::Closure_sp closure = thunk.asOrNull<Closure_O>();
+    ASSERT(closure);
     result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
@@ -1090,9 +1086,8 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   }
 #endif
   T_mv result;
-  Function_sp func = result_form.asOrNull<Function_O>();
-  ASSERT(func);
-  auto closure = func->closure; // gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+  Closure_sp closure = result_form.asOrNull<Closure_O>();
+  ASSERT(closure);
   result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   result.saveToMultipleValue0();
   throw CatchThrow(frame);

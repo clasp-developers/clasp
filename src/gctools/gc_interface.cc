@@ -260,7 +260,7 @@ NOINLINE void define_source_info(source_info_kind kind,
   if ( kind == code_kind ) {
     core::Function_sp func = core::coerce::functionDesignator(sym);
     core::Str_sp sourceFile = core::Str_O::create(file);
-    func->closure->setSourcePosInfo(sourceFile, character_offset, line, 0 );
+    func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
     core::Str_sp docs = core::Str_O::create(docstring);
     ext__annotate(sym,cl::_sym_documentation,cl::_sym_function, docs);
     ext__annotate(func,cl::_sym_documentation,cl::_sym_function, docs);

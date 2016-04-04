@@ -1141,7 +1141,7 @@ public:
       ss << "UNBOUND";
     } else {
       Function_sp func = gc::As<Function_sp>(entry);
-      ss << "function " << _rep_(func->closure->name);
+      ss << "function " << _rep_(func->name());
     }
     ss << std::endl;
     return true;

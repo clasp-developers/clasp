@@ -116,7 +116,6 @@ class MacroClosure_O : public BuiltinClosure_O {
 private:
   typedef T_mv (*MacroPtr)(List_sp, T_sp);
   MacroPtr mptr;
-
 public:
   virtual const char *describe() const { return "MacroClosure"; };
   // constructor

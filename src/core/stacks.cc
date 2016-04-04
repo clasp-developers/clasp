@@ -155,7 +155,7 @@ string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure) const {
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
-  T_sp funcNameObj = closure->name;
+  T_sp funcNameObj = closure->_name;
   string funcName = _rep_(funcNameObj);
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();

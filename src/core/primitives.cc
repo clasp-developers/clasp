@@ -805,8 +805,8 @@ CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T
       err << "lambda_list: " << _rep_(llh) << std::endl;
       err << "Passing argument 1: " << _rep_(form) << std::endl;
       err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-      Closure_sp closure = macro_function->closure;
-      err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
+      Closure_sp closure = macro_function;
+      err << "macro_function[" << _rep_(macro_function->name()) << std::endl;
       if (auto ic = closure.as<InterpretedClosure_O>()) {
         err << "code: " << _rep_(ic->code());
       } else {
@@ -858,8 +858,9 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functionObject, T_sp is_
   if ( lambda_list_p.notnilp() ) {
     functionObject->setf_lambda_list(lambda_list);
   }
-  if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()) {
-    functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
+  if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()
+      && functionObject->compiledP()) {
+    functionObject->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
   }
   if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
@@ -1603,7 +1604,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return closure->name;
+  return closure->name();
 }
 
 CL_LISPIFY_NAME("frameIteratorEnvironment");
@@ -1615,7 +1616,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return closure->closedEnvironment;
+  return closure->closedEnvironment();
 }
 
 int InvocationHistoryFrameIterator_O::index() {
@@ -1633,7 +1634,7 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return Function_O::make(closure); // Should I really be creating a new Function object every time???
+  return closure;
 }
 
 CL_LISPIFY_NAME("frameIteratorArguments");

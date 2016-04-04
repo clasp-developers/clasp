@@ -90,8 +90,7 @@ namespace llvmo {
 
 
 CL_DEFUN void compiler__setAssociatedFuncs(core::CompiledFunction_sp cf, core::List_sp associatedFuncs) {
-  auto closure = cf->closure.as<core::CompiledClosure_O>();
-  closure->setAssociatedFunctions(associatedFuncs);
+  cf->setAssociatedFunctions(associatedFuncs);
 };
 
 CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
@@ -2806,14 +2805,12 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
   gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
-  core::CompiledFunction_sp func = core::CompiledFunction_O::make(functoid);
-  ASSERT(func);
-  return func;
+  return functoid;
 }
 
 CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
-  auto closure = func->closure.as<core::CompiledClosure_O>();
+  auto closure = func.as<core::CompiledClosure_O>();
   llvmo::Function_sp llvm_func = closure->llvmFunction;
   void *p = engine->getPointerToFunction(llvm_func->wrappedPtr());
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);

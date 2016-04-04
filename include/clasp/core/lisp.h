@@ -732,9 +732,9 @@ public:
   /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionTable by name
 	 If errorp == true then throw an exception if the single-dispatch-generic-function is not
 	 found otherwise return nil */
-  static SingleDispatchGenericFunction_sp find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp = true);
+  static T_sp find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp = true);
   /*! Associate a generic function with a symbol by name */
-  static SingleDispatchGenericFunction_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunction_sp gf);
+  static T_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunctionClosure_sp gf);
   /*! Clear all generic functions */
   static void forget_all_single_dispatch_generic_functions();
   HashTableEq_sp singleDispatchGenericFunctionTable() const { return this->_Roots._SingleDispatchGenericFunctionTable; };

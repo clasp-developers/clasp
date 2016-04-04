@@ -50,28 +50,23 @@ THE SOFTWARE.
 
 
 namespace core {
-Functor_O::Functor_O(T_sp n) : name(n) {
-  if (n.nilp()) {
-    SIMPLE_ERROR(BF("Functoids must have a non-nil name"));
-  }
-}
 
-string Functor_O::nameAsString() {
-  if (this->name.nilp()) {
+string Closure_O::nameAsString() const {
+  if (this->_name.nilp()) {
     return "Function-name(NIL)";
-  } else if (Symbol_sp sname = this->name.asOrNull<Symbol_O>()) {
+  } else if (Symbol_sp sname = this->_name.asOrNull<Symbol_O>()) {
     stringstream ss;
     ss << "Function-name(";
     ss << sname->symbolNameAsString();
     ss << ")";
     return ss.str();
-  } else if (Cons_sp cname = this->name.asOrNull<Cons_O>()) {
+  } else if (Cons_sp cname = this->_name.asOrNull<Cons_O>()) {
     stringstream ss;
     ss << "Function-name(setf ";
     ss << gc::As<Symbol_sp>(oCadr(cname))->symbolNameAsString();
     ss << ")";
     return ss.str();
-  } else if (Str_sp strname = this->name.asOrNull<Str_O>()) {
+  } else if (Str_sp strname = this->_name.asOrNull<Str_O>()) {
     stringstream ss;
     ss << "Function-name(string-";
     ss << strname->get();
@@ -81,32 +76,6 @@ string Functor_O::nameAsString() {
   THROW_HARD_ERROR(BF("Cannot get name as string of Functoid"));
 }
 
-
-
-int Closure_O::sourceFileInfoHandle() const {
-  return 0;
-}
-
-T_sp Closure_O::docstring() const {
-  SIMPLE_ERROR(BF("Closure does not support docstring"));
-}
-
-List_sp Closure_O::declares() const {
-  SIMPLE_ERROR(BF("Closure does not support declares"));
-}
-
-T_sp Closure_O::cleavir_ast() const {
-  SIMPLE_ERROR(BF("Subclass of Closure must support cleavir_ast"));
-}
-
-T_sp Closure_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column)
-{
-  SIMPLE_ERROR(BF("Subclass of Closure must support this method"));
-}
-
-void Closure_O::setf_cleavir_ast(T_sp ast) {
-  SIMPLE_ERROR(BF("Subclass of Closure must support setf_cleavir_ast"));
-}
 };
 
 
@@ -159,7 +128,7 @@ LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
 };
 
 InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandler_sp llh, List_sp dec, T_sp doc, T_sp e, List_sp c, SOURCE_INFO)
-  : FunctionClosure_O(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
+  : Base(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
 T_sp InterpretedClosure_O::lambdaList() const {
@@ -171,7 +140,7 @@ void InterpretedClosure_O::setf_lambda_list(T_sp lambda_list) {
 }
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
-  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->closedEnvironment);
+  ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);

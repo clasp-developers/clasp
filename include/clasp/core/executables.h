@@ -44,94 +44,42 @@ THE SOFTWARE.
 #include <clasp/core/lispDefinitions.h>
 
 namespace core {
-
 extern void handleArgumentHandlingExceptions(Closure_sp);
 };
 
-namespace core {
-SMART(LambdaListHandler);
-SMART(Function);
-class Function_O : public General_O {
-  LISP_CLASS(core, ClPkg, Function_O, "Function",General_O);
 
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif  // defined(XML_ARCHIVE)
-public: // was protected:
-  Closure_sp closure;
-
-public:
-  Function_O() : Base(), closure(){};
-  virtual ~Function_O(){};
-
-public:
-  static Function_sp make(Closure_sp c) {
-    GC_ALLOCATE(Function_O, f);
-    ASSERT(c.generalp());
-    f->closure = c;
-    return f;
-  }
-
-public:
-  string __repr__() const;
-  string description() const { return "Function::description"; };
-
-  virtual bool macroP() const;
-  virtual void setKind(Symbol_sp k);
-  virtual Symbol_sp functionKind() const;
-  T_sp functionLambdaListHandler() const;
-  /*! Return (values lambda-list foundp) */
-  T_mv lambdaList();
-  void setf_lambda_list(T_sp lambda_list);
-  T_sp closedEnvironment() const;
-  List_sp functionDeclares() const;
-  T_sp functionName() const;
-  T_mv functionSourcePos() const;
-  T_sp cleavir_ast() const;
-  virtual void setf_cleavir_ast(T_sp ast);
-  List_sp declares() const;
-  T_sp docstring() const;
-};
-};
-template <>
-struct gctools::GCInfo<core::Function_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-TRANSLATE(core::Function_O);
-
-
-namespace core {
-SMART(LambdaListHandler);
-SMART(Function);
-class CompiledFunction_O : public Function_O {
-  LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Function_O);
-
-#if defined(XML_ARCHIVE)
-  void archiveBase(ArchiveP node);
-#endif // defined(XML_ARCHIVE)
-public:
-  CompiledFunction_O() : Base(){};
-  virtual ~CompiledFunction_O(){};
-
-public:
-  static CompiledFunction_sp make(Closure_sp c) {
-    GC_ALLOCATE(CompiledFunction_O, f);
-    ASSERT(c.generalp());
-    f->closure = c;
-    //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);
-    return f;
-  }
-
-public:
-};
-};
 template <>
 struct gctools::GCInfo<core::CompiledFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
+  SMART(LambdaListHandler);
+  SMART(Function);
+  class CompiledFunction_O : public Closure_O {
+    LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Closure_O);
+
+#if defined(XML_ARCHIVE)
+    void archiveBase(ArchiveP node);
+#endif // defined(XML_ARCHIVE)
+  public:
+  CompiledFunction_O(T_sp name) : Base(name){};
+    virtual ~CompiledFunction_O(){};
+
+  public:
+#if 0
+    static CompiledFunction_sp make(Closure_sp c) {
+      GC_ALLOCATE(CompiledFunction_O, f);
+      ASSERT(c.generalp());
+      f->closure = c;
+    //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);
+      return f;
+    }
+#endif
+  public:
+  };
 };
 TRANSLATE(core::CompiledFunction_O);
 

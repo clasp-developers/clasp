@@ -1798,7 +1798,7 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
                         ss << " ";
                         ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
 			Function_sp fn = cl__symbol_function(sym);
-                        if ( !fn.unboundp() && fn->closure && gc::As<Function_sp>(cl__symbol_function(sym))->closure->macroP() )
+                        if ( !fn.unboundp() && gc::As<Function_sp>(cl__symbol_function(sym))->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -2390,21 +2390,21 @@ void Lisp_O::switchToClassNameHashTable() {
 CL_LAMBDA(gf-symbol &optional errorp);
 CL_DOCSTRING("Lookup a single dispatch generic function. If errorp is truen and the generic function isn't found throw an exception");
 CL_LISPIFY_NAME(find_single_dispatch_generic_function);
-CL_DEFUN SingleDispatchGenericFunction_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) {
+CL_DEFUN T_sp Lisp_O::find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp) {
   T_sp fn = _lisp->_Roots._SingleDispatchGenericFunctionTable->gethash(gfSym, _Nil<T_O>());
   if (fn.nilp()) {
     if (errorp) {
       SIMPLE_ERROR(BF("No single-dispatch-generic-function named %s") % _rep_(gfSym));
     }
-    return _Nil<SingleDispatchGenericFunction_O>();
+    return _Nil<T_O>();
   }
-  return gc::As<SingleDispatchGenericFunction_sp>(fn);
+  return gc::As<SingleDispatchGenericFunctionClosure_sp>(fn);
 }
 
 CL_LAMBDA(gf-symbol gf)
 CL_LISPIFY_NAME(setf_find_single_dispatch_generic_function);
 CL_DOCSTRING("Define a single dispatch generic function");
-CL_DEFUN SingleDispatchGenericFunction_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunction_sp gf) {
+CL_DEFUN T_sp Lisp_O::setf_find_single_dispatch_generic_function(Symbol_sp gfName, SingleDispatchGenericFunctionClosure_sp gf) {
   _lisp->_Roots._SingleDispatchGenericFunctionTable->setf_gethash(gfName, gf);
   return gf;
 }

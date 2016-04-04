@@ -39,8 +39,7 @@ namespace core {
 
 
 SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr) {
-  SpecialForm_sp sf = SpecialForm_O::create();
-  sf->_SpecialSymbol = symbol;
+  SpecialForm_sp sf = gctools::GC<SpecialForm_O>::allocate(symbol);
   sf->_fptr = fptr;
   return sf;
 }
@@ -63,7 +62,7 @@ void SpecialForm_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 string SpecialForm_O::__repr__() const {
-  return this->_SpecialSymbol->fullName();
+  return this->name().as<Symbol_O>()->fullName();
 }
 
 

@@ -159,12 +159,12 @@ public:
 
 namespace clbind {
 template <typename Policies, typename T>
-class DerivableDefaultConstructorFunctor : public core::Functor_O {
+class DerivableDefaultConstructorFunctor : public core::Closure_O {
 public:
   typedef core::Functor_O TemplatedBase;
 public:
   enum { NumParams = 0 };
-  DerivableDefaultConstructorFunctor(core::T_sp name) : core::Functor_O(name){};
+  DerivableDefaultConstructorFunctor(core::T_sp name) : core::Closure_O(name){};
 public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 public:

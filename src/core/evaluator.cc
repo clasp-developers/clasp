@@ -107,7 +107,6 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   if (last.nilp()) {
     // Nil as last argument
     LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args, lenArgs - 1);
-    Closure_sp ft = func->closure;
     core::T_O *arg0;
     core::T_O *arg1;
     core::T_O *arg2;
@@ -115,7 +114,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     LCC_VA_LIST_INDEXED_ARG(arg0, valist_s, 0);
     LCC_VA_LIST_INDEXED_ARG(arg1, valist_s, 1);
     LCC_VA_LIST_INDEXED_ARG(arg2, valist_s, 2);
-    gc::return_type res = (*ft).invoke_va_list(NULL,
+    gc::return_type res = (*func).invoke_va_list(NULL,
                                                args.raw_(),
                                                LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
                                                arg0,  //LCC_VA_LIST_REGISTER_ARG0(args),
@@ -245,8 +244,7 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       eval::parse_lambda_body(body, declares, docstring, code);
       LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
       InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(cl::_sym_lambda, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-      Function_sp proc = Function_O::make(ic);
-      return proc;
+      return ic;
 #if 0
       T_sp fn;
       if ( comp::_sym_compileInEnv->fboundp() ) {
@@ -1326,8 +1324,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
     }
   }
   Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
-  Function_sp proc = Function_O::make(ic);
-  return proc;
+  return ic;
 }
 
 /*
@@ -1556,9 +1553,9 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll, declares, cl::_sym_function);
       printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__);
       Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_macro, outer_llh, declares, docstring, newEnv, code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-      outer_func = Function_O::make(ic);
+      outer_func = ic;
     }
-    LOG(BF("func = %s") % outer_func_cons->__repr__());
+    LOG(BF("func = %s") % ic->__repr__());
     newEnv->addMacro(name, outer_func);
     //		newEnv->bind_function(name,outer_func);
     cur = oCdr(cur);
@@ -1608,7 +1605,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  cl::_sym_function);
     printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
     InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-    Function_sp outer_func = Function_O::make(ic);
+    Function_sp outer_func = ic;
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);
   }
@@ -1739,12 +1736,11 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
     }
     SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
   }
-  Function_sp ffn = gc::As<Function_sp>(tfn);
-  Closure_sp closureP = ffn->closure;
-  if (closureP) {
-    return applyClosureToActivationFrame(closureP, args);
+  Closure_sp closure = gc::As<Closure_sp>(tfn);
+  if (closure) {
+    return applyClosureToActivationFrame(closure, args);
   }
-  SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(ffn) % _rep_(args));
+  SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(closure) % _rep_(args));
 }
 
 

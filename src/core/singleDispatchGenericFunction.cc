@@ -58,14 +58,14 @@ CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, La
     if (gfname->fboundp()) {
       T_sp symFunc = gfname->symbolFunction();
       // printf("%s:%d   gfname->symbolFunction() --> %p\n", __FILE__, __LINE__, gfname->symbolFunction().raw_());
-      if (SingleDispatchGenericFunction_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunction_O>()) {
+      if (SingleDispatchGenericFunctionClosure_sp existingGf = symFunc.asOrNull<SingleDispatchGenericFunctionClosure_O>()) {
         (void)existingGf;
         SIMPLE_ERROR(BF("The symbol %s has a SingleDispatchGenericFunction bound to its function slot but no SingleDispatchGenericFunction with that name was found") % _rep_(gfname));
       } else {
         SIMPLE_ERROR(BF("The symbol %s already has a function bound to it and it is not a SingleDispatchGenericFunction - it cannot become a SingleDispatchGenericFunction") % _rep_(gfname));
       }
     }
-    gfn = SingleDispatchGenericFunction_O::create(gfname, llhandler);
+    gfn = SingleDispatchGenericFunctionClosure_O::create(gfname, llhandler);
     Lisp_O::setf_find_single_dispatch_generic_function(gfname, gfn);
     gfname->setf_symbolFunction(gfn);
   }
@@ -80,11 +80,10 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
   if (!gfname->fboundp()) {
     SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
   }
-  SingleDispatchGenericFunction_sp gf = gc::As<SingleDispatchGenericFunction_sp>(gfname->symbolFunction());
+  SingleDispatchGenericFunctionClosure_sp gf = gc::As<SingleDispatchGenericFunctionClosure_sp>(gfname->symbolFunction());
   SingleDispatchMethod_sp method = SingleDispatchMethod_O::create(gfname, receiver_class, lambda_list_handler, declares, docstring, body);
   ASSERT(lambda_list_handler.notnilp());
-  SingleDispatchGenericFunctionClosure_sp gfc = gf->closure.as<SingleDispatchGenericFunctionClosure_O>();
-  LambdaListHandler_sp gf_llh = gfc->_lambdaListHandler;
+  LambdaListHandler_sp gf_llh = gf->_lambdaListHandler;
   if (lambda_list_handler->numberOfRequiredArguments() != gf_llh->numberOfRequiredArguments()) {
     SIMPLE_ERROR(BF("There is a mismatch between the number of required arguments\n"
                     " between the single-dispatch-generic-function %s which expects %d arguments\n"
@@ -98,7 +97,7 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
                     " eg: getFilename -> PresumedLoc-getFilename") %
                  _rep_(gfname) % gf_llh->numberOfRequiredArguments() % _rep_(gf->methods()) % _rep_(receiver_class) % lambda_list_handler->numberOfRequiredArguments());
   }
-  gfc->addMethod(method);
+  gf->addMethod(method);
   if (docstring.notnilp()) {
     core::ext__annotate(method,cl::_sym_documentation,core::_sym_single_dispatch_method, docstring );
   }
@@ -146,14 +145,14 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   Function_sp func;
   Cache_sp cache = _lisp->singleDispatchMethodCachePtr();
   gctools::Vec0<T_sp> &vektor = cache->keys();
-  vektor[0] = this->name;
+  vektor[0] = this->name();
   Class_sp dispatchArgClass = vektor[1] = lisp_instance_class(LCC_ARG0());
   CacheRecord *e; //gctools::StackRootedPointer<CacheRecord> e;
   try {
     cache->search_cache(e); // e = ecl_search_cache(cache);
   } catch (CacheError &err) {
     printf("%s:%d - There was an CacheError searching the GF cache for the keys  You should try and get into cache->search_cache to see where the error is\n", __FILE__, __LINE__);
-    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(this->name));
+    SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(this->name()));
   }
   //        printf("%s:%d searched on %s/%s  cache record = %p\n", __FILE__, __LINE__, _rep_(vektor[0]).c_str(), _rep_(vektor[1]).c_str(), e );
   if (e->_key.notnilp()) {
@@ -166,7 +165,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   }
   // WARNING: DO NOT alter contents of _lisp->callArgs() or _lisp->multipleValues() above.
   // LISP_PASS ARGS relys on the extra arguments being passed transparently
-  return func->closure->invoke_va_list(LCC_PASS_ARGS);
+  return func->invoke_va_list(LCC_PASS_ARGS);
 }
 
 class SingleDispatch_OrderByClassPrecedence {
@@ -191,7 +190,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
     }
   }
   if (UNLIKELY(applicableMethods.size() == 0)) {
-    SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s") % _rep_(this->name) % mc->instanceClassName());
+    SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s") % _rep_(this->name()) % mc->instanceClassName());
   }
 #if 1
   /* Sort the methods from most applicable to least applicable */
@@ -240,12 +239,11 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
 
 
 
-SingleDispatchGenericFunction_sp SingleDispatchGenericFunction_O::create(T_sp name, LambdaListHandler_sp llh) {
-  GC_ALLOCATE(SingleDispatchGenericFunction_O, gf);
+SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::create(T_sp name, LambdaListHandler_sp llh) {
+//  GC_ALLOCATE(SingleDispatchGenericFunctionClosure_O, gf);
   SingleDispatchGenericFunctionClosure_sp gfc = gctools::GC<SingleDispatchGenericFunctionClosure_O>::allocate(name);
   gfc->finishSetup(llh, kw::_sym_function);
-  gf->closure = gfc;
-  return gf;
+  return gfc;
 }
 
 #if 0

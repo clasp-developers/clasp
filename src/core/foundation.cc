@@ -211,7 +211,7 @@ extern "C" {
 void closure_dump(core::Closure_sp closure) {
   core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closure->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
   std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
-  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->name).c_str(), namestring.c_str(), closure->lineNumber());
+  printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closure->name()).c_str(), namestring.c_str(), closure->lineNumber());
 }
 };
 
@@ -943,7 +943,7 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
   methoid->finishSetup(llhandler, kw::_sym_function);
-  Function_sp fn = Function_O::make(methoid);
+  Function_sp fn = methoid;
   ASSERT(llhandler || llhandler.notnilp())
 #ifdef DEBUG_PROGRESS
     printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
@@ -1023,7 +1023,7 @@ void lisp_defun(Symbol_sp sym,
   }
   fc->finishSetup(llh, kw::_sym_function);
   fc->setSourcePosInfo(Str_O::create(sourceFile), 0, lineNumber, 0);
-  Function_sp func = Function_O::make(fc);
+  Function_sp func = fc;
   sym->setf_symbolFunction(func);
   if (autoExport)
     sym->exportYourself();
@@ -1051,7 +1051,7 @@ void lisp_defmacro(Symbol_sp sym,
   (void)ldeclares;
   LambdaListHandler_sp llh = lisp_function_lambda_list_handler(ll, _Nil<T_O>());
   f->finishSetup(llh, kw::_sym_macro);
-  Function_sp func = Function_O::make(f);
+  Function_sp func = f;
   //    Package_sp package = lisp->getPackage(packageName);
   //    package->addFunctionForLambdaListHandlerCreation(func);
   sym->setf_symbolFunction(func);

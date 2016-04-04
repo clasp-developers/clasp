@@ -37,7 +37,8 @@ class SingleDispatchEffectiveMethodFunction_O : public Function_O {
   LISP_CLASS(core, CorePkg, SingleDispatchEffectiveMethodFunction_O, "SingleDispatchEffectiveMethodFunction",Function_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(SingleDispatchEffectiveMethodFunction_O);
+ SingleDispatchEffectiveMethodFunction_O(T_sp name) :Base(name) {};
+  virtual ~SingleDispatchEffectiveMethodFunction_O() {};
 
 public: // ctor/dtor for classes with shared virtual base
         //    explicit SingleDispatchEffectiveMethodFunction_O(core::Class_sp const& mc) : T_O(mc), T(mc) {};

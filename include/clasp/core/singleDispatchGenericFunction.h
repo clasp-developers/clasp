@@ -42,6 +42,7 @@ struct gctools::GCInfo<core::SingleDispatchGenericFunctionClosure_O> {
 namespace core {
   FORWARD(SingleDispatchMethod);
   class SingleDispatchGenericFunctionClosure_O : public FunctionClosure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchGenericFunctionClosure_O,"SingleDispatchGenericFunctionClosure",FunctionClosure_O);
   public:
   /*! Store the methods here */
     List_sp _Methods;
@@ -49,11 +50,13 @@ namespace core {
   /*! Store the method functions hashed on the receiver class */
   //	HashTable_sp	classesToClosures;
   public:
+      static SingleDispatchGenericFunctionClosure_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
+public:
     DISABLE_NEW();
   SingleDispatchGenericFunctionClosure_O(T_sp name, Symbol_sp k, SOURCE_INFO)
-    : FunctionClosure_O(name, k, _Nil<T_O>() /*Env*/, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
+    : Base(name, k, SOURCE_INFO_PASS), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
   SingleDispatchGenericFunctionClosure_O(T_sp name)
-    : FunctionClosure_O(name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
+    : Base(name), _Methods(_Nil<T_O>()), _lambdaListHandler(_Nil<LambdaListHandler_O>()){};
     void finishSetup(LambdaListHandler_sp llh, Symbol_sp k) {
       this->_lambdaListHandler = llh;
       this->kind = k;
@@ -71,6 +74,12 @@ namespace core {
 	  is wiped out */
     void addMethod(SingleDispatchMethod_sp method);
     LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
+    CL_LISPIFY_NAME("SingleDispatchGenericFunction-methods");
+    CL_DEFMETHOD   List_sp methods() const {
+      return this->_Methods;
+    };
+    virtual List_sp declares() const {NOT_APPLICABLE();};
+    virtual T_sp docstring() const {NOT_APPLICABLE();};
 
     Function_sp slowMethodLookup(Class_sp mc);
     Function_sp computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const &applicableMethods);
@@ -78,37 +87,31 @@ namespace core {
 
 };
 
+#if 0  
 namespace core {
-
   FORWARD(SingleDispatchGenericFunctionClosure);
-  
-class SingleDispatchGenericFunction_O : public Function_O {
-  LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function",Function_O);
+  class SingleDispatchGenericFunction_O : public Function_O {
+    LISP_CLASS(core, CorePkg, SingleDispatchGenericFunction_O, "single-dispatch-generic-function",Function_O);
   //    DECLARE_ARCHIVE();
-  friend class SingleDispatchGenericFunctoid;
+    friend class SingleDispatchGenericFunctoid;
 
-public: // Simple default ctor/dtor
-  DEFAULT_CTOR_DTOR(SingleDispatchGenericFunction_O);
+  public: // Simple default ctor/dtor
+    DEFAULT_CTOR_DTOR(SingleDispatchGenericFunction_O);
 
-public: // ctor/dtor for classes with shared virtual base
+  public: // ctor/dtor for classes with shared virtual base
         //    explicit SingleDispatchGenericFunction_O(core::Class_sp const& mc) : T_O(mc), Function(mc) {};
         //    virtual ~SingleDispatchGenericFunction_O() {};
-public:
-  static SingleDispatchGenericFunction_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
+  public:
+    static SingleDispatchGenericFunction_sp create(T_sp functionName, LambdaListHandler_sp llhandler);
 
-public: // Functions here
+  public: // Functions here
   /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
-CL_LISPIFY_NAME("SingleDispatchGenericFunction-methods");
-CL_DEFMETHOD   List_sp methods() const {
-  SingleDispatchGenericFunctionClosure_sp cl = this->closure.as<SingleDispatchGenericFunctionClosure_O>();
-    return cl->_Methods;
-  };
-
-}; // SingleDispatchGenericFunction class
-
+  }; // SingleDispatchGenericFunction class
 }; // core namespace
 TRANSLATE(core::SingleDispatchGenericFunction_O);
+#endif
 
+#if 0
 namespace core {
 class SingleDispatchGenericFunctoid : public Closure_O {
 private:
@@ -123,7 +126,12 @@ public:
 #endif
   }
 };
+};
+#endif
 
+
+namespace core {
+ 
 class Lambda_emf : public FunctionClosure_O {
   FRIEND_GC_SCANNER(core::Lambda_emf);
 
@@ -139,7 +147,7 @@ public:
 
 public:
   Lambda_emf(T_sp name,
-             SingleDispatchGenericFunction_sp gf,
+             SingleDispatchGenericFunctionClosure_sp gf,
              SingleDispatchMethod_sp cur_method);
   DISABLE_NEW();
 

@@ -241,7 +241,7 @@ ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
   if (sv == gctools::global_tagged_Symbol_OP_unbound) {
     intrinsic_error(llvmo::unboundSymbolFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
   }
-  return sv;
+  return symP->_Function.raw_();
 }
 
 ALWAYS_INLINE T_O *cc_unsafe_setfdefinition(core::T_O *sym) {
@@ -255,13 +255,13 @@ ALWAYS_INLINE T_O *cc_safe_setfdefinition(core::T_O *sym) {
   if (sv == gctools::global_tagged_Symbol_OP_unbound) {
     intrinsic_error(llvmo::unboundSymbolSetfFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
   }
-  return sv;
+  return symP->_SetfFunction.raw_();
 }
 
 ALWAYS_INLINE gc::return_type cc_call(LCC_ARGS_CC_CALL_ELLIPSIS) {
   //	core::Function_O* func = gctools::DynamicCast<core::Function_O*,core::T_O*>::castOrNULL(tfunc);
-  core::Function_O *tagged_func = reinterpret_cast<core::Function_O *>(lcc_func);
-  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
+  core::Closure_O *tagged_closure = reinterpret_cast<core::Closure_O *>(lcc_func);
+  core::Closure_O* closure = gc::untag_general<core::Closure_O *>(tagged_closure);
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);

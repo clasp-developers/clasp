@@ -69,16 +69,17 @@ THE SOFTWARE.
 namespace core {
 
 
-class Instance_O : public Function_O {
-  LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
+class Instance_O : public General_O {
+  LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
   friend class Class_O;
   void archiveBase(ArchiveP node);
 
 public: // ctor/dtor for classes with shared virtual base
-  explicit Instance_O() : Function_O(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  explicit Instance_O() : Base(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
   virtual ~Instance_O(){};
 GCPROTECTED: // instance variables here
   int _isgf;
+  Closure_sp closure;
   Class_sp _Class;
   gctools::Vec0<T_sp> _Slots;
   /*! Mimicking ECL instance->sig generation signature
