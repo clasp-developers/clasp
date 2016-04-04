@@ -1100,7 +1100,7 @@ void initialize_astExpose() {
     CLASS_TYPE(Array, Type)
         .def("getElementType", &clang::ArrayType::getElementType),
     CLASS_TYPE(ConstantArray, ArrayType)
-        .def("desugar", &clang::ConstantArrayType::desugar),
+        .def("desugar", &clang::ConstantArrayType::desugar)
         .def("getSize", &clang::ConstantArrayType::getSize),
     CLASS_TYPE(IncompleteArray, ArrayType)
         .def("desugar", &clang::IncompleteArrayType::desugar),

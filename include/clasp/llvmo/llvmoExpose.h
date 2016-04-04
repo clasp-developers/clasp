@@ -2311,6 +2311,7 @@ public:
 
 public:
   string toString(int radix, bool isigned) const;
+  core::Integer_sp toInteger(bool issigned) const;
   APInt_O() : Base(){};
   ~APInt_O(){};
 
