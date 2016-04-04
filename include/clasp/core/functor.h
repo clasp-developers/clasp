@@ -178,7 +178,7 @@ public:
   virtual T_sp functionLambdaListHandler() const;
   /*! Return (values lambda-list foundp) */
   virtual void setAssociatedFunctions(core::List_sp assocFuncs){SUBIMP();};
-  virtual void setf_lambda_list(T_sp lambda_list) = 0;
+  virtual void setf_lambda_list(T_sp lambda_list);
   virtual T_sp closedEnvironment() const {SUBIMP();};
 //  virtual List_sp functionDeclares() const;
   virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;

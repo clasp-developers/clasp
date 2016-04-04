@@ -84,11 +84,9 @@ CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
 
 
 
-#if 0
 CL_DEFMETHOD void Function_O::setf_lambda_list(T_sp ll) {
-  this->setf_lambda_list(ll);
+  SUBIMP();
 }
-#endif
 
 CL_LISPIFY_NAME("core:cleavir_ast");
 CL_DEFMETHOD T_sp Function_O::cleavir_ast() const {
