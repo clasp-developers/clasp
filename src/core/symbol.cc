@@ -106,7 +106,7 @@ CL_DEFUN T_sp cl__symbol_package(Symbol_sp arg) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolFunction");
-CL_DEFUN NamedFunction_sp cl__symbol_function(Symbol_sp sym) {
+CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
   if (!sym->fboundp()) {
     SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
   }
@@ -164,8 +164,8 @@ Symbol_O::Symbol_O() : Base(),
                        _Name(gctools::smart_ptr<Str_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
                        _Value(gctools::smart_ptr<T_O>()),
-                       _Function(gctools::smart_ptr<NamedFunction_O>()),
-                       _SetfFunction(gctools::smart_ptr<NamedFunction_O>()),
+                       _Function(gctools::smart_ptr<Function_O>()),
+                       _SetfFunction(gctools::smart_ptr<Function_O>()),
                        _IsSpecial(false),
                        _IsConstant(false),
                        _ReadOnlyFunction(false)

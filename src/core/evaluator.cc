@@ -186,7 +186,7 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS: funcall");
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
-  NamedFunction_sp func = coerce::functionDesignator(function_desig);
+  Function_sp func = coerce::functionDesignator(function_desig);
   if (func.nilp()) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
@@ -200,7 +200,7 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS: funcall");
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
   //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
-  NamedFunction_sp func = coerce::functionDesignator(function_desig);
+  Function_sp func = coerce::functionDesignator(function_desig);
   if (func.nilp()) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
@@ -220,8 +220,8 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("coerce_to_function");
-CL_DEFUN NamedFunction_sp core__coerce_to_function(T_sp arg) {
-  if (NamedFunction_sp fnobj = arg.asOrNull<NamedFunction_O>()) {
+CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
+  if (Function_sp fnobj = arg.asOrNull<Function_O>()) {
     return fnobj;
   } else if (Symbol_sp sym = arg.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
@@ -251,7 +251,7 @@ CL_DEFUN NamedFunction_sp core__coerce_to_function(T_sp arg) {
         fn = eval::funcall(comp::_sym_compileInEnv
                            , _Nil<T_O>()
                            , carg
-                           , _Nil<T_O>() ).as<NamedFunction_O>();
+                           , _Nil<T_O>() ).as<Function_O>();
       } else {
         SIMPLE_ERROR(BF("You cannot coerce-to-function a lambda until the compiler is in place"));
       }
@@ -330,7 +330,7 @@ CL_DEFUN T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env) {
     int depth = 0;
     int level = 0;
     bool shadowed = false;
-    NamedFunction_sp macro;
+    Function_sp macro;
     bool found = Environment_O::clasp_findSymbolMacro(env, sym, depth, level, shadowed, macro);
     if (found)
       return macro;
@@ -339,7 +339,7 @@ CL_DEFUN T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env) {
   T_sp fn = _Nil<T_O>();
   T_mv result = core__get_sysprop(sym, core::_sym_symbolMacro);
   if (gc::As<T_sp>(result.valueGet(1)).notnilp()) {
-    fn = gc::As<NamedFunction_sp>(result);
+    fn = gc::As<Function_sp>(result);
   }
   return fn;
 };
@@ -467,7 +467,7 @@ T_sp af_interpreter_lookup_variable(Symbol_sp sym, T_sp env) {
 #define DOCS_af_interpreter_lookup_function "environment_lookup_function return the function or UNBOUND"
 T_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env) {
   if (env.notnilp()) {
-    NamedFunction_sp fn;
+    Function_sp fn;
     int depth;
     int index;
     if (Environment_O::clasp_findFunction(env, name, depth, index, fn)) {
@@ -485,7 +485,7 @@ T_sp af_interpreter_lookup_function(Symbol_sp name, T_sp env) {
 T_sp af_interpreter_lookup_setf_function(List_sp setf_name, T_sp env) {
   Symbol_sp name = gc::As<Symbol_sp>(oCadr(setf_name));
   if (env.notnilp()) {
-    NamedFunction_sp fn;
+    Function_sp fn;
     int depth;
     int index;
     // TODO: This may not work properly - it looks like it will find regular functions
@@ -508,12 +508,12 @@ T_sp af_interpreter_lookup_macro(Symbol_sp sym, T_sp env) {
     return _Nil<T_O>();
   int depth = 0;
   int level = 0;
-  NamedFunction_sp macro;
+  Function_sp macro;
   bool found = Environment_O::clasp_findMacro(env, sym, depth, level, macro);
   if (found)
     return macro;
   if (sym->fboundp()) {
-    if (NamedFunction_sp fn = sym->symbolFunction().asOrNull<NamedFunction_O>()) {
+    if (Function_sp fn = sym->symbolFunction().asOrNull<Function_O>()) {
       if (fn->macroP())
         return fn;
     }
@@ -1250,8 +1250,8 @@ T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
 }
 
 T_mv sp_multipleValueCall(List_sp args, T_sp env) {
-  NamedFunction_sp func;
-  func = gc::As<NamedFunction_sp>(eval::evaluate(oCar(args), env));
+  Function_sp func;
+  func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
   List_sp resultList = _Nil<T_O>();
   Cons_sp *cur = reinterpret_cast<Cons_sp *>(&resultList);
   for (auto forms : (List_sp)oCdr(args)) {
@@ -1278,7 +1278,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
 
 
 /*! Parse a lambda expression of the form ([declare*] ["docstring"] body...) */
-NamedFunction_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T_sp env) {
+Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T_sp env) {
   List_sp declares;
   gc::Nilable<Str_sp> docstring;
   List_sp form;
@@ -1377,7 +1377,7 @@ T_mv sp_function(List_sp args, T_sp environment) {
       }
       //		    HALT(BF("Check name/lambdaList/body and if ok remove me"));
       // Create an anonymous function and close it over the current environment
-      NamedFunction_sp lambdaFunction = lambda(name,
+      Function_sp lambdaFunction = lambda(name,
                                           wrapBlock,
                                           lambdaList,
                                           body,
@@ -1466,7 +1466,7 @@ T_mv sp_flet(List_sp args, T_sp environment) {
   while (cur.notnilp()) {
     List_sp oneDef = oCar(cur);
     functionName = oCar(oneDef);
-    NamedFunction_sp func = lambda(functionName, true, oCadr(oneDef), oCddr(oneDef), environment);
+    Function_sp func = lambda(functionName, true, oCadr(oneDef), oCddr(oneDef), environment);
     newEnvironment->bind_function(functionName, func);
     cur = oCdr(cur);
   }
@@ -1496,7 +1496,7 @@ T_mv sp_labels(List_sp args, T_sp environment) {
   while (cur.notnilp()) {
     List_sp oneDef = oCar(cur);
     name = oCar(oneDef);
-    NamedFunction_sp func = lambda(name, true, oCadr(oneDef) /*lambda-list*/, oCddr(oneDef) /*body with decls/docstring*/, newEnvironment);
+    Function_sp func = lambda(name, true, oCadr(oneDef) /*lambda-list*/, oCddr(oneDef) /*body with decls/docstring*/, newEnvironment);
     LOG(BF("func = %s") % func->__repr__());
     newEnvironment->bind_function(name, func);
     cur = oCdr(cur);
@@ -1536,11 +1536,11 @@ T_mv doMacrolet(List_sp args, T_sp env, bool toplevel) {
     // printf("   inner_code = %s\n", _rep_(inner_code).c_str());
     List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro, name, olambdaList, inner_body);
     //		printf("%s:%d sp_macrolet outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-    NamedFunction_sp outer_func;
+    Function_sp outer_func;
     if (comp::_sym_compileInEnv->fboundp()) {
       // If the compiler is set up then compile the outer func
-      outer_func = gc::As<NamedFunction_sp>(eval::funcall(comp::_sym_compileInEnv, _Nil<T_O>(), outer_func_cons, newEnv));
-      outer_func->setKind(kw::_sym_macro);
+      outer_func = gc::As<Function_sp>(eval::funcall(comp::_sym_compileInEnv, _Nil<T_O>(), outer_func_cons, newEnv));
+      outer_func->set_kind(kw::_sym_macro);
     } else {
       List_sp outer_ll = oCadr(outer_func_cons);
       //		printf("%s:%d sp_macrolet outer_ll = %s\n", __FILE__, __LINE__, _rep_(outer_ll).c_str());
@@ -1605,7 +1605,7 @@ T_mv do_symbolMacrolet(List_sp args, T_sp env, bool topLevelForm) {
                                                                  cl::_sym_function);
     printf("%s:%d Creating InterpretedClosure with no source information and empty name- fix this\n", __FILE__, __LINE__);
     InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(_sym_symbolMacroletLambda, kw::_sym_macro, outer_llh, declares, _Nil<T_O>(), newEnv, expansion, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-    NamedFunction_sp outer_func = ic;
+    Function_sp outer_func = ic;
     newEnv->addSymbolMacro(name, outer_func);
     cur = oCdr(cur);
   }
@@ -1647,7 +1647,7 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
                                                                                                     , _Nil<T_O>()
                                                                                                     , newEnv
                                                                                                     , expansion );
-                NamedFunction_sp outer_func = NamedFunction_O::make(ic);
+                Function_sp outer_func = Function_O::make(ic);
 		newEnv->addSymbolMacro(name,outer_func);
 		cur = oCdr(cur);
 	    }
@@ -1701,7 +1701,7 @@ T_mv handleConditionInEvaluate(T_sp environment) {
 /*! Returns NIL if no function is found */
 T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   ASSERTF(functionDesignator, BF("In apply, the head function designator is UNDEFINED"));
-  if (NamedFunction_sp exec = functionDesignator.asOrNull<NamedFunction_O>())
+  if (Function_sp exec = functionDesignator.asOrNull<Function_O>())
     return exec;
   Symbol_sp shead = gc::As<Symbol_sp>(functionDesignator);
   T_sp exec = af_interpreter_lookup_function(shead, env);
@@ -1937,10 +1937,10 @@ T_mv t1Macrolet(List_sp args, T_sp env) {
       List_sp outer_func_cons = eval::funcall(core::_sym_parse_macro,name,olambdaList,inner_body);
 #if 1
 //                printf("%s:%d   outer_func_cons = %s\n", __FILE__, __LINE__, _rep_(outer_func_cons).c_str());
-      NamedFunction_sp outer_func = eval::funcall(comp::_sym_compileInEnv
+      Function_sp outer_func = eval::funcall(comp::_sym_compileInEnv
                                              , _Nil<T_O>()
                                              , outer_func_cons
-                                             ,newEnv ).as<NamedFunction_O>();
+                                             ,newEnv ).as<Function_O>();
       outer_func->setKind(kw::_sym_macro);
 #else
       List_sp outer_ll = oCaddr(outer_func_cons);
@@ -1998,7 +1998,7 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
       Symbol_sp name = oCar(oneDef).as<Symbol_O>();
       List_sp expansion = Cons_O::create(Cons_O::createList(cl::_sym_quote,oCadr(oneDef)),_Nil<T_O>());
 //                printf("%s:%d  symbolmacrolet name=%s expansion=%s\n", __FILE__, __LINE__, _rep_(name).c_str(), _rep_(expansion).c_str() );
-      NamedFunction_sp outer_func;
+      Function_sp outer_func;
 #if 0
       T_sp olambdaList = _Nil<T_O>();
       List_sp inner_body = oCadr(oneDef);
@@ -2008,7 +2008,7 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
       outer_func = eval::funcall(comp::_sym_compileInEnv
                                  , _Nil<T_O>()
                                  , outer_func_cons
-                                 ,newEnv ).as<NamedFunction_O>();
+                                 ,newEnv ).as<Function_O>();
       outer_func->setKind(kw::_sym_macro);
 #else
       LambdaListHandler_sp outer_llh = LambdaListHandler_O::create(outer_ll,
@@ -2024,7 +2024,7 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
                                                                                           , docstring
                                                                                           , newEnv
                                                                                           , expansion );
-      outer_func = NamedFunction_O::make(ic);
+      outer_func = Function_O::make(ic);
 #endif
       newEnv->addSymbolMacro(name,outer_func);
       cur = cCdr(cur);
@@ -2186,7 +2186,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     }
     VaList_S valist_struct(callArgs);
     VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
-    NamedFunction_sp headFunc = gc::As<NamedFunction_sp>(theadFunc);
+    Function_sp headFunc = gc::As<Function_sp>(theadFunc);
     if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
       if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
         InterpreterTrace itrace;

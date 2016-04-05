@@ -77,7 +77,7 @@ bool ActivationFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
 }
 
-bool ActivationFrame_O::_findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &func) const {
+bool ActivationFrame_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func) const {
   T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
   ++depth;
   return clasp_findFunction(parent, functionName, depth, index, func);
@@ -107,7 +107,7 @@ T_sp ActivationFrame_O::_lookupValue(int depth, int index) {
   return this->lookupValueReference(depth, index);
 }
 
-NamedFunction_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
+Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find function - this activation frame: %s") % this->__repr__());
   }
@@ -275,12 +275,12 @@ string FunctionFrame_O::asString() const {
   return ((ss.str()));
 }
 
-NamedFunction_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
+Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
   if (depth == 0) {
     if (index >= this->_Objects.capacity()) {
       SIMPLE_ERROR(BF("Out of range index[%d] for FunctionFrame with %d entries") % index % this->_Objects.capacity());
     }
-    return gc::As<NamedFunction_sp>((this->entry(index)));
+    return gc::As<Function_sp>((this->entry(index)));
   }
   --depth;
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);

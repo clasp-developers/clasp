@@ -81,7 +81,7 @@ class SNode_O;
 typedef gctools::smart_ptr<SNode_O> SNode_sp;
 typedef gctools::smart_ptr<SNode_O> ArchiveP;
 class Function_O;
-typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
+typedef gctools::smart_ptr<Function_O> Function_sp;
 
 bool cl__eq(T_sp x, T_sp y);
 bool cl__eql(T_sp x, T_sp y);
@@ -640,7 +640,7 @@ namespace core {
 
 #include <clasp/core/glue.h>
 
-TRANSLATE(core::NamedFunction_O);
+TRANSLATE(core::Function_O);
 
 #include <clasp/core/conditions.h>
 

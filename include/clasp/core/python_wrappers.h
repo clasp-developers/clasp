@@ -97,7 +97,7 @@ object BOOST_PYTHON_DECL make_raw_function(objects::py_function);
 									      _lisp);
 #else
 	    core::CompiledBody_sp cbfunc = core::CompiledBody_O::create(func,_lisp);
-	    core::NamedFunction_sp fp = core::NamedFunction_O::create(funcSymbol,
+	    core::Function_sp fp = core::NamedFunction_O::create(funcSymbol,
 							    llh,
 							    _lisp->cnil(),
 							    core::lisp_create_str(docs),
@@ -109,7 +109,7 @@ object BOOST_PYTHON_DECL make_raw_function(objects::py_function);
 	    object ofn = detail::make_raw_function(
 		objects::py_function(
 //		    detail::wrapped_dispatcher<core::FunctionPrimitive_sp>(fp,lisp)
-		    detail::wrapped_dispatcher<core::NamedFunction_sp>(fp,lisp)
+		    detail::wrapped_dispatcher<core::Function_sp>(fp,lisp)
 		    , mpl::vector1<PyObject*>()
 		    , 0
 		    , (std::numeric_limits<unsigned>::max)()
@@ -120,14 +120,14 @@ object BOOST_PYTHON_DECL make_raw_function(objects::py_function);
 	}
 #endif
 //
-// This is used to wrap a NamedFunction_sp object as a python function
+// This is used to wrap a Function_sp object as a python function
 //
 template <class F>
 object def_executable(string const &packageName, string const &functionName, F fp, const string &args, const string &docs, core::Lisp_sp lisp) {
   core::Symbol_sp funcSymbol = lisp->internWithPackageName(packageName, functionName);
   object ofn = detail::make_raw_function(
       objects::py_function(
-          detail::wrapped_dispatcher<core::NamedFunction_sp>(fp, lisp), mpl::vector1<PyObject *>(), 0, (std::numeric_limits<unsigned>::max)()));
+          detail::wrapped_dispatcher<core::Function_sp>(fp, lisp), mpl::vector1<PyObject *>(), 0, (std::numeric_limits<unsigned>::max)()));
   boost::python::def(functionName.c_str(), ofn);
   return ofn;
 }

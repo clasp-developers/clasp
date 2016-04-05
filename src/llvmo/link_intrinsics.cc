@@ -181,13 +181,13 @@ T_O *va_coerceToClosure(core::T_sp *argP) {
   if (!(*argP).objectp()) {
     intrinsic_error(llvmo::couldNotCoerceToClosure, *argP);
   }
-  core::NamedFunction_sp func = core::coerce::functionDesignator((*argP));
+  core::Function_sp func = core::coerce::functionDesignator((*argP));
   return &closure);
 }
 #endif
 
 ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
-  core::NamedFunction_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
+  core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
   ASSERTF(func.objectp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s") % depth % index % _rep_(*evaluateFrameP));
   return func.raw_();
 }
@@ -197,7 +197,7 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  core::NamedFunction_O *func = reinterpret_cast<NamedFunction_O *>(gctools::untag_general(lcc_func));
+  core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_func));
   return func->invoke_va_list(LCC_PASS_ARGS);
 }
 
@@ -251,18 +251,18 @@ void cc_ifBadKeywordArgumentException(size_t allowOtherKeys, std::size_t badKwId
     intrinsic_error(llvmo::badKeywordArgument, core::T_sp((gc::Tagged)kw));
 }
 
-void NamednewFunction_sp(core::NamedFunction_sp *sharedP) {
+void NamednewFunction_sp(core::Function_sp *sharedP) {
   ASSERT(sharedP != NULL);
-  new (sharedP) core::NamedFunction_sp();
+  new (sharedP) core::Function_sp();
 }
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #if 0
-void NameddestructFunction_sp(core::NamedFunction_sp *sharedP) {
+void NameddestructFunction_sp(core::Function_sp *sharedP) {
   ASSERT(sharedP != NULL);
   DEPRECIATED(); // April 2015
   if ((*sharedP).objectp()) {
-    typedef core::NamedFunction_sp dummy;
+    typedef core::Function_sp dummy;
     (*sharedP).~dummy();
   }
 }
@@ -772,7 +772,7 @@ void mv_symbolFunctionRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
 extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
   ASSERT(resultP != NULL);
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
-  core::NamedFunction_sp setfFunc = (*symP)->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
+  core::Function_sp setfFunc = (*symP)->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
   ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = setfFunc;
   ASSERTNOTNULL(*resultP);
@@ -783,7 +783,7 @@ core::T_sp proto_lexicalFunctionRead(int depth, int index, core::ActivationFrame
   ASSERT(renvP != NULL);
   LOG(BF("About to lexicalFunction depth[%d] index[%d]") % depth % index);
   LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__());
-  core::NamedFunction_sp res = core::Environment_O::clasp_lookupFunction((*renvP), depth, index);
+  core::Function_sp res = core::Environment_O::clasp_lookupFunction((*renvP), depth, index);
   return res;
 }
 
@@ -1554,7 +1554,7 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   }
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
-  core::NamedFunction_sp func((gctools::Tagged)tfunc);
+  core::Function_sp func((gctools::Tagged)tfunc);
   ASSERT(func);
   core::T_O *lcc_fixed_arg0 = mvargs[0];
   core::T_O *lcc_fixed_arg1 = mvargs[1];
@@ -1585,9 +1585,9 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
 	  in cmpintrinsics.lsp it is set to require a landing pad */
 void cc_invoke_multipleValueOneFormCall(core::T_mv *result, core::T_O *tfunc) {
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
-  core::NamedFunction_sp tagged_func = tfunc.asOrNull<core::NamedFunction_O>();
+  core::Function_sp tagged_func = tfunc.asOrNull<core::Function_O>();
   ASSERT(tagged_func);
-  auto closure = gc::untag_general<core::NamedFunction_O *>(tagged_func)->closure;
+  auto closure = gc::untag_general<core::Function_O *>(tagged_func)->closure;
   IMPLEMENT_MEF(BF("Handle multiple argument calls"));
 //  closure->invoke(result, result->number_of_values(), result->raw_(), mvThreadLocal[1], mvThreadLocal[2], mvThreadLocal[3], mvThreadLocal[4]);
 }
@@ -1683,7 +1683,7 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
   }
 #endif
   try {
-    core::NamedFunction_sp func = thunk.asOrNull<core::NamedFunction_O>();
+    core::Function_sp func = thunk.asOrNull<core::Function_O>();
     ASSERT(func);
     auto closure = func->closure;
     *resultP = closure->invoke(LCC_PASS_ARGS0());
@@ -1727,7 +1727,7 @@ void cc_throw(T_O* tag, T_O* result_func)
   }
 #endif
   T_mv result;
-  core::NamedFunction_sp func = result_func.asOrNull<core::NamedFunction_O>();
+  core::Function_sp func = result_func.asOrNull<core::Function_O>();
   ASSERT(func);
   auto closure = func->closure;
   closure->invoke(&result,LCC_PASS_ARGS0());
@@ -1844,7 +1844,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_start(argp,numFuns);
   for (; numFuns; --numFuns) {
     core::T_O* tfunc = va_arg(argp,core::T_O*);
-    core::NamedFunction_sp func = tfunc.asOrNull<core::NamedFunction_O>();
+    core::Function_sp func = tfunc.asOrNull<core::Function_O>();
     ASSERT(func);
     auto closure = func->closure;
     T_mv result;
@@ -1859,9 +1859,9 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
   va_end(argp);
   ASSERT(idx < MultipleValues::MultipleValuesLimit);
   mvAccumulate._Size = idx;
-  core::NamedFunction_sp func = funcDesignator.asOrNull<core::NamedFunction_O>();
+  core::Function_sp func = funcDesignator.asOrNull<core::Function_O>();
   ASSERT(func);
-  auto closure = gc::untag_general<core::NamedFunction_O *>(func)->closure.as<core::Closure>();
+  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
   core::T_O** a = &mvAccumulate[0];
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i = LCC_FIXED_ARGS, iEnd(mvAccumulate._Size); i < iEnd; ++i) {
@@ -1872,7 +1872,7 @@ T_mv cc_multiple_value_funcall(core::T_mv* result, T_O* funcDesignator, std::siz
 
 T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, core::T_O* tfunc2) {
   MultipleValues mvFunc1;
-  core::NamedFunction_sp func1 = tfunc1.asOrNull<core::NamedFunction_O>();
+  core::Function_sp func1 = tfunc1.asOrNull<core::Function_O>();
   ASSERT(func1);
   core::Closure_sp closure1 = func1->closure;
   closure1->invoke(result,LCC_PASS_ARGS0());
@@ -1881,7 +1881,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   MultipleValues &mvThreadLocal = lisp_multipleValues();
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvFunc1[i] = mvThreadLocal[i];
   T_mv resultTemp;
-  core::NamedFunction_sp func2 = tfunc2.asOrNull<core::NamedFunction_O>();
+  core::Function_sp func2 = tfunc2.asOrNull<core::Function_O>();
   ASSERT(func2);
   core::Closure_sp closure2 = func2->closure;
   closure2->invoke(&resultTemp,LCC_PASS_ARGS0());

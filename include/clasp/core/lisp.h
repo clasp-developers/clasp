@@ -563,9 +563,9 @@ public:
 
 public:
   /*! Add a function to trace */
-  void add_trace(NamedFunction_sp func);
+  void add_trace(Function_sp func);
   /*! Remove a function to trace */
-  void remove_trace(NamedFunction_sp func);
+  void remove_trace(Function_sp func);
 
   /*! Return a list of functions being traced */
   List_sp trace_functions() const;
@@ -609,9 +609,9 @@ public:
 
 public:
   /*! Create a setfDefinition */
-  //	void set_setfDefinition(Symbol_sp fnName, NamedFunction_sp fnDef);
+  //	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
   /*! Return the function or nil if not found */
-  //	NamedFunction_sp get_setfDefinition(Symbol_sp fnName) const;
+  //	Function_sp get_setfDefinition(Symbol_sp fnName) const;
   /*! Return true if the definition was found */
   //	bool remove_setfDefinition(Symbol_sp fnName);
 
@@ -939,7 +939,7 @@ public:
   string getMethodName(uint methodId);
   uint getMethodId(const string &methodName);
 
-  //	NamedFunction_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
+  //	Function_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
 
 public:
 #if 0

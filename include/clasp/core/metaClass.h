@@ -208,8 +208,8 @@ CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
   /*! Return the name of the package that this class belongs to */
   string getPackageName() const;
 
-  //	virtual NamedFunction_sp getMethodOrNil(Symbol_sp methodSymbol, T_sp receiver );
-  //	virtual void addMethod(Symbol_sp methodSymbol, NamedFunction_sp exec );
+  //	virtual Function_sp getMethodOrNil(Symbol_sp methodSymbol, T_sp receiver );
+  //	virtual void addMethod(Symbol_sp methodSymbol, Function_sp exec );
 
   template <typename oclass>
   bool isSubClassOf() const {
@@ -241,7 +241,7 @@ CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
 	  if it hasn't been defined yet */
   //	T_sp unboundValue();
 
-  //    virtual T_sp new_Instance(NamedFunction_sp e, List_sp args,  Environment_sp environ, Lisp_sp lisp);
+  //    virtual T_sp new_Instance(Function_sp e, List_sp args,  Environment_sp environ, Lisp_sp lisp);
   virtual void describe(T_sp stream);
 
   /*! predicate if this is a BuiltInClass class */

@@ -54,7 +54,7 @@ namespace core {
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
-    LISP_ABSTRACT_CLASS(core,CorePkg,Function_O,"Function",General_O);
+    LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
   virtual const char *describe() const { return "Function - subclass must implement describe()"; };
   inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
@@ -74,6 +74,37 @@ public:
   Function_O()  {};
   virtual T_sp name() const = 0;
   virtual string nameAsString() const {SUBIMP();};
+  virtual bool compiledP() const { return false; };
+  virtual bool interpretedP() const { return false; };
+  virtual bool builtinP() const { return false; };
+  virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
+  CL_DEFMETHOD T_sp functionName() const { return this->name(); };
+  CL_DEFMETHOD Symbol_sp functionKind() const { return this->getKind(); };
+  CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
+  CL_DEFMETHOD T_sp functionLambdaListHandler() const {
+    return this->lambdaListHandler();
+  }
+//  virtual void setAssociatedFunctions(core::List_sp assocFuncs) = 0;
+  CL_DEFMETHOD virtual void setf_lambda_list(T_sp lambda_list) = 0;
+  virtual T_sp closedEnvironment() const = 0;
+  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
+  virtual T_mv functionSourcePos() const;
+  CL_DEFMETHOD virtual T_sp cleavir_ast() const = 0;
+  CL_DEFMETHOD virtual void setf_cleavir_ast(T_sp ast) = 0;
+  virtual List_sp declares() const = 0;
+  CL_DEFMETHOD virtual T_sp docstring() const = 0;
+  virtual void *functionAddress() const = 0;
+  CL_DEFMETHOD virtual bool macroP() const = 0;
+  virtual void set_kind(Symbol_sp k) = 0;
+  virtual Symbol_sp getKind() const = 0;
+  virtual int sourceFileInfoHandle() const = 0;
+  virtual size_t filePos() const { return 0; }
+  virtual int lineNumber() const { return 0; }
+  virtual int column() const { return 0; };
+  virtual LambdaListHandler_sp lambdaListHandler() const = 0;
+  virtual T_sp lambdaList() const = 0;
+  CL_DEFMETHOD virtual void setAssociatedFunctions(T_sp funcs) = 0;
+  virtual string __repr__() const;
 };
 };
 
@@ -140,7 +171,7 @@ SMART(NamedFunction);
  *  adds a function name field to anything that inherits from it.
  */
  class NamedFunction_O : public Function_O {
-  LISP_ABSTRACT_CLASS(core, ClPkg, NamedFunction_O, "NamedFunction",Function_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, NamedFunction_O, "NamedFunction",Function_O);
 public:
   T_sp _name;
  NamedFunction_O(T_sp name) : _name(name) {};
@@ -152,37 +183,6 @@ public:
     return this->_name;
   }
 
-public:
-  string __repr__() const;
-  string description() const { return "Function::description"; };
-
-  virtual bool compiledP() const { return false; };
-  virtual Symbol_sp functionKind() const;
-  virtual T_sp functionLambdaListHandler() const;
-  /*! Return (values lambda-list foundp) */
-  virtual void setAssociatedFunctions(core::List_sp assocFuncs){SUBIMP();};
-  virtual void setf_lambda_list(T_sp lambda_list);
-  virtual T_sp closedEnvironment() const {SUBIMP();};
-//  virtual List_sp functionDeclares() const;
-  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
-  virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-  virtual T_mv functionSourcePos() const;
-  virtual T_sp cleavir_ast() const = 0;
-  virtual void setf_cleavir_ast(T_sp ast) = 0;
-  virtual List_sp declares() const = 0;
-  virtual T_sp docstring() const = 0;
-  virtual void *functionAddress() const { return NULL; };
-  virtual bool macroP() const = 0;
-  virtual void setKind(Symbol_sp k) = 0;
-  virtual Symbol_sp getKind() const = 0;
-  virtual bool interpretedP() const { return false; };
-  virtual bool builtinP() const { return false; };
-  virtual int sourceFileInfoHandle() const = 0;
-  virtual size_t filePos() const { return 0; }
-  virtual int lineNumber() const { return 0; }
-  virtual int column() const { return 0; };
-  virtual LambdaListHandler_sp lambdaListHandler() const = 0;
-  virtual T_sp lambdaList() const = 0;
 };
 };
 
@@ -240,7 +240,7 @@ public:
 
   virtual const char *describe() const { return "FunctionClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR(BF("Subclass must implement")); };
-  void setKind(Symbol_sp k) { this->kind = k; };
+  void set_kind(Symbol_sp k) { this->kind = k; };
   Symbol_sp getKind() const { return this->kind; };
   bool macroP() const;
   T_sp sourcePosInfo() const; // { return this->_SourcePosInfo; };
@@ -256,6 +256,9 @@ public:
   virtual void setf_lambda_list(T_sp lambda_list) {SUBIMP();};
   virtual List_sp declares() const {NOT_APPLICABLE();};
   virtual T_sp docstring() const {NOT_APPLICABLE();};
+  virtual T_sp closedEnvironment() const { NOT_APPLICABLE();};
+  virtual void* functionAddress() const { NOT_APPLICABLE();};
+  virtual void setAssociatedFunctions(T_sp funcs) {NOT_APPLICABLE();};
 };
 
 class BuiltinClosure_O : public FunctionClosure_O {

@@ -107,6 +107,28 @@ public: // Generic function ECL macros are replicated here
   T_sp GFUN_NAME() const { return this->_Slots[0]; };
   T_sp GFUN_SPECIALIZERS() const { return this->_Slots[1]; };
   T_sp GFUN_COMB() const { return this->_Slots[2]; };
+ public:
+  // Add support for Function_O methods
+  T_sp name() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
+  virtual Symbol_sp functionKind() const { IMPLEMENT_ME(); };
+  virtual void setf_lambda_list(T_sp lambda_list) { IMPLEMENT_ME(); };
+  virtual T_sp closedEnvironment() const { IMPLEMENT_ME(); };
+  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
+//  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
+  virtual T_sp cleavir_ast() const { IMPLEMENT_ME(); };
+  virtual void setf_cleavir_ast(T_sp ast) { IMPLEMENT_ME(); };
+  virtual List_sp declares() const { IMPLEMENT_ME(); };
+  virtual T_sp docstring() const { IMPLEMENT_ME(); };
+  virtual void *functionAddress() const { IMPLEMENT_ME(); };
+  virtual bool macroP() const { return false; };
+  virtual void set_kind(Symbol_sp k);
+  virtual Symbol_sp getKind() const { return kw::_sym_function; };
+  virtual int sourceFileInfoHandle() const { IMPLEMENT_ME(); };
+  virtual size_t filePos() const { return 0; }
+  virtual int lineNumber() const { return 0; }
+  virtual int column() const { return 0; };
+  virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
+  virtual T_sp lambdaList() const { IMPLEMENT_ME(); };
 
 public: // The hard-coded indexes above are defined below to be used by Class
 protected:
@@ -139,9 +161,6 @@ public: // Functions here
   virtual T_sp instanceSigSet();
   virtual T_sp instanceSig() const;
 
-  bool macroP() const { return false; };
-  Symbol_sp functionKind() const { return kw::_sym_function; };
-  void setKind(Symbol_sp k);
 
   virtual bool equalp(T_sp obj) const;
   virtual void sxhash_(HashGenerator &hg) const;

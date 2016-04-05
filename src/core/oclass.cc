@@ -242,7 +242,7 @@ StandardClass_O::slotIterator StandardClass_O::find(Symbol_sp sym)
 T_sp StandardClass_O::allocate_newNil()
 {
   DEPRECIATED(); // Is this really?
-  T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<NamedFunction_O>(), 
+  T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
                                                     _Nil<T_O>(),
                                                     _Nil<T_O>(), _lisp );
   StandardClass_sp thisClass = this->sharedThis<StandardClass_O>();

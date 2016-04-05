@@ -146,10 +146,10 @@ CL_DECLARE();
 CL_DOCSTRING("ll_getHostByName");
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,                 // #0
                                              core::T_sp tHostEnt,                          // #1
-                                             core::NamedFunction_sp setf_host_ent_name,         // #2
-                                             core::NamedFunction_sp setf_host_ent_aliases,      // #3
-                                             core::NamedFunction_sp setf_host_ent_address_type, // #4
-                                             core::NamedFunction_sp setf_host_ent_addresses)    // #5
+                                             core::Function_sp setf_host_ent_name,         // #2
+                                             core::Function_sp setf_host_ent_aliases,      // #3
+                                             core::Function_sp setf_host_ent_address_type, // #4
+                                             core::Function_sp setf_host_ent_addresses)    // #5
 {
   struct hostent *hostent = gethostbyname(hostName.c_str());
   if (tHostEnt.notnilp()) {

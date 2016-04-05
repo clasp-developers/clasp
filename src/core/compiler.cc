@@ -154,7 +154,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     }
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
-  NamedFunction_sp fsym = coerce::functionDesignator(sym);
+  Function_sp fsym = coerce::functionDesignator(sym);
   if ( BuiltinClosure_sp  bcc = fsym.asOrNull<BuiltinClosure_O>()) {
     (void)bcc; // suppress warning
     return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
@@ -421,7 +421,7 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   Symbol_sp name = _lisp->intern(ss.str());
   InterpretedClosure_sp ic =
     gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
-  NamedFunction_sp thunk = ic;
+  Function_sp thunk = ic;
   return eval::funcall(thunk);
 };
 
@@ -587,10 +587,10 @@ CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) 
       callByValue(v1, v2, v3, v4);
       if (stage >= 1) {
 #if 0
-                    NamedFunction_O* func = reinterpret_cast<NamedFunction_O*>(fn.px_ref());
+                    Function_O* func = reinterpret_cast<NamedFunction_O*>(fn.px_ref());
 #else
 
-        NamedFunction_sp func;
+        Function_sp func;
         func = eval::lookupFunction(fn, _Nil<T_O>());
 #endif
         if (stage >= 2) {
@@ -987,7 +987,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   size_t numArgs = 0;
   size_t idx = 0;
   for (auto cur : functions) {
-    NamedFunction_sp func = gc::As<NamedFunction_sp>(oCar(cur));
+    Function_sp func = gc::As<Function_sp>(oCar(cur));
     T_mv result = eval::funcall(func);
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
     accArgs[idx] = result.raw_();
@@ -999,7 +999,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
     }
   }
   accArgs.setLength(idx);
-  NamedFunction_sp fmv = coerce::functionDesignator(funcDesignator);
+  Function_sp fmv = coerce::functionDesignator(funcDesignator);
   Closure_sp func = fmv.asOrNull<Closure_O>();
   ASSERT(func);
   LCC_CALL_WITH_ARGS_IN_FRAME(result, func, accArgs);
@@ -1009,7 +1009,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
 CL_LAMBDA(func1 func2);
 CL_DECLARE();
 CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
-CL_DEFUN T_mv core__multiple_value_prog1_function(NamedFunction_sp func1, NamedFunction_sp func2) {
+CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp func2) {
   MultipleValues mvFunc1;
   T_mv result;
   ASSERT((func1) && func1.notnilp());
@@ -1031,7 +1031,7 @@ CL_DEFUN T_mv core__multiple_value_prog1_function(NamedFunction_sp func1, NamedF
 CL_LAMBDA(tag func);
 CL_DECLARE();
 CL_DOCSTRING("catchFunction");
-CL_DEFUN T_mv core__catch_function(T_sp tag, NamedFunction_sp thunk) {
+CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
   int frame = _lisp->exceptionStack().push(CatchFrame, tag);
 #ifdef DEBUG_FLOW_CONTROL
@@ -1096,7 +1096,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
 CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
-CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, NamedFunction_sp func) {
+CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp func) {
   DynamicScopeManager manager;
   for (auto curSym : symbols) {
     Symbol_sp symbol = gc::As<Symbol_sp>(oCar(curSym));

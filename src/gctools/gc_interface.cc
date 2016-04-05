@@ -258,7 +258,7 @@ NOINLINE void define_source_info(source_info_kind kind,
   core::colon_split(lisp_name,package_part,symbol_part);
   core::Symbol_sp sym = core::lisp_intern(symbol_part,package_part);
   if ( kind == code_kind ) {
-    core::NamedFunction_sp func = core::coerce::functionDesignator(sym);
+    core::Function_sp func = core::coerce::functionDesignator(sym);
     core::Str_sp sourceFile = core::Str_O::create(file);
     func->setSourcePosInfo(sourceFile, character_offset, line, 0 );
     core::Str_sp docs = core::Str_O::create(docstring);

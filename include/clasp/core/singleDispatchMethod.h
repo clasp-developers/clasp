@@ -50,7 +50,7 @@ GCPRIVATE: // instance variables here
   /*! Store the receiver class for this method */
   Class_sp _receiver_class;
   /*! Store the body of the method */
-  NamedFunction_sp code;
+  Function_sp code;
   //        CompiledBody_sp		_body;
   //	BuiltIn_sp	_method_builtin;
   /*! This is the LambdaListHandler for the Builtin method */
@@ -65,7 +65,7 @@ public: // creation function
                                         Class_sp receiver,
                                         LambdaListHandler_sp lambda_list_handler,
                                         List_sp declares, gc::Nilable<Str_sp> docstr,
-                                        NamedFunction_sp body);
+                                        Function_sp body);
 
 public: // Functions here
   Class_sp receiver_class() const { return this->_receiver_class; };
@@ -77,7 +77,7 @@ CL_DEFMETHOD   Symbol_sp singleDispatchMethodName() const { return this->_name; 
 CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
 CL_DEFMETHOD   Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
 CL_LISPIFY_NAME("singleDispatchMethodCode");
-CL_DEFMETHOD   NamedFunction_sp singleDispatchMethodCode() const { return this->code; };
+CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
 CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
 CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
 CL_LISPIFY_NAME("singleDispatchMethodDeclares");
@@ -108,7 +108,7 @@ class Lambda_method_function : public BuiltinClosure_O {
 
 private:
   SingleDispatchMethod_sp _method;
-  NamedFunction_sp _temporary_function;
+  Function_sp _temporary_function;
 
 public:
   const char *describe() const { return "Lambda_method_function"; };
@@ -133,7 +133,7 @@ public:
 
 
  
- void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, NamedFunction_sp body);
+ void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
 
 
 };

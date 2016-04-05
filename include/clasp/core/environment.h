@@ -60,14 +60,14 @@ public:
   static T_sp clasp_getActivationFrame(T_sp env);
   static int clasp_countFunctionContainerEnvironments(T_sp env);
   static bool clasp_findValue(T_sp env, T_sp name, int &depth, int &index, ValueKind &valueKind, T_sp &value);
-  static bool clasp_findFunction(T_sp env, T_sp functionName, int &depth, int &index, NamedFunction_sp &func);
+  static bool clasp_findFunction(T_sp env, T_sp functionName, int &depth, int &index, Function_sp &func);
   static bool clasp_findTag(T_sp env, Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv);
-  static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &func);
-  static bool clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, NamedFunction_sp &func);
+  static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &func);
+  static bool clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, Function_sp &func);
   static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
   static T_sp clasp_lookupValue(T_sp env, int depth, int index);
   static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index);
-  static NamedFunction_sp clasp_lookupFunction(T_sp env, int depth, int index);
+  static Function_sp clasp_lookupFunction(T_sp env, int depth, int index);
   static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index);
   static T_mv clasp_lookupMetadata(T_sp env, Symbol_sp sym);
   static T_sp clasp_find_current_code_environment(T_sp env);
@@ -143,7 +143,7 @@ public:
 	*/
   List_sp classifyVariable(T_sp sym) const;
   virtual T_sp _lookupValue(int depth, int index);
-  virtual NamedFunction_sp _lookupFunction(int depth, int index) const;
+  virtual Function_sp _lookupFunction(int depth, int index) const;
   virtual T_sp _lookupTagbodyId(int depth, int index) const { SUBIMP(); };
   virtual T_sp &lookupValueReference(int depth, int index);
 
@@ -162,14 +162,14 @@ public:
   /*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
-  virtual bool _findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &value) const;
-  virtual bool findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &value) const;
+  virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const;
+  virtual bool findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const;
 
-  virtual bool _findMacro(Symbol_sp sym, int &depth, int &index, NamedFunction_sp &value) const;
-  virtual bool findMacro(Symbol_sp sym, int &depth, int &index, NamedFunction_sp &value) const;
+  virtual bool _findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const;
+  virtual bool findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const;
 
-  virtual bool _findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &value) const;
-  virtual bool findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &value) const;
+  virtual bool _findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const;
+  virtual bool findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const;
 
   /*! If the symbol is not found return nil 
 	 If it is lexical return `(lexical-var ,symbol ,depth . ,index)
@@ -185,7 +185,7 @@ public:
 
 public: // extend the environment with forms
   /*! Lookup the Form, if it doesn't exist return nil */
-  //	virtual NamedFunction_sp function_lookup(T_sp functionName);
+  //	virtual Function_sp function_lookup(T_sp functionName);
 
   /*! Classify function lookup
 	  If the function is not found return nil
@@ -199,7 +199,7 @@ public: // extend the environment with forms
   virtual List_sp classifyTag(Symbol_sp tag);
 
   /*! Lookup the SymbolMacro, if it doesn't exist return nil */
-  NamedFunction_sp lookupSymbolMacro(Symbol_sp sym, bool &found) const;
+  Function_sp lookupSymbolMacro(Symbol_sp sym, bool &found) const;
 
   virtual string __repr__() const;
 
@@ -294,7 +294,7 @@ public:
   T_sp runtimeEnvironment() const { return this->_RuntimeEnvironment; };
 
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
-  virtual bool _findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &value) const;
+  virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const;
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
 
   virtual T_sp currentVisibleEnvironment() const;
@@ -366,7 +366,7 @@ public:
 
   /*! Lexical variable bindings shadow symbol macros so return false if the passed
 	  symbol is a lexical variable. */
-  bool _findSymbolMacro(Symbol_sp sym, int &depth, int &level, bool &shadowed, NamedFunction_sp &func) const;
+  bool _findSymbolMacro(Symbol_sp sym, int &depth, int &level, bool &shadowed, Function_sp &func) const;
 
   /*! Return true if the symbol is declared special in the lexical environment */
   bool lexicalSpecialP(Symbol_sp sym) const;
@@ -433,12 +433,12 @@ public:
   virtual string summaryOfContents() const;
 
   /*! Extend the environment with the form bound to the symbol */
-  int bind_function(T_sp functionName, NamedFunction_sp form);
+  int bind_function(T_sp functionName, Function_sp form);
 
   /*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
-  bool _findFunction(T_sp functionName, int &depth, int &level, NamedFunction_sp &func) const;
+  bool _findFunction(T_sp functionName, int &depth, int &level, Function_sp &func) const;
 
 public:
   DEFAULT_CTOR_DTOR(FunctionValueEnvironment_O);
@@ -460,16 +460,16 @@ namespace core {
     {
     private:
 	Class_sp		_Condition;
-	NamedFunction_sp	_Handler;
+	Function_sp	_Handler;
     public:
 	HandlerHolder() {};
-	void setup(Class_sp mc, NamedFunction_sp exec)
+	void setup(Class_sp mc, Function_sp exec)
 	{
 	    this->_Condition = mc;
 	    this->_Handler = exec;
 	}
 	Class_sp getCondition() { return this->_Condition;};
-	NamedFunction_sp getHandler() { return this->_Handler;};
+	Function_sp getHandler() { return this->_Handler;};
     };
 #endif
 
@@ -715,9 +715,9 @@ public: // Codes here
   static MacroletEnvironment_sp make(T_sp env);
 
 public:
-  void addMacro(Symbol_sp name, NamedFunction_sp macro);
+  void addMacro(Symbol_sp name, Function_sp macro);
 
-  bool _findMacro(Symbol_sp sym, int &depth, int &level, NamedFunction_sp &func) const;
+  bool _findMacro(Symbol_sp sym, int &depth, int &level, Function_sp &func) const;
 
   virtual string summaryOfContents() const;
 
@@ -753,9 +753,9 @@ public: // Codes here
   static SymbolMacroletEnvironment_sp make(T_sp env);
 
 public:
-  void addSymbolMacro(Symbol_sp sym, NamedFunction_sp expansion);
+  void addSymbolMacro(Symbol_sp sym, Function_sp expansion);
 
-  bool _findSymbolMacro(Symbol_sp sym, int &depth, int &level, bool &shadowed, NamedFunction_sp &func) const;
+  bool _findSymbolMacro(Symbol_sp sym, int &depth, int &level, bool &shadowed, Function_sp &func) const;
 
   void throwErrorIfSymbolMacrosDeclaredSpecial(List_sp specialDeclaredSymbols) const;
 

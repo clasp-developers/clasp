@@ -67,10 +67,13 @@ public: // initialize
   virtual List_sp declares() const { NOT_APPLICABLE(); };
   virtual T_sp docstring() const { NOT_APPLICABLE(); };
   virtual bool macroP() const { NOT_APPLICABLE(); };
-  virtual void setKind(Symbol_sp k) { NOT_APPLICABLE(); };
   virtual Symbol_sp getKind() const { NOT_APPLICABLE(); };
   virtual T_sp lambdaList() const { NOT_APPLICABLE(); };
   virtual int sourceFileInfoHandle() const { NOT_APPLICABLE(); };
+  virtual T_sp closedEnvironment() const { NOT_APPLICABLE(); };
+  virtual void *functionAddress() const { NOT_APPLICABLE(); };
+  virtual void set_kind(Symbol_sp k) { NOT_APPLICABLE(); };
+  virtual void setAssociatedFunctions(T_sp funcs) { NOT_APPLICABLE(); };
 
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 

@@ -232,7 +232,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
     {
 	IMPLEMENT_ME();
 #if 0
-	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<NamedFunction_O>(), 
+	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
 							  _Nil<T_O>(),
 							  _Nil<Environment_O>(), _lisp );
 	StandardClass_sp thisClass = this->sharedThis<StandardClass_O>();

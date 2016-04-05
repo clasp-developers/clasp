@@ -37,10 +37,10 @@ template <typename OT>
 class OldStyleMethoid : public SingleDispatchMethoid
 {
 private:
-	T_sp (OT::*fptr)(NamedFunction_sp,List_sp, Environment_sp, Lisp_sp );
+	T_sp (OT::*fptr)(Function_sp,List_sp, Environment_sp, Lisp_sp );
 public:
     virtual string describe() const {return "OldStyleMethoid";};
-    OldStyleMethoid( const string& name, T_sp (OT::*fp)(NamedFunction_sp,List_sp, Environment_sp, Lisp_sp ) ) : SingleDispatchMethoid("OldStyleMethoid->"+name)
+    OldStyleMethoid( const string& name, T_sp (OT::*fp)(Function_sp,List_sp, Environment_sp, Lisp_sp ) ) : SingleDispatchMethoid("OldStyleMethoid->"+name)
     {
 	this->fptr = fp;
     };

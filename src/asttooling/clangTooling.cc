@@ -145,7 +145,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     printf("%s:%d Entered from_object<clang::tooling::ArgumentsAdjuster>\n", __FILE__, __LINE__);
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
-    } else if (core::NamedFunction_sp func = o.asOrNull<core::NamedFunction_O>()) {
+    } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
       if (auto compiledClosure = func.asOrNull<core::CompiledClosure_O>()) {
         core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
         core::T_O* closedEnvironment = compiledClosure->closedEnvironment().raw_();

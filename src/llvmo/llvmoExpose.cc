@@ -2796,7 +2796,7 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
 }
 
-CL_DEFUN core::NamedFunction_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList) {
+CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
@@ -2814,7 +2814,7 @@ CL_DEFUN core::NamedFunction_sp finalizeEngineAndRegisterWithGcAndGetCompiledFun
   return functoid;
 }
 
-CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::NamedFunction_sp func) {
+CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   auto closure = func.as<core::CompiledClosure_O>();
   llvmo::Function_sp llvm_func = closure->llvmFunction;

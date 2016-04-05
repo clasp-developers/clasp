@@ -67,7 +67,7 @@ CL_DEFUN Instance_sp core__copy_instance(Instance_sp obj) {
   return cp;
 };
 
-void Instance_O::setKind(Symbol_sp k) {
+void Instance_O::set_kind(Symbol_sp k) {
   if (k == kw::_sym_macro) {
     SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
   }

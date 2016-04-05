@@ -50,7 +50,7 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
                                                        LambdaListHandler_sp llh,
                                                        List_sp declares,
                                                        gc::Nilable<Str_sp> docstr,
-                                                       NamedFunction_sp body) {
+                                                       Function_sp body) {
   GC_ALLOCATE(SingleDispatchMethod_O, method);
   method->_name = name;
   method->_receiver_class = receiverClass;
