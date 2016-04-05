@@ -276,6 +276,7 @@ public:
     this->_lambdaListHandler = llh;
     this->kind = k;
   }
+  T_sp closedEnvironment() const { return _Nil<T_O>(); };
   virtual T_sp lambdaList() const;
   virtual void setf_lambda_list(T_sp lambda_list);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
@@ -316,6 +317,7 @@ class ClosureWithFrame_O : public FunctionClosure_O {
 public:
   T_sp _closedEnvironment;
 public:
+  T_sp closedEnvironment() const { return this->_closedEnvironment;};
  ClosureWithFrame_O(T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "ClosureWithFrame"; };
