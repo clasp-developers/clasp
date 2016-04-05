@@ -81,8 +81,10 @@ CL_DOCSTRING("set the kind of a function object (:function|:macro)");
 CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   if ( NamedFunction_sp func = fn.asOrNull<NamedFunction_O>() ) {
     fn->set_kind(kind);
+    return;
   }
-  SIMPLE_ERROR(BF("You cannot set the kind of a simple function"));
+  if ( kind == kw::_sym_function ) return; // by default everything is a function
+  SIMPLE_ERROR(BF("You cannot set the kind: %s of a Function_O object") % _rep_(kind));
 };
 
 CL_LISPIFY_NAME("core:functionSourcePos");
