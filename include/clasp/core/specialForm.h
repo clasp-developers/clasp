@@ -73,7 +73,7 @@ public: // initialize
   virtual T_sp closedEnvironment() const { NOT_APPLICABLE(); };
   virtual void *functionAddress() const { NOT_APPLICABLE(); };
   virtual void set_kind(Symbol_sp k) { NOT_APPLICABLE(); };
-  virtual void setAssociatedFunctions(T_sp funcs) { NOT_APPLICABLE(); };
+  virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
 
   SpecialForm_O(const SpecialForm_O &ss); //!< Copy constructor
 

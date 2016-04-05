@@ -84,7 +84,6 @@ public:
   CL_DEFMETHOD T_sp functionLambdaListHandler() const {
     return this->lambdaListHandler();
   }
-//  virtual void setAssociatedFunctions(core::List_sp assocFuncs) = 0;
   CL_DEFMETHOD virtual void setf_lambda_list(T_sp lambda_list) = 0;
   virtual T_sp closedEnvironment() const = 0;
   virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
@@ -103,7 +102,7 @@ public:
   virtual int column() const { return 0; };
   virtual LambdaListHandler_sp lambdaListHandler() const = 0;
   virtual T_sp lambdaList() const = 0;
-  CL_DEFMETHOD virtual void setAssociatedFunctions(T_sp funcs) = 0;
+  CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
   virtual string __repr__() const;
 };
 };
@@ -258,7 +257,7 @@ public:
   virtual T_sp docstring() const {NOT_APPLICABLE();};
   virtual T_sp closedEnvironment() const { NOT_APPLICABLE();};
   virtual void* functionAddress() const { NOT_APPLICABLE();};
-  virtual void setAssociatedFunctions(T_sp funcs) {NOT_APPLICABLE();};
+  virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
 };
 
 class BuiltinClosure_O : public FunctionClosure_O {
