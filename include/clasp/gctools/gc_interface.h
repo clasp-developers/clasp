@@ -34,7 +34,7 @@ THE SOFTWARE.
 namespace core {
 class T_O;
 class WrappedPointer_O;
-class Functor_O;
+class Function_O;
 class Creator_O;
 class Iterator_O;
 class SequenceStepper_O;

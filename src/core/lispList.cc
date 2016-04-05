@@ -42,9 +42,9 @@ struct cl_test {
   T_sp (*key_c_function)(struct cl_test *, T_sp);
   //cl_env_ptr env;
   T_sp key_function;
-  Function_sp key_fn;
+  NamedFunction_sp key_fn;
   T_sp test_function;
-  Function_sp test_fn;
+  NamedFunction_sp test_fn;
   T_sp item_compared;
 };
 
@@ -126,20 +126,20 @@ setup_test(struct cl_test *t, T_sp item, T_sp test,
       t->test_c_function = test_equalp;
     } else {
       t->test_c_function = test_compare;
-      t->test_fn = gc::As<Function_sp>(test); //ecl_function_dispatch(env, test);
+      t->test_fn = gc::As<NamedFunction_sp>(test); //ecl_function_dispatch(env, test);
       t->test_function = t->test_fn;          // env->function;
     }
   } else if (test_not.notnilp()) {
     t->test_c_function = test_compare_not;
     test_not = coerce::functionDesignator(test_not);
-    t->test_fn = gc::As<Function_sp>(test_not); // ecl_function_dispatch(env, test_not);
+    t->test_fn = gc::As<NamedFunction_sp>(test_not); // ecl_function_dispatch(env, test_not);
     t->test_function = t->test_fn;              // env->function;
   } else {
     t->test_c_function = test_eql;
   }
   if (key.notnilp()) {
     key = coerce::functionDesignator(key);
-    t->key_fn = gc::As<Function_sp>(key); // ecl_function_dispatch(env, key);
+    t->key_fn = gc::As<NamedFunction_sp>(key); // ecl_function_dispatch(env, key);
     t->key_function = t->key_fn;          // env->function;
     t->key_c_function = key_function;
   } else {

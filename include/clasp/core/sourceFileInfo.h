@@ -90,7 +90,7 @@ public:
 public:                                                                                    // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O() : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0){}; //, _Filepos(0) {};
 public:                                                                                    // instance variables here
-  SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc)                           // , Function_sp expander=_Nil<Function_O>())
+  SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc)                           // , NamedFunction_sp expander=_Nil<Function_O>())
       : _FileId(spf),
         _Filepos(filepos),
         _Lineno(spln),
@@ -118,7 +118,7 @@ public:
   size_t _Filepos;
   uint _Lineno;
   uint _Column;
-  //	Function_sp 	_Expander;
+  //	NamedFunction_sp 	_Expander;
 };
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())

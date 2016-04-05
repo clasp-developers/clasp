@@ -160,7 +160,7 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   //  printf("%s:%d  restricted_compute_applicable_method gf: %s  args: %s\n", __FILE__, __LINE__, _rep_(gf).c_str(), _rep_(arglist).c_str());
   T_sp methods = eval::funcall(clos::_sym_std_compute_applicable_methods, igf, arglist);
   if (methods.nilp()) {
-    Function_sp func = gc::As<Function_sp>(eval::funcall(cl::_sym_no_applicable_method,
+    NamedFunction_sp func = gc::As<NamedFunction_sp>(eval::funcall(cl::_sym_no_applicable_method,
                                                          igf, arglist));
     // Why was I setting the first argument to NIL???
     // I could use LCC_VA_LIST_REGISTER_ARG0(vargs) = gctools::tag_nil<T_O*>();
@@ -266,9 +266,9 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
     //SIMPLE_ERROR(BF("Try #1 generic function cache search error looking for %s") % _rep_(gf));
   }
   ASSERT(e != NULL);
-  Function_sp func;
+  NamedFunction_sp func;
   if (e->_key.notnilp()) {
-    func = gc::As<Function_sp>(e->_value);
+    func = gc::As<NamedFunction_sp>(e->_value);
   } else {
     /* The keys and the cache may change while we
 	     * compute the applicable methods. We must save
@@ -276,7 +276,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
 	     * it was filled. */
     T_sp keys = VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
-    func = gc::As<Function_sp>(mv);
+    func = gc::As<NamedFunction_sp>(mv);
     if (mv.valueGet(1).notnilp()) {
       if (e->_key.notnilp()) {
         try {

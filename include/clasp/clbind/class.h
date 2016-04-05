@@ -479,7 +479,7 @@ struct constructor_registration_base : public registration {
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
-    core::BuiltinClosure_sp f = gc::GC<VariadicConstructorFunctor_O<Policies, Pointer, Class, Signature>>::allocate(sym);
+    core::BuiltinClosure_sp f = gc::GC<VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>>::allocate(sym);
     lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, true, CountConstructorArguments<Signature>::value);
   }
 

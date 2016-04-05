@@ -910,7 +910,7 @@ T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_
   } else {
     this->set_syntax_type(ch, kw::_sym_terminating_macro_character);
   }
-  Function_sp func = coerce::functionDesignator(funcDesig);
+  NamedFunction_sp func = coerce::functionDesignator(funcDesig);
   this->_MacroCharacters->setf_gethash(ch, func);
   return _lisp->_true();
 }
@@ -973,7 +973,7 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
   HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
-  Function_sp new_func = coerce::functionDesignator(new_func_desig);
+  NamedFunction_sp new_func = coerce::functionDesignator(new_func_desig);
   dispatch_table->hash_table_setf_gethash(upcase_sub_char, new_func);
   return _lisp->_true();
 #if 0
@@ -987,7 +987,7 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
 	Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
-	Function_sp new_func = coerce::functionDesignator(new_func_desig);
+	NamedFunction_sp new_func = coerce::functionDesignator(new_func_desig);
 	dispatch_table->hash_table_setf_gethash(upcase_sub_char,new_func);
 	return _lisp->_true();
 #endif
@@ -1009,7 +1009,7 @@ T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character
 	HashTable_sp dispatch_table = disp_char_plist->getf(kw::_sym_dispatch_table,_Nil<HashTable_O>() ).as<HashTable_O>();
 	ASSERTF(dispatch_table.notnilp(),BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char) );
 	Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
-	Function_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<Function_O>();
+	NamedFunction_sp func = dispatch_table->gethash(upcase_sub_char,_Nil<T_O>()).as<NamedFunction_O>();
 	return func;
 #endif
 }

@@ -84,7 +84,7 @@ namespace core {
 	double operator+(double y) const { return ((double)(this->_Value))+y;};
 
 //	uint asUInt() const;
-//	T_sp sub(Function_sp e, List_sp args, Environment_sp environ, Lisp_sp lisp);
+//	T_sp sub(NamedFunction_sp e, List_sp args, Environment_sp environ, Lisp_sp lisp);
 
 	int operator-(int y) const { return this->_Value-y;};
 	LongLongInt operator-(LongLongInt y) const { return ((LongLongInt)(this->_Value))-y;};

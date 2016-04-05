@@ -1,5 +1,5 @@
 /*
-    File: evaluator.fwd.h
+    File: creator.cc
 */
 
 /*
@@ -24,22 +24,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _evaluator_fwd_H_
-#define _evaluator_fwd_H_
+#define DEBUG_LEVEL_FULL
+#include <clasp/core/foundation.h>
+#include <clasp/core/executables.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/core/standardObject.h>
+#include <clasp/core/package.h>
+//#include "debugger.h"
+#include <clasp/core/iterator.h>
+#include <clasp/core/designators.h>
+#include <clasp/core/primitives.h>
+#include <clasp/core/instance.h>
+#include <clasp/core/vectorObjects.h>
+#include <clasp/core/sourceFileInfo.h>
+#include <clasp/core/activationFrame.h>
+#include <clasp/core/lambdaListHandler.h>
+//#i n c l u d e "environmentDependent.h"
+#include <clasp/core/environment.h>
+#include <clasp/core/evaluator.h>
+// to avoid Generic to_object include headers here
+#include <clasp/core/wrappers.h>
+
+
 
 namespace core {
-namespace eval {
-extern T_mv evaluate(T_sp exp, T_sp environment);
-/*! See the CLHS for "apply" - all arguments are in args 
-  (functionDesignator) can be a Symbol or an Function
-*/
-//extern T_sp apply(T_sp functionDesignator, List_sp args, Lisp_sp lisp);
+T_sp InstanceCreator_O::allocate() {
+      GC_ALLOCATE(Instance_O, output);
+      return output;
+    };
 
-//	extern T_mv applyFunctionToActivationFrame(NamedFunction_sp func, ActivationFrame_sp args );
 
-extern T_mv sp_trace(List_sp args, T_sp env);
-extern T_mv sp_untrace(List_sp args, T_sp env);
 };
-};
-
-#endif /* _evaluator_fwd_H_ */

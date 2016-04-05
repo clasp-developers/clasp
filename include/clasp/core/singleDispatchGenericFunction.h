@@ -81,8 +81,8 @@ public:
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual T_sp docstring() const {NOT_APPLICABLE();};
 
-    Function_sp slowMethodLookup(Class_sp mc);
-    Function_sp computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const &applicableMethods);
+    NamedFunction_sp slowMethodLookup(Class_sp mc);
+    NamedFunction_sp computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const &applicableMethods);
   };
 
 };
@@ -138,7 +138,7 @@ class Lambda_emf : public FunctionClosure_O {
 private:
   /*! Store the method_function that this emf invokes.
 	  This function takes two arguments: (args next-emfun) */
-  Function_sp _method_function;
+  NamedFunction_sp _method_function;
 
 public:
   virtual const char *describe() const { return "Lambda_emf"; };

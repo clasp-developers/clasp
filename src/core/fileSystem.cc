@@ -338,7 +338,7 @@ DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
 
 
 #if 0
-    T_sp DirectoryIterator_O::make_init(Function_sp exec, Cons_sp args, T_sp bargs)
+    T_sp DirectoryIterator_O::make_init(NamedFunction_sp exec, Cons_sp args, T_sp bargs)
     {
 	Path_sp path = coerce::pathDesignator(af_interpreter_lookup_variable(_sym_path,bargs));
 	if ( path.nilp() )
@@ -360,7 +360,7 @@ DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
 	SYMBOL_SC_(CorePkg,path);
 	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path ).cons()));
-	me->make_init(_Nil<core::Function_O>(),env->args(),env);
+	me->make_init(_Nil<core::NamedFunction_O>(),env->args(),env);
 	return(Values(me));
 #endif
 }
@@ -445,12 +445,12 @@ RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path)
     {
 	RecursiveDirectoryIterator_sp me(RecursiveDirectoryIterator_O::create());
 	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path).cons()) );
-	me->make_init__(core::_Nil<Function_O>(),env->args(),env,_lisp);
+	me->make_init__(core::_Nil<NamedFunction_O>(),env->args(),env,_lisp);
 	return me;
     }
 
 
-    T_sp RecursiveDirectoryIterator_O::make_init__(Function_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp lisp)
+    T_sp RecursiveDirectoryIterator_O::make_init__(NamedFunction_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp lisp)
     {
 	Path_sp path = coerce::pathDesignator(bargs->lookup(_sym_path));
 	if ( path.nilp() )

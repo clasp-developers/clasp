@@ -38,8 +38,8 @@ THE SOFTWARE.
 namespace core {
 
 SMART(SpecialForm);
-class SpecialForm_O : public Function_O {
-  LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm",Function_O);
+class SpecialForm_O : public NamedFunction_O {
+  LISP_CLASS(core, CorePkg, SpecialForm_O, "SpecialForm",NamedFunction_O);
 
 public: // virtual functions inherited from Object
   void initialize();

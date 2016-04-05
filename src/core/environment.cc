@@ -119,7 +119,7 @@ CL_DOCSTRING("lexicalFunction - If found return (values T fn depth index) otherw
 CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
-  Function_sp func;
+  NamedFunction_sp func;
   if (Environment_O::clasp_findFunction(env, name, depth, index, func)) {
     return Values(_lisp->_true(), func, make_fixnum(depth), make_fixnum(index));
   }
@@ -132,7 +132,7 @@ CL_DOCSTRING("lexicalMacroFunction - If found return (values T fn depth index) o
 CL_DEFUN T_mv core__lexical_macro_function(T_sp name, T_sp env) {
   int depth = 0;
   int index = 0;
-  Function_sp func;
+  NamedFunction_sp func;
   if (Environment_O::clasp_findMacro(env, name, depth, index, func)) {
     return Values(_lisp->_true(), func, make_fixnum(depth), make_fixnum(index));
   }
@@ -342,7 +342,7 @@ T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) 
   return eenv->lookupValueReference(depth, index);
 }
 
-Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
+NamedFunction_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_lookupFunction(depth, index);
@@ -362,7 +362,7 @@ T_sp &Environment_O::lookupValueReference(int depth, int index) {
   SUBIMP();
 }
 
-Function_sp Environment_O::_lookupFunction(int depth, int index) const {
+NamedFunction_sp Environment_O::_lookupFunction(int depth, int index) const {
   SUBIMP();
 }
 
@@ -429,7 +429,7 @@ bool Environment_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valu
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
 }
 
-bool Environment_O::clasp_findFunction(T_sp env, T_sp functionName, int &depth, int &index, Function_sp &func) {
+bool Environment_O::clasp_findFunction(T_sp env, T_sp functionName, int &depth, int &index, NamedFunction_sp &func) {
   if (env.nilp()) {
     depth = -1;
     index = -1;
@@ -440,17 +440,17 @@ bool Environment_O::clasp_findFunction(T_sp env, T_sp functionName, int &depth, 
   NOT_ENVIRONMENT_ERROR(env);
 }
 
-bool Environment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func) const {
+bool Environment_O::_findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &func) const {
   return clasp_findFunction(this->getParentEnvironment(), functionName, depth, index, func);
 }
 
-bool Environment_O::findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const {
+bool Environment_O::findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &value) const {
   depth = 0;
   index = -1;
   return this->_findFunction(functionName, depth, index, value);
 }
 
-bool Environment_O::clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, Function_sp &func) {
+bool Environment_O::clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, NamedFunction_sp &func) {
   if (env.nilp()) {
     // Look in the global environment
     depth = -1;
@@ -463,11 +463,11 @@ bool Environment_O::clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &in
   NOT_ENVIRONMENT_ERROR(env);
 }
 
-bool Environment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &func) const {
+bool Environment_O::_findMacro(Symbol_sp sym, int &depth, int &index, NamedFunction_sp &func) const {
   return clasp_findMacro(this->getParentEnvironment(), sym, depth, index, func);
 }
 
-bool Environment_O::findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const {
+bool Environment_O::findMacro(Symbol_sp sym, int &depth, int &index, NamedFunction_sp &value) const {
   depth = 0;
   index = -1;
   return this->_findMacro(sym, depth, index, value);
@@ -522,7 +522,7 @@ T_sp Environment_O::clasp_find_block_named_environment(T_sp env, Symbol_sp block
   NOT_ENVIRONMENT_ERROR(env);
 }
 
-bool Environment_O::clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &func) {
+bool Environment_O::clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &func) {
   if (env.nilp()) {
     depth = -1;
     index = -1;
@@ -534,11 +534,11 @@ bool Environment_O::clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, i
   NOT_ENVIRONMENT_ERROR(env);
 }
 
-bool Environment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &func) const {
+bool Environment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &func) const {
   return clasp_findSymbolMacro(this->getParentEnvironment(), sym, depth, index, shadowed, func);
 }
 
-bool Environment_O::findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const {
+bool Environment_O::findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &value) const {
   depth = 0;
   index = -1;
   shadowed = false;
@@ -594,7 +594,7 @@ CL_LISPIFY_NAME("classifyFunctionLookup");
 CL_DEFMETHOD List_sp Environment_O::classifyFunctionLookup(T_sp functionName) const {
   int depth;
   int index;
-  Function_sp value;
+  NamedFunction_sp value;
   if (this->findFunction(functionName, depth, index, value)) {
     return Cons_O::createList(_sym_lexicalFunction, functionName, make_fixnum(depth), make_fixnum(index));
   }
@@ -717,21 +717,21 @@ string Environment_O::summaryOfContents() const {
 #endif
 
 #if 0
-    Function_sp Environment_O::function_lookup(T_sp functionName)
+    NamedFunction_sp Environment_O::function_lookup(T_sp functionName)
     {
 	int depth, index;
-	Function_sp func;
+	NamedFunction_sp func;
 	if (this->findFunction(functionName,depth,index,func) )
 	{
 	    return func;
 	}
-	return _Nil<Function_O>();
+	return _Nil<NamedFunction_O>();
     }
 #endif
 
 #if 0
 
-    Function_sp Environment_O::lookupSymbolMacro(Symbol_sp sym, bool& foundIt) const
+    NamedFunction_sp Environment_O::lookupSymbolMacro(Symbol_sp sym, bool& foundIt) const
     {
 	LOG(BF("Looking to see if there is a symbol-macro with name(%s)") % _rep_(sym) );
 	ASSERTNOTNULL(this->getParentEnvironment());
@@ -739,7 +739,7 @@ string Environment_O::summaryOfContents() const {
 	{
 	    // There is no symbol-macro with this name, return nil/false
 	    foundIt = false;
-	    return lisp()->nil<Function_O>();
+	    return lisp()->nil<NamedFunction_O>();
 	}
 	return this->getParentEnvironment()->lookupSymbolMacro(sym,foundIt);
     }
@@ -850,7 +850,7 @@ bool RuntimeVisibleEnvironment_O::_findValue(T_sp sym, int &depth, int &index, V
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
 }
 
-bool RuntimeVisibleEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &func) const {
+bool RuntimeVisibleEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &func) const {
   //	if (this -> isNil()) return false;
   T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
   LOG(BF("Moving down a level"));
@@ -936,7 +936,7 @@ bool ValueEnvironment_O::_findValue(T_sp sym, int &depth, int &index, ValueKind 
   return true;
 }
 
-bool ValueEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &fn) const {
+bool ValueEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &fn) const {
   LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
   List_sp fi = this->_SymbolIndex->find(sym);
@@ -1078,7 +1078,7 @@ T_sp FunctionValueEnvironment_O::getActivationFrame() const {
   return this->_FunctionFrame;
 };
 
-bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const {
+bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, int &index, NamedFunction_sp &value) const {
   LOG(BF("Looking for binding for function name[%s]") % _rep_(functionName));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
   T_mv mv = this->_FunctionIndices->gethash(functionName, _Nil<T_O>());
@@ -1090,7 +1090,7 @@ bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, in
   LOG(BF(" Found binding %d") % index);
   T_sp tvalue = this->_FunctionFrame->entry(index);
   ASSERT(tvalue.notnilp());
-  value = gc::As<Function_sp>(tvalue);
+  value = gc::As<NamedFunction_sp>(tvalue);
   return true;
 }
 
@@ -1140,7 +1140,7 @@ public:
     } else if (entry.unboundp()) {
       ss << "UNBOUND";
     } else {
-      Function_sp func = gc::As<Function_sp>(entry);
+      NamedFunction_sp func = gc::As<NamedFunction_sp>(entry);
       ss << "function " << _rep_(func->name());
     }
     ss << std::endl;
@@ -1159,7 +1159,7 @@ string FunctionValueEnvironment_O::summaryOfContents() const {
 }
 
 CL_LISPIFY_NAME("bindFunction");
-CL_DEFMETHOD int FunctionValueEnvironment_O::bind_function(T_sp functionName, Function_sp form) {
+CL_DEFMETHOD int FunctionValueEnvironment_O::bind_function(T_sp functionName, NamedFunction_sp form) {
   ASSERT(form.notnilp());
   int nextIdx = this->_FunctionIndices->hashTableCount();
   this->_FunctionIndices->hash_table_setf_gethash(functionName, make_fixnum(nextIdx));
@@ -1511,7 +1511,7 @@ string MacroletEnvironment_O::summaryOfContents() const {
   return ss.str();
 }
 
-bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Function_sp &value) const {
+bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, NamedFunction_sp &value) const {
   LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
   List_sp fi = this->_Macros->find(sym);
@@ -1519,12 +1519,12 @@ bool MacroletEnvironment_O::_findMacro(Symbol_sp sym, int &depth, int &index, Fu
     return this->Base::_findMacro(sym, depth, index, value);
   }
   LOG(BF(" Found binding %s") % fi->second);
-  value = gc::As<Function_sp>(oCdr(fi));
+  value = gc::As<NamedFunction_sp>(oCdr(fi));
   return true;
 }
 
 CL_LISPIFY_NAME("addMacro");
-CL_DEFMETHOD void MacroletEnvironment_O::addMacro(Symbol_sp sym, Function_sp macro) {
+CL_DEFMETHOD void MacroletEnvironment_O::addMacro(Symbol_sp sym, NamedFunction_sp macro) {
   this->_Macros->hash_table_setf_gethash(sym, macro);
 }
 
@@ -1535,7 +1535,7 @@ CL_DEFUN SymbolMacroletEnvironment_sp SymbolMacroletEnvironment_O::make(T_sp par
   return environ;
 }
 
-bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &value) const {
+bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, int &index, bool &shadowed, NamedFunction_sp &value) const {
   LOG(BF("Looking for binding for symbol(%s)") % _rep_(sym));
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
   List_sp fi = this->_Macros->find(sym);
@@ -1543,13 +1543,13 @@ bool SymbolMacroletEnvironment_O::_findSymbolMacro(Symbol_sp sym, int &depth, in
     return this->Base::_findSymbolMacro(sym, depth, index, shadowed, value);
   }
   LOG(BF(" Found binding %s") % fi->second);
-  value = gc::As<Function_sp>(oCdr(fi));
+  value = gc::As<NamedFunction_sp>(oCdr(fi));
   shadowed = false;
   return true;
 }
 
 CL_LISPIFY_NAME("addSymbolMacro");
-CL_DEFMETHOD void SymbolMacroletEnvironment_O::addSymbolMacro(Symbol_sp sym, Function_sp expansion) {
+CL_DEFMETHOD void SymbolMacroletEnvironment_O::addSymbolMacro(Symbol_sp sym, NamedFunction_sp expansion) {
   this->_Macros->hash_table_setf_gethash(sym, expansion);
 }
 

@@ -215,7 +215,7 @@ public:
   InvocationHistoryFrame *frame() { return this->_Frame; };
   int index();
   T_sp functionName();
-  Function_sp function();
+  NamedFunction_sp function();
   Vector_sp arguments();
   T_sp environment();
   InvocationHistoryFrameIterator_sp copy() {

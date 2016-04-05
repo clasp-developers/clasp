@@ -28,7 +28,7 @@ THE SOFTWARE.
 #define executables_fwd_H
 namespace core {
 class BuiltinClosure_O;
-FORWARD(Function);
+FORWARD(NamedFunction);
 FORWARD(CompiledFunction);
 }
 #endif

@@ -1716,7 +1716,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     }
     if (expansionFunction.notnilp()) {
       T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-      Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+      NamedFunction_sp hookFunc = coerce::functionDesignator(macroexpandHook);
       T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
       return (Values(expanded, _lisp->_true()));
     }
@@ -1740,7 +1740,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
     }
     if (expansionFunction.notnilp()) {
       T_sp macroexpandHook = cl::_sym_STARmacroexpand_hookSTAR->symbolValue();
-      Function_sp hookFunc = coerce::functionDesignator(macroexpandHook);
+      NamedFunction_sp hookFunc = coerce::functionDesignator(macroexpandHook);
       T_sp expanded = eval::funcall(hookFunc, expansionFunction, form, env);
       if (expanded != form) {
         return (Values(expanded, _lisp->_true()));
@@ -1797,8 +1797,8 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
                     {
                         ss << " ";
                         ss << cl__class_of(cl__symbol_function((sym)))->classNameAsString();
-			Function_sp fn = cl__symbol_function(sym);
-                        if ( !fn.unboundp() && gc::As<Function_sp>(cl__symbol_function(sym))->macroP() )
+			NamedFunction_sp fn = cl__symbol_function(sym);
+                        if ( !fn.unboundp() && gc::As<NamedFunction_sp>(cl__symbol_function(sym))->macroP() )
                         {
                             ss << "(MACRO)";
                         }
@@ -1888,11 +1888,11 @@ CL_DEFUN List_sp core__sorted(List_sp unsorted) {
 
 class OrderBySortFunction {
 private:
-  Function_sp _SortFunction;
+  NamedFunction_sp _SortFunction;
   Cons_sp _args;
 
 public:
-  OrderBySortFunction(Function_sp proc) {
+  OrderBySortFunction(NamedFunction_sp proc) {
     this->_SortFunction = proc;
     this->_args = Cons_O::createList(_Nil<T_O>(), _Nil<T_O>());
   }
@@ -1906,7 +1906,7 @@ CL_DECLARE();
 CL_DOCSTRING("Like CLHS: sort but does not support key");
 CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate) {
   gctools::Vec0<T_sp> sorted;
-  Function_sp sortProc = coerce::functionDesignator(predicate);
+  NamedFunction_sp sortProc = coerce::functionDesignator(predicate);
   LOG(BF("Unsorted data: %s") % _rep_(sequence));
   if (cl__length(sequence) == 0)
     return _Nil<T_O>();
@@ -2189,7 +2189,7 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
   ++nestedErrorDepth;
   DynamicScopeManager scope(_sym_STARnestedErrorDepthSTAR, make_fixnum(nestedErrorDepth));
   if (_sym_universalErrorHandler->fboundp()) {
-    Function_sp fn = _sym_universalErrorHandler->symbolFunction();
+    NamedFunction_sp fn = _sym_universalErrorHandler->symbolFunction();
     eval::funcall(fn, _Nil<T_O>(), datum, initializers);
   }
   THROW_HARD_ERROR(BF("cl__error should never return because universal-error-handler should never return - but it did"));
@@ -2643,7 +2643,7 @@ void Lisp_O::dump_backtrace(int numcol) {
 	    Symbol_sp sym = this->intern(*it);
 	    if ( sym->fboundp() )
 	    {
-		Function_sp fn = sym->symbolFunction();
+		NamedFunction_sp fn = sym->symbolFunction();
 		this->_Roots._TraceFunctions.addUnique(fn,_lisp);
 		_lisp->print(BF("trace: %s") % _rep_(sym) );
 	    } else
@@ -2671,7 +2671,7 @@ void Lisp_O::dump_backtrace(int numcol) {
 	    Symbol_sp sym = this->intern(*it);
 	    if ( sym->fboundp() )
 	    {
-		Function_sp fn = sym->symbolFunction();
+		NamedFunction_sp fn = sym->symbolFunction();
 		if (this->_Roots._TraceFunctions.count(fn)>0) this->_Roots._TraceFunctions.erase(fn);
 	    }
 	}

@@ -174,13 +174,7 @@ void CompiledClosure_O::setf_lambda_list(core::T_sp lambda_list) {
   this->_lambdaList = lambda_list;
 }
 
-
-T_sp InstanceCreator_O::allocate() {
-  GC_ALLOCATE(Instance_O, output);
-  return output;
-};
-
-
+#if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
@@ -191,7 +185,7 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
   //  LCC_SKIP_ARG(gfargs);
   return (this->entryPoint)(this->instance, gfargs);
 }
-
+#endif
 
 
 };

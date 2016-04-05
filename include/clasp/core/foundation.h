@@ -398,7 +398,7 @@ class WeakKeyHashTable_O;
 class WeakKeyMapping_O;
 class DynamicScopeManager;
 
-class Functor_O;
+class Function_O;
  class Closure_O;
 class FunctionClosure_O;
 class BuiltinClosure_O;
@@ -727,8 +727,8 @@ typedef gctools::smart_ptr<Instance_O> Instance_sp;
 
 class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
-class Function_O;
-typedef gctools::smart_ptr<Function_O> Function_sp;
+class NamedFunction_O;
+typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
 class Str_O;
 typedef gctools::smart_ptr<Str_O> Str_sp;
 class StrWithFillPtr_O;
@@ -812,13 +812,11 @@ typedef gctools::smart_ptr<Cons_O> Cons_sp;
 class Class_O;
 typedef gctools::smart_ptr<Class_O> Class_sp;
 
-class Function_O;
-
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
 
- class Functor_O;
- typedef gctools::smart_ptr<Functor_O> Functor_sp;
+ class Function_O;
+ typedef gctools::smart_ptr<Function_O> Function_sp;
  
 class SymbolToEnumConverter_O;
 typedef gctools::smart_ptr<SymbolToEnumConverter_O> SymbolToEnumConverter_sp;
@@ -943,8 +941,8 @@ void lisp_defun(Symbol_sp name, const string &packageName,
                 BuiltinClosure_sp, const string &arguments = "", const string &declarestring = "",
                 const string &docstring = "", const string &sourceFile = "", int sourceLine = 0, bool autoExport = true, int number_of_required_arguments = 0, const std::set<int> &skipIndices = std::set<int>());
 void lisp_defgeneric(const string &packageName, const string &name,
-                     Functor_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
-void lisp_defmethod(Symbol_sp gfSymbol, Functor_sp, const string &arguments, const string &docstring);
+                     Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
+void lisp_defmethod(Symbol_sp gfSymbol, Function_sp, const string &arguments, const string &docstring);
 
 void lisp_defineSingleDispatchMethod(Symbol_sp name,
                                      Symbol_sp classSymbol,
@@ -958,10 +956,10 @@ void lisp_defineSingleDispatchMethod(Symbol_sp name,
                                      std::set<int> pureOutIndices = std::set<int>());
 
 void lisp_defsetfSingleDispatchMethod(Lisp_sp lisp, const string &name, Symbol_sp classSymbol,
-                                      Functor_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
+                                      Function_sp, const string &arguments = "", const string &declares = "", const string &docstring = "", bool autoExport = true);
 
 void lisp_defsetf(const string &name, Symbol_sp classSymbol,
-                  Functor_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
+                  Function_sp, const string &arguments = "", const string &docstring = "", bool autoExport = true);
 
 core::T_sp lisp_hiddenBinderLookup(Symbol_sp sym);
 

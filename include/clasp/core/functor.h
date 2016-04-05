@@ -3,25 +3,18 @@
 
 
 namespace core {
-  FORWARD(Functor);
+  FORWARD(Function);
+  FORWARD(NamedFunction);
   FORWARD(Closure);
   FORWARD(BuiltinClosure);
   FORWARD(FunctionClosure);
   FORWARD(Closure);
   FORWARD(InterpretedClosure);
   FORWARD(CompiledClosure);
-  FORWARD(Creator);
-  FORWARD(InstanceCreator);
 };
 
 template <>
-struct gctools::GCInfo<core::Functor_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-template <>
-struct gctools::GCInfo<core::InstanceCreator_O> {
+struct gctools::GCInfo<core::Function_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -56,20 +49,14 @@ struct gctools::GCInfo<core::CompiledClosure_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-template <>
-struct gctools::GCInfo<core::Creator_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 namespace core {
-  class Functor_O : public General_O {
-    LISP_ABSTRACT_CLASS(core,CorePkg,Functor_O,"Functor",General_O);
+  /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
+*/
+  class Function_O : public General_O {
+    LISP_ABSTRACT_CLASS(core,CorePkg,Function_O,"Function",General_O);
   public:
-    T_sp _name;
-  public:
-  virtual const char *describe() const { return "Functoid - subclass must implement describe()"; };
+  virtual const char *describe() const { return "Function - subclass must implement describe()"; };
   inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
     VaList_S lcc_arglist_s;
     va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -80,31 +67,26 @@ namespace core {
 
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     printf("Subclass of Functoid must implement 'activate'\n");
-    exit(1);
+    abort();
   };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
-
 public:
-  Functor_O(T_sp name) : _name(name) {};
+  Function_O()  {};
+  virtual T_sp name() const = 0;
   virtual string nameAsString() const {SUBIMP();};
-  T_sp name() const { return this->_name; };
-  CL_LISPIFY_NAME("core:functionName");
-  CL_DEFMETHOD T_sp functionName() const {
-    return this->_name;
-  }
 };
 };
 
 #if 0
 namespace core {
-  struct ClosureWithSlots_O : public Functor_O {
+  struct ClosureWithSlots_O : public Function_O {
   public:
     typedef T_sp value_type;
   public:
     fnLispCallingConvention _FunctionPointer;
     gctools::GCArray_moveable<value_type> _Slots;
   ClosureWithSlots_O(size_t num_slots, T_sp name, fnLispCallingConvention fptr=NULL )
-    : Functor_O(name)
+    : Function_O(name)
       , _Slots(_Unbound<T_O>(),num_slots) {}
   };
 
@@ -145,7 +127,7 @@ namespace core {
 
 
 template <>
-struct gctools::GCInfo<core::Function_O> {
+struct gctools::GCInfo<core::NamedFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -153,22 +135,23 @@ struct gctools::GCInfo<core::Function_O> {
 
 namespace core {
 SMART(LambdaListHandler);
-SMART(Function);
-class Function_O : public Functor_O {
-  LISP_ABSTRACT_CLASS(core, ClPkg, Function_O, "Function",Functor_O);
-
+SMART(NamedFunction);
+/*! NamedFunction_O inherits from Function_O and
+ *  adds a function name field to anything that inherits from it.
+ */
+ class NamedFunction_O : public Function_O {
+  LISP_ABSTRACT_CLASS(core, ClPkg, NamedFunction_O, "NamedFunction",Function_O);
 public:
-  Function_O(T_sp name) : Base(name) {};
-  virtual ~Function_O(){};
+  T_sp _name;
+ NamedFunction_O(T_sp name) : _name(name) {};
+  virtual ~NamedFunction_O(){};
 public:
-#if 0
-  static Function_sp make(Closure_sp c) {
-    GC_ALLOCATE(Function_O, f);
-    ASSERT(c.generalp());
-    f->closure = c;
-    return f;
+    T_sp name() const { return this->_name; };
+  CL_LISPIFY_NAME("core:functionName");
+  CL_DEFMETHOD T_sp functionName() const {
+    return this->_name;
   }
-#endif
+
 public:
   string __repr__() const;
   string description() const { return "Function::description"; };
@@ -210,93 +193,24 @@ struct gctools::GCInfo<core::Closure_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-namespace core { 
-class Closure_O : public Function_O {
-    LISP_CLASS(core,CorePkg,Closure_O,"Closure",Function_O);
+namespace core {
+  /*! Closure_O
+   *  Can have an environment associated with it 
+   */
+class Closure_O : public NamedFunction_O {
+    LISP_CLASS(core,CorePkg,Closure_O,"Closure",NamedFunction_O);
 public:
  Closure_O(T_sp name) : Base(name) {};
 public:
   virtual const char *describe() const { return "Closure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
     printf("Subclass of Closure must implement 'activate'\n");
-    exit(1);
+    abort();
   };
   virtual string nameAsString() const;
 };
 };
 
-
-namespace core {
-
-  class Creator_O : public General_O {
-    LISP_CLASS(core,CorePkg,Creator_O,"Creator",General_O);
-  public:
-  // Some Creators don't actually allocate anything -
-  // classes that don't have default allocators
-    virtual bool allocates() const { return true; };
-  /*! If this is the allocator for a primary CxxAdapter class then return true, */
-    virtual int duplicationLevel() const { return 0; };
-    virtual size_t templatedSizeof() const = 0;
-    virtual Creator_sp duplicateForClassName(core::Symbol_sp className) {
-      printf("Subclass must implement Creator::duplicateForClassName\n");
-      exit(1);
-    };
-    virtual void describe() const = 0;
-    virtual core::T_sp allocate() = 0;
-  };
-
-
-
-    template <class _W_>
-    class LispObjectCreator : public core::Creator_O {
-  public:
-    typedef core::Creator_O TemplatedBase;
-  public:
-    DISABLE_NEW();
-    size_t templatedSizeof() const { return sizeof(LispObjectCreator<_W_>); };
-    virtual void describe() const {
-      printf("LispObjectCreator for class %s  sizeof_instances-> %zu\n", _rep_(reg::lisp_classSymbol<_W_>()).c_str(), sizeof(_W_));
-    }
-    virtual core::T_sp allocate() {
-      GC_ALLOCATE(_W_, obj);
-      return obj;
-    }
-    virtual void searcher(){};
-  };
-};
-
-template <typename T>
-class gctools::GCKind<core::LispObjectCreator<T>> {
- public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::LispObjectCreator<T>::TemplatedBase>::Kind;
-};
-template <typename T>
-struct gctools::GCInfo<core::LispObjectCreator<T>> {
-  static bool constexpr CanAllocateWithNoArguments = true;
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
-namespace core {
-
-  class InstanceCreator_O : public Creator_O {
-    LISP_CLASS(core,CorePkg,InstanceCreator_O,"InstanceCreator",Creator_O);
-  public:
-    Symbol_sp _className;
-  public:
-    DISABLE_NEW();
-  InstanceCreator_O(Symbol_sp className) : _className(className){};
-    void describe() const {
-      printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
-    };
-    T_sp allocate();
-    virtual size_t templatedSizeof() const { return sizeof(InstanceCreator_O); };
-  };
-
-
-
-};
 
 namespace core {
 class FunctionClosure_O : public Closure_O {
@@ -370,16 +284,17 @@ public:
   List_sp declares() const { return this->_declares; };
 };
 
+#if 0
 /*! Shouldn't this derive from a Functoid - it doesn't need a closedEnvironment */
 class InstanceClosure_O : public FunctionClosure_O {
-    LISP_CLASS(core,CorePkg,InstanceClosure_O,"InstanceClosure",FunctionClosure_O);
-public:
+  LISP_CLASS(core,CorePkg,InstanceClosure_O,"InstanceClosure",FunctionClosure_O);
+ public:
   GenericFunctionPtr entryPoint;
   Instance_sp instance;
   T_sp lambda_list;
-public:
-  InstanceClosure_O(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
-    : FunctionClosure_O(name), entryPoint(ep), instance(inst), lambda_list(_Nil<T_O>()){};
+ public:
+ InstanceClosure_O(T_sp name, GenericFunctionPtr ep, Instance_sp inst)
+   : FunctionClosure_O(name), entryPoint(ep), instance(inst), lambda_list(_Nil<T_O>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "InstanceClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
@@ -389,6 +304,7 @@ public:
   List_sp declares() const { IMPLEMENT_ME();};
   T_sp docstring() const { IMPLEMENT_ME();};
 };
+#endif
 }
 
 namespace core {

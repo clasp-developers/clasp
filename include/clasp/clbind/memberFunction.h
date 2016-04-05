@@ -34,9 +34,9 @@ THE SOFTWARE.
 namespace clbind {
 
 template <typename Pols, typename OT, typename MethodPtrType>
-class IndirectVariadicMethoid : public core::Functor_O {
+class IndirectVariadicMethoid : public core::Function_O {
 public:
-  typedef Functor_O TemplatedBase;
+  typedef Function_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 

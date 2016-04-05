@@ -132,7 +132,7 @@ CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
   //        printf("%s:%d starting maphash on hash-table@%p\n", __FILE__, __LINE__, hash_table.raw_());
-  Function_sp func = coerce::functionDesignator(function_desig);
+  NamedFunction_sp func = coerce::functionDesignator(function_desig);
   if (thash_table.nilp()) {
     SIMPLE_ERROR(BF("maphash called with nil hash-table"));
   }

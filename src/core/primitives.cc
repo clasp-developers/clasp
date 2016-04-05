@@ -793,8 +793,8 @@ CL_DEFUN T_mv cl__identity(T_sp arg) {
 CL_LAMBDA(macro_function form macro_env);
 CL_DECLARE();
 CL_DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
-CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
-  Function_sp debugMacroFunction = macro_function;
+CL_DEFUN T_mv core__macroexpand_default(NamedFunction_sp macro_function, T_sp form, T_sp macro_env) {
+  NamedFunction_sp debugMacroFunction = macro_function;
   T_sp debugForm = form;
   T_sp debugEnvironment = macro_env;
   T_sp tllh = macro_function->functionLambdaListHandler();
@@ -848,31 +848,32 @@ CL_DOCSTRING(R"doc(* Arguments
 Bind a function to the function slot of a symbol
 - handles symbol function-name and (SETF XXXX) names. 
 IS-MACRO defines if the function is a macro or not. PRETTY-PRINT was inherited from ecl - I don't know what its for.  LAMBDA-LIST passes the lambda-list.)doc");
-CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functionObject, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
-  ASSERTF(functionObject, BF("function is undefined\n"));
-  if (is_macro.isTrue()) {
-    functionObject->setKind(kw::_sym_macro);
-  } else {
-    functionObject->setKind(kw::_sym_function);
-  }
-  if ( lambda_list_p.notnilp() ) {
-    functionObject->setf_lambda_list(lambda_list);
-  }
-  if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()
-      && functionObject->compiledP()) {
-    functionObject->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
+CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
+  if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
+    if (is_macro.isTrue()) {
+      functionObject->setKind(kw::_sym_macro);
+    } else {
+      functionObject->setKind(kw::_sym_function);
+    }
+    if ( lambda_list_p.notnilp() ) {
+      functionObject->setf_lambda_list(lambda_list);
+    }
+    if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()
+        && functionObject->compiledP()) {
+      functionObject->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
+    }
   }
   if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
-    symbol->setf_symbolFunction(functionObject);
-    return functionObject;
+    symbol->setf_symbolFunction(functor);
+    return functor;
   } else if (cl__consp(functionName)) {
     SYMBOL_EXPORT_SC_(ClPkg, setf);
     List_sp cur = functionName;
     if (oCar(cur) == cl::_sym_setf) {
       Symbol_sp symbol = gc::As<Symbol_sp>(oCadr(cur));
-      symbol->setSetfFdefinition(functionObject);
-      return functionObject;
+      symbol->setSetfFdefinition(functor);
+      return functor;
     }
   }
   SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName));
@@ -924,7 +925,7 @@ CL_DOCSTRING("fmakunbound");
 CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
   if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
-    sym->setf_symbolFunction(_Unbound<Function_O>());
+    sym->setf_symbolFunction(_Unbound<NamedFunction_O>());
     return (Values(sym));
   } else if (cl__consp(functionName)) {
     List_sp cname = functionName;
@@ -1061,7 +1062,7 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
   return;
 }
 
-bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
+bool test_every_some_notevery_notany(NamedFunction_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
   ListOfSequenceSteppers steppers(sequences);
   ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<T_O>()));
 //  printf("%s:%d  %s  frame->length() = %d\n", __FILE__, __LINE__, __FUNCTION__,frame->length());
@@ -1088,7 +1089,7 @@ CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for every");
 CL_DEFUN T_sp cl__every(T_sp predicate, List_sp sequences) {
-  Function_sp op = coerce::functionDesignator(predicate);
+  NamedFunction_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, false, false, true, dummy);
   return _lisp->_boolean(result);
@@ -1098,7 +1099,7 @@ CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for some");
 CL_DEFUN T_sp cl__some(T_sp predicate, List_sp sequences) {
-  Function_sp op = coerce::functionDesignator(predicate);
+  NamedFunction_sp op = coerce::functionDesignator(predicate);
   T_sp retVal;
   bool result = test_every_some_notevery_notany(op, sequences, true, true, false, retVal);
   if (result)
@@ -1110,7 +1111,7 @@ CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for notany");
 CL_DEFUN T_sp cl__notany(T_sp predicate, List_sp sequences) {
-  Function_sp op = coerce::functionDesignator(predicate);
+  NamedFunction_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, true, false, true, dummy);
   return _lisp->_boolean(result);
@@ -1120,7 +1121,7 @@ CL_LAMBDA(predicate &rest sequences);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for notevery");
 CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
-  Function_sp op = coerce::functionDesignator(predicate);
+  NamedFunction_sp op = coerce::functionDesignator(predicate);
   T_sp dummy;
   bool result = test_every_some_notevery_notany(op, sequences, false, true, false, dummy);
   return _lisp->_boolean(result);
@@ -1136,7 +1137,7 @@ CL_LAMBDA(func_desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for mapcar");
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
-  Function_sp func = coerce::functionDesignator(func_desig);
+  NamedFunction_sp func = coerce::functionDesignator(func_desig);
   ListOfListSteppers steppers(lists);
   ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<ActivationFrame_O>()));
   ql::list result(_lisp);
@@ -1157,7 +1158,7 @@ CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS mapc");
 CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
-  Function_sp op = coerce::functionDesignator(top);
+  NamedFunction_sp op = coerce::functionDesignator(top);
   VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
   // Copy the arguments into argumentLists
   for (auto carg : lists) {
@@ -1188,7 +1189,7 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
-  Function_sp op = coerce::functionDesignator(func_desig);
+  NamedFunction_sp op = coerce::functionDesignator(func_desig);
   VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
   //	vector<List_sp> argumentLists;
   // Copy the arguments into argumentLists
@@ -1231,7 +1232,7 @@ CL_LAMBDA(op &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__mapl(T_sp top, List_sp lists) {
-  Function_sp op = coerce::functionDesignator(top);
+  NamedFunction_sp op = coerce::functionDesignator(top);
   cl__maplist(op, lists);
   return oCar(lists);
 }
@@ -1239,7 +1240,7 @@ CL_DEFUN T_sp cl__mapl(T_sp top, List_sp lists) {
 CL_LAMBDA(fun &rest cargs);
 CL_DECLARE();
 CL_DOCSTRING("mapappend is like mapcar except that the results are appended together - see AMOP 280");
-CL_DEFUN T_mv core__mapappend(Function_sp fun, List_sp cargs) {
+CL_DEFUN T_mv core__mapappend(NamedFunction_sp fun, List_sp cargs) {
   IMPLEMENT_MEF(BF("Fix me - I think I'm broken"));
   T_sp testNull = eval::funcall(cl::_sym_some, cl::_sym_null->symbolFunction(), cargs);
   if (testNull.nilp())
@@ -1626,7 +1627,7 @@ int InvocationHistoryFrameIterator_O::index() {
   return this->_Frame->index();
 }
 
-Function_sp InvocationHistoryFrameIterator_O::function() {
+NamedFunction_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }

@@ -158,7 +158,7 @@ T_sp LispDebugger::invoke() {
       this->printExpression();
       break;
     case 'D': {
-      Function_sp func = core__ihs_fun(core__ihs_current_frame());
+      NamedFunction_sp func = core__ihs_fun(core__ihs_current_frame());
       _lisp->print(BF("Current function: %s\n") % _rep_(func));
       eval::funcall(cl::_sym_disassemble, func);
       break;
@@ -370,7 +370,7 @@ void af_gotoIhsFrame(int frame_index) {
 #define DOCS_af_printCurrentIhsFrame "printCurrentIhsFrame"
 void af_printCurrentIhsFrame() {
   int ihsCur = core__ihs_current_frame();
-  Function_sp fun = core__ihs_fun(ihsCur);
+  NamedFunction_sp fun = core__ihs_fun(ihsCur);
   printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
 };
 

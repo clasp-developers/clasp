@@ -75,7 +75,7 @@ CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, La
 CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
 CL_DECLARE();
 CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
-CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body) {
+CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, NamedFunction_sp body) {
   //	string docstr = docstring->get();
   if (!gfname->fboundp()) {
     SIMPLE_ERROR(BF("single-dispatch-generic-function %s is not defined") % _rep_(gfname));
@@ -142,7 +142,7 @@ void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp m
       std-compute-discriminating-function (gf) AMOP-303 top
     */
 LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
-  Function_sp func;
+  NamedFunction_sp func;
   Cache_sp cache = _lisp->singleDispatchMethodCachePtr();
   gctools::Vec0<T_sp> &vektor = cache->keys();
   vektor[0] = this->name();
@@ -156,7 +156,7 @@ LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
   }
   //        printf("%s:%d searched on %s/%s  cache record = %p\n", __FILE__, __LINE__, _rep_(vektor[0]).c_str(), _rep_(vektor[1]).c_str(), e );
   if (e->_key.notnilp()) {
-    func = gc::As<Function_sp>(e->_value);
+    func = gc::As<NamedFunction_sp>(e->_value);
   } else {
     func = this->slowMethodLookup(dispatchArgClass);
     T_sp keys = VectorObjects_O::create(vektor);
@@ -177,7 +177,7 @@ public:
   }
 };
 
-Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc) {
+NamedFunction_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc) {
   _OF();
   LOG(BF("Looking for applicable methods for receivers of class[%s]") % _rep_(mc));
   gctools::Vec0<SingleDispatchMethod_sp> applicableMethods;
@@ -208,7 +208,7 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
 #endif
 
 #if 0
-	Function_sp emf = this->computeEffectiveMethodFunction(applicableMethods);
+	NamedFunction_sp emf = this->computeEffectiveMethodFunction(applicableMethods);
         return emf;
 #else
   SingleDispatchMethod_sp cur_method = applicableMethods[0];
@@ -220,13 +220,13 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
 }
 
 #if 0
-    Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
+    NamedFunction_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
     {_OF();
         SingleDispatchMethod_sp cur_method = applicableMethods[0];
         ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
         // Construct a name for the emf by stringing together the generic function name
         // with the name of the receiver class - this is to help with debugging
-        Function_sp code = cur_method->code;
+        NamedFunction_sp code = cur_method->code;
         return code;
     }
 #endif
@@ -275,8 +275,8 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
 	ASSERTF(!dispatchArgClass.nilp(),BF("The dispatch class is NIL!!!! for dispatch obj: %s") % _rep_(dispatchArg));
 	LOG(BF("Invoked SingleDispatchGenericFunction[%s] with receiver class[%s]")
 	    % _rep_(this->getFunctionName()) % _rep_(dispatchArgClass) );
-	Function_sp emf =
-	    this->_classes_to_emf_table->gethash(dispatchArgClass,_Nil<SingleDispatchEffectiveMethodFunction_O>()).as<Function_O>();
+	NamedFunction_sp emf =
+	    this->_classes_to_emf_table->gethash(dispatchArgClass,_Nil<NamedSingleDispatchEffectiveMethodFunction_O>()).as<NamedFunction_O>();
 	if ( emf.nilp() )
 	{
 	    LOG(BF("There was no effective method function defined - building one"));
@@ -307,7 +307,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
         Symbol_sp		_name;
         /*! Store the method_function that this emf invokes.
           This function takes two arguments: (args next-emfun) */
-        Function_sp		_method_function;
+        NamedFunction_sp		_method_function;
         /*! Store the next-emfun that will be passed to the _method_function */
         T_sp		_next_emfun;
     public:
@@ -350,7 +350,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
     };
 
 
-        Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(List_sp applicable_methods)
+        NamedFunction_sp SingleDispatchGenericFunction_O::compute_effective_method_function(List_sp applicable_methods)
         {_OF();
             if ( applicable_methods.nilp() )
             {
@@ -371,7 +371,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
             Lambda_emf* l_emf = _NEW_(Lambda_emf(emf_name_ss.str(),this->sharedThis<SingleDispatchGenericFunction_O>(),
                                                  emf_name, cur_method,cCdr(applicable_methods)));
             CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf,_Nil<T_O>(),_lisp);
-            Function_sp emf = BuiltIn_O::create(emf_name,
+            NamedFunction_sp emf = BuiltIn_O::create(emf_name,
                                                 _Nil<LambdaListHandler_O>(),
                                                 cb_l_emf,
                                                 _Nil<ActivationFrame_O>(),

@@ -23,7 +23,7 @@ namespace cast {
     class Sequence_V;
     class List_V;
     class WrappedPointer_O;
-    class Functor_O;
+    class Function_O;
     class Creator_O;
     class Iterator_O;
   };

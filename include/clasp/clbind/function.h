@@ -49,9 +49,9 @@ public:
 };
 
 template <typename FunctionPtrType, typename Policies>
-class VariadicFunctor : public core::Functor_O {
+class VariadicFunctor : public core::Function_O {
 public:
-  typedef core::Functor_O TemplatedBase;
+  typedef core::Function_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
 

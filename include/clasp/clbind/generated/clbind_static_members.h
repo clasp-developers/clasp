@@ -16,14 +16,14 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -97,14 +97,14 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -171,14 +171,14 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -239,14 +239,14 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -301,14 +301,14 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2, ARG3)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -357,14 +357,14 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1, ARG2)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -407,14 +407,14 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( ARG1)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -451,14 +451,14 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT   >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (*)( )  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -490,14 +490,14 @@ template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -569,14 +569,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -642,14 +642,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -709,14 +709,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -770,14 +770,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2, ARG3)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -825,14 +825,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1, ARG2)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -874,14 +874,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( ARG1)  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -917,14 +917,14 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT   >
 class IndirectVariadicMethoid
 < Pols,OT ,void(*)( )  >
-: public core::Functor_O {
+: public core::NamedFunction_O {
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
 DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()

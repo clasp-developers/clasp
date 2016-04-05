@@ -106,7 +106,7 @@ CL_DEFUN T_sp cl__symbol_package(Symbol_sp arg) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolFunction");
-CL_DEFUN Function_sp cl__symbol_function(Symbol_sp sym) {
+CL_DEFUN NamedFunction_sp cl__symbol_function(Symbol_sp sym) {
   if (!sym->fboundp()) {
     SIMPLE_ERROR(BF("No function bound to %s") % _rep_(sym));
   }
@@ -164,8 +164,8 @@ Symbol_O::Symbol_O() : Base(),
                        _Name(gctools::smart_ptr<Str_O>()),
                        _HomePackage(gctools::smart_ptr<Package_O>()),
                        _Value(gctools::smart_ptr<T_O>()),
-                       _Function(gctools::smart_ptr<Function_O>()),
-                       _SetfFunction(gctools::smart_ptr<Function_O>()),
+                       _Function(gctools::smart_ptr<NamedFunction_O>()),
+                       _SetfFunction(gctools::smart_ptr<NamedFunction_O>()),
                        _IsSpecial(false),
                        _IsConstant(false),
                        _ReadOnlyFunction(false)
@@ -178,8 +178,8 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
   this->_Value = _Unbound<T_O>();
-  this->_Function = _Unbound<Function_O>();
-  this->_SetfFunction = _Unbound<Function_O>();
+  this->_Function = _Unbound<T_O>();
+  this->_SetfFunction = _Unbound<T_O>();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }

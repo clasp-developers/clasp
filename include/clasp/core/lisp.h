@@ -61,7 +61,7 @@ namespace core {
 class Bundle;
 class CallStack;
 SMART(Intrinsic);
-SMART(Function);
+SMART(NamedFunction);
 SMART(Reader);
 SMART(FunctionValueEnvironment);
 SMART(Class);
@@ -563,9 +563,9 @@ public:
 
 public:
   /*! Add a function to trace */
-  void add_trace(Function_sp func);
+  void add_trace(NamedFunction_sp func);
   /*! Remove a function to trace */
-  void remove_trace(Function_sp func);
+  void remove_trace(NamedFunction_sp func);
 
   /*! Return a list of functions being traced */
   List_sp trace_functions() const;
@@ -609,9 +609,9 @@ public:
 
 public:
   /*! Create a setfDefinition */
-  //	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
+  //	void set_setfDefinition(Symbol_sp fnName, NamedFunction_sp fnDef);
   /*! Return the function or nil if not found */
-  //	Function_sp get_setfDefinition(Symbol_sp fnName) const;
+  //	NamedFunction_sp get_setfDefinition(Symbol_sp fnName) const;
   /*! Return true if the definition was found */
   //	bool remove_setfDefinition(Symbol_sp fnName);
 
@@ -773,7 +773,7 @@ public:
   void setBuiltInClassesInitialized(bool b) { this->_BuiltInClassesInitialized = b; };
   void throwIfBuiltInClassesNotInitialized();
 
-  void defineMethod(const string &name, Symbol_sp classSymbol, Functor_sp methoid, const string &arguments, const string &docString, bool autoExport);
+  void defineMethod(const string &name, Symbol_sp classSymbol, Function_sp methoid, const string &arguments, const string &docString, bool autoExport);
 
 public:
   Symbol_sp errorUndefinedSymbol(const char *symbolName);
@@ -939,7 +939,7 @@ public:
   string getMethodName(uint methodId);
   uint getMethodId(const string &methodName);
 
-  //	Function_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
+  //	NamedFunction_sp	lookupMethod(Symbol_sp, Class_sp classSymbol, T_sp receiver );
 
 public:
 #if 0

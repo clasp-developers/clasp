@@ -152,7 +152,7 @@ struct DispatchOn {
  struct MethodDefinition {
   string _Name;
   int _ClassSymbol;
-  Functor_sp _Methoid;
+  Function_sp _Methoid;
 };
 #endif
 //    typedef	enum { no_init,class_name_init, make_class_name_init } maker_enum;

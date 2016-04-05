@@ -30,14 +30,14 @@ $var ConstTypeCount = 1
                         template <typename Pols, typename OT $if ret==RetVoid [[]] $else [[, typename RT ]] $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
                         class IndirectVariadicMethoid
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-                        : public core::Functor_O {
+                        : public core::NamedFunction_O {
                         public:
 			    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
                         typedef $if ret==RetVoid [[void]] $else [[RT]] (*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                         Type mptr;
                         public:
                         enum { NumParams = $numArgs };
-                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functor_O(name), mptr(ptr) {};
+                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
                     DISABLE_NEW();
 
                     inline LCC_RETURN LISP_CALLING_CONVENTION()

@@ -96,7 +96,7 @@ CL_DEFUN bool cl__functionp(T_sp obj) {
   if (Instance_sp inst_obj = obj.asOrNull<Instance_O>()) {
     return inst_obj->isgf();
   }
-  return gc::IsA<Function_sp>(obj);
+  return gc::IsA<NamedFunction_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -325,7 +325,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("genericFunctionP");
 CL_DEFUN bool core__generic_function_p(T_sp o) {
-  if (Function_sp cf = o.asOrNull<Function_O>()) {
+  if (NamedFunction_sp cf = o.asOrNull<NamedFunction_O>()) {
     (void)cf;
     IMPLEMENT_MEF(BF("I should have a more sophisticated test here"));
     return true;

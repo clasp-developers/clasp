@@ -57,7 +57,7 @@ struct gctools::GCInfo<core::CompiledFunction_O> {
 
 namespace core {
   SMART(LambdaListHandler);
-  SMART(Function);
+  SMART(NamedFunction);
   class CompiledFunction_O : public Closure_O {
     LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Closure_O);
 

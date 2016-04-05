@@ -158,6 +158,7 @@
 (defun inherits-from* (x-name y-name inheritance)
   (let ((depth 0)
         ancestor
+        (entry-x-name x-name)
         prev-ancestor)
     (loop
        (setf prev-ancestor ancestor
@@ -165,7 +166,7 @@
        (when (string= ancestor +root-dummy-class+)
          (return-from inherits-from* nil))
        (unless ancestor
-         (error "Hit nil in inherits-from*  prev-ancestor = ~a" prev-ancestor))
+         (error "Could not find ancestor of ~a - could not find a parent of ~a"  entry-x-name prev-ancestor))
        (if (string= ancestor y-name)
            (return-from inherits-from* t))
        (incf depth)

@@ -58,9 +58,9 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
     if (!sym->fboundp()) {
       return Values(_Nil<T_O>(), _Nil<T_O>());
     }
-    Function_sp fn = sym->symbolFunction();
+    NamedFunction_sp fn = sym->symbolFunction();
     return Values(fn->lambdaList(), _lisp->_true());
-  } else if (Function_sp func = obj.asOrNull<Function_O>()) {
+  } else if (NamedFunction_sp func = obj.asOrNull<NamedFunction_O>()) {
     return Values(func->lambdaList(), _lisp->_true());
   }
   return Values(_Nil<T_O>(), _Nil<T_O>());
@@ -78,57 +78,57 @@ CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp funct
 CL_LAMBDA(fn kind);
 CL_DECLARE();
 CL_DOCSTRING("set the kind of a function object (:function|:macro)");
-CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
+CL_DEFUN void core__set_kind(NamedFunction_sp fn, Symbol_sp kind) {
   fn->setKind(kind);
 };
 
 
 
-CL_DEFMETHOD void Function_O::setf_lambda_list(T_sp ll) {
+CL_DEFMETHOD void NamedFunction_O::setf_lambda_list(T_sp ll) {
   SUBIMP();
 }
 
 CL_LISPIFY_NAME("core:cleavir_ast");
-CL_DEFMETHOD T_sp Function_O::cleavir_ast() const {
+CL_DEFMETHOD T_sp NamedFunction_O::cleavir_ast() const {
   return this->cleavir_ast();
 }
 
 CL_LISPIFY_NAME("core:setf_cleavir_ast");
-CL_DEFMETHOD void Function_O::setf_cleavir_ast(T_sp ast) {
+CL_DEFMETHOD void NamedFunction_O::setf_cleavir_ast(T_sp ast) {
   this->setf_cleavir_ast(ast);
 }
 
 CL_LISPIFY_NAME("core:functionLambdaListHandler");
-CL_DEFMETHOD T_sp Function_O::functionLambdaListHandler() const {
+CL_DEFMETHOD T_sp NamedFunction_O::functionLambdaListHandler() const {
   return this->lambdaListHandler();
 };
 CL_LISPIFY_NAME("core:macrop");
-CL_DEFMETHOD bool Function_O::macroP() const {
+CL_DEFMETHOD bool NamedFunction_O::macroP() const {
   return this->macroP();
 }
 
 CL_LISPIFY_NAME("core:setFunctionKind");
-CL_DEFMETHOD void Function_O::setKind(Symbol_sp k) {
+CL_DEFMETHOD void NamedFunction_O::setKind(Symbol_sp k) {
   this->setKind(k);
 }
 CL_LISPIFY_NAME("core:functionKind");
-CL_DEFMETHOD Symbol_sp Function_O::functionKind() const {
+CL_DEFMETHOD Symbol_sp NamedFunction_O::functionKind() const {
   return this->getKind();
 };
 
 CL_LISPIFY_NAME("core:function_docstring");
-CL_DEFMETHOD T_sp Function_O::docstring() const {
+CL_DEFMETHOD T_sp NamedFunction_O::docstring() const {
   return this->docstring();
 };
 
 CL_LISPIFY_NAME("core:function_declares");
-CL_DEFMETHOD List_sp Function_O::declares() const {
+CL_DEFMETHOD List_sp NamedFunction_O::declares() const {
   return this->declares();
 };
 
 
 CL_LISPIFY_NAME("core:functionSourcePos");
-CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
+CL_DEFMETHOD T_mv NamedFunction_O::functionSourcePos() const {
   T_sp spi = this->sourcePosInfo();
   T_sp sfi = core__source_file_info(spi);
   if (sfi.nilp() || spi.nilp()) {
@@ -145,7 +145,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
 
 void handleArgumentHandlingExceptions(Closure_sp closure) {
-  Function_sp func = closure;
+  NamedFunction_sp func = closure;
   try {
     throw;
   } catch (TooManyArgumentsError &error) {
@@ -160,7 +160,7 @@ void handleArgumentHandlingExceptions(Closure_sp closure) {
 CL_LAMBDA(fn);
 CL_DECLARE();
 CL_DOCSTRING("functionLambdaExpression");
-CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
+CL_DEFUN T_mv cl__function_lambda_expression(NamedFunction_sp fn) {
   T_sp code;
   code = core__function_lambda_list(fn);
   bool closedp = true; // fn->closedEnvironment().notnilp();
@@ -171,7 +171,7 @@ CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
 CL_LAMBDA(fn);
 CL_DECLARE();
 CL_DOCSTRING("functionSourceCode");
-CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
+CL_DEFUN T_sp core__function_source_code(NamedFunction_sp fn) {
   if (auto ic = fn.as<InterpretedClosure_O>()) {
     return ic->code();
   }
@@ -181,7 +181,7 @@ CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
 
 
 
-string Function_O::__repr__() const {
+string NamedFunction_O::__repr__() const {
   T_sp name = this->_name;
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
@@ -193,7 +193,7 @@ string Function_O::__repr__() const {
 }
 
 #if defined(XML_ARCHIVE)
-void Function_O::archiveBase(ArchiveP node) {
+void NamedFunction_O::archiveBase(ArchiveP node) {
   this->Base::archiveBase(node);
   node->archiveWeakPointer("weakName", this->_WeakName);
 }

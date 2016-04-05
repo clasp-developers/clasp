@@ -133,7 +133,7 @@ void Instance_O::archiveBase(ArchiveP node) {
     }
   } else {
     this->_isgf = false;
-    this->closure.reset_();
+    this->entryPoint = NULL;
 #if 1
     Symbol_sp className = node->getKind();
     //	    node->attribute(kw::_sym_iclass,className);
@@ -245,12 +245,7 @@ T_sp Instance_O::copyInstance() const {
   Instance_sp iobj = gc::As<Instance_sp>(Instance_O::allocateInstance(this->_Class));
   iobj->_isgf = this->_isgf;
   iobj->_Slots = this->_Slots;
-  if ((bool)(this->closure)) {
-    auto ic = this->closure.as<InstanceClosure_O>();
-    iobj->closure = gc::GC<InstanceClosure_O>::allocate(*ic);
-  } else {
-    iobj->closure.reset_();
-  }
+  iobj->entryPoint = this->entryPoint;
   iobj->_Sig = this->_Sig;
   return iobj;
 }
@@ -270,12 +265,7 @@ SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
-  if (!(bool)(this->closure)) {
-    this->closure = gc::GC<InstanceClosure_O>::allocate(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
-  } else {
-    auto ic = this->closure.as<InstanceClosure_O>();
-    ic->entryPoint = entryPoint;
-  }
+  this->entryPoint = entryPoint;
 };
 
 T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {

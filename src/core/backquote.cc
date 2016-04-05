@@ -256,7 +256,7 @@ SYMBOL_SC_(CorePkg, backquote_maptree);
 CL_LAMBDA(op x);
 CL_DECLARE();
 CL_DOCSTRING("backquote_maptree");
-CL_DEFUN T_sp core__backquote_maptree(Function_sp op, T_sp x) {
+CL_DEFUN T_sp core__backquote_maptree(NamedFunction_sp op, T_sp x) {
   if (cl__atom(x)) {
     T_sp result = eval::funcall(op, x);
     return result;

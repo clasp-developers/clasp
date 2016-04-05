@@ -33,8 +33,8 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
 
 namespace core {
-class SingleDispatchEffectiveMethodFunction_O : public Function_O {
-  LISP_CLASS(core, CorePkg, SingleDispatchEffectiveMethodFunction_O, "SingleDispatchEffectiveMethodFunction",Function_O);
+class SingleDispatchEffectiveMethodFunction_O : public NamedFunction_O {
+  LISP_CLASS(core, CorePkg, SingleDispatchEffectiveMethodFunction_O, "SingleDispatchEffectiveMethodFunction",NamedFunction_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
  SingleDispatchEffectiveMethodFunction_O(T_sp name) :Base(name) {};

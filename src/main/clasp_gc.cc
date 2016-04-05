@@ -100,7 +100,7 @@
     class DITypeArray_O;
     class InsertPoint_O;
     class InvokeInst_O;
-    class Function_O;
+    class NamedFunction_O;
     class AttributeSet_O;
     class PassManager_O;
     class CompositeType_O;
@@ -197,7 +197,7 @@
     class Specializer_O;
     class Null_O;
     class T_O;
-    class Functor_O;
+    class Function_O;
     class LightUserData_O;
     class Symbol_O;
     class DoubleFloat_O;
@@ -267,7 +267,7 @@
     class DirectoryEntry_O;
     class Character_dummy_O;
     class HashTableEqual_O;
-    class Function_O;
+    class NamedFunction_O;
     class Pointer_O;
     class LogicalPathname_O;
     class SmallMultimap_O;
@@ -469,7 +469,7 @@ KIND_LISPALLOC_core__Binder_O = 168,
 KIND_LISPALLOC_core__IntArray_O = 169,
 KIND_LISPALLOC_core__SourceManager_O = 170,
 KIND_LISPALLOC_core__Record_O = 171,
-KIND_LISPALLOC_core__Functor_O = 172,
+KIND_LISPALLOC_core__Function_O = 172,
 KIND_LISPALLOC_core__Closure_O = 173,
 KIND_LISPALLOC_core__FunctionClosure_O = 174,
 KIND_LISPALLOC_core__InstanceClosure_O = 175,
@@ -543,7 +543,7 @@ KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O = 242,
 KIND_LISPALLOC_core__Package_O = 243,
 KIND_LISPALLOC_core__DirectoryEntry_O = 244,
 KIND_LISPALLOC_core__Character_dummy_O = 245,
-KIND_LISPALLOC_core__Function_O = 246,
+KIND_LISPALLOC_core__NamedFunction_O = 246,
 KIND_LISPALLOC_core__CompiledFunction_O = 247,
 KIND_LISPALLOC_core__SingleDispatchGenericFunction_O = 248,
 KIND_LISPALLOC_core__SpecialForm_O = 249,
@@ -912,7 +912,7 @@ template <typename FP> struct Cast<core::Pointer_O*,FP> {
       return (kindVal == 252);
   };
 };
-template <typename FP> struct Cast<core::Function_O*,FP> {
+template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -1840,7 +1840,7 @@ template <typename FP> struct Cast<core::LightUserData_O*,FP> {
       return ((181 <= kindVal) && (kindVal <= 182));
   };
 };
-template <typename FP> struct Cast<core::Functor_O*,FP> {
+template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -2938,9 +2938,9 @@ template <> class gctools::GCKind<core::Pointer_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Pointer_O ;
 };
-template <> class gctools::GCKind<core::Function_O> {
+template <> class gctools::GCKind<core::NamedFunction_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Function_O ;
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
 };
 template <> class gctools::GCKind<core::HashTableEqual_O> {
 public:
@@ -3422,9 +3422,9 @@ template <> class gctools::GCKind<core::LightUserData_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LightUserData_O ;
 };
-template <> class gctools::GCKind<core::Functor_O> {
+template <> class gctools::GCKind<core::Function_O> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Functor_O ;
+  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Function_O ;
 };
 template <> class gctools::GCKind<core::T_O> {
 public:
@@ -4135,7 +4135,7 @@ public:
 { class_kind, KIND_LISPALLOC_core__SingleDispatchMethod_O, sizeof(core::SingleDispatchMethod_O), 0, "core::SingleDispatchMethod_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_name), "_name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_receiver_class), "_receiver_class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Function_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),code), "code" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::NamedFunction_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),code), "code" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::LambdaListHandler_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_argument_handler), "_argument_handler" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_declares), "_declares" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::SingleDispatchMethod_O),_docstring), "_docstring" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -4396,8 +4396,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Record_O),_alist), "_alist" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Record_O),_replacement_table), "_replacement_table" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Record_O),_Seen), "_Seen" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ class_kind, KIND_LISPALLOC_core__Functor_O, sizeof(core::Functor_O), 0, "core::Functor_O" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Functor_O),name), "name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_core__Function_O, sizeof(core::Function_O), 0, "core::Function_O" },
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Function_O),name), "name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__Closure_O, sizeof(core::Closure_O), 0, "core::Closure_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Closure_O),name), "name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Closure_O),closedEnvironment), "closedEnvironment" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -4921,8 +4921,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Package_O),_Nicknames), "_Nicknames" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__DirectoryEntry_O, sizeof(core::DirectoryEntry_O), 0, "core::DirectoryEntry_O" },
 { class_kind, KIND_LISPALLOC_core__Character_dummy_O, sizeof(core::Character_dummy_O), 0, "core::Character_dummy_O" },
-{ class_kind, KIND_LISPALLOC_core__Function_O, sizeof(core::Function_O), 0, "core::Function_O" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Closure_O>), offsetof(SAFE_TYPE_MACRO(core::Function_O),closure), "closure" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ class_kind, KIND_LISPALLOC_core__NamedFunction_O, sizeof(core::NamedFunction_O), 0, "core::Function_O" },
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Closure_O>), offsetof(SAFE_TYPE_MACRO(core::NamedFunction_O),closure), "closure" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CompiledFunction_O, sizeof(core::CompiledFunction_O), 0, "core::CompiledFunction_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Closure_O>), offsetof(SAFE_TYPE_MACRO(core::CompiledFunction_O),closure), "closure" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SingleDispatchGenericFunction_O, sizeof(core::SingleDispatchGenericFunction_O), 0, "core::SingleDispatchGenericFunction_O" },
@@ -5882,7 +5882,7 @@ obj_finalize_KIND_LISPALLOC_llvmo__GlobalVariable_O:
 obj_finalize_KIND_LISPALLOC_llvmo__Function_O:
 {
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
-    obj_gc_safe->~Function_O();
+    obj_gc_safe->~NamedFunction_O();
     return;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantArray_O:
@@ -6233,10 +6233,10 @@ obj_finalize_KIND_LISPALLOC_core__Record_O:
     obj_gc_safe->~Record_O();
     return;
 }
-obj_finalize_KIND_LISPALLOC_core__Functor_O:
+obj_finalize_KIND_LISPALLOC_core__Function_O:
 {
-    core::Functor_O* obj_gc_safe = reinterpret_cast<core::Functor_O*>(client);
-    obj_gc_safe->~Functor_O();
+    core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
+    obj_gc_safe->~Function_O();
     return;
 }
 obj_finalize_KIND_LISPALLOC_core__Closure_O:
@@ -6673,10 +6673,10 @@ obj_finalize_KIND_LISPALLOC_core__Character_dummy_O:
     obj_gc_safe->~Character_dummy_O();
     return;
 }
-obj_finalize_KIND_LISPALLOC_core__Function_O:
+obj_finalize_KIND_LISPALLOC_core__NamedFunction_O:
 {
-    core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
-    obj_gc_safe->~Function_O();
+    core::NamedFunction_O* obj_gc_safe = reinterpret_cast<core::NamedFunction_O*>(client);
+    obj_gc_safe->~NamedFunction_O();
     return;
 }
 obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O:
@@ -7125,7 +7125,7 @@ static void* OBJ_FINALIZE_table[] = {
   /* 169 */ &&obj_finalize_KIND_LISPALLOC_core__IntArray_O,
   /* 170 */ &&obj_finalize_KIND_LISPALLOC_core__SourceManager_O,
   /* 171 */ &&obj_finalize_KIND_LISPALLOC_core__Record_O,
-  /* 172 */ &&obj_finalize_KIND_LISPALLOC_core__Functor_O,
+  /* 172 */ &&obj_finalize_KIND_LISPALLOC_core__Function_O,
   /* 173 */ &&obj_finalize_KIND_LISPALLOC_core__Closure_O,
   /* 174 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionClosure_O,
   /* 175 */ &&obj_finalize_KIND_LISPALLOC_core__InstanceClosure_O,
@@ -7199,7 +7199,7 @@ static void* OBJ_FINALIZE_table[] = {
   /* 243 */ &&obj_finalize_KIND_LISPALLOC_core__Package_O,
   /* 244 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryEntry_O,
   /* 245 */ &&obj_finalize_KIND_LISPALLOC_core__Character_dummy_O,
-  /* 246 */ &&obj_finalize_KIND_LISPALLOC_core__Function_O,
+  /* 246 */ &&obj_finalize_KIND_LISPALLOC_core__NamedFunction_O,
   /* 247 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O,
   /* 248 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O,
   /* 249 */ &&obj_finalize_KIND_LISPALLOC_core__SpecialForm_O,
@@ -8265,10 +8265,10 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O:
     GC<core::Record_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Functor_O:
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O:
 {
-    core::Functor_O* obj_gc_safe = reinterpret_cast<core::Functor_O*>(client);
-    GC<core::Functor_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
+    GC<core::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Closure_O:
@@ -8705,10 +8705,10 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O:
     GC<core::Character_dummy_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O:
+obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NamedFunction_O:
 {
-    core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
-    GC<core::Function_O>::deallocate_unmanaged_instance(obj_gc_safe);
+    core::NamedFunction_O* obj_gc_safe = reinterpret_cast<core::NamedFunction_O*>(client);
+    GC<core::NamedFunction_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O:
@@ -9157,7 +9157,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 169 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IntArray_O,
   /* 170 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceManager_O,
   /* 171 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O,
-  /* 172 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Functor_O,
+  /* 172 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O,
   /* 173 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Closure_O,
   /* 174 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionClosure_O,
   /* 175 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InstanceClosure_O,
@@ -9231,7 +9231,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 243 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Package_O,
   /* 244 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryEntry_O,
   /* 245 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O,
-  /* 246 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O,
+  /* 246 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NamedFunction_O,
   /* 247 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O,
   /* 248 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchGenericFunction_O,
   /* 249 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SpecialForm_O,
@@ -9460,10 +9460,10 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::IRBuilderBase_O::static_class);
  SMART_PTR_FIX(core::BitVector_O::static_class_symbol);
  SMART_PTR_FIX(core::BitVectorWithFillPtr_O::static_creator);
- SMART_PTR_FIX(core::Function_O::static_class_symbol);
+ SMART_PTR_FIX(core::NamedFunction_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_creator);
  SMART_PTR_FIX(core::Integer_O::static_class_symbol);
- SMART_PTR_FIX(core::Functor_O::static_creator);
+ SMART_PTR_FIX(core::Function_O::static_creator);
  SMART_PTR_FIX(core::DirectoryEntry_O::static_creator);
  SMART_PTR_FIX(core::Instance_O::static_class);
  SMART_PTR_FIX(llvmo::ModulePass_O::static_creator);
@@ -9545,7 +9545,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Path_O::static_class);
  SMART_PTR_FIX(llvmo::APInt_O::static_class);
  SMART_PTR_FIX(core::SaveArchive_O::static_creator);
- SMART_PTR_FIX(core::Functor_O::static_class_symbol);
+ SMART_PTR_FIX(core::Function_O::static_class_symbol);
  SMART_PTR_FIX(core::LightUserData_O::static_class_symbol);
  SMART_PTR_FIX(core::Real_O::static_creator);
  SMART_PTR_FIX(llvmo::DITypeArray_O::static_class_symbol);
@@ -9674,7 +9674,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::StackValueEnvironment_O::static_class_symbol);
  SMART_PTR_FIX(core::FunctionFrame_O::static_class);
  SMART_PTR_FIX(core::LongFloat_O::static_class);
- SMART_PTR_FIX(core::Functor_O::static_class);
+ SMART_PTR_FIX(core::Function_O::static_class);
  SMART_PTR_FIX(llvmo::FunctionType_O::static_creator);
  SMART_PTR_FIX(core::Iterator_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class_symbol);
@@ -9726,7 +9726,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::CompositeType_O::static_creator);
  SMART_PTR_FIX(llvmo::DIBuilder_O::static_creator);
  SMART_PTR_FIX(llvmo::DITypeArray_O::static_creator);
- SMART_PTR_FIX(core::Function_O::static_class);
+ SMART_PTR_FIX(core::NamedFunction_O::static_class);
  SMART_PTR_FIX(core::CxxClass_O::static_class_symbol);
  SMART_PTR_FIX(core::ValueEnvironment_O::static_creator);
  SMART_PTR_FIX(llvmo::Pass_O::static_class_symbol);
@@ -9748,7 +9748,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SaveArchive_O::static_class);
  SMART_PTR_FIX(llvmo::ConstantDataArray_O::static_class_symbol);
  SMART_PTR_FIX(core::Class_O::static_creator);
- SMART_PTR_FIX(core::Function_O::static_creator);
+ SMART_PTR_FIX(core::NamedFunction_O::static_creator);
  SMART_PTR_FIX(core::HashTableEqualp_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::FunctionPassManager_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::StructType_O::static_class_symbol);
@@ -9994,7 +9994,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::MCSubtargetInfo_O::static_creator);
  SMART_PTR_FIX(core::SmallMap_O::static_class_symbol);
  SMART_PTR_FIX(core::IntArray_O::static_class);
- SMART_PTR_FIX(llvmo::NamedMDNode_O::static_class_symbol);
+ SMART_PTR_FIX(xxllvmo::NamedMDNode_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ConstantExpr_O::static_creator);
  SMART_PTR_FIX(core::SequenceStepper_O::static_class);
  SMART_PTR_FIX(llvmo::BlockAddress_O::static_class);

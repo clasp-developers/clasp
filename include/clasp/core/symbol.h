@@ -44,7 +44,7 @@ THE SOFTWARE.
 namespace core {
 
 SMART(Package);
-SMART(Function);
+SMART(NamedFunction);
 
 FORWARD(Symbol);
 class Symbol_O : public General_O {
@@ -152,7 +152,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
 
   void setf_symbolValueReadOnlyOverRide(T_sp obj);
 
-  void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
+  void setSetfFdefinition(T_sp fn) { this->_SetfFunction = fn; };
   inline T_sp getSetfFdefinition() { return this->_SetfFunction; };
   inline bool setf_fboundp() const { return !this->_SetfFunction.unboundp(); };
   void resetSetfFdefinition() { this->_SetfFunction = _Unbound<Function_O>(); };
@@ -229,7 +229,7 @@ public:
 T_sp cl__symbol_value(const Symbol_sp sym);
 Str_sp cl__symbol_name(Symbol_sp sym);
 T_sp cl__symbol_package(Symbol_sp sym);
-Function_sp cl__symbol_function(Symbol_sp sym);
+NamedFunction_sp cl__symbol_function(Symbol_sp sym);
 bool cl__boundp(Symbol_sp sym);
 };
 

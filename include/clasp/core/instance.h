@@ -69,8 +69,8 @@ THE SOFTWARE.
 namespace core {
 
 
-class Instance_O : public General_O {
-  LISP_CLASS(core, CorePkg, Instance_O, "Instance",General_O);
+class Instance_O : public Function_O {
+  LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
   friend class Class_O;
   void archiveBase(ArchiveP node);
 
@@ -79,7 +79,8 @@ public: // ctor/dtor for classes with shared virtual base
   virtual ~Instance_O(){};
 GCPROTECTED: // instance variables here
   int _isgf;
-  Closure_sp closure;
+  GenericFunctionPtr entryPoint;
+//  Closure_sp closure;
   Class_sp _Class;
   gctools::Vec0<T_sp> _Slots;
   /*! Mimicking ECL instance->sig generation signature
@@ -87,7 +88,7 @@ GCPROTECTED: // instance variables here
   T_sp _Sig;
 
 public:
-  bool isCallable() const { return (bool)(this->closure); };
+  bool isCallable() const { return (bool)(this->entryPoint); };
 #if 0
     public: // Functions that mimic ECL_XXXX_XXXX macros (eg: ECL_CLASS_SLOTS(x))
 	// Instances that represent CL classes have slots that are hard-coded to represent
@@ -161,6 +162,17 @@ public: // Functions here
   void describe(T_sp stream);
 
   void __write__(T_sp sout) const; // Look in write_ugly.cc
+
+  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+// Copy the arguments passed in registers into the multiple_values array and those
+// will be processed by the generic function
+#ifdef _DEBUG_BUILD
+  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
+#endif
+  VaList_sp gfargs((gc::Tagged)lcc_arglist);
+  //  LCC_SKIP_ARG(gfargs);
+  return (this->entryPoint)(this->asSmartPtr(), gfargs);
+}
 
 }; // Instance class
 

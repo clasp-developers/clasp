@@ -161,7 +161,7 @@ namespace clbind {
 template <typename Policies, typename T>
 class DerivableDefaultConstructorFunctor : public core::Closure_O {
 public:
-  typedef core::Functor_O TemplatedBase;
+  typedef core::Function_O TemplatedBase;
 public:
   enum { NumParams = 0 };
   DerivableDefaultConstructorFunctor(core::T_sp name) : core::Closure_O(name){};
@@ -179,7 +179,7 @@ public:
 
 namespace clbind {
 
-template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunctor_O : public core::BuiltinClosure_O {
+template <typename Pols, typename Pointer, typename T, typename Sig> class VariadicConstructorFunction_O : public core::BuiltinClosure_O {
 public:
   typedef core::BuiltinClosure_O TemplatedBase;
 public:
@@ -190,9 +190,9 @@ public:
 };
 
 template <typename Pols, typename Pointer, typename T, typename Sig>
-class gctools::GCKind<clbind::VariadicConstructorFunctor_O<Pols, Pointer, T, Sig>> {
+class gctools::GCKind<clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicConstructorFunctor_O<Pols, Pointer, T, Sig>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename clbind::VariadicConstructorFunction_O<Pols, Pointer, T, Sig>::TemplatedBase>::Kind;
 };
 
 #endif
