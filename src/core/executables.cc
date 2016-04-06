@@ -59,9 +59,9 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
       return Values(_Nil<T_O>(), _Nil<T_O>());
     }
     Function_sp fn = sym->symbolFunction();
-    return Values(fn->lambdaList(), _lisp->_true());
+    return Values(fn->lambda_list(), _lisp->_true());
   } else if (NamedFunction_sp func = obj.asOrNull<NamedFunction_O>()) {
-    return Values(func->lambdaList(), _lisp->_true());
+    return Values(func->lambda_list(), _lisp->_true());
   }
   return Values(_Nil<T_O>(), _Nil<T_O>());
 }
@@ -147,7 +147,7 @@ string Function_O::__repr__() const {
   ss << "#<" << this->_instanceClass()->classNameAsString();
   ss << "/" << this->describe();
   ss << " " << _rep_(name);
-  ss << " lambda-list: " << _rep_(this->lambdaList());
+  ss << " lambda-list: " << _rep_(this->lambda_list());
   ss << ">";
   return ss.str();
 }

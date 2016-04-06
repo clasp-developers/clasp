@@ -61,8 +61,8 @@ public:
       this->_lambdaListHandler = llh;
       this->kind = k;
     }
-    T_sp lambdaList() const;
-    void setf_lambda_list(T_sp lambda_list);
+    T_sp lambda_list() const;
+    void setf_lambda_list(List_sp lambda_list);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "SingleDispatchGenericFunctionClosure"; };
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();

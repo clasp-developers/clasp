@@ -75,7 +75,7 @@ extern void evaluateIntoActivationFrame(ActivationFrame_sp af, List_sp args, T_s
   (functionDesignator) can be a Symbol or an Function
 */
 
-extern T_mv applyClosureToActivationFrame(Closure_sp closureP, ActivationFrame_sp af);
+extern T_mv applyClosureToActivationFrame(Function_sp closureP, ActivationFrame_sp af);
 
 extern T_mv applyToActivationFrame(T_sp functionDesignator, ActivationFrame_sp af);
 
@@ -88,7 +88,8 @@ inline T_mv applyLastArgsPLUSFirst(T_sp fn, List_sp argsPLUS, Args&&... args) {
   T_sp tfunc = lookupFunction(fn, _Nil<T_O>());
   if (tfunc.nilp())
     ERROR_UNDEFINED_FUNCTION(fn);
-  Closure_sp func = gc::As<Closure_sp>(tfunc);
+  Function_sp func = tfunc.asOrNull<Function_O>();
+  ASSERT(func);
   int numArgsPassed = sizeof...(Args);
   int numArgsPlus = cl__length(argsPLUS);
   int nargs = numArgsPassed + numArgsPlus;

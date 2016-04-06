@@ -84,7 +84,7 @@ public:
   CL_DEFMETHOD T_sp functionLambdaListHandler() const {
     return this->lambdaListHandler();
   }
-  CL_DEFMETHOD virtual void setf_lambda_list(T_sp lambda_list) = 0;
+  CL_DEFMETHOD virtual void setf_lambda_list(List_sp lambda_list) = 0;
   virtual T_sp closedEnvironment() const = 0;
   virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
   virtual T_mv functionSourcePos() const;
@@ -101,7 +101,7 @@ public:
   virtual int lineNumber() const { return 0; }
   virtual int column() const { return 0; };
   virtual LambdaListHandler_sp lambdaListHandler() const = 0;
-  virtual T_sp lambdaList() const = 0;
+  virtual T_sp lambda_list() const = 0;
   CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
   virtual string __repr__() const;
 };
@@ -251,8 +251,8 @@ public:
   virtual T_sp cleavir_ast() const { return this->_cleavir_ast; };
   virtual void setf_cleavir_ast(T_sp ast) { this->_cleavir_ast = ast; };
   virtual LambdaListHandler_sp lambdaListHandler() const {SUBIMP();};
-  virtual T_sp lambdaList() const {SUBIMP();};
-  virtual void setf_lambda_list(T_sp lambda_list) {SUBIMP();};
+  virtual T_sp lambda_list() const {SUBIMP();};
+  virtual void setf_lambda_list(List_sp lambda_list) {SUBIMP();};
   virtual List_sp declares() const {NOT_APPLICABLE();};
   virtual T_sp docstring() const {NOT_APPLICABLE();};
   virtual T_sp closedEnvironment() const { NOT_APPLICABLE();};
@@ -276,8 +276,8 @@ public:
     this->kind = k;
   }
   T_sp closedEnvironment() const { return _Nil<T_O>(); };
-  virtual T_sp lambdaList() const;
-  virtual void setf_lambda_list(T_sp lambda_list);
+  virtual T_sp lambda_list() const;
+  virtual void setf_lambda_list(List_sp lambda_list);
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "BuiltinClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
@@ -302,8 +302,8 @@ class InstanceClosure_O : public FunctionClosure_O {
   virtual const char *describe() const { return "InstanceClosure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION();
   LambdaListHandler_sp lambdaListHandler() const { return _Nil<LambdaListHandler_O>(); };
-  T_sp lambdaList() const { return this->lambda_list; };
-  void setf_lambda_list(T_sp ll) { this->lambda_list = ll; };
+  T_sp lambda_list() const { return this->lambda_list; };
+  void setf_lambda_list(List_sp ll) { this->lambda_list = ll; };
   List_sp declares() const { IMPLEMENT_ME();};
   T_sp docstring() const { IMPLEMENT_ME();};
 };
@@ -344,8 +344,8 @@ public:
   List_sp declares() const { return this->_declares; };
   List_sp code() const { return this->_code; };
   LambdaListHandler_sp lambdaListHandler() const { return this->_lambdaListHandler; };
-  T_sp lambdaList() const;
-  void setf_lambda_list(T_sp lambda_list);
+  T_sp lambda_list() const;
+  void setf_lambda_list(List_sp lambda_list);
 };
 
 };
@@ -374,8 +374,8 @@ public:
       : Base(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
   void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
   bool compiledP() const { return true; };
-  core::T_sp lambdaList() const;
-  void setf_lambda_list(core::T_sp lambda_list);
+  core::T_sp lambda_list() const;
+  void setf_lambda_list(core::List_sp lambda_list);
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {

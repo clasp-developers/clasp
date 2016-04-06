@@ -355,7 +355,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
          it != this->_RequiredArguments.end(); it++) {
       if (it->_lambdaListP()) {
         DEPRECIATED();
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         //		    throw_if_not_destructuring_context(context);
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
@@ -370,7 +370,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
       if (it->_lambdaListP()) {
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
@@ -389,7 +389,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
       if (it->_lambdaListP()) {
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {

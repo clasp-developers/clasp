@@ -73,36 +73,24 @@ class Instance_O : public Function_O {
   LISP_CLASS(core, CorePkg, Instance_O, "Instance",Function_O);
   friend class Class_O;
   void archiveBase(ArchiveP node);
-
 public: // ctor/dtor for classes with shared virtual base
-  explicit Instance_O() : Base(), _isgf(ECL_NOT_FUNCALLABLE), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
+  Instance_O() : Base(), _isgf(ECL_NOT_FUNCALLABLE), _entryPoint(NULL), _Class(_Nil<Class_O>()), _Sig(_Nil<T_O>()){};
   virtual ~Instance_O(){};
-GCPROTECTED: // instance variables here
-  int _isgf;
-  GenericFunctionPtr entryPoint;
-//  Closure_sp closure;
+ public:
   Class_sp _Class;
+public: // generic function specific instance variables here
+  int _isgf;
+  GenericFunctionPtr _entryPoint;
+  T_sp  _lambda_list;
+ public: // Slots
   gctools::Vec0<T_sp> _Slots;
   /*! Mimicking ECL instance->sig generation signature
-        Jul 2014 - I think it is pointed to the class slots in case they change - then the instances can be updated*/
+        This is pointed to the class slots in case they change 
+        - then the instances can be updated*/
   T_sp _Sig;
 
 public:
-  bool isCallable() const { return (bool)(this->entryPoint); };
-#if 0
-    public: // Functions that mimic ECL_XXXX_XXXX macros (eg: ECL_CLASS_SLOTS(x))
-	// Instances that represent CL classes have slots that are hard-coded to represent
-	// class instance variables
-	const Class_sp& _CLASS_OF() const	{ return this->_Class;};
-	T_sp& _SPECIALIZER_FLAG()  	{ return this->_Slots[0];};
-	T_sp& _SPECIALIZER_OBJECT() 	{ return this->_Slots[3];};
-	T_sp& _CLASS_NAME()   		{ return this->_Slots[3+0];}; // 3
-	T_sp& _CLASS_SUPERIORS() 	{ return this->_Slots[3+1];}; // 4
-	T_sp& _CLASS_INFERIORS() 	{ return this->_Slots[3+2];}; // 5 
-	T_sp& _CLASS_SLOTS() 	{ return this->_Slots[3+3];}; // 6
-	T_sp& _CLASS_CPL() 	{ return this->_Slots[3+4];};
-
-#endif
+  bool isCallable() const { return (bool)(this->_entryPoint); };
 public: // Generic function ECL macros are replicated here
   T_sp GFUN_NAME() const { return this->_Slots[0]; };
   T_sp GFUN_SPECIALIZERS() const { return this->_Slots[1]; };
@@ -111,7 +99,6 @@ public: // Generic function ECL macros are replicated here
   // Add support for Function_O methods
   T_sp name() const { ASSERT(this->isgf()); return this->GFUN_NAME(); };
   virtual Symbol_sp functionKind() const { IMPLEMENT_ME(); };
-  virtual void setf_lambda_list(T_sp lambda_list) { IMPLEMENT_ME(); };
   virtual T_sp closedEnvironment() const { IMPLEMENT_ME(); };
   virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
@@ -128,13 +115,13 @@ public: // Generic function ECL macros are replicated here
   virtual int lineNumber() const { return 0; }
   virtual int column() const { return 0; };
   virtual LambdaListHandler_sp lambdaListHandler() const { IMPLEMENT_ME(); };
-  virtual T_sp lambdaList() const { IMPLEMENT_ME(); };
-
+  virtual void setAssociatedFunctions(List_sp funcs) { NOT_APPLICABLE(); };
 public: // The hard-coded indexes above are defined below to be used by Class
 protected:
   void initializeSlots(int numberOfSlots);
   void ensureClosure(GenericFunctionPtr entryPoint);
-
+  virtual void setf_lambda_list(List_sp lambda_list) { this->_lambda_list = lambda_list; };
+  virtual T_sp lambda_list() const { return this->_lambda_list; };
 public:
   static T_sp allocateInstance(T_sp _theClass, int numberOfSlots = 0);
   static T_sp allocateRawInstance(T_sp orig, T_sp _theClass, int numberOfSlots);
@@ -190,7 +177,7 @@ public: // Functions here
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
   //  LCC_SKIP_ARG(gfargs);
-  return (this->entryPoint)(this->asSmartPtr(), gfargs);
+  return (this->_entryPoint)(this->asSmartPtr(), gfargs);
 }
 
 }; // Instance class

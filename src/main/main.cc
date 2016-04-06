@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/cffi/cffiPackage.h>
+#include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
@@ -159,6 +160,8 @@ public:
 public:
   explicit EmptyClass();
 };
+
+
 
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
 #if 0

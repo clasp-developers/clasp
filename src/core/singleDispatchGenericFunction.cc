@@ -106,11 +106,11 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 // ----------------------------------------------------------------------
 //
 
-T_sp SingleDispatchGenericFunctionClosure_O::lambdaList() const {
+T_sp SingleDispatchGenericFunctionClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
-void SingleDispatchGenericFunctionClosure_O::setf_lambda_list(T_sp ll) {
+void SingleDispatchGenericFunctionClosure_O::setf_lambda_list(List_sp ll) {
   // Do nothing
 };
 

@@ -115,11 +115,11 @@ T_sp FunctionClosure_O::sourcePosInfo() const {
   return spi;
 }
 
-T_sp BuiltinClosure_O::lambdaList() const {
+T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
 }
 
-void BuiltinClosure_O::setf_lambda_list(T_sp lambda_list) {
+void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing
 }
 
@@ -131,11 +131,11 @@ InterpretedClosure_O::InterpretedClosure_O(T_sp fn, Symbol_sp k, LambdaListHandl
   : Base(fn, k, e, SOURCE_INFO_PASS), _lambdaListHandler(llh), _declares(dec), _docstring(doc), _code(c) {
 }
 
-T_sp InterpretedClosure_O::lambdaList() const {
+T_sp InterpretedClosure_O::lambda_list() const {
   return this->lambdaListHandler()->lambdaList();
 }
 
-void InterpretedClosure_O::setf_lambda_list(T_sp lambda_list) {
+void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
   // Do nothing - setting the lambdaListHandler is all that's needed
 }
 
@@ -166,11 +166,11 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
 
 namespace core {
 
-core::T_sp CompiledClosure_O::lambdaList() const {
+core::T_sp CompiledClosure_O::lambda_list() const {
   return this->_lambdaList;
 }
 
-void CompiledClosure_O::setf_lambda_list(core::T_sp lambda_list) {
+void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
   this->_lambdaList = lambda_list;
 }
 

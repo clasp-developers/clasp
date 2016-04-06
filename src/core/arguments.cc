@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 
-List_sp Argument::lambdaList() const {
+List_sp Argument::lambda_list() const {
   return ((this->_ArgTarget));
 };
 

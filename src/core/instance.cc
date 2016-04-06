@@ -133,7 +133,7 @@ void Instance_O::archiveBase(ArchiveP node) {
     }
   } else {
     this->_isgf = false;
-    this->entryPoint = NULL;
+    this->_entryPoint = NULL;
 #if 1
     Symbol_sp className = node->getKind();
     //	    node->attribute(kw::_sym_iclass,className);
@@ -245,7 +245,7 @@ T_sp Instance_O::copyInstance() const {
   Instance_sp iobj = gc::As<Instance_sp>(Instance_O::allocateInstance(this->_Class));
   iobj->_isgf = this->_isgf;
   iobj->_Slots = this->_Slots;
-  iobj->entryPoint = this->entryPoint;
+  iobj->_entryPoint = this->_entryPoint;
   iobj->_Sig = this->_Sig;
   return iobj;
 }
@@ -265,7 +265,7 @@ SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
-  this->entryPoint = entryPoint;
+  this->_entryPoint = entryPoint;
 };
 
 T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {

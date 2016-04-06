@@ -1708,7 +1708,7 @@ T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   return exec;
 }
 
-T_mv applyClosureToActivationFrame(Closure_sp func, ActivationFrame_sp args) {
+T_mv applyClosureToActivationFrame(Function_sp func, ActivationFrame_sp args) {
   size_t nargs = args->length();
   ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(args);
 #define frame (*vframe)
@@ -1736,8 +1736,8 @@ T_mv applyToActivationFrame(T_sp head, ActivationFrame_sp targs) {
     }
     SIMPLE_ERROR(BF("Could not find function %s args: %s") % _rep_(head) % _rep_(args));
   }
-  Closure_sp closure = gc::As<Closure_sp>(tfn);
-  if (closure) {
+  Function_sp closure = tfn.asOrNull<Function_O>();
+  if (LIKELY(closure)) {
     return applyClosureToActivationFrame(closure, args);
   }
   SIMPLE_ERROR(BF("In applyToActivationFrame the closure for %s is NULL and is being applied to arguments: %s") % _rep_(closure) % _rep_(args));
