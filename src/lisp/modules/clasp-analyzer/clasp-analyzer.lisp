@@ -19,7 +19,10 @@
 
 
 
-(defun maybe-list (x) (if (listp x) x (list x)))
+(defun ensure-list (x)
+  (unless (listp x)
+    (error "The argument ~a must be a list" x))
+  x)
 
 (defparameter *errors* nil
   "Keep track of errors discovered during analysis")
@@ -98,16 +101,29 @@
   metadata
   )
 
+(defclass instance-field ()
+  ((access :initform :public :initarg :access :accessor instance-field-access)
+   (ctype :initarg :ctype :accessor instance-field-ctype)))
+(defclass instance-variable (instance-field)
+  ((field-name :initarg :field-name :accessor instance-variable-field-name)
+   (location :initarg :location :accessor instance-variable-location))
+  (:documentation "Represent an instance variable, it's name, it's source-location and it's classified type"))
 
-(defstruct instance-variable
-  "Represent an instance variable, it's name, it's source-location and it's classified type"
-  field-name
-  location
-  access
-  ctype
-  )
+(defmethod print-object ((x instance-variable) stream)
+  (format stream "#<~a :field-name ~a>" (class-name (class-of x)) (instance-variable-field-name x)))
 
+(defclass instance-array-element (instance-field)
+  ((index :initarg :index :accessor instance-array-element-index)))
 
+(defgeneric instance-field-as-string (x first)
+  (:documentation "Return a string that describes this instance-field"))
+(defmethod instance-field-as-string ((x instance-variable) first)
+  (format nil "~a~a"
+          (if first "" ".")
+          (instance-variable-field-name x)))
+
+(defmethod instance-field-as-string ((x instance-array-element) first)
+  (format nil "[~a]" (instance-array-element-index x)))
 
 (defstruct alloc
   key
@@ -345,7 +361,7 @@
   ctype)
 
 
-
+;; A ctype is holds the name of a C++ type
 (defstruct ctype key)
 (defstruct (simple-ctype (:include ctype)))
 (defstruct (function-proto-ctype (:include ctype)))
@@ -412,12 +428,11 @@
 ;; //////////////////////////////////////////////////////////////////////
 
 (defun linearize-code-for-field (field base analysis)
-  (let ((code (linearize-class-layout-impl field base analysis)))
+  (let ((code (ensure-list (linearize-class-layout-impl field base analysis))))
+    (unless (listp code)
+      (error "The result of linearize-class-layout-impl MUST be a LIST"))
     (cond
       ((null code) nil)
-      ((atom code)
-       (push-prefix-field field code)
-       (list code))
       ((listp code)
        (mapc (lambda (onecode) (push-prefix-field field onecode)) code)
        code)
@@ -438,9 +453,46 @@
 
 (defclass offset ()
   ((offset-type :initarg :offset-type :accessor offset-type)
-   (fields :initform nil :accessor fields)
-   (base :initarg :base :accessor base)
-   #+(or)(instance-variable :accessor instance-variable)))
+   (fields :initform nil :initarg :fields :accessor fields)
+   (base :initarg :base :accessor base)))
+
+(defmethod print-object ((x offset) stream)
+  (format stream "#<~a :fields ~a>" (class-name (class-of x)) (fields x)))
+
+(defclass copyable-offset (offset) ())
+(defclass smart-ptr-offset (copyable-offset) ())
+(defclass tagged-pointer-offset (copyable-offset) ())
+(defclass pointer-offset (copyable-offset) ())
+(defclass pod-offset (copyable-offset) ())
+
+(defun copy-offset (offset)
+  "* Arguments
+- offset :: A copyable-offset.
+* Make a duplicate of the offset."
+  (make-instance (class-of offset)
+                 :offset-type (offset-type offset)
+                 :fields (fields offset)
+                 :base (base offset)))
+
+(defmethod offset-type-c++-identifier ((x pod-offset))
+  (let ((type (offset-type x)))
+    (format nil "ctype_~a" (c++identifier (ctype-key type)))))
+
+(defclass array-offset (offset)
+  ((element-type :initarg :element-type :accessor element-type)
+   (elements :initarg :elements :accessor elements)))
+
+(defclass constant-array-offset (array-offset)
+  ((constant-array-size :initarg :constant-array-size :accessor constant-array-size)))
+
+(defclass container-offset (offset)
+  ((fixed-fields :initarg :fixed-fields :accessor fixed-fields)
+   (elements-base :initarg :elements-base :accessor elements-base)
+   (elements :initarg :elements :accessor elements)))
+
+(defclass gcarray-offset (container-offset) ())
+(defclass gcvector-offset (container-offset) ())
+(defclass gcstring-offset (container-offset) ())
 
 (defun c++identifier (str)
   "* Arguments
@@ -457,54 +509,33 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
                (setf (elt cid i) x)))
     cid))
 
-(defmethod layout-type ((x offset))
+(defmethod offset-type-c++-identifier ((x offset))
   (c++identifier (string (class-name (class-of x)))))
 
-(defmethod layout-ctype ((x offset))
+(defmethod offset-ctype ((x offset))
   (ctype-key (offset-type x)))
 
-(defmethod layout-base-ctype ((x offset))
+(defmethod offset-base-ctype ((x offset))
   (cclass-key (base x)))
 
-(defmethod layout-field-names ((x offset))
-  (loop :for x :in (fields x)
-     :collect (instance-variable-field-name x)))
-
-(defclass smart-ptr-offset (offset) ())
-
-(defclass tagged-pointer-offset (offset) ())
-
-(defclass pointer-offset (offset) ())
-
-(defclass pod-offset (offset) ())
-
-(defmethod layout-type ((x pod-offset))
-  (let ((type (offset-type x)))
-    (format nil "ctype_~a" (c++identifier (ctype-key type)))))
-
-(defclass array-offset (offset)
-  ((element-type :initarg :element-type :accessor element-type)
-   (elements :initarg :elements :accessor elements)))
-
-(defclass pointer-fixer (offset) ())
-
-(defclass container-offset (offset)
-  ((fixed-fields :initarg :fixed-fields :accessor fixed-fields)
-   (elements-base :initarg :elements-base :accessor elements-base)
-   (elements :initarg :elements :accessor elements)))
-
-(defclass gcarray-offset (container-offset) ())
-(defclass gcvector-offset (container-offset) ())
-(defclass gcstring-offset (container-offset) ())
+(defmethod layout-offset-field-names ((off offset))
+  "* Arguments
+- off :: An offset.
+* Description
+Generate a list of strings that represent nested field names for the offset."
+  (format t "layout-offset-field-names x: ~a~%" off)
+  (loop :for x :in (fields off)
+     :for index :below (length (fields off))
+     :collect (instance-field-as-string x (= index 0))))
 
 
 (defmethod push-prefix-field (field (the-offset offset))
-  (unless (typep field 'instance-variable)
+  (unless (typep field 'instance-field)
     (error "field can only be instance-variable got: ~a" field))
   (push field (fields the-offset)))
 
 (defmethod push-prefix-field (field (the-offset container-offset))
-  (unless (typep field 'instance-variable)
+  (unless (typep field 'instance-field)
     (error "field can only be instance-variable got: ~a" field))
   (call-next-method)
   (mapc (lambda (os) (push field (fields os))) (fixed-fields the-offset)))
@@ -515,7 +546,7 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
           when (string= (instance-variable-field-name (car (last (fields x)))) name)
           collect x)))
 
-(defun offset-field-names (fields)
+(defun variable-part-offset-field-names (fields)
   (loop for x in fields
      collect (instance-variable-field-name (car (last (fields x))))))
 
@@ -545,39 +576,39 @@ to expose."
            (capacity (offset-field-with-name variable-fields "_Capacity"))
            (end (or (offset-field-with-name variable-fields "_End") capacity)))
       (unless capacity
-        (error "Could not find _Capacity in the variable-fields: ~a with names: ~a of ~a" variable-fields (offset-field-names variable-fields) (mapcar (lambda (x) (offset-type x)) variable-fields)))
-      (format stream "{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" },~%"
-              (layout-base-ctype array)
-              (layout-field-names array)
-              (layout-field-names array))
-      (format stream "{  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), NULL },~%"
-              (maybe-fixup-type (ctype-key (element-type array)) (layout-base-ctype array))
-              (layout-base-ctype array)
-              (layout-field-names end)
-              (layout-base-ctype array)
-              (layout-field-names capacity))
+        (error "Could not find _Capacity in the variable-fields: ~a with names: ~a of ~a" variable-fields (variable-part-offset-field-names variable-fields) (mapcar (lambda (x) (offset-type-c++-identifier x)) variable-fields)))
+      (format stream "{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" },~%"
+              (offset-base-ctype array)
+              (layout-offset-field-names array)
+              (layout-offset-field-names array))
+      (format stream "{  variable_capacity, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), NULL },~%"
+              (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
+              (offset-base-ctype array)
+              (layout-offset-field-names end)
+              (offset-base-ctype array)
+              (layout-offset-field-names capacity))
       (dolist (one (elements array))
-        (let ((field-names (layout-field-names one)))
+        (let ((field-names (layout-offset-field-names one)))
             (if field-names
                 (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-                       (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
+                       (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
                        (all-public (every #'identity public))
-                       (good-name (not (is-bad-special-case-variable-name (layout-field-names one))))
+                       (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
                        (expose-it (and (or all-public fixable) good-name))
                        (*print-pretty* nil))
-                  (format stream "~a {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+                  (format stream "~a {    variable_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
                           (if expose-it "" "// not-exposed-yet ")
-                          (layout-type one)
+                          (offset-type-c++-identifier one)
                           (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
                           (ctype-key (base one))
-                          (layout-field-names one)
-                          (layout-field-names one)
+                          (layout-offset-field-names one)
+                          (layout-offset-field-names one)
                           public
                           fixable
                           good-name))
                   (format stream "{    variable_field, ~a, sizeof(~a), 0, \"only\" },~%"
-                          (layout-type one)
-                          (maybe-fixup-type (ctype-key (element-type array)) (layout-base-ctype array))
+                          (offset-type-c++-identifier one)
+                          (maybe-fixup-type (ctype-key (element-type array)) (offset-base-ctype array))
                           ;;                      (maybe-fixup-type (ctype-key (offset-type one)) (ctype-key (base one)))
                           (ctype-key (base one))))))))
 
@@ -586,18 +617,20 @@ to expose."
 (defun codegen-full (stream layout analysis)
   (dolist (one (fixed-part layout))
     (let* ((fixable (fixable-instance-variables (car (last (fields one))) analysis))
-           (public (mapcar (lambda (iv) (eq (instance-variable-access iv) 'ast-tooling:as-public)) (fields one)))
+           (public (mapcar (lambda (iv) (eq (instance-field-access iv) 'ast-tooling:as-public)) (fields one)))
            (all-public (every #'identity public))
-           (good-name (not (is-bad-special-case-variable-name (layout-field-names one))))
+           (good-name (not (is-bad-special-case-variable-name (layout-offset-field-names one))))
            (expose-it (and (or all-public fixable) good-name))
+           (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
-      (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~^.~}), \"~{~a~^.~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
+      (format t "base:   ~a~%" base)
+      (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it "" "// not-exposing")
-              (layout-type one)
-              (or (layout-ctype one) "UnknownType")
-              (layout-base-ctype one)
-              (layout-field-names one)
-              (layout-field-names one)
+              (offset-type-c++-identifier one)
+              (or (offset-ctype one) "UnknownType")
+              (offset-base-ctype one)
+              (layout-offset-field-names one)
+              (layout-offset-field-names one)
               public
               fixable
               good-name)))
@@ -619,10 +652,18 @@ to expose."
   (codegen-full stream layout analysis))
 
 
-(defgeneric linearize-class-layout-impl (x base analysis))
+(defgeneric linearize-class-layout-impl (x base analysis)
+  (:documentation "* Arguments
+- x :: A ctype, cclass or an instance variable.
+- base :: The class we are linearizing (NOT SURE!).
+- analysis :: An analysis
+* Description
+Recursively search X and return a LIST of OFFSET objects that represent instance variable offsets that we want
+to expose to C++.
+"))
 
 (defmethod linearize-class-layout-impl ((x instance-variable) base analysis)
-  (let ((offset (linearize-class-layout-impl (instance-variable-ctype x) base analysis)))
+  (let ((offset (linearize-class-layout-impl (instance-field-ctype x) base analysis)))
     offset))
 
 (defmethod linearize-class-layout-impl ((x gcarray-moveable-ctype) base analysis)
@@ -633,33 +674,33 @@ to expose."
                     :return arg))
            (arg0-ctype (gc-template-argument-ctype arg0)))
       #+(or)(fixed (linearize-code-for-field (gethash (gcarray-moveable-ctype-key x) (project-classes (analysis-project analysis))) base analysis))
-      (make-instance 'gcarray-offset
-                     :base base
-                     :fixed-fields nodes
-                     :offset-type arg0-ctype
-                     :elements-base arg0-ctype
-                     :elements (maybe-list (linearize-class-layout-impl arg0-ctype arg0-ctype analysis))))))
+      (list (make-instance 'gcarray-offset
+                           :base base
+                           :fixed-fields nodes
+                           :offset-type arg0-ctype
+                           :elements-base arg0-ctype
+                           :elements (ensure-list (linearize-class-layout-impl arg0-ctype arg0-ctype analysis)))))))
 
 (defmethod linearize-class-layout-impl ((x cclass) base analysis)
   (let* ((project (analysis-project analysis))
-         (base-code (let (all-fixers)
+         (base-code (let (all-offsets)
                        (dolist (base-name (cclass-bases x))
-                         (let ((base-fixers (linearize-class-layout-impl (gethash base-name (project-classes project)) base analysis)))
+                         (let ((base-fixers (ensure-list (linearize-class-layout-impl (gethash base-name (project-classes project)) base analysis))))
                            (when base-fixers
-                             (setq all-fixers (append base-fixers all-fixers)))))
-                       all-fixers))
-         (vbase-code (let (all-fixers)
+                             (setq all-offsets (append base-fixers all-offsets)))))
+                       all-offsets))
+         (vbase-code (let (all-offsets)
                        (dolist (vbase-name (cclass-vbases x))
-                         (let ((vbase-fixers (linearize-class-layout-impl (gethash vbase-name (project-classes project)) base analysis)))
+                         (let ((vbase-fixers (ensure-list (linearize-class-layout-impl (gethash vbase-name (project-classes project)) base analysis))))
                            (when vbase-fixers
-                             (setq all-fixers (append vbase-fixers all-fixers)))))
-                       all-fixers))
-         (field-code (let (all-fixers)
+                             (setq all-offsets (append vbase-fixers all-offsets)))))
+                       all-offsets))
+         (field-code (let (all-offsets)
                        (dolist (field (cclass-fields x))
                          (let ((field-fixers (linearize-code-for-field field base analysis)))
                            (when field-fixers
-                             (setq all-fixers (append field-fixers all-fixers)))))
-                       all-fixers))
+                             (setq all-offsets (append field-fixers all-offsets)))))
+                       all-offsets))
          result)
     (when base-code (setq result (append result base-code)))
     (when vbase-code (setq result (append result vbase-code)))
@@ -670,18 +711,18 @@ to expose."
 (defmethod linearize-class-layout-impl ((x unclassified-ctype) base analysis)
   (if (ignorable-ctype-p x)
       nil
-      (make-instance 'pod-offset
-                     :base base
-                     :offset-type x)))
+      (list (make-instance 'pod-offset
+                           :base base
+                           :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x enum-ctype) base analysis)
   nil)
 (defmethod linearize-class-layout-impl ((x builtin-ctype) base analysis)
   (if (ignorable-ctype-p x)
       nil
-      (make-instance 'pod-offset
-                     :base base
-                     :offset-type x)))
+      (list (make-instance 'pod-offset
+                           :base base
+                           :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x cxxrecord-ctype) base analysis)
   (let ((code (gethash (cxxrecord-ctype-key x) (project-classes (analysis-project analysis)))))
@@ -696,46 +737,80 @@ to expose."
      (linearize-class-layout-impl (gethash (ctype-key x) (project-classes (analysis-project analysis))) base analysis))))
 
 (defmethod linearize-class-layout-impl ((x smart-ptr-ctype) base analysis)
-    (make-instance 'smart-ptr-offset :base base :offset-type x))
+  (list (make-instance 'smart-ptr-offset :base base :offset-type x)))
 
 (defmethod linearize-class-layout-impl ((x tagged-pointer-ctype) base analysis)
-    (make-instance 'tagged-pointer-offset :base base :offset-type x))
+  (list (make-instance 'tagged-pointer-offset :base base :offset-type x)))
+
+(defun linearize-constant-array-contents (array element-type elements base analysis)
+  "* Arguments
+- array :: A constant-array-ctype.
+- element-type :: A ctype.
+- elements :: A list of the fields to expose in element-type.
+- base :: The ctype that contains the array.
+- analysis :: An analysis object.
+* Description
+Generate offsets for every array element that exposes the fields in elements."
+  (let ((number-of-elements (constant-array-ctype-array-size array))
+        entries)
+    (loop :for index :below number-of-elements
+       :append (loop :for element :in elements
+                  :collect (let ((element-copy (copy-offset element)))
+                             (push-prefix-field (make-instance 'instance-array-element
+                                                               :index index
+                                                               :ctype element-type)
+                                                element-copy)
+                             element-copy)))))
 
 (defmethod linearize-class-layout-impl ((x constant-array-ctype) base analysis)
   (let* ((element-type (constant-array-ctype-element-type x))
-         (elements (maybe-list (linearize-class-layout-impl element-type element-type analysis))))
-    (make-instance 'array-offset
-                   :base base
-                   :element-type element-type
-                   :elements elements
-                   :offset-type x)))
+                                        ; The following requires some explaination
+                                        ; Constant arrays of zero length will be assumed to be variable arrays at
+                                        ; the end of a instance of either a GCVector or a GCArray
+                                        ; and their offset is wrt the GCVector or GCArray start
+                                        ; Non-zero length and their offset is calculated wrt the base
+                                        ; There should be a better way to decide this
+         (elements (if (= (constant-array-ctype-array-size x) 0)
+                       (linearize-class-layout-impl element-type element-type analysis)
+                       (linearize-class-layout-impl element-type base analysis))))
+    (if (> (constant-array-ctype-array-size x) 0)
+        (if (fixable-instance-variables element-type analysis)
+            (linearize-constant-array-contents x element-type elements base analysis)
+            nil)
+        (list (make-instance 'constant-array-offset
+                             :base base
+                             :element-type element-type
+                             :elements elements
+                             :constant-array-size (constant-array-ctype-array-size x)
+                             :offset-type x)))))
 
 
 (defvar *x*)
 (defmethod linearize-class-layout-impl ((x incomplete-array-ctype) base analysis)
   (let* ((element-type (incomplete-array-ctype-element-type x))
-         (elements (maybe-list (linearize-class-layout-impl element-type element-type analysis))))
-    (make-instance 'array-offset
-                   :base base
-                   :element-type element-type
-                   :elements elements
-                   :offset-type x)))
+         (elements (ensure-list (linearize-class-layout-impl element-type element-type analysis))))
+    (warn "Either this should never be returned or I need to return something other than an ARRAY-OFFSET for fixing")
+    (list (make-instance 'array-offset
+                         :base base
+                         :element-type element-type
+                         :elements elements
+                         :offset-type x))))
 
 (defmethod linearize-class-layout-impl ((x pointer-ctype) base analysis )
   (let ((pointee (pointer-ctype-pointee x)))
     (cond
-    ((or (gcvector-moveable-ctype-p pointee)
-         (gcarray-moveable-ctype-p pointee)
-         (gcstring-moveable-ctype-p pointee))
-        (make-instance 'pointer-offset :base base :offset-type x))
-    ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
-     (make-instance 'pointer-offset :base base :offset-type x))
-    ((fixable-pointee-p (pointer-ctype-pointee x))
-     (make-instance 'pointer-offset :base base :offset-type x))
-    ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
-    (t
-     ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
-      nil))))
+      ((or (gcvector-moveable-ctype-p pointee)
+           (gcarray-moveable-ctype-p pointee)
+           (gcstring-moveable-ctype-p pointee))
+       (list (make-instance 'pointer-offset :base base :offset-type x)))
+      ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
+       (list (make-instance 'pointer-offset :base base :offset-type x)))
+      ((fixable-pointee-p (pointer-ctype-pointee x))
+       (list (make-instance 'pointer-offset :base base :offset-type x)))
+      ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
+      (t
+       ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)
+       nil))))
 
 ;; \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -831,7 +906,7 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
                                       :collect type-name)))
        (values (format nil "~a<~{~a~^,~}>" (decl-name decl-node) template-args-as-list) t)))
     (otherwise
-     (format t "Add support for record-key for ~a  get-name->~a~%" decl-node (decl-name decl-node))
+     (format t "Add support for record-key for ~a  get-name->~a" decl-node (decl-name decl-node))
      #+use-breaks(break "Check the decl-node")
      )))
 
@@ -1003,7 +1078,7 @@ can be saved and reloaded within the project for later analysis"
 
 (defmethod classify-ctype ((x t))
   (let ((key (record-key x)))
-    (warn "Add support for classify-ctype to recognize ~a key: ~a~%" x key)
+    (warn "Add support for classify-ctype to recognize ~a key: ~a" x key)
     (make-unclassified-ctype :key key)))
 
 ;;; Convert a clang::Type or clang::QualType to the canonical clang::Type
@@ -1145,7 +1220,7 @@ can be saved and reloaded within the project for later analysis"
                            (type (to-canonical-type (cast:get-type field-node))))
                       (gclog "      >> Field: ~30a~%" field-node)
                       (handler-case
-                          (push (make-instance-variable
+                          (push (make-instance 'instance-variable
                                  :location (clang-tool:mtag-loc-start minfo :field)
                                  :field-name (clang-tool:mtag-name minfo :field)
                                  :access (clang-ast:get-access (clang-tool:mtag-node minfo :field))
@@ -1623,7 +1698,7 @@ so that they don't have to be constantly recalculated"
                    (setq result (or result one-result)))))))
     (loop :for field :in (cclass-fields x)
        :do (when field
-             (let* ((field-ctype (instance-variable-ctype field))
+             (let* ((field-ctype (instance-field-ctype field))
                     (one-result (contains-fixptr-impl-p field-ctype project)))
                (setq result (or result one-result)))))
     result))
@@ -1665,7 +1740,7 @@ so that they don't have to be constantly recalculated"
      (contains-fixptr-impl-p ctype project)))
                                    
 (defmethod contains-fixptr-impl-p ((x instance-variable) project)
-  (let ((ctype (instance-variable-ctype x)))
+  (let ((ctype (instance-field-ctype x)))
     (contains-fixptr-impl-p ctype project)))
 (defmethod contains-fixptr-impl-p ((x gcarray-moveable-ctype) project)
   (let* ((arguments (gcarray-moveable-ctype-arguments x))
@@ -2474,7 +2549,7 @@ so that they don't have to be constantly recalculated"
 
 
 (defun class-layout (x analysis)
-  (let* ((fields (linearize-class-layout-impl x x analysis))
+  (let* ((fields (ensure-list (linearize-class-layout-impl x x analysis)))
          (fixed (loop :for var :in fields
                    :when (not (typep var 'container-offset))
                    :collect var))
@@ -2507,7 +2582,7 @@ Otherwise return nil."
   (let ((var-part (variable-part cclass-layout)))
     (when var-part
       (format stream "~a,~%" (field-data key var-part "variable_array0"))
-      (let* ((ctype (instance-variable-ctype (car var-part)))
+      (let* ((ctype (instance-field-ctype (car var-part)))
              (ctype-key (container-key ctype))
              (container-cclass (gethash ctype-key (project-classes project)))
              (capacity-field (field-with-name container-cclass "_Capacity")))
@@ -2520,9 +2595,19 @@ Otherwise return nil."
   (let ((fix-vars (fixable-instance-variables-impl x analysis)))
     fix-vars))
 
-(defgeneric fixable-instance-variables-impl (x analysis))
+(defgeneric fixable-instance-variables-impl (x analysis)
+  (:documentation
+  "* Arguments 
+- x :: An instance variable, a cclass or a ctype.
+- analysis :: An analysis.
+* Description
+Recursively analyze x and return T if x contains fixable pointers."
+ ))
 (defmethod fixable-instance-variables-impl ((x instance-variable) analysis)
-  (fixable-instance-variables-impl (instance-variable-ctype x) analysis))
+  (fixable-instance-variables-impl (instance-field-ctype x) analysis))
+
+(defmethod fixable-instance-variables-impl ((x instance-array-element) analysis)
+  (fixable-instance-variables-impl (instance-field-ctype x) analysis))
 
 (defmethod fixable-instance-variables-impl ((x cclass) analysis)
   (let* ((project (analysis-project analysis))
@@ -2575,8 +2660,8 @@ Otherwise return nil."
 (defmethod fixable-instance-variables-impl ((x tagged-pointer-ctype) analysis) :tagged-pointer-fix)
 
 (defmethod fixable-instance-variables-impl ((x constant-array-ctype) analysis)
-  (if (contains-fixptr-p x (analysis-project analysis))
-      (make-array-fixer :element-type (constant-array-ctype-element-type x))))
+  (when (contains-fixptr-p x (analysis-project analysis))
+    (fixable-instance-variables-impl (constant-array-ctype-element-type x) analysis)))
 
 (defmethod fixable-instance-variables-impl ((x pointer-ctype) analysis )
   (let ((pointee (pointer-ctype-pointee x)))
@@ -2585,13 +2670,10 @@ Otherwise return nil."
       ((or (gcvector-moveable-ctype-p pointee)
            (gcarray-moveable-ctype-p pointee)
            (gcstring-moveable-ctype-p pointee)) :raw-tagged-pointer-fix)
-;;       (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
       ((is-alloc-p (pointer-ctype-pointee x) (analysis-project analysis))
        :raw-tagged-pointer-fix)
-;;       (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
       ((fixable-pointee-p (pointer-ctype-pointee x))
        :raw-tagged-pointer-fix)
-;;       (make-pointer-fixer :pointee-type (pointer-ctype-pointee x)))
       ((ignorable-ctype-p (pointer-ctype-pointee x)) nil)
       (t
        ;;(warn "I'm not sure if I can ignore pointer-ctype ~a  ELIMINATE THESE WARNINGS" x)

@@ -36,6 +36,14 @@ THE SOFTWARE.
 namespace core {
 T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
 
+ struct DummyInner {
+   T_sp one;
+   T_sp two;
+ };
+ struct DummyOuter {
+   DummyInner _inner;
+ };
+ 
 FORWARD(HashTable);
 class HashTable_O : public General_O {
   struct metadata_bootstrap_class {};
@@ -66,6 +74,8 @@ protected: // instance variables here
 #else
   void* _LocationDependencyTracker; // Need to have a field here to match MPS  
 #endif
+  DummyOuter _DummyOuterArray[3];
+  T_sp        _DummyTArray[2];
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
 

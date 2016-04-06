@@ -1,16 +1,16 @@
 (print "Testing")
 (progn
+  (format t "About to require clang-tool and clasp-analyzer~%")
   (require :clang-tool)
   (require :clasp-analyzer)
-  (print "Done"))
+  (format t "Done~%"))
 
-(print "Finished")
 (in-package :clasp-analyzer)
 
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*activationFrame.cc.*"))
+   :selection-pattern ".*hashTable.cc.*"))
 
 
 (clasp-analyzer:search/generate-code *db*)
@@ -18,6 +18,13 @@
 (time (clasp-analyzer:load-project *db*))
 
 (analyze-only *db*)
+
+
+
+(defparameter *db*
+  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+   #P"app-resources:build-databases;clasp_compile_commands.json"
+   :selection-pattern ".*activationFrame.cc.*"))
 
 (find "aNO-NAME" '("a" "b" "NO-NAME" "c") :test #'string=)
 (null (search "NO-NAME" "_PackageName.__r_.__first_.NO-NAME.__l.__cap_"))
