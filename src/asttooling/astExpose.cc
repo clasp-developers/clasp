@@ -729,6 +729,17 @@ core::T_sp mostDerivedType(const clang::Type *x) {
   SIMPLE_ERROR(BF("astExpose.cc>mostDerivedType | Could not cast clang::Type s->getTypeClass()-> %d") % s->getTypeClass());
 }
 
+
+#define ARGS_af_constant_array_get_size "(constant-array)"
+#define DECL_af_constant_array_get_size ""
+#define DOCS_af_constant_array_get_size "constant_array_get_size - returns the size of the constant array"
+core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
+    llvm::APInt size = cat->getSize();
+  string s = size.toString(10,true);
+  return core::Integer_O::create(s);
+}
+
+
 #define ARGS_af_getTypePtrOrNull "(arg)"
 #define DECL_af_getTypePtrOrNull ""
 #define DOCS_af_getTypePtrOrNull "getTypePtrOrNull - returns the most derived Type* ptr or NIL"
@@ -1100,8 +1111,8 @@ void initialize_astExpose() {
     CLASS_TYPE(Array, Type)
         .def("getElementType", &clang::ArrayType::getElementType),
     CLASS_TYPE(ConstantArray, ArrayType)
-        .def("desugar", &clang::ConstantArrayType::desugar)
-        .def("getSize", &clang::ConstantArrayType::getSize),
+    .def("desugar", &clang::ConstantArrayType::desugar),
+    def("constant-array-get-size", &af_constant_array_get_size, policies<>(), ARGS_af_constant_array_get_size, DECL_af_constant_array_get_size, DOCS_af_constant_array_get_size),
     CLASS_TYPE(IncompleteArray, ArrayType)
         .def("desugar", &clang::IncompleteArrayType::desugar),
     CLASS_TYPE(VariableArray, ArrayType),

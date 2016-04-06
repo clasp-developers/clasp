@@ -1979,9 +1979,10 @@ CL_DEFMETHOD string APInt_O::toString(int radix, bool isigned) const {
   return this->_value.toString(radix, isigned);
 }
 
+CL_LAMBDA(api &optional (issigned t))
 CL_LISPIFY_NAME("toInteger");
-CL_DEFMETHOD core::Integer_sp APInt_O::toInteger(bool issigned) const {
-  string s = this->toString(10,issigned);
+CL_DEFUN core::Integer_sp toInteger(APInt_sp api, bool issigned) {
+  string s = api->toString(10,issigned);
   return core::Integer_O::create(s);
 }
 
