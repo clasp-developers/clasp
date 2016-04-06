@@ -523,7 +523,6 @@ Convert the string into a C++ identifier, convert spaces, dashes and colons to u
 - off :: An offset.
 * Description
 Generate a list of strings that represent nested field names for the offset."
-  (format t "layout-offset-field-names x: ~a~%" off)
   (loop :for x :in (fields off)
      :for index :below (length (fields off))
      :collect (instance-field-as-string x (= index 0))))
@@ -623,7 +622,6 @@ to expose."
            (expose-it (and (or all-public fixable) good-name))
            (base (base one)) ;; The outermost class that contains this offset
            (*print-pretty* nil))
-      (format t "base:   ~a~%" base)
       (format stream "~a {  fixed_field, ~a, sizeof(~a), offsetof(SAFE_TYPE_MACRO(~a),~{~a~}), \"~{~a~}\" }, // public: ~a fixable: ~a good-name: ~a~%"
               (if expose-it "" "// not-exposing")
               (offset-type-c++-identifier one)
@@ -2665,7 +2663,6 @@ Recursively analyze x and return T if x contains fixable pointers."
 
 (defmethod fixable-instance-variables-impl ((x pointer-ctype) analysis )
   (let ((pointee (pointer-ctype-pointee x)))
-    (format t "pointee: ~a~%" pointee)
     (cond
       ((or (gcvector-moveable-ctype-p pointee)
            (gcarray-moveable-ctype-p pointee)
