@@ -102,8 +102,8 @@ public: // Generic function ECL macros are replicated here
   virtual T_sp closedEnvironment() const { IMPLEMENT_ME(); };
   virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) { IMPLEMENT_ME(); };
 //  virtual T_mv functionSourcePos() const { IMPLEMENT_ME();;
-  virtual T_sp cleavir_ast() const { IMPLEMENT_ME(); };
-  virtual void setf_cleavir_ast(T_sp ast) { IMPLEMENT_ME(); };
+  virtual T_sp cleavir_ast() const { return _Nil<T_O>(); };
+  virtual void setf_cleavir_ast(T_sp ast) { SIMPLE_ERROR(BF("Generic functions cannot be inlined"));};
   virtual List_sp declares() const { IMPLEMENT_ME(); };
   virtual T_sp docstring() const { IMPLEMENT_ME(); };
   virtual void *functionAddress() const { IMPLEMENT_ME(); };
