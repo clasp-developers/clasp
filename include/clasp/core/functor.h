@@ -252,7 +252,7 @@ namespace core {
     virtual void setf_lambda_list(List_sp lambda_list) {SUBIMP();};
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual T_sp docstring() const {NOT_APPLICABLE();};
-    virtual T_sp closedEnvironment() const { NOT_APPLICABLE();};
+    virtual T_sp closedEnvironment() const { return _Nil<T_O>()};
     virtual void* functionAddress() const { NOT_APPLICABLE();};
     virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
   };
