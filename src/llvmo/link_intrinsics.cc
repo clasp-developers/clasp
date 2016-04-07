@@ -1513,17 +1513,25 @@ core::T_O *cc_stack_enclose(void* closure_address,
                             std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const GCKindEnum closure_kind = GCKind<core::ClosureWithSlots_O>::Kind;
+  const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
 #ifdef DEBUG_GUARD
   memset(header,0x00,true_size);
-  new (header) GCHeader<T>::HeaderType(closure_kind,size,0,size);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
 #error "Ensure that DEBUG_GUARD works properly with cc_stack_enclose"
 #else
-  new (header) GCHeader<T>::HeaderType(closure_kind);
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
 #endif
-  auto obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(closure_address);
-  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(std::forward<ARGS>(args)...);
+  auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
+  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,
+                                                                          tlambdaName,
+                                                                          kw::_sym_function,
+                                                                          llvm_func,
+                                                                          _Nil<T_O>(),
+                                                                          _Nil<T_O>(),
+                                                                          _Nil<T_O>(),
+                                                                          *sourceFileInfoHandleP, filePos, lineno, column);
+                                                                          
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;
   va_list argp;
