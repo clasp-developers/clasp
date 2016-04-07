@@ -291,19 +291,6 @@ ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, 
   return pos_gc_safe;
 }
 
-ALWAYS_INLINE core::T_sp *valueFrameReferenceWithOffset(core::ActivationFrame_sp *frameP, int idx, int offset) {
-  int ridx = idx + offset;
-  ASSERT(frameP != NULL);
-  ASSERT(*frameP);
-  ASSERT(ridx >= 0 && ridx < (*frameP)->length());
-  core::ValueFrame_sp frame = gc::As_unsafe<core::ValueFrame_sp>((*frameP));
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(ridx));
-  return pos_gc_safe;
-}
-
-
-
-
 ALWAYS_INLINE core::T_O *cc_makeCell() {
   core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 #ifdef DEBUG_CC
@@ -332,18 +319,39 @@ ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell) {
   return val.raw_();
 }
 
-core::T_O *cc_fetch(core::T_O *array, std::size_t idx) {
+core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
-  core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>((gc::Tagged)array);
+  gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
 #ifdef DEBUG_CC
-  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*a)[idx].raw_());
+  printf("%s:%d fetch array@%p idx[%zu] -->cell[%p]\n", __FILE__, __LINE__, array, idx, (*c)[idx].raw_());
 #endif
-  ASSERT(a.notnilp());
-  return (*a)[idx].raw_();
+  ASSERT(c.notnilp());
+  return (*c)[idx].raw_();
 }
+
 
 };
 
+extern "C" {
+
+ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, core::T_O *closureRaw) {
+  Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
+  T_sp activationFrame = closure->closedEnvironment();
+  core::T_O* parentP =  activationFrame.raw_();
+  ASSERT((*resultP).isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+  af->setParentFrame(parentP);
+}
+
+ALWAYS_INLINE void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
+  T_O *parentP = parentsp->raw_();
+  ASSERT((*resultP).isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
+  af->setParentFrame(parentP);
+  return;
+}
+
+};
 namespace llvmo {
 void initialize_intrinsics() {
   // Do nothing

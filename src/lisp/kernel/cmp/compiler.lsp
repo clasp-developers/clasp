@@ -51,10 +51,10 @@
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
 			  function-env
-			  closed-over-renv
+			  closure
 			  argument-holder
 			  new-env)
-  (cmp-log "compile-arguments closed-over-renv: %s\n" closed-over-renv)
+  (cmp-log "compile-arguments closure: %s\n" closure)
   ;; This is where we make the value frame for the passed arguments
   ;;
   ;; keywords:  ESCAPE ANALYSIS escape analysis TODO
@@ -63,7 +63,7 @@
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
+  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) closure)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -118,7 +118,7 @@ Could return more functions that provide lambda-list for swank for example"
 	       (cmp-log "Starting new function name: %s\n" name)
 	       (let ((arguments (llvm-sys:get-argument-list fn))
                      traceid)
-                 (multiple-value-bind (closed-over-renv argument-holder)
+                 (multiple-value-bind (closure argument-holder)
                      (parse-function-arguments arguments)
                    (let ((new-env (progn
                                     (cmp-log "Creating new-value-environment for arguments\n")
@@ -130,7 +130,7 @@ Could return more functions that provide lambda-list for swank for example"
                                                           (compile-arguments name
                                                                              lambda-list-handler
                                                                              fn-env
-                                                                             closed-over-renv
+                                                                             closure
                                                                              argument-holder
                                                                              lambda-args-env
                                                                              ))))))

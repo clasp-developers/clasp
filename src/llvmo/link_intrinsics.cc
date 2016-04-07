@@ -608,27 +608,6 @@ void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::Activa
 
 extern "C" {
 
-extern void setParentOfActivationFrameTPtr(core::T_sp *resultP, core::T_O *parentP) {
-  if (resultP->valistp()) {
-    SIMPLE_ERROR(BF("I don't support frames anymore"));
-  }
-  ASSERT((*resultP).isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
-  af->setParentFrame(parentP);
-}
-
-extern void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *parentsp) {
-  T_O *parentP = parentsp->raw_();
-  if (resultP->valistp()) {
-    DEPRECIATED();
-    //    frame::SetParentFrame(*resultP, gctools::smart_ptr<core::T_O>((gc::Tagged)parentP));
-    return;
-  }
-  ASSERT((*resultP).isA<ActivationFrame_O>());
-  ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
-  af->setParentFrame(parentP);
-  return;
-}
 
 extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
                                             core::T_sp *debuggingInfoP) {
@@ -1505,39 +1484,57 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
                       size_t filePos, size_t lineno, size_t column,
                       std::size_t numCells, ...) {
   core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
-  core::T_sp vo;
-  if (numCells == 0) {
-    vo = _Nil<T_O>();
-  } else {
-    core::ValueFrame_sp vf = core::ValueFrame_O::create(numCells, _Nil<core::T_O>());
-    core::T_O *p;
-    va_list argp;
-    va_start(argp, numCells);
-    int idx = 0;
-    for (; numCells; --numCells) {
-      p = va_arg(argp, core::T_O *);
-      (*vf)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
-      ++idx;
-    }
-    va_end(argp);
-    vo = vf;
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid =
+    gctools::GC<core::ClosureWithSlots_O>::allocate_container(numCells
+                                                             , tlambdaName
+                                                             , kw::_sym_function
+                                                             , llvm_func
+                                                             , _Nil<core::T_O>()
+                                                             , _Nil<T_O>() // assocFuncs
+                                                             , _Nil<T_O>() // lambdaList
+                                                             , *sourceFileInfoHandleP, filePos, lineno, column);
+  core::T_O *p;
+  va_list argp;
+  va_start(argp, numCells);
+  int idx = 0;
+  for (; numCells; --numCells) {
+    p = va_arg(argp, core::T_O *);
+    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
+    ++idx;
   }
-  gctools::smart_ptr<core::CompiledClosure_O> functoid =
-      gctools::GC<core::CompiledClosure_O>::allocate(tlambdaName // functionName - make this something useful!
-                                                    ,
-                                                    kw::_sym_function // fn-type
-                                                    ,
-                                                    llvm_func //(llvmo::CompiledClosure::fptr_type)NULL   // ptr - will be set when Module is compiled
-                                                    ,
-                                                    _Nil<core::T_O>() // llvm-func
-                                                    ,
-                                                    vo // renv
-                                                    ,
-                                                    _Nil<T_O>() // assocFuncs
-                                                    ,
-                                                    _Nil<T_O>() // lambdaList
-                                                    ,
-                                                    *sourceFileInfoHandleP, filePos, lineno, column);
+  va_end(argp);
+  return functoid.raw_();
+}
+
+core::T_O *cc_stack_enclose(void* closure_address,
+                            core::T_O *lambdaName, fnLispCallingConvention llvm_func,
+                            int *sourceFileInfoHandleP,
+                            size_t filePos, size_t lineno, size_t column,
+                            std::size_t numCells, ...) {
+  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
+  const GCKindEnum closure_kind = GCKind<core::ClosureWithSlots_O>::Kind;
+  size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
+#ifdef DEBUG_GUARD
+  memset(header,0x00,true_size);
+  new (header) GCHeader<T>::HeaderType(closure_kind,size,0,size);
+#error "Ensure that DEBUG_GUARD works properly with cc_stack_enclose"
+#else
+  new (header) GCHeader<T>::HeaderType(closure_kind);
+#endif
+  auto obj = BasePtrToMostDerivedPtr<typename PTR_TYPE::Type>(closure_address);
+  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(std::forward<ARGS>(args)...);
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
+  core::T_O *p;
+  va_list argp;
+  va_start(argp, numCells);
+  int idx = 0;
+  for (; numCells; --numCells) {
+    p = va_arg(argp, core::T_O *);
+    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
+    ++idx;
+  }
+  va_end(argp);
   return functoid.raw_();
 }
 

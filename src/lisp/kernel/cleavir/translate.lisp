@@ -520,6 +520,48 @@
 		     (format *debug-log* "    inputs: ~a~%" inputs))
 	(%store result (first outputs) nil)))))
 
+
+(defmethod translate-simple-instruction
+    ((instruction cc-mir:stack-enclose-instruction) return-value inputs outputs abi)
+  (declare (ignore inputs))
+  (cmp:irc-low-level-trace :flow)
+  (let* ((enter-instruction (cleavir-ir:code instruction)))
+    (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
+	(layout-procedure enter-instruction abi)
+      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
+             (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
+	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
+	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+	     (result
+              #+(or)(cmp:irc-intrinsic-args
+                     "cc_stack_enclose"
+                     (list* stack-allocated-closure-space
+                            ltv-lambda-name
+                            enclosed-function
+                            cmp:*gv-source-file-info-handle*
+                            (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                            (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                            (cmp:irc-size_t-*current-source-pos-info*-column)
+                            (%size_t (length inputs))
+                            loaded-inputs)
+                     :label (format nil "closure->~a" lambda-name))
+               (cmp:irc-intrinsic-args
+                "cc_enclose"
+                (list* ltv-lambda-name
+                       enclosed-function
+                       cmp:*gv-source-file-info-handle*
+                       (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                       (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                       (cmp:irc-size_t-*current-source-pos-info*-column)
+                       (%size_t (length inputs))
+                       loaded-inputs)
+                :label (format nil "closure->~a" lambda-name))
+               ))
+	(cc-dbg-when *debug-log*
+		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+		     (format *debug-log* "    inputs: ~a~%" inputs))
+	(%store result (first outputs) nil)))))
+
 (defmethod translate-simple-instruction
     ((instruction cc-mir:stack-enclose-instruction) return-value inputs outputs abi)
   (declare (ignore inputs))

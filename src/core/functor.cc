@@ -115,6 +115,13 @@ T_sp FunctionClosure_O::sourcePosInfo() const {
   return spi;
 }
 
+CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
+{
+  size_t result = gctools::sizeof_container_with_header<ClosureWithSlots_O>(number_of_slots);
+  return result;
+}
+
+
 T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
 }
