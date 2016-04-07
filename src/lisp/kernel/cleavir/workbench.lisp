@@ -22,7 +22,7 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(clasp-cleavir::cleavir-compile nil '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug t)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug nil)
 
 (apropos "slot-")
 (mapcar (lambda (x) (clos::slot-definition-name x)) (clos::class-slots (find-class 'cc-mir:stack-enclose-instruction)))
