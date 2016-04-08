@@ -51,6 +51,7 @@ successfully, T is returned, else error."
 	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
 	 gc-start
          gc-bytes-start gc-bytes-end
+         stack-closure-start stack-closure-end
          clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end
@@ -62,11 +63,11 @@ successfully, T is returned, else error."
     #-clasp(si::gc t)
     #-clasp(setf gc-start (si::gc-time))
     (setf gc-bytes-start (gctools:bytes-allocated))
-    (multiple-value-setq (gc-bytes-start clasp-bytes-start)
+    (multiple-value-setq (gc-bytes-start clasp-bytes-start stack-closure-start)
       (gctools:bytes-allocated))
     (multiple-value-prog1
 	(funcall closure)
-      (multiple-value-setq (gc-bytes-end clasp-bytes-end)
+      (multiple-value-setq (gc-bytes-end clasp-bytes-end stack-closure-end)
         (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
@@ -86,17 +87,19 @@ successfully, T is returned, else error."
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
 		     )
       #+clasp(format *trace-output*
-                     "real time          : ~,3F secs~%~
-              run time           : ~,3F secs~%~
-              GC bytes consed    : ~a bytes~%~
-              Clasp bytes consed : ~a bytes~%~
-              LLVM time          : ~,3F secs~%~
-              LLVM compiles      : ~A~%~
-              Cxx-calls          : ~A~%"
+             "real time           : ~,3F secs~%~
+              run time            : ~,3F secs~%~
+              GC bytes consed     : ~a bytes~%~
+              Clasp bytes consed  : ~a bytes~%~
+              Stack closure alloca: ~a bytes~%~
+              LLVM time           : ~,3F secs~%~
+              LLVM compiles       : ~A~%~
+              Cxx-calls           : ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
                      (- gc-bytes-end gc-bytes-start)
                      (- clasp-bytes-end clasp-bytes-start)
+                     (- stack-closure-end stack-closure-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
                      (- (core:cxx-lambda-list-handler-create-bindings-calls) llh-calls-begin))))

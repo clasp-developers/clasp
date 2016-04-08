@@ -318,15 +318,7 @@ string StructureObject_O::__repr__() const {
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
   SYMBOL_EXPORT_SC_(CorePkg, structureSet);
   SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
-
   SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
-
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
-
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
-
-
-
-
-
 };

@@ -59,7 +59,7 @@ std::vector<Immediate_info> get_immediate_info() {
 namespace gctools {
 
 GCStack _ThreadLocalStack;
-
+size_t global_stack_closure_bytes_allocated = 0;
 void *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */

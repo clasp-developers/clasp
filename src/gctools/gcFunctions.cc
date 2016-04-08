@@ -91,6 +91,7 @@ CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
+CL_DOCSTRING("Return bytes allocated (values gc-bytes clasp-calculated-bytes stack-closure-bytes)");
 CL_DEFUN core::T_mv gctools__bytes_allocated() {
   size_t gc_bytes = 0;
 #ifdef USE_BOEHM
@@ -100,8 +101,10 @@ CL_DEFUN core::T_mv gctools__bytes_allocated() {
   gc_bytes = 0; // IMPLEMENT_MEF(BF("Figure out how to get the total bytes allocated using MPS"));
 #endif
   size_t my_bytes = globalBytesAllocated;
-  ASSERT(gc_bytes < gc::most_positive_fixnum && my_bytes < gc::most_positive_fixnum);
-  return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes));
+  ASSERT(gc_bytes < gc::most_positive_fixnum);
+  ASSERT(my_bytes < gc::most_positive_fixnum);
+  ASSERT(gctools::global_stack_closure_bytes_allocated < gc::most_positive_fixnum);
+  return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes), core::clasp_make_fixnum(gctools::global_stack_closure_bytes_allocated));
 }
 
 
