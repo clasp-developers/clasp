@@ -24,7 +24,7 @@
   (format stream "   ~a [label = \"stack-enclose\"];~%"
 	  (cleavir-ir-graphviz::instruction-id instruction))
   (format stream "  ~a -> ~a [color = pink, style = dashed];~%"
-	  (gethash (class-of instruction) cleavir-ir-graphviz::*instruction-table*)
+	  (gethash (cleavir-ir:code instruction) cleavir-ir-graphviz::*instruction-table*)
 	  (cleavir-ir-graphviz::instruction-id instruction)))
 
 
