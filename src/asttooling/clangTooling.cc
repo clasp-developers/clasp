@@ -146,6 +146,17 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
     if (o.nilp()) {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
+#if 1
+      this->_v = [func](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
+			// Should resolve to vector<string>
+          core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
+          core::T_mv result = core::eval::funcall(func,targs);;
+          translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
+          return cresult._v;
+      };
+      return;
+#else
+      // What was I thinking to expose the inner workings of funcall?????
       if (auto compiledClosure = func.asOrNull<core::CompiledClosure_O>()) {
         core::CompiledClosure_fptr_type fptr = compiledClosure->fptr;
         core::T_O* closedEnvironment = compiledClosure->closedEnvironment().raw_();
@@ -173,6 +184,7 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
         ASSERT(closure);
         SIMPLE_ERROR(BF("Figure out what to do with the %s Closure %s ") % closure->describe() % _rep_(closure->name()));
       }
+#endif
     } else if (clang::tooling::ArgumentsAdjuster *argAdj = gc::As<core::WrappedPointer_sp>(o)->cast<clang::tooling::ArgumentsAdjuster>()) {
       this->_v = *argAdj;
       return;
