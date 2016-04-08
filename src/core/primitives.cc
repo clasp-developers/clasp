@@ -1415,8 +1415,23 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 }
 
 T_sp type_of(T_sp x) {
-  if (x.nilp())
-    return cl::_sym_null;
+  if (x.fixnump()) {
+    ql::list res(_lisp);
+    res << cl::_sym_integer << x << x;
+    return res.cons();
+  } else if (x.consp()) {
+    return cl::_sym_cons;
+  } else if (x.single_floatp()) {
+    return cl::_sym_single_float;
+  } else if (x.characterp()) {
+    if (cl__standard_char_p(gc::As<Character_sp>(x)))
+      return cl::_sym_standard_char;
+    return cl::_sym_character;
+  } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
+    ql::list res(_lisp);
+    res << cl::_sym_integer << ix << ix;
+    return res.cons();
+  }
 #ifdef CLOS
   if (Instance_sp instance = x.asOrNull<Instance_O>()) {
     T_sp cl = lisp_instance_class(instance);
@@ -1438,85 +1453,71 @@ T_sp type_of(T_sp x) {
   } else if (Class_sp mc = x.asOrNull<Class_O>()) {
     Class_sp mcc = lisp_static_class(mc);
     return mcc->className();
-  } else
+  }
 #endif
-    if (x.fixnump()) {
-      ql::list res(_lisp);
-      res << cl::_sym_integer << x << x;
-      return res.cons();
-    } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
-      ql::list res(_lisp);
-      res << cl::_sym_integer << ix << ix;
-      return res.cons();
-    } else if (cl__characterp(x)) {
-      if (cl__standard_char_p(gc::As<Character_sp>(x)))
-        return cl::_sym_standard_char;
-      return cl::_sym_character;
-    } else if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
-      if (x == _lisp->_true())
-        return cl::_sym_boolean;
-      if (cl__keywordp(symx))
-        return cl::_sym_keyword;
-      return cl::_sym_symbol;
-    } else if (String_sp sx = x.asOrNull<String_O>()) {
-      Symbol_sp t;
-      if (sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p()) {
-        t = cl::_sym_array;
-      } else
-        t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx)))).cons();
-    } else if (Vector_sp vx = x.asOrNull<Vector_O>()) {
-      if (vx->adjustable_array_p() || vx->_displaced_array_p()) {
-        return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
-      } else if (vx->array_has_fill_pointer_p() /* || (cl__elttype)x->vector.elttype != aet_object) */) {
-        return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
-      } else {
-        return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl__length(vx))).cons();
-      }
-    } else if (Array_sp ax = x.asOrNull<Array_O>()) {
-      Symbol_sp t;
-      if (ax->adjustable_array_p() || ax->_displaced_array_p()) {
-        t = cl::_sym_array;
-      } else
-        t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << ax->element_type_as_symbol() << ax->arrayDimensions()).cons();
-    } else if (BitVector_sp bx = x.asOrNull<BitVector_O>()) {
-      Symbol_sp t;
-      if (bx->adjustable_array_p() || bx->array_has_fill_pointer_p() || bx->_displaced_array_p()) {
-        t = cl::_sym_array;
-      } else
-        t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(bx)))).cons();
-    } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
-      return pp->_instanceClass()->className();
-    } else if (core__structurep(x)) {
-      return gc::As<StructureObject_sp>(x)->structureType();
-    } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
-      if (gc::IsA<SynonymStream_sp>(stx))
-        return cl::_sym_SynonymStream_O;
-      else if (gc::IsA<BroadcastStream_sp>(stx))
-        return cl::_sym_BroadcastStream_O;
-      else if (gc::IsA<ConcatenatedStream_sp>(stx))
-        return cl::_sym_ConcatenatedStream_O;
-      else if (gc::IsA<TwoWayStream_sp>(stx))
-        return cl::_sym_TwoWayStream_O;
-      else if (gc::IsA<StringInputStream_sp>(stx))
-        return _sym_StringInputStream_O;
-      else if (gc::IsA<StringOutputStream_sp>(stx))
-        return _sym_StringOutputStream_O;
-      else if (gc::IsA<EchoStream_sp>(stx))
-        return cl::_sym_EchoStream_O;
-      else
-        return cl::_sym_FileStream_O;
-    } else if (x.consp()) {
-      return cl::_sym_cons;
-    } else if (Pathname_sp px = x.asOrNull<Pathname_O>()) {
-      if (core__logical_pathname_p(px)) {
-        return cl::_sym_logical_pathname;
-      } else {
-        return cl::_sym_pathname;
-      }
+  if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
+    if (x.nilp()) return cl::_sym_null;
+    if (x == _lisp->_true())
+      return cl::_sym_boolean;
+    if (cl__keywordp(symx))
+      return cl::_sym_keyword;
+    return cl::_sym_symbol;
+  } else if (String_sp sx = x.asOrNull<String_O>()) {
+    Symbol_sp t;
+    if (sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p()) {
+      t = cl::_sym_array;
+    } else t = cl::_sym_simple_array;
+    return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx)))).cons();
+  } else if (Vector_sp vx = x.asOrNull<Vector_O>()) {
+    if (vx->adjustable_array_p() || vx->_displaced_array_p()) {
+      return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
+    } else if (vx->array_has_fill_pointer_p() /* || (cl__elttype)x->vector.elttype != aet_object) */) {
+      return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
+    } else {
+      return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl__length(vx))).cons();
     }
+  } else if (Array_sp ax = x.asOrNull<Array_O>()) {
+    Symbol_sp t;
+    if (ax->adjustable_array_p() || ax->_displaced_array_p()) {
+      t = cl::_sym_array;
+    } else
+      t = cl::_sym_simple_array;
+    return (ql::list(_lisp) << t << ax->element_type_as_symbol() << ax->arrayDimensions()).cons();
+  } else if (BitVector_sp bx = x.asOrNull<BitVector_O>()) {
+    Symbol_sp t;
+    if (bx->adjustable_array_p() || bx->array_has_fill_pointer_p() || bx->_displaced_array_p()) {
+      t = cl::_sym_array;
+    } else
+      t = cl::_sym_simple_array;
+    return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(bx)))).cons();
+  } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
+    return pp->_instanceClass()->className();
+  } else if (core__structurep(x)) {
+    return gc::As<StructureObject_sp>(x)->structureType();
+  } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
+    if (gc::IsA<SynonymStream_sp>(stx))
+      return cl::_sym_SynonymStream_O;
+    else if (gc::IsA<BroadcastStream_sp>(stx))
+      return cl::_sym_BroadcastStream_O;
+    else if (gc::IsA<ConcatenatedStream_sp>(stx))
+      return cl::_sym_ConcatenatedStream_O;
+    else if (gc::IsA<TwoWayStream_sp>(stx))
+      return cl::_sym_TwoWayStream_O;
+    else if (gc::IsA<StringInputStream_sp>(stx))
+      return _sym_StringInputStream_O;
+    else if (gc::IsA<StringOutputStream_sp>(stx))
+      return _sym_StringOutputStream_O;
+    else if (gc::IsA<EchoStream_sp>(stx))
+      return cl::_sym_EchoStream_O;
+    else
+      return cl::_sym_FileStream_O;
+  } else if (Pathname_sp px = x.asOrNull<Pathname_O>()) {
+    if (core__logical_pathname_p(px)) {
+      return cl::_sym_logical_pathname;
+    } else {
+      return cl::_sym_pathname;
+    }
+  }
   return core__type_to_symbol(x);
 }
 

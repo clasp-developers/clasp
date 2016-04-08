@@ -351,9 +351,7 @@ the corresponding VAR.  Returns NIL."
 (defun invoke-debugger (cond)
   (core:invoke-internal-debugger cond))
 
-
 (export 'class-name)
-
 
 (in-package :ext)
 (defun compiled-function-name (x)
@@ -361,7 +359,7 @@ the corresponding VAR.  Returns NIL."
 
 (defun compiled-function-file (x)
   (if (and x (functionp x))
-      (multiple-value-bind (sfi pos)
+      (multiple-value-bind (sfi pos lineno)
           (core:function-source-pos x)
         (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
           (when source-file
@@ -376,17 +374,31 @@ the corresponding VAR.  Returns NIL."
                  (let* ((pn (if (eq (car src-directory) :relative)
                                 (merge-pathnames src-pathname (translate-logical-pathname "SYS:"))
                                 src-pathname)))
-                   (return-from compiled-function-file (values pn filepos))))
+                   (return-from compiled-function-file (values pn filepos lineno))))
                 ((or (string= src-type "cc")
                      (string= src-type "cpp")
                      (string= src-type "h")
                      (string= src-type "hpp"))
                  (let ((absolute-dir (merge-pathnames src-pathname
                                                       (translate-logical-pathname "source-main:"))))
-                   (return-from compiled-function-file (values absolute-dir filepos))))))))))
-  (values nil 0))
+                   (return-from compiled-function-file (values absolute-dir filepos lineno))))))))))
+  (values nil 0 0))
 
-(export '(compiled-function-name compiled-function-file))
+(defun where (id &optional (stream *standard-output*))
+  "* Arguments 
+- id :: An object (symbol, function etc)
+* Desciption
+Print the source location of id."
+  (cond
+    ((symbolp id)
+     (when (fboundp id)
+       (multiple-value-bind (file pos line)
+           (ext:compiled-function-file (fdefinition id))
+         (format stream "~a ~a~%" file line))))
+    (t (error "Add support to generate source info for ~a~%" id))))
+     
+
+(export '(compiled-function-name compiled-function-file where))
 
 (defun warn-or-ignore (x &rest args)
   nil)

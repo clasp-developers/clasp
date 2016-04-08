@@ -52,6 +52,7 @@ StructureClass_sp StructureClass_O::createUncollectable() {
 #endif
 
 StructureClass_O::StructureClass_O() {
+//  printf("%s:%d In StructureClass_O ctor\n", __FILE__, __LINE__ );
 }
 
 void StructureClass_O::initialize() {
@@ -66,6 +67,20 @@ void StructureClass_O::archiveBase(ArchiveP node) {
   IMPLEMENT_ME();
 }
 #endif // defined(XML_ARCHIVE)
+
+
+CL_LISPIFY_NAME("core:make-structure-class");
+CL_DEFUN StructureClass_sp StructureClass_O::make(Symbol_sp name, T_sp included_structure_class)
+{
+  GC_ALLOCATE(StructureClass_O, sc);
+  sc->setName(name);
+  List_sp direct_superclasses = _Nil<T_O>();
+  if ( included_structure_class.notnilp() ) {
+    direct_superclasses = Cons_O::create(included_structure_class,_Nil<T_O>());
+  }
+  sc->setInstanceBaseClasses(direct_superclasses);
+  return sc;
+}
 
 #if 0 // All functions
     void	StructureClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)

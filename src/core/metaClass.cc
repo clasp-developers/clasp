@@ -422,20 +422,17 @@ void Class_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl
 }
 
 void Class_O::addInstanceBaseClass(Symbol_sp className) {
-  _OF();
   this->addInstanceBaseClassDoNotCalculateClassPrecedenceList(className);
   this->lowLevel_calculateClassPrecedenceList();
 }
 
 void Class_O::setInstanceBaseClasses(List_sp classes) {
-  _OF();
   this->instanceSet(REF_DIRECT_SUPERCLASSES, cl__copy_list(classes));
   this->lowLevel_calculateClassPrecedenceList();
 }
 
 CL_LISPIFY_NAME("core:direct-superclasses");
 CL_DEFMETHOD List_sp Class_O::directSuperclasses() const {
-  _OF();
   return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
 }
 

@@ -690,7 +690,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/lsp/seqlib"
     #P"kernel/lsp/iolib"
 ;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
-    :tiny
+    #P"kernel/lsp/logging"
+    #P"kernel/lsp/trace"
     :pre-cmp
     ;; Compiler code
     #P"kernel/cmp/packages"
@@ -720,8 +721,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     :min
     :cmprepl
     #P"kernel/cmp/cmpwalk"
-    #P"kernel/lsp/logging"
-    #P"kernel/lsp/trace"
     :was-pre-cmp
     #P"kernel/lsp/sharpmacros"
     #P"kernel/lsp/assert"

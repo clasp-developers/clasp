@@ -192,44 +192,30 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
   if (UNLIKELY(applicableMethods.size() == 0)) {
     SIMPLE_ERROR(BF("There are no applicable methods of %s for receiver class %s") % _rep_(this->name()) % mc->instanceClassName());
   }
-#if 1
   /* Sort the methods from most applicable to least applicable */
   SingleDispatch_OrderByClassPrecedence sort_by_class_precedence;
   sort::quickSort(applicableMethods.begin(), applicableMethods.end(), sort_by_class_precedence);
-#else // look for the most applicable method
-  applicable_method = applicableMethods->elt(0).as<SingleDispatchMethod_O>();
-  for (int i(1), iEnd(applicableMethods->length()); i < iEnd; ++i) {
-    SingleDispatchMethod_sp sdm = applicableMethods->elt(i).as<SingleDispatchMethod_O>();
-    if (sdm->receiver_class()->isSubClassOf(applicable_method->receiver_class())) {
-      applicable_method = sdm;
-    }
-  }
-  printf("%s:%d:%s The most applicable method is for class %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(applicable_method).c_str());
-#endif
-
-#if 0
-	Function_sp emf = this->computeEffectiveMethodFunction(applicableMethods);
-        return emf;
-#else
-  SingleDispatchMethod_sp cur_method = applicableMethods[0];
-  ASSERTF(cur_method.notnilp(), BF("There is no method to compute_effective_method_function for"));
-  // Construct a name for the emf by stringing together the generic function name
-  // with the name of the receiver class - this is to help with debugging
-  return cur_method->code;
-#endif
+  Function_sp emf = this->computeEffectiveMethodFunction(applicableMethods);
+  return emf;
 }
 
+Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
+{
 #if 0
-    Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
-    {_OF();
-        SingleDispatchMethod_sp cur_method = applicableMethods[0];
-        ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
+  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %d methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), applicableMethods.size() );
+  if (applicableMethods.size()>0 ) {
+    for ( int i=0; i<applicableMethods.size(); ++i ) {
+      printf("        [%d]  selector: %s\n", i, _rep_(applicableMethods[i]->receiver_class()->name()).c_str());
+    }
+  }
+#endif
+  SingleDispatchMethod_sp cur_method = applicableMethods[0];
+  ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
         // Construct a name for the emf by stringing together the generic function name
         // with the name of the receiver class - this is to help with debugging
-        Function_sp code = cur_method->code;
-        return code;
-    }
-#endif
+  Function_sp code = cur_method->code;
+  return code;
+}
 
 
 

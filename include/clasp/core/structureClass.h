@@ -53,7 +53,8 @@ public:
   void initialize();
 GCPROTECTED:
   Class_sp _InstanceCoreClass;
-
+ public:
+  static StructureClass_sp make( Symbol_sp name, T_sp included_class);
 public:
   /*! Special creator used when starting up lisp environment, the object returned will be a root */
   static StructureClass_sp createUncollectable();
