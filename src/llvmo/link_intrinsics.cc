@@ -1543,7 +1543,7 @@ core::T_O *cc_stack_enclose(void* closure_address,
     ++idx;
   }
   va_end(argp);
-  printf("%s:%d  Allocating closure on stack at %p\n", __FILE__, __LINE__, functoid.raw_());
+//  printf("%s:%d  Allocating closure on stack at %p\n", __FILE__, __LINE__, functoid.raw_());
   return functoid.raw_();
 }
 

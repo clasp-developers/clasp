@@ -156,6 +156,13 @@ cclasp-boehmdc-bitcode:
 
 cclasp-boehmdc-fasl:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+
+link-all-boehmdc-fasl:
+	$(CLASP_BOEHMDC) -I -f ecl-min -e "(link-min)" -e "(quit)"
+	$(CLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	$(CLASP_BOEHMDC) -f bclasp -e "(link-cclasp)" -e "(quit)"
+	$(CLASP_BOEHMDC) -l "link_addons.lsp"
+
 bclasp-boehm:
 	make bclasp-boehm-bitcode
 	make bclasp-boehm-fasl
