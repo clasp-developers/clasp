@@ -290,14 +290,6 @@
   (create-type-name name)
   ;; We are going to modify this list!!!
   (setf slot-descriptions (copy-tree slot-descriptions))
-  #+(and clasp (not clos))
-  (unless type
-    ;; in minimal lisp I want a simple single-dispatch generic function
-    ;; to dispatch on structures - so create a structure class for
-    ;; every structure and keep track of class-precedence lists
-    (let* ((include-class (and include (find-class include)))
-           (struct-class (make-structure-class name include-class)))
-      (core::setf-find-class struct-class name)))
   #+clos
   (unless type
     (eval `(defclass ,name ,(and include (list include))

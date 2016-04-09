@@ -42,10 +42,12 @@ SMART(StructureClass);
 SMART(StringSet);
 
 SMART(StructureClass);
+
+ /*! A StructureClass maintains info about StructureObjects within the minimal Common Lisp
+A StructureClass can inherit from one other class but can have any number of mixins */
 class StructureClass_O : public Class_O {
   LISP_META_CLASS(core::StandardClass_O);
   LISP_CLASS(core, ClPkg, StructureClass_O, "structure-class",Class_O);
-
 public:
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -54,7 +56,7 @@ public:
 GCPROTECTED:
   Class_sp _InstanceCoreClass;
  public:
-  static StructureClass_sp make( Symbol_sp name, T_sp included_class);
+  static StructureClass_sp ensure_structure_class( Symbol_sp name, T_sp included_class, List_sp mixins);
 public:
   /*! Special creator used when starting up lisp environment, the object returned will be a root */
   static StructureClass_sp createUncollectable();

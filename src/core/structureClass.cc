@@ -69,18 +69,24 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 
-CL_LISPIFY_NAME("core:make-structure-class");
-CL_DEFUN StructureClass_sp StructureClass_O::make(Symbol_sp name, T_sp included_structure_class)
+CL_LISPIFY_NAME("core:ensure-structure-class");
+CL_DEFUN StructureClass_sp StructureClass_O::ensure_structure_class(Symbol_sp name, T_sp included_class, List_sp mixins)
 {
   GC_ALLOCATE(StructureClass_O, sc);
   sc->setName(name);
   List_sp direct_superclasses = _Nil<T_O>();
-  if ( included_structure_class.notnilp() ) {
-    direct_superclasses = Cons_O::create(included_structure_class,_Nil<T_O>());
+  if ( included_class.notnilp() ) {
+    direct_superclasses = Cons_O::create(included_class,_Nil<T_O>());
+  }
+  for ( auto cur : mixins ) {
+    T_sp mix = oCar(cur);
+    direct_superclasses = Cons_O::create(mix,direct_superclasses);
   }
   sc->setInstanceBaseClasses(direct_superclasses);
+  eval::funcall(core::_sym_setf_findClass,sc,name);
   return sc;
 }
+
 
 #if 0 // All functions
     void	StructureClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)

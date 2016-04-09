@@ -649,14 +649,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
-		  (load-bitcode bitcode-path))
-		(bformat t "      Skipping reload\n"))
-	    )))
-    bitcode-path
-    ))
+		  (load-bitcode bitcode-path))))))
+    bitcode-path))
 (export 'compile-kernel-file)
-
-
 
 
 (defvar *init-files*

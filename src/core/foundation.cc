@@ -629,19 +629,23 @@ Class_sp lisp_instance_class(T_sp o) {
     return core::Cons_O::static_class;
   } else if (o.generalp()) {
     General_sp go(o.unsafe_general());
-    if (go.nilp()) {
+    if ( go.nilp() ) {
       return core::Null_O::static_class;
-    } else if (Instance_sp iobj = go.asOrNull<Instance_O>()) {
+    }
+    return go->_instanceClass();
+#if 0
+    if (Instance_sp iobj = go.asOrNull<Instance_O>()) {
       return iobj->_instanceClass();
     } else if (WrappedPointer_sp exobj = go.asOrNull<WrappedPointer_O>()) {
       return exobj->_instanceClass();
     } else if (StructureObject_sp sobj = go.asOrNull<StructureObject_O>()) {
-      (void)sobj;
-      IMPLEMENT_MEF(BF("structureType returns a T_sp but I need a Class_sp - What do I return here????"));
+      return sobj->_instanceClass();
     } else if (Class_sp cobj = go.asOrNull<Class_O>()) {
       return cobj->_instanceClass();
-    }
-    return go->__class(); // lisp_static_class()
+    } else if (go.nilp()) {
+      return core::Null_O::static_class;
+    } else return go->__class(); // lisp_static_class()
+#endif
   } else if (o.valistp()) {
     // What do I return for this?
     return core::VaList_dummy_O::static_class;

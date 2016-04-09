@@ -72,6 +72,7 @@ namespace core {
     T_sp& slot_ref( Symbol_sp sym ) throw(SlotRefFailed);
 #endif
 
+    virtual Class_sp _instanceClass() const { return this->_Type;};
     T_sp structureType() const { return this->_Type->name();};
 
     void allocate_slot_storage(uint numberOfSlots, T_sp initialValue);
