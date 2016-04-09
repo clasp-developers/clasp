@@ -52,6 +52,5 @@ PROGN."
          (orig (cadr (clasp-cleavir-hir:precalc-symbol-instruction-original-object cwvb)))
          (is-precalc (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction))
          (found-cwvb (eq orig 'cleavir-primop:call-with-variable-bound)))
-        (format t "Found enclose ~a~%" enclose)
         (change-class enclose 'cc-mir:stack-enclose-instruction)))
      top-instruction)))

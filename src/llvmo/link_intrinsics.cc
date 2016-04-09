@@ -1515,6 +1515,8 @@ core::T_O *cc_stack_enclose(void* closure_address,
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
+  gctools::global_stack_closure_bytes_allocated += size;
+
 #ifdef DEBUG_GUARD
   memset(header,0x00,true_size);
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
