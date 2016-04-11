@@ -242,7 +242,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
   template <class From>
     inline smart_ptr(smart_ptr<From> const &rhs) {
     if (TaggedCast<Type *, From *>::isA(rhs.theObject)) {
-      this->theObject = TaggedCast<Type *, From *>::castOrNULL(rhs.theObject); //reinterpret_cast<From*>(rhs.raw_()));
+      this->theObject = reinterpret_cast<Type*>(rhs.raw_());//TaggedCast<Type *, From *>::castOrNULL(rhs.theObject); //reinterpret_cast<From*>(rhs.raw_()));
       return;
     }
     lisp_errorCast<Type, From>(rhs.theObject);

@@ -172,10 +172,7 @@ public: // Functions here
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
-#ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
-#endif
-  VaList_sp gfargs((gc::Tagged)lcc_arglist);
+    LCC_MAKE_VA_LIST_SP(gfargs);
   //  LCC_SKIP_ARG(gfargs);
   return (this->_entryPoint)(this->asSmartPtr(), gfargs);
 }

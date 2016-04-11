@@ -112,6 +112,9 @@ namespace gctools {
 
   void build_kind_field_layout_tables();
 
+
+#define FRIEND_GC_INTERFACE() friend gctools::Layout_code* gctools::get_kind_layout_codes()
+
 };
 
 #endif

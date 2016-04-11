@@ -104,7 +104,9 @@ extern gctools::smart_ptr<core::Symbol_O> global_symbols[];
 
 extern void client_validate_internal(void* tagged_client);
 extern void client_validate_recursive(void* tagged_client, std::set<void*>& seen );
+
 };
+
 
 void initialize_clasp();
 

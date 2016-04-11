@@ -55,7 +55,11 @@ SingleDispatchMethod_sp SingleDispatchMethod_O::create(Symbol_sp name,
   method->_name = name;
   method->_receiver_class = receiverClass;
   ASSERTF(body.notnilp(), BF("The body of a method should never be nil"));
-  method->code = body;
+  if ( BuiltinClosure_sp bif = body.asOrNull<BuiltinClosure_O>() ) {
+    method->_body = gctools::GC<CxxMethodFunction_O>::allocate(name,body);
+  } else {
+    method->_body = gctools::GC<SingleDispatchMethodFunction_O>::allocate(name,body);
+  }
   method->_argument_handler = llh;
   method->_declares = declares;
   method->_docstring = docstr;
@@ -77,7 +81,7 @@ string SingleDispatchMethod_O::__repr__() const {
   ss << "#<" << this->_instanceClass()->classNameAsString()
      << " :name " << _rep_(this->_name)
      << " :receiver-class " << _rep_(this->_receiver_class)
-     << " :code " << _rep_(this->code)
+     << " :code " << _rep_(this->_body)
      //	   << " :method_builtin " << _rep_(this->_method_builtin)
      << " >";
   return ss.str();

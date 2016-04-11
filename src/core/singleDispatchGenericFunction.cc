@@ -72,6 +72,7 @@ CL_DEFUN T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, La
   return gfn;
 };
 
+
 CL_LAMBDA("gfname receiver-class &key lambda-list-handler declares (docstring \"\") body ");
 CL_DECLARE();
 CL_DOCSTRING("ensureSingleDispatchMethod creates a method and adds it to the single-dispatch-generic-function");
@@ -103,6 +104,15 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
   }
 };
 
+
+
+
+
+
+LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
+  LCC_MAKE_VA_LIST_SP(sdargs);
+  return (*this->_onlyCxxMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(sdargs.raw_(),_Nil<T_O>().raw_()));
+};
 // ----------------------------------------------------------------------
 //
 
@@ -195,26 +205,33 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
   /* Sort the methods from most applicable to least applicable */
   SingleDispatch_OrderByClassPrecedence sort_by_class_precedence;
   sort::quickSort(applicableMethods.begin(), applicableMethods.end(), sort_by_class_precedence);
-  Function_sp emf = this->computeEffectiveMethodFunction(applicableMethods);
+  List_sp applicableMethodsList = _Nil<T_O>();
+  for ( int i=applicableMethods.size()-1; i>=0; --i ) {
+    applicableMethodsList = Cons_O::create(applicableMethods[i],applicableMethodsList);
+  }
+  Function_sp emf = this->computeEffectiveMethodFunction(applicableMethodsList);
   return emf;
 }
 
-Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const& applicableMethods)
+Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFunction(List_sp applicableMethodsList)
 {
-#if 0
-  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %d methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), applicableMethods.size() );
-  if (applicableMethods.size()>0 ) {
-    for ( int i=0; i<applicableMethods.size(); ++i ) {
-      printf("        [%d]  selector: %s\n", i, _rep_(applicableMethods[i]->receiver_class()->name()).c_str());
+  if ( core::cl__length(applicableMethodsList) == 1 ) {
+    SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
+    SingleDispatchMethodFunction_sp mf = cur_method->_body;
+    if ( CxxMethodFunction_sp cmf = mf.as<CxxMethodFunction_O>() ) {
+      Function_sp emf = gctools::GC<SingleDispatchCxxEffectiveMethodFunction_O>::allocate(this->name(),mf);
+      return emf;
     }
   }
+#if 1
+  printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %d methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), core::cl__length(applicableMethodsList) );
+  int i = 0;
+  for ( auto cur : applicableMethodsList ) {
+    SingleDispatchMethod_sp method = gctools::As<SingleDispatchMethod_sp>(oCar(cur));
+    printf("      selector[%d]: %s\n", i++, _rep_(method->receiver_class()->name()).c_str());
+  }
 #endif
-  SingleDispatchMethod_sp cur_method = applicableMethods[0];
-  ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
-        // Construct a name for the emf by stringing together the generic function name
-        // with the name of the receiver class - this is to help with debugging
-  Function_sp code = cur_method->code;
-  return code;
+  SIMPLE_ERROR(BF("Generate an effective-single-dispatch-generic-function"));
 }
 
 
@@ -284,86 +301,84 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
 
 #if 0 // old algorithm
 
-
-
-    class Lambda_emf : public Functoid
-    {
-    private:
+class Lambda_emf : public Functoid
+{
+private:
         /*! Store the name of the function that this Lambda_emf invokes - for debugging */
-        Symbol_sp		_name;
+  Symbol_sp		_name;
         /*! Store the method_function that this emf invokes.
           This function takes two arguments: (args next-emfun) */
-        Function_sp		_method_function;
+  Function_sp		_method_function;
         /*! Store the next-emfun that will be passed to the _method_function */
-        T_sp		_next_emfun;
-    public:
-        string describe() const { return "Lambda_emf";};
-        bool requires_activation_frame() const { return true;};
-    public:
-        Lambda_emf(const string& name,
-                   SingleDispatchGenericFunction_sp gf,
-                   Symbol_sp emf_name,
-                   SingleDispatchMethod_sp cur_method,
-                   Cons_sp next_methods) : Functoid("Lambda_emf->"+name)
-        {
-            this->_name = emf_name;
-            this->_method_function = cur_method->_chainable_method_function;
-            ASSERTF(this->_method_function->getLambdaListHandler().notnilp()
-                    , BF("The method-function should never have a nil LambdaListHandler"));
+  T_sp		_next_emfun;
+public:
+  string describe() const { return "Lambda_emf";};
+  bool requires_activation_frame() const { return true;};
+public:
+  Lambda_emf(const string& name,
+             SingleDispatchGenericFunction_sp gf,
+             Symbol_sp emf_name,
+             SingleDispatchMethod_sp cur_method,
+             Cons_sp next_methods) : Functoid("Lambda_emf->"+name)
+  {
+    this->_name = emf_name;
+    this->_method_function = cur_method->_chainable_method_function;
+    ASSERTF(this->_method_function->getLambdaListHandler().notnilp()
+            , BF("The method-function should never have a nil LambdaListHandler"));
             // Calculate the function to call with call_next_method
             // Do this by recursively calling gf->compute_effective_method_function with next_methods
-            if ( next_methods.nilp() )
-            {
-                this->_next_emfun = _Nil<T_O>();
-            } else
-            {
-                this->_next_emfun = gf->compute_effective_method_function(next_methods);
-            }
-        }
+    if ( next_methods.nilp() )
+    {
+      this->_next_emfun = _Nil<T_O>();
+    } else
+    {
+      this->_next_emfun = gf->compute_effective_method_function(next_methods);
+    }
+  }
 
-        DISABLE_NEW();
+  DISABLE_NEW();
 
-        virtual T_mv activate(ActivationFrame_sp frame)
-        {
+  virtual T_mv activate(ActivationFrame_sp frame)
+  {
             // TODO:: Here I'm converting the ActivationFrame back into a Cons and passing it
             // as the first argument to the _method_function and the second argument is _next_emfun
             // I should pass (frame) within (method_function_args) [an ActivationFrame within an ActivationFrame ]
             // Then I don't need to convert it back into an activation frame on the receiving end
-            ValueFrame_sp method_function_args(ValueFrame_O::create_fill(frame,this->_next_emfun,_Nil<ActivationFrame_O>()));
-            return this->_method_function->INVOKE(method_function_args);
+    ValueFrame_sp method_function_args(ValueFrame_O::create_fill(frame,this->_next_emfun,_Nil<ActivationFrame_O>()));
+    return this->_method_function->INVOKE(method_function_args);
 	    
-        }
-    };
+  }
+};
 
 
-        Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(List_sp applicable_methods)
-        {_OF();
-            if ( applicable_methods.nilp() )
-            {
-                SIMPLE_ERROR(BF("You cannot compute_effective_method_function for gf[%s] because there are no methods!") % _rep_(this->getFunctionName()) );
-            }
-            SingleDispatchMethod_sp cur_method = oCar(applicable_methods).as<SingleDispatchMethod_O>();
-            ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
+Function_sp SingleDispatchGenericFunction_O::compute_effective_method_function(List_sp applicable_methods)
+{_OF();
+  if ( applicable_methods.nilp() )
+  {
+    SIMPLE_ERROR(BF("You cannot compute_effective_method_function for gf[%s] because there are no methods!") % _rep_(this->getFunctionName()) );
+  }
+  SingleDispatchMethod_sp cur_method = oCar(applicable_methods).as<SingleDispatchMethod_O>();
+  ASSERTF(cur_method.notnilp(),BF("There is no method to compute_effective_method_function for"));
             // Construct a name for the emf by stringing together the generic function name
             // with the name of the receiver class - this is to help with debugging
-            stringstream emf_name_ss;
-            string gfname = _rep_(this->getFunctionName());
-            Class_sp receiverClass = cur_method->receiver_class();
-            LambdaListHandler_sp method_llh = cur_method->method_lambda_list_handler();
-            Symbol_sp receiverClassNameSymbol = receiverClass->className();
-            string receiverClassName = receiverClassNameSymbol->symbolNameAsString();
-            emf_name_ss << gfname << "->" << receiverClassName;
-            Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_!functionBlockName(this->getFunctionName())->getPackage());
-            Lambda_emf* l_emf = _NEW_(Lambda_emf(emf_name_ss.str(),this->sharedThis<SingleDispatchGenericFunction_O>(),
-                                                 emf_name, cur_method,cCdr(applicable_methods)));
-            CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf,_Nil<T_O>(),_lisp);
-            Function_sp emf = BuiltIn_O::create(emf_name,
-                                                _Nil<LambdaListHandler_O>(),
-                                                cb_l_emf,
-                                                _Nil<ActivationFrame_O>(),
-                                                kw::_sym_function );
-            return emf;
-        }
+  stringstream emf_name_ss;
+  string gfname = _rep_(this->getFunctionName());
+  Class_sp receiverClass = cur_method->receiver_class();
+  LambdaListHandler_sp method_llh = cur_method->method_lambda_list_handler();
+  Symbol_sp receiverClassNameSymbol = receiverClass->className();
+  string receiverClassName = receiverClassNameSymbol->symbolNameAsString();
+  emf_name_ss << gfname << "->" << receiverClassName;
+  Symbol_sp emf_name = _lisp->intern(emf_name_ss.str(),af_!functionBlockName(this->getFunctionName())->getPackage());
+  Lambda_emf* l_emf = _NEW_(Lambda_emf(emf_name_ss.str(),this->sharedThis<SingleDispatchGenericFunction_O>(),
+                                       emf_name, cur_method,cCdr(applicable_methods)));
+  CompiledBody_sp cb_l_emf = CompiledBody_O::create(l_emf,_Nil<T_O>(),_lisp);
+  Function_sp emf = BuiltIn_O::create(emf_name,
+                                      _Nil<LambdaListHandler_O>(),
+                                      cb_l_emf,
+                                      _Nil<ActivationFrame_O>(),
+                                      kw::_sym_function );
+  return emf;
+}
 #endif
 
 }; /* core */
