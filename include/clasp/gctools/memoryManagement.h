@@ -76,7 +76,6 @@ namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT>
 struct GCKind;
- extern size_t global_stack_closure_bytes_allocated;
 extern size_t global_alignup_sizeof_header;
 extern void *_global_stack_marker;
 extern size_t _global_stack_max_size;
