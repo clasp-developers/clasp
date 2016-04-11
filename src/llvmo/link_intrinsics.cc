@@ -712,7 +712,7 @@ inline core::T_sp prependMultipleValues(core::T_mv *multipleValuesP) {
   if (mv.number_of_values() > 0) {
     result = core::Cons_O::create(mv, result);
     for (int i = 1; i < mv.number_of_values(); i++) {
-      result = core::Cons_O::create(mv.valueGet(i), result);
+      result = core::Cons_O::create(mv.valueGet_(i), result);
     }
   }
   return result;
@@ -1141,7 +1141,7 @@ void assignSourceFileInfoHandle(const char *moduleName, const char *sourceDebugP
   core::Str_sp mname = core::Str_O::create(moduleName);
   core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
   SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet(1)));
+  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
 #if 0
 	if ( sfindex == 0 ) {
 	    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
@@ -1328,8 +1328,10 @@ extern void saveValues(core::T_sp *resultP, core::T_mv *mvP) {
   if (numValues > 0) {
     vo->setf_elt(0, (*mvP));
   }
+  core::MultipleValues& mv = core::lisp_multipleValues();
   for (int i(1); i < (*mvP).number_of_values(); ++i) {
-    vo->setf_elt(i, (*mvP).valueGet(i));
+    core::T_sp val((gctools::Tagged)mv._Values[i]);
+    vo->setf_elt(i, val );
   }
   (*resultP) = vo;
   ASSERTNOTNULL(*resultP);
@@ -1353,8 +1355,9 @@ extern void loadValues(core::T_mv *resultP, core::T_sp *vectorObjectsP) {
     return;
   }
   (*resultP) = gctools::multiple_values<core::T_O>(vo->elt(0), vo->length());
+  core::MultipleValues& mv = core::lisp_multipleValues();
   for (int i(1); i < vo->length(); ++i) {
-    (*resultP).valueSet(i, vo->elt(i));
+    mv._Values[i] = vo->elt(i).raw_();
   }
 }
 
@@ -1506,46 +1509,6 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
   return functoid.raw_();
 }
 
-core::T_O *cc_stack_enclose(void* closure_address,
-                            core::T_O *lambdaName, fnLispCallingConvention llvm_func,
-                            int *sourceFileInfoHandleP,
-                            size_t filePos, size_t lineno, size_t column,
-                            std::size_t numCells, ...) {
-  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
-  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
-  size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
-  gctools::global_stack_closure_bytes_allocated += size;
-
-#ifdef DEBUG_GUARD
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
-#else
-  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
-#endif
-  auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
-  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,
-                                                                          tlambdaName,
-                                                                          kw::_sym_function,
-                                                                          llvm_func,
-                                                                          _Nil<T_O>(),
-                                                                          _Nil<T_O>(),
-                                                                          _Nil<T_O>(),
-                                                                          *sourceFileInfoHandleP, filePos, lineno, column);
-                                                                          
-  gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
-  core::T_O *p;
-  va_list argp;
-  va_start(argp, numCells);
-  int idx = 0;
-  for (; numCells; --numCells) {
-    p = va_arg(argp, core::T_O *);
-    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
-    ++idx;
-  }
-  va_end(argp);
-//  printf("%s:%d  Allocating closure on stack at %p\n", __FILE__, __LINE__, functoid.raw_());
-  return functoid.raw_();
-}
 
 /*! Take the multiple-value inputs from the thread local MultipleValues and call tfunc with them.
      This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but

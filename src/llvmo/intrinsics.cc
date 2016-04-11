@@ -351,6 +351,53 @@ ALWAYS_INLINE void setParentOfActivationFrame(core::T_sp *resultP, core::T_sp *p
   return;
 }
 
+
+ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
+                            core::T_O *lambdaName, fnLispCallingConvention llvm_func,
+                            int *sourceFileInfoHandleP,
+                            size_t filePos, size_t lineno, size_t column,
+                            std::size_t numCells, ...) {
+  core::T_sp tlambdaName = gctools::smart_ptr<core::T_O>((gc::Tagged)lambdaName);
+  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
+  const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
+  size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
+  
+//  gctools::global_stack_closure_bytes_allocated += size;
+
+#ifdef DEBUG_GUARD
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
+#else
+  new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
+#endif
+  auto obj = gctools::BasePtrToMostDerivedPtr<typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type>(closure_address);
+  new (obj) (typename gctools::smart_ptr<core::ClosureWithSlots_O>::Type)(numCells,
+                                                                          tlambdaName,
+                                                                          kw::_sym_function,
+                                                                          llvm_func,
+                                                                          _Nil<T_O>(),
+                                                                          _Nil<T_O>(),
+                                                                          _Nil<T_O>(),
+                                                                          *sourceFileInfoHandleP, filePos, lineno, column);
+                                                                          
+  gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
+  core::T_O *p;
+  va_list argp;
+  va_start(argp, numCells);
+  int idx = 0;
+  for (; numCells; --numCells) {
+    p = va_arg(argp, core::T_O *);
+    (*functoid)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
+    ++idx;
+  }
+  va_end(argp);
+//  printf("%s:%d  Allocating closure on stack at %p\n", __FILE__, __LINE__, functoid.raw_());
+  return functoid.raw_();
+}
+
+
+
+
+
 };
 namespace llvmo {
 void initialize_intrinsics() {
