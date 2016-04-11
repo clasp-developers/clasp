@@ -278,7 +278,7 @@ CL_DEFUN T_mv cl__gentemp(T_sp prefix, T_sp package_designator) {
     ss << static_gentemp_counter;
     ++static_gentemp_counter;
     T_mv mv = pkg->findSymbol(ss.str());
-    if (gc::As<T_sp>(mv.valueGet(1)).nilp()) {{
+    if (gc::As<T_sp>(mv.valueGet_(1)).nilp()) {{
         Str_sp sname = Str_O::create(ss.str());
         retval = pkg->intern(sname);
         goto DONE;
@@ -610,7 +610,7 @@ bool Package_O::shadow(Str_sp symbolName) {
   Symbol_sp shadowSym, status;
   Symbol_mv values = this->_findSymbol(symbolName);
   shadowSym = values;
-  status = gc::As<Symbol_sp>(values.valueGet(1));
+  status = gc::As<Symbol_sp>(values.valueGet_(1));
   if (status.nilp() || (status != kw::_sym_internal && status != kw::_sym_external)) {
     shadowSym = Symbol_O::create(symbolName->get());
     shadowSym->makunbound();
@@ -690,7 +690,7 @@ void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp s
 T_mv Package_O::intern(Str_sp name) {
   Symbol_mv values = this->_findSymbol(name);
   Symbol_sp sym = values;
-  Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
+  Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
   if (status.nilp()) {
     sym = Symbol_O::create(name);
     sym->makunbound();
@@ -718,7 +718,7 @@ bool Package_O::unintern(Symbol_sp sym) {
     {
       Symbol_mv values = this->_findSymbol(nameKey);
       sym = values;
-      status = gc::As<Symbol_sp>(values.valueGet(1));
+      status = gc::As<Symbol_sp>(values.valueGet_(1));
     }
     if (status.notnilp()) {
       if (this->_Shadowing->contains(sym)) {
@@ -747,7 +747,7 @@ bool Package_O::unintern(Symbol_sp sym) {
         MULTIPLE_VALUES_CONTEXT();
         Symbol_mv values = (*it)->_findSymbol(nameKey);
         uf = values;
-        status = gc::As<Symbol_sp>(values.valueGet(1));
+        status = gc::As<Symbol_sp>(values.valueGet_(1));
       }
       if (status.notnilp()) {
         if (status != kw::_sym_external)
@@ -765,7 +765,7 @@ bool Package_O::unintern(Symbol_sp sym) {
 bool Package_O::isExported(Symbol_sp sym) {
   Str_sp nameKey = sym->_Name;
   T_mv values = this->_ExternalSymbols->gethash(nameKey, _Nil<T_O>());
-  T_sp presentp = values.valueGet(1);
+  T_sp presentp = values.valueGet_(1);
   LOG(BF("isExported test of symbol[%s] isExported[%d]") % sym->symbolNameAsString() % presentp.isTrue());
   return (presentp.isTrue());
 }
@@ -777,7 +777,7 @@ void Package_O::import(List_sp symbols) {
     Str_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->_findSymbol(nameKey);
     Symbol_sp foundSymbol = values;
-    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
+    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
     if (status == kw::_sym_external || status == kw::_sym_internal) {
       // do nothing
     } else if (status == kw::_sym_inherited || status.nilp()) {
@@ -794,7 +794,7 @@ void Package_O::shadowingImport(List_sp symbols) {
     Str_sp nameKey = symbolToImport->_Name;
     Symbol_mv values = this->_findSymbol(nameKey);
     Symbol_sp foundSymbol = values;
-    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet(1));
+    Symbol_sp status = gc::As<Symbol_sp>(values.valueGet_(1));
     if (status == kw::_sym_internal || status == kw::_sym_external) {
       this->unintern(foundSymbol);
     }

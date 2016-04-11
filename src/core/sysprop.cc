@@ -45,7 +45,7 @@ CL_DEFUN T_sp core__put_sysprop(T_sp key, T_sp area, T_sp value) {
   bool foundHashTable = false;
   const T_mv &values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area);
   T_sp area_hash_table = values;
-  foundHashTable = gc::As<T_sp>(values.valueGet(1)).isTrue();
+  foundHashTable = gc::As<T_sp>(values.valueGet_(1)).isTrue();
   T_sp retval;
   if (foundHashTable) {
     retval = gc::As<HashTable_sp>(area_hash_table)->hash_table_setf_gethash(key, value);
@@ -64,7 +64,7 @@ CL_DEFUN T_mv core__get_sysprop(T_sp key, T_sp area) {
   if (_lisp->_Roots._SystemProperties.notnilp()) {
     T_mv values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
     T_sp hashTable = values;
-    bool foundHashTable = gc::As<T_sp>(values.valueGet(1)).isTrue();
+    bool foundHashTable = gc::As<T_sp>(values.valueGet_(1)).isTrue();
     if (foundHashTable) {
       return gc::As<HashTable_sp>(hashTable)->gethash(key, _Nil<T_O>());
     }
@@ -78,7 +78,7 @@ CL_DOCSTRING("rem_sysprop");
 CL_DEFUN T_sp core__rem_sysprop(T_sp key, T_sp area) {
   T_mv mv_values = gc::As<HashTable_sp>(_lisp->_Roots._SystemProperties)->gethash(area, _Nil<T_O>());
   HashTable_sp hashTable = gc::As<HashTable_sp>(mv_values);
-  bool foundHashTable = gc::As<T_sp>(mv_values.valueGet(1)).isTrue();
+  bool foundHashTable = gc::As<T_sp>(mv_values.valueGet_(1)).isTrue();
   if (foundHashTable) {
     bool found = hashTable->remhash(key);
     return _lisp->_boolean(found);

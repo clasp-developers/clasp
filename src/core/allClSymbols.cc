@@ -54,7 +54,7 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
   List_sp missing = _Nil<T_O>();
   for (auto it : globalAllClSymbols) {
     T_mv sym = commonLispPackage->findSymbol(it.first);
-    T_sp found = sym.valueGet(1);
+    T_sp found = sym.valueGet_(1);
     if (found.nilp()) {
       missing = Cons_O::create(Str_O::create(it.first), missing);
     }

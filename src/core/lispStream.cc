@@ -2838,7 +2838,7 @@ io_file_length(T_sp strm) {
   if (StreamByteSize(strm) != 8) {
     cl_index bs = StreamByteSize(strm);
     Real_mv output_mv = clasp_floor2(output, make_fixnum(bs / 8));
-    Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet(1));
+    Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     unlikely_if(unbox_fixnum(fn1) != 0) {
       FEerror("File length is not on byte boundary", 0);
     }
@@ -3488,7 +3488,7 @@ io_stream_length(T_sp strm) {
     //            const cl_env_ptr the_env = clasp_process_env();
     cl_index bs = StreamByteSize(strm);
     T_mv output_mv = clasp_floor2(output, make_fixnum(bs / 8));
-    Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet(1));
+    Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     Fixnum fn = unbox_fixnum(ofn1);
     unlikely_if(fn != 0) {
       FEerror("File length is not on byte boundary", 0);

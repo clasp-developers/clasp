@@ -258,6 +258,10 @@
 (defun add-call-next-method-closure (method-lambda)
   (multiple-value-bind (declarations real-body documentation)
       (si::find-declarations (cddr method-lambda))
+    ;; meister (April 11, 2016)
+    ;; ! the method-lambda needs the first two arguments to be
+    ;; combined-args next-methods  and then they need to be
+    ;; closed over
     `(lambda ,(second method-lambda)
        (let* ((.closed-combined-method-args.
 	       (if (listp .combined-method-args.)

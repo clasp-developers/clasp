@@ -137,7 +137,7 @@ public:
   static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
 
 public:
-  explicit _RootDummyClass();
+  explicit _RootDummyClass() {};
 };
 template <class T_Base>
 struct LispBases1 {

@@ -916,8 +916,8 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     List_sp llraw = lisp_parse_arguments(gc::As<Package_sp>(className->getPackage())->getName(), arguments);
     T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
-    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(1));
-    Symbol_sp sd_class_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet(2));
+    Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(1));
+    Symbol_sp sd_class_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(2));
     List_sp llproc = coerce_to_list(tllproc);
     if (sd_class_symbol.notnilp() && sd_class_symbol != classSymbol) {
       SIMPLE_ERROR(BF("Mismatch between hard coded class[%s] and"
@@ -1443,7 +1443,7 @@ SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos
   Str_sp fn = Str_O::create(fileName);
   SourceFileInfo_mv sfi_mv = core__source_file_info(fn);
   SourceFileInfo_sp sfi = sfi_mv;
-  Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet(1));
+  Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet_(1));
   int sfindex = unbox_fixnum(handle);
   return SourcePosInfo_O::create(sfindex, filePos, lineno, 0);
 }

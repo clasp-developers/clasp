@@ -56,10 +56,12 @@ namespace core {
   public:
     const char *describe() const { return "SingleDispatchEffectiveMethodFunction"; };
   public:
-    SingleDispatchMethodFunction_sp _onlyMethodFunction;
+    List_sp _Befores;
+    List_sp _Primaries;
+    List_sp _Afters;
   public:
     T_sp lambda_list() const { return _Nil<T_O>();};
-  SingleDispatchEffectiveMethodFunction_O(T_sp name, SingleDispatchMethodFunction_sp mf) : Base(name), _onlyMethodFunction(mf) {};
+  SingleDispatchEffectiveMethodFunction_O(T_sp name, List_sp befores, List_sp primaries, List_sp afters) : Base(name), _Befores(befores),_Primaries(primaries),_Afters(afters) {};
     LCC_RETURN LISP_CALLING_CONVENTION();
   };
 };

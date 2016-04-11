@@ -68,7 +68,7 @@ Real_sp times2(Real_sp x) {
 static float_approx *setup(Float_sp number, float_approx *approx) {
   Real_mv mv_f = cl__integer_decode_float(number);
   Integer_sp f = gc::As<Integer_sp>(mv_f);
-  Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet(1));
+  Fixnum_sp fne = gc::As<Fixnum_sp>(mv_f.valueGet_(1));
   Fixnum e = clasp_fixnum(fne), min_e;
   bool limit_f = 0;
   switch (clasp_t_of(number)) {
@@ -163,7 +163,7 @@ generate(StrWithFillPtr_sp digits, float_approx *approx) {
   do {
     Real_mv mv_d = clasp_truncate2(gc::As<Real_sp>(clasp_times(approx->r, PRINT_BASE)), approx->s);
     d = mv_d;
-    approx->r = gc::As<Real_sp>(mv_d.valueGet(1));
+    approx->r = gc::As<Real_sp>(mv_d.valueGet_(1));
     approx->mp = gc::As<Real_sp>(clasp_times(approx->mp, PRINT_BASE));
     approx->mm = gc::As<Real_sp>(clasp_times(approx->mm, PRINT_BASE));
     tc1 = approx->low_ok ? clasp_lowereq(approx->r, approx->mm) : clasp_lower(approx->r, approx->mm);

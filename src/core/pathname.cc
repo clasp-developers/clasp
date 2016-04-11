@@ -725,7 +725,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   } else {
     T_mv version_mv = cl__parse_integer(gc::As<Str_sp>(aux), 0, _Nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
-    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet(1));
+    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet_(1));
     if (unbox_fixnum(parsed_length) == cl__length(aux) &&
         cl__integerp(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);

@@ -1073,7 +1073,7 @@ void ExecutionEngine_O::removeNamedModule(const string &name) {
   core::Str_sp key = core::Str_O::create(name);
   core::T_mv mi = this->_DependentModules->gethash(key);
   //	core::StringMap<Module_O>::iterator mi = this->_DependentModules.find(name);
-  if (mi.valueGet(1).nilp()) // == this->_DependentModules.end() )
+  if (mi.valueGet_(1).nilp()) // == this->_DependentModules.end() )
   {
     SIMPLE_ERROR(BF("Could not find named module %s") % name);
   }
@@ -2809,7 +2809,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
   core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
   core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
+  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
   gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
   return functoid;

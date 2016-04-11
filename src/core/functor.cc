@@ -102,7 +102,7 @@ int FunctionClosure_O::column() const {
 
 T_sp FunctionClosure_O::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
   SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
-  this->_sourceFileInfoHandle = gc::As<Fixnum_sp>(sfi.valueGet(1)).unsafe_fixnum();
+  this->_sourceFileInfoHandle = gc::As<Fixnum_sp>(sfi.valueGet_(1)).unsafe_fixnum();
   this->_filePos = filePos;
   this->_lineno = lineno;
   this->_column = column;

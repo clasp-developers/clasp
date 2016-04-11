@@ -1083,7 +1083,7 @@ bool FunctionValueEnvironment_O::_findFunction(T_sp functionName, int &depth, in
   //    LOG(BF("The frame stack is %d deep") % this->depth() );
   T_mv mv = this->_FunctionIndices->gethash(functionName, _Nil<T_O>());
   T_sp val = mv;
-  bool foundp = mv.valueGet(1).isTrue();
+  bool foundp = mv.valueGet_(1).isTrue();
   if (!foundp)
     return this->Base::_findFunction(functionName, depth, index, value);
   index = unbox_fixnum(gc::As<Fixnum_sp>(val));

@@ -59,8 +59,6 @@ This chapter describes the classes and methods available within Cando-Script.
 __END_DOC
 */
 
-_RootDummyClass::_RootDummyClass() : GCObject(){};
-
 
 namespace core {
 

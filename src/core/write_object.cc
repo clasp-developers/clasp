@@ -115,7 +115,7 @@ T_sp write_object(T_sp x, T_sp stream) {
     T_sp objx = x;
     T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, objx);
     T_sp f0 = mv_f;
-    T_sp f1 = mv_f.valueGet(1);
+    T_sp f1 = mv_f.valueGet_(1);
     if (f1.notnilp()) {
       eval::funcall(f0, stream, objx);
       return objx;

@@ -126,7 +126,7 @@ T_mv generic_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   T_sp memoize;
   T_mv methods = eval::funcall(clos::_sym_compute_applicable_methods_using_classes,
                                gf, listOfClasses(vargs));
-  memoize = methods.valueGet(1); // unlikely_if (Null(memoize = env->values[1])) {
+  memoize = methods.valueGet_(1); // unlikely_if (Null(memoize = env->values[1])) {
   if (memoize.nilp()) {
     List_sp arglist = listOfObjects(vargs);
     //    T_sp arglist = lisp_va_list_toCons(vargs); // used to be frame_to_list
@@ -277,7 +277,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
     T_sp keys = VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = gc::As<Function_sp>(mv);
-    if (mv.valueGet(1).notnilp()) {
+    if (mv.valueGet_(1).notnilp()) {
       if (e->_key.notnilp()) {
         try {
           cache->search_cache(e); // e = ecl_search_cache(cache);

@@ -986,6 +986,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   STACK_FRAME(buff, accArgs, MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
+  MultipleValues& mv = lisp_multipleValues();
   for (auto cur : functions) {
     Function_sp func = gc::As<Function_sp>(oCar(cur));
     T_mv result = eval::funcall(func);
@@ -994,7 +995,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
     ++idx;
     for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
       ASSERT(idx < MultipleValues::MultipleValuesLimit);
-      accArgs[idx] = result.valueGet(i).raw_();
+      accArgs[idx] = mv._Values[i];
       ++idx;
     }
   }
@@ -1011,21 +1012,11 @@ CL_DECLARE();
 CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
 CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp func2) {
   MultipleValues mvFunc1;
-  T_mv result;
   ASSERT((func1) && func1.notnilp());
-  result = eval::funcall(func1);
-  mvFunc1._Size = result.number_of_values();
-  mvFunc1[0] = result.raw_();
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) {
-    mvFunc1[i] = mvThreadLocal[i];
-  }
-  T_mv resultTemp;
+  T_mv result = eval::funcall(func1);
+  multipleValuesSaveToMultipleValues(result,&mvFunc1);
   eval::funcall(func2);
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) {
-    mvThreadLocal[i] = mvFunc1[i];
-  }
-  return result;
+  return multipleValuesLoadFromMultipleValues(&mvFunc1);
 }
 
 CL_LAMBDA(tag func);

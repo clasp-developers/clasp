@@ -970,7 +970,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     }
     T_mv component_path_mv = file_truename(component_path, component, flags);
     component_path = component_path_mv;
-    kind = component_path_mv.valueGet(1);
+    kind = component_path_mv.valueGet_(1);
     out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
 #ifdef HAVE_DIRENT_H

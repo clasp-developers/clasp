@@ -1330,7 +1330,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           vresults[0] = result;
           if (result.number_of_values() > 1) {
             for (int i(1); i < result.number_of_values(); ++i) {
-              vresults[i] = result.valueGet(i);
+              vresults[i] = result.valueGet_(i);
             }
           }
         }
@@ -1576,7 +1576,7 @@ CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   HashTable_sp classNames = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
   T_mv mc = classNames->gethash(symbol, _Nil<T_O>());
   T_sp cla = mc;
-  bool foundp = mc.valueGet(1).notnilp();
+  bool foundp = mc.valueGet_(1).notnilp();
   if (!foundp) {
     if (errorp) {
       SIMPLE_ERROR(BF("Could not find class %s") % _rep_(symbol));
@@ -1765,7 +1765,7 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
   do {
     T_mv mv = cl__macroexpand_1(cur, env);
     cur = mv;
-    sawAMacro = gc::As<T_sp>(mv.valueGet(1)).isTrue();
+    sawAMacro = gc::As<T_sp>(mv.valueGet_(1)).isTrue();
     expandedMacro |= sawAMacro;
     macroExpansionCount++;
     if (macroExpansionCount > 100) {

@@ -116,9 +116,30 @@ LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION()
 
 
 LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
-  LCC_MAKE_VA_LIST_SP(sdargs);
-  return (*this->_onlyMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(sdargs.raw_(),_Nil<T_O>().raw_()));
-};
+  VaList_sp orig_args((gctools::Tagged)lcc_arglist);
+  VaList_S &orig_args_s = *orig_args;
+  for ( auto cur : this->_Befores ) {
+    VaList_S before_args_s(orig_args_s);
+    VaList_sp before_args(&before_args_s);
+    Function_sp before((gctools::Tagged)oCar(cur).raw_());
+    (*before)(LCC_PASS_ARGS2_ELLIPSIS(before_args.raw_(),_Nil<T_O>().raw_()));
+  }
+  MultipleValues save;
+  Function_sp primary0((gctools::Tagged)oCar(this->_Primaries).raw_());
+  VaList_S primary_args_s(orig_args_s);
+  VaList_sp primary_args(&primary_args_s);
+  T_mv val0 = (*primary0)(LCC_PASS_ARGS2_ELLIPSIS(primary_args.raw_(),oCdr(this->_Primaries).raw_()));
+  multipleValuesSaveToMultipleValues(val0, &save);
+  for ( auto cur : this->_Afters ) {
+    VaList_S after_args_s(orig_args_s);
+    VaList_sp after_args(&after_args_s);
+    Function_sp after((gctools::Tagged)oCar(cur).raw_());
+    (*after)(LCC_PASS_ARGS2_ELLIPSIS(after_args.raw_(),_Nil<T_O>().raw_()));
+  }
+  return multipleValuesLoadFromMultipleValues(&save);
+}
+
+
 // ----------------------------------------------------------------------
 //
 
@@ -231,7 +252,10 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
   }
   // For now I'm going to just return the first method
   SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
-  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->name(),cur_method->_body);;
+  List_sp befores = _Nil<T_O>();  
+  List_sp primaries = Cons_O::create(cur_method->_body,_Nil<T_O>());
+  List_sp afters = _Nil<T_O>();
+  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->name(),befores,primaries,afters);
   return emf;
 #if 1
   printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %d methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), core::cl__length(applicableMethodsList) );

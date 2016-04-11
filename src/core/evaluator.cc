@@ -338,7 +338,7 @@ CL_DEFUN T_sp core__lookup_symbol_macro(Symbol_sp sym, T_sp env) {
   SYMBOL_SC_(CorePkg, symbolMacro);
   T_sp fn = _Nil<T_O>();
   T_mv result = core__get_sysprop(sym, core::_sym_symbolMacro);
-  if (gc::As<T_sp>(result.valueGet(1)).notnilp()) {
+  if (gc::As<T_sp>(result.valueGet_(1)).notnilp()) {
     fn = gc::As<Function_sp>(result);
   }
   return fn;
@@ -955,7 +955,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   List_sp assignments = oCar(args);
   T_mv pairOfLists = core__separate_pair_list(assignments);
   List_sp variables = coerce_to_list(pairOfLists);
-  List_sp expressions = pairOfLists.valueGet(1);
+  List_sp expressions = pairOfLists.valueGet_(1);
   List_sp body = oCdr(args);
   //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
   //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
@@ -967,7 +967,7 @@ T_mv sp_let(List_sp args, T_sp parentEnvironment) {
   LOG(BF("Assignment part=%s") % assignments->__repr__());
   T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
   List_sp classified = coerce_to_list(classifiedAndCount);
-  int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet(1)));
+  int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
   ValueEnvironment_sp newEnvironment =
       ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
@@ -1029,7 +1029,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   List_sp assignments = oCar(args);
   T_mv pairOfLists = core__separate_pair_list(assignments);
   List_sp variables = coerce_to_list(pairOfLists);
-  List_sp expressions = pairOfLists.valueGet(1);
+  List_sp expressions = pairOfLists.valueGet_(1);
   List_sp body = oCdr(args);
   //    LOG(BF("Extended the environment - result -->\n%s") % newEnvironment->__repr__() );
   //    LOG(BF("Evaluating code in this new lexical environment: %s") % body->__repr__() );
@@ -1041,7 +1041,7 @@ T_mv sp_letSTAR(List_sp args, T_sp parentEnvironment) {
   LOG(BF("Assignment part=%s") % assignments->__repr__());
   T_mv classifiedAndCount = core__classify_let_variables_and_declares(variables, declaredSpecials);
   List_sp classified = coerce_to_list(classifiedAndCount);
-  int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet(1)));
+  int numberOfLexicalVariables = unbox_fixnum(gc::As<Fixnum_sp>(classifiedAndCount.valueGet_(1)));
   ValueEnvironment_sp newEnvironment =
       ValueEnvironment_O::createForNumberOfEntries(numberOfLexicalVariables, parentEnvironment);
   ValueEnvironmentDynamicScopeManager scope(newEnvironment);
@@ -1242,11 +1242,19 @@ T_mv sp_throw(List_sp args, T_sp environment) {
 }
 
 T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
+#if 1
+  MultipleValues save;
+  T_mv val0 = eval::evaluate(oCar(args), environment);
+  multipleValuesSaveToMultipleValues(val0, &save);
+  eval::evaluateListReturnLast(oCdr(args), environment);
+  return multipleValuesLoadFromMultipleValues(&save);
+#else
   VectorObjects_sp save(VectorObjects_O::create());
   T_mv val0 = eval::evaluate(oCar(args), environment);
   multipleValuesSaveToVector(val0, save);
   eval::evaluateListReturnLast(oCdr(args), environment);
   return multipleValuesLoadFromVector(save);
+#endif
 }
 
 T_mv sp_multipleValueCall(List_sp args, T_sp env) {
@@ -1254,13 +1262,14 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
   List_sp resultList = _Nil<T_O>();
   Cons_sp *cur = reinterpret_cast<Cons_sp *>(&resultList);
+  core::MultipleValues& mv = core::lisp_multipleValues();
   for (auto forms : (List_sp)oCdr(args)) {
     T_sp oneForm = oCar(forms);
     T_mv retval = eval::evaluate(oneForm, env);
     *cur = Cons_O::create(retval, _Nil<T_O>());
     cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
     for (int i(1); i < retval.number_of_values(); i++) {
-      *cur = Cons_O::create(retval.valueGet(i), _Nil<T_O>());
+      *cur = Cons_O::create(T_sp((gctools::Tagged)mv._Values[i]), _Nil<T_O>());
       cur = reinterpret_cast<Cons_sp *>(&(*cur)->_Cdr);
     }
   }
