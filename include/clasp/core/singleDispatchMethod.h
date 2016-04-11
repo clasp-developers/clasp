@@ -41,6 +41,7 @@ namespace core {
   public:
     Function_sp _body;
   public:
+    core::T_sp lambda_list() const { return _Nil<T_O>(); };
   SingleDispatchMethodFunction_O(T_sp name, Function_sp body) : Base(name), _body(body) {};
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
       ASSERT_FIRST_ARG_IS_VALIST();

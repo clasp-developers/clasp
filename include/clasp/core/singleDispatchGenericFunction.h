@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
-#include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
+//#include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
 
 
 
@@ -47,6 +47,19 @@ namespace core {
   public:
     T_sp lambda_list() const { return _Nil<T_O>();};
   SingleDispatchCxxEffectiveMethodFunction_O(T_sp name, CxxMethodFunction_sp mf) : Base(name), _onlyCxxMethodFunction(mf) {};
+    LCC_RETURN LISP_CALLING_CONVENTION();
+  };
+
+  FORWARD(SingleDispatchEffectiveMethodFunction);  
+  class SingleDispatchEffectiveMethodFunction_O : public FunctionClosure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchEffectiveMethodFunction_O,"SingleDispatchEffectiveMethodFunction",FunctionClosure_O);
+  public:
+    const char *describe() const { return "SingleDispatchEffectiveMethodFunction"; };
+  public:
+    SingleDispatchMethodFunction_sp _onlyMethodFunction;
+  public:
+    T_sp lambda_list() const { return _Nil<T_O>();};
+  SingleDispatchEffectiveMethodFunction_O(T_sp name, SingleDispatchMethodFunction_sp mf) : Base(name), _onlyMethodFunction(mf) {};
     LCC_RETURN LISP_CALLING_CONVENTION();
   };
 };

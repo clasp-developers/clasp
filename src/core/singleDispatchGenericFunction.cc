@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>
-#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
+//#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/core/wrappers.h>
@@ -112,6 +112,12 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
   LCC_MAKE_VA_LIST_SP(sdargs);
   return (*this->_onlyCxxMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(sdargs.raw_(),_Nil<T_O>().raw_()));
+};
+
+
+LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
+  LCC_MAKE_VA_LIST_SP(sdargs);
+  return (*this->_onlyMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(sdargs.raw_(),_Nil<T_O>().raw_()));
 };
 // ----------------------------------------------------------------------
 //
@@ -223,6 +229,10 @@ Function_sp SingleDispatchGenericFunctionClosure_O::computeEffectiveMethodFuncti
       return emf;
     }
   }
+  // For now I'm going to just return the first method
+  SingleDispatchMethod_sp cur_method = gc::As<SingleDispatchMethod_sp>(oCar(applicableMethodsList));
+  Function_sp emf = gctools::GC<SingleDispatchEffectiveMethodFunction_O>::allocate(this->name(),cur_method->_body);;
+  return emf;
 #if 1
   printf("%s:%d   in computeEffectiveMethodFunction name: %s  contains %d methods\n", __FILE__, __LINE__, _rep_(this->name()).c_str(), core::cl__length(applicableMethodsList) );
   int i = 0;

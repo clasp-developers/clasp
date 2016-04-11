@@ -177,8 +177,6 @@ THE SOFTWARE.
 #include <clasp/core/readtable.h>
 #include <clasp/core/sequence.h>
 //#include "core/singleDispatch.fwd.h"
-#include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
-#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
