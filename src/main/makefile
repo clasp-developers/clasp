@@ -152,10 +152,10 @@ bclasp-boehmdc:
 	make bclasp-boehmdc-fasl
 
 cclasp-boehmdc-bitcode:
-	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
+	$(BCLASP_BOEHMDC) -e "(compile-cclasp)" -e "(quit)"
 
 cclasp-boehmdc-fasl:
-	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+	$(BCLASP_BOEHMDC) -e "(link-cclasp :force t)" -e "(quit)"
 
 link-all-boehmdc-fasl:
 	$(CLASP_BOEHMDC) -I -f ecl-min -e "(link-min)" -e "(quit)"
