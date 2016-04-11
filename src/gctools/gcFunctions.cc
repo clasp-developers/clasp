@@ -92,10 +92,10 @@ CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
 }
 
 CL_DOCSTRING("Return bytes allocated (values clasp-calculated-bytes)");
-CL_DEFUN core::T_mv gctools__bytes_allocated() {
+CL_DEFUN core::T_sp gctools__bytes_allocated() {
   size_t my_bytes = globalBytesAllocated;
   ASSERT(my_bytes < gc::most_positive_fixnum);
-  return Values(core::clasp_make_fixnum(my_bytes));
+  return core::clasp_make_fixnum(my_bytes);
 }
 
 
