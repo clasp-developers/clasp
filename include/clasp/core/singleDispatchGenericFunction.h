@@ -33,6 +33,25 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchMethod.fwd.h>
 #include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
 
+
+
+namespace core {
+
+  FORWARD(SingleDispatchCxxEffectiveMethodFunction);  
+  class SingleDispatchCxxEffectiveMethodFunction_O : public FunctionClosure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchCxxEffectiveMethodFunction_O,"SingleDispatchCxxEffectiveMethodFunction",FunctionClosure_O);
+  public:
+    const char *describe() const { return "SingleDispatchCxxEffectiveMethodFunction"; };
+  public:
+    CxxMethodFunction_sp _onlyCxxMethodFunction;
+  public:
+    T_sp lambda_list() const { return _Nil<T_O>();};
+  SingleDispatchCxxEffectiveMethodFunction_O(T_sp name, CxxMethodFunction_sp mf) : Base(name), _onlyCxxMethodFunction(mf) {};
+    LCC_RETURN LISP_CALLING_CONVENTION();
+  };
+};
+
+
 template <>
 struct gctools::GCInfo<core::SingleDispatchGenericFunctionClosure_O> {
   static bool constexpr NeedsInitialization = false;
@@ -82,7 +101,7 @@ public:
     virtual T_sp docstring() const {NOT_APPLICABLE();};
 
     Function_sp slowMethodLookup(Class_sp mc);
-    Function_sp computeEffectiveMethodFunction(gctools::Vec0<SingleDispatchMethod_sp> const &applicableMethods);
+    Function_sp computeEffectiveMethodFunction(List_sp applicableMethodList);
   };
 
 };

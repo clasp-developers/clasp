@@ -173,6 +173,9 @@ bclasp-boehm-fasl:
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
+bclasp-mps-addons:
+	$(BCLASP_MPS) -l "build_addons.lsp"
+
 bclasp-boehm-addons-fasl:
 	$(BCLASP_BOEHM) -l "link-addons.lsp"
 

@@ -122,6 +122,9 @@ inline T_mv apply_consume_VaList(Function_sp func, VaList_sp args) {
                                              arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
   return res;
 }
+
+
+ 
 inline LCC_RETURN funcall(T_sp fn) {
   /* If the following assertion fails then the funcall functions in this header
      need to be made consistent with lispCallingConvention.h */

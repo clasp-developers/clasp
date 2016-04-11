@@ -540,6 +540,7 @@ namespace core {
 #include <clasp/core/scrape.h>
 #include <clasp/gctools/memoryManagement.h>
 
+
 namespace core {
 typedef gctools::smart_ptr<T_O> T_sp;
 typedef T_sp SEQUENCE_sp;

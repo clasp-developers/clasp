@@ -1518,9 +1518,7 @@ core::T_O *cc_stack_enclose(void* closure_address,
   gctools::global_stack_closure_bytes_allocated += size;
 
 #ifdef DEBUG_GUARD
-  memset(header,0x00,true_size);
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind,size,0,size);
-#error "Ensure that DEBUG_GUARD works properly with cc_stack_enclose"
 #else
   new (header) gctools::GCHeader<core::ClosureWithSlots_O>::HeaderType(closure_kind);
 #endif

@@ -887,7 +887,7 @@ SYMBOL_EXPORT_SC_(KeywordPkg, lambda_list_handler);
 SYMBOL_EXPORT_SC_(KeywordPkg, docstring);
 void lisp_defineSingleDispatchMethod(Symbol_sp sym,
                                      Symbol_sp classSymbol,
-                                     BuiltinClosure_sp methoid,
+                                     BuiltinClosure_sp method_body,
                                      int TemplateDispatchOn,
                                      const string &raw_arguments,
                                      const string &declares,
@@ -945,14 +945,13 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
   Str_sp docStr = Str_O::create(docstring);
   T_sp gfn = core__ensure_single_dispatch_generic_function(sym, llhandler); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
-  LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
-  methoid->finishSetup(llhandler, kw::_sym_function);
-  Function_sp fn = methoid;
+  LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  method_body@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(method_body)));
+  method_body->finishSetup(llhandler, kw::_sym_function);
   ASSERT(llhandler || llhandler.notnilp())
 #ifdef DEBUG_PROGRESS
     printf("%s:%d lisp_defineSingleDispatchMethod sym: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
 #endif
-  core__ensure_single_dispatch_method(sym, receiver_class, llhandler, ldeclares, docStr, fn);
+  core__ensure_single_dispatch_method(sym, receiver_class, llhandler, ldeclares, docStr, method_body);
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
@@ -1474,6 +1473,10 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
   stringstream ss;
   ss << "In " << functionName << " " << fileName << " line " << lineNumber << std::endl;
   ss << fmt.str();
+  if (!_sym_signalSimpleError) {
+    printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
+    throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
+  }
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
