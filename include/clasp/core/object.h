@@ -350,7 +350,7 @@ namespace core {
   class T_O : public _RootDummyClass {
   private:
     friend class CoreExposer;
-    LISP_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
+    LISP_ABSTRACT_CLASS(core, ClPkg, T_O, "T",::_RootDummyClass);
   public:
     bool isAInstanceOf(core::Class_sp mc);
   };
