@@ -329,11 +329,13 @@ CL_DEFMETHOD T_mv Environment_O::localMetadata(Symbol_sp key) const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
+#if 0
 T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
   return eenv->_lookupValue(depth, index);
 }
+#endif
 #if 0
 ALWAYS_INLINE T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
 // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
@@ -342,22 +344,29 @@ ALWAYS_INLINE T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int dept
   return eenv->lookupValueReference(depth, index);
 }
 #endif
+#if 0
 Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_lookupFunction(depth, index);
 }
+#endif
 
+#if 0
 T_sp Environment_O::clasp_lookupTagbodyId(T_sp env, int depth, int index) {
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->_lookupTagbodyId(depth, index);
 }
+#endif
 
+#if 0
 T_sp Environment_O::_lookupValue(int depth, int index) {
   SUBIMP();
 }
+#endif
 
+#if 0
 T_sp &Environment_O::lookupValueReference(int depth, int index) {
   SUBIMP();
 }
@@ -365,6 +374,7 @@ T_sp &Environment_O::lookupValueReference(int depth, int index) {
 Function_sp Environment_O::_lookupFunction(int depth, int index) const {
   SUBIMP();
 }
+#endif
 
 string Environment_O::__repr__() const {
   stringstream ss;
@@ -879,6 +889,7 @@ T_sp ValueEnvironment_O::getActivationFrame() const {
   return this->_ActivationFrame;
 }
 
+#if 0
 T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
   ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
   if (depth == 0) {
@@ -890,6 +901,9 @@ T_sp ValueEnvironment_O::_lookupValue(int depth, int index) {
   }
   return Environment_O::clasp_lookupValue(parent, depth - 1, index);
 }
+#endif
+
+
 
 CL_LISPIFY_NAME("valueEnvironment_defineLexicalBinding");
 CL_DEFMETHOD void ValueEnvironment_O::defineLexicalBinding(Symbol_sp sym, int idx) {

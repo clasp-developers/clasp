@@ -775,7 +775,9 @@ T_mv sp_specialVar(List_sp args, T_sp env) {
 T_mv sp_lexicalVar(List_sp args, T_sp env) {
   int depth = unbox_fixnum(gc::As<Fixnum_sp>(oCadr(args)));
   int index = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(args)));
-  return Values(Environment_O::clasp_lookupValue(env, depth, index));
+  ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<ActivationFrame_O>(env);
+  T_sp val = core::value_frame_lookup_reference(af,depth,index);
+  return Values(val);
 }
 
 T_mv sp_locally(List_sp args, T_sp env) {
@@ -923,7 +925,8 @@ T_mv sp_go(List_sp args, T_sp env) {
   if (!foundTag) {
     SIMPLE_ERROR(BF("Could not find tag[%s] in the lexical environment: %s") % _rep_(tag) % _rep_(env));
   }
-  T_sp tagbodyId = Environment_O::clasp_lookupTagbodyId(Environment_O::clasp_getActivationFrame(env), depth, index);
+  ActivationFrame_sp af = Environment_O::clasp_getActivationFrame(env);
+  T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
   int frame = _lisp->exceptionStack().findKey(TagbodyFrame, tagbodyId);
   if (frame < 0) {
     SIMPLE_ERROR(BF("Could not find tagbody frame for tag %s") % _rep_(tag));

@@ -673,7 +673,9 @@ T_sp allocCons() {
 }
 
 T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
-  T_sp val = Environment_O::clasp_lookupValue(fr, depth, index);
+  ASSERT(fr.isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<ActivationFrame_O>(fr);
+  T_sp val = core::value_frame_lookup_reference(af, depth, index);
   return val;
 }
 

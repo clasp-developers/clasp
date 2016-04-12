@@ -187,8 +187,8 @@ T_O *va_coerceToClosure(core::T_sp *argP) {
 #endif
 
 ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
-  core::Function_sp func = core::Environment_O::clasp_lookupFunction(*evaluateFrameP, depth, index);
-  ASSERTF(func.objectp(), BF("UNDEFINED lexicalFunctionRead!! value depth[%d] index[%d] activationFrame: %s") % depth % index % _rep_(*evaluateFrameP));
+  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*evaluateFrameP);
+  core::Function_sp func = core::function_frame_lookup(af, depth, index);
   return func.raw_();
 }
 
@@ -518,7 +518,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   // class hierarchy.  I'm leaving this code in here in case I need
   // anything from it.
   // Once this code works - delete this #else clause
- BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
+  BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
   core::BuiltinClosure_sp tc(&tempClosure);
 #endif
   STACK_FRAME(buff, no_args, 0);
@@ -578,33 +578,8 @@ void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
   }
 };
 
-core::T_sp *symbolValueReference(core::Symbol_sp *symbolP) {
-  ASSERT(symbolP != NULL);
-  return ((*symbolP)->valueReference());
-}
-
-extern core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP) {
-  ASSERT(frameP != NULL);
-  return const_cast<core::T_sp *>(&((*frameP)->lookupValueReference(depth, index)));
-}
 };
 
-core::T_sp proto_lexicalValueRead(int depth, int index, core::ActivationFrame_sp *renvP) {
-  ActivationFrame_sp renv = *renvP;
-  core::T_sp res = core::Environment_O::clasp_lookupValue(renv, depth, index);
-  return res;
-}
-
-extern "C" {
-void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
-  (*resultP) = proto_lexicalValueRead(depth, index, renvP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
-  (*resultP) = Values(proto_lexicalValueRead(depth, index, renvP));
-  ASSERTNOTNULL(*resultP);
-}
-};
 
 extern "C" {
 
@@ -623,25 +598,6 @@ extern void attachDebuggingInfoToValueFrame(core::ActivationFrame_sp *resultP,
 
 
 
-extern void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, core::ActivationFrame_sp *parentP)
-// was ActivationFrame_sp
-{
-  ASSERT(resultP != NULL);
-  ASSERT(parentP != NULL);
-  (*resultP) = core::FunctionFrame_sp(core::FunctionFrame_O::create(numargs, (*parentP)));
-  ASSERTNOTNULL(*resultP);
-}
-
-extern core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int idx) {
-  ASSERT(frameP != NULL);
-  ASSERT(frameP->objectp());
-  core::FunctionFrame_sp frame = gc::As<core::FunctionFrame_sp>((*frameP));
-  if (idx < 0 || idx >= frame->length()) {
-    intrinsic_error(llvmo::invalidIndexForFunctionFrame, clasp_make_fixnum(idx), clasp_make_fixnum(frame->length()));
-  }
-  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
-  return pos_gc_safe;
-}
 
 /*! Look for the :allow-other-keywords XX keyword argument and
       calculate (or (*ampAllowOtherKeywordsP) XX) return 1 if result is true otherwise 0 */
@@ -758,24 +714,6 @@ extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::Symbol_sp *s
 }
 };
 
-core::T_sp proto_lexicalFunctionRead(int depth, int index, core::ActivationFrame_sp *renvP) {
-  ASSERT(renvP != NULL);
-  LOG(BF("About to lexicalFunction depth[%d] index[%d]") % depth % index);
-  LOG(BF("(*renvP) --> %s") % (*renvP)->__repr__());
-  core::Function_sp res = core::Environment_O::clasp_lookupFunction((*renvP), depth, index);
-  return res;
-}
-
-extern "C" {
-void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
-  (*resultP) = proto_lexicalFunctionRead(depth, index, renvP);
-  ASSERTNOTNULL(*resultP);
-}
-void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
-  (*resultP) = Values(proto_lexicalFunctionRead(depth, index, renvP));
-  ASSERTNOTNULL(*resultP);
-}
-};
 
 extern "C" {
 int activationFrameSize(core::ActivationFrame_sp *activationFrameP) {
@@ -1062,8 +1000,8 @@ void throw_LexicalGo(int depth, int index) {
 }
 
 void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
-  T_sp tagbodyId = core::Environment_O::clasp_lookupTagbodyId((*afP), depth, index);
-  int frame = _lisp->exceptionStack().findKey(TagbodyFrame, tagbodyId);
+  T_sp tagbody = core::tagbody_frame_lookup(*afP,depth,index);
+  int frame = _lisp->exceptionStack().findKey(TagbodyFrame, tagbody);
   if (frame < 0) {
     CONTROL_ERROR();
   }

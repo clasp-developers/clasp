@@ -34,6 +34,16 @@ THE SOFTWARE.
 
 namespace core {
 
+
+  void error_frame_range(const char* type, int index, int capacity )
+  {
+    SIMPLE_ERROR(BF("Index %d out of range for %s with capacity %d") % type % index % capacity );
+  }
+  void error_end_of_frame_list(const char* message)
+  {
+    SIMPLE_ERROR(BF("Reached end of ActivationFrame list for %s") % message);
+  }
+
 void watchTriggered(T_sp *ptr) {
   printf("%s:%d Watch-pointer@%p triggered on:", __FILE__, __LINE__, ptr);
   if ((*ptr)) {
@@ -87,6 +97,7 @@ string ActivationFrame_O::summaryOfContents() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
+#if 0
 T_sp ActivationFrame_O::_lookupTagbodyId(int depth, int index) const {
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__());
@@ -94,7 +105,9 @@ T_sp ActivationFrame_O::_lookupTagbodyId(int depth, int index) const {
   --depth;
   return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
 }
+#endif
 
+#if 0
 T_sp &ActivationFrame_O::lookupValueReference(int depth, int index) {
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__());
@@ -102,11 +115,16 @@ T_sp &ActivationFrame_O::lookupValueReference(int depth, int index) {
   --depth;
   return Environment_O::clasp_lookupValueReference(this->parentFrame(), depth, index);
 }
+#endif
 
+
+#if 0
 T_sp ActivationFrame_O::_lookupValue(int depth, int index) {
   return this->lookupValueReference(depth, index);
 }
+#endif
 
+#if 0
 Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find function - this activation frame: %s") % this->__repr__());
@@ -114,7 +132,7 @@ Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
   --depth;
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
 }
-
+#endif
 
 
 
@@ -156,6 +174,7 @@ string ValueFrame_O::asString() const {
   return this->summaryOfContents();
 }
 
+#if 0
 T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
   if (depth == 0) {
     ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
@@ -164,6 +183,7 @@ T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
   --depth;
   return Environment_O::clasp_lookupValueReference(this->parentFrame(), depth, index);
 }
+#endif
 
 void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   ASSERTF((istart + cl__length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl__length(values)));
@@ -177,10 +197,11 @@ void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   }
 }
 
+#if 0
 T_sp ValueFrame_O::_lookupValue(int depth, int index) {
   return this->lookupValueReference(depth, index);
 }
-
+#endif
 ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
   ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(), parent));
   return ((vf));
@@ -275,6 +296,7 @@ string FunctionFrame_O::asString() const {
   return ((ss.str()));
 }
 
+#if 0
 Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
   if (depth == 0) {
     if (index >= this->_Objects.capacity()) {
@@ -285,12 +307,13 @@ Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
   --depth;
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
 }
-
+#endif
 
 };
 
 namespace core {
 
+#if 0
 T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
   if (depth == 0) {
     return this->asSmartPtr();
@@ -298,6 +321,8 @@ T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
   --depth;
   return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
 }
+#endif
+
 
 string TagbodyFrame_O::summaryOfContents() const {
   stringstream ss;

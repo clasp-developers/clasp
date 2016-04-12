@@ -25,6 +25,9 @@ project internals/core : requirements
 #
 
 local sources =
+    environment.cc
+    activationFrame.cc
+    evaluator.cc
       functor.cc
       creator.cc
       sharpEqualWrapper.cc
@@ -33,7 +36,6 @@ local sources =
       weakKeyMapping.cc
       weakHashTable.cc
       weakPointer.cc
-	    evaluator.cc
 	    compiler.cc
       genericFunction.cc
 	    instance.cc
@@ -71,8 +73,6 @@ local sources =
       unixfsys.cc
       executables.cc
 	    lispList.cc
-    activationFrame.cc
-	    environment.cc
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc

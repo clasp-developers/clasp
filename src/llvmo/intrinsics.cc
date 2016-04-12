@@ -67,6 +67,58 @@ using namespace core;
 
 extern "C" {
 
+ALWAYS_INLINE core::T_sp *symbolValueReference(core::Symbol_sp *symbolP) {
+  return ((*symbolP)->valueReference());
+}
+
+ALWAYS_INLINE core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP) {
+  core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*frameP);
+  return const_cast<core::T_sp *>(&core::value_frame_lookup_reference(af, depth, index));
+}
+
+ALWAYS_INLINE void sp_lexicalValueRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
+  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
+}
+ALWAYS_INLINE void mv_lexicalValueRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
+  (*resultP) = core::value_frame_lookup_reference(*renvP,depth,index);
+}
+
+
+ALWAYS_INLINE void makeFunctionFrame(core::ActivationFrame_sp *resultP, int numargs, core::ActivationFrame_sp *parentP)
+// was ActivationFrame_sp
+{
+  ASSERT(resultP != NULL);
+  ASSERT(parentP != NULL);
+  (*resultP) = core::FunctionFrame_sp(core::FunctionFrame_O::create(numargs, (*parentP)));
+  ASSERTNOTNULL(*resultP);
+}
+
+ALWAYS_INLINE core::T_sp *functionFrameReference(core::ActivationFrame_sp *frameP, int idx) {
+  ASSERT(frameP != NULL);
+  ASSERT(frameP->objectp());
+  core::FunctionFrame_sp frame = gctools::reinterpret_cast_smart_ptr<core::FunctionFrame_O>((*frameP));
+#ifdef DEBUG_ASSERTS
+  if (idx < 0 || idx >= frame->length()) {
+    intrinsic_error(llvmo::invalidIndexForFunctionFrame, clasp_make_fixnum(idx), clasp_make_fixnum(frame->length()));
+  }
+#endif
+  core::T_sp *pos_gc_safe = const_cast<core::T_sp *>(&frame->entryReference(idx));
+  return pos_gc_safe;
+}
+
+
+
+
+
+ALWAYS_INLINE void sp_lexicalFunctionRead(core::T_sp *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
+  (*resultP) = core::function_frame_lookup(*renvP,depth,index);
+}
+
+ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int index, core::ActivationFrame_sp *renvP) {
+  (*resultP) = core::function_frame_lookup(*renvP,depth,index);
+}
+
+
 ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, int index) {
   core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
   core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);

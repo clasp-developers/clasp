@@ -69,10 +69,10 @@ public:
 virtual T_sp currentVisibleEnvironment() const;
   virtual T_sp getActivationFrame() const;
 
-  virtual T_sp _lookupValue(int depth, int index);
-  virtual T_sp &lookupValueReference(int depth, int index);
-  virtual Function_sp _lookupFunction(int depth, int index) const;
-  virtual T_sp _lookupTagbodyId(int depth, int index) const;
+//  virtual T_sp _lookupValue(int depth, int index);
+//  virtual T_sp &lookupValueReference(int depth, int index);
+//  virtual Function_sp _lookupFunction(int depth, int index) const;
+//  virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
@@ -214,8 +214,8 @@ public:
   /*! Return the number of arguments */
   size_t length() const { return this->_Objects.capacity(); };
 
-  T_sp _lookupValue(int depth, int index);
-  T_sp &lookupValueReference(int depth, int index);
+//  T_sp _lookupValue(int depth, int index);
+//  T_sp &lookupValueReference(int depth, int index);
 
   virtual bool _updateValue(Symbol_sp sym, T_sp obj);
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
@@ -330,7 +330,7 @@ public:
   /*! Method for interogating ActivationFrames as Environments */
   virtual string summaryOfContents() const;
 
-  virtual Function_sp _lookupFunction(int depth, int index) const;
+//  virtual Function_sp _lookupFunction(int depth, int index) const;
 };
 };
 
@@ -345,7 +345,7 @@ public:
   }
   virtual string summaryOfContents() const;
 
-  T_sp _lookupTagbodyId(int depth, int index) const;
+//  T_sp _lookupTagbodyId(int depth, int index) const;
 
   TagbodyFrame_O() : Base(){};
  TagbodyFrame_O(T_sp parent) : Base(parent){};
@@ -362,5 +362,64 @@ struct gctools::GCInfo<core::TagbodyFrame_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+
+namespace core {
+  void error_frame_range(const char* type, int index, int capacity );
+  void error_end_of_frame_list(const char* message);
+
+  inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
+  {
+    while (true) {
+      if ( depth == 0 ) {
+        if (activationFrame.isA<ValueFrame_O>()) {
+          ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
+#ifdef DEBUG_ASSERTS
+          if ( index < vf->_Objects.capacity() )
+            error_frame_range("ValueFrame",index,vf->_Objects.capacity());
+#endif
+          return vf->_Objects[index];
+        }
+        error_end_of_frame_list("ValueFrame");
+      }
+      --depth;
+      activationFrame = activationFrame->_Parent;
+    }
+  };
+
+  inline ALWAYS_INLINE T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  {
+    while (true) {
+      if ( depth == 0 ) {
+        if (activationFrame.isA<FunctionFrame_O>()) {
+          FunctionFrame_sp ff = gc::reinterpret_cast_smart_ptr<FunctionFrame_O,T_O>(activationFrame);
+#ifdef DEBUG_ASSERTS
+          if ( index < ff->_Objects.capacity() )
+            error_frame_range("ValueFrame",index,ff->_Objects.capacity());
+#endif
+          return ff->_Objects[index];
+        }
+        error_end_of_frame_list("FunctionFrame");
+      }
+      --depth;
+      activationFrame = activationFrame->_Parent;
+    }
+  };
+
+  inline ALWAYS_INLINE T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  {
+    while (true) {
+      if ( depth == 0 ) {
+        if (activationFrame.isA<TagbodyFrame_O>()) {
+          TagbodyFrame_sp tf = gc::reinterpret_cast_smart_ptr<TagbodyFrame_O,T_O>(activationFrame);
+          return tf;
+        }
+        error_end_of_frame_list("TagbodyFrame");
+      }
+      --depth;
+      activationFrame = activationFrame->_Parent;
+    }
+  };
+
+};
 
 #endif
