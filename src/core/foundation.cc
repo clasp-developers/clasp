@@ -85,6 +85,9 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 
+thread_local core::ThreadLocalState* thread;
+
+
 namespace reg {
 
 class_id allocate_class_id(type_id const &cls) {

@@ -113,36 +113,41 @@ public:
 
   string asString() const;
 };
-
-class DynamicBinding {
-public:
-  Symbol_sp _Var;
-  T_sp _Val;
-  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
 };
+
+#if 0 // moved to foundation.h
+namespace core {
+  class DynamicBinding {
+  public:
+    Symbol_sp _Var;
+    T_sp _Val;
+  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
+  };
 
 #pragma GCC visibility push(default)
-class DynamicBindingStack {
-public:
-  gctools::Vec0<DynamicBinding> _Bindings;
+  class DynamicBindingStack {
+  public:
+    gctools::Vec0<DynamicBinding> _Bindings;
 
-public:
-  inline int top() const { return this->_Bindings.size() - 1; }
+  public:
+    inline int top() const { return this->_Bindings.size() - 1; }
 
-  Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
+    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
 
-  Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
-  T_sp val(int i) const { return this->_Bindings[i]._Val; };
+    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
+    T_sp val(int i) const { return this->_Bindings[i]._Val; };
 
-  ATTR_WEAK void push(Symbol_sp var);
-  ATTR_WEAK void pop();
+    ATTR_WEAK void push(Symbol_sp var);
+    ATTR_WEAK void pop();
 
-  void reserve(int x) { this->_Bindings.reserve(x); };
+    void reserve(int x) { this->_Bindings.reserve(x); };
 
-  int size() const { return this->_Bindings.size(); };
-};
+    int size() const { return this->_Bindings.size(); };
+  };
 #pragma GCC visibility pop
-}
+};
+#endif
+
 
 namespace core {
 
@@ -165,11 +170,8 @@ public:
 };
 
 class ExceptionStack {
-  FRIEND_GC_SCANNER(ExceptionStack);
-
 public:
   gctools::Vec0<ExceptionEntry> _Stack;
-
 public:
   ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
   size_t size() const { return this->_Stack.size(); };
@@ -208,12 +210,12 @@ public:
     return ss.str();
   };
 
-  size_t push(FrameKind kind, T_sp key) {
+  inline size_t push(FrameKind kind, T_sp key) {
     size_t frame = this->_Stack.size();
     this->_Stack.emplace_back(kind, key);
     return frame;
   }
-  void pop() {
+  inline void pop() {
     this->_Stack.pop_back();
   };
   /*! Return the index of the stack entry with the matching key.

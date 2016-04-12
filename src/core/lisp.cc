@@ -265,7 +265,6 @@ void Lisp_O::lisp_initSymbols(Lisp_sp lisp) {
 void Lisp_O::initialize() {
 //  printf("%s:%d Initializing _lisp\n", __FILE__, __LINE__ );
   this->_Roots.charInfo.initialize();
-  this->_Roots._Bindings.reserve(1024);
 }
 
 void Lisp_O::addToStarModulesStar(Symbol_sp sym) {

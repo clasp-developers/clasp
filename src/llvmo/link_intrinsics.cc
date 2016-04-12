@@ -1408,14 +1408,14 @@ extern "C" {
 
 void pushDynamicBinding(core::Symbol_sp *symbolP) {
   core::Symbol_sp sym = *symbolP;
-  _lisp->bindings().push(sym);
+  thread->bindings().push(sym);
   //	printf("%s:%d - pushDynamicBinding symbol: %s  value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
 }
 
 void popDynamicBinding(core::Symbol_sp *symbolP) {
   core::Symbol_sp sym = *symbolP;
-  core::Symbol_sp top = _lisp->bindings().topSymbol();
-  if (sym != _lisp->bindings().topSymbol()) {
+  core::Symbol_sp top = thread->bindings().topSymbol();
+  if (sym != thread->bindings().topSymbol()) {
     stringstream ss;
     ss << __FILE__ << ":" << __LINE__;
     ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
@@ -1424,7 +1424,7 @@ void popDynamicBinding(core::Symbol_sp *symbolP) {
     core::core__dynamic_binding_stack_dump(ss);
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
-  _lisp->bindings().pop();
+  thread->bindings().pop();
   //	printf("%s:%d - popDynamicBinding symbol: %s  restored value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
 }
 };

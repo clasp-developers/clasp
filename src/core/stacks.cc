@@ -103,7 +103,7 @@ InvocationHistoryFrame::InvocationHistoryFrame(Closure_sp c, core::T_O *valist_s
     this->_Index = this->_Previous->_Index + 1;
   }
   this->_Stack->push(this);
-  this->_Bds = _lisp->bindings().size();
+  this->_Bds = thread->bindings().size();
 }
 
 InvocationHistoryFrame::~InvocationHistoryFrame() {

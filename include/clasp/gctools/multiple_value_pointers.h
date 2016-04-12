@@ -88,7 +88,7 @@ public:
     values[0] = *this;
     core::MultipleValues &mv = core::lisp_multipleValues();
     for (int i(1); i < this->_number_of_values; ++i) {
-      core::T_sp val(mv._Values[i]);
+      core::T_sp val((gctools::Tagged)mv._Values[i]);
       values[i] = val;
     }
   }

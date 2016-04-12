@@ -1830,21 +1830,21 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("bdsTop");
 CL_DEFUN int core__bds_top() {
-  return _lisp->bindings().top();
+  return thread->bindings().top();
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVar");
 CL_DEFUN Symbol_sp core__bds_var(int idx) {
-  return _lisp->bindings().var(idx);
+  return thread->bindings().var(idx);
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVal");
 CL_DEFUN T_sp core__bds_val(int idx) {
-  return _lisp->bindings().val(idx);
+  return thread->bindings().val(idx);
 };
 
 CL_LAMBDA();
@@ -1885,7 +1885,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
-  DynamicBindingStack &bd = _lisp->bindings();
+  DynamicBindingStack &bd = thread->bindings();
   for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
     out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
   };

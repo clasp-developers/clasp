@@ -230,7 +230,7 @@ class Lisp_O {
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
     T_sp _SystemProperties;
-    DynamicBindingStack _Bindings;
+//    DynamicBindingStack _Bindings;
     gctools::Vec0<SourceFileInfo_sp> _SourceFiles;
     /*! Store CATCH info */
     List_sp _CatchInfo;
@@ -451,7 +451,7 @@ public:
   };
   //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
 public:
-  ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
+  inline ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
 
 public:
   uint nextReplCounter() { return ++this->_ReplCounter; };
@@ -571,7 +571,7 @@ public:
   List_sp trace_functions() const;
 
 public:
-  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
+//  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
 
 public:
   /*! Add a pair of symbolIDs that provide an accessor get/setf pair */

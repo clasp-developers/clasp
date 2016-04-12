@@ -223,22 +223,18 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
  public:
   //Default constructor, set theObject to NULL
   inline smart_ptr() : theObject(NULL){};
-  //    	explicit smart_ptr(uintptr_t p) : theObject(p) {}; // TODO: this converts ints to smart_ptr's - its dangerous
-  //! Construct a FRAME object - I need to get rid of these
-  //smart_ptr( core::T_O** p ) : theObject(tag_frame(p)) { /*printf("%s:%d Creating Frame \n", __FILE__, __LINE__ );*/ };
-  //smart_ptr( Type* objP) : theObject(tag_object(objP)) {};
-  // explicit smart_ptr( void* objP) : theObject(reinterpret_cast<Type*>(objP)) {};
-
   /*! Create a smart pointer from an existing tagged pointer */
   explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type *>(ptr)){};
-
   explicit inline smart_ptr(Type *ptr) : theObject(ptr ? tag_general<Type *>(ptr) : NULL) {
     GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == 0);
   };
   inline smart_ptr(const return_type &rt) : theObject((Type *)rt.ret0){};
-
   inline smart_ptr(const smart_ptr<Type> &obj) : theObject(obj.theObject){};
 
+#ifndef DEBUG_ASSERT
+  template <class From>
+    inline smart_ptr(smart_ptr<From> const &rhs) : theObject(reinterpret_cast<Type*>(rhs.theObject)) {};
+#else
   template <class From>
     inline smart_ptr(smart_ptr<From> const &rhs) {
     if (TaggedCast<Type *, From *>::isA(rhs.theObject)) {
@@ -247,6 +243,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     }
     lisp_errorCast<Type, From>(rhs.theObject);
   }
+#endif
 
   uintptr_t tag() const { return reinterpret_cast<uintptr_t>(this->theObject) & tag_mask; };
 

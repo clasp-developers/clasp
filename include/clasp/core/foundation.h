@@ -1166,4 +1166,53 @@ List_sp clasp_grab_rest_args(va_list args, int nargs);
 #define clasp_va_end va_end
 };
 
+
+#if 1
+namespace core {
+  class DynamicBinding {
+  public:
+    Symbol_sp _Var;
+    T_sp _Val;
+  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
+  };
+
+#pragma GCC visibility push(default)
+  class DynamicBindingStack {
+  public:
+    gctools::Vec0<DynamicBinding> _Bindings;
+
+  public:
+    inline int top() const { return this->_Bindings.size() - 1; }
+
+    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
+
+    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
+    T_sp val(int i) const { return this->_Bindings[i]._Val; };
+
+    ATTR_WEAK void push(Symbol_sp var);
+    ATTR_WEAK void pop();
+
+    void reserve(int x) { this->_Bindings.reserve(x); };
+
+    int size() const { return this->_Bindings.size(); };
+  };
+#pragma GCC visibility pop
+};
+#endif
+
+
+namespace core {
+  struct ThreadLocalState {
+    ThreadLocalState() {
+      this->_Bindings.reserve(1024);
+    };
+    core::DynamicBindingStack _Bindings;
+
+    inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
+  };
+};
+
+extern thread_local core::ThreadLocalState* thread;
+
+
 #endif //]
