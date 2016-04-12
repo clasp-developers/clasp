@@ -1584,7 +1584,7 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
 
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
+  InvocationHistoryFrame *cur = thread->invocationHistoryStack().top();
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
   iterator->setFrame(cur);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
@@ -1851,14 +1851,14 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStack");
 CL_DEFUN Vector_sp core__exception_stack() {
-  return _lisp->exceptionStack().backtrace();
+  return thread->exceptionStack().backtrace();
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStackDump");
 CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = _lisp->exceptionStack();
+  ExceptionStack &stack = thread->exceptionStack();
   printf("Exception stack size: %zu members\n", stack.size());
   for (int i(0); i < stack.size(); ++i) {
     string kind;
@@ -1904,7 +1904,7 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
   if (!msg.nilp()) {
     clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
   }
-  clasp_writeln_string(((BF("%s") % _lisp->invocationHistoryStack().asString()).str()), ss);
+  clasp_writeln_string(((BF("%s") % thread->invocationHistoryStack().asString()).str()), ss);
   if (outputDesignator.nilp()) {
     return cl__get_output_stream_string(ss);
   }

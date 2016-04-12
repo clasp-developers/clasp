@@ -79,7 +79,7 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
 }
 
 T_sp LispDebugger::invoke() {
-  //	DebuggerIHF debuggerStack(_lisp->invocationHistoryStack(),_Nil<ActivationFrame_O>());
+  //	DebuggerIHF debuggerStack(thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
     _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
   }
@@ -218,7 +218,7 @@ T_sp LispDebugger::invoke() {
       string sexp = line.substr(2, 99999);
       //		ControlSingleStep singleStep(false);
       T_sp env = core__ihs_env(core__ihs_current_frame());
-      //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
+      //		DebuggerIHF dbgFrame(thread->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
       try {
         DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
         _lisp->readEvalPrintString(sexp, env, true);
@@ -238,7 +238,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace() {
-  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
+  InvocationHistoryStack &ihs = thread->invocationHistoryStack();
   InvocationHistoryFrame *top = ihs.top();
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");

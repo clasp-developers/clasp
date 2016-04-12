@@ -1034,6 +1034,17 @@ core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 
 };
+namespace core {
+  struct ThreadLocalState;
+  class InvocationHistoryStack;
+  class InvocationHistoryFrame;
+  InvocationHistoryStack* thread_local_invocation_history_stack();
+  InvocationHistoryFrame* thread_local_invocation_history_stack_top_frame();
+  void thread_local_invocation_history_stack_push_frame(InvocationHistoryFrame* frame);
+  int thread_local_invocation_bindings_size();
+};
+extern thread_local core::ThreadLocalState* thread;
+
 
 
 #include <clasp/core/exceptions.h>
@@ -1206,13 +1217,16 @@ namespace core {
     ThreadLocalState() {
       this->_Bindings.reserve(1024);
     };
-    core::DynamicBindingStack _Bindings;
+    DynamicBindingStack _Bindings;
+    InvocationHistoryStack _InvocationHistoryStack;
+    ExceptionStack _ExceptionStack;
 
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
+    inline InvocationHistoryStack& invocationHistoryStack() { return this->_InvocationHistoryStack; };
+    inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
   };
 };
 
-extern thread_local core::ThreadLocalState* thread;
 
 
 #endif //]

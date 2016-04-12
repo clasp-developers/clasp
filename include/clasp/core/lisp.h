@@ -215,8 +215,8 @@ class Lisp_O {
     //! A pool of strings for string manipulation - must be per thread
     List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
-    InvocationHistoryStack _InvocationHistoryStack;
-    ExceptionStack _ExceptionStack;
+        //InvocationHistoryStack _InvocationHistoryStack;
+        //ExceptionStack _ExceptionStack;
     /*! Multiple values - this should be per thread */
     MultipleValues *_MultipleValuesCur;
     T_sp _TerminalIO;
@@ -400,7 +400,7 @@ private:
   // ------------------------------------------------------------
   // ------------------------------------------------------------
 public:
-  InvocationHistoryStack &invocationHistoryStack();
+//  InvocationHistoryStack &invocationHistoryStack();
 
 public:
   map<string, void *> &openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
@@ -451,7 +451,7 @@ public:
   };
   //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
 public:
-  inline ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
+//  inline ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
 
 public:
   uint nextReplCounter() { return ++this->_ReplCounter; };

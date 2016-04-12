@@ -64,8 +64,10 @@ public:
 
 public:
   InvocationHistoryFrame(Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
+
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
-  ATTR_WEAK virtual ~InvocationHistoryFrame();
+  ATTR_WEAK ~InvocationHistoryFrame(); 
+  
   InvocationHistoryFrame *previous() { return this->_Previous; };
   uint index() { return this->_Index; };
   VectorObjects_sp arguments() const;
@@ -114,39 +116,6 @@ public:
   string asString() const;
 };
 };
-
-#if 0 // moved to foundation.h
-namespace core {
-  class DynamicBinding {
-  public:
-    Symbol_sp _Var;
-    T_sp _Val;
-  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
-  };
-
-#pragma GCC visibility push(default)
-  class DynamicBindingStack {
-  public:
-    gctools::Vec0<DynamicBinding> _Bindings;
-
-  public:
-    inline int top() const { return this->_Bindings.size() - 1; }
-
-    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-
-    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
-    T_sp val(int i) const { return this->_Bindings[i]._Val; };
-
-    ATTR_WEAK void push(Symbol_sp var);
-    ATTR_WEAK void pop();
-
-    void reserve(int x) { this->_Bindings.reserve(x); };
-
-    int size() const { return this->_Bindings.size(); };
-  };
-#pragma GCC visibility pop
-};
-#endif
 
 
 namespace core {

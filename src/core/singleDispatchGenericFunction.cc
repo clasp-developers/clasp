@@ -307,7 +307,7 @@ SingleDispatchGenericFunctionClosure_sp SingleDispatchGenericFunctionClosure_O::
 #endif
 	T_sp dispatchArg = LCC_ARG0();
 	ASSERTF(!dispatchArg.unboundp(),BF("The dispatch object is UNBOUND"));
-	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
+	LispCompiledFunctionIHF _frame(thread->invocationHistoryStack(),this->asSmartPtr());
 	Class_sp dispatchArgClass = lisp_instance_class(dispatchArg);
 	ASSERTF(!dispatchArgClass.nilp(),BF("The dispatch class is NIL!!!! for dispatch obj: %s") % _rep_(dispatchArg));
 	LOG(BF("Invoked SingleDispatchGenericFunction[%s] with receiver class[%s]")

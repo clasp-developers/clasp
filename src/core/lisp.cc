@@ -1380,7 +1380,7 @@ CL_DEFUN void core__low_level_repl() {
 void Lisp_O::readEvalPrintInteractive() {
   _OF();
   Cons_sp expression;
-  //	TopLevelIHF topFrame(_lisp->invocationHistoryStack(),_Nil<T_O>());
+  //	TopLevelIHF topFrame(thread->invocationHistoryStack(),_Nil<T_O>());
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 }
 
@@ -1930,7 +1930,7 @@ CL_DECLARE();
 CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
-  InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
+  InvocationHistoryFrame *frame = thread->invocationHistoryStack().top();
   Closure_sp closure = frame->closure;
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
@@ -1943,7 +1943,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
-  InvocationHistoryFrame *frame = _lisp->invocationHistoryStack().top();
+  InvocationHistoryFrame *frame = thread->invocationHistoryStack().top();
   Closure_sp closure = frame->closure;
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }
@@ -2613,13 +2613,15 @@ List_sp Lisp_O::allPackagesAsCons() const {
   return asCons(this->_Roots._Packages);
 }
 
+#if 0
 InvocationHistoryStack &Lisp_O::invocationHistoryStack() {
   return this->_Roots._InvocationHistoryStack;
 }
+#endif
 
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
-  string bt = this->invocationHistoryStack().asString();
+  string bt = thread->invocationHistoryStack().asString();
   _lisp->print(BF("%s") % bt);
 }
 
