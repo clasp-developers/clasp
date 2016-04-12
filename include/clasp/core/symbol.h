@@ -112,7 +112,7 @@ public:
 
   void setf_name(Str_sp nm) { this->_Name = nm; };
 
-  List_sp plist() const;
+  List_sp plist() const { return this->_PropertyList; };
   void setf_plist(List_sp plist);
 
   void setReadOnly(bool b) { this->_IsConstant = true; };
@@ -128,27 +128,35 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
+  void symbolUnboundError() const;
+  
   /*! Return the value slot of the symbol - throws if unbound */
-  T_sp symbolValue() const;
+  inline T_sp symbolValue() const {
+    if (this->_Value.unboundp()) this->symbolUnboundError();
+    return this->_Value;
+  }
 
   /*! Return the address of the value slot of the symbol */
   inline T_sp &symbolValueRef() { return this->_Value; };
 
   /*! Return the value slot of the symbol or UNBOUND if unbound */
-  T_sp symbolValueUnsafe() const;
+  inline T_sp symbolValueUnsafe() const { return this->_Value;};
 
   void makeSpecial();
 
   void makeConstant(T_sp val);
 
-  bool boundP() const;
+  inline bool boundP() const { return !this->_Value.unboundp(); };
 
   void makunbound();
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);
 
-  T_sp setf_symbolValue(T_sp obj);
+  inline T_sp setf_symbolValue(T_sp obj) {
+    this->_Value = obj;
+    return obj;
+  }
 
   void setf_symbolValueReadOnlyOverRide(T_sp obj);
 
@@ -163,7 +171,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   void setf_symbolFunction(T_sp exec);
 
   /*! Return the global bound function */
-  inline T_sp symbolFunction() { return this->_Function; };
+  inline T_sp symbolFunction() const { return this->_Function; };
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const { return !this->_Function.unboundp(); };

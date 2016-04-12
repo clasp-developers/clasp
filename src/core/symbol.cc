@@ -216,17 +216,14 @@ Symbol_sp Symbol_O::create(const string &nm) {
   return n;
 };
 
-bool Symbol_O::boundP() const {
-  return !this->_Value.unboundp();
-}
 
 CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD void Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
 }
 
-List_sp Symbol_O::plist() const {
-  return this->_PropertyList;
+void Symbol_O::symbolUnboundError() const {
+  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->c_str());
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
@@ -298,22 +295,6 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   return kwSymbol;
 };
 
-T_sp Symbol_O::setf_symbolValue(T_sp val) {
-  _OF();
-  ASSERT(!this->_IsConstant);
-#if 0
-	// trap a change in a dynamic variable
-	if ( this->_Name.as<Str_O>()->get() == "*THE-MODULE*")
-	{
-	    printf("%s:%d Changing value of a symbol named *THE-MODULE* to %s\n", __FILE__, __LINE__, _rep_(val).c_str());
-	    if ( val.nilp() ) {
-		printf("%s:%d Trap here - it changed to nil\n", __FILE__, __LINE__ );
-	    }
-	}
-#endif
-  this->_Value = val;
-  return val;
-}
 
 CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_DEFMETHOD void Symbol_O::makeSpecial() {
@@ -348,16 +329,6 @@ void Symbol_O::setf_symbolValueReadOnlyOverRide(T_sp val) {
   this->_Value = val;
 }
 
-T_sp Symbol_O::symbolValue() const {
-  if (this->_Value.unboundp()) {
-    SIMPLE_ERROR(BF("Unbound symbol-value for %s@@%p") % this->_Name->c_str() % this);
-  }
-  return this->_Value;
-}
-
-T_sp Symbol_O::symbolValueUnsafe() const {
-  return this->_Value;
-}
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {

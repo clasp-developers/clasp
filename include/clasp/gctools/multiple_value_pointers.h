@@ -88,15 +88,39 @@ public:
     values[0] = *this;
     core::MultipleValues &mv = core::lisp_multipleValues();
     for (int i(1); i < this->_number_of_values; ++i) {
+#ifdef TRAP
+      if ( (((uintptr_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
+        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
+        abort();
+      }
+#endif
       core::T_sp val((gctools::Tagged)mv._Values[i]);
       values[i] = val;
+#ifdef TRAP
+      if ( (((uintptr_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
+        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
+        abort();
+      }
+#endif
     }
   }
 
   void loadFromVec0(const ::gctools::Vec0<core::T_sp> &values) {
     core::MultipleValues &mv = core::lisp_multipleValues();
     for (size_t i(1), iEnd(values.size()); i < iEnd; ++i) {
+#ifdef TRAP
+      if ( (((uintptr_t)values[i].raw_())&gctools::tag_mask) == unused0_tag) {
+        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
+        abort();
+      }
+#endif
       mv._Values[i] = values[i].raw_();
+#ifdef TRAP
+      if ( (((uintptr_t)mv._Values[i])&gctools::tag_mask) == unused0_tag) {
+        printf("%s:%d Caught bad tagged pointer\n", __FILE__, __LINE__ );
+        abort();
+      }
+#endif
     }
     this->_number_of_values = values.size();
     this->setRaw_(reinterpret_cast<gc::Tagged>(values[0].raw_()));
