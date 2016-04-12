@@ -334,14 +334,14 @@ T_sp Environment_O::clasp_lookupValue(T_sp env, int depth, int index) {
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O>(env);
   return eenv->_lookupValue(depth, index);
 }
-
-T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
+#if 0
+ALWAYS_INLINE T_sp &Environment_O::clasp_lookupValueReference(T_sp env, int depth, int index) {
 // set this to 1 to use dynamic_cast and 0 to use what is essentially a static cast
   ASSERT(env && env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
   return eenv->lookupValueReference(depth, index);
 }
-
+#endif
 Function_sp Environment_O::clasp_lookupFunction(T_sp env, int depth, int index) {
   ASSERT(env.isA<Environment_O>());
   Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);

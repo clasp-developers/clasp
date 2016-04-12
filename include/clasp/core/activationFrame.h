@@ -142,13 +142,6 @@ public:
     return vf;
   }
 
-#if 0
-  template <class... ARGS>
-  static ValueFrame_sp create_fill_args(T_sp parent, ARGS &&... args) {
-    ValueFrame_sp vf = create_fill_numExtraArgs(0,parent,std::forward<ARGS>(args)...);
-    return vf;
-  }
-#endif
   static ValueFrame_sp create(int numArgs, const T_sp &parent) {
     ValueFrame_sp vf = create_fill_capacity(numArgs,parent);
     return vf;

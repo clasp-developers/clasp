@@ -66,7 +66,11 @@ public:
   static bool clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, Function_sp &func);
   static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
   static T_sp clasp_lookupValue(T_sp env, int depth, int index);
-  static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index);
+  ALWAYS_INLINE static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index) {
+    ASSERT(env && env.isA<Environment_O>());
+    Environment_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
+    return eenv->lookupValueReference(depth,index);
+  }
   static Function_sp clasp_lookupFunction(T_sp env, int depth, int index);
   static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index);
   static T_mv clasp_lookupMetadata(T_sp env, Symbol_sp sym);
@@ -146,19 +150,15 @@ public:
   virtual Function_sp _lookupFunction(int depth, int index) const;
   virtual T_sp _lookupTagbodyId(int depth, int index) const { SUBIMP(); };
   virtual T_sp &lookupValueReference(int depth, int index);
-
 public:
   string environmentStackAsString();
-
   /*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
   virtual bool findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
-
   /*! Return the most recent RuntimeVisibleEnvironment */
   virtual T_sp currentVisibleEnvironment() const;
-
   /*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
