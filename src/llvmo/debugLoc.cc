@@ -46,21 +46,10 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugI
   return oip;
 }
 
-EXPOSE_CLASS(llvmo, DebugLoc_O);
 
-void DebugLoc_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<DebugLoc_O>()
-      .def("getLine", &DebugLoc_O::getLine)
-      .def("getCol", &DebugLoc_O::getCol)
-      .def("getScope", &DebugLoc_O::getScope);
-//  core::af_def(LlvmoPkg, "DebugLoc-get", &DebugLoc_O::get);
-}
 
-void DebugLoc_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(LlvmoPkg, DebugLoc, "", "", _lisp);
-#endif
-}
+
+
 
 CL_LISPIFY_NAME("getScope");
 CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {

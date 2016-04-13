@@ -1,11 +1,22 @@
+#|
+NOTE!!!!!   Running the static analyzer often runs into problems because clang can't find the system header files.
+
+Look at the definitions of +isystem-dir+, +resource-dir+ and possibly +additional-arguments+
+Find directories that look like them and replace the ones defined in the constants by the correct ones.
+
+|#
+
+
 (provide :clang-tool)
 
 (defpackage #:clang-tool
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
   (:export
    #:with-compilation-tool-database
+   #:match-in-compilation-tool-database-source-tree
    #:main-pathname
    #:clang-database
+   #:multitool-compilation-tool-database
    #:source-namestrings
    #:main-source-filename
    #:arguments-adjuster-list
@@ -42,35 +53,27 @@
 (use-package :ast-tooling)
 (use-package :clang-ast)
 
-
-
-
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-  #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
+  #+target-os-linux "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/3.6.2"
   #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
   #+target-os-darwin (vector
                       "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
+                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include"
                       "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
   #-target-os-darwin (vector
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
-
-
-
-
-
 
 (defmacro with-unmanaged-object ((var obj) &body body)
   `(let ((,var ,obj))
@@ -92,6 +95,7 @@ Sets up a dynamic environment where clang-tooling:*compilation-tool-database* is
 
 (defclass compilation-tool-database ()
   ((clang-database :initarg :clang-database :accessor clang-database)
+   (source-path-identifier :initform nil :initarg :source-path-identifier :accessor source-path-identifier)
    (main-source-filename :initform "main.cc" :initarg :main-source-filename :accessor main-source-filename)
    (source-namestrings :initarg :source-namestrings :accessor source-namestrings)
    (arguments-adjuster-list :initform nil :initarg :arguments-adjuster-list :accessor arguments-adjuster-list)))
@@ -111,6 +115,17 @@ Apply the compilation-tool-database's arguments-adjusters to the clang tool."
   (ast-tooling:clear-arguments-adjusters tool)
   (dolist (aa (arguments-adjuster-list compilation-tool-database))
     (ast-tooling:append-arguments-adjuster tool aa)))
+
+(defun match-in-compilation-tool-database-source-tree (compilation-tool-database match-info)
+  (let* ((match-loc (mtag-loc-start match-info :whole))
+         (ml-pathname (pathname (subseq match-loc 0 (position #\: match-loc))))
+         (ml-dir-pn (make-pathname :name nil :type nil :defaults ml-pathname))
+         (ml-dir (namestring ml-dir-pn))
+         (in-source-tree (if (source-path-identifier compilation-tool-database)
+                             (let ((found (search (source-path-identifier compilation-tool-database) ml-dir)))
+                               found)
+                             t)))
+    in-source-tree))
 
 (defun fix-path (root rel)
   (let* ((pnroot (pathname root))
@@ -171,7 +186,8 @@ Setup the default arguments adjusters."
     (t #| Do nothing |#)))
 
 (defun load-compilation-tool-database (pathname &key (main-source-filename "main.cc")
-                                                  convert-relative-includes-to-absolute)
+                                                  convert-relative-includes-to-absolute
+                                                  source-path-identifier)
   "* Arguments
 - pathname :: The name of the file that contains the compilation database in JSON format.
 See http://clang.llvm.org/docs/JSONCompilationDatabase.html for the format
@@ -179,8 +195,10 @@ See http://clang.llvm.org/docs/JSONCompilationDatabase.html for the format
 - convert-relative-includes-to-absolute :: If T the main-pathname of the compilation-tool-database is used
 as the root of the absolute includes, if nil relative includes are left alone.
 Otherwise the value of convert-relative-includes-to-absolute is used.
+- source-path-identifier :: nil or a string
 * Description
-Load the compilation database and return it"
+Load the compilation database and return it. If source-path-identifier is defined then every match will have it's source location checked to see if the 
+it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
   (let* ((db (ast-tooling:jsoncompilation-database-load-from-file
               (namestring (or (probe-file pathname) (error "Could not find file: ~a" pathname)))))
          (all-files (map 'list #'identity (ast-tooling:get-all-files db)))
@@ -189,6 +207,7 @@ Load the compilation database and return it"
                              :main-source-filename main-source-filename)))
     (format t "Loaded database contains ~a source files~%" (length all-files))
     (setup-default-arguments-adjusters ctd :convert-relative-includes-to-absolute convert-relative-includes-to-absolute)
+    (setf (source-path-identifier ctd) source-path-identifier)
     ctd))
 
 (defun main-pathname (&optional (compilation-tool-database *compilation-tool-database*))
@@ -592,6 +611,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
 
 (defstruct multitool
   "Store multiple tools to run in one go across a bunch of source files."
+  compilation-tool-database
   all-tools   ;; the list of all tools
   selected-tools  ;; the list of selected tools - if nil then use all-tools
   results
@@ -642,7 +662,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                                     (source-namestrings compilation-tool-database))))
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
     (when (multitool-arguments-adjuster mtool)
-      (ast-tooling:append-arguments-adjuster temp (multitool-arguments-adjuster mtool)))
+      (ast-tooling:append-arguments-adjuster *match-refactoring-tool* (multitool-arguments-adjuster mtool)))
     (let* ((*run-and-save* run-and-save)
            (tools (multitool-active-tools mtool))
            (match-finder (let ((mf (ast-tooling:new-match-finder)))

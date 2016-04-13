@@ -119,7 +119,7 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/metaobject.h>
 #include <clasp/core/null.h>
-#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
+//#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/specialForm.h>
 #include <clasp/core/lispVector.h>
@@ -318,6 +318,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedFunctionsSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, FullDebug);
 SYMBOL_EXPORT_SC_(KeywordPkg, LineTablesOnly);
 
+SYMBOL_EXPORT_SC_(CorePkg, debug_message);
 SYMBOL_SC_(CorePkg, STARdebugMonitorSTAR);
 SYMBOL_SC_(CorePkg, monitorReader);
 SYMBOL_EXPORT_SC_(CorePkg, tsp);
@@ -518,6 +519,8 @@ SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 SYMBOL_SC_(CorePkg, invalidKeywordArgumentError);
 SYMBOL_EXPORT_SC_(ClPkg, fileError);
 SYMBOL_EXPORT_SC_(ClPkg, satisfies);
+SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
+
 SYMBOL_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
 SYMBOL_SC_(CorePkg, _PLUS_executableName_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
@@ -799,12 +802,10 @@ void testFeatures() {
   testConses();
 }
 
-CoreExposer::CoreExposer(Lisp_sp lisp) : Exposer(lisp, CorePkg, CorePkg_nicknames) {
-  //	testFeatures();
-  this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
+CoreExposer_O::CoreExposer_O(Lisp_sp lisp) : Exposer_O(lisp, CorePkg, CorePkg_nicknames) {
 };
 
-void CoreExposer::expose(core::Lisp_sp lisp, WhatToExpose what) const {
+void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
   switch (what) {
   case candoClasses:
 #define EXPOSE_TO_CANDO
@@ -941,8 +942,9 @@ gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_class
 
 
   
-void CoreExposer::define_essential_globals(Lisp_sp lisp) {
+void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   {
+    this->package()->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
 #define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
@@ -1020,7 +1022,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   SYMBOL_EXPORT_SC_(ClPkg, char_code_limit);
   cl::_sym_char_code_limit->defconstant(make_fixnum(CHAR_CODE_LIMIT));
   cl::_sym_STARgensym_counterSTAR->defparameter(make_fixnum(0));
-  cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(_Nil<T_O>());
+  cl::_sym_STARdefaultPathnameDefaultsSTAR->defparameter(Pathname_O::create());
   cl::_sym_STARprint_arraySTAR->defparameter(_lisp->_true());
   cl::_sym_STARprint_baseSTAR->defparameter(make_fixnum(10));
   cl::_sym_STARprint_caseSTAR->defparameter(kw::_sym_upcase);
@@ -1061,9 +1063,8 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_STARterminal_ioSTAR->defparameter(terminal);
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
-  _sym_STARsharp_equal_final_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-  _sym_STARsharp_equal_temp_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
-  _sym_STARsharp_equal_repl_tableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
+  _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
+
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_executableName_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
@@ -1141,18 +1142,18 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   clasp_cleavir::_sym_STARcode_walkerSTAR->defparameter(_Nil<T_O>());
 #if 0
 
-	_sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
-	_sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
+  _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
+  _sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
 #endif
 
 #if 0 //Old system checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_TARGET_OS_DARWIN)
-	SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
-	Symbol_sp target_os = kw::_sym_target_os_darwin;
+  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
+  Symbol_sp target_os = kw::_sym_target_os_darwin;
 #elif defined(_TARGET_OS_LINUX)
-	SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
-	Symbol_sp target_os = kw::_sym_target_os_linux;
+  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
+  Symbol_sp target_os = kw::_sym_target_os_linux;
 #endif
 
 #endif //End old system checking
@@ -1213,11 +1214,11 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
 #if 0 //Old System checking
 	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
 #if defined(_ADDRESS_MODEL_64)
-	SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
-	Symbol_sp address_model = kw::_sym_address_model_64;
+  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
+  Symbol_sp address_model = kw::_sym_address_model_64;
 #elif defined(_ADDRESS_MODEL_32)
-	SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
-	Symbol_sp address_model = kw::_sym_address_model_32;
+  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
+  Symbol_sp address_model = kw::_sym_address_model_32;
 #endif
 
 #endif //End old system checking

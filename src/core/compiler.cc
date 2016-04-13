@@ -155,8 +155,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
     return Values(_Nil<T_O>(), name, make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
   Function_sp fsym = coerce::functionDesignator(sym);
-  gctools::tagged_pointer<Closure> closure = fsym->closure;
-  if (gctools::tagged_pointer<BuiltinClosure> bcc = closure.asOrNull<BuiltinClosure>()) {
+  if ( BuiltinClosure_sp  bcc = fsym.asOrNull<BuiltinClosure_O>()) {
     (void)bcc; // suppress warning
     return Values(_lisp->_true(), Str_O::create("Provide-c-func-name"), make_fixnum(0), make_fixnum(CALL_ARGUMENTS_LIMIT));
   }
@@ -211,7 +210,11 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
   /* Define the source file */
   SourceFileInfo_sp sfi = core__source_file_info(pathDesig);
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
+#ifdef USE_SOURCE_DATABASE
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, SourceManager_O::create());
+#else
+  scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
+#endif
   scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
@@ -274,8 +277,6 @@ LOAD:
 };
 
 #ifdef EXPOSE_DLLOAD
-#define ARGS_core__dlload "(pathDesig)"
-#define DECL_core__dlload ""
 CL_DOCSTRING("dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error)");
 CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
   string lib_extension = ".dylib";
@@ -405,22 +406,22 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   }
 }
 
-#define ARGS_compiler__implicit_compile_hook_default "(form &optional environment)"
-#define DECL_compiler__implicit_compile_hook_default ""
-#define DOCS_compiler__implicit_compile_hook_default "implicit_compile_hook_default"
 CL_LAMBDA(form &optional environment);
 CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
-  SourceManager_sp db = _lisp->sourceDatabase();
-  T_sp sourcePosInfo = db->duplicateSourcePosInfo(form, code);
+  T_sp source_manager = _lisp->sourceDatabase();
+  T_sp sourcePosInfo = _Nil<T_O>();
+  if ( SourceManager_sp db = source_manager.asOrNull<SourceManager_O>() ) {
+    sourcePosInfo = db->duplicateSourcePosInfo(form, code);
+  }
   stringstream ss;
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());
-  gctools::tagged_pointer<InterpretedClosure> ic =
-      gctools::tagged_pointer<InterpretedClosure>(gctools::ClassAllocator<InterpretedClosure>::allocate_class(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo)));
-  Function_sp thunk = Function_O::make(ic);
+  InterpretedClosure_sp ic =
+    gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, _Nil<T_O>(), _Nil<T_O>(), env, code, SOURCE_POS_INFO_FIELDS(sourcePosInfo));
+  Function_sp thunk = ic;
   return eval::funcall(thunk);
 };
 
@@ -586,7 +587,7 @@ CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) 
       callByValue(v1, v2, v3, v4);
       if (stage >= 1) {
 #if 0
-                    Function_O* func = reinterpret_cast<Function_O*>(fn.px_ref());
+                    Function_O* func = reinterpret_cast<NamedFunction_O*>(fn.px_ref());
 #else
 
         Function_sp func;
@@ -614,7 +615,7 @@ CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) 
               }
 #endif
               if (stage >= 5) {
-                gctools::tagged_pointer<Closure> closureP = func->closure;
+                Closure_sp closureP = func->closure;
                 ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
                 eval::applyClosureToActivationFrame(closureP, frame);
               }
@@ -667,12 +668,14 @@ T_sp bitOLogicWithObjects() {
 };
 
 T_sp allocCons() {
-  Cons_sp fn = Cons_O::create();
+  Cons_sp fn = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
   return fn;
 }
 
 T_sp lexicalFrameLookup(T_sp fr, int depth, int index) {
-  T_sp val = Environment_O::clasp_lookupValue(fr, depth, index);
+  ASSERT(fr.isA<ActivationFrame_O>());
+  ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<ActivationFrame_O>(fr);
+  T_sp val = core::value_frame_lookup_reference(af, depth, index);
   return val;
 }
 
@@ -913,18 +916,17 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__);
-      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+      printf("   %s\n", thread->exceptionStack().summary().c_str());
     }
 #endif
-    core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(protected_fn.raw_());
-    ASSERT(func != NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
+    ASSERT(closure);
     result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__);
-      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+      printf("   %s\n", thread->exceptionStack().summary().c_str());
     }
 #endif
 // Save any return value that may be in the multiple value return array
@@ -945,9 +947,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     tresult.saveToVec0(savemv);
 #endif
     {
-      core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(cleanup_fn.raw_());
-      ASSERT(func != NULL);
-      auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+      Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
+      ASSERT(closure);
       T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
     }
 #if 1 // See comment above about 22a8d7b1
@@ -957,7 +958,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__);
-      printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+      printf("   %s\n", thread->exceptionStack().summary().c_str());
     }
 #endif
     throw;
@@ -965,16 +966,15 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    printf("   %s\n", thread->exceptionStack().summary().c_str());
   }
 #endif
   gctools::Vec0<T_sp> savemv;
   result.saveToVec0(savemv);
   {
     T_mv tresult;
-    core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(cleanup_fn.raw_());
-    ASSERT(func != NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
+    ASSERT(closure);
     tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   }
   result.loadFromVec0(savemv);
@@ -988,6 +988,7 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   STACK_FRAME(buff, accArgs, MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
+  MultipleValues& mv = lisp_multipleValues();
   for (auto cur : functions) {
     Function_sp func = gc::As<Function_sp>(oCar(cur));
     T_mv result = eval::funcall(func);
@@ -996,13 +997,14 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
     ++idx;
     for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
       ASSERT(idx < MultipleValues::MultipleValuesLimit);
-      accArgs[idx] = result.valueGet(i).raw_();
+      accArgs[idx] = mv._Values[i];
       ++idx;
     }
   }
   accArgs.setLength(idx);
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  gctools::tagged_pointer<Closure> func = fmv->closure;
+  Closure_sp func = fmv.asOrNull<Closure_O>();
+  ASSERT(func);
   LCC_CALL_WITH_ARGS_IN_FRAME(result, func, accArgs);
   return T_mv(result);
 }
@@ -1012,21 +1014,11 @@ CL_DECLARE();
 CL_DOCSTRING("multipleValueProg1_Function - evaluate func1, save the multiple values and then evaluate func2 and restore the multiple values");
 CL_DEFUN T_mv core__multiple_value_prog1_function(Function_sp func1, Function_sp func2) {
   MultipleValues mvFunc1;
-  T_mv result;
-  ASSERT(func1.notnilp() && func1->closure);
-  result = eval::funcall(func1);
-  mvFunc1._Size = result.number_of_values();
-  mvFunc1[0] = result.raw_();
-  MultipleValues &mvThreadLocal = lisp_multipleValues();
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) {
-    mvFunc1[i] = mvThreadLocal[i];
-  }
-  T_mv resultTemp;
+  ASSERT((func1) && func1.notnilp());
+  T_mv result = eval::funcall(func1);
+  multipleValuesSaveToMultipleValues(result,&mvFunc1);
   eval::funcall(func2);
-  for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) {
-    mvThreadLocal[i] = mvFunc1[i];
-  }
-  return result;
+  return multipleValuesLoadFromMultipleValues(&mvFunc1);
 }
 
 CL_LAMBDA(tag func);
@@ -1034,17 +1026,16 @@ CL_DECLARE();
 CL_DOCSTRING("catchFunction");
 CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   T_mv result;
-  int frame = _lisp->exceptionStack().push(CatchFrame, tag);
+  int frame = thread->exceptionStack().push(CatchFrame, tag);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    printf("   %s\n", thread->exceptionStack().summary().c_str());
   }
 #endif
   try {
-    core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(thunk.raw_());
-    ASSERT(func != NULL);
-    auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+    core::Closure_sp closure = thunk.asOrNull<Closure_O>();
+    ASSERT(closure);
     result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
@@ -1063,11 +1054,11 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
     printf("- - - - - Unwinding to thisFrame: %d\n", frame);
   }
 #endif
-  _lisp->exceptionStack().unwind(frame);
+  thread->exceptionStack().unwind(frame);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__);
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    printf("   %s\n", thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1077,20 +1068,19 @@ CL_LAMBDA(tag result);
 CL_DECLARE();
 CL_DOCSTRING("throwFunction TODO: The semantics are not followed here - only the first return value is returned!!!!!!!!");
 CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
-  int frame = _lisp->exceptionStack().findKey(CatchFrame, tag);
+  int frame = thread->exceptionStack().findKey(CatchFrame, tag);
   if (frame < 0) {
     CONTROL_ERROR();
   }
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", _lisp->exceptionStack().summary().c_str());
+    printf("   %s\n", thread->exceptionStack().summary().c_str());
   }
 #endif
   T_mv result;
-  core::Function_O *func = gc::TaggedCast<core::Function_O *, core::T_O *>::castOrNULL(result_form.raw_());
-  ASSERT(func != NULL);
-  auto closure = gc::untag_general<core::Function_O *>(func)->closure.as<core::Closure>();
+  Closure_sp closure = result_form.asOrNull<Closure_O>();
+  ASSERT(closure);
   result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
   result.saveToMultipleValue0();
   throw CatchThrow(frame);

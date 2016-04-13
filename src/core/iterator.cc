@@ -58,26 +58,8 @@ void Iterator_O::archive(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
-void Iterator_O::exposeCando(Lisp_sp lisp) {
-  class_<Iterator_O>()
-      .def("core:begin", &Iterator_O::first)
-      .def("next", &Iterator_O::next)
-      .def("isDone", &Iterator_O::isDone)
-      .def("notDone", &Iterator_O::notDone)
-      .def("currentObject", &Iterator_O::currentObject);
-  //	def("create_Iterator",&Iterator_O::create);
-}
 
-void Iterator_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, Iterator, "", "", _lisp)
-      .def("core:begin", &Iterator_O::first)
-      .def("next", &Iterator_O::next)
-      .def("isDone", &Iterator_O::isDone)
-      .def("notDone", &Iterator_O::notDone)
-      .def("currentObject", &Iterator_O::currentObject);
-#endif //]
-}
 
-EXPOSE_CLASS(core, Iterator_O);
+
+
 };

@@ -33,9 +33,9 @@ THE SOFTWARE.
 #include <clasp/core/loadTimeValues.fwd.h>
 
 namespace core {
-class LoadTimeValues_O : public T_O {
+class LoadTimeValues_O : public General_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
-  LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues",T_O);
+  LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues",General_O);
 
 public: // Simple default ctor/dtor
   LoadTimeValues_O() : Base(){};
@@ -78,49 +78,5 @@ struct gctools::GCInfo<core::LoadTimeValues_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
 };
-
-#if 0
-namespace core {
-    /*! This class will be allocated in a non-moving pool and store a smart_ptr
-      to a LoadTimeValuesPointer_sp to which pointers can be taken and guaranteed
-      that they will not become stale */
-    FORWARD(MemoryLockedLoadTimeValuesPointer);
-    c l a s s MemoryLockedLoadTimeValuesPointer_O : public T_O
-    {
-        struct metadata_gc_do_not_move {};   // put this in a non-moveable pool
-    private:
-	L I S P _BASE1(T_O);
-	L I S P _CLASS(core,CorePkg,MemoryLockedLoadTimeValuesPointer_O,"MemoryLockedLoadTimeValuePointer");
-    public: // Simple default ctor/dtor
-	MemoryLockedLoadTimeValuesPointer_O() : Base(), _LoadTimeValues(_Nil<LoadTimeValues_O>()) {
-            printf("%s:%d  MemoryLockedLoadTimeValuesPointer is DEPRECIATED()\n",__FILE__,__LINE__);
-        };
-	virtual ~MemoryLockedLoadTimeValuesPointer_O() {};
-    private: // instance variables here
-        LoadTimeValues_sp               _LoadTimeValues;
-    public: // Functions here
-	static MemoryLockedLoadTimeValuesPointer_sp make(LoadTimeValues_sp ltv) {
-            GC_ALLOCATE_UNCOLLECTABLE(MemoryLockedLoadTimeValuesPointer_O,obj);
-            obj->_LoadTimeValues = ltv;
-            return obj;
-        }
-
-        LoadTimeValues_sp& ref() { return this->_LoadTimeValues; };
-        LoadTimeValues_sp* ptr() { return &this->_LoadTimeValues; };
-
-    }; //  class
-    
-}; // core namespace
-TRANSLATE(core::MemoryLockedLoadTimeValuesPointer_O);
-
-
-
-template<> struct gctools::GCInfo<core::MemoryLockedLoadTimeValuesPointer_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = false;
-    static GCInfo_policy constexpr Policy = unmanaged;
-};
-
-#endif
 
 #endif /* _core_loadTimeValues_H_ */

@@ -73,14 +73,7 @@ void BuiltInClass_O::describe(T_sp stream) {
   clasp_write_string(ss.str(), stream);
 }
 
-void BuiltInClass_O::exposeCando(Lisp_sp lisp) {
-  class_<BuiltInClass_O>();
-}
-void BuiltInClass_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, BuiltInClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, BuiltInClass_O);
+
+
 };

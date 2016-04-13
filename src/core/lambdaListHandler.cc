@@ -42,7 +42,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
+void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
@@ -70,7 +70,7 @@ void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> clo
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
-  //	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
+  //	TopLevelIHF stackFrame(thread->invocationHistoryStack(),form);
   return eval::evaluate(form, env);
 }
 
@@ -319,8 +319,6 @@ CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
 }
 
 void LambdaListHandler_O::initialize() {
-  _OF();
-  this->Base::initialize();
   this->_CreatesBindings = true;
   this->_DeclareSpecifierList = _Nil<T_O>();
   this->_RequiredArguments.clear();
@@ -357,7 +355,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
          it != this->_RequiredArguments.end(); it++) {
       if (it->_lambdaListP()) {
         DEPRECIATED();
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         //		    throw_if_not_destructuring_context(context);
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
@@ -372,7 +370,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
       if (it->_lambdaListP()) {
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
@@ -391,7 +389,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
       if (it->_lambdaListP()) {
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
@@ -955,9 +953,6 @@ LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int
   return ollh;
 }
 
-#define ARGS_LambdaListHandler_O_makeLambdaListHandler "(lambda-list &optional declares (context 'core::function))"
-#define DECL_LambdaListHandler_O_makeLambdaListHandler ""
-#define DOCS_LambdaListHandler_O_makeLambdaListHandler "makeLambdaListHandler"
 CL_LAMBDA("lambda-list &optional declares (context 'core::function)");
 CL_LISPIFY_NAME(makeLambdaListHandler);
 CL_DEFUN LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
@@ -1073,7 +1068,7 @@ string LambdaListHandler_O::partsAsString() const {
 string LambdaListHandler_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << cl__class_of(this->asSmartPtr())->classNameAsString();
   {
     ss << this->partsAsString();
   }
@@ -1169,37 +1164,16 @@ CL_DEFMETHOD VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDeb
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, LambdaListHandler_O);
+
 LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()), _RequiredLexicalArgumentsOnly(false){};
 
-void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
-  class_<LambdaListHandler_O>()
-      .def("single-dispatch-on-argument", &LambdaListHandler_O::single_dispatch_on_argument)
-      .def("classifiedSymbols", &LambdaListHandler_O::classifiedSymbols)
-      .def("processLambdaListHandler", &LambdaListHandler_O::processLambdaListHandler)
-      .def("lambdaListHandlerRequiredLexicalArgumentsOnlyP", &LambdaListHandler_O::requiredLexicalArgumentsOnlyP)
-      .def("numberOfRequiredArguments", &LambdaListHandler_O::numberOfRequiredArguments)
-      .def("numberOfOptionalArguments", &LambdaListHandler_O::numberOfOptionalArguments)
-      .def("numberOfRestArguments", &LambdaListHandler_O::numberOfRestArguments)
-      .def("numberOfKeyArguments", &LambdaListHandler_O::numberOfKeyArguments)
-      .def("numberOfAuxArguments", &LambdaListHandler_O::numberOfAuxArguments)
-      .def("allowOtherKeys", &LambdaListHandler_O::allowOtherKeys)
-      .def("numberOfLexicalVariables", &LambdaListHandler_O::numberOfLexicalVariables)
-      .def("namesOfLexicalVariables", &LambdaListHandler_O::namesOfLexicalVariables)
-      .def("namesOfLexicalVariablesForDebugging", &LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
-      .def("LambdaListHandler-lambdaList", &LambdaListHandler_O::lambdaList);
-}
+
 
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
   SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
 
-void LambdaListHandler_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, LambdaListHandler, "", "", _lisp);
-#endif
-}
 
 }; /* core */
    

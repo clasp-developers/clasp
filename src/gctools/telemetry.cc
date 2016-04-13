@@ -17,10 +17,14 @@ void throw_if_invalid_global_telemetry_search() {
 CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("");
-CL_DEFUN void core__telemetry_open(core::T_sp pathname) {
+CL_DEFUN void core__telemetry_open(core::T_sp tpathname) {
+  core::Pathname_sp pathname = core::cl__pathname(tpathname);
   core::Str_sp filename = core::cl__namestring(pathname);
   global_telemetry_search = new Telemetry();
   global_telemetry_search->open_read(filename->c_str());
+  if (global_telemetry_search->_File == NULL ) {
+    printf("Could not open file: %s\n", _rep_(pathname).c_str());
+  }
 }
 #define MAX_WORDS 16
 
@@ -198,6 +202,10 @@ CL_DEFUN void core__telemetry_dump(core::T_sp begin, core::T_sp end) {
       break;
     std::string entry = global_telemetry_search->entry_as_string(label, num_read, data);
     printf("%s\n", entry.c_str());
+    if ((global_telemetry_search->_Index % 1000000) == 0 ) {
+      POLL_SIGNALS();
+      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+    }
   }
 }
 
@@ -213,17 +221,32 @@ CL_DEFUN size_t core__telemetry_count() {
   Word data[MAX_WORDS];
   while (1) {
     bool read = global_telemetry_search->read_header(header);
-    if (!read)
-      break;
-    if (global_telemetry_search->process_header(header))
-      continue;
+    if (!read) break;
+    if (global_telemetry_search->process_header(header)) continue;
     size_t num_read = global_telemetry_search->read_data(label, MAX_WORDS, data);
+    if ((global_telemetry_search->_Index % 1000000) == 0 ) {
+      POLL_SIGNALS();
+      printf("%s:%d Searching record index %lu at file offset %lu\n", __FILE__, __LINE__, global_telemetry_search->_Index, global_telemetry_search->_ThisRecordPos);
+    }
   }
   return global_telemetry_search->_Index;
 }
 
 char *global_clasp_telemetry_file;
-Telemetry *global_telemetry = NULL;
+
+
+void Telemetry::dump_entry_varargs(Handle label, size_t num, ... )
+{
+  Word data[8];
+  va_list arguments;
+  va_start(arguments,num);
+  for ( int x = 0; x<num; ++x ) {
+    data[x] = va_arg(arguments,Word);
+  }
+  va_end(arguments);
+  std::string msg = this->entry_as_string(label,num,data);
+  printf("%s\n", msg.c_str());
+}
 
 std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[]) {
   std::string slabel = global_telemetry_search->_Labels[label];
@@ -286,6 +309,15 @@ void Telemetry::initialize() {
   this->intern("label_stack_allocate alloc@%p size: %lu", label_stack_allocate);
   this->intern("label_stack_pop ap@%p frame@%p", label_stack_pop);
   this->intern("obj_deallocate_unmanaged_instance addr@%p", label_obj_deallocate_unmanaged_instance);
+  this->intern("cons_mps_allocation base @%p client@%p client_end@%p kind: %lu", label_cons_allocation);
+    this->intern("cons_pad base@%p size: %lu", label_cons_pad);
+  this->intern("cons_scan_start client@%p limit@%p", label_cons_scan_start);
+  this->intern("cons_scan client@%p after_client@%p kind: %lu", label_cons_scan);
+  this->intern("cons_isfwd == TRUE client@%p base@%p forward@%p", label_cons_isfwd_true);
+  this->intern("cons_isfwd == FALSE client@%p base@%p", label_cons_isfwd_false);
+  this->intern("cons_skip in-client@%p  out-client@%p size=%lu", label_cons_skip);
+  this->intern("cons_fwd old-client@%p new-client@%p", label_cons_fwd);
+
 };
 
 void initialize_telemetry_functions() {
@@ -294,6 +326,8 @@ void initialize_telemetry_functions() {
 
 extern "C" {
 void global_telemetry_flush() {
-  telemetry::global_telemetry->flush();
+#ifdef DEBUG_TELEMETRY
+  telemetry::global_telemetry_search->flush();
+#endif
 };
 };

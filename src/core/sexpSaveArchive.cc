@@ -51,16 +51,13 @@ namespace core {
 */
 const char *keywords_saveArchive[] = {":debug", ""};
 
-EXPOSE_CLASS(core, SexpSaveArchive_O);
 
-void SexpSaveArchive_O::exposeCando(Lisp_sp lisp) {
-  class_<SexpSaveArchive_O>("make-sexp-save-archive")
-      .def("sexpSaveArchiveWrite", &SexpSaveArchive_O::sexpSaveArchiveWrite);
-}
-void SexpSaveArchive_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream) {
+  DEPRECIATED();
+#if 0
   if (snode->refCount() > 1) {
     T_sp ref = snodeToRef->gethash(snode, _Nil<T_O>());
     if (ref.notnilp()) {
@@ -108,6 +105,7 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
     }
     clasp_write_char(')', stream);
   }
+#endif
 }
 
 CL_LISPIFY_NAME("sexpSaveArchiveWrite");

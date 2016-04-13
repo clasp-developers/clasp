@@ -189,12 +189,13 @@ CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
 
 StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
   StructureObject_sp co = StructureObject_O::create();
-  co->_Type = type;
+  // This better work or there will be trouble
+  co->_Type = gctools::As<Class_sp>(eval::funcall(cl::_sym_findClass,type));
   co->_Slots.resize(cl__length(slot_values));
   int i = 0;
   for (auto cur : slot_values) {
     T_sp val = oCar(cur);
-    co->_Slots[i] = val;
+    co->_Slots[i++] = val;
   }
   return co;
 }
@@ -202,7 +203,6 @@ StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
 void StructureObject_O::initialize() {
   LOG(BF("Initializing StructureObject"));
   this->Base::initialize();
-  this->_Type = _Nil<T_O>();
   this->_Slots.clear();
 }
 
@@ -228,7 +228,7 @@ T_sp StructureObject_O::structureAsList() const {
   *curP = head;          // cur.setPointee(head); // *cur = head;
   curP = head->cdrPtr(); // cur.setPointer(head->cdrPtr()); // cur = head->cdrPtr();
   SYMBOL_EXPORT_SC_(CorePkg, structure_slot_descriptions);
-  List_sp slots = core__get_sysprop(this->_Type, _sym_structure_slot_descriptions);
+  List_sp slots = core__get_sysprop(this->_Type->name(), _sym_structure_slot_descriptions);
   for (; slots.notnilp(); slots = oCdr(slots)) {
     List_sp slotDesc = oCar(slots);
     //    printf("%s:%d slots: %s\n", __FILE__, __LINE__, _rep_(slots).c_str());
@@ -263,7 +263,7 @@ void StructureObject_O::archiveBase(ArchiveP node) {
 }
 
 T_sp StructureObject_O::copyStructure() const {
-  StructureObject_sp copy = gctools::GCObjectAllocator<StructureObject_O>::copy(*this);
+  StructureObject_sp copy = gctools::GC<StructureObject_O>::copy(*this);
   //GC_COPY(StructureObject_O,copy,*this);
   return copy;
 }
@@ -273,11 +273,7 @@ string StructureObject_O::__repr__() const {
   ss << "#< ";
   ss << this->_instanceClass()->classNameAsString() << " ";
   ASSERT(this->_Type);
-  if (this->_Type.unboundp()) {
-    ss << ":type - UNBOUND -" << std::endl;
-  } else {
-    ss << ":type " << _rep_(this->_Type) << std::endl;
-  }
+  ss << ":type " << _rep_(this->_Type) << std::endl;
   ss << "[slots ";
   for (int i = 0; i < this->_Slots.size(); i++) {
     if (this->_Slots[i].nilp()) {
@@ -318,28 +314,7 @@ string StructureObject_O::__repr__() const {
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
   SYMBOL_EXPORT_SC_(CorePkg, structureSet);
   SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
-
   SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
-
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
-
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
-
-void StructureObject_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureObject_O>()
-      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
-      ;
-#if 0
-	    SYMBOL_SC_(CorePkg,make_structure);
-	    Defun(make_structure);
-#endif
-}
-
-void StructureObject_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StructureObject, "", "", _lisp);
-#endif
-}
-
-EXPOSE_CLASS(core, StructureObject_O);
 };

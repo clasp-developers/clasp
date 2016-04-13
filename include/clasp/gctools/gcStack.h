@@ -104,16 +104,6 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   }
   VaList_S(gc::frame::Frame &frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, frame);
-#if 0
-      // This must match (and should be in) lispCallingConvention.h
-      this->_Args[0].reg_save_area = &frame.lowLevelElementRef(gc::frame::IdxRegisterSaveArea);
-      this->_Args[0].overflow_arg_area = &frame.lowLevelElementRef(gc::frame::IdxOverflowArgs);
-      // This is where the number of arguments remaining should be stored
-      ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_NARGS_REGISTER] = frame._ArrayLength;
-      ((uintptr_t*)(this->_Args[0].reg_save_area))[LCC_OVERFLOW_SAVE_REGISTER] = (uintptr_t)(this->_Args[0].overflow_arg_area);
-      this->_Args[0].gp_offset = (gc::frame::IdxRegisterArgumentsStart-gc::frame::IdxRegisterSaveArea)*sizeof(gc::frame::ElementType);
-      this->_Args[0].fp_offset = 304;
-#endif
   };
 
   VaList_S(int nargs, va_list vargs) {

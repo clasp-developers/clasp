@@ -180,7 +180,7 @@ Real_mv clasp_floor1(Real_sp x) {
     Ratio_sp rx(gc::As<Ratio_sp>(x));
     Real_mv mv_v0 = clasp_floor2(rx->numerator(), rx->denominator());
     v0 = mv_v0;
-    Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
+    Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
     v1 = clasp_make_ratio(tv1, rx->den());
     break;
   }
@@ -255,7 +255,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Ratio_sp ry = gc::As<Ratio_sp>(y);
       Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v0;
-      Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
+      Integer_sp t1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
       //		v1 = clasp_make_ratio(clasp_nth_value(the_env, 1), y->den());
       v1 = clasp_make_ratio(t1, ry->den());
       break;
@@ -313,7 +313,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Ratio_sp ry = gc::As<Ratio_sp>(y);
       Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v0;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
+      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
       v1 = clasp_make_ratio(tv1, ry->den());
       break;
     }
@@ -356,7 +356,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Real_mv mv_v0 = clasp_floor2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
                                    gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
       v0 = mv_v0;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet(1));
+      Integer_sp tv1 = gc::As<Integer_sp>(mv_v0.valueGet_(1));
       v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
       break;
     }
@@ -365,7 +365,7 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
       Real_mv mv_v0 = clasp_floor2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
       v0 = mv_v0;
-      Number_sp tv1 = gc::As<Number_sp>(mv_v0.valueGet(1));
+      Number_sp tv1 = gc::As<Number_sp>(mv_v0.valueGet_(1));
       v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
       break;
     }
@@ -428,7 +428,7 @@ Real_mv clasp_ceiling1(Real_sp x) {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
     Real_mv mv_v = clasp_ceiling2(rx->num(), rx->den());
     v0 = mv_v;
-    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
     v1 = clasp_make_ratio(tv1, rx->den());
     break;
   }
@@ -502,7 +502,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Ratio_sp ry = gc::As<Ratio_sp>(y);
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
       v1 = clasp_make_ratio(tv1, ry->den());
       break;
     }
@@ -555,7 +555,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Ratio_sp ry = gc::As<Ratio_sp>(y);
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(x, ry->den())), ry->num());
       v0 = mv_v;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
       v1 = clasp_make_ratio(tv1, ry->den());
       break;
     }
@@ -599,7 +599,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Real_mv mv_v = clasp_ceiling2(gc::As<Real_sp>(clasp_times(rx->num(), ry->den())),
                                     gc::As<Real_sp>(clasp_times(rx->den(), ry->num())));
       v0 = mv_v;
-      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+      Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
       v1 = clasp_make_ratio(tv1, gc::As<Integer_sp>(clasp_times(rx->den(), ry->den())));
       break;
     }
@@ -608,7 +608,7 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
       Ratio_sp rx = gc::As<Ratio_sp>(x);
       Real_mv mv_v = clasp_ceiling2(rx->num(), gc::As<Real_sp>(clasp_times(rx->den(), y)));
       v0 = mv_v;
-      Number_sp tv1 = gc::As<Number_sp>(mv_v.valueGet(1));
+      Number_sp tv1 = gc::As<Number_sp>(mv_v.valueGet_(1));
       v1 = gc::As<Real_sp>(clasp_divide(tv1, rx->den()));
     }
     }
@@ -668,7 +668,7 @@ Real_mv clasp_truncate1(Real_sp x) {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
     Real_mv mv_v = clasp_truncate2(rx->num(), rx->den());
     v0 = mv_v;
-    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
     v1 = clasp_make_ratio(tv1, rx->den());
     break;
   }
@@ -762,7 +762,7 @@ Real_mv clasp_round1(Real_sp x) {
     Ratio_sp rx = gc::As<Ratio_sp>(x);
     Real_mv mv_v = clasp_round2(rx->num(), rx->den());
     v0 = mv_v;
-    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet(1));
+    Integer_sp tv1 = gc::As<Integer_sp>(mv_v.valueGet_(1));
     v1 = clasp_make_ratio(tv1, rx->den());
     break;
   }
@@ -848,7 +848,7 @@ CL_DOCSTRING("mod");
 CL_DEFUN Real_sp cl__mod(Real_sp x, Real_sp y) {
   /* INV: #'floor always outputs two values */
   Real_mv mv_v = cl__floor(x, y);
-  return gc::As<Real_sp>(mv_v.valueGet(1));
+  return gc::As<Real_sp>(mv_v.valueGet_(1));
 }
 
 CL_LAMBDA(x y);
@@ -856,7 +856,7 @@ CL_DECLARE();
 CL_DOCSTRING("rem");
 CL_DEFUN Real_sp cl__rem(Real_sp x, Real_sp y) {
   Real_mv mv_v = cl__truncate(x, y);
-  return gc::As<Real_sp>(mv_v.valueGet(1));
+  return gc::As<Real_sp>(mv_v.valueGet_(1));
 }
 
 CL_LAMBDA(x);

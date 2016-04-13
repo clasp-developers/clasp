@@ -59,10 +59,10 @@ THE SOFTWARE.
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_gctools_mem
 
+#if 0
 namespace translate {
-
 template <>
-struct to_object<core::Creator *> {
+struct to_object<core::Creator_sp> {
   typedef core::Creator *GivenType;
   static core::T_sp convert(GivenType v) {
     if (v)
@@ -71,7 +71,7 @@ struct to_object<core::Creator *> {
   }
 };
 };
-
+#endif
 namespace core {
 
 const int Class_O::NumberOfClassSlots;
@@ -110,13 +110,9 @@ void Class_O::initializeSlots(int slots) {
   }
   this->_MetaClassSlots.resize(slots, _Unbound<T_O>());
   this->instanceSet(REF_DIRECT_SUPERCLASSES, _Nil<T_O>());
+  this->instanceSet(REF_DIRECT_DEFAULT_INITARGS, _Nil<T_O>());
   this->instanceSet(REF_FINALIZED, cl::_sym_T_O);
 }
-
-T_sp InstanceCreator::allocate() {
-  GC_ALLOCATE(Instance_O, output);
-  return output;
-};
 
 gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
   if (aClass->cxxClassP()) {
@@ -158,13 +154,11 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   }
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
-    gc::tagged_pointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
-    // gctools::StackRootedPointer<Creator> aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
-    gc::tagged_pointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
-    //gctools::StackRootedPointer<Creator> dup(aCxxAllocator->duplicateForClassName(this->name()));
+    Creator_sp aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
+    Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
-    gc::tagged_pointer<InstanceCreator> instanceAllocator = gctools::ClassAllocator<InstanceCreator>::allocate_class(this->name());
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->name());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }
@@ -189,7 +183,11 @@ T_sp Class_O::allocate_newNil() {
 
 T_sp Class_O::make_instance() {
   T_sp instance = this->allocate_newNil();
-  instance->initialize();
+  if (instance.generalp()) {
+    instance.unsafe_general()->initialize();
+  } else {
+    SIMPLE_ERROR(BF("Add support to make_instance of non general objects"));
+  }
   return instance;
 }
 
@@ -222,7 +220,7 @@ string Class_O::__repr__() const {
     return "#<built-in-class t>";
   }
   stringstream ss;
-  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << " @" << (void *)(this) << ">";
+  ss << "#<" << _rep_(this->__class()->className()) << " " << this->instanceClassName() << ">";
 
   return ss.str();
 }
@@ -424,20 +422,17 @@ void Class_O::addInstanceBaseClassDoNotCalculateClassPrecedenceList(Symbol_sp cl
 }
 
 void Class_O::addInstanceBaseClass(Symbol_sp className) {
-  _OF();
   this->addInstanceBaseClassDoNotCalculateClassPrecedenceList(className);
   this->lowLevel_calculateClassPrecedenceList();
 }
 
 void Class_O::setInstanceBaseClasses(List_sp classes) {
-  _OF();
   this->instanceSet(REF_DIRECT_SUPERCLASSES, cl__copy_list(classes));
   this->lowLevel_calculateClassPrecedenceList();
 }
 
 CL_LISPIFY_NAME("core:direct-superclasses");
 CL_DEFMETHOD List_sp Class_O::directSuperclasses() const {
-  _OF();
   return coerce_to_list(this->instanceRef(REF_DIRECT_SUPERCLASSES));
 }
 
@@ -534,6 +529,9 @@ T_sp Class_O::instanceClassSet(Class_sp mc) {
 
 void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp className) {
   this->setName(className);
+  // Initialize some of the class slots
+  this->instanceSet(REF_DIRECT_SLOTS,_Nil<T_O>());
+  this->instanceSet(REF_DEFAULT_INITARGS,_Nil<T_O>());
   T_sp tmc = this->_instanceClass();
   ASSERTNOTNULL(tmc);
   Class_sp mc = gc::As<Class_sp>(tmc);
@@ -561,21 +559,7 @@ SYMBOL_SC_(CorePkg, subclassp);
 SYMBOL_SC_(CorePkg, allocateRawClass);
 SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
 
-void Class_O::exposeCando(Lisp_sp lisp) {
-  class_<Class_O>()
-      .def("core:nameOfClass", &Class_O::className)
-      .def("core:direct-superclasses", &Class_O::directSuperclasses)
-      .def("core:hasCreator", &Class_O::hasCreator)
-    ;
-      //      .def("core:getCreator", &Class_O::getCreator);
-      //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
-      //	Defun(makeSureClosClassSlotsMatchClass);
-    }
-void Class_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Class, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, Class_O);
+
+
 };

@@ -501,13 +501,6 @@
   (let* ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
-      #+(or)(push enclosed-function *functions-to-finalize*)
-      #+(or)(progn
-	      (warn "------- Implement enclose-instruction: ~a~%" instruction)
-	      (format t "   enter-instruction: ~a~%" enter-instruction)
-	      (format t "   enclosed-function: ~a~%" enclosed-function)
-	      (format t "    inputs: ~a~%" inputs)
-	      (format t "    outputs: ~a~%" outputs))
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
 	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
@@ -527,6 +520,50 @@
 		     (format *debug-log* "    inputs: ~a~%" inputs))
 	(%store result (first outputs) nil)))))
 
+(defmethod translate-simple-instruction
+    ((instruction cc-mir:stack-enclose-instruction) return-value inputs outputs abi)
+  (declare (ignore inputs))
+  (cmp:irc-low-level-trace :flow)
+  (let* ((enter-instruction (cleavir-ir:code instruction)))
+    (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
+        (layout-procedure enter-instruction abi)
+      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
+             (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
+             (ptr-to-sacs
+              (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
+             (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
+             (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+             (result
+              (progn
+                (cmp:irc-intrinsic-args
+                 "cc_stack_enclose"
+                 (list* ptr-to-sacs
+                        ltv-lambda-name
+                        enclosed-function
+                        cmp:*gv-source-file-info-handle*
+                        (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                        (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                        (cmp:irc-size_t-*current-source-pos-info*-column)
+                        (%size_t (length inputs))
+                        loaded-inputs)
+                 :label (format nil "closure->~a" lambda-name)))
+               #+(or) (progn
+                        (cmp:irc-intrinsic-args
+                         "cc_enclose"
+                         (list* ltv-lambda-name
+                                enclosed-function
+                                cmp:*gv-source-file-info-handle*
+                                (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                                (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                                (cmp:irc-size_t-*current-source-pos-info*-column)
+                                (%size_t (length inputs))
+                                loaded-inputs)
+                         :label (format nil "closure->~a" lambda-name)))
+               ))
+        (cc-dbg-when *debug-log*
+                     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+                     (format *debug-log* "    inputs: ~a~%" inputs))
+        (%store result (first outputs) nil)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
@@ -880,7 +917,7 @@ nil)
 (defun describe-form (form)
   (when (consp form)
     (cond
-      ((eq 'core:*fset (car form))
+      ((eq 'core:fset (car form))
        (let* ((name (cadr (cadr form)))
 	      (is-macro (cadddr form))
 	      (header (if is-macro
@@ -950,9 +987,7 @@ nil)
                      (format *debug-log* "cleavir-generate-ast::*current-form-is-top-level-p* --> ~a~%" 
                              (if (boundp 'cleavir-generate-ast::*current-form-is-top-level-p*) 
                                  cleavir-generate-ast::*current-form-is-top-level-p* 
-                                 "UNBOUND" ))
-                     (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
-                             cleavir-generate-ast::*subforms-are-top-level-p*))
+                                 "UNBOUND" )))
         (let* ((clasp-system *clasp-system*)
                (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
                       (when *debug-cleavir* (draw-ast a))
@@ -975,6 +1010,7 @@ nil)
           (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
           (cleavir-ir:hir-to-mir hir clasp-system nil nil)
           (when *debug-cleavir* (draw-mir hir)) ;; comment out
+          (clasp-cleavir:optimize-stack-enclose hir)
           (cc-mir:assign-mir-instruction-datum-ids hir)
           (setf *ast* hoisted-ast
                 *hir* hir)
@@ -983,8 +1019,7 @@ nil)
             (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
             (translate hir abi))))
     (cc-dbg-when *debug-log*
-                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))
-    ))
+                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))))
 
 ;; Set this to T to watch cleavir-compile-t1expr run
 (defvar *cleavir-compile-verbose* nil)
@@ -1022,7 +1057,8 @@ nil)
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
-              (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+              (cleavir-ir:hir-to-mir hir clasp-system nil nil) 
+              (clasp-cleavir:optimize-stack-enclose hir)
               (cc-mir:assign-mir-instruction-datum-ids hir)
               #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
               (setf *ast* hoisted-ast

@@ -93,8 +93,18 @@ struct TargetClassifier {
   void advanceLexicalIndex();
 };
 
-class LambdaListHandler_O : public T_O {
-  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",T_O);
+};
+template <>
+struct gctools::GCInfo<core::LambdaListHandler_O> {
+  static bool constexpr CanAllocateWithNoArguments = true;
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core{
+class LambdaListHandler_O : public General_O {
+  LISP_CLASS(core, CorePkg, LambdaListHandler_O, "LambdaListHandler",General_O);
 
 public: // virtual functions inherited from Object
   void initialize();
@@ -293,12 +303,6 @@ public:
 };
 };
 TRANSLATE(core::LambdaListHandler_O);
-template <>
-struct gctools::GCInfo<core::LambdaListHandler_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 #endif //]
    

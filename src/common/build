@@ -9,13 +9,13 @@
 # currently it needs the files generated above by the python grovelers
 #
 install -d bin
-bjam $* -n -a >bin/all-commands.txt
-bjam $* -n >bin/commands.txt
+$BJAM $* -n -a >bin/all-commands.txt
+$BJAM $* -n >bin/commands.txt
 echo Running $CLASP_SBCL  --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANGXX_PATH `pwd`/ bin/all-commands.txt bin/commands.txt
 $CLASP_SBCL --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANGXX_PATH `pwd`/ bin/all-commands.txt bin/commands.txt
 
 #
 # run bjam to build app
 #
-echo bjam $*
-bjam $*
+echo $BJAM $*
+$BJAM $*

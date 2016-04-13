@@ -32,10 +32,29 @@ THE SOFTWARE.
 #include <clasp/core/singleDispatchMethod.fwd.h>
 
 namespace core {
-class SingleDispatchMethod_O : public T_O {
-  friend class SingleDispatchGenericFunctionClosure;
-  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",T_O);
-  DECLARE_INIT();
+
+  FORWARD(SingleDispatchMethodFunction);  
+  class SingleDispatchMethodFunction_O : public FunctionClosure_O {
+    LISP_CLASS(core,CorePkg,SingleDispatchMethodFunction_O,"SingleDispatchMethodFunction",FunctionClosure_O);
+  public:
+    const char *describe() const { return "SingleDispatchMethodFunction"; };
+  public:
+    Function_sp _body;
+  public:
+    core::T_sp lambda_list() const { return _Nil<T_O>(); };
+  SingleDispatchMethodFunction_O(T_sp name, Function_sp body) : Base(name), _body(body) {};
+    inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      ASSERT_FIRST_ARG_IS_VALIST();
+      return apply_consume_valist(this->_body,LCC_ARG0_VALIST());
+    };
+  };
+
+};
+
+namespace core {
+class SingleDispatchMethod_O : public General_O {
+  friend class SingleDispatchGenericFunctionClosure_O;
+  LISP_CLASS(core, CorePkg, SingleDispatchMethod_O, "SingleDispatchMethod",General_O);
   //    DECLARE_ARCHIVE();
 public:
   friend class SingleDispatchMethodPrimitive_O;
@@ -51,8 +70,7 @@ GCPRIVATE: // instance variables here
   /*! Store the receiver class for this method */
   Class_sp _receiver_class;
   /*! Store the body of the method */
-  Function_sp code;
-  //        CompiledBody_sp		_body;
+  SingleDispatchMethodFunction_sp       _body;
   //	BuiltIn_sp	_method_builtin;
   /*! This is the LambdaListHandler for the Builtin method */
   LambdaListHandler_sp _argument_handler;
@@ -77,8 +95,10 @@ CL_LISPIFY_NAME("singleDispatchMethodName");
 CL_DEFMETHOD   Symbol_sp singleDispatchMethodName() const { return this->_name; };
 CL_LISPIFY_NAME("singleDispatchMethodReceiverClass");
 CL_DEFMETHOD   Class_sp singleDispatchMethodReceiverClass() const { return this->_receiver_class; };
-CL_LISPIFY_NAME("singleDispatchMethodCode");
-CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
+ 
+//CL_LISPIFY_NAME("singleDispatchMethodCode");
+//CL_DEFMETHOD   Function_sp singleDispatchMethodCode() const { return this->code; };
+ 
 CL_LISPIFY_NAME("singleDispatchMethodLambdaListHandler");
 CL_DEFMETHOD   LambdaListHandler_sp singleDispatchMethodLambdaListHandler() const { return this->_argument_handler; };
 CL_LISPIFY_NAME("singleDispatchMethodDeclares");
@@ -99,38 +119,54 @@ TRANSLATE(core::SingleDispatchMethod_O);
 
 namespace core {
 
+
+  /*! A CxxMethodFunction_O is invoked with two arguments (args next-emfun)
+      It will invoke the method body using the args and ignore the next-emfun) */
+    
+  class CxxMethodFunction_O : public SingleDispatchMethodFunction_O {
+    LISP_CLASS(core,CorePkg,CxxMethodFunction_O,"CxxMethodFunction",SingleDispatchMethodFunction_O);
+  public:
+    const char *describe() const { return "CxxMethodFunction"; };
+  public:
+  CxxMethodFunction_O(T_sp name, Function_sp body) : Base(name,body) {};
+  };
+
 /*! A method function when invoked is given two arguments: (args next-emfun)
       It creates a FunctionValueEnvironment that defines call-next-method and next-method-p 
       with the method environment as its parent and then invokes the method-function
       with (args next-emfun) */
-class Lambda_method_function : public BuiltinClosure {
-  FRIEND_GC_SCANNER(core::Lambda_method_function);
+#if 0
+  class Lambda_method_function : public BuiltinClosure_O {
+    FRIEND_GC_SCANNER(core::Lambda_method_function);
 
-private:
-  SingleDispatchMethod_sp _method;
-  Function_sp _temporary_function;
+  private:
+    SingleDispatchMethod_sp _method;
+    Function_sp _temporary_function;
 
-public:
-  const char *describe() const { return "Lambda_method_function"; };
+  public:
+    const char *describe() const { return "Lambda_method_function"; };
 
-public:
+  public:
   Lambda_method_function(T_sp name, SingleDispatchMethod_sp method)
-      : BuiltinClosure(name) {
-    _G();
-    this->_method = method;
-    this->_temporary_function = _Nil<Function_O>();
-  }
+    : BuiltinClosure_O(name) {
+      _G();
+      this->_method = method;
+      this->_temporary_function = _Nil<Function_O>();
+    }
 
-  DISABLE_NEW();
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  bool requires_activation_frame() const { return true; };
+    DISABLE_NEW();
+    virtual size_t templatedSizeof() const { return sizeof(*this); };
+    bool requires_activation_frame() const { return true; };
 
   /*! The argument list is: (args next-emfun)
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
-  void LISP_INVOKE();
-};
+    void LISP_INVOKE();
+  };
+#endif
 
- void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
+
+ 
+  void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
 
 
 };

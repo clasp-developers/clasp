@@ -71,19 +71,8 @@ CL_DEFMETHOD void SmallMultimap_O::insert(T_sp key, T_sp val) {
   (void)found;
 }
 
-void SmallMultimap_O::exposeCando(Lisp_sp lisp) {
-  class_<SmallMultimap_O>()
-      .def("small_multimap_describe", &SmallMultimap_O::describe)
-      .def("small_multimap_describe_range", &SmallMultimap_O::describeRange)
-      .def("small_multimap_insert", &SmallMultimap_O::insert)
-      .def("small_multimap_size", &SmallMultimap_O::size);
-}
 
-void SmallMultimap_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SmallMultimap, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, SmallMultimap_O);
+
+
 };

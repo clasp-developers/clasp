@@ -291,20 +291,24 @@ Boehm and MPS use a single pointer"
   ;; va-list arg
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
-(defvar +fn-registers-prototype-argument-names+                    (list* "closed-af-ptr" "va-list"    "nargs" *register-arg-names*))
-(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +tmv+ (list* +t*+            +VaList_S*+ +size_t+ *register-arg-types*))
-  "The general function prototypes pass the following pass:
-1) An sret pointer for where to put the result
-2) A closed over runtime environment (linked list of activation frames)
-3) The number of arguments +i32+
-4) core::+number-of-fixed-arguments+ T_O* pointers, the first arguments passed in registers,
-      If no argument is passed then pass NULL.
-5) If additional arguments are needed then they must be put in the multiple-values array on the stack")
+(defvar +fn-registers-prototype-argument-names+
+  (list* "closure-ptr" "va-list" "nargs" *register-arg-names*))
+(defvar +fn-registers-prototype+
+  (llvm-sys:function-type-get
+   +tmv+
+   (list* +t*+ +VaList_S*+ +size_t+ *register-arg-types*))
+  "X86_64 calling convention The general function prototypes pass the following pass:
+1) A closed over runtime environment a pointer to a closure.
+2) A valist of remaining arguments
+3) The number of arguments +size_t+
+4) core::+number-of-fixed-arguments+ T_O* pointers, 
+   the first arguments passed in registers,
+5) The remaining arguments are on the stack
+      If no argument is passed then pass NULL.")
 
 (progn
   (defvar +fn-prototype+ +fn-registers-prototype+)
   (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
-
 
 (defvar +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
   "A pointer to the function prototype")
@@ -612,9 +616,9 @@ Boehm and MPS use a single pointer"
 
 
   (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
-  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
+  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i64+))
 ;;  (primitive-nounwind module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
-  (primitive-nounwind module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
+  (primitive-nounwind module "setParentOfActivationFrameFromClosure" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
   (primitive-nounwind module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
@@ -660,11 +664,10 @@ Boehm and MPS use a single pointer"
   (primitive          module "singleStepCallback" +void+ nil)
 
 
-  (primitive module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
+  (primitive-nounwind module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-nounwind module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-nounwind module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
 ;;  (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
-;;  (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
   (primitive module "va_symbolFunction" +t*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +t*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
@@ -674,7 +677,7 @@ Boehm and MPS use a single pointer"
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
 ;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
-  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
+  (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
 ;;  (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
 ;;  (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
@@ -775,6 +778,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
+  (primitive-nounwind module "cc_stack_enclose" +t*+ (list +i8*+ +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive          module "cc_call_multipleValueOneFormCall" +return_type+ (list +t*+))
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
@@ -790,7 +794,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_allowOtherKeywords" +i64+ (list +i64+ +t*+))
 ;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
-  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
+  (primitive-nounwind module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
   (primitive          module "cc_unwind" +void+ (list +t*+ +size_t+))
   (primitive          module "cc_throw" +void+ (list +t*+) :does-not-return t)

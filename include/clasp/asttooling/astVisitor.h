@@ -37,8 +37,8 @@ THE SOFTWARE.
 namespace asttooling {
 
 FORWARD(AstVisitor);
-class AstVisitor_O : public core::T_O, public clang::RecursiveASTVisitor<AstVisitor_O> {
-  LISP_CLASS(asttooling, AstToolingPkg, AstVisitor_O, "AstVisitor",core::T_O);
+class AstVisitor_O : public core::General_O, public clang::RecursiveASTVisitor<AstVisitor_O> {
+  LISP_CLASS(asttooling, AstToolingPkg, AstVisitor_O, "AstVisitor",core::General_O);
 
 GCPRIVATE:
   core::T_sp _Target;

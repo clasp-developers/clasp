@@ -35,11 +35,11 @@ NAMESPACE_PACKAGE_ASSOCIATION(cffi, CffiPkg, "CFFI-SYS");
 namespace cffi {
 
 
-class CffiExposer : public core::Exposer {
+class CffiExposer_O : public core::Exposer_O {
 private:
 public:
   DISABLE_NEW();
-  CffiExposer(core::Lisp_sp lisp) : Exposer(lisp, CffiPkg){};
+  CffiExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, CffiPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
 };

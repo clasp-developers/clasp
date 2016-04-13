@@ -4,8 +4,6 @@ echo "core dir = $(dir)" ;
 #
 #
 project internals/core : requirements
-	<define>EXPAT
-	<threading>single
 	<toolset>darwin:<define>darwin
 	<toolset>darwin:<cxxflags>"-Wno-unused-variable"
 	<toolset>darwin:<linkflags>"-framework IOKit -framework Carbon -framework Cocoa -framework System -framework OpenGL -framework Glut -framework AGL -L/usr/local/lib/x86_64 -lgomp"
@@ -32,12 +30,18 @@ local sources =
       clc-env.cc
       clc-query.cc
       clc-ast.cc
+    environment.cc
+    generate.cc
+    activationFrame.cc
+    evaluator.cc
+      functor.cc
+      creator.cc
+      sharpEqualWrapper.cc
       vectorDisplaced.cc
       stacks.cc
       weakKeyMapping.cc
       weakHashTable.cc
       weakPointer.cc
-	    evaluator.cc
 	    compiler.cc
       genericFunction.cc
 	    instance.cc
@@ -75,8 +79,6 @@ local sources =
       unixfsys.cc
       executables.cc
 	    lispList.cc
-    activationFrame.cc
-	    environment.cc
 	    binder.cc
 		multiStringBuffer.cc
 		candoOpenMp.cc
@@ -153,7 +155,7 @@ local sources =
 	    backquote.cc
 	    documentation.cc
 	    lispReader.cc
-	    singleDispatchEffectiveMethodFunction.cc
+#	    singleDispatchEffectiveMethodFunction.cc
 	    singleDispatchGenericFunction.cc
 	    singleDispatchMethod.cc
 	    structureObject.cc
@@ -179,4 +181,4 @@ local sources =
 		posixTime.cc
      		;
 
-alias core : $(sources) ;
+alias core : $(sources) : <cxxflags>"-std=c++11" ;

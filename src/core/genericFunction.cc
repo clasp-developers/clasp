@@ -126,7 +126,7 @@ T_mv generic_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   T_sp memoize;
   T_mv methods = eval::funcall(clos::_sym_compute_applicable_methods_using_classes,
                                gf, listOfClasses(vargs));
-  memoize = methods.valueGet(1); // unlikely_if (Null(memoize = env->values[1])) {
+  memoize = methods.valueGet_(1); // unlikely_if (Null(memoize = env->values[1])) {
   if (memoize.nilp()) {
     List_sp arglist = listOfObjects(vargs);
     //    T_sp arglist = lisp_va_list_toCons(vargs); // used to be frame_to_list
@@ -249,7 +249,7 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
 }
 
 // Arguments are passed in the multiple_values array
-LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, gc::tagged_pointer<Cache> cache) {
+LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
   /* Lookup the generic-function/arguments invocation in a cache and if an effective-method
 	   exists then use that.   If an effective-method does not exist then calculate it and put it in the cache.
 	   Then call the effective method with the saved arguments.
@@ -277,7 +277,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, gc::tagged_pointer<Cach
     T_sp keys = VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
     func = gc::As<Function_sp>(mv);
-    if (mv.valueGet(1).notnilp()) {
+    if (mv.valueGet_(1).notnilp()) {
       if (e->_key.notnilp()) {
         try {
           cache->search_cache(e); // e = ecl_search_cache(cache);
@@ -308,20 +308,20 @@ generic_function_dispatch_vararg(cl_narg narg, ...)
 }
  */
 LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
-  gc::tagged_pointer<Cache> cache(_lisp->methodCachePtr());
+  Cache_sp cache = _lisp->methodCachePtr();
   return standard_dispatch(gf, vargs, cache);
 }
 
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
 LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
-  gc::tagged_pointer<Cache> cache(_lisp->slotCachePtr());
+  Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
 LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs) {
-  gc::tagged_pointer<Cache> cache(_lisp->slotCachePtr());
+  Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
@@ -342,8 +342,13 @@ CL_DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the 
 CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
-  _lisp->methodCachePtr()->removeOne(what);
-  _lisp->slotCachePtr()->removeOne(what);
+  if ( what == _lisp->_true() ) {
+    _lisp->methodCachePtr()->empty();
+    _lisp->slotCachePtr()->empty();
+  } else {
+    _lisp->methodCachePtr()->removeOne(what);
+    _lisp->slotCachePtr()->removeOne(what);
+  }
 };
 
   SYMBOL_SC_(ClosPkg, clearGfunHash);

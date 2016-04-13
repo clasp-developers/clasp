@@ -37,8 +37,8 @@ THE SOFTWARE.
 namespace core {
 
 FORWARD(WeakHashTable);
-class WeakHashTable_O : public T_O {
-  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",T_O);
+class WeakHashTable_O : public General_O {
+  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",General_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -85,9 +85,9 @@ public: // instance variables here
   HashTableType _HashTable;
 
 public:
-  WeakKeyHashTable_O() : _HashTable(16){};
-  WeakKeyHashTable_O(uint sz) : _HashTable(sz){};
-
+ WeakKeyHashTable_O(size_t sz) : _HashTable(sz) {};
+ WeakKeyHashTable_O() : _HashTable(16) {};
+  void initialize(); 
 public:
   virtual int tableSize() const;
   int size() const { return this->tableSize(); };
@@ -111,7 +111,7 @@ public:
 }; /* core */
 template <>
 struct gctools::GCInfo<core::WeakKeyHashTable_O> {
-  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };

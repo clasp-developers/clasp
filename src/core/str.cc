@@ -114,9 +114,6 @@ T_sp Str_O::elementType() const {
   return cl::_sym_base_char;
 }
 
-#define ARGS_core__base_string_concatenate "(&va-rest args)"
-#define DECL_core__base_string_concatenate ""
-#define DOCS_core__base_string_concatenate "base_string_concatenate"
 CL_LAMBDA(&va-rest args);
 CL_LISPIFY_NAME(base_string_concatenate);
 CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
@@ -840,7 +837,7 @@ void Str_O::fillInitialContents(T_sp seq) {
   }
   return;
 ERROR:
-  SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl__length(seq) % _rep_(seq->__class()->className()) % this->size());
+  SIMPLE_ERROR(BF("There are %d elements in the :INITIAL-CONTENTS, but the %s length is %d") % cl__length(seq) % _rep_(cl__class_of(seq)->className()) % this->size());
 }
 
 void Str_O::__write__(T_sp stream) const {
@@ -861,45 +858,12 @@ void Str_O::__write__(T_sp stream) const {
   }
 }
 
-EXPOSE_CLASS(core, Str_O);
+
 
   SYMBOL_SC_(CorePkg, base_string_concatenate);
 
-void Str_O::exposeCando(Lisp_sp lisp) {
-  class_<Str_O>()
-      //	.def("valueAsStr", &Str_O::valueAsString )
-      //	.def("setFromStr", &Str_O::setFromString )
-//      .def("core:asInt", &Str_O::asInt)
-      .def("core:parse-real", &Str_O::asReal)
-      .def("core:asReal", &Str_O::asReal)
-      .def("core:asSymbol", &Str_O::asSymbol)
-      .def("core:asKeywordSymbol", &Str_O::asKeywordSymbol)
-      //		.def("core:set", &Str_O::set)
-      .def("core:left", &Str_O::left)
-      .def("core:string-find", &Str_O::find)
-      .def("core:right", &Str_O::right)
-      .def("core:substr", &Str_O::substr)
-      //		.def("get", &Str_O::get)
-      .def("core:size", &Str_O::size)
-      .def("core:countOccurances", &Str_O::countOccurances)
-      .def("core:split", &Str_O::split)
-      .def("core:splitAtWhiteSpace", &Str_O::splitAtWhiteSpace)
-      ;
 
-//  core::af_def(CorePkg, "base_string_concatenate", &af_base_string_concatenate_, ARGS_af_base_string_concatenate_, DECL_af_base_string_concatenate_, DOCS_af_base_string_concatenate_);
 
-}
-
-void Str_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Str, "", "", _lisp)
-      .def("valueAsStr", &Str_O::valueAsString)
-      .def("setFromStr", &Str_O::setFromString)
-      //		.def("set", &Str_O::set)
-      //		.def("get", &Str_O::get)
-      ;
-#endif
-}
 
 
 }; /* core */

@@ -41,6 +41,10 @@
 (defun alloca-i8* (&optional (label "var"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8*+ (%i32 1) label))
 
+(defun alloca-i8 (num &optional (label "var"))
+  "Allocate a block of memory in the stack frame"
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8+ (%i32 num) label))
+
 (defun alloca-return_type (&optional (label "return-value"))
   (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+return_type+ (%i32 1) label)))
     instr))

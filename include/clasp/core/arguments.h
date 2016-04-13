@@ -43,7 +43,6 @@ public:
   int _ArgTargetFrameIndex;
   explicit Argument() : _ArgTarget(_Nil<T_O>()), _ArgTargetFrameIndex(UNDEFINED_TARGET) {}
   explicit Argument(T_sp target) : _ArgTarget(target), _ArgTargetFrameIndex(UNDEFINED_TARGET){};
-  DECLARE_onHeapScanGCRoots();
   int targetFrameIndex() const {
     return this->_ArgTargetFrameIndex;
   }
@@ -59,7 +58,7 @@ public:
   inline bool _lambdaListHandlerP() const { return core__lambda_list_handler_p(this->_ArgTarget); };
   LambdaListHandler_sp lambdaListHandler() const;
   inline bool _lambdaListP() const { return cl__consp(this->_ArgTarget); };
-  List_sp lambdaList() const;
+  List_sp lambda_list() const;
   inline bool targetIsLexical() const { return this->_ArgTargetFrameIndex != SPECIAL_TARGET; }
   virtual string asString() const;
 };
@@ -70,7 +69,6 @@ public:
   T_sp _Default;
   ArgumentWithDefault() : _Default(_Nil<T_O>()){};
   ArgumentWithDefault(T_sp target, T_sp def) : Argument(target), _Default(def){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -80,7 +78,6 @@ public:
   RequiredArgument(){};
   RequiredArgument(T_sp target) : Argument(target){};
   RequiredArgument(T_sp target, int frameIndex) : Argument(target) { this->_ArgTargetFrameIndex = frameIndex; };
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -90,7 +87,6 @@ public:
   Argument _Sensor;
   OptionalArgument(){};
   OptionalArgument(T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target, def), _Sensor(sensor){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -100,7 +96,6 @@ public:
   typedef Argument Base;
   explicit RestArgument() : Argument(), VaRest(false){};
   explicit RestArgument(T_sp target) : Argument(target), VaRest(false){};
-  DECLARE_onHeapScanGCRoots();
   void setTarget(T_sp target) { this->_ArgTarget = target; };
   string asString() const;
 };
@@ -112,7 +107,6 @@ public:
   Argument _Sensor;
   KeywordArgument() : ArgumentWithDefault(), _Keyword(_Nil<T_O>()), _Sensor(){};
   KeywordArgument(T_sp keyword, T_sp target, T_sp def, T_sp sensor) : ArgumentWithDefault(target, def), _Keyword(keyword), _Sensor(sensor){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -122,7 +116,6 @@ public:
   T_sp _Expression;
   AuxArgument() : Argument(_Nil<T_O>()), _Expression(_Nil<T_O>()){};
   AuxArgument(T_sp target, T_sp exp) : Argument(target), _Expression(exp){};
-  DECLARE_onHeapScanGCRoots();
   string asString() const;
 };
 
@@ -138,15 +131,19 @@ public:
   virtual void va_rest_binding(const Argument &argument) { N_A_(); };
   virtual VaList_S &valist() { N_A_(); };
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
-  void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val);
+  inline void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
+    thread->bindings().push(sym);
+    this->_endTop = thread->bindings().top();
+    sym->setf_symbolValue(val);
+  }
   inline explicit DynamicScopeManager() {
-    int top = _lisp->bindings().top();
+    int top = thread->bindings().top();
     this->_beginTop = top;
     this->_endTop = top;
   }
 
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
-    int top = _lisp->bindings().top();
+    int top = thread->bindings().top();
     this->_beginTop = top;
     this->_endTop = top;
     this->pushSpecialVariableAndSet(sym, newVal);
@@ -157,7 +154,7 @@ public:
   virtual T_sp lexenv() const;
 
   virtual ~DynamicScopeManager() {
-    DynamicBindingStack &bindings = _lisp->bindings();
+    DynamicBindingStack &bindings = thread->bindings();
     int numBindings = this->_endTop - this->_beginTop;
     for (int i = 0; i < numBindings; ++i) {
       bindings.pop();

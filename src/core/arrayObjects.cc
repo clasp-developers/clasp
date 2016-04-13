@@ -36,11 +36,8 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, ArrayObjects_O);
 
-#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
-#define DECL_ArrayObjects_O_make ""
-#define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
+
 CL_LISPIFY_NAME(make-array-objects);
 CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   GC_ALLOCATE(ArrayObjects_O, array);
@@ -58,15 +55,8 @@ CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, 
   return ((array));
 }
 
-void ArrayObjects_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ArrayObjects_O>();
-}
 
-void ArrayObjects_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ArrayObjects, "", "", _lisp);
-#endif
-}
+
 
 #if defined(XML_ARCHIVE)
 void ArrayObjects_O::archiveBase(::core::ArchiveP node) {
@@ -104,8 +94,7 @@ T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
 }
 
 bool ArrayObjects_O::equalp(T_sp o) const {
-  if (this->eq(o))
-    return true;
+  if (this->eq(o)) return true;
   if (ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>()) {
     const std::vector<cl_index> &my_dimensions = this->_Dimensions;
     const std::vector<cl_index> &other_dimensions = other->_Dimensions;
@@ -172,6 +161,7 @@ void ArrayObjects_O::arrayFill(T_sp val) {
   }
 }
 
+#if 0
 T_sp ArrayObjects_O::deepCopy() const {
   _OF();
   GC_ALLOCATE(ArrayObjects_O, narray);
@@ -183,6 +173,8 @@ T_sp ArrayObjects_O::deepCopy() const {
   }
   return ((narray));
 }
+#endif
+
 
 T_sp ArrayObjects_O::svref(int index) const {
   if (this->_Dimensions.size() == 1) {

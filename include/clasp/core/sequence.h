@@ -32,43 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-
-#if 0
-    FORWARD(Sequence);
-    c l a s s Sequence_O : virtual public T_O
-    {
-	L I S P_BASE1(T_O);
-	L I S P_CLASS(core,ClPkg,Sequence_O,"Sequence");
-    public:
-	void archiveBase(SNode_sp node);
-    public:
-	explicit Sequence_O(): T_O() {}
-	virtual ~Sequence_O() {}
-
-    private: // instance variables here
-
-
-    public: // Functions here
-
-	virtual uint length() const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-
-	virtual T_sp reverse() {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual T_sp nreverse() {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-
-	virtual T_sp elt(int index) const {_OF(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual T_sp setf_elt(int index, T_sp value);
-
-
-	virtual T_sp subseq(int start, T_sp end) const {_G(); SUBCLASS_MUST_IMPLEMENT();};
-	virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq) {_G(); SUBCLASS_MUST_IMPLEMENT();};
-    };
-#endif
-
-}; /* core */
-
-//TRANSLATE(core::Sequence_O);
-
-namespace core {
   uint cl__length(T_sp arg);
 
   T_sp cl__reverse(T_sp obj);

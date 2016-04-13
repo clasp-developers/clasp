@@ -33,8 +33,6 @@ THE SOFTWARE.
 
 namespace core {
 
-REGISTER_CLASS(core, IntArray_O);
-
 //
 // Constructor
 //

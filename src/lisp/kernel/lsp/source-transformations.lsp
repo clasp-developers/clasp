@@ -83,4 +83,9 @@
 
   (define-compiler-macro 1- (x)
     `(core:two-arg-- ,x 1))
+
+  (define-compiler-macro aref (&whole whole array &rest indeces)
+    (if (= (length indeces) 1)
+        `(row-major-aref ,array ,(car indeces))
+        whole))
   )

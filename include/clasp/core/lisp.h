@@ -61,7 +61,7 @@ namespace core {
 class Bundle;
 class CallStack;
 SMART(Intrinsic);
-SMART(Function);
+SMART(NamedFunction);
 SMART(Reader);
 SMART(FunctionValueEnvironment);
 SMART(Class);
@@ -133,9 +133,9 @@ public:
      the clasp stuff and then the python interface creates another one and
      gets the Package_sp for the core package from lisp and then 
      exposes the python classes/functions/globals */
-class Exposer {
-  FRIEND_GC_SCANNER(core::Exposer);
-
+ class Exposer_O : public General_O {
+   FRIEND_GC_SCANNER(Exposer_O);
+   LISP_ABSTRACT_CLASS(core,CorePkg,Exposer_O,"Exposer",General_O);
 public:
   typedef enum { candoClasses,
                  candoFunctions,
@@ -143,21 +143,20 @@ public:
                  pythonClasses,
                  pythonFunctions,
                  pythonGlobals } WhatToExpose;
-GCPRIVATE:
+ private:
   // The package is put here
   Package_sp _Package;
   string _PackageName;
-
 public:
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - allows nicknames */
-  Exposer(Lisp_sp lisp, const string &packageName, const char *nicknames[]);
+  Exposer_O(Lisp_sp lisp, const string &packageName, const char *nicknames[]);
 
   /*! CTor that looks up a Package with packageName and if it
 	  doesn't exist it makes it - no nicknames allowed */
-  Exposer(Lisp_sp lisp, const string &packageName);
+  Exposer_O(Lisp_sp lisp, const string &packageName);
 
-  virtual ~Exposer();
+  virtual ~Exposer_O();
 
   /*! Return the packageName */
   string packageName() const { return this->_PackageName; };
@@ -210,13 +209,14 @@ extern __thread ThreadInfo *threadLocalInfoPtr;
 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
+  friend gctools::Layout_code* gctools::get_kind_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
       {
     //! A pool of strings for string manipulation - must be per thread
     List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
-    InvocationHistoryStack _InvocationHistoryStack;
-    ExceptionStack _ExceptionStack;
+        //InvocationHistoryStack _InvocationHistoryStack;
+        //ExceptionStack _ExceptionStack;
     /*! Multiple values - this should be per thread */
     MultipleValues *_MultipleValuesCur;
     T_sp _TerminalIO;
@@ -230,7 +230,7 @@ class Lisp_O {
     CharacterInfo charInfo;
     gctools::Vec0<core::Symbol_sp> _ClassSymbolsHolder;
     T_sp _SystemProperties;
-    DynamicBindingStack _Bindings;
+//    DynamicBindingStack _Bindings;
     gctools::Vec0<SourceFileInfo_sp> _SourceFiles;
     /*! Store CATCH info */
     List_sp _CatchInfo;
@@ -256,12 +256,12 @@ class Lisp_O {
     T_sp _TrueObject;
 
     /*! SingleDispatchGenericFunction cache */
-    gc::tagged_pointer<Cache> _SingleDispatchMethodCachePtr;
+    Cache_sp _SingleDispatchMethodCachePtr;
 #if CLOS
     /*! Generic functions method cache */
-    gc::tagged_pointer<Cache> _MethodCachePtr;
+        Cache_sp _MethodCachePtr;
     /*! Generic functions slot cache */
-    gc::tagged_pointer<Cache> _SlotCachePtr;
+        Cache_sp _SlotCachePtr;
 #endif
     DoubleFloat_sp _RehashSize;
     DoubleFloat_sp _RehashThreshold;
@@ -347,7 +347,7 @@ public:
   /*! Raw argv */
   vector<string> _Argv;
 
-private:
+public:
   /*! Map source file path strings to SourceFileInfo_sp */
   map<string, int> _SourceFileIndices; // map<string,SourceFileInfo_sp> 	_SourceFiles;
   uint _Mode;
@@ -400,7 +400,7 @@ private:
   // ------------------------------------------------------------
   // ------------------------------------------------------------
 public:
-  InvocationHistoryStack &invocationHistoryStack();
+//  InvocationHistoryStack &invocationHistoryStack();
 
 public:
   map<string, void *> &openDynamicLibraryHandles() { return this->_OpenDynamicLibraryHandles; };
@@ -451,7 +451,7 @@ public:
   };
   //	vector<string>& printfPrefixStack() { return this->_printfPrefixStack;};
 public:
-  ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
+//  inline ExceptionStack &exceptionStack() { return this->_Roots._ExceptionStack; };
 
 public:
   uint nextReplCounter() { return ++this->_ReplCounter; };
@@ -538,9 +538,9 @@ public: // numerical constants
   LongFloat_sp longFloatOne() const { return this->_Roots._LongFloatOne; };
 #endif // ifdef CLASP_LONG_FLOAT
 public:
-  gc::tagged_pointer<Cache> singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
-  gc::tagged_pointer<Cache> methodCachePtr() const { return this->_Roots._MethodCachePtr; };
-  gc::tagged_pointer<Cache> slotCachePtr() const { return this->_Roots._SlotCachePtr; };
+  Cache_sp singleDispatchMethodCachePtr() const { return this->_Roots._SingleDispatchMethodCachePtr; };
+  Cache_sp methodCachePtr() const { return this->_Roots._MethodCachePtr; };
+  Cache_sp slotCachePtr() const { return this->_Roots._SlotCachePtr; };
 
 public:
   /*! Setup makePackage and exportSymbol callbacks */
@@ -571,7 +571,7 @@ public:
   List_sp trace_functions() const;
 
 public:
-  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
+//  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
 
 public:
   /*! Add a pair of symbolIDs that provide an accessor get/setf pair */
@@ -732,9 +732,9 @@ public:
   /*! Lookup a single-dispatch-ggeneric-function in the _SingleDispatchGenericFunctionTable by name
 	 If errorp == true then throw an exception if the single-dispatch-generic-function is not
 	 found otherwise return nil */
-  static SingleDispatchGenericFunction_sp find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp = true);
+  static T_sp find_single_dispatch_generic_function(Symbol_sp gfSym, bool errorp = true);
   /*! Associate a generic function with a symbol by name */
-  static SingleDispatchGenericFunction_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunction_sp gf);
+  static T_sp setf_find_single_dispatch_generic_function(Symbol_sp gfSym, SingleDispatchGenericFunctionClosure_sp gf);
   /*! Clear all generic functions */
   static void forget_all_single_dispatch_generic_functions();
   HashTableEq_sp singleDispatchGenericFunctionTable() const { return this->_Roots._SingleDispatchGenericFunctionTable; };
@@ -773,7 +773,7 @@ public:
   void setBuiltInClassesInitialized(bool b) { this->_BuiltInClassesInitialized = b; };
   void throwIfBuiltInClassesNotInitialized();
 
-  void defineMethod(const string &name, Symbol_sp classSymbol, Functoid *methoid, const string &arguments, const string &docString, bool autoExport);
+  void defineMethod(const string &name, Symbol_sp classSymbol, Function_sp methoid, const string &arguments, const string &docString, bool autoExport);
 
 public:
   Symbol_sp errorUndefinedSymbol(const char *symbolName);
@@ -809,7 +809,7 @@ public:
 	void	popConditionHandlers();
 #endif
   /*! Install a package using the newer Exposer idiom */
-  void installPackage(const Exposer *package);
+  void installPackage(const Exposer_O *package);
   /*! Create nils for all classes that don't have them yet */
   //	void	createNils();
   /*! When global initialization is locked then no more callbacks can be added
@@ -969,8 +969,8 @@ public:
   void initializeEnvironment();
 
   void addClassNameToPackageAsDynamic(const string &package, const string &name, Class_sp cl);
-  void addClass(Symbol_sp classSymbol, gc::tagged_pointer<Creator> creator, Symbol_sp base1ClassSymbol, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
-  void addClass(Symbol_sp classSymbol, Class_sp theClass, gc::tagged_pointer<Creator> creator);
+  void addClass(Symbol_sp classSymbol, Creator_sp creator, Symbol_sp base1ClassSymbol ); //, Symbol_sp base2ClassSymbol = UNDEFINED_SYMBOL, Symbol_sp base3ClassSymbol = UNDEFINED_SYMBOL);
+  void addClass(Symbol_sp classSymbol, Class_sp theClass, Creator_sp creator);
   //	void addClass( Symbol_sp classSymbol);
 
   string __repr__() const;
@@ -983,9 +983,6 @@ public:
   /*! From gdb - stop trace on functions using function names separated by spaces.
 	  if the names string is empty then untrace all functions. */
   void gdb_untrace_by_name(const char *name);
-
-  void exposeCando();
-  void exposePython();
 
   explicit Lisp_O();
   virtual ~Lisp_O(){};

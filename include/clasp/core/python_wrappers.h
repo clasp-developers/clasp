@@ -97,7 +97,7 @@ object BOOST_PYTHON_DECL make_raw_function(objects::py_function);
 									      _lisp);
 #else
 	    core::CompiledBody_sp cbfunc = core::CompiledBody_O::create(func,_lisp);
-	    core::Function_sp fp = core::Function_O::create(funcSymbol,
+	    core::Function_sp fp = core::NamedFunction_O::create(funcSymbol,
 							    llh,
 							    _lisp->cnil(),
 							    core::lisp_create_str(docs),

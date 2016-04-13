@@ -51,7 +51,7 @@ using namespace core;
 namespace serveEvent {
 
 
-void ServeEventExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
+void ServeEventExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
 #define ALL_STAGES

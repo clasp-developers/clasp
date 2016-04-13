@@ -71,9 +71,6 @@ CL_DEFUN bool core__bignump(T_sp obj) {
 };
 
 
-#define ARGS_cl__stringp "(arg)"
-#define DECL_cl__stringp ""
-#define DOCS_cl__stringp "stringP"
 CL_DEFUN bool cl__stringp(T_sp obj) {
   return gc::IsA<String_sp>(obj);
 };
@@ -106,11 +103,9 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("interpretedFunctionP");
 CL_DEFUN bool core__interpreted_function_p(T_sp arg) {
-  if (gc::IsA<Function_sp>(arg)) {
-    if (auto intfunc = gc::As<Function_sp>(arg)->closure.asOrNull<InterpretedClosure>()) {
-      (void)intfunc;
-      return true;
-    }
+  if ( auto intfunc = arg.asOrNull<InterpretedClosure_O>() ) {
+    (void)intfunc;
+    return true;
   }
   return false;
 };
@@ -161,9 +156,6 @@ CL_DEFUN bool cl__numberp(T_sp obj) {
   return gc::IsA<Number_sp>(obj);
 };
 
-#define ARGS_cl__complexp "(arg)"
-#define DECL_cl__complexp ""
-#define DOCS_cl__complexp "complexP"
 CL_DEFUN bool cl__complexp(T_sp obj) {
   return gc::IsA<Complex_sp>(obj);
 };
@@ -182,9 +174,6 @@ CL_DEFUN bool cl__random_state_p(T_sp obj) {
   return gc::IsA<RandomState_sp>(obj);
 };
 
-#define ARGS_cl__rationalp "(arg)"
-#define DECL_cl__rationalp ""
-#define DOCS_cl__rationalp "rationalP"
 CL_DEFUN bool cl__rationalp(T_sp obj) {
   return gc::IsA<Rational_sp>(obj);
 };
@@ -210,37 +199,22 @@ CL_DEFUN bool core__single_float_p(T_sp obj) {
   return gc::IsA<SingleFloat_sp>(obj);
 };
 
-#define ARGS_cl__realp "(arg)"
-#define DECL_cl__realp ""
-#define DOCS_cl__realp "realP"
 CL_DEFUN bool cl__realp(T_sp obj) {
   return gc::IsA<Real_sp>(obj);
 };
 
-#define ARGS_cl__floatp "(arg)"
-#define DECL_cl__floatp ""
-#define DOCS_cl__floatp "floatP"
 CL_DEFUN bool cl__floatp(T_sp obj) {
   return gc::IsA<Float_sp>(obj);
 };
 
-#define ARGS_cl__vectorp "(arg)"
-#define DECL_cl__vectorp ""
-#define DOCS_cl__vectorp "vectorP"
 CL_DEFUN bool cl__vectorp(T_sp obj) {
   return gc::IsA<Vector_sp>(obj);
 };
 
-#define ARGS_cl__integerp "(arg)"
-#define DECL_cl__integerp ""
-#define DOCS_cl__integerp "integerP"
 CL_DEFUN bool cl__integerp(T_sp obj) {
   return gc::IsA<Integer_sp>(obj);
 };
 
-#define ARGS_cl__keywordp "(arg)"
-#define DECL_cl__keywordp ""
-#define DOCS_cl__keywordp "keywordP"
 CL_DEFUN bool cl__keywordp(T_sp obj) {
   if (Symbol_sp s = obj.asOrNull<Symbol_O>()) {
     return s->isKeywordSymbol();
@@ -297,7 +271,7 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("singleDispatchGenericFunctionP");
 CL_DEFUN bool core__single_dispatch_generic_function_p(T_sp obj) {
-  return gc::IsA<SingleDispatchGenericFunction_sp>(obj);
+  return gc::IsA<SingleDispatchGenericFunctionClosure_sp>(obj);
 };
 
 CL_LAMBDA(arg);
@@ -340,9 +314,9 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("compiled_function_p");
 CL_DEFUN bool cl__compiled_function_p(T_sp o) {
-  if (Function_sp fn = o.asOrNull<Function_O>()) {
+  if (Closure_sp fn = o.asOrNull<Closure_O>()) {
     (void)fn;
-    return fn->closure->compiledP();
+    return fn->compiledP();
   }
   return false;
 };

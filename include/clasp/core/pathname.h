@@ -50,15 +50,16 @@ namespace core {
 
 FORWARD(Pathname);
 Pathname_sp cl__pathname(T_sp x);
-
-Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = _Nil<T_O>(), T_sp defaultVersion = kw::_sym_newest); // = cl__symbol_value(cl::_sym_STARdefaultPathnameDefaultsSTAR), T_sp defaultVersion = kw::_sym_newest);
+ Pathname_sp core__safe_default_pathname_defaults();
+ Pathname_sp core__safe_default_pathname_defaults_host_only();
+ Pathname_sp cl__merge_pathnames(T_sp arg, T_sp defaultPathname = core__safe_default_pathname_defaults(), T_sp defaultVersion = kw::_sym_newest);
 
 T_mv cl__parse_namestring(T_sp thing,
-                        T_sp host = _Nil<T_O>(),
-                        T_sp defaultPathname = _Nil<T_O>(),
-                        Fixnum_sp start = make_fixnum(0),
-                        T_sp end = _Nil<T_O>(),
-                        bool junkAllowed = false);
+                          T_sp host = _Nil<T_O>(),
+                          T_sp defaultPathname = core__safe_default_pathname_defaults(),
+                          Fixnum_sp start = make_fixnum(0),
+                          T_sp end = _Nil<T_O>(),
+                          bool junkAllowed = false);
 
 T_sp cl__pathname_host(T_sp pathname, Symbol_sp acase);
 T_sp cl__pathname_device(T_sp pathname, Symbol_sp acase);
@@ -80,8 +81,8 @@ Pathname_sp core__coerce_to_file_pathname(T_sp tpathname);
 namespace core {
 
 SMART(Pathname);
-class Pathname_O : public T_O {
-  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",T_O);
+class Pathname_O : public General_O {
+  LISP_CLASS(core, ClPkg, Pathname_O, "pathname",General_O);
 
   friend bool cl__wild_pathname_p(T_sp tpathname, T_sp component);
   friend Pathname_sp core__coerce_to_physical_pathname(T_sp x);
@@ -199,7 +200,7 @@ Pathname_sp cl__make_pathname(T_sp host, bool hostp,
                             T_sp type, bool typep,
                             T_sp version, bool versionp,
                             T_sp scase = kw::_sym_local,
-                            T_sp defaults = _Nil<T_O>());
+                              T_sp defaults = core__safe_default_pathname_defaults_host_only());
 };
 
 #endif //]

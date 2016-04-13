@@ -65,16 +65,9 @@ using namespace clbind::detail;
 
 namespace clbind {
 
-void ClassRep_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ClassRep_O>();
-}
-void ClassRep_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ClassRep, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(clbind, ClassRep_O);
+
+
 
 ClassRep_O::ClassRep_O(type_id const &type, const std::string &name, bool derivable)
     : m_type(type), m_name(name)

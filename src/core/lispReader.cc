@@ -413,7 +413,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
         return _Nil<T_O>();
       string symbolName = tokenStr(token, name_marker - token.data());
-      Symbol_sp sym = _lisp->getCurrentPackage()->intern(symbolName);
+      Str_sp sym_name = Str_O::create(symbolName);
+      Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
       return sym;
     }
     break;
@@ -435,19 +436,20 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       ++cur;
     }
     string symbolName = tokenStr(token, name_marker - token.data());
+    Str_sp symbol_name_str = Str_O::create(symbolName);
     LOG(BF("Interpreting token as packageName[%s] and symbol-name[%s]") % packageSin.str() % symbolName);
     string packageName = packageSin.str();
     Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
     Symbol_sp sym;
     if (separator == 1) { // Asking for external symbol
-      Symbol_mv sym_mv = pkg->findSymbol(symbolName);
+      Symbol_mv sym_mv = pkg->_findSymbol(symbol_name_str);
       sym = sym_mv;
       T_sp status = sym_mv.second();
       if (status != kw::_sym_external) {
         SIMPLE_ERROR(BF("Cannot find the external symbol %s in %s") % symbolName % _rep_(pkg));
       }
     } else {
-      sym = pkg->intern(symbolName);
+      sym = pkg->intern(symbol_name_str);
     }
     ASSERT(sym);
     return sym;
@@ -458,7 +460,8 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     // interpret good keywords
     LOG(BF("Token[%s] interpreted as keyword") % name_marker);
     string keywordName = tokenStr(token, name_marker - token.data());
-    return _lisp->keywordPackage()->intern(keywordName);
+    Str_sp keyword_name = Str_O::create(keywordName);
+    return _lisp->keywordPackage()->intern(keyword_name);
   } break;
   case tsyme:
   case tsymp:
@@ -594,7 +597,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp cur = first;
   while (1) {
+#ifdef SOURCE_TRACKING
     SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
+#endif
     Character_sp cp = gc::As<Character_sp>(cl__peek_char(_lisp->_true(), sin, _lisp->_true(), _Nil<Character_O>(), _lisp->_true()));
     LOG(BF("read_list ---> peeked char[%s]") % _rep_(cp));
     if (clasp_as_char(cp) == end_char) {
@@ -611,7 +616,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
       TRAP_BAD_CONS(otherResult);
       if (otherResult.nilp())
         return (Values(_Nil<T_O>()));
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(otherResult, info);
+#endif
       return (otherResult);
     }
     int ivalues;
@@ -638,7 +645,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
           SIMPLE_ERROR(BF("More than one object after consing dot"));
         }
         Cons_sp one = Cons_O::create(obj, _Nil<T_O>());
+#ifdef SOURCE_TRACKING
         lisp_registerSourcePosInfo(one, info);
+#endif
         LOG(BF("One = %s\n") % _rep_(one));
         LOG(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
         LOG(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());
@@ -651,10 +660,7 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
   }
 }
 
-/*! Used when USE_SHARP_EQUAL_HASH_TABLES is on */
 SYMBOL_SC_(CorePkg, STARsharp_equal_final_tableSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_equal_temp_tableSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_equal_repl_tableSTAR);
 
 __thread unsigned int read_lisp_object_recursion_depth = 0;
 struct increment_read_lisp_object_recursion_depth {
@@ -697,12 +703,7 @@ T_sp read_lisp_object(T_sp sin, bool eofErrorP, T_sp eofValue, bool recursiveP) 
     }
   } else {
     increment_read_lisp_object_recursion_depth::reset();
-    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR,
-                              HashTableEql_O::create(40, make_fixnum(4000), 0.8));
-    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_temp_tableSTAR,
-                                    HashTableEql_O::create(40, make_fixnum(4000), 0.8));
-    scope.pushSpecialVariableAndSet(_sym_STARsharp_equal_repl_tableSTAR,
-                                    HashTableEq_O::create(40, make_fixnum(4000), 0.8));
+    DynamicScopeManager scope(_sym_STARsharp_equal_final_tableSTAR, _Nil<T_O>());
     result = read_lisp_object(sin, eofErrorP, eofValue, true);
   }
   if (result.nilp())

@@ -79,7 +79,7 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
 }
 
 T_sp LispDebugger::invoke() {
-  //	DebuggerIHF debuggerStack(_lisp->invocationHistoryStack(),_Nil<ActivationFrame_O>());
+  //	DebuggerIHF debuggerStack(thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
     _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
   }
@@ -218,7 +218,7 @@ T_sp LispDebugger::invoke() {
       string sexp = line.substr(2, 99999);
       //		ControlSingleStep singleStep(false);
       T_sp env = core__ihs_env(core__ihs_current_frame());
-      //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
+      //		DebuggerIHF dbgFrame(thread->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
       try {
         DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
         _lisp->readEvalPrintString(sexp, env, true);
@@ -238,7 +238,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace() {
-  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
+  InvocationHistoryStack &ihs = thread->invocationHistoryStack();
   InvocationHistoryFrame *top = ihs.top();
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");
@@ -247,13 +247,13 @@ CL_DEFUN void core__low_level_backtrace() {
   printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    gctools::tagged_pointer<Closure> closure = cur->closure;
+    Closure_sp closure = cur->closure;
     if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
-      if (closure->name.notnilp()) {
+      if (closure->_name.notnilp()) {
         try {
-          name = _rep_(closure->name);
+          name = _rep_(closure->_name);
         } catch (...) {
           name = "-BAD-NAME-";
         }
@@ -264,7 +264,7 @@ CL_DEFUN void core__low_level_backtrace() {
     if (sfi.notnilp()) {
       sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
     }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure, name.c_str(), closure->lineNumber(), sourceName.c_str());
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
   }
   printf("----Done\n");
 }
@@ -452,35 +452,35 @@ void dbg_mv_lowLevelDescribe(T_mv mv_obj) {
 }
 
 void dbg_describe_tagged_T_Optr(T_O *p) {
-  gctools::headerDescribe(p);
+  client_describe(p);
   T_sp obj((gctools::Tagged) reinterpret_cast<T_O *>(p));
   dbg_lowLevelDescribe(obj);
 }
 
 void dbg_describe_tagged_T_Optr_header(T_O *p) {
-  gctools::headerDescribe(p);
+  client_describe(p);
 }
 
 extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
-  printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
+  printf("dbg_describe object class--> %s\n", _rep_(cl__class_of(obj)->className()).c_str());
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
   fflush(stdout);
 }
 
 void dbg_describe_cons(Cons_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
-  printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
+  printf("dbg_describe object class--> CONS\n");
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
 }
 
 void dbg_describe_symbol(Symbol_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);
@@ -488,7 +488,7 @@ void dbg_describe_symbol(Symbol_sp obj) {
 }
 
 void dbg_describeActivationFrame(ActivationFrame_sp obj) {
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
   printf("dbg_describe ActivationFrame class--> %s\n", _rep_(obj->__class()->className()).c_str());
   ss << _rep_(obj);
@@ -502,9 +502,9 @@ void dbg_describeTPtr(uintptr_t raw) {
   }
   T_sp obj = gctools::smart_ptr<T_O>(raw);
   printf("dbg_describeTPtr Raw pointer value: %p\n", obj.raw_());
-  DynamicScopeManager(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
+  DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   stringstream ss;
-  printf("dbg_describe object class--> %s\n", _rep_(obj->__class()->className()).c_str());
+  printf("dbg_describe object class--> %s\n", _rep_(lisp_instance_class(obj)->className()).c_str());
   ss << _rep_(obj);
   printf("dbg_describe: %s\n", ss.str().c_str());
   fflush(stdout);
@@ -516,7 +516,7 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   clasp_write_string((BF("dbg_printTPtr Raw pointer value: %p\n") % (void *)obj.raw_()).str(), sout);
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, _Nil<T_O>());
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_readablySTAR, _lisp->_boolean(print_pretty));
-  clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(obj->__class()->className())).str(), sout);
+  clasp_write_string((BF("dbg_printTPtr object class --> %s\n") % _rep_(lisp_instance_class(obj)->className())).str(), sout);
   fflush(stdout);
   write_ugly_object(obj, sout);
   clasp_force_output(sout);

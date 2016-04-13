@@ -15,6 +15,7 @@ ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   ACLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -I -f ecl-min
   BCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -f bclasp
   CCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
+  CLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
 else
   echo "ERROR CLASP_INTERNAL_BUILD_TARGET_DIR is not defined - what should I do now?"
 endif
@@ -73,6 +74,9 @@ link-cclasp-boehmdc-addons:
 cclasp-boehm-addons:
 	$(CCLASP_BOEHM) -l "build_addons.lsp"
 
+cclasp-mps-addons:
+	$(CCLASP_MPS) -l "build_addons.lsp"
+
 link-cclasp-mps-addons:
 	$(CCLASP_MPS) -l "link_addons.lsp"
 
@@ -93,11 +97,18 @@ boehm-release-cxx-a:
 
 mps-release-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install
+
+mps-prep-release-cxx:
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/release gc=mps-prep release clasp_install
+
 mps-release-cxx-a:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install -a
 
 boehmdc-debug-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/debug gc=boehmdc debug clasp_install
+
+boehmdc-debug-cxx-a:
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehmdc/debug gc=boehmdc debug clasp_install -a
 
 boehm-debug-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/debug gc=boehm debug clasp_install
@@ -124,6 +135,9 @@ cclasp-boehm-clean:
 min-boehm:
 	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
+min-mps:
+	$(CLASP_MPS) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+
 min-boehmdc:
 	$(CLASP_BOEHMDC) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
@@ -133,17 +147,31 @@ bclasp-boehmdc-bitcode:
 bclasp-boehmdc-fasl:
 	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
 
+bclasp-boehmdc:
+	make bclasp-boehmdc-bitcode
+	make bclasp-boehmdc-fasl
+
 cclasp-boehmdc-bitcode:
-	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
+	$(BCLASP_BOEHMDC) -e "(compile-cclasp)" -e "(quit)"
 
 cclasp-boehmdc-fasl:
-	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+	$(BCLASP_BOEHMDC) -e "(link-cclasp :force t)" -e "(quit)"
+
+link-all-boehmdc-fasl:
+	$(CLASP_BOEHMDC) -I -f ecl-min -e "(link-min)" -e "(quit)"
+	$(CLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	$(CLASP_BOEHMDC) -f bclasp -e "(link-cclasp)" -e "(quit)"
+	$(CLASP_BOEHMDC) -l "link_addons.lsp"
+
 bclasp-boehm:
 	make bclasp-boehm-bitcode
 	make bclasp-boehm-fasl
 
 bclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+
+bclasp-mps-bitcode:
+	$(CLASP_MPS) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
 
 bclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
@@ -152,11 +180,17 @@ bclasp-boehm-fasl:
 bclasp-boehm-addons:
 	$(BCLASP_BOEHM) -l "build_addons.lsp"
 
+bclasp-mps-addons:
+	$(BCLASP_MPS) -l "build_addons.lsp"
+
 bclasp-boehm-addons-fasl:
 	$(BCLASP_BOEHM) -l "link-addons.lsp"
 
 cclasp-from-bclasp-boehm-bitcode:
 	$(BCLASP_BOEHM) -l "buildCleavirClasp.lsp"
+
+cclasp-from-bclasp-mps-bitcode:
+	$(BCLASP_MPS) -l "buildCleavirClasp.lsp"
 
 cclasp-boehm:
 	make cclasp-from-bclasp-boehm-bitcode
@@ -168,17 +202,14 @@ cclasp-boehm-bitcode:
 cclasp-boehm-fasl:
 	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
 
+cclasp-mps-fasl:
+	$(BCLASP_MPS) -e "(link-cclasp :force t)" -e "(quit)"
 
 aclasp-mps-fasl:
-	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
+	$(CLASP_MPS) -I -f ecl-min -e "(link-min)" -e "(quit)"
 
 bclasp-mps-fasl:
 	$(CLASP_MPS) -f ecl-min -e "(link-bclasp)" -e "(quit)"
-
-cclasp-mps-fasl:
-	$(BCLASP_MPS) -f ecl-min -e "(link-cclasp)" -e "(quit)"
-
-
 
 clasp-gc-interface:
 	$(BCLASP_BOEHM) -l "buildClaspGC.lsp"
@@ -211,25 +242,37 @@ mps-interface-clasp:
 	$(BCLASP_BOEHM) -l "sys:mps-interface.lsp" -e "(parallel-search-all-then-generate-code-and-quit)"
 
 compile-commands:
-	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
+	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(BCLASP_BOEHMDC) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	clasp_boehmdc_o -f bclasp \
+		-l $(CLASP_HOME)/src/common/build-json.lisp \
+		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
+		-e "(quit)"
 
-compile-commands-cclasp:
-	-bjam link=static gc=mps-prep program=clasp link=static -n -a >bjam.out
+compile-commands-boot:
+	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	python ../common/buildJSON.py clang bjam.out `$(CCLASP_BOEHM) -N -e "(progn (format t \"~a\"(namestring (translate-logical-pathname (ensure-directories-exist #P\"APP-RESOURCES:build-databases;clasp_compile_commands.json\")))) (quit))"` # $(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json
+	clasp_boehmdc_o -f bclasp \
+		-l $(CLASP_HOME)/src/common/build-json.lisp \
+		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
+		-e "(quit)"
 
-mps-interface-run:
-	$(BCLASP_BOEHMDC)  \
+mps-interface-run-boot:
+	clasp_boehmdc_o -f bclasp  \
 		-e "(require :clasp-analyzer)" \
-		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
+		-e "(quit)"
+
+mps-interface-run-boot-d:
+	clasp_boehmdc_d -f bclasp  \
+		-e "(require :clasp-analyzer)" \
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
 mps-interface-run-cclasp:
 	$(CCLASP_BOEHM)  \
 		-e "(require :clasp-analyzer)" \
-		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))"
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
 mps-interface:
@@ -238,9 +281,22 @@ mps-interface:
 	make compile-commands
 	make mps-interface-run
 
+mps-interface-cclasp:
+	@echo Building mps-prep
+	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
+	make compile-commands-cclasp
+	make mps-interface-run-cclasp
+
+
+
+mps-interface-boot:
+	@echo Building mps-prep
+	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
+	make compile-commands-boot
+	make mps-interface-run-boot
 
 scrape:
 	echo $(CLASP_CLANGXX_PATH)
-	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
-	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
+	$(BJAM) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
+	$(BJAM) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
 	sbcl --load "../scraper/scraper.lisp" -- $(CLASP_CLANGXX_PATH) $(CLASP_HOME)/include/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt

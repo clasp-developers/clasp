@@ -86,7 +86,8 @@
 
 (defun wrapped-method-function (method-function)
   #'(lambda (.combined-method-args. *next-methods*)
-      (declare (special .combined-method-args. *next-methods*))
+      (declare (core:lambda-name wrapped-method-function)
+               (special .combined-method-args. *next-methods*))
       (apply method-function .combined-method-args.)))
 
 ;;; ----------------------------------------------------------------------

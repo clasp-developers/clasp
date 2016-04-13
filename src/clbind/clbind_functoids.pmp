@@ -17,18 +17,18 @@ $var NumArgs = 16
                 // numArgs = $numArgs
                 /* Specialization */
                 template <typename Pols $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[, typename UPRT ]] $else [[, typename RT ]] $if numArgs [[,]] $for Args_ ,[[typename ARG$Args_]] >
-                class VariadicFunctoid
+                class VariadicFunctor
                 < $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[ RT ]] (*)($for Args_ , [[ARG$Args_]]), Pols>
-                : public core::BuiltinClosure {
+                : public core::BuiltinClosure_O {
                 public:
-                typedef core::BuiltinClosure TemplatedBase;
+                typedef core::BuiltinClosure_O TemplatedBase;
                 public:
                     typedef $if ret==RetVoid [[void]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> ]] $else [[RT]](*Type)($for Args_ , [[ARG$Args_]]);
                     Type fptr;
                 public:
-		    virtual const char* describe() const { return "VariadicFunctoid"; };
+		    virtual const char* describe() const { return "VariadicFunctor"; };
                     enum { NumParams = $numArgs };
-                    VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+                    VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
                     DISABLE_NEW();
                     virtual size_t templatedSizeof() const { return sizeof(*this);};
                     inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -37,7 +37,7 @@ $var NumArgs = 16
                         $if numArgs>0 [[
                           STACK_FRAME(buff,frame,$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
-                          lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                          lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                       $for Args_ [[
                         translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));

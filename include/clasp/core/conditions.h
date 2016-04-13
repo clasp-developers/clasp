@@ -38,9 +38,8 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 
 namespace core {
-class CandoException_O : public T_O {
-  LISP_CLASS(core, CorePkg, CandoException_O, "CandoException",T_O);
-  DECLARE_INIT();
+class CandoException_O : public General_O {
+  LISP_CLASS(core, CorePkg, CandoException_O, "CandoException",General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(CandoException_O);

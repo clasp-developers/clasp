@@ -276,7 +276,7 @@ No DIBuilder is defined for the default module")
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
 
-(si::*fset
+(si:fset
  'load-bitcode
  #'(lambda (filename &optional verbose print external_format)
      "Load a bitcode file, link it and execute it"

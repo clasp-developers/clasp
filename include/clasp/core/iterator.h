@@ -37,8 +37,8 @@ THE SOFTWARE.
 namespace core {
 
 SMART(Iterator);
-class Iterator_O : public T_O {
-  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",T_O);
+class Iterator_O : public General_O {
+  LISP_CLASS(core, CorePkg, Iterator_O, "Iterator",General_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -82,7 +82,7 @@ CL_DEFMETHOD   virtual T_sp currentObject() {
     SUBCLASS_MUST_IMPLEMENT();
   };
   template <typename OType>
-  gctools::smart_ptr<OType> current() { return downcast<OType>(this->currentObject()); };
+    gctools::smart_ptr<OType> current() { return gctools::As<gctools::smart_ptr<OType>>(this->currentObject()); };
 
   //	Iterator_O( const Iterator_O& ss ); //!< Copy constructor
 

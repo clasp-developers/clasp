@@ -149,8 +149,7 @@ CL_DEFUN Symbol_mv cl__make_symbol(Str_sp name) {
 namespace core {
 
 /*! Construct a symbol that is incomplete, it has no Class or Package */
-Symbol_O::Symbol_O(bool dummy) : T_O(),
-                                 _HomePackage(_Nil<T_O>()),
+Symbol_O::Symbol_O(bool dummy) : _HomePackage(_Nil<T_O>()),
                                  _Value(_Unbound<T_O>()),
                                  _Function(_Unbound<T_O>()),
                                  _SetfFunction(_Unbound<T_O>()),
@@ -179,8 +178,8 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
   this->_HomePackage = pkg;
   this->_Value = _Unbound<T_O>();
-  this->_Function = _Unbound<Function_O>();
-  this->_SetfFunction = _Unbound<Function_O>();
+  this->_Function = _Unbound<T_O>();
+  this->_SetfFunction = _Unbound<T_O>();
   pkg->bootstrap_add_symbol_to_package(this->symbolName()->get().c_str(), this->sharedThis<Symbol_O>(), exportp, shadowp);
   this->_PropertyList = _Nil<T_O>();
 }
@@ -188,7 +187,7 @@ void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
 Symbol_sp Symbol_O::create_at_boot(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate();
+  Symbol_sp n = gctools::GC<Symbol_O>::root_allocate();
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
 #if VERBOSE_SYMBOLS
   if (nm.find("/dyn") != string::npos) {
@@ -202,7 +201,7 @@ Symbol_sp Symbol_O::create_at_boot(const string &nm) {
 Symbol_sp Symbol_O::create(const string &nm) {
   // This is used to allocate roots that are pointed
   // to by global variable _sym_XXX  and will never be collected
-  Symbol_sp n = gctools::GCObjectAllocator<Symbol_O>::root_allocate(true);
+  Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
   Str_sp snm = Str_O::create(nm);
   n->setf_name(snm);
   ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
@@ -217,17 +216,14 @@ Symbol_sp Symbol_O::create(const string &nm) {
   return n;
 };
 
-bool Symbol_O::boundP() const {
-  return !this->_Value.unboundp();
-}
 
 CL_LISPIFY_NAME("makunbound");
 CL_DEFMETHOD void Symbol_O::makunbound() {
   this->_Value = _Unbound<T_O>();
 }
 
-List_sp Symbol_O::plist() const {
-  return this->_PropertyList;
+void Symbol_O::symbolUnboundError() const {
+  SIMPLE_ERROR(BF("Symbol %s is unbound\n") % this->_Name->c_str());
 }
 
 void Symbol_O::setf_plist(List_sp plist) {
@@ -239,9 +235,6 @@ void Symbol_O::sxhash_(HashGenerator &hg) const {
     this->_Name->sxhash_(hg);
 }
 
-#define ARGS_Symbol_O_copy_symbol "(symbol &optional copy-properties)"
-#define DECL_Symbol_O_copy_symbol ""
-#define DOCS_Symbol_O_copy_symbol "copy_symbol"
 CL_LISPIFY_NAME("cl:copy_symbol");
 CL_LAMBDA(symbol &optional copy-properties);
 CL_DEFMETHOD Symbol_sp Symbol_O::copy_symbol(T_sp copy_properties) const {
@@ -302,22 +295,6 @@ CL_DEFMETHOD Symbol_sp Symbol_O::asKeywordSymbol() {
   return kwSymbol;
 };
 
-T_sp Symbol_O::setf_symbolValue(T_sp val) {
-  _OF();
-  ASSERT(!this->_IsConstant);
-#if 0
-	// trap a change in a dynamic variable
-	if ( this->_Name.as<Str_O>()->get() == "*THE-MODULE*")
-	{
-	    printf("%s:%d Changing value of a symbol named *THE-MODULE* to %s\n", __FILE__, __LINE__, _rep_(val).c_str());
-	    if ( val.nilp() ) {
-		printf("%s:%d Trap here - it changed to nil\n", __FILE__, __LINE__ );
-	    }
-	}
-#endif
-  this->_Value = val;
-  return val;
-}
 
 CL_LISPIFY_NAME("core:STARmakeSpecial");
 CL_DEFMETHOD void Symbol_O::makeSpecial() {
@@ -352,16 +329,6 @@ void Symbol_O::setf_symbolValueReadOnlyOverRide(T_sp val) {
   this->_Value = val;
 }
 
-T_sp Symbol_O::symbolValue() const {
-  if (this->_Value.unboundp()) {
-    SIMPLE_ERROR(BF("Unbound symbol-value for %s@@%p") % this->_Name->c_str() % this);
-  }
-  return this->_Value;
-}
-
-T_sp Symbol_O::symbolValueUnsafe() const {
-  return this->_Value;
-}
 
 CL_LISPIFY_NAME("core:setf_symbolFunction");
 CL_DEFMETHOD void Symbol_O::setf_symbolFunction(T_sp exec) {
@@ -389,7 +356,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
       ss << ":" << this->_Name->get();
     } else {
       Package_sp currentPackage = _lisp->getCurrentPackage();
-      if ((currentPackage == myPackage) && !prefixAlways) {
+      if (currentPackage->_findSymbol(this->_Name).notnilp() && !prefixAlways) {
         ss << this->_Name->get();
       } else {
         if (myPackage->isExported(this->const_sharedThis<Symbol_O>())) {
@@ -487,31 +454,8 @@ SYMBOL_EXPORT_SC_(ClPkg, symbolPackage);
 SYMBOL_EXPORT_SC_(ClPkg, symbolFunction);
 SYMBOL_EXPORT_SC_(ClPkg, boundp);
 
-void Symbol_O::exposeCando(Lisp_sp lisp) {
-  // TODO: By default these symbols like SPECIALP are being dumped into the COMMON-LISP package - don't do that.
-  class_<Symbol_O>()
-    .def("core:specialp", &Symbol_O::specialP)
-      .def("core:STARmakeSpecial", &Symbol_O::makeSpecial)
-      .def("core:STARmakeConstant", &Symbol_O::makeConstant)
-      .def("core:fullName", &Symbol_O::fullName)
-      .def("core:asKeywordSymbol", &Symbol_O::asKeywordSymbol)
-      .def("core:setf_symbolFunction", &Symbol_O::setf_symbolFunction)
-      .def("makunbound", &Symbol_O::makunbound)
-      .def("cl:copy_symbol", &Symbol_O::copy_symbol,
-           ARGS_Symbol_O_copy_symbol,
-           DECL_Symbol_O_copy_symbol,
-           DOCS_Symbol_O_copy_symbol)
-    ;
-}
 
-void Symbol_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Symbol, "", "", _lisp)
-      .def("fullName", &Symbol_O::fullName)
-      //	    .def("namestring",&Symbol_O::fullName)
-      .def("asKeywordSymbol", &Symbol_O::asKeywordSymbol);
-#endif
-}
+
 
 void Symbol_O::dump() {
   stringstream ss;
@@ -555,5 +499,5 @@ void Symbol_O::dump() {
   printf("%s", ss.str().c_str());
 }
 
-EXPOSE_CLASS(core, Symbol_O);
+
 };

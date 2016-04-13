@@ -155,6 +155,20 @@ public:
   };
 };
 
+};
+
+namespace asttooling {
+  class DerivableMatchCallback;
+};
+
+template <>
+struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+
+namespace asttooling {
 class DerivableMatchCallback
     : public clbind::Derivable<clang::ast_matchers::MatchFinder::MatchCallback> {
   typedef clang::ast_matchers::MatchFinder::MatchCallback AlienBase;
@@ -206,12 +220,6 @@ public:
     printf("%s:%d ~DerivableMatchCallback dtor\n", __FILE__, __LINE__ );
   }
 };
-};
-template <>
-struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = unmanaged;
 };
 DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
 

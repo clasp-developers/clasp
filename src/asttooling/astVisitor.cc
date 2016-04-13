@@ -48,17 +48,9 @@ CL_DEFUN AstVisitor_sp ast_tooling__makeAstVisitor(core::T_sp target) {
   return AstVisitor_O::create(target);
 };
 
-EXPOSE_CLASS(asttooling, AstVisitor_O);
 
-void AstVisitor_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<AstVisitor_O>();
-}
 
-void AstVisitor_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, AstVisitor, "", "", _lisp);
-#endif
-};
+
 
 SYMBOL_EXPORT_SC_(AstToolingPkg, VisitStmt);
 

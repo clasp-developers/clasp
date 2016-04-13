@@ -48,17 +48,13 @@ namespace core {
 SMART(ObjectDictionary);
 SMART(Name);
 
-class Environment_O : public T_O {
-  LISP_CLASS(core, CorePkg, Environment_O, "Environment",T_O);
+class Environment_O : public General_O {
+  LISP_CLASS(core, CorePkg, Environment_O, "Environment",General_O);
 
 public:
   typedef enum { undeterminedValue,
                  specialValue,
                  /*stackValue,*/ lexicalValue } ValueKind;
-
-protected:
-  uint _EnvId;
-
 public:
   static T_sp clasp_currentVisibleEnvironment(T_sp env);
   static T_sp clasp_getActivationFrame(T_sp env);
@@ -69,10 +65,17 @@ public:
   static bool clasp_findSymbolMacro(T_sp env, Symbol_sp sym, int &depth, int &index, bool &shadowed, Function_sp &func);
   static bool clasp_findMacro(T_sp env, Symbol_sp sym, int &depth, int &index, Function_sp &func);
   static bool clasp_lexicalSpecialP(T_sp env, Symbol_sp sym);
-  static T_sp clasp_lookupValue(T_sp env, int depth, int index);
-  static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index);
+//  static T_sp clasp_lookupValue(T_sp env, int depth, int index);
+#if 0
+  ALWAYS_INLINE static T_sp &clasp_lookupValueReference(T_sp env, int depth, int index) {
+    ASSERT(env && env.isA<Environment_O>());
+    if (env.isA<ValueFrame_O>()) {
+      ValueFrame_sp eenv = gc::reinterpret_cast_smart_ptr<Environment_O, T_O>(env);
+    return eenv->lookupValueReference(depth,index);
+  }
   static Function_sp clasp_lookupFunction(T_sp env, int depth, int index);
-  static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index);
+#endif
+//  static T_sp clasp_lookupTagbodyId(T_sp env, int depth, int index);
   static T_mv clasp_lookupMetadata(T_sp env, Symbol_sp sym);
   static T_sp clasp_find_current_code_environment(T_sp env);
   static T_mv clasp_recognizesBlockSymbol(T_sp env, Symbol_sp sym, bool &interFunction);
@@ -88,8 +91,6 @@ protected:
 
 public:
   void dump();
-  uint environmentId() const { return this->_EnvId; };
-  void setEnvironmentId(uint id) { this->_EnvId = id; };
   virtual bool environmentp() const { return true; }
 CL_LISPIFY_NAME("lexicalEnvironmentP");
 CL_DEFMETHOD   virtual bool lexicalEnvironmentP() const { return false; };
@@ -148,23 +149,21 @@ public:
 	  Otherwise return nil.  
 	*/
   List_sp classifyVariable(T_sp sym) const;
-  virtual T_sp _lookupValue(int depth, int index);
-  virtual Function_sp _lookupFunction(int depth, int index) const;
-  virtual T_sp _lookupTagbodyId(int depth, int index) const { SUBIMP(); };
+//  virtual T_sp _lookupValue(int depth, int index);
+//  virtual Function_sp _lookupFunction(int depth, int index) const;
+//  virtual T_sp _lookupTagbodyId(int depth, int index) const { SUBIMP(); };
+#if 0
   virtual T_sp &lookupValueReference(int depth, int index);
-
+#endif
 public:
   string environmentStackAsString();
-
   /*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
   virtual bool findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
-
   /*! Return the most recent RuntimeVisibleEnvironment */
   virtual T_sp currentVisibleEnvironment() const;
-
   /*! Search down the stack for the symbol
 	 * If not found return end()
 	 */
@@ -233,7 +232,7 @@ public: // extend the environment with forms
 
   virtual int countFunctionContainerEnvironments() const;
 
-  Environment_O() : Base(), _EnvId(0){};
+  Environment_O() : Base(){};
   virtual ~Environment_O(){};
 };
 };
@@ -325,7 +324,7 @@ class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
 GCPROTECTED:
   /*! Maps symbols to their index within the activation frame or if the index is -1 then the symbol is locally special */
   HashTableEq_sp _SymbolIndex;
-  ActivationFrame_sp _ActivationFrame;
+  ValueFrame_sp _ActivationFrame;
 
 public:
   static ValueEnvironment_sp createSingleTopLevelEnvironment();
@@ -344,7 +343,7 @@ private:
   void setupForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
 
 public:
-  virtual T_sp _lookupValue(int depth, int index);
+//  virtual T_sp _lookupValue(int depth, int index);
 
 public:
   /*! Return a summary of the contents of only this environment
@@ -503,7 +502,7 @@ class UnwindProtectEnvironment_O : public CompileTimeEnvironment_O {
 public:
   void initialize();
 
-private:
+public:
   List_sp _CleanupForm;
 #if defined(XML_ARCHIVE)
   void archiveBase(ArchiveP node);
@@ -648,7 +647,6 @@ namespace core {
 FORWARD(TagbodyEnvironment);
 class TagbodyEnvironment_O : public RuntimeVisibleEnvironment_O {
   LISP_CLASS(core, CorePkg, TagbodyEnvironment_O, "TagbodyEnvironment",RuntimeVisibleEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(TagbodyEnvironment_O);
@@ -706,7 +704,6 @@ namespace core {
 FORWARD(MacroletEnvironment);
 class MacroletEnvironment_O : public CompileTimeEnvironment_O {
   LISP_CLASS(core, CorePkg, MacroletEnvironment_O, "MacroletEnvironment",CompileTimeEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(MacroletEnvironment_O);
@@ -745,7 +742,6 @@ namespace core {
 FORWARD(SymbolMacroletEnvironment);
 class SymbolMacroletEnvironment_O : public CompileTimeEnvironment_O {
   LISP_CLASS(core, CorePkg, SymbolMacroletEnvironment_O, "SymbolMacroletEnvironment",CompileTimeEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(SymbolMacroletEnvironment_O);
@@ -787,7 +783,6 @@ namespace core {
 FORWARD(StackValueEnvironment);
 class StackValueEnvironment_O : public CompileTimeEnvironment_O {
   LISP_CLASS(core, CorePkg, StackValueEnvironment_O, "StackValueEnvironment",CompileTimeEnvironment_O);
-  DECLARE_INIT();
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(StackValueEnvironment_O);

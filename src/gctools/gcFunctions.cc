@@ -21,6 +21,7 @@ extern "C" {
 #include <clasp/core/standardClass.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/structureClass.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -34,9 +35,6 @@ namespace gctools {
 const char *global_HardcodedKinds[] = {
     "", "core::T_O", "core::StandardObject_O", "core::Metaobject_O", "core::Specializer_O", "core::Class_O", "core::BuiltInClass_O", "core::StdClass_O", "core::StandardClass_O", "core::StructureClass_O", "core::Symbol_O", "core::Str_O"};
 
-#define ARGS_gctools__max_bootstrap_kinds "()"
-#define DECL_gctools__max_bootstrap_kinds ""
-#define DOCS_gctools__max_bootstrap_kinds "maxBootstrapKinds"
 CL_DEFUN int gctools__max_bootstrap_kinds() {
   return sizeof(global_HardcodedKinds) / sizeof(global_HardcodedKinds[0]);
 }
@@ -68,9 +66,6 @@ void initialize_bootstrap_kinds() {
   SetupKind(core::Str_O);
 }
 
-#define ARGS_gctools__bootstrap_kind_symbols "()"
-#define DECL_gctools__bootstrap_kind_symbols ""
-#define DOCS_gctools__bootstrap_kind_symbols "bootstrapKindSymbols"
 CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   core::Cons_sp list(_Nil<core::Cons_O>());
   for (int i(gctools__max_bootstrap_kinds() - 1); i > 0; --i) {
@@ -80,9 +75,6 @@ CL_DEFUN core::Cons_sp gctools__bootstrap_kind_symbols() {
   return list;
 }
 
-#define ARGS_gctools__bootstrap_kind_p "(arg)"
-#define DECL_gctools__bootstrap_kind_p ""
-#define DOCS_gctools__bootstrap_kind_p "bootstrap-kind-p return a generalized boolean of the bootstrap-kind - either the boostrap kind index or nil"
 CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
   for (int i(0), iEnd(gctools__max_bootstrap_kinds()); i < iEnd; ++i) {
     //            printf("%s:%d i[%d]Checking if %s == %s\n", __FILE__, __LINE__, i, global_HardcodedKinds[i], name.c_str());
@@ -95,28 +87,17 @@ CL_DEFUN core::T_sp gctools__bootstrap_kind_p(const string &name) {
 
 
 
-#define ARGS_gctools__deallocate_unmanaged_instance "()"
-#define DECL_gctools__deallocate_unmanaged_instance ""
-#define DOCS_gctools__deallocate_unmanaged_instance "Deallocate the memory for unmanaged instances and do nothing for other instances"
 CL_DEFUN void gctools__deallocate_unmanaged_instance(core::T_sp obj) {
   obj_deallocate_unmanaged_instance(obj);
 }
 
-#define ARGS_gctools__bytes_allocated "()"
-#define DECL_gctools__bytes_allocated ""
-#define DOCS_gctools__bytes_allocated "Return the number of bytes allocated since Clasp started. Two values are returned the number reported by the GC and the number calculated by Clasp"
-CL_DEFUN core::T_mv gctools__bytes_allocated() {
-  size_t gc_bytes = 0;
-#ifdef USE_BOEHM
-  gc_bytes = GC_get_total_bytes();
-#endif
-#ifdef USE_MPS
-  gc_bytes = 0; // IMPLEMENT_MEF(BF("Figure out how to get the total bytes allocated using MPS"));
-#endif
+CL_DOCSTRING("Return bytes allocated (values clasp-calculated-bytes)");
+CL_DEFUN core::T_sp gctools__bytes_allocated() {
   size_t my_bytes = globalBytesAllocated;
-  ASSERT(gc_bytes < gc::most_positive_fixnum && my_bytes < gc::most_positive_fixnum);
-  return Values(core::clasp_make_fixnum(gc_bytes), core::clasp_make_fixnum(my_bytes));
+  ASSERT(my_bytes < gc::most_positive_fixnum);
+  return core::clasp_make_fixnum(my_bytes);
 }
+
 
 
 CL_LAMBDA();
@@ -127,7 +108,7 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
     return reinterpret_cast<Fixnum>(&typeid(*obj));
 #else
-    return gctools::GCKind<core::Cons_O>::Kind;
+    return gctools::kind_cons;
 #endif
   } else if (obj.generalp()) {
 #if defined(USE_BOEHM) && defined(USE_CXX_DYNAMIC_CAST)
@@ -146,6 +127,8 @@ CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
     return kind_single_float;
   } else if (obj.characterp()) {
     return kind_character;
+  } else if (obj.consp()) {
+    return kind_cons;
   }
   printf("%s:%d HEADER-KIND requested for a non-general object - Clasp needs to define hard-coded kinds for non-general objects - returning -1 for now", __FILE__, __LINE__);
   return core::clasp_make_fixnum(-1);
@@ -165,9 +148,11 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN core::T_mv core__hardwired_kinds() {
-  core::List_sp result = core::Cons_O::createList(core::Cons_O::create(core::Str_O::create("FIXNUM"), core::clasp_make_fixnum(kind_fixnum)),
-                                                  core::Cons_O::create(core::Str_O::create("SINGLE_FLOAT"), core::clasp_make_fixnum(kind_single_float)),
-                                                  core::Cons_O::create(core::Str_O::create("CHARACTER"), core::clasp_make_fixnum(kind_character)));
+  std::vector<Immediate_info> immediates = get_immediate_info();
+  core::List_sp result = _Nil<core::T_O>();
+  for ( int i=0; i<immediates.size(); ++i ) {
+    result = core::Cons_O::create(core::Cons_O::create(core::Str_O::create(immediates[i]._name), core::clasp_make_fixnum(immediates[i]._kind)),result);
+  }
   core::List_sp ignoreClasses = _Nil<core::T_O>(); // core::Cons_O::createList(Str_O::create("core__Cons_O") <-- future when CONS are in their own pool
   return Values(result, ignoreClasses, core::clasp_make_fixnum(kind_first_general), core::clasp_make_fixnum(kind_first_alien), core::clasp_make_fixnum(kind_last_alien), core::clasp_make_fixnum(kind_first_instance));
 }
@@ -390,9 +375,6 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
 
 namespace gctools {
 
-#define ARGS_gctools__gc_info "(&optional x (marker 0))"
-#define DECL_gctools__gc_info ""
-#define DOCS_gctools__gc_info "gcInfo - Return info about the reachable objects"
 CL_LAMBDA(&optional x (marker 0));
 CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #ifdef USE_MPS
@@ -403,9 +385,6 @@ CL_DEFUN core::T_mv gctools__gc_info(core::T_sp x, core::Fixnum_sp marker) {
 #endif
 };
 
-#define ARGS_gctools__monitor_allocations "(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6))"
-#define DECL_gctools__monitor_allocations ""
-#define DOCS_gctools__monitor_allocations "gcMonitorAllocations"
 CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
 CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount, core::Fixnum_sp backtraceDepth) {
   global_monitorAllocations.on = on;
@@ -421,9 +400,6 @@ CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceSta
   printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on);
 };
 
-#define ARGS_gctools__gc_marker "(&optional marker)"
-#define DECL_gctools__gc_marker ""
-#define DOCS_gctools__gc_marker "gcMarker"
 CL_LAMBDA(&optional marker);
 CL_DEFUN Fixnum gctools__gc_marker(core::Fixnum_sp marker) {
 #ifdef USE_BOEHM
@@ -447,9 +423,6 @@ SYMBOL_EXPORT_SC_(GcToolsPkg, STARallocPatternStackSTAR);
 SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
-#define ARGS_gctools__alloc_pattern_begin "(pattern)"
-#define DECL_gctools__alloc_pattern_begin ""
-#define DOCS_gctools__alloc_pattern_begin "allocPatternBegin - pass either gctools:ramp or gctools:ramp-collect-all"
 CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #ifdef USE_MPS
   if (pattern == _sym_ramp || pattern == _sym_rampCollectAll) {
@@ -467,9 +440,6 @@ CL_DEFUN void gctools__alloc_pattern_begin(core::Symbol_sp pattern) {
 #endif
 };
 
-#define ARGS_gctools__alloc_pattern_end "()"
-#define DECL_gctools__alloc_pattern_end ""
-#define DOCS_gctools__alloc_pattern_end "allocPatternEnd - end the current alloc-pattern - return what it was"
 CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
   core::Symbol_sp pattern(_Nil<core::Symbol_O>());
 #ifdef USE_MPS
@@ -490,7 +460,7 @@ CL_DEFUN core::Symbol_sp gctools__alloc_pattern_end() {
 CL_LAMBDA(&optional x (marker 0) msg);
 CL_DECLARE();
 CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, :default - as in ROOM.  marker can be a fixnum (0 - matches everything, any other number/only objects with that marker)");
-             CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
+CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tmsg) {
   string smsg = "Total";
   if (core::Str_sp msg = tmsg.asOrNull<core::Str_O>()) {
     smsg = msg->get();
@@ -499,6 +469,12 @@ CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, 
   mps_word_t numCollections = mps_collections(gctools::_global_arena);
   size_t arena_committed = mps_arena_committed(gctools::_global_arena);
   size_t arena_reserved = mps_arena_reserved(gctools::_global_arena);
+  vector<ReachableMPSObject> reachables;
+  for (int i = 0; i < gctools::KIND_max; ++i) {
+    reachables.push_back(ReachableMPSObject(i));
+  }
+  mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);
+  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
   printf("%12lu collections\n", numCollections);
   printf("%12lu mps_arena_committed\n", arena_committed);
   printf("%12lu mps_arena_reserved\n", arena_reserved);
@@ -510,12 +486,6 @@ CL_DOCSTRING("room - Return info about the reachable objects.  x can be T, nil, 
   printf("%12lu    moving zero-rank(AMCZ) allocations\n", globalMpsMetrics.movingZeroRankAllocations);
   printf("%12lu    unknown(configurable) allocations\n", globalMpsMetrics.unknownAllocations);
   printf("%12lu total memory allocated\n", globalMpsMetrics.totalMemoryAllocated);
-  vector<ReachableMPSObject> reachables;
-  for (int i = 0; i < gctools::KIND_max; ++i) {
-    reachables.push_back(ReachableMPSObject(i));
-  }
-  mps_amc_apply(_global_amc_pool, amc_apply_stepper, &reachables, 0);
-  dumpMPSResults("Reachable Kinds", "AMCpool", reachables);
 #endif
 #ifdef USE_BOEHM
   globalSearchMarker = core::unbox_fixnum(marker);
@@ -554,32 +524,20 @@ void dbg_room() {
 namespace gctools {
 
 #ifdef USE_MPS
-#define ARGS_gctools__mpsTelemetryFlush "()"
-#define DECL_gctools__mpsTelemetryFlush ""
-#define DOCS_gctools__mpsTelemetryFlush "mpsTelemetryFlush"
 CL_DEFUN void gctools__mpsTelemetryFlush() {
   mps_telemetry_flush();
 };
 
-#define ARGS_gctools__mpsTelemetrySet "(flags)"
-#define DECL_gctools__mpsTelemetrySet ""
-#define DOCS_gctools__mpsTelemetrySet "mpsTelemetrySet"
 CL_DEFUN void gctools__mpsTelemetrySet(core::Fixnum_sp flags) {
   mps_telemetry_set(unbox_fixnum(flags));
 };
 
-#define ARGS_gctools__mpsTelemetryReset "(flags)"
-#define DECL_gctools__mpsTelemetryReset ""
-#define DOCS_gctools__mpsTelemetryReset "mpsTelemetryReset"
 CL_DEFUN void gctools__mpsTelemetryReset(core::Fixnum_sp flags) {
   mps_telemetry_reset(unbox_fixnum(flags));
 };
 
 #endif
 
-#define ARGS_gctools__stack_depth "()"
-#define DECL_gctools__stack_depth ""
-#define DOCS_gctools__stack_depth "stackDepth"
 CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
   void *zp = &z;
@@ -587,9 +545,6 @@ CL_DEFUN core::T_sp gctools__stack_depth() {
   return core::make_fixnum((uint)stackDepth);
 };
 
-#define ARGS_gctools__garbage_collect "()"
-#define DECL_gctools__garbage_collect ""
-#define DOCS_gctools__garbage_collect "garbageCollect"
 CL_DEFUN void gctools__garbage_collect() {
 #ifdef USE_BOEHM
   GC_gcollect();
@@ -603,14 +558,135 @@ CL_DEFUN void gctools__garbage_collect() {
   //        printf("Garbage collection done\n");
 };
 
-#define ARGS_gctools__cleanup "()"
-#define DECL_gctools__cleanup ""
-#define DOCS_gctools__cleanup "cleanup"
 CL_DEFUN void gctools__cleanup() {
 #ifdef USE_MPS
   processMpsMessages();
 #endif
 };
+
+
+
+
+bool debugging_configuration(stringstream& ss) {
+  bool debugging = false;
+  bool use_boehm_memory_marker = false;
+#ifdef USE_BOEHM_MEMORY_MARKER
+  use_boehm_memory_marker = true;
+  debugging = true;
+#endif
+  ss << (BF("USE_BOEHM_MEMORY_MARKER = %s\n") % (use_boehm_memory_marker ? "defined" : "undefined") ).str();
+  bool use_alloca_for_frame = false;
+#ifdef USE_ALLOCA_FOR_FRAME
+  use_alloca_for_frame = true;
+  debugging = true;
+#endif
+  ss << (BF("USE_ALLOCA_FOR_FRAME = %s\n") % (use_alloca_for_frame ? "defined" : "undefined") ).str();
+
+  bool use_amc_pool = false;
+#ifdef USE_AMC_POOL
+  use_amc_pool = true;
+#else
+  debugging = true;
+#endif
+  ss << (BF("USE_AMC_POOL = %s\n") % (use_amc_pool ? "defined" : "undefined") ).str();
+
+  bool mps_recognize_all_tags = false;
+#ifdef MPS_RECOGNIZE_ALL_TAGS
+  mps_recognize_all_tags = true;
+  debugging = true;
+#endif
+  ss << (BF("MPS_RECOGNIZE_ALL_TAGS = %s\n") % (mps_recognize_all_tags ? "defined" : "undefined") ).str();
+
+  bool mps_recognize_zero_tags = false;
+#ifdef MPS_RECOGNIZE_ZERO_TAGS
+  mps_recognize_zero_tags = true;
+  debugging = true;
+#endif
+  ss << (BF("MPS_RECOGNIZE_ZERO_TAGS = %s\n") % (mps_recognize_zero_tags ? "defined" : "undefined") ).str();
+
+  bool use_symbols_in_global_array = false;
+#ifdef USE_SYMBOLS_IN_GLOBAL_ARRAY
+  use_symbols_in_global_array = true;
+#endif
+  ss << (BF("USE_SYMBOLS_IN_GLOBAL_ARRAY = %s\n") % (use_symbols_in_global_array ? "defined" : "undefined") ).str();
+
+  bool use_static_analyzer_global_symbols = false;
+#ifdef USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
+  use_static_analyzer_global_symbols = true;
+#endif
+  ss << (BF("USE_STATIC_ANALYZER_GLOBAL_SYMBOLS = %s\n") % (use_static_analyzer_global_symbols ? "defined" : "undefined") ).str();
+
+  bool debug_throw_if_invalid_client_on = false;
+#ifdef DEBUG_THROW_IF_INVALID_CLIENT_ON
+  debug_throw_if_invalid_client_on = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_THROW_IF_INVALID_CLIENT_ON = %s\n") % (debug_throw_if_invalid_client_on ? "defined" : "undefined") ).str();
+
+    bool debug_telemetry = false;
+#ifdef DEBUG_TELEMETRY
+  debug_telemetry = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_TELEMETRY = %s\n") % (debug_telemetry ? "defined" : "undefined") ).str();
+
+  bool debug_stack_telemetry = false;
+#ifdef DEBUG_STACK_TELEMETRY
+  debug_stack_telemetry = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_STACK_TELEMETRY = %s\n") % (debug_stack_telemetry ? "defined" : "undefined") ).str();
+
+  bool debug_mps_underscanning = false;
+#ifdef DEBUG_MPS_UNDERSCANNING
+  debug_mps_underscanning = true;
+  bool debug_mps_underscanning_initial = DEBUG_MPS_UNDERSCANNING_INITIAL;
+  debugging = true;
+#else
+  bool debug_mps_underscanning_initial = false;
+#endif
+  ss << (BF("DEBUG_MPS_UNDERSCANNING = %s\n") % (debug_mps_underscanning ? "defined" : "undefined") ).str();
+  ss << (BF("DEBUG_MPS_UNDERSCANNING_INITIAL = %s\n") % (debug_mps_underscanning_initial ? "true" : "false") ).str();
+
+  bool debug_recursive_allocations = false;
+#ifdef DEBUG_RECURSIVE_ALLOCATIONS
+  debug_recursive_allocations = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_RECURSIVE_ALLOCATIONS = %s\n") % (debug_recursive_allocations ? "defined" : "undefined") ).str();
+
+  bool config_var_cool = false;
+#ifdef CONFIG_VAR_COOL
+  config_var_cool = true;
+  debugging = true;
+#endif
+  ss << (BF("CONFIG_VAR_COOL = %s\n") % (config_var_cool ? "defined" : "undefined") ).str();
+
+  bool debug_guard = false;
+#ifdef DEBUG_GUARD
+  debug_guard = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_GUARD = %s\n") % (debug_guard ? "defined" : "undefined") ).str();
+
+  bool debug_validate_guard = false;
+#ifdef DEBUG_VALIDATE_GUARD
+  debug_validate_guard = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
+
+
+  return debugging;
+}
+
+CL_DEFUN void gctools__configuration()
+{
+  stringstream ss;
+  bool debugging = debugging_configuration(ss);
+  core::clasp_writeln_string(ss.str());
+}
+
 
 #define ARGS_gctools__debug_allocations "(arg)"
 #define DECL_gctools__debug_allocations ""

@@ -39,9 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace llvmo {
 
-#define ARGS_llvm_sys__dwTag "(tagsym &optional (debug-version llvm-sys:llvmdebug-version8))"
-#define DECL_llvm_sys__dwTag ""
-#define DOCS_llvm_sys__dwTag "Convert a DW_TAG and version to an integer"
 CL_LAMBDA(tagsym &optional (debug-version llvm-sys:llvmdebug-version8));
 CL_DOCSTRING("Convert a DW_TAG and version to an integer");
 CL_NAME(dw-tag);

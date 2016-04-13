@@ -40,15 +40,7 @@ THE SOFTWARE.
 
 namespace core {
 
-void SymbolToEnumConverter_O::exposeCando(Lisp_sp e) {
-  class_<SymbolToEnumConverter_O>()
-      .def("enumIndexForSymbol", &SymbolToEnumConverter_O::enumIndexForSymbol);
-}
-void SymbolToEnumConverter_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, SymbolToEnumConverter, "", "", _lisp);
-#endif //]
-}
+
 
 SymbolToEnumConverter_sp SymbolToEnumConverter_O::create(const string &whatDoesEnumRepresent) {
   SymbolToEnumConverter_sp c = SymbolToEnumConverter_O::create();
@@ -174,5 +166,5 @@ void	SymbolToEnumConverter_O::archiveBase(ArchiveP node)
 }
 #endif
 
-EXPOSE_CLASS(core, SymbolToEnumConverter_O);
+
 };

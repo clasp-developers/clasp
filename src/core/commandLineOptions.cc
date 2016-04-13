@@ -212,7 +212,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
              "# to control MPS\n"
-             "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80\" # for lots of GC's\n");
+             "export CLASP_MPS_CONFIG=\"32 32 16 80 32 80 64\" # for lots of GC's\n");
       exit(0);
     } else if (arg == "-I" || arg == "--ignore-image") {
       this->_DontLoadImage = true;

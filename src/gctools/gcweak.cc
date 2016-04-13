@@ -1,3 +1,12 @@
+/* NOTES:
+
+(1) _deleted is not being used or updated properly.
+(2) There is something wrong with WeakHashTable - weak pointers end up pointing to memory that is not the start of an object
+(3) The other weak objects (weak pointer, weak mapping) are doing allocations in their constructors.
+
+*/
+
+
 /*
     File: gcweak.cc
 */
@@ -40,7 +49,8 @@ namespace gctools {
     }
 #endif
 
-WeakHashTable::WeakHashTable(size_t length) {
+void WeakHashTable::initialize() {
+  int length = this->_Length;
   /* round up to next power of 2 */
   if (length == 0)
     length = 2;
@@ -148,6 +158,7 @@ int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_b
 		result = 0;
 		length = this->_Keys->length();
 		MyType newHashTable(newLength);
+                newHashTable.initialize();
 		//new_keys = make_buckets(newLength, this->key_ap);
 		//new_values = make_buckets(newLength, this->value_ap);
 		//new_keys->dependent = new_values;
@@ -382,7 +393,7 @@ core::T_mv WeakHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 							  ,pos);
 		if (result) { // WeakHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
 		    value_type& k = (*this->_Keys)[pos];
-		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % k.NULLp() );
+		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
 		    if ( !k.unboundp() && !k.deletedp() ) {
 			GCWEAK_LOG(BF("Returning success!"));
 			core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);

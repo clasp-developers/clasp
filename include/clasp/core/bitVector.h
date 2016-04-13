@@ -43,11 +43,10 @@ SMART(BitVector);
 class BitVector_O : public Vector_O {
   friend T_sp core__bit_array_op(T_sp o, T_sp x, T_sp y, T_sp r);
   LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector",Vector_O);
-
 protected:
   vector<unsigned char> bits;
-
 public:
+  virtual T_sp deepCopy() const {SUBIMP();}
   virtual gc::Fixnum dimension() const { return this->bits.size() * CHAR_BIT; };
   unsigned char *bytes() const { return const_cast<unsigned char *>(this->bits.data()); };
 
@@ -156,6 +155,7 @@ public:
   virtual T_sp vectorPush(T_sp newElement);
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 8);
   virtual T_sp subseq(int start, T_sp end) const;
+  void setFillPointer(size_t fp);
   T_sp deepCopy() const;
   explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust) : BitVector_O(sz), _fill_ptr(fill_ptr), _adjustable(adjust){};
   explicit BitVectorWithFillPtr_O() : BitVector_O(){};

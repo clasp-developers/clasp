@@ -106,15 +106,9 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
   SIMPLE_ERROR(BF("SexpLoadArchive - could not parse %s") % _rep_(obj));
 }
 
-EXPOSE_CLASS(core, SexpLoadArchive_O);
 
-void SexpLoadArchive_O::exposeCando(Lisp_sp lisp) {
-  class_<SexpLoadArchive_O>("make-sexp-load-archive")
-      .def("parseFromObject", &SexpLoadArchive_O::parseFromObject)
-      .def("parseFromStream", &SexpLoadArchive_O::parseFromStream);
-}
-void SexpLoadArchive_O::exposePython(Lisp_sp lisp) {
-}
+
+
 
 CL_LISPIFY_NAME("parseFromObject");
 CL_DEFMETHOD void SexpLoadArchive_O::parseFromObject(T_sp object) {

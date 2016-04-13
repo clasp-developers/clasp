@@ -41,8 +41,8 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoPackage.h>
 
 namespace llvmo {
-class DebugLoc_O : public core::T_O {
-  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc",core::T_O);
+class DebugLoc_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, DebugLoc_O, "DebugLoc",core::General_O);
 
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(DebugLoc_O);

@@ -1,101 +1,112 @@
 (print "Testing")
-(require :asdf)
-(require :clang-tool)
-(require :clasp-analyzer)
-(print "Done")
+(progn
+  (format t "About to require clang-tool and clasp-analyzer~%")
+  (require :clang-tool)
+  (require :clasp-analyzer)
+  (format t "Done~%"))
 
 (in-package :clasp-analyzer)
 
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*cons\.cc.*$" ))
+   :selection-pattern ".*hashTable.cc.*"))
 
-(defparameter *project* (search/generate-code *db*))
+
+(clasp-analyzer:search/generate-code *db*)
+
+(time (clasp-analyzer:load-project *db*))
+
+(analyze-only *db*)
 
 
 
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
-   #P"app-resources:build-databases;clasp_compile_commands.json"))
+   #P"app-resources:build-databases;clasp_compile_commands.json"
+   :selection-pattern ".*activationFrame.cc.*"))
 
-(time (defparameter *project* (search/generate-code *db*)))
+(find "aNO-NAME" '("a" "b" "NO-NAME" "c") :test #'string=)
+(null (search "NO-NAME" "_PackageName.__r_.__first_.NO-NAME.__l.__cap_"))
 
+(print "Done Loading")
+(gethash "core::Functor_O" (project-classes *project*))
 
-
-(macroexpand '(setf (analysis-inline analysis) 'foo))
-
-
-(ext:chdir #P"/Users/meister/Development/clasp/src/main/")
-(clasp-analyzer:load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
-(defun translate-include (args)
-  (dotimes (i (length args))
-    (when (string= (elt args i) "-Iinclude")
-      (setf (elt args i) "-I/Users/meister/Development/clasp/src/main/include")))
-  args)
-(time (clasp-analyzer:serial-search-all-then-generate-code-and-quit :arguments-adjuster #'translate-include :test t))
-
-(defparameter *test-search* (clasp-analyzer:lsel $* ".*primitives.*"))
-(serial-search-only :test *test-search* :arguments-adjuster #'translate-include)
-(room)
+(setf *print-pretty* nil)
 
 
+(defparameter *db*
+  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+   #P"app-resources:build-databases;clasp_compile_commands.json"
+))
+(analyze-only *db*)
+(search "bc" "abcdefg")
 
+(maphash (lambda (k v) (when (search "Wrap" k) (print k))) (project-lispallocs *project*))
+*project*
 
-(apropos "version")
-
-(asdf:asdf-version)
-
-(room)
+(gethash "core::Cons_O" (project-classes *project*))
 
 
 
 
-(load-project)
-(analyze-project)
-(setf (analysis-inline *analysis*) '("core::Cons_O"))
-(generate-code)
-
-(print "Go go go")
-
-(clasp-analyzer:load-compilation-database "app-resources:build-databases;clasp_compile_commands.json")
-
-(clasp-analyzer:lnew $tiny-test-search)
-
-(setq $tiny-test-search (clasp-analyzer:lsel clasp-analyzer:$* ".*/cons\.cc"))
-
-(clasp-analyzer:load-asts $tiny-test-search
-           :arguments-adjuster (clasp-analyzer:build-arguments-adjuster))
-
-(defparameter *test-matcher*
-  '(:record-decl
-    ;;        (:is-definition)
-    ;;        (:is-template-instantiation)
-    (:matches-name ".*GCInfo.*"))
+(progn
+  (defparameter *classes* (project-classes *project*))
+  (defparameter *analysis* (analyze-project *project*))
+  (setq *print-pretty* nil)
+  (defparameter *cws* (gethash "core::ClosureWithSlots" *classes*))
+  (defparameter *cwr* (gethash "core::ClosureWithRecords" *classes*))
+  (defparameter *cc* (gethash "gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>" *classes*))
   )
-(clasp-analyzer:match-run
- *test-matcher*
- :limit 10
- ;;              :tag :point
-;; :match-comments '( ".*mytest.*" )
- :the-code-match-callback
- #'(lambda ()
-     (let* ((decl (mtag-node :whole))
-            (args (cast:get-template-args decl))
-            (arg (cast:template-argument-list-get args 0))
-            (qtarg (cast:get-as-type arg))
-            (tsty-new (cast:get-type-ptr-or-null qtarg))
-            (key (record-key tsty-new))
-            (classified (classify-ctype tsty-new)))
-       (format t "MATCH: ------------------~%")
-       (format t "        Start: ~a~%" (mtag-loc-start :whole))
-       (format t "         Node: ~a~%" (mtag-node :whole))
-       (format t "     type-of node: ~a~%" (type-of (mtag-node :whole)))
-       (format t "         Name: ~a~%" (mtag-name :whole))
-       (format t "          Arg: ~a~%" classified)
-       (format t "          key: ~a~%" key)
-       )))
+*cwr*
 
 
+(trace linearize-code-for-field linearize-class-layout-impl)
+(untrace)
+(defparameter *ls* (class-layout *cws* *analysis*))
+*ls*
+(defparameter *lr* (class-layout *cwr* *analysis*))
 
-(room)
+(defparameter *lc* (class-layout *cc* *analysis*))
+*lc*
+*lr*
+*node*
+(codegen-layout t "core__ClosureWithRecords" "core::ClosureWithRecords" *lr*)
+(codegen-layout t "core__ClosureWithSlots" "core::ClosureWithSlots" *ls*)
+(codegen-container-layout t "foo" "bar" *lc*)
+(variable-part *lr*)
+
+
+(fifth *l*)
+(codegen-offsets (fifth *l*))
+
+(trace fixable-instance-variables-impl)
+(fixable-instance-variables *cws* *analysis*)
+
+(cclass-fields *cws*)
+(first (cclass-fields *cws*))
+*cws*
+(fixable-instance-variables *cws* *analysis*)
+(fixable-instance-variables (instance-variable-ctype (car (third (fixable-instance-variables *cws* *analysis*)))) *analysis*)
+(car (third (fixable-instance-variables *cws* *analysis*)))
+(class-of (first (cclass-fields *cws*)))
+(contains-fixptr-p (first (cclass-fields *cws*)) *project*)
+(gethash "core::SlotData" *classes*)
+(contains-fixptr-p (gethash "core::SlotData" *classes*) *project*)
+(gethash "gctools::GCArray_moveable<core::SlotData,0>" *classes*)
+
+(trace contains-fixptr-impl-p)
+
+
+(code-for-class-layout (cclass-key *cws*) (class-layout *cws* *analysis*) *project*)
+(variable-part (class-layout *cws* *analysis*))
+(fixable-instance-variables (car (variable-part (class-layout *cws* *analysis*))) *analysis*)
+(defparameter *v* (instance-variable-ctype (car (variable-part (class-layout *cws* *analysis*)))))
+(fixable-instance-variables *v* *analysis*)
+
+((class-layout *cws* *analysis*)
+(defparameter *analysis* (analyze-project *project*))
+
+
+(gethash "core::LogicalPathname_O" (analysis-enums *analysis*))
+T

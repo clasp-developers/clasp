@@ -69,7 +69,7 @@ THE SOFTWARE.
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
+#define DEBUG_GCWEAK
 #ifdef DEBUG_GCWEAK
 #define GCWEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
 #else
@@ -148,7 +148,7 @@ struct weak_fwd2_s : public WeakObject {
 };
 
 struct weak_pad_s : public WeakObject {
-  WeakObject *fwd;                         /* forwarded object */
+//  WeakObject *fwd;                         /* forwarded object */  /*WHY!!*//
   gctools::smart_ptr<core::Fixnum_I> size; /* total size of this object */
 };
 
@@ -253,7 +253,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
     }
 #endif
 #ifdef USE_MPS
-    GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.px)));
+    GCWEAK_LOG(BF("Setting Buckets<T,U,WeakLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
     this->bucket[idx] = val;
 #endif
   }
@@ -265,7 +265,7 @@ struct Buckets<T, U, StrongLinks> : public BucketsBase<T, U> {
   Buckets(int l) : BucketsBase<T, U>(StrongBucketKind, l){};
   virtual ~Buckets() {}
   void set(size_t idx, const value_type &val) {
-    GCWEAK_LOG(BF("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p") % idx % ((void *)(val.px)));
+    GCWEAK_LOG(BF("Setting Buckets<T,U,StrongLinks> idx=%d  address=%p") % idx % ((void *)(val.raw_())));
     this->bucket[idx] = val;
   }
 };
@@ -294,15 +294,18 @@ public:
   typedef gctools::GCBucketAllocator<ValueBucketsType> ValueBucketsAllocatorType;
 
 public:
+  int _Length;
   gctools::tagged_pointer<KeyBucketsType> _Keys;     // hash buckets for keys
   gctools::tagged_pointer<ValueBucketsType> _Values; // hash buckets for values
 #ifdef USE_MPS
   mps_ld_s _LocationDependency;
+#else
+  void* _LocationDependency; // Must have a field to match MPS
 #endif
 
 public:
-  WeakHashTable(size_t length = 0);
-
+ WeakHashTable(size_t length) : _Length(length) {};
+  void initialize();
 public:
   static uint sxhashKey(const value_type &key
 #ifdef USE_MPS
@@ -576,6 +579,28 @@ struct WeakPointerManager {
     return result;
   }
 };
+
+
+
+
+ template <typename FROM>
+struct TaggedCast<gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>> *, FROM> {
+  typedef gctools::BucketsBase<gctools::smart_ptr<core::T_O>, gctools::smart_ptr<core::T_O>> *ToType;
+  typedef FROM FromType;
+  inline static bool isA(FromType tagged_client) {
+    if (tagged_generalp(tagged_client)) {
+      // Should I have more here?
+      return dynamic_cast<ToType>(untag_general(tagged_client)) != NULL;
+    }
+    return false;
+  }
+  inline static ToType castOrNULL(FromType client) {
+    if (TaggedCast<ToType, FromType>::isA(client))
+      return reinterpret_cast<ToType>(client);
+    return NULL;
+  }
+};
+
 };
 
 #ifdef USE_MPS

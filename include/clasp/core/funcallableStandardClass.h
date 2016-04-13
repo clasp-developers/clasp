@@ -101,6 +101,7 @@ struct gctools::GCInfo<core::FuncallableStandardClass_O> {
 
 namespace core {
 
+#if 0
 class FuncallableStandardClassInitializationFunctoid : public Functoid {
 private:
   FuncallableStandardClass_sp _FuncallableStandardClass;
@@ -112,6 +113,7 @@ public:
   FuncallableStandardClassInitializationFunctoid(T_sp name, FuncallableStandardClass_sp c) : Functoid(name) { this->_FuncallableStandardClass = c; };
   virtual ~FuncallableStandardClassInitializationFunctoid(){};
 };
+#endif
 };
 TRANSLATE(core::FuncallableStandardClass_O);
 #endif //]

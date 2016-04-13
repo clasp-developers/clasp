@@ -39,25 +39,7 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp InstanceClosure::lambdaList() const {
-  printf("%s:%d InstanceClosure::lambdaList returning NIL\n", __FILE__, __LINE__);
-  return _Nil<T_O>();
-}
 
-LCC_RETURN InstanceClosure::LISP_CALLING_CONVENTION() {
-// Copy the arguments passed in registers into the multiple_values array and those
-// will be processed by the generic function
-#ifdef _DEBUG_BUILD
-  VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
-#endif
-  VaList_sp gfargs((gc::Tagged)lcc_arglist);
-  //  LCC_SKIP_ARG(gfargs);
-  return (this->entryPoint)(this->instance, gfargs);
-}
-
-#define ARGS_clos_setFuncallableInstanceFunction "(instance func)"
-#define DECL_clos_setFuncallableInstanceFunction ""
-#define DOCS_clos_setFuncallableInstanceFunction "setFuncallableInstanceFunction"
 CL_DEFUN T_sp clos__setFuncallableInstanceFunction(T_sp obj, T_sp func) {
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     return iobj->setFuncallableInstanceFunction(func);
@@ -85,7 +67,7 @@ CL_DEFUN Instance_sp core__copy_instance(Instance_sp obj) {
   return cp;
 };
 
-void Instance_O::setKind(Symbol_sp k) {
+void Instance_O::set_kind(Symbol_sp k) {
   if (k == kw::_sym_macro) {
     SIMPLE_ERROR(BF("You cannot set a generic-function (instance) to macro"));
   }
@@ -109,12 +91,15 @@ T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
   if (!cl->hasCreator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  gc::tagged_pointer<core::Creator> allocatorP = (cl->getCreator());
-  T_sp obj = allocatorP->allocate();
+  Creator_sp allocator = (cl->getCreator());
+  T_sp obj = allocator->allocate();
   ASSERT(obj);
   ASSERT(obj.notnilp());
-  obj->instanceClassSet(gc::As<Class_sp>(theClass));
-  obj->initializeSlots(numberOfSlots);
+  if (obj.generalp()) {
+    General_O* gp = (General_O*)obj.unsafe_general();
+    gp->instanceClassSet(gc::As<Class_sp>(theClass));
+    gp->initializeSlots(numberOfSlots);
+  }
   return (obj);
 }
 
@@ -148,7 +133,7 @@ void Instance_O::archiveBase(ArchiveP node) {
     }
   } else {
     this->_isgf = false;
-    this->closure.reset_();
+    this->_entryPoint = NULL;
 #if 1
     Symbol_sp className = node->getKind();
     //	    node->attribute(kw::_sym_iclass,className);
@@ -188,22 +173,12 @@ T_sp Instance_O::instanceSig() const {
   return ((this->_Sig));
 }
 
-EXPOSE_CLASS(core, Instance_O);
+
 
   SYMBOL_EXPORT_SC_(ClosPkg, setFuncallableInstanceFunction);
   SYMBOL_EXPORT_SC_(CorePkg, instanceClassSet);
-void Instance_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<Instance_O>();
 
-//  af_def(CorePkg, "allocateRawInstance", &Instance_O::allocateRawInstance);
-//  ClosDefun(setFuncallableInstanceFunction);
-}
 
-void Instance_O::exposePython(core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Instance, "", "", _lisp);
-#endif
-}
 
 T_sp Instance_O::instanceClassSet(Class_sp mc) {
   this->_Class = mc;
@@ -270,12 +245,7 @@ T_sp Instance_O::copyInstance() const {
   Instance_sp iobj = gc::As<Instance_sp>(Instance_O::allocateInstance(this->_Class));
   iobj->_isgf = this->_isgf;
   iobj->_Slots = this->_Slots;
-  if ((bool)(this->closure)) {
-    auto ic = this->closure.as<InstanceClosure>();
-    iobj->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(*ic);
-  } else {
-    iobj->closure.reset_();
-  }
+  iobj->_entryPoint = this->_entryPoint;
   iobj->_Sig = this->_Sig;
   return iobj;
 }
@@ -295,12 +265,7 @@ SYMBOL_SC_(ClosPkg, standardOptimizedReaderMethod);
 SYMBOL_SC_(ClosPkg, standardOptimizedWriterMethod);
 
 void Instance_O::ensureClosure(GenericFunctionPtr entryPoint) {
-  if (!(bool)(this->closure)) {
-    this->closure = gctools::ClassAllocator<InstanceClosure>::allocate_class(this->GFUN_NAME(), entryPoint, this->asSmartPtr());
-  } else {
-    auto ic = this->closure.as<InstanceClosure>();
-    ic->entryPoint = entryPoint;
-  }
+  this->_entryPoint = entryPoint;
 };
 
 T_sp Instance_O::setFuncallableInstanceFunction(T_sp functionOrT) {
@@ -353,10 +318,8 @@ bool Instance_O::genericFunctionP() const {
 }
 
 bool Instance_O::equalp(T_sp obj) const {
-  if (obj.nilp())
-    return false;
-  if (this->eq(obj))
-    return true;
+  if (!obj.generalp()) return false;
+  if (this == obj.unsafe_general()) return true;
   if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
     if (this->_Class != iobj->_Class)
       return false;
@@ -385,7 +348,7 @@ void Instance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 #if 0
 	ASSERT(this->_Entry!=NULL);
-	LispCompiledFunctionIHF _frame(_lisp->invocationHistoryStack(),this->asSmartPtr());
+	LispCompiledFunctionIHF _frame(thread->invocationHistoryStack(),this->asSmartPtr());
 	return(( (this->_Entry)(*this,nargs,args)));
 #endif
 }

@@ -33,6 +33,8 @@ THE SOFTWARE.
 #include <boost/utility/binary.hpp>
 #include <clasp/gctools/telemetry.h>
 
+
+
 extern "C" {
 typedef struct SegStruct *Seg;
 typedef mps_arena_t Arena;
@@ -43,12 +45,16 @@ extern void ShieldExpose(Arena arena, Seg seg);
 extern void ShieldCover(Arena arena, Seg seg);
 };
 
+
 namespace gctools {
 
+  extern bool global_underscanning;
 #ifdef DEBUG_MPS_UNDERSCANNING
 #define DEBUG_MPS_UNDERSCANNING_TESTS() \
-  mps_arena_collect(_global_arena);     \
-  mps_arena_release(_global_arena);
+  if ( global_underscanning ) { \
+    mps_arena_collect(_global_arena);     \
+    mps_arena_release(_global_arena); \
+  }
 #else
 #define DEBUG_MPS_UNDERSCANNING_TESTS()
 #endif
@@ -61,6 +67,7 @@ namespace gctools {
 struct MpsMetrics {
   size_t finalizationRequests = 0;
   size_t movingAllocations = 0;
+  size_t consAllocations = 0;
   size_t movingZeroRankAllocations = 0;
   size_t nonMovingAllocations = 0;
   size_t unknownAllocations = 0;
@@ -89,13 +96,7 @@ extern MpsMetrics globalMpsMetrics;
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss
 
-class GCObject {
-public:
-  //	bool isNil() const { return false;};
-  //	bool isUnbound() const { return false;};
-  //	bool isObject() const { return true;};
-  virtual ~GCObject(){};
-};
+class GCObject {};
 
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
@@ -110,7 +111,7 @@ typedef enum { KIND_null,
 };
 
 extern "C" {
-char *obj_name(gctools::kind_t kind);
+const char *obj_name(gctools::kind_t kind);
 extern void obj_dump_base(void *base);
 };
 
@@ -136,8 +137,8 @@ extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t 
 
 namespace gctools {
 
-template <class T>
-inline size_t sizeof_with_header();
+  template <class T>
+    inline size_t sizeof_with_header();
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -170,107 +171,105 @@ inline size_t sizeof_with_header();
       bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
     */
 
-class Header_s {
-public:
-  static const tagged_kind_t tag_mask = BOOST_BINARY(11);
-  static const tagged_kind_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
-  static const tagged_kind_t fwd_tag = BOOST_BINARY(10);
-  static const tagged_kind_t pad_mask = BOOST_BINARY(111);
-  static const tagged_kind_t pad_test = BOOST_BINARY(011);
-  static const tagged_kind_t pad_tag = BOOST_BINARY(011);
-  static const tagged_kind_t pad1_tag = BOOST_BINARY(111);
-  static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
+ 
+  class Header_s {
+  public:
+    static const tagged_kind_t tag_mask = BOOST_BINARY(11);
+    static const tagged_kind_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
+    static const tagged_kind_t fwd_tag = BOOST_BINARY(10);
+    static const tagged_kind_t pad_mask = BOOST_BINARY(111);
+    static const tagged_kind_t pad_test = BOOST_BINARY(011);
+    static const tagged_kind_t pad_tag = BOOST_BINARY(011);
+    static const tagged_kind_t pad1_tag = BOOST_BINARY(111);
+    static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
   //        static const tagged_kind_t  fwd2_tag        = BOOST_BINARY(001);
 
-private:
-  tagged_kind_t header;
-  tagged_kind_t data[1]; // After this is where the client pointer starts
-public:
- Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag), data{0xDEADBEEF01234567} {};
+  public:
+    tagged_kind_t header;
+#ifdef DEBUG_GUARD
+    tagged_kind_t guard;
+    int tail_start;
+    int tail_size;
+#endif
+    tagged_kind_t data[1]; // After this is where the client pointer starts
+  public:
+#ifndef DEBUG_GUARD
+  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag)
+      ,data{0xDEADBEEF01234567} {};
+    void validate() const {};
+#else
+    inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
+  Header_s(kind_t k,size_t tstart, size_t tsize, size_t total_size) 
+    : header((((kind_t)k) << 2) | kind_tag),
+      data{0xDEADBEEF01234567},
+      tail_start(tstart),
+        tail_size(tsize),
+        guard(0x0FEEAFEEBFEECFEED)
+        {
+#if 0
+          if ( tstart == 88 && k == 31 ) {
+            printf("%s:%d @%p  tstart == %lu tsize=%lu k == %d total_size=%lu \n", __FILE__, __LINE__, (void*)this, tstart, tsize, k, total_size  );
+          }
+#endif
+          this->fill_tail();
+        };
 
-  bool invalidP() const { return (this->header & tag_mask) == 0; };
-  bool kindP() const { return (this->header & tag_mask) == kind_tag; };
-  bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
-  bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
-  bool padP() const { return (this->header & pad_mask) == pad_tag; };
-  bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
+      void validate() const;
+#endif
+
+      bool invalidP() const { return (this->header & tag_mask) == 0; };
+      bool kindP() const { return (this->header & tag_mask) == kind_tag; };
+      bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
+      bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
+      bool padP() const { return (this->header & pad_mask) == pad_tag; };
+      bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
 
   /*! No sanity checking done - this function assumes kindP == true */
-  GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
-  void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
+      GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
+      void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
   /*! No sanity checking done - this function assumes fwdP == true */
-  void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
+      void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
   /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-  void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
-  tagged_kind_t fwdSize() const { return this->data[0]; };
+      void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
+      tagged_kind_t fwdSize() const { return this->data[0]; };
   /*! This writes into the first tagged_kind_t sized word of the client data. */
-  void setFwdSize(size_t sz) { this->data[0] = sz; };
+      void setFwdSize(size_t sz) { this->data[0] = sz; };
   /*! Define the header as a pad, pass pad_tag or pad1_tag */
-  void setPad(tagged_kind_t p) { this->header = p; };
+      void setPad(tagged_kind_t p) { this->header = p; };
   /*! Return the pad1 size */
-  tagged_kind_t pad1Size() const { return sizeof(Header_s); };
+      tagged_kind_t pad1Size() const { return alignof(Header_s); };
   /*! Return the size of the pad block - without the header */
-  tagged_kind_t padSize() const { return data[0]; };
+      tagged_kind_t padSize() const { return ((uintptr_t*)this)[1]; };
   /*! This writes into the first tagged_kind_t sized word of the client data. */
-  void setPadSize(size_t sz) { this->data[0] = sz; };
-  string description() const {
-    if (this->kindP()) {
-      std::stringstream ss;
-      ss << "Header=" << (void *)(this->header);
-      ss << "/";
-      ss << obj_name(this->kind());
-      return ss.str();
-    } else if (this->fwdP()) {
-      std::stringstream ss;
-      ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
-      return ss.str();
-    } else if (this->pad1P()) {
-      return "Pad1";
-    } else if (this->padP()) {
-      stringstream ss;
-      ss << "Pad/sz=" << this->padSize();
-      return ss.str();
-    }
-    stringstream ss;
-    ss << "IllegalHeader=";
-    ss << (void *)(this->header);
-    printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
-    return ss.str();
-    ;
-  }
+      void setPadSize(size_t sz) { ((uintptr_t*)this)[1] = sz; };
+      string description() const {
+        if (this->kindP()) {
+          std::stringstream ss;
+          ss << "Header=" << (void *)(this->header);
+          ss << "/";
+          ss << obj_name(this->kind());
+          return ss.str();
+        } else if (this->fwdP()) {
+          std::stringstream ss;
+          ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
+          return ss.str();
+        } else if (this->pad1P()) {
+          return "Pad1";
+        } else if (this->padP()) {
+          stringstream ss;
+          ss << "Pad/sz=" << this->padSize();
+          return ss.str();
+        }
+        stringstream ss;
+        ss << "IllegalHeader=";
+        ss << (void *)(this->header);
+        printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
+        return ss.str();
+        ;
+      }
+  };
 };
 
-void headerDescribe(core::T_O *taggedClient);
-};
-
-namespace gctools {
-
-constexpr size_t Alignment() {
-  return sizeof(Header_s);
-};
-inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
-
-template <class T>
-inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
-};
-
-/* Align size upwards and ensure that it's big enough to store a
- * forwarding pointer.
- * This is used by the obj_scan and obj_skip methods
- */
-/*   Replaces this macro...
-     #define ALIGN(size)                                                \
-    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
-     ? AlignUp<Header_s>(size)                              \
-     : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
-*/
-namespace gctools {
-extern size_t global_sizeof_fwd;
-//extern size_t global_alignup_sizeof_header;
-inline size_t Align(size_t size) {
-  return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
-};
-};
 
 namespace gctools {
 
@@ -279,12 +278,14 @@ namespace gctools {
 extern mps_arena_t _global_arena;
 
 extern mps_pool_t _global_amc_pool;
+extern mps_pool_t global_amc_cons_pool;
 //    extern mps_pool_t _global_mvff_pool;
 extern mps_pool_t _global_amcz_pool;
 extern mps_pool_t global_non_moving_pool;
 extern mps_pool_t global_unmanaged_pool;
 
 extern mps_ap_t _global_automatic_mostly_copying_allocation_point;
+extern mps_ap_t global_amc_cons_allocation_point;
 //    extern mps_ap_t _global_mvff_allocation_point;
 extern mps_ap_t _global_automatic_mostly_copying_zero_rank_allocation_point;
 extern mps_ap_t global_non_moving_ap;
@@ -334,51 +335,7 @@ struct allocation_point<core::Cons_O> {
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) ((_smartptr_).pbase_ref())
 #define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
-namespace gctools {
 
-inline void *ClientPtrToBasePtr(void *mostDerived) {
-  void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
-  return ptr;
-}
-
-inline void throwIfInvalidClient(core::T_O *client) {
-  Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
-  if (header->invalidP()) {
-    THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void *)client);
-  }
-}
-
-template <typename T>
-inline T *BasePtrToMostDerivedPtr(void *base) {
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
-  return ptr;
-}
-};
-
-namespace core {
-class T_O;
-class WrappedPointer_O;
-class Functoid;
-class Creator;
-class Iterator_O;
-};
-namespace clbind {
-class ConstructorCreator;
-};
-
-#ifndef RUNNING_GC_BUILDER
-#define DECLARE_FORWARDS
-#include "clasp_gc.cc"
-#undef DECLARE_FORWARDS
-#endif
-
-namespace gctools {
-#if !defined(RUNNING_GC_BUILDER)
-#define GC_DYNAMIC_CAST
-#include "clasp_gc.cc" // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
-#endif
-};
 
 namespace gctools {
 template <typename T>
@@ -434,20 +391,14 @@ inline mps_res_t ptrFix(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, mps
 #endif
       *taggedP = obj;
     };
-  } else if (*taggedP) {
-    printf("%s:%d POINTER_FIX called on untagged pointer\n", __FILE__, __LINE__);
-    gctools::Tagged obj = *taggedP;
-    if (MPS_FIX1(_ss, obj)) {
-      mps_res_t res = MPS_FIX2(_ss, reinterpret_cast<mps_addr_t *>(&obj));
-      if (res != MPS_RES_OK)
-        return res;
-      *taggedP = obj;
-    };
   };
   return MPS_RES_OK;
 };
 #define TAGGED_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_).rawRef_()))
-#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&_ptr_))
+// Get rid of SIMPLE_POINTER_FIX - its a terrible name
+#define SIMPLE_POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_REF_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(&(_ptr_)))
+#define POINTER_FIX(_ptr_) ptrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(_ptr_))
 
 namespace gctools {
 

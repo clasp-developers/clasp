@@ -104,9 +104,9 @@ string PosixTime_O::toSimpleString() {
 }
 
 CL_LISPIFY_NAME("sub");
-CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp t) {
+CL_DEFMETHOD PosixTimeDuration_sp PosixTime_O::sub(PosixTime_sp tt) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-  result->_Duration = this->_Time - t->_Time;
+  result->_Duration = this->_Time - tt->_Time;
   return result;
 }
 
@@ -141,9 +141,9 @@ void PosixTimeDuration_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 CL_LISPIFY_NAME("sub");
-CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp t) {
+CL_DEFMETHOD PosixTimeDuration_sp PosixTimeDuration_O::sub(PosixTimeDuration_sp tt) {
   PosixTimeDuration_sp result = PosixTimeDuration_O::create();
-  result->_Duration = this->_Duration - t->_Duration;
+  result->_Duration = this->_Duration - tt->_Duration;
   return result;
 }
 
@@ -200,46 +200,12 @@ CL_DEFMETHOD string PosixTimeDuration_O::toIsoString() {
   return boost::posix_time::to_iso_string(this->_Duration);
 }
 
-void PosixTime_O::exposeCando(Lisp_sp lisp) {
-  class_<PosixTime_O>()
-      .def("setToLocalTime", &PosixTime_O::setToLocalTime)
-      .def("now", &PosixTime_O::setToLocalTime)
-      .def("sub", &PosixTime_O::sub);
-}
 
-void PosixTime_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, PosixTime, "", "", _lisp)
-      .def("setToLocalTime", &PosixTime_O::setToLocalTime)
-      .def("sub", &PosixTime_O::sub);
-#endif //]
-}
 
-void PosixTimeDuration_O::exposeCando(Lisp_sp lisp) {
-  class_<PosixTimeDuration_O>()
-      .def("sub", &PosixTimeDuration_O::sub)
-      .def("totalSeconds", &PosixTimeDuration_O::totalSeconds)
-      .def("totalMilliseconds", &PosixTimeDuration_O::totalMilliseconds)
-      .def("posix-time-duration-seconds", &PosixTimeDuration_O::seconds)
-      .def("minutes", &PosixTimeDuration_O::minutes)
-      .def("hours", &PosixTimeDuration_O::hours)
-      .def("toSimpleString", &PosixTimeDuration_O::toSimpleString)
-      .def("toIsoString", &PosixTimeDuration_O::toIsoString);
-}
 
-void PosixTimeDuration_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, PosixTimeDuration, "", "", _lisp)
-      .def("sub", &PosixTimeDuration_O::sub)
-      .def("totalSeconds", &PosixTimeDuration_O::totalSeconds)
-      .def("posix_time_duration_seconds", &PosixTimeDuration_O::seconds)
-      .def("minutes", &PosixTimeDuration_O::minutes)
-      .def("hours", &PosixTimeDuration_O::hours)
-      .def("toSimpleString", &PosixTimeDuration_O::toSimpleString)
-      .def("toIsoString", &PosixTimeDuration_O::toIsoString);
-#endif //]
-}
 
-EXPOSE_CLASS(core, PosixTime_O);
-EXPOSE_CLASS(core, PosixTimeDuration_O);
+
+
+
+
 };

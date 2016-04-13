@@ -56,16 +56,18 @@ public:
   InvocationHistoryStack *_Stack;
   InvocationHistoryFrame *_Previous;
   int _Bds;
-  gc::tagged_pointer<Closure> closure;
+  Closure_sp closure;
   T_sp environment;
   size_t _NumberOfArguments;
   core::T_O **_RegisterArguments;
   core::T_O **_StackArguments;
 
 public:
-  InvocationHistoryFrame(gctools::tagged_pointer<Closure> fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
+  InvocationHistoryFrame(Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
+
   //	InvocationHistoryFrame(int sourceFileInfoHandle, int lineno, int column, ActivationFrame_sp env=_Nil<ActivationFrame_O>());
-  ATTR_WEAK virtual ~InvocationHistoryFrame();
+  ATTR_WEAK ~InvocationHistoryFrame(); 
+  
   InvocationHistoryFrame *previous() { return this->_Previous; };
   uint index() { return this->_Index; };
   VectorObjects_sp arguments() const;
@@ -73,7 +75,7 @@ public:
   void dump() const;
   virtual void setActivationFrame(T_sp af) { this->environment = af; };
   virtual string asString() const;
-  string asStringLowLevel(gctools::tagged_pointer<Closure> closure) const;
+  string asStringLowLevel(Closure_sp closure) const;
   virtual T_sp activationFrame() const { return this->environment; };
   virtual int bds() const { return this->_Bds; };
 
@@ -113,36 +115,8 @@ public:
 
   string asString() const;
 };
-
-class DynamicBinding {
-public:
-  Symbol_sp _Var;
-  T_sp _Val;
-  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
 };
 
-#pragma GCC visibility push(default)
-class DynamicBindingStack {
-public:
-  gctools::Vec0<DynamicBinding> _Bindings;
-
-public:
-  inline int top() const { return this->_Bindings.size() - 1; }
-
-  Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-
-  Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
-  T_sp val(int i) const { return this->_Bindings[i]._Val; };
-
-  ATTR_WEAK void push(Symbol_sp var);
-  ATTR_WEAK void pop();
-
-  void reserve(int x) { this->_Bindings.reserve(x); };
-
-  int size() const { return this->_Bindings.size(); };
-};
-#pragma GCC visibility pop
-}
 
 namespace core {
 
@@ -165,11 +139,8 @@ public:
 };
 
 class ExceptionStack {
-  FRIEND_GC_SCANNER(ExceptionStack);
-
 public:
   gctools::Vec0<ExceptionEntry> _Stack;
-
 public:
   ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
   size_t size() const { return this->_Stack.size(); };
@@ -208,12 +179,12 @@ public:
     return ss.str();
   };
 
-  size_t push(FrameKind kind, T_sp key) {
+  inline size_t push(FrameKind kind, T_sp key) {
     size_t frame = this->_Stack.size();
     this->_Stack.emplace_back(kind, key);
     return frame;
   }
-  void pop() {
+  inline void pop() {
     this->_Stack.pop_back();
   };
   /*! Return the index of the stack entry with the matching key.
@@ -225,6 +196,6 @@ public:
 };
 };
 
-#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(gctools::tagged_pointer<core::Closure>(this), lcc_arglist);
+#define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this->asSmartPtr(), lcc_arglist);
 
 #endif /* _core_stacks_H_ */

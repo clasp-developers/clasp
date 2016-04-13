@@ -36,13 +36,11 @@ THE SOFTWARE.
 #undef NAMESPACE_clbind_clang
 #endif
 
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<llvm::APInt>)
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(clbind::Wrapper<llvm::APSInt>);
-
+#if 0
 typedef clbind::Wrapper<llvm::APInt, std::unique_ptr<llvm::APInt>> APInt_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(APInt_wrapper);
 typedef clbind::Wrapper<llvm::APSInt, std::unique_ptr<llvm::APSInt>> APSInt_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(APSInt_wrapper);
+#endif
+
 
 namespace llvmo {
 

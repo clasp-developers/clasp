@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 
-List_sp Argument::lambdaList() const {
+List_sp Argument::lambda_list() const {
   return ((this->_ArgTarget));
 };
 
@@ -140,13 +140,13 @@ string AuxArgument::asString() const {
 
 #if 0 // moved to header
 DynamicScopeManager::DynamicScopeManager() {
-  int top = _lisp->bindings().top();
+  int top = thread->bindings().top();
   this->_beginTop = top;
   this->_endTop = top;
 }
 
 DynamicScopeManager::DynamicScopeManager(Symbol_sp sym, T_sp val) {
-  int top = _lisp->bindings().top();
+  int top = thread->bindings().top();
   this->_beginTop = top;
   this->_endTop = top;
   this->pushSpecialVariableAndSet(sym, val);
@@ -157,19 +157,20 @@ void DynamicScopeManager::dump() const {
   stringstream ss;
   ss << "DynamicScopeManager  _beginTop[" << this->_beginTop << "] _endTop[" << this->_endTop << "]" << std::endl;
   for (int i = this->_endTop - 1; i >= this->_beginTop; --i) {
-    ss << (BF("Dynamic[%d] var[%s] val-->%s") % i % _rep_(_lisp->bindings().var(i)) % _rep_(_lisp->bindings().val(i))).str() << std::endl;
+    ss << (BF("Dynamic[%d] var[%s] val-->%s") % i % _rep_(thread->bindings().var(i)) % _rep_(thread->bindings().val(i))).str() << std::endl;
   }
   printf("%s", ss.str().c_str());
 }
 
+#if 0
 void DynamicScopeManager::pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-  _lisp->bindings().push(sym);
-  this->_endTop = _lisp->bindings().top();
+  thread->bindings().push(sym);
+  this->_endTop = thread->bindings().top();
   //	SymbolSaveValue sv(sym,sym->symbolValueUnsafe());
   //	this->_SavedValues.push_back(sv);
   sym->setf_symbolValue(val);
 }
-
+#endif
 /*! The frame_index is not used here - it is only used by ActivationFrameDynamicLexicalScopeManager */
 void DynamicScopeManager::new_binding(const Argument &arg, T_sp val) {
   if (arg._ArgTargetFrameIndex == SPECIAL_TARGET) {
@@ -186,7 +187,7 @@ T_sp DynamicScopeManager::lexenv() const {
 
 #if 0
 DynamicScopeManager::~DynamicScopeManager() {
-  DynamicBindingStack &bindings = _lisp->bindings();
+  DynamicBindingStack &bindings = thread->bindings();
   int numBindings = this->_endTop - this->_beginTop;
   for (int i = 0; i < numBindings; ++i) {
     bindings.pop();
@@ -236,11 +237,13 @@ void ActivationFrameDynamicScopeManager::new_binding(const Argument &argument, T
     return;
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  this->_Frame->set_entry(argument._ArgTargetFrameIndex, val);
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_Frame);
+  vframe->set_entry(argument._ArgTargetFrameIndex, val);
 }
 
 bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
-  return ((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_Frame);
+  return ((vframe->boundp_entry(argument._ArgTargetFrameIndex)));
 }
 
 T_sp ActivationFrameDynamicScopeManager::lexenv() const {

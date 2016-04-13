@@ -17,8 +17,10 @@
      (namestring (merge-pathnames "src/main/" cl-user::*clasp-home*))
      "bin/all-commands.txt"
      "bin/commands.txt")
-  :run-preprocessor t
-  :regenerate-sifs nil)
+  :run-preprocessor nil
+  :regenerate-sifs t)
+(print "Done")
+(cscrape::split-type-name "const string &name")
 
 
 (split-cpps '(1 2 3 4 5 6 7) 2)

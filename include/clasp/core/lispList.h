@@ -32,26 +32,26 @@ THE SOFTWARE.
 #include <clasp/core/numbers.fwd.h>
 
 namespace core {
-T_sp cl_revappend(List_sp tail);
-T_sp cl__nreconc(List_sp list, T_sp tail);
-T_sp cl__nth(int idx, T_sp arg);
-T_sp cl__nthcdr(int idx, T_sp arg);
+  T_sp cl_revappend(List_sp tail);
+  T_sp cl__nreconc(List_sp list, T_sp tail);
+  T_sp cl__nth(int idx, T_sp arg);
+  T_sp cl__nthcdr(int idx, T_sp arg);
 
-T_sp cl__copy_list(T_sp arg);
+  T_sp cl__copy_list(T_sp arg);
 
-T_sp cl__nconc(List_sp rest);
+  T_sp cl__nconc(List_sp rest);
 
 /*! Replace the last CONS of l with y and return l,  if l was nil return y */
-T_sp clasp_nconc(T_sp l, T_sp y);
+  T_sp clasp_nconc(T_sp l, T_sp y);
 
-T_sp cl__last(T_sp list, int n = 1);
-List_sp cl__nbutlast(List_sp list, Integer_sp n);
+  T_sp cl__last(T_sp list, int n = 1);
+  List_sp cl__nbutlast(List_sp list, Integer_sp n);
 
 };
 
 namespace core {
 class VaList_dummy_O : public T_O {
-  LISP_VIRTUAL_CLASS(core, CorePkg, VaList_dummy_O, "VA-LIST",T_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, VaList_dummy_O, "VA-LIST",T_O);
 };
 };
 #endif /* _core_List_H */

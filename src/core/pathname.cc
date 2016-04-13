@@ -66,6 +66,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/arguments.h>
 #include <clasp/core/character.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
 
@@ -307,9 +308,6 @@ BEGIN:
   return directory;
 }
 
-#define ARGS_Pathname_O_makePathname "(host device directory name type version fromcase &optional logical)"
-#define DECL_Pathname_O_makePathname ""
-#define DOCS_Pathname_O_makePathname "makePathname - force it to be logical-pathname with logical"
 Pathname_sp Pathname_O::makePathname(T_sp host, T_sp device, T_sp directory,
                                      T_sp name, T_sp type, T_sp version,
                                      T_sp fromcase, bool logical) {
@@ -458,7 +456,7 @@ Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
     return pathname;
   }
   directory = pathname->_Directory;
-  if (!cl__consp(directory) || CONS_CAR(directory) != kw::_sym_relative || CONS_CDR(directory).nilp()) {
+  if (!cl__consp(directory) || cons_car(directory) != kw::_sym_relative || cons_car(directory).nilp()) {
     return pathname;
   }
   head = oCadr(directory);
@@ -692,8 +690,8 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   device = kw::_sym_unspecific;
   path = parse_directories(s, WORD_LOGICAL, *ep, end, ep);
   if (cl__consp(path)) {
-    if (CONS_CAR(path) != kw::_sym_relative &&
-        CONS_CAR(path) != kw::_sym_absolute)
+    if (cons_car(path) != kw::_sym_relative &&
+        cons_car(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_absolute, path);
     path = destructively_check_directory(path, true, false);
   } else {
@@ -727,7 +725,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   } else {
     T_mv version_mv = cl__parse_integer(gc::As<Str_sp>(aux), 0, _Nil<T_O>(), 10, _lisp->_true());
     T_sp tversion = version_mv;
-    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet(1));
+    Fixnum_sp parsed_length = gc::As<Fixnum_sp>(version_mv.valueGet_(1));
     if (unbox_fixnum(parsed_length) == cl__length(aux) &&
         cl__integerp(tversion) && clasp_plusp(gc::As<Integer_sp>(tversion))) {
       version = gc::As<Integer_sp>(tversion);
@@ -794,8 +792,8 @@ maybe_parse_host:
 done_device_and_host:
   path = parse_directories(s, 0, *ep, end, ep);
   if (cl__consp(path)) {
-    if (CONS_CAR(path) != kw::_sym_relative &&
-        CONS_CAR(path) != kw::_sym_absolute)
+    if (cons_car(path) != kw::_sym_relative &&
+        cons_car(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_relative, path);
     path = destructively_check_directory(path, false, false);
   }
@@ -825,23 +823,49 @@ make_it:
 }
 
 SYMBOL_SC_(CorePkg, defaultPathnameDefaults);
-Pathname_sp core_defaultPathnameDefaults(void) {
-  /* This routine outputs the value of *default-pathname-defaults*
+CL_DEFUN Pathname_sp core__safe_default_pathname_defaults(void) {
+  /* This routine returns the value of *default-pathname-defaults*
 	 * coerced to type PATHNAME. Special care is taken so that we do
 	 * not enter an infinite loop when using PARSE-NAMESTRING, because
 	 * this routine might itself try to use the value of this variable. */
-  Pathname_sp path = gc::As<Pathname_sp>(cl__symbol_value(cl::_sym_STARdefaultPathnameDefaultsSTAR));
+  T_sp path = cl__symbol_value(cl::_sym_STARdefaultPathnameDefaultsSTAR);
   unlikely_if(!cl__pathnamep(path)) {
-    DynamicScopeManager(cl::_sym_STARdefaultPathnameDefaultsSTAR, getcwd());
+    // Set *default-pathname-defaults* to a pathname to avoid infinite recursions of errors
+    DynamicScopeManager scope(cl::_sym_STARdefaultPathnameDefaultsSTAR, Pathname_O::create());
     ERROR_WRONG_TYPE_KEY_ARG(core::_sym_defaultPathnameDefaults, cl::_sym_STARdefaultPathnameDefaultsSTAR, path, cl::_sym_Pathname_O);
   }
-  return path;
+  return gc::As<Pathname_sp>(path);
 }
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("pathname");
+CL_DEFUN Pathname_sp core__safe_default_pathname_defaults_host_only(void) {
+  /* This routine returns a pathname that has value of only the host part of *default-pathname-defaults* */
+  Pathname_sp def = core__safe_default_pathname_defaults();
+  Pathname_sp res = Pathname_O::makePathname(cl__pathname_host(def,kw::_sym_local)
+                                             , _Nil<core::T_O>() // device
+                                             , _Nil<core::T_O>() // dir
+                                             , _Nil<core::T_O>() // name
+                                             , _Nil<core::T_O>() // type
+                                             , _Nil<core::T_O>() // version
+                                             , kw::_sym_local // fromcase
+                                             , false );
+  return res;
+}
+
+static int global_pathname_recursion_guard = 0;
+struct PathnameRecursionGuard {
+  PathnameRecursionGuard() {
+    ++global_pathname_recursion_guard;
+    if ( global_pathname_recursion_guard > 50 ) {
+      printf("%s:%d Hit maximum recursion on pathname - set breakpoint here\n", __FILE__, __LINE__ );
+    }
+  }
+  virtual ~PathnameRecursionGuard() {
+    --global_pathname_recursion_guard;
+  }
+};
+
 CL_DEFUN Pathname_sp cl__pathname(T_sp x) {
+  PathnameRecursionGuard guard;
   if (x.nilp()) {
     SIMPLE_ERROR(BF("The only argument for pathname is nil"));
   }
@@ -895,7 +919,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   }
   if (path->_Directory.nilp()) {
     directory = cl__pathname_directory(defaults, tocase);
-  } else if (CONS_CAR(path->_Directory) == kw::_sym_absolute) {
+  } else if (cons_car(path->_Directory) == kw::_sym_absolute) {
     directory = path->_Directory;
   } else if (defaults->_Directory.notnilp()) {
     directory = Cons_O::append(cl__pathname_directory(defaults, tocase),
@@ -936,13 +960,10 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   return defaults;
 }
 
-CL_LAMBDA(arg &optional (default-pathname *default-pathname-defaults*) (default-version :newest));
+CL_LAMBDA(arg &optional (default-pathname (core:safe-default-pathname-defaults)) (default-version :newest));
 CL_DECLARE();
 CL_DOCSTRING("mergePathnames");
 CL_DEFUN Pathname_sp cl__merge_pathnames(T_sp path, T_sp defaults, T_sp defaultVersion) {
-  if (defaults.nilp()) {
-    defaults = cl__symbol_value(cl::_sym_STARdefaultPathnameDefaultsSTAR);
-  }
   path = cl__pathname(path);
   defaults = cl__pathname(defaults);
   return clasp_mergePathnames(path, defaults, defaultVersion);
@@ -988,8 +1009,8 @@ CL_DEFUN bool cl__wild_pathname_p(T_sp tpathname, T_sp component) {
   if (component.nilp() || component == kw::_sym_directory) {
     T_sp list = pathname->_Directory;
     checked = 1;
-    for (; list.notnilp(); list = CONS_CDR(list)) {
-      T_sp name = CONS_CAR(list);
+    for (; list.notnilp(); list = cons_cdr(list)) {
+      T_sp name = cons_car(list);
       if (name.notnilp() &&
           (name == kw::_sym_wild || name == kw::_sym_wild_inferiors ||
            clasp_wild_string_p(name))) {
@@ -1027,7 +1048,7 @@ CL_DEFUN Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
 #endif
 #endif
   if (pathname->_Directory.nilp() ||
-      CONS_CAR(pathname->_Directory) == kw::_sym_relative) {
+      cons_car(pathname->_Directory) == kw::_sym_relative) {
     pathname = cl__merge_pathnames(pathname, getcwd(0));
   }
   return pathname;
@@ -1136,7 +1157,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   l = x->_Directory;
   if (cl__endp(l))
     goto NO_DIRECTORY;
-  y = CONS_CAR(l);
+  y = cons_car(l);
   if (y == kw::_sym_relative) {
     if (logical)
       clasp_write_char(';', buffer);
@@ -1144,9 +1165,9 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     if (!logical)
       clasp_write_string(DIR_SEPARATOR, buffer);
   }
-  l = CONS_CDR(l);
-  for (; l.notnilp(); l = CONS_CDR(l)) {
-    y = CONS_CAR(l);
+  l = cons_cdr(l);
+  for (; l.notnilp(); l = cons_cdr(l)) {
+    y = cons_car(l);
     if (y == kw::_sym_up) {
       clasp_write_string("..", buffer);
     } else if (y == kw::_sym_wild) {
@@ -1162,7 +1183,8 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     clasp_write_char(logical ? ';' : DIR_SEPARATOR_CHAR, buffer);
   }
 NO_DIRECTORY:
-  if (unbox_fixnum(gc::As<Fixnum_sp>(clasp_file_position(buffer))) == 0) {
+  core::T_sp fp = clasp_file_position(buffer);
+  if (unbox_fixnum(gc::As<Fixnum_sp>(fp)) == 0 ) {
     if ((cl__stringp(x->_Name) &&
          clasp_memberChar(':', x->_Name)) ||
         (cl__stringp(x->_Type) &&
@@ -1252,11 +1274,11 @@ CL_DEFUN T_sp cl__namestring(T_sp x) {
   return clasp_namestring(x, CLASP_NAMESTRING_TRUNCATE_IF_ERROR);
 }
 
-CL_LAMBDA(thing &optional host defaults &key (start 0) end junk-allowed);
+CL_LAMBDA(thing &optional host (defaults (core:safe-default-pathname-defaults)) &key (start 0) end junk-allowed);
 CL_DECLARE();
 CL_DOCSTRING("parseNamestring");
 CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum_sp start, T_sp end, bool junkAllowed) {
-  T_sp tempdefaults = (tdefaults.nilp()) ? cl::_sym_STARdefaultPathnameDefaultsSTAR->symbolValue() : gc::As<T_sp>(cl__pathname(tdefaults));
+  Pathname_sp tempdefaults = cl__pathname(tdefaults);
   T_sp output;
   if (host.notnilp()) {
     host = cl__string(host);
@@ -1268,7 +1290,6 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
     size_t_pair p;
     size_t ee;
     if (default_host.nilp() && tempdefaults.notnilp()) {
-      tempdefaults = cl__pathname(tempdefaults);
       default_host = gc::As<Pathname_sp>(tempdefaults)->_Host;
     }
 #ifdef CLASP_UNICODE
@@ -1289,21 +1310,21 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
   if (output.nilp()) {
     SIMPLE_ERROR(BF("output is nil"));
   }
-  if (host.notnilp() && !gc::As<Pathname_sp>(output)->_Host->equal(host)) {
+  if (host.notnilp() && !cl__equal(gc::As<Pathname_sp>(output)->_Host,host)) {
     SIMPLE_ERROR(BF("The pathname %sS does not contain the required host %s.") % _rep_(thing) % _rep_(host));
   }
 OUTPUT:
   return Values(output, start);
 };
 
-CL_LAMBDA(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) defaults);
+CL_LAMBDA(&key (host nil hostp) (device nil devicep) (directory nil directoryp) (name nil namep) (type nil typep) (version nil versionp) ((:case scase) :local) (defaults (core:safe-default-pathname-defaults-host-only)));
 CL_DECLARE();
 CL_DOCSTRING("makePathname");
 CL_DEFUN Pathname_sp cl__make_pathname(T_sp host, bool hostp, T_sp device, bool devicep, T_sp directory, bool directoryp, T_sp name, bool namep, T_sp type, bool typep, T_sp version, bool versionp, T_sp scase, T_sp odefaults) {
   Pathname_sp x;
   Pathname_sp defaults;
   if (odefaults.nilp()) {
-    defaults = core_defaultPathnameDefaults();
+    defaults = core__safe_default_pathname_defaults();
     defaults = Pathname_O::makePathname(defaults->_Host,
                                         _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(), _Nil<T_O>(),
                                         kw::_sym_local);
@@ -1432,15 +1453,14 @@ CL_DEFUN Str_sp cl__host_namestring(T_sp tpname) {
   return shost;
 }
 
-//#define EN_MATCH(p1,p2,el) (clasp_equalp(p1->pathname.el, p2->pathname.el)? _Nil<T_O>() : p1->pathname.el)
 #define EN_MATCH(p1, p2, el) (cl__equalp(p1->el, p2->el) ? _Nil<T_O>() : p1->el)
 
-CL_LAMBDA(tpath &optional defaults);
+CL_LAMBDA(tpath &optional (defaults (core::safe-default-pathname-defaults)));
 CL_DECLARE();
 CL_DOCSTRING("enoughNamestring");
 CL_DEFUN Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   T_sp newpath, fname;
-  Pathname_sp defaults = tdefaults.nilp() ? core_defaultPathnameDefaults() : cl__pathname(tdefaults);
+  Pathname_sp defaults = cl__pathname(tdefaults);
   Pathname_sp path = cl__pathname(tpath);
   T_sp pathdir = path->_Directory;
   T_sp defaultdir = defaults->_Directory;
@@ -1448,7 +1468,7 @@ CL_DEFUN Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
     pathdir = Cons_O::create(kw::_sym_relative);
   } else if (defaultdir.nilp()) {
     /* The defaults pathname does not have a directory. */
-  } else if (CONS_CAR(pathdir) == kw::_sym_relative) {
+  } else if (cons_car(pathdir) == kw::_sym_relative) {
     /* The pathname is relative to the default one one, so we just output the
 	   original one */
   } else {
@@ -1648,9 +1668,15 @@ coerce_to_from_pathname(T_sp x, T_sp host) {
   SIMPLE_ERROR(BF("%s is not a valid from-pathname translation") % _rep_(x));
 }
 
-CL_LAMBDA(&optional (host nil hostp) set);
+CL_LAMBDA(&optional (host nil hostp) translation);
 CL_DECLARE();
-CL_DOCSTRING("core::pathnameTranslations");
+CL_DOCSTRING(R"doc(* Arguments
+- host :: A string or nil.
+- translation :: A list or nil.
+* Description
+If host is nil then return all pathname translations.
+If translation is nil then the pathname translation for the host name is returned.
+If translation is not nil then the pathname translation for the host name is set.)doc");
 CL_DEFUN T_sp core__pathname_translations(T_sp host, T_sp hostp, T_sp set) {
   if (hostp.nilp())
     return _lisp->pathnameTranslations();
@@ -1961,17 +1987,10 @@ begin:
   SIMPLE_ERROR(BF("%s admits no logical pathname translations") % _rep_(pathname));
 }
 
-EXPOSE_CLASS(core, Pathname_O);
 
-void Pathname_O::exposeCando(Lisp_sp lisp) {
-  class_<Pathname_O>();
-}
 
-void Pathname_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Pathname, "", "", _lisp);
-#endif
-};
+
+
 
 string Pathname_O::__repr__() const {
   stringstream ss;
@@ -1984,17 +2003,10 @@ string Pathname_O::__repr__() const {
   return ss.str();
 }
 
-EXPOSE_CLASS(core, LogicalPathname_O);
 
-void LogicalPathname_O::exposeCando(Lisp_sp lisp) {
-  class_<LogicalPathname_O>();
-}
 
-void LogicalPathname_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, LogicalPathname, "", "", _lisp);
-#endif
-};
+
+
 
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilename);
   SYMBOL_EXPORT_SC_(CorePkg, coerceToFilePathname);

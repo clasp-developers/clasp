@@ -34,11 +34,11 @@ NAMESPACE_PACKAGE_ASSOCIATION(clbind, ClbindPkg, "CLBIND");
 
 namespace clbind {
 
-class ClbindExposer : public core::Exposer {
+class ClbindExposer_O : public core::Exposer_O {
 private:
 public:
   DISABLE_NEW();
-  ClbindExposer(core::Lisp_sp lisp) : Exposer(lisp, ClbindPkg){};
+  ClbindExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, ClbindPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
 };

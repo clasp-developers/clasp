@@ -41,7 +41,7 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, Record_O);
+
 
 T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
   return eval::funcall(_sym_circle_subst, replacement_table, tree);
@@ -82,9 +82,5 @@ void Record_O::errorIfInvalidArguments() {
   }
 }
 
-void Record_O::exposeCando(Lisp_sp lisp) {
-  class_<Record_O>();
-}
-void Record_O::exposePython(Lisp_sp lisp) {
-}
+
 };

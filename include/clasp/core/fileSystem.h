@@ -40,9 +40,9 @@ THE SOFTWARE.
 namespace core {
 
 SMART(Path);
-class Path_O : public T_O {
+class Path_O : public General_O {
   friend class XmlSaveArchive_O;
-  LISP_CLASS(core, CorePkg, Path_O, "path",T_O);
+  LISP_CLASS(core, CorePkg, Path_O, "path",General_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -127,7 +127,6 @@ CL_DEFMETHOD   bool isAbsolute() const { return this->_Path.is_absolute(); };
 SMART(DirectoryIterator);
 class DirectoryIterator_O : public Iterator_O {
   LISP_CLASS(core, CorePkg, DirectoryIterator_O, "DirectoryIterator",Iterator_O);
-  DECLARE_MAKE_INIT();
 
 public:
   void initialize();
@@ -167,7 +166,6 @@ namespace core {
 SMART(RecursiveDirectoryIterator);
 class RecursiveDirectoryIterator_O : public Iterator_O {
   LISP_CLASS(core, CorePkg, RecursiveDirectoryIterator_O, "RecursiveDirectoryIterator",Iterator_O);
-  DECLARE_MAKE_INIT();
 
 public:
   void initialize();
@@ -208,8 +206,8 @@ namespace core {
 SMART(FileStatus);
 
 SMART(DirectoryEntry);
-class DirectoryEntry_O : public T_O {
-  LISP_CLASS(core, CorePkg, DirectoryEntry_O, "DirectoryEntry",T_O);
+class DirectoryEntry_O : public General_O {
+  LISP_CLASS(core, CorePkg, DirectoryEntry_O, "DirectoryEntry",General_O);
 
 public:
   void initialize();
@@ -237,8 +235,8 @@ struct gctools::GCInfo<core::DirectoryEntry_O> {
 
 namespace core {
 SMART(FileStatus);
-class FileStatus_O : public T_O {
-  LISP_CLASS(core, CorePkg, FileStatus_O, "FileStatus",T_O);
+class FileStatus_O : public General_O {
+  LISP_CLASS(core, CorePkg, FileStatus_O, "FileStatus",General_O);
 
 public:
   void initialize();

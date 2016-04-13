@@ -34,23 +34,18 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-//#define DEBUG_HASH_TABLE
-
 T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
 
+
 FORWARD(HashTable);
-class HashTable_O : public T_O {
+class HashTable_O : public General_O {
   struct metadata_bootstrap_class {};
-  LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable",core::T_O);
+  LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",core::General_O);
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 
   friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
-#ifdef DEBUG_HASH_TABLE
-                  ,
-                  _DebugHashTable(false)
-#endif
                   {};
   virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -69,10 +64,8 @@ protected: // instance variables here
   uint _HashTableCount;
 #ifdef USE_MPS
   mps_ld_s _LocationDependencyTracker;
-#endif
-#ifdef DEBUG_HASH_TABLE
-public: // Turn on to debug a particular hash table
-  bool _DebugHashTable;
+#else
+  void* _LocationDependencyTracker; // Need to have a field here to match MPS  
 #endif
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
@@ -91,7 +84,8 @@ private:
 public:
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
   List_sp rehash(bool expandTable, T_sp findKey);
-
+  CL_LISPIFY_NAME("hash-table-buckets");
+  CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
 public: // Functions here
   virtual bool equalp(T_sp other) const;
 
@@ -112,6 +106,9 @@ CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThr
   uint hashTableSize() const;
 
   virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+  gc::Fixnum safe_sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey ) const {
+    return this->sxhashKey(key,bound,willAddKey);
+  }
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */

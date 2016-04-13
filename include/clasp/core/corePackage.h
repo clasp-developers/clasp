@@ -34,16 +34,17 @@ THE SOFTWARE.
 namespace core {
 
 extern const char *CorePkg_nicknames[];
-
-class CoreExposer : public core::Exposer {
+ FORWARD(CoreExposer);
+class CoreExposer_O : public core::Exposer_O {
+  LISP_CLASS(core,CorePkg,CoreExposer_O,"CoreExposer",core::Exposer_O);
 public:
-  CoreExposer(Lisp_sp lisp);
+  CoreExposer_O(Lisp_sp lisp);
+ public:
   DISABLE_NEW();
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
-
 public:
   /*! Lisp_O::startupLispEnvironment calls this to create the core classes */
-  static gctools::tagged_pointer<CoreExposer> create_core_packages_and_classes();
+  static CoreExposer_sp create_core_packages_and_classes();
 
 public:
   void define_essential_globals(Lisp_sp lisp);

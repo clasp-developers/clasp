@@ -16,16 +16,16 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -34,7 +34,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -99,16 +99,16 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -117,7 +117,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -175,16 +175,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -193,7 +193,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -245,16 +245,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -263,7 +263,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -309,16 +309,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -327,7 +327,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -367,16 +367,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -385,7 +385,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -419,16 +419,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -437,7 +437,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v);
@@ -465,16 +465,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT   >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( )  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -483,7 +483,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 RT retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -506,16 +506,16 @@ template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -524,7 +524,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -587,16 +587,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -605,7 +605,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -662,16 +662,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -680,7 +680,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -731,16 +731,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -749,7 +749,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -794,16 +794,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -812,7 +812,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -851,16 +851,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -869,7 +869,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -902,16 +902,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -920,7 +920,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 ((*objPtr._v).*(this->mptr))(a1._v);
@@ -947,16 +947,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT   >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( )  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -965,7 +965,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -988,16 +988,16 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1006,7 +1006,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1072,16 +1072,16 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1090,7 +1090,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1149,16 +1149,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1167,7 +1167,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1220,16 +1220,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1238,7 +1238,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1285,16 +1285,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1303,7 +1303,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1344,16 +1344,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1362,7 +1362,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1397,16 +1397,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1)  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1415,7 +1415,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v);
@@ -1444,16 +1444,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT   >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( )  >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1462,7 +1462,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1486,16 +1486,16 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1504,7 +1504,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1569,16 +1569,16 @@ template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1587,7 +1587,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1645,16 +1645,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1663,7 +1663,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1715,16 +1715,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1733,7 +1733,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1779,16 +1779,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2, ARG3) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1797,7 +1797,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1837,16 +1837,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1, ARG2) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1855,7 +1855,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -1889,16 +1889,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ARG1) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1907,7 +1907,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 RT retval =  ((*objPtr._v).*(this->mptr))(a1._v);
@@ -1935,16 +1935,16 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols, typename OT , typename RT   >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::*)( ) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef RT (OT::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1953,7 +1953,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 RT retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1976,16 +1976,16 @@ template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -1994,7 +1994,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2057,16 +2057,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2075,7 +2075,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2132,16 +2132,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2150,7 +2150,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2201,16 +2201,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2219,7 +2219,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2264,16 +2264,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2, ARG3) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2282,7 +2282,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2321,16 +2321,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1, ARG2) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2339,7 +2339,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2372,16 +2372,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ARG1) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2390,7 +2390,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 ((*objPtr._v).*(this->mptr))(a1._v);
@@ -2417,16 +2417,16 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols, typename OT   >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::*)( ) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef void (OT::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2435,7 +2435,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2458,16 +2458,16 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2476,7 +2476,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2542,16 +2542,16 @@ template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename AR
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2560,7 +2560,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2619,16 +2619,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2637,7 +2637,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2690,16 +2690,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2708,7 +2708,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2755,16 +2755,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2, ARG3) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2773,7 +2773,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2814,16 +2814,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1, ARG2) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2832,7 +2832,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a2(frame.arg(2));
@@ -2867,16 +2867,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT  ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ARG1) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2885,7 +2885,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a1(frame.arg(1));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))(a1._v);
@@ -2914,16 +2914,16 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>,typename AdoptPoint
 template <typename Pols, typename OT , typename UPRT   >
 class IndirectVariadicMethoid
 < Pols,OT , std::unique_ptr<UPRT> (OT::*)( ) const >
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 virtual const char* describe() const { return "IndirectVariadicMethoid"; };
 typedef std::unique_ptr<UPRT> (OT::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 
@@ -2932,7 +2932,7 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 STACK_FRAME(buff,frame,1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
 translate::from_object<OT*> objPtr(frame.arg(0));
 std::unique_ptr<UPRT> retval =  ((*objPtr._v).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();

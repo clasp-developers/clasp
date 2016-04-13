@@ -31,6 +31,7 @@
    #:source-pos
    #:unknown-tag
    #:handler-code
+   #:initializer-tag
    #:lisp-base-tag
    #:lisp-class-tag
    #:lisp-internal-class-tag

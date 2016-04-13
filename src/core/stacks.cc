@@ -86,8 +86,7 @@ Vector_sp ExceptionStack::backtrace() {
   }
   return result;
 }
-
-InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O *valist_sptr, T_sp env)
+InvocationHistoryFrame::InvocationHistoryFrame(Closure_sp c, core::T_O *valist_sptr, T_sp env)
     : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL) {
   if (valist_sptr != NULL) {
     VaList_sp arguments(reinterpret_cast<core::VaList_S *>(gc::untag_valist(valist_sptr)));
@@ -95,7 +94,7 @@ InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> 
     this->_RegisterArguments = LCC_VA_LIST_REGISTER_SAVE_AREA(arguments);
     this->_StackArguments = LCC_VA_LIST_OVERFLOW_ARG_AREA(arguments);
   }
-  this->_Stack = &_lisp->invocationHistoryStack();
+  this->_Stack = &thread->invocationHistoryStack();
   this->_Previous = this->_Stack->top();
   if (this->_Previous == NULL) {
     this->_Index = 0;
@@ -103,12 +102,18 @@ InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> 
     this->_Index = this->_Previous->_Index + 1;
   }
   this->_Stack->push(this);
-  this->_Bds = _lisp->bindings().size();
+  this->_Bds = thread->bindings().size();
+}
+ATTR_WEAK InvocationHistoryFrame::~InvocationHistoryFrame() {
+  this->_Stack->pop();
 }
 
+
+#if 0
 InvocationHistoryFrame::~InvocationHistoryFrame() {
   this->_Stack->pop();
 }
+#endif
 
 VectorObjects_sp InvocationHistoryFrame::arguments() const {
   if (this->_NumberOfArguments == 0) {
@@ -151,11 +156,11 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   return strres->get();
 }
 
-string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure) const {
+string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure) const {
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
-  T_sp funcNameObj = closure->name;
+  T_sp funcNameObj = closure->_name;
   string funcName = _rep_(funcNameObj);
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();
@@ -175,7 +180,7 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
   } else
     closureType = "toplevel";
   string sargs = this->argumentsAsString(256);
-  ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure.raw_() % sourceFileName % lineNumber % column % funcName % sargs).str();
+  ss << (BF("#%3d%2s %20s %5d (%s %s)") % this->_Index % closureType % sourceFileName % lineNumber % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();
@@ -194,7 +199,7 @@ void InvocationHistoryFrame::dump() const {
 vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {
   vector<InvocationHistoryFrame *> frames;
   frames.resize(this->_Top->index() + 1);
-  for (InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
+  for (InvocationHistoryFrame *cur = thread->invocationHistoryStack().top();
        cur != NULL; cur = cur->previous()) {
     frames[cur->index()] = cur;
   }
@@ -205,7 +210,7 @@ string InvocationHistoryStack::asString() const {
   stringstream ss;
   ss.str("");
   ss << std::endl;
-  vector<InvocationHistoryFrame *> frames = _lisp->invocationHistoryStack().asVectorFrames();
+  vector<InvocationHistoryFrame *> frames = thread->invocationHistoryStack().asVectorFrames();
   ss << "--------STACK TRACE--------" << std::endl;
   int ihsCur = core__ihs_current_frame();
   for (int i = 0; i < frames.size(); ++i) {
@@ -288,7 +293,7 @@ GC_RESULT DynamicBindingStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 
 #ifdef OLD_MPS
 GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack(); // in multithreaded code there is one for every thread
+  InvocationHistoryStack &ihs = thread->invocationHistoryStack(); // in multithreaded code there is one for every thread
   InvocationHistoryFrame *cur = ihs.top();
   GC_SCANNER_BEGIN() {
     while (cur) {

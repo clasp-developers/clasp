@@ -44,10 +44,10 @@ THE SOFTWARE.
 namespace core {
 
 SMART(Package);
-SMART(Function);
+SMART(NamedFunction);
 
 FORWARD(Symbol);
-class Symbol_O : public T_O {
+class Symbol_O : public General_O {
   struct metadata_bootstrap_class {};
   struct metadata_gc_do_not_move {};
 
@@ -66,7 +66,7 @@ private:
   friend class Class_O;
   friend class Package_O;
   friend class CoreExposer;
-  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",T_O);
+  LISP_CLASS(core, ClPkg, Symbol_O, "Symbol",General_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -83,10 +83,16 @@ public:
 	  Before NIL, UNBOUND etc are defined */
   static Symbol_sp create_at_boot(const string &nm);
   static Symbol_sp create(const string &nm);
-
+  static Symbol_sp create(Str_sp snm) {
+  // This is used to allocate roots that are pointed
+  // to by global variable _sym_XXX  and will never be collected
+    Symbol_sp n = gctools::GC<Symbol_O>::root_allocate(true);
+    n->setf_name(snm);
+//    ASSERTF(nm != "", BF("You cannot create a symbol without a name"));
+    return n;
+  };
 public:
   string formattedName(bool prefixAlways) const;
-
 public:
   //  T_sp apply();
   //  T_sp funcall();
@@ -106,7 +112,7 @@ public:
 
   void setf_name(Str_sp nm) { this->_Name = nm; };
 
-  List_sp plist() const;
+  List_sp plist() const { return this->_PropertyList; };
   void setf_plist(List_sp plist);
 
   void setReadOnly(bool b) { this->_IsConstant = true; };
@@ -122,31 +128,39 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   Symbol_sp copy_symbol(T_sp copy_properties) const;
   bool isExported();
 
+  void symbolUnboundError() const;
+  
   /*! Return the value slot of the symbol - throws if unbound */
-  T_sp symbolValue() const;
+  inline T_sp symbolValue() const {
+    if (this->_Value.unboundp()) this->symbolUnboundError();
+    return this->_Value;
+  }
 
   /*! Return the address of the value slot of the symbol */
   inline T_sp &symbolValueRef() { return this->_Value; };
 
   /*! Return the value slot of the symbol or UNBOUND if unbound */
-  T_sp symbolValueUnsafe() const;
+  inline T_sp symbolValueUnsafe() const { return this->_Value;};
 
   void makeSpecial();
 
   void makeConstant(T_sp val);
 
-  bool boundP() const;
+  inline bool boundP() const { return !this->_Value.unboundp(); };
 
   void makunbound();
 
   T_sp defparameter(T_sp obj);
   T_sp defconstant(T_sp obj);
 
-  T_sp setf_symbolValue(T_sp obj);
+  inline T_sp setf_symbolValue(T_sp obj) {
+    this->_Value = obj;
+    return obj;
+  }
 
   void setf_symbolValueReadOnlyOverRide(T_sp obj);
 
-  void setSetfFdefinition(Function_sp fn) { this->_SetfFunction = fn; };
+  void setSetfFdefinition(T_sp fn) { this->_SetfFunction = fn; };
   inline T_sp getSetfFdefinition() { return this->_SetfFunction; };
   inline bool setf_fboundp() const { return !this->_SetfFunction.unboundp(); };
   void resetSetfFdefinition() { this->_SetfFunction = _Unbound<Function_O>(); };
@@ -157,7 +171,7 @@ CL_DEFMETHOD   bool specialP() const { return this->_IsSpecial; };
   void setf_symbolFunction(T_sp exec);
 
   /*! Return the global bound function */
-  inline T_sp symbolFunction() { return this->_Function; };
+  inline T_sp symbolFunction() const { return this->_Function; };
 
   /*! Return true if the symbol has a function bound*/
   bool fboundp() const { return !this->_Function.unboundp(); };

@@ -60,6 +60,7 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
@@ -1244,7 +1245,7 @@ user_multistate_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
         while (!Null(x)) {
           buffer[0] = clasp_fixnum(oCar(x));
           buffer++;
-          x = ECL_CONS_CDR(x);
+          x = ECL_cons_cdr(x);
           n++;
         }
         stream->stream.format_table = p;
@@ -1259,7 +1260,7 @@ user_multistate_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
         return n + 1;
       }
     }
-    p = ECL_CONS_CDR(p);
+    p = ECL_cons_cdr(p);
   } while (p != table_list);
   /* Exhausted all lists */
   return encoding_error(stream, buffer, c);
@@ -2837,7 +2838,7 @@ io_file_length(T_sp strm) {
   if (StreamByteSize(strm) != 8) {
     cl_index bs = StreamByteSize(strm);
     Real_mv output_mv = clasp_floor2(output, make_fixnum(bs / 8));
-    Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet(1));
+    Fixnum_sp fn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     unlikely_if(unbox_fixnum(fn1) != 0) {
       FEerror("File length is not on byte boundary", 0);
     }
@@ -3487,7 +3488,7 @@ io_stream_length(T_sp strm) {
     //            const cl_env_ptr the_env = clasp_process_env();
     cl_index bs = StreamByteSize(strm);
     T_mv output_mv = clasp_floor2(output, make_fixnum(bs / 8));
-    Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet(1));
+    Fixnum_sp ofn1 = gc::As<Fixnum_sp>(output_mv.valueGet_(1));
     Fixnum fn = unbox_fixnum(ofn1);
     unlikely_if(fn != 0) {
       FEerror("File length is not on byte boundary", 0);
@@ -5709,6 +5710,7 @@ void clasp_write_string(const string &str, T_sp strm) {
 void clasp_writeln_string(const string &str, T_sp strm) {
   clasp_write_string(str, strm);
   clasp_terpri(strm);
+  clasp_finish_output(strm);
 }
 
 T_sp clasp_filename(T_sp strm, bool errorp) {
@@ -5781,19 +5783,19 @@ SourceFileInfo_sp clasp_input_source_file_info(T_sp strm) {
 
 namespace core {
 
-EXPOSE_CLASS(core, Stream_O);
-EXPOSE_CLASS(core, AnsiStream_O);
-EXPOSE_CLASS(core, FileStream_O);
-EXPOSE_CLASS(core, IOFileStream_O);
-EXPOSE_CLASS(core, IOStreamStream_O);
-EXPOSE_CLASS(core, StringStream_O);
-EXPOSE_CLASS(core, StringOutputStream_O);
-EXPOSE_CLASS(core, StringInputStream_O);
-EXPOSE_CLASS(core, SynonymStream_O);
-EXPOSE_CLASS(core, TwoWayStream_O);
-EXPOSE_CLASS(core, BroadcastStream_O);
-EXPOSE_CLASS(core, ConcatenatedStream_O);
-EXPOSE_CLASS(core, EchoStream_O);
+
+
+
+
+
+
+
+
+
+
+
+
+
 };
 
 namespace core {
@@ -5822,57 +5824,7 @@ T_sp SynonymStream_O::filename() const {
 };
 
 namespace core {
-void Stream_O::exposeCando(Lisp_sp lisp) {
-  class_<Stream_O>();
-}
-void Stream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
 
-namespace core {
-void AnsiStream_O::exposeCando(Lisp_sp lisp) {
-  class_<AnsiStream_O>();
-}
-void AnsiStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-
-namespace core {
-void StringStream_O::exposeCando(Lisp_sp lisp) {
-  class_<StringStream_O>();
-}
-void StringStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void StringInputStream_O::exposeCando(Lisp_sp lisp) {
-  class_<StringInputStream_O>();
-}
-void StringInputStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-
-namespace core {
-void StringOutputStream_O::exposeCando(Lisp_sp lisp) {
-  class_<StringOutputStream_O>();
-}
-void StringOutputStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
 
 void StringOutputStream_O::fill(const string &data) {
   this->_Contents->pushStringCharStar(data.c_str());
@@ -5888,94 +5840,12 @@ StrWithFillPtr_sp StringOutputStream_O::getAndReset() {
 };
 
 namespace core {
-void SynonymStream_O::exposeCando(Lisp_sp lisp) {
-  class_<SynonymStream_O>();
-}
-void SynonymStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void TwoWayStream_O::exposeCando(Lisp_sp lisp) {
-  class_<TwoWayStream_O>();
-}
-void TwoWayStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void BroadcastStream_O::exposeCando(Lisp_sp lisp) {
-  class_<BroadcastStream_O>();
-}
-void BroadcastStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void EchoStream_O::exposeCando(Lisp_sp lisp) {
-  class_<EchoStream_O>();
-}
-void EchoStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
 
 string FileStream_O::__repr__() const {
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString() << " " << _rep_(FileStreamFilename(this->asSmartPtr())) << ">";
   return ss.str();
 }
-
-void FileStream_O::exposeCando(Lisp_sp lisp) {
-  class_<FileStream_O>();
-}
-void FileStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void IOFileStream_O::exposeCando(Lisp_sp lisp) {
-  class_<IOFileStream_O>();
-}
-void IOFileStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void IOStreamStream_O::exposeCando(Lisp_sp lisp) {
-  class_<IOStreamStream_O>();
-}
-void IOStreamStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-namespace core {
-void ConcatenatedStream_O::exposeCando(Lisp_sp lisp) {
-  class_<ConcatenatedStream_O>();
-}
-void ConcatenatedStream_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(ClPkg, Number, "", "", _lisp);
-#endif
-};
-};
-
-namespace core {
 
 T_sp StringInputStream_O::make(const string &str) {
   Str_sp s = str_create(str);
@@ -6352,7 +6222,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
     T_sp elt_type = cl_stream_element_type(stream);
     bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
     T_sp s = cl__nthcdr(start, seq);
-    for (;; s = CONS_CDR(s)) {
+    for (;; s = cons_cdr(s)) {
       if (start < end) {
         T_sp elt = oCar(s);
         if (ischar)

@@ -38,11 +38,11 @@ NAMESPACE_PACKAGE_ASSOCIATION(llvmo, LlvmoPkg, "LLVM-SYS");
 
 namespace llvmo {
 
-class LlvmoExposer : public core::Exposer {
+class LlvmoExposer_O : public core::Exposer_O {
 private:
 public:
   DISABLE_NEW();
-  LlvmoExposer(core::Lisp_sp lisp) : Exposer(lisp, LlvmoPkg){};
+  LlvmoExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, LlvmoPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
 

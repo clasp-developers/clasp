@@ -51,10 +51,10 @@
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
 			  function-env
-			  closed-over-renv
+			  closure
 			  argument-holder
 			  new-env)
-  (cmp-log "compile-arguments closed-over-renv: %s\n" closed-over-renv)
+  (cmp-log "compile-arguments closure: %s\n" closure)
   ;; This is where we make the value frame for the passed arguments
   ;;
   ;; keywords:  ESCAPE ANALYSIS escape analysis TODO
@@ -63,7 +63,7 @@
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
+  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) closure)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -118,7 +118,7 @@ Could return more functions that provide lambda-list for swank for example"
 	       (cmp-log "Starting new function name: %s\n" name)
 	       (let ((arguments (llvm-sys:get-argument-list fn))
                      traceid)
-                 (multiple-value-bind (closed-over-renv argument-holder)
+                 (multiple-value-bind (closure argument-holder)
                      (parse-function-arguments arguments)
                    (let ((new-env (progn
                                     (cmp-log "Creating new-value-environment for arguments\n")
@@ -130,7 +130,7 @@ Could return more functions that provide lambda-list for swank for example"
                                                           (compile-arguments name
                                                                              lambda-list-handler
                                                                              fn-env
-                                                                             closed-over-renv
+                                                                             closure
                                                                              argument-holder
                                                                              lambda-args-env
                                                                              ))))))
@@ -338,19 +338,25 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
-    (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (saved-values (irc-alloca-tsp :label "multiple-value-prog1-saved-values"))
-	  (temp-val (irc-alloca-tsp :label "temp-val")))
-      ;; See the interpreter sp_multipleValueCall
-      (codegen temp-mv-result (car rest) env)
-      (irc-intrinsic "saveValues" saved-values temp-mv-result)
-      (do* ((cur (cdr rest) (cdr cur))
-	    (form (car cur) (car cur)))
-	   ((endp cur) nil)
-	(codegen temp-val form env)
-	)
-      (irc-intrinsic "loadValues" temp-mv-result saved-values)
-      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result))))
+    (let ((first-form (car rest))
+          (forms (cdr rest)))
+      (codegen result `(funcall 'core::multiple-value-prog1-function
+                                (lambda () ,first-form)
+                                (lambda () (progn ,@forms))) env)))
+  #+(or)(with-dbg-lexical-block (rest)
+          (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+                (saved-values (irc-alloca-tsp :label "multiple-value-prog1-saved-values"))
+                (temp-val (irc-alloca-tsp :label "temp-val")))
+            ;; See the interpreter sp_multipleValueCall
+            (codegen temp-mv-result (car rest) env)
+            (irc-intrinsic "saveValues" saved-values temp-mv-result)
+            (do* ((cur (cdr rest) (cdr cur))
+                  (form (car cur) (car cur)))
+                 ((endp cur) nil)
+              (codegen temp-val form env)
+              )
+            (irc-intrinsic "loadValues" temp-mv-result saved-values)
+            (irc-intrinsic "copyTmvOrSlice" result temp-mv-result))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
@@ -746,6 +752,7 @@ jump to blocks within this tagbody."
   "codegen-block using the try macro"
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
+    (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
     (with-dbg-lexical-block (body)
       (let* ((block-env (irc-new-block-environment env :name block-symbol))
              traceid)

@@ -234,8 +234,8 @@ struct to_object<llvm::Pass *> {
 
 namespace llvmo {
 FORWARD(AttributeSet);
-class AttributeSet_O : public core::T_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::AttributeSet, AttributeSet_O, "AttributeSet", core::T_O);
+class AttributeSet_O : public core::General_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::AttributeSet, AttributeSet_O, "AttributeSet", core::General_O);
  public:
   typedef llvm::AttributeSet ExternalType;
 protected:
@@ -1176,9 +1176,8 @@ TRANSLATE(llvmo::User_O);
 /* to_object translators */
 
 namespace llvmo {
-class Attribute_O : public core::T_O {
-  LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute",core::T_O);
-  DECLARE_INIT();
+class Attribute_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, Attribute_O, "Attribute",core::General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(Attribute_O);
@@ -1306,37 +1305,6 @@ struct to_object<llvm::DataLayout *> {
 };
     ;
 
-namespace llvmo {
-class CompiledClosure : public core::FunctionClosure {
-  friend void dump_funcs(core::CompiledFunction_sp compiledFunction);
-
-public:
-  core::T_sp llvmFunction;
-  core::CompiledClosure_fptr_type fptr;
-  core::T_sp associatedFunctions;
-  core::T_sp _lambdaList;
-  // constructor
-public:
-  virtual const char *describe() const { return "CompiledClosure"; };
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-  virtual void *functionAddress() const { return (void *)this->fptr; }
-
-public:
-  CompiledClosure(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
-                  core::T_sp ll, SOURCE_INFO)
-      : FunctionClosure(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
-  void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
-  bool compiledP() const { return true; };
-  core::T_sp lambdaList() const;
-  core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
-  DISABLE_NEW();
-  inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    core::InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist, this->closedEnvironment);
-    core::T_O *closedEnv = LCC_FROM_ACTIVATION_FRAME_SMART_PTR(this->closedEnvironment);
-    return (*(this->fptr))(LCC_PASS_ARGS_ENV(closedEnv));
-  };
-};
-};
 
 namespace llvmo {
 FORWARD(Constant);
@@ -2307,13 +2275,22 @@ TRANSLATE(llvmo::APFloat_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
-  typedef const llvm::APFloat &DeclareType;
+  typedef llvm::APFloat DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APFloat_sp>(object)->_value){};
 };
 };
+
 /* to_object translators */
 
+#if 0
+template <>
+struct gctools::GCInfo<llvmo::APFloat_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+#endif
 namespace llvmo {
 FORWARD(APInt);
 class APInt_O : public core::ExternalObject_O {
@@ -2334,6 +2311,7 @@ public:
 
 public:
   string toString(int radix, bool isigned) const;
+  core::Integer_sp toInteger(bool issigned) const;
   APInt_O() : Base(){};
   ~APInt_O(){};
 
@@ -2346,12 +2324,19 @@ TRANSLATE(llvmo::APInt_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APInt &, std::true_type> {
-  typedef const llvm::APInt &DeclareType;
+  typedef llvm::APInt DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::APInt_sp>(object)->_value){};
 };
 /* to_object translators */
-
+#if 0
+ template <>
+struct gctools::GCInfo<llvmo::APInt_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+#endif
 template <>
 struct to_object<llvm::APInt> {
   static core::T_sp convert(llvm::APInt sr) { return llvmo::APInt_O::create(sr); };
@@ -4049,7 +4034,6 @@ namespace translate {
 template <>
 struct to_object<llvm::CompositeType *> {
   static core::T_sp convert(llvm::CompositeType *ptr) {
-    _G();
     return ((core::RP_Create_wrapped<llvmo::CompositeType_O, llvm::CompositeType *>(ptr)));
   };
 };

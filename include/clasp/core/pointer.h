@@ -32,9 +32,8 @@ THE SOFTWARE.
 #include <clasp/core/pointer.fwd.h>
 
 namespace core {
-class Pointer_O : public T_O {
-  LISP_CLASS(core, CorePkg, Pointer_O, "Pointer",T_O);
-  //	DECLARE_INIT();
+class Pointer_O : public General_O {
+  LISP_CLASS(core, CorePkg, Pointer_O, "Pointer",General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(Pointer_O);

@@ -34,11 +34,11 @@ NAMESPACE_PACKAGE_ASSOCIATION(serveEvent, ServeEventPkg, "SERVE-EVENT-INTERNAL")
 
 namespace serveEvent {
 
-class ServeEventExposer : public core::Exposer {
+class ServeEventExposer_O : public core::Exposer_O {
 private:
 public:
   DISABLE_NEW();
-  ServeEventExposer(core::Lisp_sp lisp) : Exposer(lisp, ServeEventPkg){};
+  ServeEventExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, ServeEventPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
 };

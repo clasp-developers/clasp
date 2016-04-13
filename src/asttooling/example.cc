@@ -92,7 +92,3 @@ typedef clbind::Wrapper<asttooling::A> A_wrapper;
 typedef clbind::Wrapper<asttooling::B> B_wrapper;
 typedef clbind::Wrapper<asttooling::C> C_wrapper;
 typedef clbind::Wrapper<asttooling::B_Adapter> B_Adapter_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(A_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(B_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(B_Adapter_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(C_wrapper);

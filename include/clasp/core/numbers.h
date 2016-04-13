@@ -28,6 +28,7 @@ THE SOFTWARE.
 #define _core_numbers_H
 
 #include <clasp/core/clasp_gmpxx.h>
+#include <cmath>
 #include <math.h>
 #include <limits.h>
 #pragma GCC diagnostic push
@@ -145,8 +146,8 @@ Number_sp contagen_div(Number_sp na, Number_sp nb);
 int basic_compare(Number_sp na, Number_sp nb);
 
 SMART(Number);
-class Number_O : public T_O {
-  LISP_CLASS(core, ClPkg, Number_O, "number",T_O);
+class Number_O : public General_O {
+  LISP_CLASS(core, ClPkg, Number_O, "number",General_O);
 
 public:
   static Number_sp create(double val);
@@ -452,7 +453,7 @@ public:
   string __repr__() const;
   Number_sp abs_() const;
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!
-  bool isinf_() const { return isinf(this->_Value); };
+  bool isinf_() const { return std::isinf(this->_Value); };
 
 public:
   //	virtual	string	valueAsString_() const;
@@ -589,7 +590,7 @@ public:
   Number_sp signum_() const;
   Number_sp abs_() const { return DoubleFloat_O::create(fabs(this->_Value)); };
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
-  bool isinf_() const { return isinf(this->_Value); };
+  bool isinf_() const { return std::isinf(this->_Value); };
 
 public:
   //	virtual	string	valueAsString_() const;
@@ -670,7 +671,7 @@ public:
   Number_sp signum_() const;
   Number_sp abs_() const;
   bool isnan_() const { return this->_Value != this->_Value; }; // NaN is supposed to be the only value that != itself!!!!
-  bool isinf_() const { return isinf(this->_Value); };
+  bool isinf_() const { return std::isinf(this->_Value); };
 public:
   //	virtual	string	valueAsString_() const;
   //	virtual	void	setFromString( const string& strVal );
@@ -913,7 +914,7 @@ inline Number_sp clasp_log1(Number_sp x) {
     return clasp_make_single_float(logf(f));
   } else if (x.single_floatp()) {
     float f = x.unsafe_single_float();
-    if (::isnan(f))
+    if (std::isnan(f))
       return x;
     if (f < 0)
       return clasp_log1_complex_inner(x, clasp_make_fixnum(0));
@@ -930,7 +931,7 @@ inline Number_sp clasp_log1p(Number_sp x) {
     return clasp_make_single_float(_log1p(f));
   } else if (x.single_floatp()) {
     float f = x.unsafe_single_float();
-    if (::isnan(f))
+    if (std::isnan(f))
       return x;
     if (f < -1)
       return clasp_log1_complex_inner(clasp_one_plus(x), clasp_make_fixnum(0));
@@ -1405,7 +1406,7 @@ inline bool clasp_float_nan_p(Float_sp num) {
 inline bool clasp_float_infinity_p(Float_sp num) {
   if (num.single_floatp()) {
     float f = num.unsafe_single_float();
-    return isinf(f);
+    return std::isinf(f);
   }
   return num->isnan_();
 }

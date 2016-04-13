@@ -149,8 +149,6 @@ CL_DEFUN T_mv cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non
 
 SYMBOL_EXPORT_SC_(KeywordPkg, constituent_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
-SYMBOL_SC_(CorePkg, STARsharp_equal_alistSTAR);
-SYMBOL_SC_(CorePkg, STARsharp_sharp_alistSTAR);
 SYMBOL_SC_(CorePkg, STARconsing_dot_allowedSTAR);
 SYMBOL_SC_(CorePkg, STARconsing_dotSTAR);
 SYMBOL_SC_(CorePkg, STARpreserve_whitespace_pSTAR);
@@ -216,10 +214,14 @@ CL_DEFUN T_sp core__reader_comma_form(T_sp sin, Character_sp ch) {
     head = _sym_unquote_nsplice;
     gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
   }
+#ifdef SOURCE_TRACKING
   SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
+#endif
   T_sp comma_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   list << head << comma_object;
+#ifdef SOURCE_TRACKING
   lisp_registerSourcePosInfo(list.cons(), info);
+#endif
   return (list.cons());
 };
 
@@ -227,9 +229,13 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_list_allow_consing_dot");
 CL_DEFUN T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch) {
+#ifdef SOURCE_TRACKING
   SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
+#endif
   List_sp list = read_list(sin, ')', true);
+#ifdef SOURCE_TRACKING
   lisp_registerSourcePosInfo(list, info);
+#endif
   return list;
 };
 
@@ -237,8 +243,11 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_error_unmatched_close_parenthesis");
 CL_DEFUN T_mv core__reader_error_unmatched_close_parenthesis(T_sp sin, Character_sp ch) {
+#ifdef SOURCE_TRACKING
+#error "There is nothing that uses info"
   SourceFileInfo_sp info = core__source_file_info(sin);
   SIMPLE_ERROR(BF("Unmatched close parenthesis in file: %s line: %s") % info->fileName() % clasp_input_lineno(sin));
+#endif
   return (Values(_Nil<T_O>()));
 };
 
@@ -248,11 +257,15 @@ CL_DOCSTRING("reader_quote");
 CL_DEFUN T_sp core__reader_quote(T_sp sin, Character_sp ch) {
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__source_file_info(sin));
   ql::list acc;
+#ifdef SOURCE_TRACKING
   SourcePosInfo_sp spi = core__input_stream_source_pos_info(sin);
+#endif
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   acc << cl::_sym_quote << quoted_object;
   T_sp result = acc.cons();
+#ifdef SOURCE_TRACKING
   lisp_registerSourcePosInfo(result, spi);
+#endif
   return result;
 }
 
@@ -405,7 +418,9 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_dot");
 CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
+#ifdef SOURCE_TRACKING
   SourcePosInfo_sp spi = core__input_stream_source_pos_info(sin);
+#endif
   T_sp object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   if (!cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {
     if (!cl::_sym_STARread_evalSTAR->symbolValue().isTrue()) {
@@ -414,9 +429,11 @@ CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
                    sin);
     }
     T_sp result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
+#ifdef SOURCE_TRACKING
     if (cl__consp(result)) {
       lisp_registerSourcePosInfo(result, spi);
     }
+#endif
     return result;
   }
   return (Values0<T_O>());
@@ -426,12 +443,16 @@ CL_LAMBDA(stream ch num);
 CL_DECLARE();
 CL_DOCSTRING("sharp_single_quote");
 CL_DEFUN T_sp core__sharp_single_quote(T_sp sin, Character_sp ch, T_sp num) {
+#ifdef SOURCE_TRACKING
   SourcePosInfo_sp spi = core__input_stream_source_pos_info(sin);
+#endif
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   //	ql::source_code_list result(sin->lineNumber(),sin->column(),core__source_file_info(sin));
   ql::list result;
   result << cl::_sym_function << quoted_object;
+#ifdef SOURCE_TRACKING
   lisp_registerSourcePosInfo(result.cons(), spi);
+#endif
   T_sp tresult = result.cons();
   return tresult;
 };
@@ -737,7 +758,7 @@ DONE:
   return (Values0<T_O>());
 }; // core__sharp_vertical_bar
 
-EXPOSE_CLASS(core, ReadTable_O);
+
 SYMBOL_EXPORT_SC_(KeywordPkg, syntax);
 SYMBOL_EXPORT_SC_(KeywordPkg, whitespace_character);
 HashTable_sp ReadTable_O::create_standard_syntax_table() {
@@ -883,9 +904,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, non_terminating_macro_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, terminating_macro_character);
 SYMBOL_EXPORT_SC_(KeywordPkg, macro_function);
 
-#define ARGS_ReadTable_set_macro_character "(ch func_desig &optional non-terminating-p)"
-#define DECL_ReadTable_set_macro_character ""
-#define DOCS_ReadTable_set_macro_character "set-macro-character as in CL"
 T_sp ReadTable_O::set_macro_character(Character_sp ch, T_sp funcDesig, T_sp non_terminating_p) {
   if (non_terminating_p.isTrue()) {
     this->set_syntax_type(ch, kw::_sym_non_terminating_macro_character);
@@ -1073,17 +1091,7 @@ ReadTable_sp ReadTable_O::copyReadTable(gc::Nilable<ReadTable_sp> tdest) {
   SYMBOL_EXPORT_SC_(ClPkg, setDispatchMacroCharacter);
   SYMBOL_EXPORT_SC_(ClPkg, getDispatchMacroCharacter);
 
-void ReadTable_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ReadTable_O>()
-      ;
-}
 
-void ReadTable_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), ReadTable, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
 
 }; /* core */

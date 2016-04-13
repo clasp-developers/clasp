@@ -21,12 +21,14 @@
    #:translate-datum
    #:convert-funcalls
    #:finalize-unwind-and-landing-pad-instructions
+   #:optimize-stack-enclose
    #:cleavir-compile
    #:cleavir-compile-file
    #:cclasp-compile-in-env
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
+   #:alloca-i8
 ))
 
 (defpackage #:clasp-cleavir-generate-ast
@@ -110,7 +112,9 @@
 
 (defpackage #:cc-mir
   (:use #:common-lisp)
-  (:export 
+  (:export
+   #:stack-enclose-instruction
+   #:make-stack-enclose-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

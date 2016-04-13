@@ -35,20 +35,11 @@ THE SOFTWARE.
 
 namespace core {
 
-void SpecialForm_O::exposeCando(Lisp_sp lisp) {
-  class_<SpecialForm_O>();
-}
 
-void SpecialForm_O::exposePython(Lisp_sp lisp) {
-#if 0  // USEBOOSTPYTHON //[
-	PYTHON_CLASS(CorePkg,SpecialForm,"","",_lisp)
-    ;
-#endif //]
-}
+
 
 SpecialForm_sp SpecialForm_O::create(Symbol_sp symbol, SpecialFormCallback fptr) {
-  SpecialForm_sp sf = SpecialForm_O::create();
-  sf->_SpecialSymbol = symbol;
+  SpecialForm_sp sf = gctools::GC<SpecialForm_O>::allocate(symbol);
   sf->_fptr = fptr;
   return sf;
 }
@@ -71,8 +62,8 @@ void SpecialForm_O::archiveBase(ArchiveP node) {
 #endif // defined(XML_ARCHIVE)
 
 string SpecialForm_O::__repr__() const {
-  return this->_SpecialSymbol->fullName();
+  return this->name().as<Symbol_O>()->fullName();
 }
 
-EXPOSE_CLASS(core, SpecialForm_O);
+
 };

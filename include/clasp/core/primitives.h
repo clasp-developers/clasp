@@ -38,7 +38,7 @@ namespace core {
 extern T_sp cl__macro_function(Symbol_sp symbol, T_sp env);
 extern T_mv core__separate_pair_list(List_sp listOfPairs);
 
-extern Symbol_mv core__function_block_name(T_sp functionName);
+extern Symbol_sp core__function_block_name(T_sp functionName);
 
 //extern void af_ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llh);
 
@@ -69,21 +69,50 @@ List_sp cl__append(List_sp lists);
 
 Symbol_mv cl__gensym(T_sp x);
 
-class SequenceStepper {
+};
+
+
+namespace core {
+  class SequenceStepper_O;
+  class VectorStepper_O;
+  class ConsStepper_O;
+  FORWARD(SequenceStepper);
+  FORWARD(VectorStepper);
+  FORWARD(ConsStepper);
+};
+
+template <>
+  struct gctools::GCInfo<core::SequenceStepper_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
+ class SequenceStepper_O : public General_O {
+   LISP_ABSTRACT_CLASS(core,CorePkg,SequenceStepper_O,"SequenceStepper",General_O);
 public:
   virtual bool advance() = 0;
   virtual T_sp element() const = 0;
-  virtual ~SequenceStepper(){};
+  virtual ~SequenceStepper_O(){};
+};
 };
 
-class VectorStepper : public SequenceStepper {
-  FRIEND_GC_SCANNER(core::VectorStepper);
-GCPRIVATE:
+template <>
+  struct gctools::GCInfo<core::VectorStepper_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
+class VectorStepper_O : public SequenceStepper_O {
+  LISP_CLASS(core,CorePkg,VectorStepper_O,"VectorStepper",SequenceStepper_O);
+private:
   Vector_sp _Domain;
   int _Index;
-
 public:
-  VectorStepper(Vector_sp domain) : _Domain(domain), _Index(0){};
+  VectorStepper_O(Vector_sp domain) : _Domain(domain), _Index(0){};
   virtual bool advance() {
     this->_Index++;
     return (this->_Index >= cl__length(this->_Domain));
@@ -96,15 +125,21 @@ public:
     }
   };
 };
+};
+template <>
+  struct gctools::GCInfo<core::ConsStepper_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
-class ConsStepper : public SequenceStepper {
-  FRIEND_GC_SCANNER(core::ConsStepper);
-
+namespace core {
+class ConsStepper_O : public SequenceStepper_O {
+  LISP_CLASS(core,CorePkg,ConsStepper_O,"ConsStepper",SequenceStepper_O);
 public: //private
   List_sp _Cur;
-
 public:
-  ConsStepper(List_sp first) : _Cur(first){};
+  ConsStepper_O(List_sp first) : _Cur(first){};
   virtual bool advance() {
     this->_Cur = oCdr(this->_Cur);
     return this->_Cur.nilp();
@@ -115,12 +150,12 @@ public:
 /*! A class that generates lists of elements drawn from a list of sequences.
       Given (a1 a2 a3) (b1 b2 b3) (c1 c2 c3)
       Will successively generate (a1 b1 c1) (a2 b2 c2) (a3 b3 c3) */
-class ListOfSequenceSteppers //: public gctools::StackRoot
+class ListOfSequenceSteppers
     {
   friend class ListOfListSteppers;
 
 private:
-  gctools::Vec0<gctools::tagged_pointer<SequenceStepper>> _Steppers;
+  gctools::Vec0<SequenceStepper_sp> _Steppers;
   bool _AtEnd;
 
 public:
@@ -161,8 +196,8 @@ void initializePythonPrimitives(Lisp_sp lisp);
 
 namespace core {
 FORWARD(InvocationHistoryFrameIterator);
-class InvocationHistoryFrameIterator_O : public T_O {
-  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",T_O);
+class InvocationHistoryFrameIterator_O : public General_O {
+  LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",General_O);
 
 private: // instance variables here
   InvocationHistoryFrame *_Frame;
@@ -228,7 +263,7 @@ namespace core {
   T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env);
   void core__setf_global_inline_statis(core::T_sp name, bool status, core::T_sp env);
   T_sp cl__fdefinition(T_sp functionName);
-
+  T_mv cl__special_operator_p(T_sp sym);
 
 };
 

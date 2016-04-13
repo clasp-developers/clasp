@@ -33,10 +33,6 @@ THE SOFTWARE.
 
 #include <clasp/gctools/hardErrors.h>
 
-#define INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(x)
-
-#define USE_WEAK_POINTER
-
 #ifdef USE_BOEHM
 #include <clasp/gc/gc.h>
 #include <clasp/gc/gc_allocator.h>
@@ -118,10 +114,8 @@ struct GCAllocationPoint;
   Specialized in clasp_gc.cc
 
 */
-
+#include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/pointer_tagging.h>
-
-#include <clasp/gctools/tagged_cast.h>
 
 namespace gctools {
     /*! This is the type of the tagged kind header that is the first
@@ -138,61 +132,147 @@ word of every object in memory managed by the GC */
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
 
+#include <clasp/gctools/cast.h>
+#include <clasp/gctools/tagged_cast.h>
+
 namespace gctools {
 
-struct MonitorAllocations {
-  bool on;
-  bool stackDump;
-  int counter;
-  int start;
-  int end;
-  int backtraceDepth;
-  MonitorAllocations() : on(false), stackDump(false), counter(0){};
+  constexpr size_t Alignment() {
+//  return sizeof(Header_s);
+    return alignof(Header_s);
+  };
+  inline constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
+
+  // ----------------------------------------------------------------------
+  //! Calculate the size of an object + header for allocation
+  template <class T>
+    inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
+
+
+/*! Size of containers given the number of elements */
+  template <typename Cont_impl>
+    size_t sizeof_container(size_t n) {
+    size_t classSz = sizeof(Cont_impl);
+    size_t dataSz = sizeof(typename Cont_impl::value_type) * n;
+    size_t totalSz = classSz + dataSz;
+    return AlignUp(totalSz);
+  };
+
+  template <class T>
+    inline size_t sizeof_container_with_header(size_t num) {
+    return sizeof_container<T>(num) + sizeof(Header_s);
+  };
+
+
+/* Align size upwards and ensure that it's big enough to store a
+ * forwarding pointer.
+ * This is used by the obj_scan and obj_skip methods
+ */
+/*   Replaces this macro...
+     #define ALIGN(size)                                                \
+    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
+     ? AlignUp<Header_s>(size)                              \
+     : gctools::sizeof_with_header<gctools::Fwd_s>() ) 
+*/
+
+
+  extern size_t global_sizeof_fwd;
+  inline size_t Align(size_t size) {
+    return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd);
+  };
 };
-extern MonitorAllocations global_monitorAllocations;
 
-extern void monitorAllocation(kind_t k, size_t sz);
 
+namespace gctools {
+
+  inline void *ClientPtrToBasePtr(void *mostDerived) {
+    void *ptr = reinterpret_cast<char *>(mostDerived) - sizeof(Header_s);
+    return ptr;
+  }
+
+  inline Header_s* header_pointer(void* client_pointer)
+  {
+    Header_s* header = reinterpret_cast<Header_s*>(reinterpret_cast<char*>(client_pointer) - sizeof(Header_s));
+    return header;
+  }
+  
+  inline void throwIfInvalidClient(core::T_O *client) {
+    Header_s *header = (Header_s *)ClientPtrToBasePtr(client);
+    if (header->invalidP()) {
+      THROW_HARD_ERROR(BF("The client pointer at %p is invalid!\n") % (void *)client);
+    }
+  }
+
+  template <typename T>
+    inline T *BasePtrToMostDerivedPtr(void *base) {
+    T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + sizeof(Header_s));
+    return ptr;
+  }
+};
+
+
+namespace gctools {
+
+  struct MonitorAllocations {
+    bool on;
+    bool stackDump;
+    int counter;
+    int start;
+    int end;
+    int backtraceDepth;
+  MonitorAllocations() : on(false), stackDump(false), counter(0){};
+  };
+  extern MonitorAllocations global_monitorAllocations;
+
+  extern void monitorAllocation(kind_t k, size_t sz);
+  extern uint64_t globalBytesAllocated;
+
+#ifdef TRACK_ALLOCATIONS
+  inline void monitor_allocation(kind_t k, size_t sz) {
+    globalBytesAllocated += sz;
 #ifdef GC_MONITOR_ALLOCATIONS
-#define MONITOR_ALLOCATION(k, sz)     \
-  if (global_monitorAllocations.on) { \
-    monitorAllocation(k, sz);         \
+    if ( global_monitorAllocations.on ) {
+      monitorAllocation(k,sz);
+    }
+#endif
   }
 #else
-#define MONITOR_ALLOCATION(k, sz)
+  inline void monitor_allocation(kind_t k, size_t sz) {};
 #endif
-}
+
+};
+
 extern "C" {
-char *obj_name(gctools::kind_t kind);
-char *obj_kind_name(core::T_O *ptr);
+const char *obj_name(gctools::kind_t kind);
+const char *obj_kind_name(core::T_O *ptr);
 size_t obj_kind(core::T_O *ptr);
 extern void obj_dump_base(void *base);
 };
 
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
-template <class OT>
-struct GCKind {
+  template <class OT>
+    struct GCKind {
 #ifdef USE_MPS
 #ifdef RUNNING_GC_BUILDER
-  static GCKindEnum const Kind = KIND_null;
+      static GCKindEnum const Kind = KIND_null;
 #else
   // We need a default Kind when running the gc-builder.lsp static analyzer
   // but we don't want a default Kind when compiling the mps version of the code
   // to force compiler errors when the Kind for an object hasn't been declared
-  static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
+      static GCKindEnum const Kind = KIND_null; // provide default for weak dependents
 #endif // RUNNING_GC_BUILDER
 #endif // USE_MPS
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
-  static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
+      static GCKindEnum const Kind = KIND_null; // minimally define KIND_null
 #else
                                             // We don't want a default Kind when compiling the boehm version of the code
                                             // to force compiler errors when the Kind for an object hasn't been declared
 // using clasp_gc.cc
 #endif // USE_CXX_DYNAMIC_CAST
 #endif
-};
+    };
 };
 
 namespace gctools {
@@ -210,9 +290,9 @@ namespace gctools {
   
 template <class OT>
 struct GCInfo {
-  static constexpr GCInfo_policy Policy = normal;
   static bool const NeedsInitialization = true; // Currently, by default,  everything needs initialization
   static bool const NeedsFinalization = false;  // By default, nothing needs finalization
+  static constexpr GCInfo_policy Policy = normal;
 };
 };
 
@@ -232,27 +312,6 @@ void *SmartPtrToBasePtr(smart_ptr<T> obj) {
 }
 };
 
-#define DECLARE_onHeapScanGCRoots()
-#define DECLARE_onStackScanGCRoots()
-
-namespace gctools {
-
-/*! Size of containers given the number of elements */
-template <typename Cont_impl>
-size_t sizeof_container(size_t n) {
-  size_t headerSz = sizeof(Cont_impl);
-  size_t dataSz = sizeof(typename Cont_impl::value_type) * n;
-  size_t totalSz = headerSz + dataSz;
-  GC_LOG(("headerSz[%lu] + ( value_size[%lu] * n[%lu] -> dataSz[%lu] ) --> totalSz[%lu]\n",
-          headerSz, sizeof(typename Cont_impl::value_type), n, dataSz, totalSz));
-  return AlignUp(totalSz);
-};
-
-template <class T>
-inline size_t sizeof_container_with_header(size_t num) {
-  return sizeof_container<T>(num) + sizeof(Header_s);
-};
-};
 
 namespace gctools {
 class GCStack;
@@ -262,20 +321,18 @@ GCStack *threadLocalStack();
 #include <clasp/gctools/gcStack.h>
 #include <clasp/gctools/gcalloc.h>
 
-#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind)
-#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::allocate_kind(gctools::GCKind<_class_>::Kind,__VA_ARGS__)
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::root_allocate_kind(gctools::GCKind<_class_>::Kind)
+#define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_with_default_constructor()
+#define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate(__VA_ARGS__)
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate()
 
-#define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GCObjectAllocator<_class_>::copy(_orig_)
+#define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 
 /*! These don't do anything at the moment
   but may be used in the future to create unsafe-gc points
 */
 
-#define SUPPRESS_GC() \
-  {}
-#define ENABLE_GC() \
-  {}
+#define SUPPRESS_GC()  {}
+#define ENABLE_GC() {}
 
 namespace gctools {
 
@@ -285,5 +342,18 @@ int handleFatalCondition();
        The main function is wrapped within this function */
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);
 };
+
+
+extern "C" {
+// These must be provided the the garbage collector specific code
+
+//! Describe the header of the client
+void client_describe(void *taggedClient);
+//! Validate the client
+void client_validate(void *taggedClient);
+//! Describe the header
+void header_describe(gctools::Header_s* headerP);
+};
+
 
 #endif // _clasp_memoryManagement_H

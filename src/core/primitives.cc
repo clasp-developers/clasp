@@ -426,9 +426,9 @@ like CL:DESCRIBE)doc");
 CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
 {
   if (obj.generalp()) {
-    obj->describe(stream);
+    obj.unsafe_general()->describe(stream);
   } else if (obj.consp()) {
-    obj->describe(stream);
+    obj.unsafe_cons()->describe(stream);
   }
   SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
 };
@@ -486,14 +486,33 @@ CL_DEFUN T_mv core__smart_pointer_details() {
   return Values(ptrType, pxOffset, pxSize);
 }
 
-CL_LAMBDA(&rest args);
+CL_LAMBDA(&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("values");
-CL_DEFUN T_mv cl__values(List_sp args) {
+CL_DEFUN T_mv cl__values(T_sp args) {
   // returns multiple values
-  T_mv result = ValuesFromCons(args);
-  return result;
+  if (!args.valistp()) {
+    SIMPLE_ERROR(BF("arg must be valist"));
+  }
+  VaList_sp vargs = gctools::As<VaList_sp>(args);
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  if (nargs >= core::MultipleValues::MultipleValuesLimit) {
+    SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );
+  }
+  SUPPRESS_GC();
+  core::MultipleValues &me = (core::lisp_multipleValues());
+  me.setSize(0);
+  core::T_sp first = LCC_NEXT_ARG(vargs,0);
+  for (size_t i(1); i< nargs; ++i ) {
+    T_sp csp = LCC_NEXT_ARG(vargs,i);
+    me.valueSet(i, csp);
+  }
+  me.setSize(nargs);
+  ENABLE_GC();
+  core::T_mv mv = gctools::multiple_values<core::T_O>(first,nargs);
+  return mv;
 }
+
 
 CL_LAMBDA(&rest args);
 CL_DECLARE();
@@ -527,12 +546,12 @@ Symbol_sp functionBlockName(T_sp functionName) {
 CL_LAMBDA(functionName);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS glossary 'function block name'. If the functionName is a symbol return it.  If the functionName is a cons of the form (setf xxxx) return xxxx");
-CL_DEFUN Symbol_mv core__function_block_name(T_sp functionName) {
+CL_DEFUN Symbol_sp core__function_block_name(T_sp functionName) {
   Symbol_sp output = functionBlockName(functionName);
   if (output.nilp()) {
     SIMPLE_ERROR(BF("Invalid function name: %s") % _rep_(functionName));
   }
-  return (Values(output));
+  return output;
 }
 
 CL_LAMBDA(arg);
@@ -702,7 +721,6 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
 };
 
 
-CL_LAMBDA(integer count);
 CL_DECLARE();
 CL_DOCSTRING("CLHS: ash");
 CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
@@ -810,9 +828,9 @@ CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T
       err << "lambda_list: " << _rep_(llh) << std::endl;
       err << "Passing argument 1: " << _rep_(form) << std::endl;
       err << "Passing argument 2: " << _rep_(macro_env) << std::endl;
-      gctools::tagged_pointer<Closure> closure = macro_function->closure;
-      err << "macro_function[" << _rep_(macro_function->functionName()) << std::endl;
-      if (auto ic = closure.as<InterpretedClosure>()) {
+      Closure_sp closure = macro_function;
+      err << "macro_function[" << _rep_(macro_function->name()) << std::endl;
+      if (auto ic = closure.as<InterpretedClosure_O>()) {
         err << "code: " << _rep_(ic->code());
       } else {
         err << "macro_function is not an interpreted function";
@@ -838,36 +856,47 @@ CL_DECLARE();
 CL_DOCSTRING("return class of object - see CLHS");
 CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   Class_sp result = lisp_instance_class(obj);
-#if DEBUG_CLOS >= 3
-  printf("\nMLOG classOf %s ---> %s\n", obj->__repr__().c_str(), result->__repr__().c_str());
-#endif
   return (result);
 }
 
-CL_LAMBDA(function-name fn &optional macro);
+CL_LAMBDA(function-name fn &optional is-macro pretty-print (lambda-list nil lambda-list-p));
 CL_DECLARE();
-CL_DOCSTRING("fset - bind a function to its name - handles symbol function-name and (SETF XXXX) names. (macro) defines if the function is a macro or not.");
-CL_DEFUN T_sp core__STARfset(T_sp functionName, Function_sp functionObject, T_sp macro) {
-  ASSERTF(functionObject, BF("function is undefined\n"));
-  if (macro.isTrue()) {
-    functionObject->setKind(kw::_sym_macro);
-  } else {
-    functionObject->setKind(kw::_sym_function);
-  }
-  if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()) {
-    functionObject->closure->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
+CL_DOCSTRING(R"doc(* Arguments
+- function-name :: The name of the function to bind.
+- fn :: The function object.
+- is-macro :: A boolean.
+- pretty-print : A boolean.
+- lambda-list : A lambda-list or nil.
+* Description
+Bind a function to the function slot of a symbol
+- handles symbol function-name and (SETF XXXX) names. 
+IS-MACRO defines if the function is a macro or not. PRETTY-PRINT was inherited from ecl - I don't know what its for.  LAMBDA-LIST passes the lambda-list.)doc");
+CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
+  if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
+    if (is_macro.isTrue()) {
+      functionObject->set_kind(kw::_sym_macro);
+    } else {
+      functionObject->set_kind(kw::_sym_function);
+    }
+    if ( lambda_list_p.notnilp() ) {
+      functionObject->setf_lambda_list(lambda_list);
+    }
+    if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()
+        && functionObject->compiledP()) {
+      functionObject->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
+    }
   }
   if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
-    symbol->setf_symbolFunction(functionObject);
-    return functionObject;
+    symbol->setf_symbolFunction(functor);
+    return functor;
   } else if (cl__consp(functionName)) {
     SYMBOL_EXPORT_SC_(ClPkg, setf);
     List_sp cur = functionName;
     if (oCar(cur) == cl::_sym_setf) {
       Symbol_sp symbol = gc::As<Symbol_sp>(oCadr(cur));
-      symbol->setSetfFdefinition(functionObject);
-      return functionObject;
+      symbol->setSetfFdefinition(functor);
+      return functor;
     }
   }
   SIMPLE_ERROR(BF("Illegal name for function[%s]") % _rep_(functionName));
@@ -986,29 +1015,6 @@ CL_DEFUN T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp 
 /* -------------------------------------------------------- */
 /*     Sequence primitives                                  */
 
-#if 0
-GC_RESULT VectorStepper::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-{
-#ifdef USE_MPS
-  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-    SMART_PTR_FIX(this->_Domain);
-  } MPS_SCAN_END(GC_SCAN_STATE);
-#endif
-  return GC_RES_OK;
-}
-#endif
-
-#if 0
-GC_RESULT ConsStepper::onHeapScanGCRoots(GC_SCAN_ARGS_PROTOTYPE)
-{
-#ifdef USE_MPS
-  MPS_SCAN_BEGIN(GC_SCAN_STATE) {
-    SMART_PTR_FIX(this->_Cur);
-  } MPS_SCAN_END(GC_SCAN_STATE);
-#endif
-  return GC_RES_OK;
-}
-#endif
 
 ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
   this->_AtEnd = false;
@@ -1017,15 +1023,16 @@ ListOfSequenceSteppers::ListOfSequenceSteppers(List_sp sequences) {
     if (Vector_sp vobj = obj.asOrNull<Vector_O>()) {
       if (cl__length(vobj) == 0)
         goto EMPTY;
-      gctools::tagged_pointer<VectorStepper> vP(gctools::ClassAllocator<VectorStepper>::allocate_class(vobj));
+      VectorStepper_sp  vP(gc::GC<VectorStepper_O>::allocate(vobj));
       this->_Steppers.push_back(vP);
     } else if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocate_class(cobj));
+      ConsStepper_sp cP(gc::GC<ConsStepper_O>::allocate(cobj));
       this->_Steppers.push_back(cP);
     } else if (obj.nilp()) {
       goto EMPTY;
-    } else {
-      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(obj) % obj->_instanceClass()->classNameAsString());
+    } else if (obj.generalp()) {
+      General_sp gobj((gctools::Tagged)obj.raw_());
+      SIMPLE_ERROR(BF("Illegal object for stepper[%s] class[%s]") % _rep_(gobj) % gobj->_instanceClass()->classNameAsString());
     }
   }
   this->_AtEnd = false;
@@ -1038,8 +1045,9 @@ void ListOfSequenceSteppers::fillValueFrameUsingCurrentSteppers(ActivationFrame_
   if (this->_AtEnd)
     SIMPLE_ERROR(BF("Tried to make list of ended stepper"));
   int idx = 0;
+  ValueFrame_sp vframe = frame.as<ValueFrame_O>();
   for (auto rit = this->_Steppers.begin(); rit != this->_Steppers.end(); rit++) {
-    frame->set_entry(idx, (*rit)->element());
+    vframe->set_entry(idx, (*rit)->element());
     ++idx;
   }
 }
@@ -1064,7 +1072,7 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
   for (auto cur : sequences) {
     T_sp obj = oCar(cur);
     if (Cons_sp cobj = obj.asOrNull<Cons_O>()) {
-      gctools::tagged_pointer<ConsStepper> cP(gctools::ClassAllocator<ConsStepper>::allocate_class(cobj));
+      ConsStepper_sp  cP(gc::GC<ConsStepper_O>::allocate(cobj));
       this->_Steppers.push_back(cP);
     } else {
       goto EMPTY;
@@ -1079,7 +1087,9 @@ ListOfListSteppers::ListOfListSteppers(List_sp sequences) {
 
 bool test_every_some_notevery_notany(Function_sp predicate, List_sp sequences, bool elementTest, bool elementReturn, bool fallThroughReturn, T_sp &retVal) {
   ListOfSequenceSteppers steppers(sequences);
-  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<ActivationFrame_O>()));
+  ValueFrame_sp frame(ValueFrame_O::create(steppers.size(), _Nil<T_O>()));
+//  printf("%s:%d  %s  frame->length() = %d\n", __FILE__, __LINE__, __FUNCTION__,frame->length());
+//  printf("        frame->_Objects.capacity() = %d\n", frame->_Objects.capacity());
   if (steppers.atEnd())
     goto FALLTHROUGH; // return elementReturn;
   while (!steppers.atEnd()) {
@@ -1380,53 +1390,71 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
 #pragma clang diagnostic ignored "-Wunused-variable"
   if (x.fixnump())
     return (Values(cl::_sym_fixnum));
-  else if (Character_sp ccx = x.asOrNull<Character_O>())
+  else if ( x.characterp() )
     return (Values(cl::_sym_character));
-  else if (SingleFloat_sp sfx = x.asOrNull<SingleFloat_O>())
+  else if ( x.single_floatp() ) 
     return (Values(cl::_sym_single_float));
-  else if (x.nilp())
-    return (Values(cl::_sym_Symbol_O)); // Return _sym_null??
-  else if (Symbol_sp sx = x.asOrNull<Symbol_O>())
-    return (Values(cl::_sym_Symbol_O));
   else if (x.consp())
     return (Values(cl::_sym_list));
-  else if (DoubleFloat_sp dfx = x.asOrNull<DoubleFloat_O>())
-    return (Values(cl::_sym_DoubleFloat_O));
-  else if (Bignum_sp bnx = x.asOrNull<Bignum_O>())
-    return (Values(cl::_sym_Bignum_O));
-  else if (Ratio_sp rx = x.asOrNull<Ratio_O>())
-    return (Values(cl::_sym_Ratio_O));
+  else if (x.generalp()) {
+    General_sp gx(x.unsafe_general());
+    if (DoubleFloat_sp dfx = gx.asOrNull<DoubleFloat_O>())
+      return (Values(cl::_sym_DoubleFloat_O));
+    else if (Symbol_sp sx = gx.asOrNull<Symbol_O>())
+      return (Values(cl::_sym_Symbol_O));
+    else if (gx.nilp())
+      return (Values(cl::_sym_Symbol_O)); // Return _sym_null??
+    else if (Bignum_sp bnx = gx.asOrNull<Bignum_O>())
+      return (Values(cl::_sym_Bignum_O));
+    else if (Ratio_sp rx = gx.asOrNull<Ratio_O>())
+      return (Values(cl::_sym_Ratio_O));
 #ifdef CLASP_LONG_FLOAT
-  else if (LongFloat_sp lfx = x.asOrNull<LongFloat_O>())
-    return (Values(cl::_sym_LongFloat_O));
+    else if (LongFloat_sp lfx = gx.asOrNull<LongFloat_O>())
+      return (Values(cl::_sym_LongFloat_O));
 #endif
-  else if (Complex_sp cx = x.asOrNull<Complex_O>())
-    return (Values(cl::_sym_Complex_O));
-  else if (Package_sp px = x.asOrNull<Package_O>())
-    return (Values(cl::_sym_Package_O));
-  else if (HashTable_sp htx = x.asOrNull<HashTable_O>())
-    return (Values(cl::_sym_HashTable_O));
-  else if (Vector_sp vx = x.asOrNull<Vector_O>())
-    return (Values(cl::_sym_Vector_O));
-  else if (BitVector_sp bvx = x.asOrNull<BitVector_O>())
-    return (Values(cl::_sym_BitVector_O));
-  else if (Array_sp ax = x.asOrNull<Array_O>())
-    return (Values(cl::_sym_Array_O));
-  else if (Str_sp strx = x.asOrNull<Str_O>())
-    return (Values(cl::_sym_String_O));
+    else if (Complex_sp cx = gx.asOrNull<Complex_O>())
+      return (Values(cl::_sym_Complex_O));
+    else if (Package_sp px = gx.asOrNull<Package_O>())
+      return (Values(cl::_sym_Package_O));
+    else if (HashTable_sp htx = gx.asOrNull<HashTable_O>())
+      return (Values(cl::_sym_HashTable_O));
+    else if (Vector_sp vx = gx.asOrNull<Vector_O>())
+      return (Values(cl::_sym_Vector_O));
+    else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
+      return (Values(cl::_sym_BitVector_O));
+    else if (Array_sp ax = gx.asOrNull<Array_O>())
+      return (Values(cl::_sym_Array_O));
+    else if (Str_sp strx = gx.asOrNull<Str_O>())
+      return (Values(cl::_sym_String_O));
   //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
-  else if (Stream_sp streamx = x.asOrNull<Stream_O>())
-    return (Values(cl::_sym_Stream_O));
-  else if (ReadTable_sp rtx = x.asOrNull<ReadTable_O>())
-    return (Values(cl::_sym_ReadTable_O));
-  return Values(x->__class()->className());
-  SIMPLE_ERROR(BF("Add af_type_to_symbol support for type: %s") % x->_instanceClass()->classNameAsString());
+    else if (Stream_sp streamx = gx.asOrNull<Stream_O>())
+      return (Values(cl::_sym_Stream_O));
+    else if (ReadTable_sp rtx = gx.asOrNull<ReadTable_O>())
+      return (Values(cl::_sym_ReadTable_O));
+    return Values(gx->__class()->className());
+  }
+  SIMPLE_ERROR(BF("Add core__type_to_symbol support for type: %s") % cl__class_of(x)->classNameAsString());
 #pragma clang diagnostic pop
 }
 
 T_sp type_of(T_sp x) {
-  if (x.nilp())
-    return cl::_sym_null;
+  if (x.fixnump()) {
+    ql::list res(_lisp);
+    res << cl::_sym_integer << x << x;
+    return res.cons();
+  } else if (x.consp()) {
+    return cl::_sym_cons;
+  } else if (x.single_floatp()) {
+    return cl::_sym_single_float;
+  } else if (x.characterp()) {
+    if (cl__standard_char_p(gc::As<Character_sp>(x)))
+      return cl::_sym_standard_char;
+    return cl::_sym_character;
+  } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
+    ql::list res(_lisp);
+    res << cl::_sym_integer << ix << ix;
+    return res.cons();
+  }
 #ifdef CLOS
   if (Instance_sp instance = x.asOrNull<Instance_O>()) {
     T_sp cl = lisp_instance_class(instance);
@@ -1448,85 +1476,71 @@ T_sp type_of(T_sp x) {
   } else if (Class_sp mc = x.asOrNull<Class_O>()) {
     Class_sp mcc = lisp_static_class(mc);
     return mcc->className();
-  } else
+  }
 #endif
-    if (x.fixnump()) {
-      ql::list res(_lisp);
-      res << cl::_sym_integer << x << x;
-      return res.cons();
-    } else if (Integer_sp ix = x.asOrNull<Integer_O>()) {
-      ql::list res(_lisp);
-      res << cl::_sym_integer << ix << ix;
-      return res.cons();
-    } else if (cl__characterp(x)) {
-      if (cl__standard_char_p(gc::As<Character_sp>(x)))
-        return cl::_sym_standard_char;
-      return cl::_sym_character;
-    } else if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
-      if (x == _lisp->_true())
-        return cl::_sym_boolean;
-      if (cl__keywordp(symx))
-        return cl::_sym_keyword;
-      return cl::_sym_symbol;
-    } else if (String_sp sx = x.asOrNull<String_O>()) {
-      Symbol_sp t;
-      if (sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p()) {
-        t = cl::_sym_array;
-      } else
-        t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx)))).cons();
-    } else if (Vector_sp vx = x.asOrNull<Vector_O>()) {
-      if (vx->adjustable_array_p() || vx->_displaced_array_p()) {
-        return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
-      } else if (vx->array_has_fill_pointer_p() /* || (cl__elttype)x->vector.elttype != aet_object) */) {
-        return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
-      } else {
-        return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl__length(vx))).cons();
-      }
-    } else if (Array_sp ax = x.asOrNull<Array_O>()) {
-      Symbol_sp t;
-      if (ax->adjustable_array_p() || ax->_displaced_array_p()) {
-        t = cl::_sym_array;
-      } else
-        t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << ax->element_type_as_symbol() << ax->arrayDimensions()).cons();
-    } else if (BitVector_sp bx = x.asOrNull<BitVector_O>()) {
-      Symbol_sp t;
-      if (bx->adjustable_array_p() || bx->array_has_fill_pointer_p() || bx->_displaced_array_p()) {
-        t = cl::_sym_array;
-      } else
-        t = cl::_sym_simple_array;
-      return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(bx)))).cons();
-    } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
-      return pp->_instanceClass()->className();
-    } else if (core__structurep(x)) {
-      return gc::As<StructureObject_sp>(x)->structureType();
-    } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
-      if (gc::IsA<SynonymStream_sp>(stx))
-        return cl::_sym_SynonymStream_O;
-      else if (gc::IsA<BroadcastStream_sp>(stx))
-        return cl::_sym_BroadcastStream_O;
-      else if (gc::IsA<ConcatenatedStream_sp>(stx))
-        return cl::_sym_ConcatenatedStream_O;
-      else if (gc::IsA<TwoWayStream_sp>(stx))
-        return cl::_sym_TwoWayStream_O;
-      else if (gc::IsA<StringInputStream_sp>(stx))
-        return _sym_StringInputStream_O;
-      else if (gc::IsA<StringOutputStream_sp>(stx))
-        return _sym_StringOutputStream_O;
-      else if (gc::IsA<EchoStream_sp>(stx))
-        return cl::_sym_EchoStream_O;
-      else
-        return cl::_sym_FileStream_O;
-    } else if (x.consp()) {
-      return cl::_sym_cons;
-    } else if (Pathname_sp px = x.asOrNull<Pathname_O>()) {
-      if (core__logical_pathname_p(px)) {
-        return cl::_sym_logical_pathname;
-      } else {
-        return cl::_sym_pathname;
-      }
+  if (Symbol_sp symx = x.asOrNull<Symbol_O>()) {
+    if (x.nilp()) return cl::_sym_null;
+    if (x == _lisp->_true())
+      return cl::_sym_boolean;
+    if (cl__keywordp(symx))
+      return cl::_sym_keyword;
+    return cl::_sym_symbol;
+  } else if (String_sp sx = x.asOrNull<String_O>()) {
+    Symbol_sp t;
+    if (sx->adjustable_array_p() || sx->array_has_fill_pointer_p() || sx->_displaced_array_p()) {
+      t = cl::_sym_array;
+    } else t = cl::_sym_simple_array;
+    return (ql::list(_lisp) << t << cl::_sym_base_char << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(sx)))).cons();
+  } else if (Vector_sp vx = x.asOrNull<Vector_O>()) {
+    if (vx->adjustable_array_p() || vx->_displaced_array_p()) {
+      return (ql::list(_lisp) << cl::_sym_vector << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
+    } else if (vx->array_has_fill_pointer_p() /* || (cl__elttype)x->vector.elttype != aet_object) */) {
+      return (ql::list(_lisp) << cl::_sym_simple_array << vx->element_type_as_symbol() << vx->arrayDimensions()).cons();
+    } else {
+      return (ql::list(_lisp) << cl::_sym_simple_vector << make_fixnum(cl__length(vx))).cons();
     }
+  } else if (Array_sp ax = x.asOrNull<Array_O>()) {
+    Symbol_sp t;
+    if (ax->adjustable_array_p() || ax->_displaced_array_p()) {
+      t = cl::_sym_array;
+    } else
+      t = cl::_sym_simple_array;
+    return (ql::list(_lisp) << t << ax->element_type_as_symbol() << ax->arrayDimensions()).cons();
+  } else if (BitVector_sp bx = x.asOrNull<BitVector_O>()) {
+    Symbol_sp t;
+    if (bx->adjustable_array_p() || bx->array_has_fill_pointer_p() || bx->_displaced_array_p()) {
+      t = cl::_sym_array;
+    } else
+      t = cl::_sym_simple_array;
+    return (ql::list(_lisp) << t << cl::_sym_bit << Cons_O::createList(make_fixnum(1), make_fixnum(cl__length(bx)))).cons();
+  } else if (WrappedPointer_sp pp = x.asOrNull<WrappedPointer_O>()) {
+    return pp->_instanceClass()->className();
+  } else if (core__structurep(x)) {
+    return gc::As<StructureObject_sp>(x)->structureType();
+  } else if (Stream_sp stx = x.asOrNull<Stream_O>()) {
+    if (gc::IsA<SynonymStream_sp>(stx))
+      return cl::_sym_SynonymStream_O;
+    else if (gc::IsA<BroadcastStream_sp>(stx))
+      return cl::_sym_BroadcastStream_O;
+    else if (gc::IsA<ConcatenatedStream_sp>(stx))
+      return cl::_sym_ConcatenatedStream_O;
+    else if (gc::IsA<TwoWayStream_sp>(stx))
+      return cl::_sym_TwoWayStream_O;
+    else if (gc::IsA<StringInputStream_sp>(stx))
+      return _sym_StringInputStream_O;
+    else if (gc::IsA<StringOutputStream_sp>(stx))
+      return _sym_StringOutputStream_O;
+    else if (gc::IsA<EchoStream_sp>(stx))
+      return cl::_sym_EchoStream_O;
+    else
+      return cl::_sym_FileStream_O;
+  } else if (Pathname_sp px = x.asOrNull<Pathname_O>()) {
+    if (core__logical_pathname_p(px)) {
+      return cl::_sym_logical_pathname;
+    } else {
+      return cl::_sym_pathname;
+    }
+  }
   return core__type_to_symbol(x);
 }
 
@@ -1566,7 +1580,7 @@ CL_DEFUN Integer_sp cl__sxhash(T_sp obj) {
 
 namespace core {
 
-EXPOSE_CLASS(core, InvocationHistoryFrameIterator_O);
+
 
 bool satisfiesTest(InvocationHistoryFrameIterator_sp iterator, T_sp test) {
   if (!iterator->isValid()) {
@@ -1591,12 +1605,9 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
   } while (num >= 0);
 }
 
-#define ARGS_InvocationHistoryFrameIterator_O_make ""
-#define DECL_InvocationHistoryFrameIterator_O_make ""
-#define DOCS_InvocationHistoryFrameIterator_O_make "Return the InvocationHistoryFrameIterator for the frame that is the (first) that satisfies (test)"
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
+  InvocationHistoryFrame *cur = thread->invocationHistoryStack().top();
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
   iterator->setFrame(cur);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
@@ -1614,11 +1625,11 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure;
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return closure->name;
+  return closure->name();
 }
 
 CL_LISPIFY_NAME("frameIteratorEnvironment");
@@ -1626,11 +1637,11 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure;
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return closure->closedEnvironment;
+  return closure->closedEnvironment();
 }
 
 int InvocationHistoryFrameIterator_O::index() {
@@ -1644,11 +1655,11 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  gctools::tagged_pointer<Closure> closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure;
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
-  return Function_O::make(closure); // Should I really be creating a new Function object every time???
+  return closure;
 }
 
 CL_LISPIFY_NAME("frameIteratorArguments");
@@ -1662,23 +1673,8 @@ CL_DEFMETHOD Vector_sp InvocationHistoryFrameIterator_O::arguments() {
 
 SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
 
-void InvocationHistoryFrameIterator_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<InvocationHistoryFrameIterator_O>()
-      .def("frameIteratorFunctionName", &InvocationHistoryFrameIterator_O::functionName)
-      .def("frameIteratorArguments", &InvocationHistoryFrameIterator_O::arguments)
-      .def("frameIteratorEnvironment", &InvocationHistoryFrameIterator_O::environment)
-      .def("frameIteratorIsValid", &InvocationHistoryFrameIterator_O::isValid)
-      .def("frameIteratorPreviousFrame", &InvocationHistoryFrameIterator_O::prev)
-      //	.initArgs("(self)")
-      ;
-//  Defun_maker(CorePkg, InvocationHistoryFrameIterator);
-};
+;
 
-void InvocationHistoryFrameIterator_O::exposePython(::core::Lisp_sp lisp) {
-//	PYTHON_CLASS_2BASES(Pkg(),Vector,"","",_LISP)
-#ifdef USEBOOSTPYTHON
-#endif
-}
 
 CL_LAMBDA(idx direction);
 CL_DECLARE();
@@ -1857,35 +1853,35 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("bdsTop");
 CL_DEFUN int core__bds_top() {
-  return _lisp->bindings().top();
+  return thread->bindings().top();
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVar");
 CL_DEFUN Symbol_sp core__bds_var(int idx) {
-  return _lisp->bindings().var(idx);
+  return thread->bindings().var(idx);
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVal");
 CL_DEFUN T_sp core__bds_val(int idx) {
-  return _lisp->bindings().val(idx);
+  return thread->bindings().val(idx);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStack");
 CL_DEFUN Vector_sp core__exception_stack() {
-  return _lisp->exceptionStack().backtrace();
+  return thread->exceptionStack().backtrace();
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStackDump");
 CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = _lisp->exceptionStack();
+  ExceptionStack &stack = thread->exceptionStack();
   printf("Exception stack size: %zu members\n", stack.size());
   for (int i(0); i < stack.size(); ++i) {
     string kind;
@@ -1912,7 +1908,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
-  DynamicBindingStack &bd = _lisp->bindings();
+  DynamicBindingStack &bd = thread->bindings();
   for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
     out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
   };
@@ -1931,7 +1927,7 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
   if (!msg.nilp()) {
     clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
   }
-  clasp_writeln_string(((BF("%s") % _lisp->invocationHistoryStack().asString()).str()), ss);
+  clasp_writeln_string(((BF("%s") % thread->invocationHistoryStack().asString()).str()), ss);
   if (outputDesignator.nilp()) {
     return cl__get_output_stream_string(ss);
   }
@@ -1942,7 +1938,6 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
 
   SYMBOL_SC_(CorePkg, smartPointerDetails);
   SYMBOL_EXPORT_SC_(ClPkg, null);
-  SYMBOL_SC_(CorePkg, STARfset);
   SYMBOL_SC_(CorePkg, unbound);
   SYMBOL_EXPORT_SC_(ClPkg, read);
   SYMBOL_EXPORT_SC_(ClPkg, read_preserving_whitespace);

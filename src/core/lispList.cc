@@ -63,7 +63,7 @@ static bool
 test_compare(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn->closure)(LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_()));
+  T_sp res = (*t->test_fn)(LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_()));
   return res.notnilp();
 }
 
@@ -71,7 +71,7 @@ static bool
 test_compare_not(struct cl_test *t, T_sp x) {
   x = KEY(t, x);
   //t->env->function = t->test_function;
-  T_sp res = (*t->test_fn->closure)(LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_()));
+  T_sp res = (*t->test_fn)(LCC_PASS_ARGS2_ELLIPSIS(t->item_compared.raw_(), x.raw_()));
   return res.nilp();
 }
 
@@ -99,7 +99,7 @@ static T_sp
 key_function(struct cl_test *t, T_sp x) {
   //t->env->function = t->key_function;
   T_mv result;
-  return (*t->key_fn->closure)(LCC_PASS_ARGS1_ELLIPSIS(x.raw_()));
+  return (*t->key_fn)(LCC_PASS_ARGS1_ELLIPSIS(x.raw_()));
 }
 
 static T_sp
@@ -307,7 +307,6 @@ CL_DEFUN T_sp cl__last(T_sp list, int n) {
 
 CL_LAMBDA(&rest lists);
 CL_DECLARE();
-CL_DOCSTRING("tnconc");
 CL_DEFUN T_sp cl__nconc(List_sp lists) {
   T_sp head = _Nil<T_O>();
   T_sp tail = _Nil<T_O>();
@@ -364,16 +363,6 @@ CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   return list.asCons()->nreconc(tail);
 };
 
-#if 0
-    EXPOSE_CLASS(core,List_O);
-
-    void List_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<List_O>()
-	    ;
-    }
-#endif
-
   SYMBOL_EXPORT_SC_(ClPkg, revappend);
   SYMBOL_EXPORT_SC_(ClPkg, nreconc);
   SYMBOL_EXPORT_SC_(ClPkg, list);
@@ -385,41 +374,10 @@ CL_DEFUN T_sp cl__nreconc(List_sp list, T_sp tail) {
   SYMBOL_EXPORT_SC_(ClPkg, copyList);
   SYMBOL_EXPORT_SC_(ClPkg, last);
 
-#if 0
-    void List_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),List,"","",_LISP)
-	    //	.initArgs("(self)")
-	    ;
-#endif
-    }
-#endif
 
-#if 0
-    void List_O::serialize(::serialize::SNodeP node)
-    {
-	IMPLEMENT_ME();
-	this->Bases::serialize(node);
-	// Archive other instance variables here
-    }
-#endif
 
-#if 0
-    void List_O::archiveBase(::core::ArchiveP node)
-    {
-	IMPLEMENT_ME();
-	this->Base1::archiveBase(node);
-	// Archive other instance variables here
-    }
-#endif
 
-EXPOSE_CLASS(core, VaList_dummy_O);
+;
 
-void VaList_dummy_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<VaList_dummy_O>();
-};
-
-void VaList_dummy_O::exposePython(::core::Lisp_sp lisp){};
 
 }; /* core */

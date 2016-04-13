@@ -37,7 +37,6 @@ namespace core {
 FORWARD(Vector);
 
 /*! A one dimensional vector of objects */
-// class Vector_O : public Array_O, public T_O
 class Vector_O : public Array_O {
   LISP_CLASS(core, ClPkg, Vector_O, "vector",Array_O);
 
@@ -82,7 +81,11 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   virtual cl_index fillPointer() const { SUBIMP(); };
 
   CL_NAME("FILL-POINTER-SET");
-  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { SUBIMP(); };
+  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { ERROR(cl::_sym_simpleTypeError,
+                                                               core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not an array with a fill pointer."),
+                                                                                     kw::_sym_formatArguments, core::lisp_createList(this->asSmartPtr()),
+                                                                                     kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+                                                                                     kw::_sym_datum, this->asSmartPtr())); }
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
@@ -107,7 +110,7 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
 TRANSLATE(core::Vector_O);
 
 namespace cl {
-  extern core::Symbol_sp& _sym_T_O;
+  extern core::Symbol_sp& _sym_General_O;
 };
 
 namespace core {

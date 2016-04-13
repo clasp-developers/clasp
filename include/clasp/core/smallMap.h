@@ -45,8 +45,8 @@ THE SOFTWARE.
 namespace core {
 using namespace core;
 SMART(SmallMap);
-class SmallMap_O : public T_O {
-  LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap",T_O);
+class SmallMap_O : public General_O {
+  LISP_CLASS(core, CorePkg, SmallMap_O, "SmallMap",General_O);
 GCPRIVATE:
   typedef gctools::SmallMap<T_sp, T_sp> map_type;
   map_type map;

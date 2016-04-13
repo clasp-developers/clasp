@@ -89,7 +89,7 @@ public:
   virtual void arrayFill(T_sp val);
 
   /*! Return a deepCopy of the ArrayObjects */
-  virtual T_sp deepCopy() const;
+//  virtual T_sp deepCopy() const;
 
   virtual T_sp svref(int index) const;
   virtual T_sp setf_svref(int index, T_sp value);

@@ -187,7 +187,7 @@ bool clasp_memberChar(claspChar c, T_sp charBag) {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, String_O);
+
 SYMBOL_EXPORT_SC_(ClPkg, string);
 SYMBOL_EXPORT_SC_(ClPkg, string_upcase);
 SYMBOL_EXPORT_SC_(ClPkg, string_downcase);
@@ -198,19 +198,8 @@ SYMBOL_EXPORT_SC_(ClPkg, stringLeftTrim);
 SYMBOL_EXPORT_SC_(ClPkg, stringRightTrim);
 SYMBOL_EXPORT_SC_(ClPkg, char);
 
-void String_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<String_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void String_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), String, "", "", _LISP)
-      //	.initArgs("(self)")
-    ;
-#endif
-}
+
 
 #if defined(XML_ARCHIVE)
 void String_O::archiveBase(::core::ArchiveP node) {

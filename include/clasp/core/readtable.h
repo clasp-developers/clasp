@@ -41,9 +41,8 @@ enum clasp_readtable_case {
 };
 
 FORWARD(ReadTable);
-class ReadTable_O : public T_O {
-  LISP_CLASS(core, ClPkg, ReadTable_O, "readtable",T_O);
-  DECLARE_INIT();
+class ReadTable_O : public General_O {
+  LISP_CLASS(core, ClPkg, ReadTable_O, "readtable",General_O);
   //    DECLARE_ARCHIVE();
   friend T_sp cl__set_syntax_from_char(Character_sp toChar, Character_sp fromChar, ReadTable_sp toReadTable, ReadTable_sp fromReadTable);
 

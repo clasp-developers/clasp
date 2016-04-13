@@ -78,6 +78,8 @@ project clasp : requirements
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
+#### Define this until we get rid of tagged_pointer<...>
+        <define>TAGGED_POINTER 
         <warnings>off
         <toolset>clang-darwin:<cxxflags>"-ferror-limit=999"
         <toolset>clang-linux:<cxxflags>"-ferror-limit=999"
@@ -95,8 +97,8 @@ project clasp : requirements
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
 	<target-os>linux:<linkflags>"-lpthread -ldl -lrt"
+        <target-os>linux:<linkflags>"-Wl,-rpath,'$ORIGIN/../../../../Resources/lib/common/lib'"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
-	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
         <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
@@ -121,7 +123,7 @@ project clasp : requirements
 
 
 ### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
-    <define>GC_MONITOR_ALLOCATIONS
+#    <define>GC_MONITOR_ALLOCATIONS
     
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>
@@ -139,13 +141,43 @@ project clasp : requirements
 #       <define>SOURCE_DEBUG
 #-------- mps options
 
+
+#### Memory sanitizer and don't omit frame pointers
+#          <cflags>"-fsanitize=memory -fno-omit-frame-pointer"
+#          <cflags>"-fsanitize=address"
+
+### USE_AMC_POOL  --- controls if certain objects (Closures) are allocated in a non-moving pool or AMC
+     <define>USE_AMC_POOL
+
+
+#### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
+#        <define>DEBUG_SPLAT_FORWARD
+#### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory
+#     <define>DEBUG_GUARD
+#### DEBUG_VALIDATE_GUARD  - Test the memory guards in lots of places - requires DEBUG_GUARD to be defined.
+#     <define>DEBUG_VALIDATE_GUARD
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
+#        <define>DEBUG_TELEMETRY_DUMP       # dump telemetry information as it is generated
 #	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
 #	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
-##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
-##### This really, really slows things down
+#        <define>DEBUG_MPS_FENCEPOST_FREE
+
+#### DEBUG_FRAME_BOUNDS  - check limits of writing/reading activation frames
+#      <define>DEBUG_FRAME_BOUNDS
+      
+#### DEBUG_MPS_UNDERSCANNING  - When defined, does a garbage collection for every allocation
+#### DEBUG_MPS_UNDERSCANNING_INITIAL - (true|false)  - when DEBUG_MPS_UNDERSCANNING is defined you can
+####                                                   control it using (gctools:enable-underscanning (t|nil))
+####                                                   This sets the initial value of global_underscanning.
 #        <define>DEBUG_MPS_UNDERSCANNING
-        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#        <define>DEBUG_MPS_UNDERSCANNING_INITIAL="true"
+#### DEBUG_PROGRESS - Print startup progress
+#     <define>DEBUG_PROGRESS
+
+#### DEBUG_RECURSIVE_ALLOCATIONS - Inexpensive test for allocations that invoke other allocations
+####                               This is not allowed in the MPS
+#         <define>DEBUG_RECURSIVE_ALLOCATIONS
+#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded
          <define>USE_CLASP_DYNAMIC_CAST
@@ -259,7 +291,8 @@ path-constant APPRES-LIB-COMMON : $(APPRES-LIB)/common ;
 path-constant APPRES-LIB-COMMON-LIB : $(APPRES-LIB-COMMON)/lib ;
 path-constant APPRES-LIB-COMMON-INCLUDE : $(APPRES-LIB-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
-path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
+path-constant APPRES-CANDO : $(APPRES)/cando ;
+path-constant APPRES-CANDO-LISP : $(APPRES-CANDO)/lisp ;
 path-constant APPBIN : $(APPTOP)/bin ;
 path-constant APPBIN-DARWIN : $(APPTOP)/MacOS ;
 path-constant APPBIN-LINUX : $(APPTOP)/bin ;

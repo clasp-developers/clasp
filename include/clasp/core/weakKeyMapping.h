@@ -32,8 +32,8 @@ THE SOFTWARE.
 
 namespace core {
 FORWARD(WeakKeyMapping);
-class WeakKeyMapping_O : public T_O {
-  LISP_CLASS(core, CorePkg, WeakKeyMapping_O, "WeakKeyMapping",T_O);
+class WeakKeyMapping_O : public General_O {
+  LISP_CLASS(core, CorePkg, WeakKeyMapping_O, "WeakKeyMapping",General_O);
 #if defined(OLD_SERIALIZE)
   DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)

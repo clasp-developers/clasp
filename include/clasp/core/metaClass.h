@@ -131,7 +131,7 @@ public:
   /*! Mimic ECL Instance::sig */
   T_sp _Signature_ClassSlots;
   /*! Callback function to allocate instances */
-  gc::tagged_pointer<Creator> _theCreator;
+  Creator_sp _theCreator;
   gctools::Vec0<T_sp> _MetaClassSlots;
 
 public:
@@ -178,8 +178,8 @@ public: // Mimic CLOS classes that are represented by Instance_O
 
 public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
-  void setCreator(gc::tagged_pointer<Creator> cb) { this->_theCreator = cb; };
-  gc::tagged_pointer<Creator> getCreator() const { return this->_theCreator; };
+  void setCreator(Creator_sp cb) { this->_theCreator = cb; };
+  Creator_sp getCreator() const { return this->_theCreator; };
 CL_LISPIFY_NAME("core:hasCreator");
 CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
 
@@ -199,6 +199,8 @@ CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
   string instanceClassName() { return this->getPackagedName(); };
   string instanceClassName() const { return this->getPackagedName(); };
 
+  CL_DEFMETHOD List_sp core__min_class_precedence_list() const { return this->instanceRef(REF_CLASS_PRECEDENCE_LIST);};
+  
   /*! Return the name of the class with its Package name prefixed
 	 */
   string getPackagedName() const;
@@ -278,24 +280,6 @@ bool core__subclassp(T_sp low, T_sp high);
 /*! Return true if the object is of the class _class */
 bool af_ofClassP(T_sp object, T_sp _class);
 
-class InstanceCreator : public Creator {
-  FRIEND_GC_SCANNER(core::InstanceCreator);
-
-public:
-  Symbol_sp _className;
-
-public:
-  DECLARE_onHeapScanGCRoots();
-
-public:
-  DISABLE_NEW();
-  InstanceCreator(Symbol_sp className) : _className(className){};
-  void describe() const {
-    printf("InstanceAllocatorFunctor for class %s\n", _rep_(this->_className).c_str());
-  };
-  T_sp allocate();
-  virtual size_t templatedSizeof() const { return sizeof(InstanceCreator); };
-};
 };
 TRANSLATE(core::Class_O);
 #endif
