@@ -13,19 +13,5 @@
 
 namespace clcenv {
 
-EXPOSE_CLASS(clcenv,Info_O);
-EXPOSE_CLASS(clcenv,FunctionInfo_O);
-EXPOSE_CLASS(clcenv,VariableInfo_O);
-EXPOSE_CLASS(clcenv,LexicalVariableInfo_O);
-EXPOSE_CLASS(clcenv,SpecialVariableInfo_O);
-EXPOSE_CLASS(clcenv,ConstantVariableInfo_O);
-EXPOSE_CLASS(clcenv,SymbolMacroInfo_O);
-EXPOSE_CLASS(clcenv,LocalFunctionInfo_O);
-EXPOSE_CLASS(clcenv,GlobalFunctionInfo_O);
-EXPOSE_CLASS(clcenv,LocalMacroInfo_O);
-EXPOSE_CLASS(clcenv,GlobalMacroInfo_O);
-EXPOSE_CLASS(clcenv,SpecialOperatorInfo_O);
-EXPOSE_CLASS(clcenv,BlockInfo_O);
-EXPOSE_CLASS(clcenv,OptimizeInfo_O);
 
 };

@@ -31,7 +31,7 @@ namespace comp {
     const size_t num_fields = Base::num_fields+3;
   public:
 
-    CL_DEFUN static IfAst_sp make_if_ast(core::T_sp test, core::T_sp then, core::T_sp else_=_Nil<core::T_O>()) {
+    CL_DEFUN static IfAst_sp make_if_ast(core::T_sp test, core::T_sp then, core::T_sp else_) {
       GC_ALLOCATE(IfAst_O,ast);
       ast->setf_test(test);
       ast->setf_then(then);

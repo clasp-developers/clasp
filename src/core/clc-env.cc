@@ -13,24 +13,6 @@
 
 namespace clcenv {
 
-EXPOSE_CLASS(clcenv,GlobalEnvironment_O);
-EXPOSE_CLASS(clcenv,Entry_O);
-EXPOSE_CLASS(clcenv,LexicalVariable_O);
-EXPOSE_CLASS(clcenv,SpecialVariable_O);
-EXPOSE_CLASS(clcenv,SymbolMacro_O);
-EXPOSE_CLASS(clcenv,Function_O);
-EXPOSE_CLASS(clcenv,Macro_O);
-EXPOSE_CLASS(clcenv,Block_O);
-EXPOSE_CLASS(clcenv,Tag_O);
-EXPOSE_CLASS(clcenv,VariableType_O);
-EXPOSE_CLASS(clcenv,FunctionType_O);
-EXPOSE_CLASS(clcenv,VariableIgnore_O);
-EXPOSE_CLASS(clcenv,FunctionIgnore_O);
-EXPOSE_CLASS(clcenv,VariableDynamicExtent_O);
-EXPOSE_CLASS(clcenv,FunctionDynamicExtent_O);
-EXPOSE_CLASS(clcenv,Optimize_O);
-EXPOSE_CLASS(clcenv,Inline_O);
-
 core::T_sp GlobalEnvironment_O::compilation_speed() const
 {
   IMPLEMENT_ME();
