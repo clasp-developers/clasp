@@ -87,8 +87,8 @@ T_sp oEighth(T_sp o);
 T_sp oNinth(T_sp o);
 T_sp oTenth(T_sp o);
 
-#define CONS_CAR(x) (gc::As<Cons_sp>(x)->_Car)
-#define CONS_CDR(x) (gc::As<Cons_sp>(x)->_Cdr)
+#define CONS_CAR(x) (reinterpret_cast_smart_ptr<Cons_O>(x)->_Car)
+#define CONS_CAR(x) (reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr)
 #define CAR(x) oCar(x)
 #define CDR(x) oCdr(x)
 #define CONSP(x) ((x).consp())
@@ -563,7 +563,14 @@ CL_DEFUN inline T_sp oCaar(T_sp o) { return oCar(oCar(o)); };
  CL_DEFUN inline T_sp oNinth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o))))))))); };
  CL_PKG_NAME(ClPkg,Tenth);
  CL_DEFUN inline T_sp oTenth(T_sp o) { return oCar(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(oCdr(o)))))))))); };
+
+
+  inline T_sp cons_car(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Car;};
+ inline T_sp cons_cdr(T_sp x) {ASSERT(x.consp());return gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr;};
+
 };
+
+
 
 //TRANSLATE(core::Cons_O);
 

@@ -232,10 +232,10 @@ void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
     TYPE_ERROR_PROPER_LIST(head);
   }
   while (cl__consp(l)) {
-    Cons_sp cons = Cons_O::create(CONS_CAR(l));
+    Cons_sp cons = Cons_O::create(cons_car(l));
     *tailP = cons;
     tailP = &(cons->_Cdr);
-    l = CONS_CDR(l);
+    l = cons_cdr(l);
   }
   *tailP = l;
 }
@@ -248,10 +248,10 @@ void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &t
     TYPE_ERROR_PROPER_LIST(head);
   }
   while (cl__consp(l)) {
-    Cons_sp cons = Cons_O::create(CONS_CAR(l));
+    Cons_sp cons = Cons_O::create(cons_car(l));
     tail.setPointee(cons);
     tail.setPointer(&(cons->_Cdr)); // = &cons->_Cdr;
-    l = CONS_CDR(l);
+    l = cons_cdr(l);
   }
   tail.setPointee(l);
 }

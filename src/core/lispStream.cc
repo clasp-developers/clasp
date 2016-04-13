@@ -1245,7 +1245,7 @@ user_multistate_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
         while (!Null(x)) {
           buffer[0] = clasp_fixnum(oCar(x));
           buffer++;
-          x = ECL_CONS_CDR(x);
+          x = ECL_cons_cdr(x);
           n++;
         }
         stream->stream.format_table = p;
@@ -1260,7 +1260,7 @@ user_multistate_encoder(T_sp stream, unsigned char *buffer, claspCharacter c) {
         return n + 1;
       }
     }
-    p = ECL_CONS_CDR(p);
+    p = ECL_cons_cdr(p);
   } while (p != table_list);
   /* Exhausted all lists */
   return encoding_error(stream, buffer, c);
@@ -6222,7 +6222,7 @@ CL_DEFUN T_sp cl__write_sequence(T_sp seq, T_sp stream, Fixnum_sp fstart, T_sp t
     T_sp elt_type = cl_stream_element_type(stream);
     bool ischar = (elt_type == cl::_sym_base_char) || (elt_type == cl::_sym_character);
     T_sp s = cl__nthcdr(start, seq);
-    for (;; s = CONS_CDR(s)) {
+    for (;; s = cons_cdr(s)) {
       if (start < end) {
         T_sp elt = oCar(s);
         if (ischar)

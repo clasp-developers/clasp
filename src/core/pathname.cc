@@ -456,7 +456,7 @@ Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
     return pathname;
   }
   directory = pathname->_Directory;
-  if (!cl__consp(directory) || CONS_CAR(directory) != kw::_sym_relative || CONS_CDR(directory).nilp()) {
+  if (!cl__consp(directory) || cons_car(directory) != kw::_sym_relative || cons_car(directory).nilp()) {
     return pathname;
   }
   head = oCadr(directory);
@@ -690,8 +690,8 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   device = kw::_sym_unspecific;
   path = parse_directories(s, WORD_LOGICAL, *ep, end, ep);
   if (cl__consp(path)) {
-    if (CONS_CAR(path) != kw::_sym_relative &&
-        CONS_CAR(path) != kw::_sym_absolute)
+    if (cons_car(path) != kw::_sym_relative &&
+        cons_car(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_absolute, path);
     path = destructively_check_directory(path, true, false);
   } else {
@@ -792,8 +792,8 @@ maybe_parse_host:
 done_device_and_host:
   path = parse_directories(s, 0, *ep, end, ep);
   if (cl__consp(path)) {
-    if (CONS_CAR(path) != kw::_sym_relative &&
-        CONS_CAR(path) != kw::_sym_absolute)
+    if (cons_car(path) != kw::_sym_relative &&
+        cons_car(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_relative, path);
     path = destructively_check_directory(path, false, false);
   }
@@ -919,7 +919,7 @@ Pathname_sp clasp_mergePathnames(T_sp tpath, T_sp tdefaults, T_sp defaultVersion
   }
   if (path->_Directory.nilp()) {
     directory = cl__pathname_directory(defaults, tocase);
-  } else if (CONS_CAR(path->_Directory) == kw::_sym_absolute) {
+  } else if (cons_car(path->_Directory) == kw::_sym_absolute) {
     directory = path->_Directory;
   } else if (defaults->_Directory.notnilp()) {
     directory = Cons_O::append(cl__pathname_directory(defaults, tocase),
@@ -1009,8 +1009,8 @@ CL_DEFUN bool cl__wild_pathname_p(T_sp tpathname, T_sp component) {
   if (component.nilp() || component == kw::_sym_directory) {
     T_sp list = pathname->_Directory;
     checked = 1;
-    for (; list.notnilp(); list = CONS_CDR(list)) {
-      T_sp name = CONS_CAR(list);
+    for (; list.notnilp(); list = cons_cdr(list)) {
+      T_sp name = cons_car(list);
       if (name.notnilp() &&
           (name == kw::_sym_wild || name == kw::_sym_wild_inferiors ||
            clasp_wild_string_p(name))) {
@@ -1048,7 +1048,7 @@ CL_DEFUN Pathname_sp core__coerce_to_file_pathname(T_sp tpathname) {
 #endif
 #endif
   if (pathname->_Directory.nilp() ||
-      CONS_CAR(pathname->_Directory) == kw::_sym_relative) {
+      cons_car(pathname->_Directory) == kw::_sym_relative) {
     pathname = cl__merge_pathnames(pathname, getcwd(0));
   }
   return pathname;
@@ -1157,7 +1157,7 @@ T_sp clasp_namestring(T_sp tx, int flags) {
   l = x->_Directory;
   if (cl__endp(l))
     goto NO_DIRECTORY;
-  y = CONS_CAR(l);
+  y = cons_car(l);
   if (y == kw::_sym_relative) {
     if (logical)
       clasp_write_char(';', buffer);
@@ -1165,9 +1165,9 @@ T_sp clasp_namestring(T_sp tx, int flags) {
     if (!logical)
       clasp_write_string(DIR_SEPARATOR, buffer);
   }
-  l = CONS_CDR(l);
-  for (; l.notnilp(); l = CONS_CDR(l)) {
-    y = CONS_CAR(l);
+  l = cons_cdr(l);
+  for (; l.notnilp(); l = cons_cdr(l)) {
+    y = cons_car(l);
     if (y == kw::_sym_up) {
       clasp_write_string("..", buffer);
     } else if (y == kw::_sym_wild) {
@@ -1468,7 +1468,7 @@ CL_DEFUN Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
     pathdir = Cons_O::create(kw::_sym_relative);
   } else if (defaultdir.nilp()) {
     /* The defaults pathname does not have a directory. */
-  } else if (CONS_CAR(pathdir) == kw::_sym_relative) {
+  } else if (cons_car(pathdir) == kw::_sym_relative) {
     /* The pathname is relative to the default one one, so we just output the
 	   original one */
   } else {

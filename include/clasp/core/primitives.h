@@ -254,6 +254,9 @@ namespace core {
       If the idx is out of bounds then return a valid value */
   int core__set_ihs_current_frame(int idx);
   void core__exception_stack_dump();
+
+  T_mv cl__special_operator_p(T_sp sym);
+
 };
 
 #endif /* _core_primitives_H */

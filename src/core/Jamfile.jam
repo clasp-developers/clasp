@@ -26,6 +26,7 @@ project internals/core : requirements
 
 local sources =
     environment.cc
+    generate.cc
     activationFrame.cc
     evaluator.cc
       functor.cc

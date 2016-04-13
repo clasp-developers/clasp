@@ -316,6 +316,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedFunctionsSTAR);
 SYMBOL_EXPORT_SC_(KeywordPkg, FullDebug);
 SYMBOL_EXPORT_SC_(KeywordPkg, LineTablesOnly);
 
+SYMBOL_EXPORT_SC_(CorePkg, debug_message);
 SYMBOL_SC_(CorePkg, STARdebugMonitorSTAR);
 SYMBOL_SC_(CorePkg, monitorReader);
 SYMBOL_EXPORT_SC_(CorePkg, tsp);
