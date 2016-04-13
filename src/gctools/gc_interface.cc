@@ -139,6 +139,7 @@ typedef bool _Bool;
 #include <clasp/core/pointer.h>
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
+#include <clasp/core/generate.h>
 #include <clasp/core/sharpEqualWrapper.h>
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/weakHashTable.h>
