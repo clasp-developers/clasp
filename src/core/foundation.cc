@@ -85,7 +85,7 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 
-thread_local core::ThreadLocalState* thread;
+thread_local core::ThreadLocalState* thread = NULL;
 
 
 namespace reg {

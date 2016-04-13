@@ -193,8 +193,6 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
   void *stackMarker = NULL;
-  core::ThreadLocalState thread_local_state;
-  thread = &thread_local_state;
   gctools::_global_stack_marker = &stackMarker;
   gctools::_global_stack_max_size = stackMax;
 
@@ -245,6 +243,8 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   //  GC_enable_incremental();
   GC_init();
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
+  core::ThreadLocalState thread_local_state;
+  thread = &thread_local_state;
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
   telemetry::global_telemetry_search->close();
