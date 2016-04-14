@@ -372,16 +372,17 @@
 	  (funcall compiler gf applicable-methods)))))
 
 #+compare(print "combin.lsp 388")
+#| meister asks - should the (if (and (listp aux ... be changed to reflect what compute effective-method does? |#
 (defun compute-effective-method-function (gf method-combination applicable-methods)
   ;; Cannot be inlined because it will be a method
   (declare (notinline compute-effective-method))
   (let ((form (compute-effective-method gf method-combination applicable-methods)))
     (let ((aux form) f)
       (if (and (listp aux)
-		 (eq (pop aux) 'funcall)
+		 (eq (pop aux) 'apply)
 		 (functionp (setf f (pop aux)))
-		 (eq (pop aux) '.combined-method-args.)
-		 (eq (pop aux) '*next-methods*))
+		 (eq (pop aux) '.method-args.)
+		 (eq (pop aux) '.next-methods.))
 	  f
 	  (effective-method-function form t)))))
 

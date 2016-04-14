@@ -61,8 +61,16 @@
                     (flet ((call-next-method (&rest args)
                              (if (not .next-methods.)
                                  (error "No next method")
+#|meister changed the next APPLY into the one that follows it
+so that explicitly passed method args become
+  the .method-args. in the next method called.
+I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
+                                 #+(or)(apply (car .next-methods.)
+                                              .method-args.
+                                              (cdr .next-methods.)
+                                              (or args .method-args.))
                                  (apply (car .next-methods.)
-                                        .method-args.
+                                        (or args .method-args) ; meister changed from .method-args.
                                         (cdr .next-methods.)
                                         (or args .method-args.))))
                            (next-method-p ()
@@ -115,7 +123,7 @@
 #+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method #|&va-rest or &rest args|#)
+  #'(lambda (.method-args. no-next-method &rest args)
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
@@ -378,17 +386,17 @@
   (let ((form (compute-effective-method gf method-combination applicable-methods)))
     (let ((aux form) f)
       (if (and (listp aux)
-		 (eq (pop aux) 'funcall)
+		 (eq (pop aux) 'apply)
 		 (functionp (setf f (pop aux)))
-		 (eq (pop aux) '.combined-method-args.)
-		 (eq (pop aux) '*next-methods*))
+		 (eq (pop aux) '.method-args.)
+		 (eq (pop aux) '.next-methods.))
 	  f
 	  (effective-method-function form t)))))
 
 #+compare(print "combin.lsp 402")
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
-	    .combined-method-args. *next-methods*))
+	    .method-args. .next-methods.))
 
 ;;
 ;; These method combinations are bytecompiled, for simplicity.
