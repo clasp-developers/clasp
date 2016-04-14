@@ -142,7 +142,11 @@
 ;;;
 ;;; When threading is supported this macro should replicate the ECL mp:with-lock macro
 ;;;
-(make-package :mp :use '(common-lisp))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (if (find-package "MP")
+      nil
+      (make-package "MP" :use '(common-lisp))))
+
 (in-package :mp)
 (defmacro with-lock ((sym) &rest body)
   #+threading(warn "Make the mp:with-lock macro actually lock a symbol")
