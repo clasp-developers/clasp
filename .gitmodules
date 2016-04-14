@@ -13,3 +13,6 @@
 [submodule "tools/boost_build"]
 	path = tools/boost_build
 	url = https://github.com/clasp-developers/build
+[submodule "src/mps"]
+	path = src/mps
+	url = git@github.com:Ravenbrook/mps.git
