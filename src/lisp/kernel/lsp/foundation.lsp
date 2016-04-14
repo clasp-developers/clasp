@@ -404,3 +404,13 @@ Print the source location of id."
   nil)
 (export 'warn-or-ignore)
 
+;;;
+;;; When threading is supported this macro should replicate the ECL mp:with-lock macro
+;;;
+(make-package :mp :use '(common-lisp))
+(in-package :mp)
+(defmacro with-lock ((sym) &rest body)
+  #+threading(warn "Make the mp:with-lock macro actually lock a symbol")
+  `(progn ,@body))
+(export 'with-lock)
+(in-package :core)
