@@ -764,7 +764,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #ifdef MPS_LOVEMORE
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_INCREMENTAL, 0);
 #endif
-    MPS_ARGS_ADD(args, MPS_KEY_PAUSE_TIME, 0.1); // accept up to 0.1 seconds pause time
+    MPS_ARGS_ADD(args, MPS_KEY_PAUSE_TIME, 100.0); // accept up to 0.1 seconds pause time
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, arenaSizeMb * 1024 * 1024);
     res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
   }
