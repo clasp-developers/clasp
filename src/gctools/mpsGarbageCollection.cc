@@ -48,7 +48,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 
 
 */
-#define MPS_LOVEMORE 1
+//#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -764,6 +764,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #ifdef MPS_LOVEMORE
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_INCREMENTAL, 0);
 #endif
+    MPS_ARGS_ADD(args, MPS_KEY_PAUSE_TIME, 0.1); // accept up to 0.1 seconds pause time
     MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, arenaSizeMb * 1024 * 1024);
     res = mps_arena_create_k(&_global_arena, mps_arena_class_vm(), args);
   }
@@ -983,14 +984,15 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   // register the main thread stack scanner
   mps_root_t global_stack_root;
   // use mask
-  res = mps_root_create_stack(&global_stack_root,
-                              _global_arena,
-                              mps_rank_ambig(),
-                              0,
-                              global_thread,
-                              gctools::pointer_tag_mask,
-                              gctools::pointer_tag_eq,
-                              _global_stack_marker);
+  res = mps_root_create_thread_tagged(&global_stack_root,
+                                      _global_arena,
+                                      mps_rank_ambig(),
+                                      0,
+                                      global_thread,
+                                      mps_scan_area_tagged_or_zero,
+                                      gctools::pointer_tag_mask,
+                                      gctools::pointer_tag_eq,
+                                      _global_stack_marker);
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
 
