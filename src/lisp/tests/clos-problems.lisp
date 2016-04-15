@@ -18,20 +18,20 @@
 |#
 
 (fmakunbound 'foo)
-(defgeneric foo (x &rest keys &key verbose))
-(defmethod foo :around (x &rest keys &key verbose)
-  (format t "In foo :around  keys: ~a~%" keys)
+(defgeneric foobar (x &rest keys &key verbose))
+(defmethod foobar :around (x &rest keys &key verbose)
+  (format t "In foobar :around  keys: ~a~%" keys)
   (call-next-method))
-(defmethod foo (x &rest keys &key verbose)
-  (format t "In foo (eql 'foo) keys: ~a~%" keys))
+(defmethod foobar (x &rest keys &key verbose)
+  (format t "In foobar (eql 'foobar) keys: ~a~%" keys))
 (trace clos::standard-compute-effective-method)
 (trace clos::standard-main-effective-method)
 ;; this should work
-(foo 'bar :verbose t)
-(defmethod foo :before (x &rest keys &key verbose)
-  (format t "In foo :before  keys: ~a~%" keys))
+(foobar 'bar :verbose t)
+(defmethod foobar :before (x &rest keys &key verbose)
+  (format t "In foobar :before  keys: ~a~%" keys))
 ;; This will crash
-(foo 'bar :verbose t)
+(foobar 'bar :verbose t)
 
 
 
