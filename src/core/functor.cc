@@ -51,6 +51,14 @@ THE SOFTWARE.
 
 namespace core {
 
+// Keep track of how many interpreted closure calls there are
+uint64_t global_interpreted_closure_calls = 0;
+
+CL_DEFUN Integer_sp core__interpreted_closure_calls() {
+  return Integer_O::create(global_interpreted_closure_calls);
+}
+
+
 string Closure_O::nameAsString() const {
   if (this->_name.nilp()) {
     return "Function-name(NIL)";
@@ -147,6 +155,7 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 }
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
+  ++global_interpreted_closure_calls;
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();

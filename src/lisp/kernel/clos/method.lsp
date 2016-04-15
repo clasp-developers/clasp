@@ -231,7 +231,6 @@ and wraps it in an flet |#
       (walk-method-lambda method-lambda env)
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
-      ;;      (let 
       (values `(lambda (.method-args. .next-methods. ,@(cadr method-lambda))
                  (declare ,@declarations)
                  ,doc
@@ -246,14 +245,6 @@ and wraps it in an flet |#
                                                        #+(or)(apply #'no-next-method ,gf ,method
                                                                     (or args .method-args.))
                                                        (error "No next method") ;; Should be what is above -> (apply #'no-next-method ...)
-#|meister changed the next APPLY into the one that follows it
-so that explicitly passed method args become
-  the .method-args. in the next method called.
-I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
-                                                       #+(or)(apply (car .next-methods.)
-                                                              .method-args.
-                                                              (cdr .next-methods.)
-                                                              (or args .method-args.))
                                                        (apply (car .next-methods.)
                                                               (or args .method-args.)
                                                               (cdr .next-methods.)
@@ -273,8 +264,10 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
                            method-lambda)
                       .combined-method-args.))
             nil)))
-                     
 
+;;; Clasp doesn't use this anymore.
+;;; I think all GF calls are ending up in a closure!
+#+ecl
 (defun add-call-next-method-closure (method-lambda)
   (multiple-value-bind (declarations real-body documentation)
       (si::find-declarations (cddr method-lambda))
@@ -287,13 +280,6 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 	 (flet ((call-next-method (&rest args)
 		  (unless .next-methods.
 		    (error "No next method"))
-                  #|meister changed the next APPLY into the one that follows it
-                  so that explicitly passed method args become
-                  the .method-args. in the next method called.
-                  I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
-		  #+(or)(funcall (car .next-methods.)
-			   (or args .closed-method-args.)
-			   (rest .next-methods.))
                   (apply (car .closed-next-methods.)
                          (or args .closed-method-args.)
                          (rest .closed-next-methods.)

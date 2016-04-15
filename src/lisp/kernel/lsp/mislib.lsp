@@ -53,6 +53,7 @@ successfully, T is returned, else error."
          clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end
+         interpreted-calls-start interpreted-calls-end
          llh-calls-begin llh-calls-end
 	 llvm-finalization-time-end
 	 llvm-finalization-number-end
@@ -62,12 +63,14 @@ successfully, T is returned, else error."
     #-clasp(setf gc-start (si::gc-time))
     (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
+    (setq interpreted-calls-start (core:interpreted-closure-calls))
     (multiple-value-prog1
 	(funcall closure)
       (multiple-value-setq (clasp-bytes-end)
         (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
+            interpreted-calls-end (core:interpreted-closure-calls)
 	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
 	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
             llh-calls-begin (core:cxx-lambda-list-handler-create-bindings-calls))
@@ -84,18 +87,20 @@ successfully, T is returned, else error."
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
 		     )
       #+clasp(format *trace-output*
-             "Real time           : ~,3F secs~%~
+                     "Real time           : ~,3F secs~%~
               Run time            : ~,3F secs~%~
               Bytes consed        : ~a bytes~%~
               LLVM time           : ~,3F secs~%~
               LLVM compiles       : ~A~%~
-              Cxx-calls           : ~A~%"
+              Cxx-calls           : ~A~%
+              Interpreter calls   : ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
                      (- clasp-bytes-end clasp-bytes-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
-                     (- (core:cxx-lambda-list-handler-create-bindings-calls) llh-calls-begin))))
+                     (- (core:cxx-lambda-list-handler-create-bindings-calls) llh-calls-begin)
+                     (- interpreted-calls-end interpreted-calls-start))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start

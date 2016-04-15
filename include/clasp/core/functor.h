@@ -361,6 +361,10 @@ public:
 
 
 namespace core {
+  /*! Keeps track of how many InterpretedClosure calls there are
+*/
+  extern uint64_t global_interpreted_closure_calls;
+  
 class InterpretedClosure_O : public ClosureWithFrame_O {
     LISP_CLASS(core,CorePkg,InterpretedClosure_O,"InterpretedClosure",ClosureWithFrame_O);
 public:
