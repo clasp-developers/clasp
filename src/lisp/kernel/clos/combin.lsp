@@ -82,8 +82,8 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
           (effective-method-function (second form))
           (mapcar #'effective-method-function (third form))))
         (top-level
-         (coerce `(lambda (.method-args. no-next-methods)
-                    (declare (ignorable no-next-methods)
+         (coerce `(lambda (.method-args. .next-methods. #|no-next-methods|#)
+                    (declare (ignorable .next-methods.)
                              (core:lambda-name effective-method-function.top-level))
                     ,form)
                  'function))
@@ -99,8 +99,8 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 #+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-methods)
-      (declare (ignorable no-next-methods)
+  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+      (declare (ignorable .next-methods. #|no-next-methods|#)
                (core:lambda-name combine-method-functions.lambda))
       (apply method .method-args. rest-methods .method-args.))) 
 

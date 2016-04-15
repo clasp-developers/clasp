@@ -63,3 +63,17 @@ bar (cb) y --> 999
 bar (ca) y --> 999
 NIL
 * 
+
+
+
+(fmakunbound 'bar)
+(defclass ca () ())
+(defclass cb (ca) ())
+(defclass cc (cb) ())
+(defgeneric bar (x y))
+(defmethod bar ((x ca) y) )
+(defmethod bar ((x cb) y) (call-next-method))
+(defmethod bar ((x cc) y) (call-next-method))
+(defmethod bar :around ((x cc) y)  (call-next-method x 999))
+(defparameter *a* (make-instance 'cc))
+(bar *a* 2)

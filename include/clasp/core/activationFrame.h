@@ -374,7 +374,7 @@ namespace core {
         if (activationFrame.isA<ValueFrame_O>()) {
           ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
 #ifdef DEBUG_ASSERTS
-          if ( index < vf->_Objects.capacity() )
+          if ( index >= vf->_Objects.capacity() )
             error_frame_range("ValueFrame",index,vf->_Objects.capacity());
 #endif
           return vf->_Objects[index];
@@ -393,7 +393,7 @@ namespace core {
         if (activationFrame.isA<FunctionFrame_O>()) {
           FunctionFrame_sp ff = gc::reinterpret_cast_smart_ptr<FunctionFrame_O,T_O>(activationFrame);
 #ifdef DEBUG_ASSERTS
-          if ( index < ff->_Objects.capacity() )
+          if ( index >= ff->_Objects.capacity() )
             error_frame_range("ValueFrame",index,ff->_Objects.capacity());
 #endif
           return ff->_Objects[index];
