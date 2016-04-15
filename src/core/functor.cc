@@ -55,7 +55,7 @@ namespace core {
 uint64_t global_interpreted_closure_calls = 0;
 
 CL_DEFUN Integer_sp core__interpreted_closure_calls() {
-  return Integer_O::create((uint64_t)global_interpreted_closure_calls);
+  return Integer_O::create((Fixnum)global_interpreted_closure_calls);
 }
 
 
