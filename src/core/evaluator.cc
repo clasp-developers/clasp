@@ -236,26 +236,32 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
-      T_sp olambdaList = oCadr(arg);
-      List_sp body = oCdr(oCdr(arg));
-      List_sp declares;
-      gc::Nilable<Str_sp> docstring;
-      List_sp code;
-      eval::parse_lambda_body(body, declares, docstring, code);
-      LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
-      InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(cl::_sym_lambda, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
-      return ic;
-#if 0
-      T_sp fn;
-      if ( comp::_sym_compileInEnv->fboundp() ) {
-        fn = eval::funcall(comp::_sym_compileInEnv
-                           , _Nil<T_O>()
-                           , carg
-                           , _Nil<T_O>() ).as<Function_O>();
+      if ( false ) { //cl::_sym_compile->fboundp() ) {
+//        printf("%s:%d coerce-to-function Compiling the form: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
+        T_sp fn = gctools::As<Function_sp>(eval::funcall(cl::_sym_compile, _Nil<T_O>() , carg));
+        return fn;
       } else {
-        SIMPLE_ERROR(BF("You cannot coerce-to-function a lambda until the compiler is in place"));
+        T_sp olambdaList = oCadr(carg);
+        List_sp body = oCdr(oCdr(arg));
+        List_sp declares;
+        gc::Nilable<Str_sp> docstring;
+        List_sp code;
+        eval::parse_lambda_body(body, declares, docstring, code);
+        T_sp name = cl::_sym_lambda;
+        for ( auto cur : declares ) {
+          T_sp declare = oCar(cur);
+          if ( declare.consp() ) {
+            T_sp head = oCar(declare);
+            if ( head == core::_sym_lambdaName ) {
+              name = oCadr(declare);
+            }
+          }
+        }
+        LambdaListHandler_sp llh = LambdaListHandler_O::create(olambdaList, declares, cl::_sym_function);
+//        printf("%s:%d coerce-to-function generating InterpretedClosure_O: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
+        InterpretedClosure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, _Nil<T_O>(), code, SOURCE_POS_INFO_FIELDS(_Nil<T_O>()));
+        return ic;
       }
-#endif
     }
   }
   SIMPLE_ERROR(BF("Illegal function designator %s") % _rep_(arg));

@@ -56,39 +56,21 @@
 	((atom form)
 	 (error "Malformed effective method form:~%~A" form))
 	((eq (setf first (first form)) 'MAKE-METHOD)
-         (coerce `(lambda (.method-args. .next-methods.)
-                    (declare (core:lambda-name effective-method-function.make-method))
-                    (flet ((call-next-method (&rest args)
-                             (if (not .next-methods.)
-                                 (error "No next method")
-#|meister changed the next APPLY into the one that follows it
-so that explicitly passed method args become
-  the .method-args. in the next method called.
-I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
-                                 #+(or)(apply (car .next-methods.)
-                                              .method-args.
-                                              (cdr .next-methods.)
-                                              (or args .method-args.))
-                                 (apply (car .next-methods.)
-                                        (or args .method-args) ; meister changed from .method-args.
-                                        (cdr .next-methods.)
-                                        (or args .method-args.))))
-                           (next-method-p ()
-                             (and .next-methods. t)))
-                      ,(second form)))
-                 'function))
-        ((eq first 'CALL-METHOD)
-         (combine-method-functions
-          (effective-method-function (second form))
-          (mapcar #'effective-method-function (third form))))
-        (top-level
-         (coerce `(lambda (.method-args. .next-methods. #|no-next-methods|#)
-                    (declare (ignorable .next-methods.)
-                             (core:lambda-name effective-method-function.top-level))
-                    ,form)
-                 'function))
-        (t
-         (error "Malformed effective method form:~%~A" form))))
+	 (coerce `(lambda (.combined-method-args. *next-methods*)
+		    (declare (special .combined-method-args. *next-methods*))
+		    ,(second form))
+		 'function))
+	((eq first 'CALL-METHOD)
+	 (combine-method-functions
+	  (effective-method-function (second form))
+	  (mapcar #'effective-method-function (third form))))
+	(top-level
+	 (coerce `(lambda (.combined-method-args. no-next-methods)
+		    (declare (ignorable no-next-methods))
+		    ,form)
+		 'function))
+	(t
+	 (error "Malformed effective method form:~%~A" form))))
 
 ;;;
 ;;; This function is a combinator of effective methods. It creates a
@@ -99,18 +81,39 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 #+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
-      (declare (ignorable .next-methods. #|no-next-methods|#)
-               (core:lambda-name combine-method-functions.lambda))
-      (apply method .method-args. rest-methods .method-args.))) 
+  #'(lambda (args no-next-methods)
+      (declare (ignorable no-next-methods))
+      (funcall method args rest-methods)))
 
+#+compare(print "combin.lsp 88")
 (defmacro call-method (method &optional rest-methods)
-  `(apply ,(effective-method-function method)
-          ;; This is a stab in the dark - I don't know if .method-args.
-          ;; will be defined in the lexical environment
-          .method-args.
-          ',(and rest-methods (mapcar #'effective-method-function rest-methods))
-          .method-args.))
+  `(funcall ,(effective-method-function method)
+	    .combined-method-args.
+	    ',(and rest-methods (mapcar #'effective-method-function rest-methods))))
+
+#+compare(print "combin.lsp 94")
+(defun call-next-method (&rest args)
+  (declare (special .combined-method-args. *next-methods*))
+  (unless *next-methods*
+    (error "No next method."))
+  (funcall (car *next-methods*) (or args .combined-method-args.) (rest *next-methods*)))
+
+#+compare(print "combin.lsp 104")
+(defun next-method-p ()
+  (declare (special *next-methods*))
+  *next-methods*)
+
+#+compare(print "combin.lsp 109")
+(define-compiler-macro call-next-method (&rest args)
+  `(if *next-methods*
+       (funcall (car *next-methods*)
+		,(if args `(list ,@args) '.combined-method-args.)
+		(rest *next-methods*))
+       (error "No next method.")))
+
+#+compare(print "combin.lsp 117")
+(define-compiler-macro next-method-p ()
+  'clos::*next-methods*)
 
 #+compare(print "combin.lsp 121")
 (defun error-qualifier (m qualifier)
@@ -123,18 +126,16 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 #+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method &rest args)
-      (declare (ignore no-next-method)
-               (core:lambda-name standard-main-effective-method.lambda))
+  #'(lambda (.combined-method-args. no-next-method)
+      (declare (ignorable no-next-method))
       (dolist (i before)
-        (apply i .method-args. nil .method-args.))
+	(funcall i .combined-method-args. nil))
       (if after
 	  (multiple-value-prog1
-              (apply (first primary) .method-args. (rest primary) .method-args.)
-            (dolist (i after)
-              (apply i .method-args. nil .method-args.)))
-          (apply (first primary) .method-args. (rest primary) .method-args.))))
-
+	   (funcall (first primary) .combined-method-args. (rest primary))
+	   (dolist (i after)
+	     (funcall i .combined-method-args. nil)))
+	(funcall (first primary) .combined-method-args. (rest primary)))))
 
 #+compare(print "combin.lsp 143")
 (defun standard-compute-effective-method (gf methods)
@@ -174,7 +175,8 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 				      (nconc (rest around) main)))
 	  (if (or before after)
 	      (standard-main-effective-method before primary after)
-	      (combine-method-functions (first primary) (rest primary)))))))
+	      (combine-method-functions (first primary) (rest primary))))
+      )))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
@@ -201,14 +203,31 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 (defparameter *method-combinations* (make-hash-table :size 32 :test 'eq))
 
 
+#-clasp
 (defun search-method-combination (name)
   (mp:with-lock (*method-combinations-lock*)
     (or (gethash name *method-combinations*)
 	(error "~A does not name a method combination" name))))
 
+
+#+compare(print "combin.lsp 216")
+
+#+clasp
+(defun search-method-combination (name)
+    (or (gethash name *method-combinations*)
+	(error "~A does not name a method combination" name)))
+
+#-clasp
 (defun install-method-combination (name function)
   (mp:with-lock (*method-combinations-lock*)
-                (setf (gethash name *method-combinations*) function))
+    (setf (gethash name *method-combinations*) function))
+  name)
+
+#+compare(print "combin.lsp 229")
+
+#+clasp
+(defun install-method-combination (name function)
+  (setf (gethash name *method-combinations*) function)
   name)
 
 #+compare(print "combin.lsp 236")
@@ -328,8 +347,10 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 							  (t (invalid-method-error .method.
 										   "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ,name)))))
-                                                ,@group-after
-                                                (effective-method-function (progn ,@body) t))))))))
+						,@group-after
+						(effective-method-function (progn ,@body) t))))
+				   )
+      )))
 
 #+compare(print "combin.lsp 345")
 (defmacro define-method-combination (name &body body)
@@ -348,8 +369,6 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
   (error "Invalid method error for ~A~%~S"
 	 method
 	 (apply #'format nil format-control args)))
-
-
 
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-EFFECTIVE-METHOD
@@ -386,17 +405,17 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
   (let ((form (compute-effective-method gf method-combination applicable-methods)))
     (let ((aux form) f)
       (if (and (listp aux)
-		 (eq (pop aux) 'apply)
+		 (eq (pop aux) 'funcall)
 		 (functionp (setf f (pop aux)))
-		 (eq (pop aux) '.method-args.)
-		 (eq (pop aux) '.next-methods.))
+		 (eq (pop aux) '.combined-method-args.)
+		 (eq (pop aux) '*next-methods*))
 	  f
 	  (effective-method-function form t)))))
 
 #+compare(print "combin.lsp 402")
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
-	    .method-args. .next-methods.))
+	    .combined-method-args. *next-methods*))
 
 ;;
 ;; These method combinations are bytecompiled, for simplicity.

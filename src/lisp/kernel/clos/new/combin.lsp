@@ -61,16 +61,8 @@
                     (flet ((call-next-method (&rest args)
                              (if (not .next-methods.)
                                  (error "No next method")
-#|meister changed the next APPLY into the one that follows it
-so that explicitly passed method args become
-  the .method-args. in the next method called.
-I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
-                                 #+(or)(apply (car .next-methods.)
-                                              .method-args.
-                                              (cdr .next-methods.)
-                                              (or args .method-args.))
                                  (apply (car .next-methods.)
-                                        (or args .method-args) ; meister changed from .method-args.
+                                        .method-args.
                                         (cdr .next-methods.)
                                         (or args .method-args.))))
                            (next-method-p ()
@@ -82,8 +74,8 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
           (effective-method-function (second form))
           (mapcar #'effective-method-function (third form))))
         (top-level
-         (coerce `(lambda (.method-args. .next-methods. #|no-next-methods|#)
-                    (declare (ignorable .next-methods.)
+         (coerce `(lambda (.method-args. no-next-methods)
+                    (declare (ignorable no-next-methods)
                              (core:lambda-name effective-method-function.top-level))
                     ,form)
                  'function))
@@ -99,8 +91,8 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 #+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
-      (declare (ignorable .next-methods. #|no-next-methods|#)
+  #'(lambda (.method-args. no-next-methods)
+      (declare (ignorable no-next-methods)
                (core:lambda-name combine-method-functions.lambda))
       (apply method .method-args. rest-methods .method-args.))) 
 
@@ -123,7 +115,7 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 #+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.method-args. no-next-method &rest args)
+  #'(lambda (.method-args. no-next-method #|&va-rest|#&rest args)
       (declare (ignore no-next-method)
                (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
@@ -380,6 +372,7 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 	  (funcall compiler gf applicable-methods)))))
 
 #+compare(print "combin.lsp 388")
+#| meister asks - should the (if (and (listp aux ... be changed to reflect what compute effective-method does? |#
 (defun compute-effective-method-function (gf method-combination applicable-methods)
   ;; Cannot be inlined because it will be a method
   (declare (notinline compute-effective-method))
@@ -396,7 +389,7 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
 #+compare(print "combin.lsp 402")
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
-	    .method-args. .next-methods.))
+	    .combined-method-args. *next-methods*))
 
 ;;
 ;; These method combinations are bytecompiled, for simplicity.

@@ -64,11 +64,13 @@
 ;;; ----------------------------------------------------------------------
 ;;; Methods
 
-(defun install-method (name qualifiers specializers lambda-list fun &rest options)
-  (declare (notinline ensure-generic-function))
+(defun install-method (name qualifiers specializers lambda-list fun wrap &rest options)
+  (declare (ignore doc)
+	   (notinline ensure-generic-function))
   #+compare(print (list "MLOG entered install-method name: " name ))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
+	 (fun (if wrap (wrapped-method-function fun) fun))
 	 (specializers (mapcar #'(lambda (x)
 				   (cond ((consp x) (intern-eql-specializer (second x)))
 					 ((typep x 'specializer) x)
@@ -82,14 +84,11 @@
     (add-method gf method)
     method))
 
-(defun wrapped-method-function-from-defun (method-function)
-  "The function-to-method function in fixup.lsp converts regular functions
-into methods.   Methods have the lambda-list (.method-args. .next-methods. &rest args)
-but the defun functions just take args - so wrap it"
-  #'(lambda (.method-args. .next-methods. &rest args)
-      (declare (ignore .method-args. .next-methods.)
-               (core:lambda-name wrapped-method-function-from-defun.lambda))
-      (apply method-function args)))
+(defun wrapped-method-function (method-function)
+  #'(lambda (.combined-method-args. *next-methods*)
+      (declare (core:lambda-name wrapped-method-function)
+               (special .combined-method-args. *next-methods*))
+      (apply method-function .combined-method-args.)))
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                         early versions

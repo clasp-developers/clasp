@@ -40,9 +40,8 @@
 (defun std-class-optimized-accessors (slot-name)
   (declare (si::c-local))
   (with-early-accessors (+standard-class-slots+)
-    (values #'(lambda (.method-args. .next-methods. self)
+    (values #'(lambda (self)
 		(declare (optimize (safety 0) (speed 3) (debug 0))
-                         (ignore .method-args. .next-methods.)
 			 (standard-object self))
 		(ensure-up-to-date-instance self)
 		(let* ((class (si:instance-class self))
@@ -54,9 +53,8 @@
 		  (if (si:sl-boundp value)
 		      value
 		      (values (slot-unbound (class-of self) self slot-name)))))
-	    #'(lambda (.method-args. .next-methods. value self)
+	    #'(lambda (value self)
 		(declare (optimize (safety 0) (speed 3) (debug 0))
-                         (ignore .method-args. .next-methods.)
 			 (standard-object self))
 		(ensure-up-to-date-instance self)
 		(let* ((class (si:instance-class self))
@@ -69,15 +67,13 @@
 (defun std-class-sealed-accessors (index)
   (declare (si::c-local)
 	   (fixnum index))
-  (values #'(lambda (.method-args. .next-methods. self)
+  (values #'(lambda (self)
               (declare (optimize (safety 0) (speed 3) (debug 0))
-                       (ignore .method-args. .next-methods.)
                        (standard-object self))
               (ensure-up-to-date-instance self)
 	      (safe-instance-ref self index))
-	  #'(lambda (.method-args. .next-methods. value self)
+	  #'(lambda (value self)
               (declare (optimize (safety 0) (speed 3) (debug 0))
-                       (ignore .method-args. .next-methods.)
                        (standard-object self))
               (ensure-up-to-date-instance self)
 	      (si:instance-set self index value))))
@@ -85,11 +81,9 @@
 (defun std-class-accessors (slot-name)
   (declare (si::c-local))
   ;; The following are very slow. We do not optimize for the slot position.
-  (values #'(lambda (.method-args. .next-methods. self)
-              (declare (ignore .method-args. .next-methods.))
+  (values #'(lambda (self)
 	      (slot-value self slot-name))
-	  #'(lambda (.method-args. .next-methods. value self)
-              (declare (ignore .method-args. .next-methods. ))
+	  #'(lambda (value self)
 	      (setf (slot-value self slot-name) value))))
 
 (defun safe-add-method (name method)
@@ -167,7 +161,7 @@
 					writer-args))))
 	  (dolist (fname readers)
 	    (let ((method (make-method reader-class nil `(,standard-class) '(self)
-				       reader
+				       (wrapped-method-function reader)
 				       options)))
 	      (safe-add-method fname method)
 	      ;; This is redundant, but we need it at boot time because
@@ -177,7 +171,7 @@
 	  (dolist (fname writers)
 	    (let ((method (make-method writer-class nil
 				       `(,(find-class t) ,standard-class) '(value self)
-				       writer
+				       (wrapped-method-function writer)
 				       options)))
 	      (safe-add-method fname method)
 	      ;; This is redundant, but we need it at boot time because
