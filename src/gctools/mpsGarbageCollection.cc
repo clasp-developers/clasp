@@ -565,8 +565,8 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
   stack->_IsActive = false;
   mps_arena_park(_global_arena);
   mps_ap_destroy(stack->_AllocationPoint);
-  mps_fmt_destroy(stack->_ObjectFormat);
   mps_pool_destroy(stack->_Pool);
+  mps_fmt_destroy(stack->_ObjectFormat);
   mps_arena_release(_global_arena);
   //  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
 };
@@ -1055,9 +1055,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   mps_ap_destroy(_global_automatic_mostly_copying_allocation_point);
   mps_ap_destroy(_global_weak_link_allocation_point);
   mps_ap_destroy(_global_strong_link_allocation_point);
+  mps_ap_destroy(global_non_moving_ap);
   mps_pool_destroy(_global_awl_pool);
   mps_pool_destroy(_global_amcz_pool);
-  mps_ap_destroy(global_non_moving_ap);
   mps_pool_destroy(global_non_moving_pool);
   mps_pool_destroy(global_amc_cons_pool);
   mps_pool_destroy(_global_amc_pool);
