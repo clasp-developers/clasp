@@ -92,8 +92,8 @@ successfully, T is returned, else error."
               Bytes consed        : ~a bytes~%~
               LLVM time           : ~,3F secs~%~
               LLVM compiles       : ~A~%~
-              Cxx-calls           : ~A~%
-              Interpreter calls   : ~A~%"
+              Cxx-calls           : ~A~%~
+              Interpreted closures: ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
                      (- clasp-bytes-end clasp-bytes-start)
