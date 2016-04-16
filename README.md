@@ -11,7 +11,7 @@ Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seaml
 * Lots of bug fixes and stability improvements.
 
 ## Getting Clasp
-Precompiled and prepackaged versions of Clasp are not yet available for a limited number of distributions. 
+Precompiled and prepackaged versions of Clasp are not yet available. 
 
 At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. In case you cannot get it to compile even with the instructions below, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
