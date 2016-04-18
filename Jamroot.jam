@@ -164,7 +164,9 @@ project clasp : requirements
 
 #### DEBUG_FRAME_BOUNDS  - check limits of writing/reading activation frames
 #      <define>DEBUG_FRAME_BOUNDS
-      
+
+#### DEBUG_TRACE_INTERPRETED_CLOSURES
+       <define>DEBUG_TRACE_INTERPRETED_CLOSURES
 #### DEBUG_MPS_UNDERSCANNING  - When defined, does a garbage collection for every allocation
 #### DEBUG_MPS_UNDERSCANNING_INITIAL - (true|false)  - when DEBUG_MPS_UNDERSCANNING is defined you can
 ####                                                   control it using (gctools:enable-underscanning (t|nil))
