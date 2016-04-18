@@ -52,7 +52,7 @@ public:
   typedef gctools::Vec0<T_sp> vector_type;
   typedef gctools::Vec0<T_sp>::iterator iterator;
 
-GCPROTECTED: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
+public: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
   T_sp _ElementType;
   bool _Adjustable;
   vector_type _Values;

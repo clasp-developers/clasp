@@ -127,10 +127,10 @@ void Cache_O::search_cache(CacheRecord *&min_e) {
       }
       /* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-    } else if (argno == cl__length(gc::As<VectorObjects_sp>(hkey))) { // if (argno == hkey->vector.fillp) {
+    } else if (argno == gctools::reinterpret_cast_smart_ptr<VectorObjects_O>(hkey)->_Values.size()) {
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
-        if (keys[n] != gc::As<VectorObjects_sp>(hkey)->operator[](n))
+        if (keys[n] != gctools::reinterpret_cast_smart_ptr<VectorObjects_O>(hkey)->_Values[n])
           // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
           goto NO_MATCH;
       }
