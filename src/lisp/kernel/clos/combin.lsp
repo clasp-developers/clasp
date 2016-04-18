@@ -61,14 +61,6 @@
                     (flet ((call-next-method (&rest args)
                              (if (not .next-methods.)
                                  (error "No next method")
-#|meister changed the next APPLY into the one that follows it
-so that explicitly passed method args become
-  the .method-args. in the next method called.
-I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
-                                 #+(or)(apply (car .next-methods.)
-                                              .method-args.
-                                              (cdr .next-methods.)
-                                              (or args .method-args.))
                                  (apply (car .next-methods.)
                                         (or args .method-args) ; meister changed from .method-args.
                                         (cdr .next-methods.)
