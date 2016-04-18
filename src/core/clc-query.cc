@@ -5,7 +5,6 @@
 #include <clasp/core/evaluator.h>
 #include <clasp/core/predicates.h>
 #include <clasp/core/clc.h>
-#include <clasp/core/clc-ast.h>
 #include <clasp/core/clc-env-info.h>
 #include <clasp/core/clc-query.h>
 #include <clasp/core/wrappers.h>

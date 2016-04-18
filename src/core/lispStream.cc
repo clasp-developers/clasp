@@ -4683,6 +4683,11 @@ void writestr_stream(const char *s, T_sp strm) {
     clasp_write_char(*s++, strm);
 }
 
+void write_bf_stream(const boost::format& fmt, T_sp strm)
+{
+  clasp_write_string(fmt.str(),strm);
+}
+
 void clasp_write_addr(T_sp x, T_sp strm) {
   stringstream ss;
   ss << (void *)x.raw_();
@@ -6255,17 +6260,14 @@ T_sp clasp_openRead(T_sp sin) {
 }
 
 T_sp clasp_openWrite(T_sp path) {
-  enum StreamMode smm = clasp_smm_output;
-  T_sp if_exists = _Nil<T_O>();
-  T_sp if_does_not_exist = _Nil<T_O>();
-  gctools::Fixnum byte_size = 8;
-  int flags = CLASP_STREAM_DEFAULT_FORMAT;
-  T_sp external_format = _Nil<T_O>();
-  T_sp strm = clasp_open_stream(path, smm, if_exists, if_does_not_exist,
-                                byte_size, flags, external_format);
-  return strm;
+  T_sp stream = eval::funcall(cl::_sym_open,path,kw::_sym_direction,kw::_sym_output,kw::_sym_if_exists, kw::_sym_supersede);
+  return stream;
 }
 
+SYMBOL_EXPORT_SC_(ClPkg,open);
+SYMBOL_EXPORT_SC_(KeywordPkg,direction);
+SYMBOL_EXPORT_SC_(KeywordPkg,output);
+SYMBOL_EXPORT_SC_(KeywordPkg,input);
   SYMBOL_EXPORT_SC_(ClPkg, filePosition);
   SYMBOL_EXPORT_SC_(ClPkg, readSequence);
   SYMBOL_EXPORT_SC_(ClPkg, read_from_string);

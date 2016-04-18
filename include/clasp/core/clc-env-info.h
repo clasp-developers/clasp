@@ -1,3 +1,4 @@
+DELETE-ME
 /*
     File: env-info.h
 */
@@ -29,12 +30,5 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-
-namespace clcenv {
- 
-  core::T_sp function_info(core::T_sp environment, core::T_sp form);
-  core::T_sp variable_info(core::T_sp environment, core::T_sp form);
-  core::T_sp global_environment(core::T_sp env);
-};
 #endif
 

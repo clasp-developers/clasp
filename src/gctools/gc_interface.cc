@@ -141,15 +141,13 @@ typedef bool _Bool;
 #include <clasp/core/pointer.h>
 #include <clasp/core/smallMap.h>
 #include <clasp/core/pathname.h>
-#include <clasp/core/generate.h>
 #include <clasp/core/sharpEqualWrapper.h>
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/gctools/gc_boot.h>
 
-#include <clasp/core/clc-ast.h>
-#include <clasp/core/clc-env.h>
-#include <clasp/core/clc-query.h>
+#include <clasp/core/clc.h>
+#include <clasp/core/clcenv.h>
 
 #include <clasp/clbind/clbind.h>
 

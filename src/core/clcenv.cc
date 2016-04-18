@@ -1,8 +1,41 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/arguments.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/clc-query.h>
-#include <clasp/core/clc-env.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/predicates.h>
+#include <clasp/core/clc.h>
+#include <clasp/core/clcenv.h>
+#include <clasp/core/wrappers.h>
+
+
+namespace clcenv {
+
+core::T_sp GlobalEnvironment_O::compilation_speed() const
+{
+  IMPLEMENT_ME();
+}
+core::T_sp GlobalEnvironment_O::debug() const
+{
+  IMPLEMENT_ME();
+}
+
+core::T_sp GlobalEnvironment_O::space() const
+{
+  IMPLEMENT_ME();
+}
+
+core::T_sp GlobalEnvironment_O::speed() const
+{
+  IMPLEMENT_ME();
+}
+
+core::T_sp GlobalEnvironment_O::safety() const
+{
+  IMPLEMENT_ME();
+}
+ 
+};
 
 namespace clcenv {
 
@@ -586,6 +619,109 @@ CL_DEFUN core::T_sp global_environment(core::T_sp environment)
   }
   SIMPLE_ERROR(BF("Illegal environment"));
 }
-  
 
+
+clc::Ast_sp Info_O::convert_form(ARGS_form_env_rest)
+{
+  IMPLEMENT_MEF(BF("Implement convert_form for %s with name %s") % lisp_classNameAsString(core::instance_class(this->asSmartPtr())) % _rep_(this->name()) );
+}
+
+clc::Ast_sp SpecialOperatorInfo_O::convert_form(ARGS_form_env_rest)
+{
+  return clc::convert_special(oCar(form),PASS_form_env_rest);
+}
+
+};
+
+
+namespace clcenv {
+
+Entry_sp augment_environment_with_declaration(core::List_sp canonicalized_declaration_specifier,
+                                          Entry_sp environment )
+{
+  core::T_sp head = oCar(canonicalized_declaration_specifier);
+  core::List_sp rest = oCdr(canonicalized_declaration_specifier);
+  if ( head == cl::_sym_dynamic_extent ) {
+    core::T_sp var_or_function = oCar(rest);
+    if ( var_or_function.consp() ) {
+      return add_function_dynamic_extent(environment,oCadr(var_or_function));
+    } else {
+      return add_variable_dynamic_extent(environment,oCar(var_or_function));
+    }
+  } else if ( head == cl::_sym_ftype ) {
+    return add_function_type(environment,oCadr(rest),oCar(rest));
+  } else if ( head == cl::_sym_ignore || head == cl::_sym_ignorable ) {
+    if ( oCar(rest).consp() ) {
+      return add_function_ignore(environment,oCadr(oCar(rest)),head);
+    } else {
+      return add_variable_ignore(environment,oCar(rest),head);
+    }
+  } else if ( head == cl::_sym_inline || head == cl::_sym_notinline ) {
+    return add_inline(environment,oCar(rest),head);
+  } else if ( head == cl::_sym_optimize ) {
+    core::T_sp quality = oCar(oCar(rest));
+    core::T_sp value = oCadr(oCar(rest));
+    return add_optimize(environment,quality,value);
+  } else if ( head == cl::_sym_special ) {
+    // This case is a bit tricky, because if the
+    // variable is globally special, nothing should
+    // be added to the environment.
+    Info_sp info = variable_info(environment,oCar(rest));
+    if ( SpecialVariableInfo_sp spinfo = info.asOrNull<SpecialVariableInfo_O>() ) {
+      if ( spinfo->_GlobalP.notnilp() ) {
+        return environment;
+      }
+      return add_function_type(environment,oCadr(rest),oCar(rest));
+    }
+  }
+  printf("%s:%d Unable to handle declarations specifier: %s\n", __FILE__, __LINE__, _rep_(canonicalized_declaration_specifier).c_str());
+  return environment;
+}
+
+// Augment the environment with a list of canonicalized declartion
+// specifiers.
+Entry_sp augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs)
+{
+  Entry_sp new_env = environment;
+  for ( auto spec : canonicalized_dspecs ) {
+    new_env = augment_environment_with_declaration(spec,new_env);
+  }
+  return new_env;
+}
+
+
+core::T_mv variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env )
+{
+  VariableInfo_sp existing_var_info = variable_info(env,variable);
+  if ( SpecialVariableInfo_sp svi = existing_var_info.asOrNull<SpecialVariableInfo_O>() ) {
+    return Values(_lisp->_true(), svi->_GlobalP );
+  } else if ( special_declaration_p(declarations,variable) ) {
+    return Values(_lisp->_true(), _Nil<core::T_O>() );
+  } else {
+    return Values(_Nil<core::T_O>(),_Nil<core::T_O>());
+  }
+}
+
+Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env )
+{
+  Entry_sp new_env = env;
+  core::T_mv special_p__globally_p = variable_is_special_p(variable,declarations,orig_env);
+  bool special_p = special_p__globally_p.notnilp();
+  bool globally_p = special_p__globally_p.second().notnilp();
+  if ( special_p ) {
+    if (!globally_p) {
+      new_env = add_special_variable(new_env,variable);
+    }
+  } else {
+    clc::Ast_sp var_ast = make_LexicalAst(variable);
+    new_env = add_lexical_variable(new_env,variable,var_ast);
+  }
+  core::T_sp type = declared_type(declarations);
+  if ( !(core::cl__equal(type,core::Cons_O::create(cl::_sym_and))) ) {
+    new_env = add_variable_type(new_env,variable,type);
+  }
+  if ( core::cl__member(cl::_sym_dynamic_extent,declarations,cl::_sym_car->function(),cl::_sym_eq->function(),_Nil<core::T_O>()).notnilp()) {
+    new_env = add_variable_dynamic_extent(new_env,core::Cons_O::createList(cl::_sym_quote,cl::_sym_variable));
+  }
+  return new_env;
 };

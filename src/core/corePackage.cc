@@ -216,6 +216,8 @@ SYMBOL_EXPORT_SC_(ClPkg, atanh);
 SYMBOL_EXPORT_SC_(ClPkg, dynamic_extent);
 SYMBOL_EXPORT_SC_(ClPkg, ftype);
 SYMBOL_EXPORT_SC_(ClPkg, boole);
+SYMBOL_EXPORT_SC_(ClPkg, ignorable);
+SYMBOL_EXPORT_SC_(ClPkg, notinline );
 SYMBOL_EXPORT_SC_(ClPkg, callArgumentsLimit);
 SYMBOL_EXPORT_SC_(ClPkg, arrayDimensionLimit);
 SYMBOL_EXPORT_SC_(ClPkg, arrayTotalSizeLimit);
@@ -1138,8 +1140,10 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
+#if 0
   clasp_cleavir::_sym_STARsimple_environmentSTAR->defparameter(_Nil<T_O>());
   clasp_cleavir::_sym_STARcode_walkerSTAR->defparameter(_Nil<T_O>());
+#endif
 #if 0
 
   _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

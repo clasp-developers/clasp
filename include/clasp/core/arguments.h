@@ -136,6 +136,9 @@ public:
     this->_endTop = thread->bindings().top();
     sym->setf_symbolValue(val);
   }
+  inline void bind(Symbol_sp sym, T_sp val) {
+    this->pushSpecialVariableAndSet(sym,val);
+  }
   inline explicit DynamicScopeManager() {
     int top = thread->bindings().top();
     this->_beginTop = top;

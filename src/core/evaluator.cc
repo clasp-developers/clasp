@@ -78,9 +78,6 @@ void errorApplyLastArgumentNotList() {
   SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
 }
 
-void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code);
-
-void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<Str_sp> &documentation, List_sp &code, List_sp &specials);
 
 };
 };
