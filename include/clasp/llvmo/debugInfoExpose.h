@@ -80,7 +80,6 @@ public:
   virtual ~DebugInfo_O(){};
 }; // DebugInfo_O
 }; // llvmo
-TRANSLATE(llvmo::DebugInfo_O);
 
 namespace llvmo {
 FORWARD(DIDescriptor);
@@ -98,7 +97,6 @@ public:
   virtual ~DIDescriptor_O(){};
 }; // DIDescriptor_O
 }; // llvmo
-TRANSLATE(llvmo::DIDescriptor_O);
 
 namespace translate {
 template <>
@@ -135,7 +133,6 @@ public:
 
 }; // DIScope_O
 }; // llvmo
-TRANSLATE(llvmo::DIScope_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -169,7 +166,6 @@ public:
 
 }; // DIArray_O
 }; // llvmo
-TRANSLATE(llvmo::DIArray_O);
 
 namespace translate {
 template <>
@@ -201,7 +197,6 @@ public:
 
 }; // DITypeArray_O
 }; // llvmo
-TRANSLATE(llvmo::DITypeArray_O);
 
 namespace translate {
 template <>
@@ -235,7 +230,6 @@ public:
 
 }; // DIFile_O
 }; // llvmo
-TRANSLATE(llvmo::DIFile_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -271,7 +265,6 @@ public:
 
 }; // DISubprogram_O
 }; // llvmo
-TRANSLATE(llvmo::DISubprogram_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -320,7 +313,6 @@ public:
 
 }; // DIType_O
 }; // llvmo
-TRANSLATE(llvmo::DIType_O);
 
 namespace translate {
 template <>
@@ -356,7 +348,6 @@ public:
 
 }; // DIDerivedType_O
 }; // llvmo
-TRANSLATE(llvmo::DIDerivedType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -395,7 +386,6 @@ public:
 
 }; // DIBasicType_O
 }; // llvmo
-TRANSLATE(llvmo::DIBasicType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -434,7 +424,6 @@ public:
 
 }; // DICompositeType_O
 }; // llvmo
-TRANSLATE(llvmo::DICompositeType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -474,7 +463,6 @@ public:
 
 }; // DISubroutineType_O
 }; // llvmo
-TRANSLATE(llvmo::DISubroutineType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -510,7 +498,6 @@ public:
 
 }; // DILexicalBlock_O
 }; // llvmo
-TRANSLATE(llvmo::DILexicalBlock_O);
 /* from_object translators */
 /* to_object translators */
 namespace translate {
@@ -547,7 +534,6 @@ public:
 
 }; // DICompileUnit_O
 }; // llvmo
-TRANSLATE(llvmo::DICompileUnit_O);
 /* from_object translators */
 /* to_object translators */
 namespace translate {
@@ -610,7 +596,6 @@ public:
 
 }; // DIBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::DIBuilder_O);
 /* from_object translators */
 
 namespace translate {

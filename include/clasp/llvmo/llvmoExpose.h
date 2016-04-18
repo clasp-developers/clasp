@@ -114,7 +114,6 @@ public:
 
 }; // LLVMContext_O
 }; // llvmo
-TRANSLATE(llvmo::LLVMContext_O);
 
 namespace translate {
 template <>
@@ -162,7 +161,6 @@ public:
 
 }; // Linker_O
 }; // llvmo
-TRANSLATE(llvmo::Linker_O);
 
 namespace translate {
 template <>
@@ -207,7 +205,6 @@ public:
 
 }; // Pass_O
 }; // llvmo
-TRANSLATE(llvmo::Pass_O);
 /* from_object translators */
 
 namespace translate {
@@ -247,7 +244,6 @@ public:
   AttributeSet_O(llvm::AttributeSet v) : val(v){};
 }; // AttributeSet_O
 }; // llvmo
-TRANSLATE(llvmo::AttributeSet_O);
 /* from_object translators */
 
 /* to_object translators */
@@ -328,7 +324,6 @@ public:
 
 }; // Triple_O
 }; // llvmo
-TRANSLATE(llvmo::Triple_O);
 /* from_object translators */
 
 namespace translate {
@@ -407,7 +402,6 @@ public:
 
 }; // TargetOptions_O
 }; // llvmo
-TRANSLATE(llvmo::TargetOptions_O);
 /* from_object translators */
 
 namespace translate {
@@ -470,7 +464,6 @@ public:
 
 }; // Target_O
 }; // llvmo
-TRANSLATE(llvmo::Target_O);
 /* from_object translators */
 
 namespace translate {
@@ -533,7 +526,6 @@ public:
 
 }; // MCSubtargetInfo_O
 }; // llvmo
-TRANSLATE(llvmo::MCSubtargetInfo_O);
 /* from_object translators */
 
 namespace translate {
@@ -582,7 +574,6 @@ public:
 
 }; // TargetSubtargetInfo_O
 }; // llvmo
-TRANSLATE(llvmo::TargetSubtargetInfo_O);
 /* from_object translators */
 
 namespace translate {
@@ -714,7 +705,6 @@ public:
   }
 }; // TargetMachine_O
 }; // llvmo
-TRANSLATE(llvmo::TargetMachine_O);
 /* from_object translators */
 
 namespace translate {
@@ -763,7 +753,6 @@ public:
 
 }; // LLVMTargetMachine_O
 }; // llvmo
-TRANSLATE(llvmo::LLVMTargetMachine_O);
 /* from_object translators */
 
 namespace translate {
@@ -806,7 +795,6 @@ public:
 
 }; // FunctionPass_O
 }; // llvmo
-TRANSLATE(llvmo::FunctionPass_O);
 /* from_object translators */
 
 namespace translate {
@@ -849,7 +837,6 @@ public:
 
 }; // ModulePass_O
 }; // llvmo
-TRANSLATE(llvmo::ModulePass_O);
 
 namespace translate {
 template <>
@@ -892,7 +879,6 @@ public:
 
 }; // ImmutablePass_O
 }; // llvmo
-TRANSLATE(llvmo::ImmutablePass_O);
 /* from_object translators */
 
 namespace translate {
@@ -951,7 +937,6 @@ public:
 
 }; // PassManagerBase_O
 }; // llvmo
-TRANSLATE(llvmo::PassManagerBase_O);
 /* from_object translators */
 
 namespace translate {
@@ -1018,7 +1003,6 @@ public:
   bool valid() const;
 }; // Value_O
 }; // llvmo
-TRANSLATE(llvmo::Value_O);
 /* from_object translators */
 
 namespace translate {
@@ -1103,7 +1087,6 @@ public:
   //	bool valid() const;
 }; // Metadata_O
 }; // llvmo
-TRANSLATE(llvmo::Metadata_O);
 /* from_object translators */
 
 namespace translate {
@@ -1171,7 +1154,6 @@ public:
 
 }; // User_O
 }; // llvmo
-TRANSLATE(llvmo::User_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1197,7 +1179,6 @@ public: // Functions here
 }; // Attribute class
 
 }; // llvmo namespace
-TRANSLATE(llvmo::Attribute_O);
 namespace translate {
 template <>
 struct from_object<llvm::Attribute::AttrKind, std::true_type> {
@@ -1262,7 +1243,6 @@ public:
 
 }; // DataLayout_O
 }; // llvmo
-TRANSLATE(llvmo::DataLayout_O);
 /* from_object translators */
 
 namespace translate {
@@ -1326,7 +1306,6 @@ public:
 
 }; // Constant_O
 }; // llvmo
-TRANSLATE(llvmo::Constant_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1396,7 +1375,6 @@ public:
   static Constant_sp get(ArrayType_sp type, core::List_sp values);
 }; // ConstantArray_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantArray_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1423,7 +1401,6 @@ public:
   static BlockAddress_sp get(Function_sp func, BasicBlock_sp bb);
 }; // BlockAddress_O
 }; // llvmo
-TRANSLATE(llvmo::BlockAddress_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1449,7 +1426,6 @@ public:
 public:
 }; // ConstantDataSequential_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantDataSequential_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1476,7 +1452,6 @@ public:
   static Constant_sp getUInt32(LLVMContext_sp context, core::T_sp values);
 }; // ConstantDataArray_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantDataArray_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1504,7 +1479,6 @@ public:
 
 }; // ConstantExpr_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantExpr_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1534,7 +1508,6 @@ public:
 
 }; // GlobalValue_O
 }; // llvmo
-TRANSLATE(llvmo::GlobalValue_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1559,7 +1532,6 @@ public:
 
 }; // GlobalVariable_O
 }; // llvmo
-TRANSLATE(llvmo::GlobalVariable_O);
 /* from_object translators */
 
 namespace translate {
@@ -1711,7 +1683,6 @@ public:
 
 }; // Module_O
 }; // llvmo
-TRANSLATE(llvmo::Module_O);
 /* from_object translators */
 
 namespace translate {
@@ -1741,7 +1712,6 @@ struct to_object<llvm::Module *> {
 };
     ;
 
-TRANSLATE(llvmo::ExecutionEngine_O);
 /* from_object translators */
 
 namespace translate {
@@ -1786,7 +1756,6 @@ public:
   ~DataLayoutPass_O() {}
 }; // DataLayoutPass_O
 }; // llvmo
-TRANSLATE(llvmo::DataLayoutPass_O);
 /* from_object translators */
 
 namespace translate {
@@ -1851,7 +1820,6 @@ public:
   }
 }; // TargetLibraryInfo_O
 }; // llvmo
-TRANSLATE(llvmo::TargetLibraryInfo_O);
 /* from_object translators */
 
 namespace translate {
@@ -1909,7 +1877,6 @@ public:
   }
 }; // TargetLibraryInfoWrapperPass_O
 }; // llvmo
-TRANSLATE(llvmo::TargetLibraryInfoWrapperPass_O);
 /* from_object translators */
 
 namespace translate {
@@ -1966,7 +1933,6 @@ namespace llvmo
     ~TargetData_O() {}
   }; // TargetData_O
 }; // llvmo
-TRANSLATE(llvmo::TargetData_O);
 /* from_object translators */
 
 namespace translate
@@ -2038,7 +2004,6 @@ public:
 public:
 }; // FunctionPassManager_O
 }; // llvmo
-TRANSLATE(llvmo::FunctionPassManager_O);
 /* from_object translators */
 
 namespace translate {
@@ -2093,7 +2058,6 @@ public:
 public:
 }; // PassManager_O
 }; // llvmo
-TRANSLATE(llvmo::PassManager_O);
 /* from_object translators */
 
 namespace translate {
@@ -2169,7 +2133,6 @@ CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
 
 }; // EngineBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::EngineBuilder_O);
 /* from_object translators */
 
 namespace translate {
@@ -2236,7 +2199,6 @@ public:
 
 }; // PassManagerBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::PassManagerBuilder_O);
 /* from_object translators */
 
 namespace translate {
@@ -2271,7 +2233,6 @@ public:
   ~APFloat_O(){};
 }; // APFloat_O
 }; // llvmo
-TRANSLATE(llvmo::APFloat_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
@@ -2319,7 +2280,6 @@ public:
   string __repr__() const;
 }; // APInt_O
 }; // llvmo
-TRANSLATE(llvmo::APInt_O);
 /* from_object translators */
 namespace translate {
 template <>
@@ -2389,7 +2349,6 @@ CL_LISPIFY_NAME("CurrentDebugLocation");
 CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
-TRANSLATE(llvmo::IRBuilderBase_O);
 /* from_object translators */
 
 namespace translate {
@@ -2442,7 +2401,6 @@ public:
   string __repr__() const;
 }; // IRBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::IRBuilder_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -2468,7 +2426,6 @@ public:
   bool terminatorInstP() const;
 }; // Instruction_O
 }; // llvmo
-TRANSLATE(llvmo::Instruction_O);
 namespace translate {
 template <>
 struct from_object<llvm::Instruction *, std::true_type> {
@@ -2512,7 +2469,6 @@ public:
 
 }; // StoreInst_O
 }; // llvmo
-TRANSLATE(llvmo::StoreInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2555,7 +2511,6 @@ public:
 
 }; // FenceInst_O
 }; // llvmo
-TRANSLATE(llvmo::FenceInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2598,7 +2553,6 @@ public:
 
 }; // AtomicCmpXchgInst_O
 }; // llvmo
-TRANSLATE(llvmo::AtomicCmpXchgInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2641,7 +2595,6 @@ public:
 
 }; // AtomicRMWInst_O
 }; // llvmo
-TRANSLATE(llvmo::AtomicRMWInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2684,7 +2637,6 @@ public:
 
 }; // PHINode_O
 }; // llvmo
-TRANSLATE(llvmo::PHINode_O);
 /* from_object translators */
 
 namespace translate {
@@ -2727,7 +2679,6 @@ public:
 
 }; // CallInst_O
 }; // llvmo
-TRANSLATE(llvmo::CallInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2770,7 +2721,6 @@ public:
 
 }; // LandingPadInst_O
 }; // llvmo
-TRANSLATE(llvmo::LandingPadInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2813,7 +2763,6 @@ public:
 
 }; // UnaryInstruction_O
 }; // llvmo
-TRANSLATE(llvmo::UnaryInstruction_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -2834,7 +2783,6 @@ public:
   ~AllocaInst_O() {}
 }; // AllocaInst_O
 }; // llvmo
-TRANSLATE(llvmo::AllocaInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2877,7 +2825,6 @@ public:
 
 }; // VAArgInst_O
 }; // llvmo
-TRANSLATE(llvmo::VAArgInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2920,7 +2867,6 @@ public:
 
 }; // LoadInst_O
 }; // llvmo
-TRANSLATE(llvmo::LoadInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2963,7 +2909,6 @@ public:
 
 }; // TerminatorInst_O
 }; // llvmo
-TRANSLATE(llvmo::TerminatorInst_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -2985,7 +2930,6 @@ public:
 
 }; // BranchInst_O
 }; // llvmo
-TRANSLATE(llvmo::BranchInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3030,7 +2974,6 @@ public:
 
 }; // SwitchInst_O
 }; // llvmo
-TRANSLATE(llvmo::SwitchInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3073,7 +3016,6 @@ public:
 
 }; // IndirectBrInst_O
 }; // llvmo
-TRANSLATE(llvmo::IndirectBrInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3116,7 +3058,6 @@ public:
 
 }; // InvokeInst_O
 }; // llvmo
-TRANSLATE(llvmo::InvokeInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3159,7 +3100,6 @@ public:
 
 }; // ResumeInst_O
 }; // llvmo
-TRANSLATE(llvmo::ResumeInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3202,7 +3142,6 @@ public:
 
 }; // UnreachableInst_O
 }; // llvmo
-TRANSLATE(llvmo::UnreachableInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3245,7 +3184,6 @@ public:
 
 }; // ReturnInst_O
 }; // llvmo
-TRANSLATE(llvmo::ReturnInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3294,7 +3232,6 @@ public:
 
 }; // ConstantFP_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantFP_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3332,7 +3269,6 @@ public:
   string __repr__() const;
 }; // ConstantInt_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantInt_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3369,7 +3305,6 @@ public:
 public:
 }; // ConstantStruct_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantStruct_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3408,7 +3343,6 @@ public:
   string __repr__() const;
 }; // UndefValue_O
 }; // llvmo
-TRANSLATE(llvmo::UndefValue_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3446,7 +3380,6 @@ public:
   string __repr__() const;
 }; // ConstantPointerNull_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantPointerNull_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3490,7 +3423,6 @@ public:
 
 }; // MDNode_O
 }; // llvmo
-TRANSLATE(llvmo::MDNode_O);
 /* from_object translators */
 
 namespace translate {
@@ -3536,7 +3468,6 @@ public:
 
 }; // MDString_O
 }; // llvmo
-TRANSLATE(llvmo::MDString_O);
 /* from_object translators */
 
 namespace translate {
@@ -3584,7 +3515,6 @@ public:
 
 }; // ValueAsMetadata_O
 }; // llvmo
-TRANSLATE(llvmo::ValueAsMetadata_O);
 /* from_object translators */
 
 namespace translate {
@@ -3639,7 +3569,6 @@ CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
 
 }; // NamedMDNode_O
 }; // llvmo
-TRANSLATE(llvmo::NamedMDNode_O);
 /* from_object translators */
 
 namespace translate {
@@ -3699,7 +3628,6 @@ public:
 
 }; // Function_O
 }; // llvmo
-TRANSLATE(llvmo::Function_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3769,7 +3697,6 @@ public:
 
 }; // BasicBlock_O
 }; // llvmo
-TRANSLATE(llvmo::BasicBlock_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3815,7 +3742,6 @@ public:
 public:
 }; // Argument_O
 }; // llvmo
-TRANSLATE(llvmo::Argument_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3893,7 +3819,6 @@ public:
 
 }; // Type_O
 }; // llvmo
-TRANSLATE(llvmo::Type_O);
 /* from_object translators */
 
 namespace translate {
@@ -3938,7 +3863,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // FunctionType_O
 }; // llvmo
-TRANSLATE(llvmo::FunctionType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3982,7 +3906,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // IntegerType_O
 }; // llvmo
-TRANSLATE(llvmo::IntegerType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4026,7 +3949,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // CompositeType_O
 }; // llvmo
-TRANSLATE(llvmo::CompositeType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4075,7 +3997,6 @@ public:
   void setBody(core::T_sp elements, core::T_sp isPacked);
 }; // StructType_O
 }; // llvmo
-TRANSLATE(llvmo::StructType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4119,7 +4040,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // SequentialType_O
 }; // llvmo
-TRANSLATE(llvmo::SequentialType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4166,7 +4086,6 @@ public: // static methods
 
 }; // PointerType_O
 }; // llvmo
-TRANSLATE(llvmo::PointerType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4210,7 +4129,6 @@ public: // static methods
   static ArrayType_sp get(Type_sp elementType, uint64_t numElements);
 }; // ArrayType_O
 }; // llvmo
-TRANSLATE(llvmo::ArrayType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4254,7 +4172,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // VectorType_O
 }; // llvmo
-TRANSLATE(llvmo::VectorType_O);
 /* from_object translators */
 /* to_object translators */
 

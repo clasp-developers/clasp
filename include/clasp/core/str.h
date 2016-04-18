@@ -193,7 +193,6 @@ struct gctools::GCInfo<core::Str_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::Str_O);
 
 namespace core {
 T_sp core__base_string_concatenate(T_sp vargs);

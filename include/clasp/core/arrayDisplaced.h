@@ -95,6 +95,5 @@ public:
 
 }; /* core */
 
-TRANSLATE(core::ArrayDisplaced_O);
 
 #endif /* _core_ArrayDisplaced_H */

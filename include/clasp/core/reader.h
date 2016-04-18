@@ -205,5 +205,4 @@ public:
   T_sp primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP = false);
 };
 };
-TRANSLATE(core::Reader_O);
 #endif //]

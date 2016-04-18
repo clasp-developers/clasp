@@ -186,7 +186,6 @@ struct gctools::GCInfo<core::Instance_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::Instance_O);
 
 
 namespace gctools {

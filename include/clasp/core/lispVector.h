@@ -107,7 +107,6 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
 
 }; /* core */
 };
-TRANSLATE(core::Vector_O);
 
 namespace cl {
   extern core::Symbol_sp& _sym_General_O;

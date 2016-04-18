@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <clasp/core/specialForm.h>
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/lambdaListHandler.h>

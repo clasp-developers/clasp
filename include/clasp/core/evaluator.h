@@ -30,7 +30,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/evaluator.fwd.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/activationFrame.h>
 
 namespace cl {

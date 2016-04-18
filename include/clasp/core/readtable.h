@@ -102,6 +102,5 @@ public: // instance member functions here
 
 }; /* core */
 
-TRANSLATE(core::ReadTable_O);
 
 #endif /* _core_ReadTable_H */

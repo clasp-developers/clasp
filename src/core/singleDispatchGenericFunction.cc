@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/package.h>
 #include <clasp/core/str.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/documentation.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/lambdaListHandler.h>

@@ -51,5 +51,4 @@ public:
   virtual ~Specializer_O(){};
 };
 };
-TRANSLATE(core::Specializer_O);
 #endif //]

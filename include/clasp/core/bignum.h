@@ -148,7 +148,6 @@ public:
 }; // Bignum class
 
 }; // core namespace
-TRANSLATE(core::Bignum_O);
 
 namespace translate {
 template <>

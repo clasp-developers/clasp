@@ -63,6 +63,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::WeakPointer_O);
 
 #endif /* _core_WeakPointer_H */

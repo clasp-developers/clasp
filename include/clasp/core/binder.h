@@ -107,6 +107,5 @@ public:
 };
 };
 
-TRANSLATE(core::Binder_O);
 
 #endif //]

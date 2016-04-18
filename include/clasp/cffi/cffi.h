@@ -66,5 +66,4 @@ public: // Functions here
 }; // Pointer class
 
 }; // cffi namespace
-TRANSLATE(cffi::Pointer_O);
 #endif /* _core_ffi_H_ */

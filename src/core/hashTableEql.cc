@@ -79,7 +79,7 @@ bool HashTableEql_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 gc::Fixnum HashTableEql_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
   HashGenerator hg;
 #ifdef USE_MPS
-  HashTable_O::sxhash_eql(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL);
+  HashTable_O::sxhash_eql(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
 #else
   HashTable_O::sxhash_eql(hg, obj, NULL);
 #endif

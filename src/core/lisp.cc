@@ -90,7 +90,6 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/numberToString.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispReader.h>
@@ -113,7 +112,6 @@ THE SOFTWARE.
 #include <clasp/core/reader.h>
 //#i n c l u d e "genericFunction.h"
 #include <clasp/core/singleDispatchGenericFunction.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/sort.h>

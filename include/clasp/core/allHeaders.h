@@ -75,7 +75,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/exceptions.h>
 #include <clasp/core/executables.fwd.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/extensionPackage.fwd.h>
 #include <clasp/core/extensionPackage.h>
 #include <clasp/core/externalObject.fwd.h>

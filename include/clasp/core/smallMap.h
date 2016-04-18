@@ -63,5 +63,4 @@ CL_DEFMETHOD   int capacity() const { return this->map.capacity(); };
 };
 };
 
-TRANSLATE(core::SmallMap_O);
 #endif

@@ -72,7 +72,6 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/externalObject.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/intArray.h>
 #include <clasp/core/primitives.h>

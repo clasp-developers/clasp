@@ -57,6 +57,5 @@ public: // Functions here
 }; // InsertPoint class
 
 }; // llvmo namespace
-TRANSLATE(llvmo::InsertPoint_O);
 
 #endif /* _llvmo_insertPoint_H_ */

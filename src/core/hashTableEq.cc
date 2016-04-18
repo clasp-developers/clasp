@@ -99,7 +99,7 @@ bool HashTableEq_O::keyTest(T_sp entryKey, T_sp searchKey) const {
 gc::Fixnum HashTableEq_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
   HashGenerator hg;
 #ifdef USE_MPS
-  HashTable_O::sxhash_eq(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL);
+  HashTable_O::sxhash_eq(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
 #endif
 #ifdef USE_BOEHM
   HashTable_O::sxhash_eq(hg, obj, NULL);

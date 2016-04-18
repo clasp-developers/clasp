@@ -38,7 +38,6 @@ THE SOFTWARE.
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/character.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/vectorObjectsWithFillPtr.h>
@@ -1910,6 +1909,61 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
   }
   return _Nil<T_O>();
 };
+};
+
+namespace core {
+
+
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionLambdaList");
+CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
+  if (obj.nilp()) {
+    return Values(_Nil<T_O>(), _Nil<T_O>());
+  } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
+    if (!sym->fboundp()) {
+      return Values(_Nil<T_O>(), _Nil<T_O>());
+    }
+    Function_sp fn = sym->symbolFunction();
+    return Values(fn->lambda_list(), _lisp->_true());
+  } else if (NamedFunction_sp func = obj.asOrNull<NamedFunction_O>()) {
+    return Values(func->lambda_list(), _lisp->_true());
+  }
+  return Values(_Nil<T_O>(), _Nil<T_O>());
+}
+
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionSourcePosInfo");
+CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
+  Closure_sp closure = coerce::closureDesignator(functionDesignator);
+  gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
+  return sourcePosInfo;
+}
+
+CL_LAMBDA(fn kind);
+CL_DECLARE();
+CL_DOCSTRING("set the kind of a function object (:function|:macro)");
+CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
+  if ( NamedFunction_sp func = fn.asOrNull<NamedFunction_O>() ) {
+    fn->set_kind(kind);
+    return;
+  }
+  if ( kind == kw::_sym_function ) return; // by default everything is a function
+  SIMPLE_ERROR(BF("You cannot set the kind: %s of a Function_O object") % _rep_(kind));
+};
+
+CL_LISPIFY_NAME("core:functionSourcePos");
+CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
+  T_sp spi = this->sourcePosInfo();
+  T_sp sfi = core__source_file_info(spi);
+  if (sfi.nilp() || spi.nilp()) {
+    return Values(sfi, make_fixnum(0), make_fixnum(0));
+  }
+  return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
+}
+
+
 };
 
 

@@ -60,5 +60,4 @@ struct gctools::GCInfo<core::StdClass_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::StdClass_O);
 #endif //]

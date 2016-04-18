@@ -62,6 +62,5 @@ public: // Functions here
 }; // Pointer class
 
 }; // core namespace
-TRANSLATE(core::Pointer_O);
 
 #endif /* _core__pointer_H_ */

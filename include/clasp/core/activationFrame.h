@@ -125,7 +125,6 @@ struct gctools::GCInfo<core::ValueFrame_O> {
   //  static bool const InlineScan = true;
   //  static bool const Roo
 };
-TRANSLATE(core::ActivationFrame_O);
 
 namespace core {
 class ValueFrame_O : public ActivationFrame_O {

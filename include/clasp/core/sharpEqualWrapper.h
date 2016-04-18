@@ -67,7 +67,6 @@ class SharpEqualWrapper_O : public General_O {
 }
 
 
-TRANSLATE(core::SharpEqualWrapper_O);
 
 
  CL_DOCSTRING("Return true if sharp-tag");

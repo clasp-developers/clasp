@@ -154,6 +154,5 @@ CL_DEFMETHOD   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp
 
 }; /* core */
 
-TRANSLATE(core::Array_O);
 
 #endif /* _core_Array_H */

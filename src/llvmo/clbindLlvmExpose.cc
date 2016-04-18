@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/APSInt.h>
-
+#include <clasp/core/lambdaListHandler.h>
 #include <clasp/clbind/clbind.h>
 
 #ifdef USE_MPS

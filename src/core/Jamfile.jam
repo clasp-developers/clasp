@@ -72,7 +72,6 @@ local sources =
 		myReadLine.cc
 		specialForm.cc
       unixfsys.cc
-      executables.cc
 	    lispList.cc
 	    binder.cc
 		multiStringBuffer.cc

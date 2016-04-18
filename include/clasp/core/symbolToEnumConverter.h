@@ -100,7 +100,6 @@ public:
   DEFAULT_CTOR_DTOR(SymbolToEnumConverter_O);
 };
 };
-TRANSLATE(core::SymbolToEnumConverter_O);
 
 #define ENUM_TRANSLATOR(enumType, converterSymbol)                                                                   \
   namespace translate {                                                                                              \

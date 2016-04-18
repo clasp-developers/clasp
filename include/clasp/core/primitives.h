@@ -228,7 +228,6 @@ CL_LISPIFY_NAME("frameIteratorIsValid");
 CL_DEFMETHOD   bool isValid() { return this->_Frame != NULL; };
 }; /* core */
 };
-TRANSLATE(core::InvocationHistoryFrameIterator_O);
 
 namespace core {
 InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top();

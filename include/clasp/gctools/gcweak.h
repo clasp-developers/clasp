@@ -300,7 +300,7 @@ public:
 #ifdef USE_MPS
   mps_ld_s _LocationDependency;
 #else
-  void* _LocationDependency; // Must have a field to match MPS
+  BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here
 #endif
 
 public:

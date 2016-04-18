@@ -113,7 +113,6 @@ public: // Functions here
 };
 
 }; /* core */
-TRANSLATE(core::VectorDisplaced_O);
 template <>
 struct gctools::GCInfo<core::VectorDisplaced_O> {
   static bool constexpr NeedsInitialization = false;

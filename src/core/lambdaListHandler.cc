@@ -42,6 +42,26 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
+
+SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
+SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
+
+void handleArgumentHandlingExceptions(Closure_sp closure) {
+  Function_sp func = closure;
+  try {
+    throw;
+  } catch (TooManyArgumentsError &error) {
+    lisp_error(core::_sym_tooManyArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
+  } catch (TooFewArgumentsError &error) {
+    lisp_error(core::_sym_tooFewArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
+  } catch (UnrecognizedKeywordArgumentError &error) {
+    lisp_error(core::_sym_unrecognizedKeywordArgumentError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_unrecognizedKeyword, error.argument));
+  }
+}
+
+
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
   if (llh->requiredLexicalArgumentsOnlyP()) {

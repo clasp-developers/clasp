@@ -97,6 +97,5 @@ public:
 
 }; /* core */
 
-TRANSLATE(core::ArrayObjects_O);
 
 #endif /* _core_ArrayObjects_H */

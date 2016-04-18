@@ -77,5 +77,4 @@ public:
   virtual ~StandardObject_O(){};
 };
 };
-TRANSLATE(core::StandardObject_O);
 #endif //]

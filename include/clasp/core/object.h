@@ -640,11 +640,9 @@ namespace core {
 
 #include <clasp/core/glue.h>
 
-TRANSLATE(core::Function_O);
 
 #include <clasp/core/conditions.h>
 
-TRANSLATE(core::T_O);
 
 /*! Used to indicate that methods should be inherited from sequence */
 #define INHERIT_SEQUENCE

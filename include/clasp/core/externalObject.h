@@ -91,7 +91,6 @@ namespace core {
   /* end */
 
 #endif // SCRAPING
-TRANSLATE(core::ExternalObject_O);
 
 namespace core {
 
@@ -133,7 +132,6 @@ public:
 };
 };
 
-TRANSLATE(core::ForeignData_O);
 
 template <>
 struct gctools::GCInfo<core::ForeignData_O> {

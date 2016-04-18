@@ -129,6 +129,5 @@ struct gctools::GCInfo<core::StrWithFillPtr_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::StrWithFillPtr_O);
 
 #endif

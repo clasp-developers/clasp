@@ -47,7 +47,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>

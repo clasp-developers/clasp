@@ -476,7 +476,7 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
     sz = 4;
   this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
 #ifdef USE_MPS
-  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena);
+  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena);
 #endif
   return sz;
 }
@@ -542,7 +542,7 @@ List_sp HashTable_O::tableRef(T_sp key) {
   // Location dependency test if key is stale
   if (key.objectp()) {
     void *blockAddr = &(*key);
-    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena, blockAddr)) {
+    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }
   }

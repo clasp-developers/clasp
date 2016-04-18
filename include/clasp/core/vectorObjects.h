@@ -124,7 +124,6 @@ public: // Functions here
 };
 
 }; /* core */
-TRANSLATE(core::VectorObjects_O);
 template <>
 struct gctools::GCInfo<core::VectorObjects_O> {
   static bool constexpr NeedsInitialization = false;

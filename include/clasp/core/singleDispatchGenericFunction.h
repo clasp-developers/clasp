@@ -142,7 +142,6 @@ namespace core {
   /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
   }; // SingleDispatchGenericFunction class
 }; // core namespace
-TRANSLATE(core::SingleDispatchGenericFunction_O);
 #endif
 
 #if 0

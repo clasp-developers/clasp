@@ -179,7 +179,6 @@ struct to_object<char> {
   }
 };
 };
-TRANSLATE(core::Character_O);
 
 namespace core {
 claspChar clasp_charCode(T_sp elt); // like ecl__char_code

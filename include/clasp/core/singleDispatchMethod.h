@@ -115,7 +115,6 @@ struct gctools::GCInfo<core::SingleDispatchMethod_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::SingleDispatchMethod_O);
 
 namespace core {
 

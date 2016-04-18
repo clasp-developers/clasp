@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/environment.fwd.h>
-#include <clasp/core/lisp.h>
+//#include <clasp/core/lisp.h>
 
 #define KW(s) (_lisp->internKeyword(s))
 
@@ -255,7 +255,6 @@ struct SymbolComparer {
 };
 };
 
-TRANSLATE(core::Symbol_O);
 template <>
 struct gctools::GCInfo<core::Symbol_O> {
   static bool constexpr NeedsInitialization = false;

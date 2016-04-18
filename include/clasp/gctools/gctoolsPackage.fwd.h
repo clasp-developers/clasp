@@ -27,6 +27,9 @@ THE SOFTWARE.
 #ifndef gctoolsPackage_fwd_H
 #define gctoolsPackage_fwd_H
 
+NAMESPACE_PACKAGE_ASSOCIATION(gctools, GcToolsPkg, "GCTOOLS")
+
+
 namespace gctools {
 };
 

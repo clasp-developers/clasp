@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
@@ -58,6 +57,17 @@ CL_DEFUN Integer_sp core__interpreted_closure_calls() {
   return Integer_O::create((Fixnum)global_interpreted_closure_calls);
 }
 
+
+string Function_O::__repr__() const {
+  T_sp name = this->name();
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "/" << this->describe();
+  ss << " " << _rep_(name);
+  ss << " lambda-list: " << _rep_(this->lambda_list());
+  ss << ">";
+  return ss.str();
+}
 
 string Closure_O::nameAsString() const {
   if (this->_name.nilp()) {

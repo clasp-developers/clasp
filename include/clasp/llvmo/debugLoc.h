@@ -63,6 +63,5 @@ CL_DEFMETHOD   uint getCol() const { return this->_DebugLoc.getCol(); };
 }; // DebugLoc class
 
 }; // llvmo namespace
-TRANSLATE(llvmo::DebugLoc_O);
 
 #endif /* _llvmo_debugLoc_H_ */

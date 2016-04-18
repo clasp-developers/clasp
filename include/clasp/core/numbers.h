@@ -44,9 +44,9 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/numerics.h>
 #include <clasp/core/bignum.fwd.h>
 #include <clasp/core/numbers.fwd.h>
-#include <clasp/core/numerics.h>
 
 #define CLASP_PI_D 3.14159265358979323846264338327950288
 #define CLASP_PI_L 3.14159265358979323846264338327950288l
@@ -1036,25 +1036,10 @@ gctools::Fixnum fixint(T_sp x);
 
 }; // namespace core
 
-TRANSLATE(core::Number_O);   // superclass T_O
-TRANSLATE(core::Real_O);     // superclass Number_O
-TRANSLATE(core::Rational_O); // superclass Real_O
-TRANSLATE(core::Integer_O);  // superclass Rational_O
-TRANSLATE(core::Fixnum_O);   // superclass Integer_O
 #if 0
-TRANSLATE(core::SignedByte_O);	// superclass Integer_O
-TRANSLATE(core::UnsignedByte_O);// superclass SignedByte_O
-TRANSLATE(core::Bit_O);		// superclass UnsignedByte_O
 #endif
-TRANSLATE(core::Float_O); // superclass Real_O
-TRANSLATE(core::ShortFloat_O);
-TRANSLATE(core::SingleFloat_O);
-TRANSLATE(core::DoubleFloat_O); // superclass DoubleFloat_O
 #ifdef CLASP_LONG_FLOAT
-TRANSLATE(core::LongFloat_O);
 #endif
-TRANSLATE(core::Ratio_O);   // superclass Rational_O
-TRANSLATE(core::Complex_O); // superclass Number_O
 
 namespace core {
 

@@ -52,6 +52,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::Null_O);
 
 #endif /* _core_Null_H */

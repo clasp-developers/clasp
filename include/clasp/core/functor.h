@@ -1,6 +1,9 @@
 #ifndef functor_h
 #define functor_h
 
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/symbol.h>
 
 namespace core {
   FORWARD(Function);
@@ -9,6 +12,7 @@ namespace core {
   FORWARD(BuiltinClosure);
   FORWARD(FunctionClosure);
   FORWARD(Closure);
+  FORWARD(CompiledFunction);
   FORWARD(InterpretedClosure);
   FORWARD(CompiledClosure);
 };
@@ -45,6 +49,14 @@ struct gctools::GCInfo<core::InterpretedClosure_O> {
 };
 template <>
 struct gctools::GCInfo<core::CompiledClosure_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+
+template <>
+struct gctools::GCInfo<core::CompiledFunction_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
@@ -391,6 +403,32 @@ public:
 
 };
 
+namespace core {
+  SMART(LambdaListHandler);
+  SMART(NamedFunction);
+  class CompiledFunction_O : public Closure_O {
+    LISP_CLASS(core, ClPkg, CompiledFunction_O, "CompiledFunction",Closure_O);
+
+#if defined(XML_ARCHIVE)
+    void archiveBase(ArchiveP node);
+#endif // defined(XML_ARCHIVE)
+  public:
+  CompiledFunction_O(T_sp name) : Base(name){};
+    virtual ~CompiledFunction_O(){};
+
+  public:
+#if 0
+    static CompiledFunction_sp make(Closure_sp c) {
+      GC_ALLOCATE(CompiledFunction_O, f);
+      ASSERT(c.generalp());
+      f->closure = c;
+    //            printf("%s:%d Returning CompiledFunction_sp func=%p &f=%p\n", __FILE__, __LINE__, f.px_ref(), &f);
+      return f;
+    }
+#endif
+  public:
+  };
+};
 
 namespace core {
 class CompiledClosure_O : public core::ClosureWithFrame_O {

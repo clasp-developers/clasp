@@ -1,5 +1,7 @@
+#include <clasp/core/foundation.h>
+#include <clasp/gctools/gctoolsPackage.fwd.h>
 #include <clasp/gctools/gc_boot.h>
-
+#include <clasp/core/numbers.h>
 
 namespace gctools {
 
@@ -160,5 +162,35 @@ void build_kind_field_layout_tables()
     }
   }
 }
+
+
+CL_DEFUN Fixnum gctools__size_of_kind_field_layout_table()
+{
+  // First pass through the global_kind_layout_codes_table
+  // to count the number of kinds and the number of fields
+  Layout_code* codes = get_kind_layout_codes();
+  int idx = 0;
+  while (1) {
+    if ( codes[idx].cmd == layout_end ) return idx;
+    ++idx;
+  }
+}
+
+CL_DEFUN core::T_mv gctools__kind_field_layout_entry(size_t idx)
+{
+  // First pass through the global_kind_layout_codes_table
+  // to count the number of kinds and the number of fields
+  Layout_code* codes = get_kind_layout_codes();
+  Layout_code& code = codes[idx];
+  core::Fixnum_sp cmd = core::clasp_make_fixnum(code.cmd);
+  core::Fixnum_sp data0 = core::clasp_make_fixnum(code.data0);
+  core::Fixnum_sp data1 = core::clasp_make_fixnum(code.data1);
+  core::Fixnum_sp data2 = core::clasp_make_fixnum(code.data2);
+  std::string desc = code.description;
+  core::Symbol_sp description = core::lispify_intern_keyword(desc);
+  return Values(cmd,data0,data1,data2,description);
+}
+
+
 };
 
