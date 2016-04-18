@@ -235,9 +235,9 @@ CL_DEFUN Function_sp core__coerce_to_function(T_sp arg) {
       }
       return sym->getSetfFdefinition();
     } else if (head == cl::_sym_lambda) {
-      if ( false ) { //cl::_sym_compile->fboundp() ) {
+      if ( false ) { //core::_sym_bclasp_compile->fboundp() ) {
 //        printf("%s:%d coerce-to-function Compiling the form: %s\n", __FILE__, __LINE__, _rep_(carg).c_str());
-        T_sp fn = gctools::As<Function_sp>(eval::funcall(cl::_sym_compile, _Nil<T_O>() , carg));
+        T_sp fn = gctools::As<Function_sp>(eval::funcall(core::_sym_bclasp_compile, _Nil<T_O>() , carg));
         return fn;
       } else {
         T_sp olambdaList = oCadr(carg);
