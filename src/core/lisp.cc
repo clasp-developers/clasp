@@ -1206,6 +1206,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("USE-AMC-POOL"), features);
 #endif
 #endif
+#ifdef USE_EXPENSIVE_BACKTRACE
+  features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
+#endif
 
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 

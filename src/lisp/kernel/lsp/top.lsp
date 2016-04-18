@@ -1102,8 +1102,11 @@ Use special code 0 to cancel this operation.")
 	      bi (bds-var bi)
 	      (let ((val (bds-val bi)))
 		(if (eq val si::unbound) "<unbound value>" val))))))
+#+(and clasp (not use-expensive-backtrace))
+(defun clasp-backtrace (&optional (n 99999999))
+  (core:clib-backtrace n))
 
-#+clasp
+#+(and clasp use-expensive-backtrace)
 (defun clasp-backtrace (&optional (n 99999999))
   (unless n (setq n 99999999))
   (let (backtrace)

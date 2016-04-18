@@ -196,6 +196,10 @@ public:
 };
 };
 
+#ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() core::InvocationHistoryFrame zzzFrame(this->asSmartPtr(), lcc_arglist);
+#else
+#define INVOCATION_HISTORY_FRAME()
+#endif
 
 #endif /* _core_stacks_H_ */

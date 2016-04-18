@@ -339,7 +339,9 @@ namespace core {
       return this->_Slots[idx];
     };
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
+#ifdef USE_EXPENSIVE_BACKTRACE
       core::InvocationHistoryFrame _frame(Closure_sp(this), lcc_arglist, _Nil<T_O>());
+#endif
       core::T_O* tagged_closure = gctools::tag_general(this);
       return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
     };
@@ -415,7 +417,9 @@ public:
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
+#ifdef USE_EXPENSIVE_BACKTRACE
     core::InvocationHistoryFrame _frame(Closure_sp(this), lcc_arglist, this->_closedEnvironment);
+#endif
     core::T_O* tagged_closure = gctools::tag_general(this);
     return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
   };

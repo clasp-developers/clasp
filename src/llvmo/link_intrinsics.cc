@@ -524,7 +524,9 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   STACK_FRAME(buff, no_args, 0);
   VaList_S empty_valist(no_args);
   core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
+#ifdef USE_EXPENSIVE_BACKTRACE
   core::InvocationHistoryFrame invFrame(tc, empty_valist_ptr, *frameP);
+#endif
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
 #define TIME_TOP_LEVEL_FUNCTIONS

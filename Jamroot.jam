@@ -148,8 +148,8 @@ project clasp : requirements
 
 ### USE_AMC_POOL  --- controls if certain objects (Closures) are allocated in a non-moving pool or AMC
      <define>USE_AMC_POOL
-
-
+### USE_INVOCATION_HISTORY_FRAME saves a frame for every function invocation for backtraces
+#     <define>USE_EXPENSIVE_BACKTRACE
 #### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
 #        <define>DEBUG_SPLAT_FORWARD
 #### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory

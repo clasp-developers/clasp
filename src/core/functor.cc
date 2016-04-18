@@ -160,7 +160,9 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
+#ifdef USE_EXPENSIVE_BACKTRACE
   InvocationHistoryFrame _frame(this->asSmartPtr(), lcc_arglist);
+#endif
   lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
@@ -168,7 +170,9 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
   VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
   newActivationFrame->attachDebuggingInfo(debuggingInfo);
   //        InvocationHistoryFrame _frame(this,newActivationFrame);
+#ifdef USE_EXPENSIVE_BACKTRACE
   _frame.setActivationFrame(newActivationFrame);
+#endif
 #if 0
   if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
     printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
