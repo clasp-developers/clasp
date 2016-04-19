@@ -139,6 +139,19 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
   return result;
 }
 
+Cl_DEFUN size_t core__closure_length(ClosureWithSlots_sp closure)
+{
+  return closure->_Slots._Capacity;
+}
+
+Cl_DEFUN T_sp core__closure_ref(ClosureWithSlots_sp closure, size_t index)
+{
+  if ( index >= closure->_Slots._Capacity ) {
+    SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Capacity );
+  }
+  return closure->_Slots[index];
+}
+
 
 T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
