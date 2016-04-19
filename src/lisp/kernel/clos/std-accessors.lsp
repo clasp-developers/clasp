@@ -1,4 +1,4 @@
-;;;;  -*- Mode: Lisp; Syntax: Common-Lisp; Package: CLOS -*-
+
 ;;;;
 ;;;;  Copyright (c) 1992, Giuseppe Attardi.o
 ;;;;  Copyright (c) 2001, Juan Jose Garcia Ripoll.
