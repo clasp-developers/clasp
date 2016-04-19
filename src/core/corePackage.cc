@@ -222,6 +222,8 @@ SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
+
+SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
 SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
@@ -1133,6 +1135,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
+  std::list<string> nicknames;
+  std::list<string> use_packages;
+  _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
 #if 0
 
   _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
