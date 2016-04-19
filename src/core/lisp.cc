@@ -2591,13 +2591,6 @@ Symbol_sp Lisp_O::internWithDefaultPackageName(string const &defaultPackageName,
 
 Symbol_sp Lisp_O::internKeyword(const string &name) {
   string realName = name;
-  if (name[0] == ':') {
-    realName = name.substr(1, 99999);
-  }
-  size_t colonPos = realName.find_first_of(":");
-  if (colonPos != string::npos) {
-    SIMPLE_ERROR(BF("You cannot intern[%s] as a keyword - it has package designating ':' characters in it at pos[%d]") % realName % colonPos);
-  }
   boost::to_upper(realName);
   Str_sp str_real_name = Str_O::create(realName);
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));

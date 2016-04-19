@@ -1140,14 +1140,6 @@ void lisp_installGlobalInitializationCallback(InitializationCallback initGlobals
   _lisp->installGlobalInitializationCallback(initGlobals);
 }
 
-#if 0
-    T_sp lisp_hiddenBinderLookup(Lisp_sp lisp, Symbol_sp sym)
-    {
-	T_sp obj = lisp->hiddenBinder()->lookup(sym);
-	return obj;
-    }
-#endif
-
 int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol) {
   SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(predefSymId->symbolValue());
   return converter->enumIndexForSymbol(gc::As<Symbol_sp>(symbol));
@@ -1157,13 +1149,6 @@ Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal) {
   SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(predefSymId->symbolValue());
   return converter->symbolForEnumIndex(enumVal);
 }
-
-#if 0
-    void lisp_hiddenBinderExtend(Lisp_sp lisp, Symbol_sp sym, T_sp obj)
-    {
-	lisp->hiddenBinder()->extend(sym,obj);
-    }
-#endif
 
 void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName, int value) {
   conv->addSymbolEnumPair(name, archiveName, value);
