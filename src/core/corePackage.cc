@@ -721,7 +721,7 @@ SYMBOL_EXPORT_SC_(CorePkg, instance);
 SYMBOL_SC_(CorePkg, all_keys);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, changed);
-
+SYMBOL_EXPORT_SC_(CorePkg,STARstack_top_hintSTAR);
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
