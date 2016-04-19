@@ -1024,6 +1024,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            (load-system :bclasp :cclasp :interp t )
            (let ((files (out-of-date-bitcodes :init :cclasp)))
              (compile-system files)))))))
+(export '(recompile-cclasp))
+(defun recompile-cclasp ()
+  (add-cleavir-to-*system-files*)
+  (let ((*target-backend* (default-target-backend)))
+    (if (out-of-date-bitcodes :init :cclasp)
+        (time
+         (let ((files (out-of-date-bitcodes :init :cclasp)))
+           (compile-system files))))))
+
 (export 'link-cclasp)
 (defun link-cclasp (&key force)
   (cclasp-features)
