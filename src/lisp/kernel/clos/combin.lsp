@@ -48,6 +48,7 @@
 ;;;	what happens with the content of MAKE-METHOD.
 ;;;
 #+compare(print "combin.lsp 50")
+(defvar *avoid-compiling* nil)
 (defun effective-method-function (form &optional top-level &aux first)
   (flet ((maybe-compile (form)
            (if *avoid-compiling*
