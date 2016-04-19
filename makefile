@@ -206,13 +206,13 @@ mps-all:
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps bundle )
 	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
 	make executable-symlinks
-	make -C src/main min-mps
-	make -C src/main bclasp-mps-bitcode
-	make -C src/main bclasp-mps-fasl
-	make -C src/main cclasp-from-bclasp-mps-bitcode
+	time make -C src/main min-mps
+	time make -C src/main bclasp-mps-bitcode
+	time make -C src/main bclasp-mps-fasl
+	time make -C src/main cclasp-from-bclasp-mps-bitcode
 #	make -C src/main cclasp-mps-fasl
-	make -C src/main cclasp-mps-fasl
-	make -C src/main cclasp-mps-addons
+	time make -C src/main cclasp-mps-fasl
+	time make -C src/main cclasp-mps-addons
 	echo Clasp is now built
 
 lisp-source:
