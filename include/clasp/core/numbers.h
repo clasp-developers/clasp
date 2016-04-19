@@ -557,6 +557,13 @@ inline SingleFloat_sp make_single_float(float x) { return gc::make_tagged_single
 inline float unbox_single_float(SingleFloat_sp x) { return x.unsafe_single_float(); };
 };
 
+template <>
+struct gctools::GCInfo<core::DoubleFloat_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = atomic;
+};
+
 namespace core {
 SMART(DoubleFloat);
 class DoubleFloat_O : public Float_O {
@@ -631,12 +638,6 @@ public:
 
   DEFAULT_CTOR_DTOR(DoubleFloat_O);
 };
-};
-template <>
-struct gctools::GCInfo<core::DoubleFloat_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = atomic;
 };
 
 namespace core {
