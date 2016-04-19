@@ -1325,7 +1325,10 @@ inline Number_sp clasp_sqrt(Number_sp z) {
 }
 
 inline Number_sp clasp_reciprocal(Number_sp x) {
-  if (x.single_floatp()) {
+  if (x.fixnump() ) {
+    if ( x.unsafe_fixnum() == 1 ) return x;
+    return Ratio_O::create(clasp_make_fixnum(1),x);
+  } else if (x.single_floatp()) {
     float f = x.unsafe_single_float();
     return clasp_make_single_float(1.0 / f);
   }
@@ -1333,7 +1336,10 @@ inline Number_sp clasp_reciprocal(Number_sp x) {
 }
 
 inline Number_sp clasp_exp(Number_sp x) {
-  if (x.single_floatp()) {
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(expf(f));
+  } else if (x.single_floatp()) {
     float f = x.unsafe_single_float();
     return clasp_make_single_float(expf(f));
   }
@@ -1341,33 +1347,51 @@ inline Number_sp clasp_exp(Number_sp x) {
 }
 
 inline Number_sp clasp_sin(Number_sp x) {
-  if (x.single_floatp())
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(sinf(f));
+  } else if (x.single_floatp())
     return clasp_make_single_float(sinf(x.unsafe_single_float()));
   return x->sin_();
 }
 inline Number_sp clasp_cos(Number_sp x) {
-  if (x.single_floatp())
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(cosf(f));
+  } else if (x.single_floatp())
     return clasp_make_single_float(cosf(x.unsafe_single_float()));
   return x->cos_();
 }
 inline Number_sp clasp_tan(Number_sp x) {
-  if (x.single_floatp())
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(tanf(f));
+  } else if (x.single_floatp())
     return clasp_make_single_float(tanf(x.unsafe_single_float()));
   return x->tan_();
 }
 
 inline Number_sp clasp_sinh(Number_sp x) {
-  if (x.single_floatp())
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(sinhf(f));
+  } else if (x.single_floatp())
     return clasp_make_single_float(sinhf(x.unsafe_single_float()));
   return x->sinh_();
 }
 inline Number_sp clasp_cosh(Number_sp x) {
-  if (x.single_floatp())
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(coshf(f));
+  } else if (x.single_floatp())
     return clasp_make_single_float(coshf(x.unsafe_single_float()));
   return x->cosh_();
 }
 inline Number_sp clasp_tanh(Number_sp x) {
-  if (x.single_floatp())
+  if (x.fixnump()) {
+    float f = x.unsafe_fixnum();
+    return clasp_make_single_float(tanhf(f));
+  } else if (x.single_floatp())
     return clasp_make_single_float(tanhf(x.unsafe_single_float()));
   return x->tanh_();
 }
