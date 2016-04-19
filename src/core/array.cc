@@ -94,6 +94,7 @@ CL_DEFUN void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in,
   }
 }
 
+#if 0 // DEPRECIATED???
 CL_LAMBDA(array &rest indices-value);
 CL_DECLARE();
 CL_DOCSTRING("aset");
@@ -123,6 +124,9 @@ CL_DEFUN T_sp core__aset(Array_sp array, List_sp indices_value) {
   }
   IMPLEMENT_MEF(BF("Implement aset"));
 };
+#endif
+
+
 
 int Array_O::checkedIndex(const string &filename, int lineno, const string &function, Array_sp array, int which, T_sp index, int nonincl_index) {
   if (index.fixnump()) {
@@ -164,9 +168,8 @@ Symbol_sp Array_O::element_type_as_symbol() const {
 }
 
 CL_LISPIFY_NAME("cl:aref");
-CL_LAMBDA((core::self cl:array) &rest core::indices);
-CL_DEFMETHOD T_sp Array_O::aref(List_sp indices) const {
-  _OF();
+CL_LAMBDA((core::self cl:array) &va-rest core::indices);
+CL_DEFMETHOD T_sp Array_O::aref(VaList_sp indices) const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
@@ -184,41 +187,64 @@ cl_index Array_O::index_vector_int(const vector<int> &indices) const {
   return ((offset));
 }
 
-cl_index Array_O::index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const {
-  _OF();
-#ifdef DEBUG_ON
+cl_index Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const {
   int indices_passed = cl__length(indices) - (last_value_is_val ? 1 : 0);
+#ifdef DEBUG_ON
   ASSERTF(indices_passed == (int)this->rank(),
           BF("Wrong number of indices[%d] must match rank[%d]") % indices_passed % this->rank());
 #endif
   cl_index offset = 0;
   cl_index idx = 0;
-  for (auto cur : indices) {
-    if (oCdr(cur).nilp() && last_value_is_val) {
-      val_cons = cur;
-      break;
-    }
+  cl_index idxEnd(indices_passed);
+  List_sp cur = indices;;
+  for ( ; idx<idxEnd; ++idx ) {
+    T_sp index = oCar(cur);
     cl_index curDimension = this->arrayDimension(idx);
-    cl_index oneIndex = clasp_to_int(gc::As<Rational_sp>(oCar(cur)));
+    cl_index oneIndex = clasp_to_int(gc::As<Rational_sp>(index));
     if (oneIndex < 0 || oneIndex >= curDimension) {
       SIMPLE_ERROR(BF("Bad index %d - must be [0,%d)") % curDimension);
     }
-
     offset = offset * curDimension + oneIndex;
-    idx++;
   }
-  return ((offset));
+  if (last_value_is_val) last_val = oCar(cur);
+  return offset;
 }
 
+cl_index Array_O::index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const {
+  int indices_passed = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(indices) - (last_value_is_val ? 1 : 0);
+#ifdef DEBUG_ON
+  ASSERTF(indices_passed == (int)this->rank(),
+          BF("Wrong number of indices[%d] must match rank[%d]") % indices_passed % this->rank());
+#endif
+  cl_index offset = 0;
+  cl_index idx = 0;
+  cl_index idxEnd(indices_passed);
+  for ( ; idx < idxEnd; ++idx) {
+    core::T_sp cur = LCC_NEXT_ARG(indices,idx);
+    cl_index curDimension = this->arrayDimension(idx);
+    cl_index oneIndex = clasp_to_int(gc::As<Rational_sp>(cur));
+    if (oneIndex < 0 || oneIndex >= curDimension) {
+      SIMPLE_ERROR(BF("Bad index %d - must be [0,%d)") % curDimension);
+    }
+    offset = offset * curDimension + oneIndex;
+  }
+  if (last_value_is_val) {
+    last_val = LCC_NEXT_ARG(indices,idx);
+  }
+  return offset;
+}
+
+CL_LAMBDA(array &va-rest indices);
 CL_LISPIFY_NAME("core:index");
-CL_DEFMETHOD gc::Fixnum Array_O::index(List_sp indices) const {
-  List_sp dummy;
-  return ((this->index_val(indices, false, dummy)));
+CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
+  T_sp dummy;
+  return array->index_val_(indices, false, dummy);
 }
 
+CL_LAMBDA((core::self array) &va-rest core::indices);
 CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
-CL_DEFMETHOD gc::Fixnum Array_O::arrayRowMajorIndex(List_sp indices) const {
-  return ((this->index(indices)));
+CL_DEFMETHOD gc::Fixnum Array_O::arrayRowMajorIndex(VaList_sp indices) const {
+  return this->index_(indices);
 }
 
 CL_LISPIFY_NAME("cl:array-dimensions");

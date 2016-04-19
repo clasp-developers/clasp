@@ -5,6 +5,8 @@
 ;;; cpp-name - namestring to write/read the preprocessed file to/from
 ;;; input - the original source input name
 
+(require :sb-posix)
+
 (defun fork-is-available ()
   (when (find-package "SB-POSIX")
     (and (find-symbol "FORK" "SB-POSIX")

@@ -74,7 +74,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
   virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]); };
   virtual T_sp elementType() const;
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   /*! Return the value at the indices */
   virtual T_sp setf_aref(List_sp indices_val);
 

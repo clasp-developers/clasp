@@ -13,6 +13,7 @@ namespace core {
   FORWARD(FunctionClosure);
   FORWARD(Closure);
   FORWARD(CompiledFunction);
+  FORWARD(ClosureWithSlots);
   FORWARD(InterpretedClosure);
   FORWARD(CompiledClosure);
 };
@@ -68,59 +69,56 @@ namespace core {
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
   public:
-  virtual const char *describe() const { return "Function - subclass must implement describe()"; };
-  inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
-    VaList_S lcc_arglist_s;
-    va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
-    LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-    core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-    return this->invoke_va_list(LCC_PASS_ARGS);
-  }
+    virtual const char *describe() const { return "Function - subclass must implement describe()"; };
+    inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
+      VaList_S lcc_arglist_s;
+      va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
+      LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
+      core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
+      return this->invoke_va_list(LCC_PASS_ARGS);
+    }
 
-  LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-    printf("Subclass of Functoid must implement 'activate'\n");
-    abort();
+    LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+      printf("Subclass of Functoid must implement 'activate'\n");
+      abort();
+    };
+    virtual size_t templatedSizeof() const { return sizeof(*this); };
+  public:
+    Function_O()  {};
+    virtual T_sp name() const = 0;
+    virtual string nameAsString() const {SUBIMP();};
+    virtual bool compiledP() const { return false; };
+    virtual bool interpretedP() const { return false; };
+    virtual bool builtinP() const { return false; };
+    virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
+    CL_DEFMETHOD T_sp functionName() const { return this->name(); };
+    CL_DEFMETHOD Symbol_sp functionKind() const { return this->getKind(); };
+    CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
+    CL_DEFMETHOD T_sp functionLambdaListHandler() const {
+      return this->lambdaListHandler();
+    }
+    CL_DEFMETHOD virtual void setf_lambda_list(List_sp lambda_list) = 0;
+    virtual T_sp closedEnvironment() const = 0;
+    virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
+    virtual T_mv functionSourcePos() const;
+    CL_DEFMETHOD virtual T_sp cleavir_ast() const = 0;
+    CL_DEFMETHOD virtual void setf_cleavir_ast(T_sp ast) = 0;
+    virtual List_sp declares() const = 0;
+    CL_DEFMETHOD virtual T_sp docstring() const = 0;
+    virtual void *functionAddress() const = 0;
+    CL_DEFMETHOD virtual bool macroP() const = 0;
+    virtual void set_kind(Symbol_sp k) = 0;
+    virtual Symbol_sp getKind() const = 0;
+    virtual int sourceFileInfoHandle() const = 0;
+    virtual size_t filePos() const { return 0; }
+    virtual int lineNumber() const { return 0; }
+    virtual int column() const { return 0; };
+    virtual LambdaListHandler_sp lambdaListHandler() const = 0;
+    virtual T_sp lambda_list() const = 0;
+    CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
+    virtual string __repr__() const;
   };
-  virtual size_t templatedSizeof() const { return sizeof(*this); };
-public:
-  Function_O()  {};
-  virtual T_sp name() const = 0;
-  virtual string nameAsString() const {SUBIMP();};
-  virtual bool compiledP() const { return false; };
-  virtual bool interpretedP() const { return false; };
-  virtual bool builtinP() const { return false; };
-  virtual T_sp sourcePosInfo() const { return _Nil<T_O>(); };
-  CL_DEFMETHOD T_sp functionName() const { return this->name(); };
-  CL_DEFMETHOD Symbol_sp functionKind() const { return this->getKind(); };
-  CL_DEFMETHOD List_sp function_declares() const { return this->declares(); };
-  CL_DEFMETHOD T_sp functionLambdaListHandler() const {
-    return this->lambdaListHandler();
-  }
-  CL_DEFMETHOD virtual void setf_lambda_list(List_sp lambda_list) = 0;
-  virtual T_sp closedEnvironment() const = 0;
-  virtual T_sp setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) = 0;
-  virtual T_mv functionSourcePos() const;
-  CL_DEFMETHOD virtual T_sp cleavir_ast() const = 0;
-  CL_DEFMETHOD virtual void setf_cleavir_ast(T_sp ast) = 0;
-  virtual List_sp declares() const = 0;
-  CL_DEFMETHOD virtual T_sp docstring() const = 0;
-  virtual void *functionAddress() const = 0;
-  CL_DEFMETHOD virtual bool macroP() const = 0;
-  virtual void set_kind(Symbol_sp k) = 0;
-  virtual Symbol_sp getKind() const = 0;
-  virtual int sourceFileInfoHandle() const = 0;
-  virtual size_t filePos() const { return 0; }
-  virtual int lineNumber() const { return 0; }
-  virtual int column() const { return 0; };
-  virtual LambdaListHandler_sp lambdaListHandler() const = 0;
-  virtual T_sp lambda_list() const = 0;
-  CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
-  virtual string __repr__() const;
 };
-};
-
-
-
 
 template <>
 struct gctools::GCInfo<core::NamedFunction_O> {

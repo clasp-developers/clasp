@@ -173,16 +173,16 @@ bool Vector_O::equalp(T_sp o) const {
   return false;
 }
 
-T_sp Vector_O::aref(List_sp args) const {
-  cl_index idx = this->index(args);
+T_sp Vector_O::aref(VaList_sp args) const {
+  cl_index idx = this->index_(args);
   return this->rowMajorAref(idx);
 }
 
 T_sp Vector_O::setf_aref(List_sp args_val) {
-  List_sp cons_val;
-  cl_index idx = this->index_val(args_val, true, cons_val);
-  this->rowMajorAset(idx, oCar(cons_val));
-  return oCar(cons_val);
+  T_sp val;
+  cl_index idx = this->index_val_(args_val, true, val);
+  this->rowMajorAset(idx, val);
+  return val;
 }
 
 T_sp Vector_O::reverse() {

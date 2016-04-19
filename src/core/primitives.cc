@@ -487,12 +487,9 @@ CL_DEFUN T_mv core__smart_pointer_details() {
 CL_LAMBDA(&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("values");
-CL_DEFUN T_mv cl__values(T_sp args) {
+CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   // returns multiple values
-  if (!args.valistp()) {
-    SIMPLE_ERROR(BF("arg must be valist"));
-  }
-  VaList_sp vargs = gctools::As<VaList_sp>(args);
+  ASSERT(vargs.valistp());
   size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );

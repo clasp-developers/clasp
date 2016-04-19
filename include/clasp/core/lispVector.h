@@ -89,7 +89,7 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   virtual T_sp setf_aref(List_sp indices_val);
 
   virtual T_sp rowMajorAref(cl_index idx) const { return this->elt(idx); };

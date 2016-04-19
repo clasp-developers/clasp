@@ -85,9 +85,12 @@ T_sp VectorDisplaced_O::elt(int index) const {
   return this->_Vector->elt(index+this->_DisplacedIndexOffset);
 }
 
-T_sp VectorDisplaced_O::aref(List_sp indices) const {
-  ASSERTF(cl__length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
-  return this->elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices))));
+T_sp VectorDisplaced_O::aref(VaList_sp indices) const {
+  ASSERT(LCC_VA_LIST_NUMBER_OF_ARGUMENTS(indices) == 1);
+  core::T_sp arg0 = LCC_NEXT_ARG(indices,0);
+  ASSERT(arg0.fixnump());
+  size_t index = arg0.unsafe_fixnum();
+  return this->elt(index);
 }
 
 T_sp VectorDisplaced_O::setf_elt(int index, T_sp obj) {
