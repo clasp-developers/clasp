@@ -851,6 +851,8 @@ memory limits before executing the program again."))
 			for value in values
 			collect (assert-prompt place-name value)))))))
 
+(defvar *stack-top-hint* nil)
+
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
@@ -870,7 +872,8 @@ bstrings."
   (declare (inline apply) ;; So as not to get bogus frames in debugger
 ;;	   #-ecl-min (c::policy-debug-ihs-frame)
 	   )
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
+  (let ((condition (coerce-to-condition datum args 'simple-error 'error))
+        (*stack-top-hint* (1- (ihs-top))))
     (cond
       ((eq t continue-string)
        ; from CEerror; mostly allocation errors
@@ -895,9 +898,8 @@ bstrings."
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
-       (progn
-	 (signal condition)
-	 (invoke-debugger condition))))))
+       (signal condition)
+       (invoke-debugger condition)))))
 
 (defun sys::tpl-continue-command (&rest any)
   (apply #'invoke-restart 'continue any))
