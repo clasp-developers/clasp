@@ -94,7 +94,6 @@ CL_DEFUN void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in,
   }
 }
 
-#if 0 // DEPRECIATED???
 CL_LAMBDA(array &rest indices-value);
 CL_DECLARE();
 CL_DOCSTRING("aset");
@@ -124,7 +123,6 @@ CL_DEFUN T_sp core__aset(Array_sp array, List_sp indices_value) {
   }
   IMPLEMENT_MEF(BF("Implement aset"));
 };
-#endif
 
 
 
