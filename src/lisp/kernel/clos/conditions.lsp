@@ -413,7 +413,7 @@
     (loop (unless *handler-clusters* (return))
           (let ((cluster (pop *handler-clusters*)))
 	    (dolist (handler cluster)
-<	      (when (typep condition (car handler))
+	      (when (typep condition (car handler))
 		(funcall (cdr handler) condition)
 		))))
     nil))
@@ -455,7 +455,8 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil))
+  (let ((*debugger-hook* nil)
+        (core:*stack-top-hint* (1- (core:ihs-top))))
     (with-simple-restart (continue "Return from BREAK.")
       (invoke-debugger
        (make-condition 'SIMPLE-CONDITION
