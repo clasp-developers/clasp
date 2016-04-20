@@ -57,12 +57,12 @@ THE SOFTWARE.
 
 // To invoke "invoke" methods use these
 
-#define LCC_ARGS_FUNCALL_ELLIPSIS core::T_O *lcc_func, core::T_O *dumArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_CC_CALL_ELLIPSIS core::T_O *lcc_func, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_ELLIPSIS core::T_O *dummyEnv, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
-#define LCC_ARGS_VA_LIST core::T_O *lcc_closedEnv, core::T_O *lcc_arglist, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2
+#define LCC_ARGS_FUNCALL_ELLIPSIS core::T_O *lcc_closure, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
+#define LCC_ARGS_CC_CALL_ELLIPSIS core::T_O *lcc_closure, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
+#define LCC_ARGS_ELLIPSIS core::T_O *lcc_closure, core::T_O *dummyArgList, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2, ...
+#define LCC_ARGS_VA_LIST core::T_O *lcc_closure, core::T_O *lcc_arglist, std::size_t lcc_nargs, core::T_O *lcc_fixed_arg0, core::T_O *lcc_fixed_arg1, core::T_O *lcc_fixed_arg2
 // When you pass args to another function use LCC_PASS_ARGS
-#define LCC_PASS_ARGS NULL, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
+#define LCC_PASS_ARGS lcc_closure, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
 #define LCC_PASS_ARGS_ENV(_env) _env, lcc_arglist, lcc_nargs, lcc_fixed_arg0, lcc_fixed_arg1, lcc_fixed_arg2
 
 // Compiled functions get the raw va_list
@@ -134,7 +134,7 @@ THE SOFTWARE.
   ASSERT((_valist_s_)._Args->gp_offset == sizeof(uintptr_t) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS));
 
 // Registers are %rdi, %rsi, %rdx, %rcx, %r8, %r9
-#define LCC_ENV_REGISTER 0
+#define LCC_CLOSURE_REGISTER 0
 #define LCC_REST_REGISTER 1
 #define LCC_OVERFLOW_SAVE_REGISTER LCC_REST_REGISTER
 #define LCC_NARGS_REGISTER 2
@@ -146,9 +146,10 @@ THE SOFTWARE.
   {                                                                                            \
     ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_t)(_num_); \
   }
-#define LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(_valist_s_)                                                                            \
-  {                                                                                                                                    \
-    ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_ENV_REGISTER] = NULL;                                                         \
+#define LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(_valist_s_) {                                                                          \
+    ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] = (uintptr_t)lcc_closure;                                   \
+    /* Tricky part!!! write the overflow_arg_area pointer into the reg_save_area */                                                    \
+    /* so we can recover the overflow args even after the va_list has been traversed */                                                \
     ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] = (uintptr_t)((_valist_s_)._Args->overflow_arg_area); \
     ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_NARGS_REGISTER] = (uintptr_t)lcc_nargs;                                       \
     ((uintptr_t *)(_valist_s_)._Args->reg_save_area)[LCC_ARG0_REGISTER] = (uintptr_t)lcc_fixed_arg0;                                   \

@@ -197,7 +197,7 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_func));
+  core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_closure));
   return func->invoke_va_list(LCC_PASS_ARGS);
 }
 
