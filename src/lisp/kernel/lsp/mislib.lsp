@@ -72,8 +72,7 @@ successfully, T is returned, else error."
 	    real-end (get-internal-real-time)
             interpreted-calls-end (core:interpreted-closure-calls)
 	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
-            llh-calls-begin (core:cxx-lambda-list-handler-create-bindings-calls))
+	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*)
       #-clasp(format *trace-output*
 		     "real time     : ~,3F secs~%~
               run time      : ~,3F secs~%~
@@ -92,14 +91,12 @@ successfully, T is returned, else error."
               Bytes consed        : ~a bytes~%~
               LLVM time           : ~,3F secs~%~
               LLVM compiles       : ~A~%~
-              Cxx-calls           : ~A~%~
               Interpreted closures: ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
                      (- clasp-bytes-end clasp-bytes-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
-                     (- (core:cxx-lambda-list-handler-create-bindings-calls) llh-calls-begin)
                      (- interpreted-calls-end interpreted-calls-start))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))

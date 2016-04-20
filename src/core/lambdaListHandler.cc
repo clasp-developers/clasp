@@ -63,10 +63,9 @@ void handleArgumentHandlingExceptions(Closure_sp closure) {
 
 
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
-  ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
-    if (numReq <= 3 && numReq == lcc_nargs) {
+    if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
       switch (numReq) {
       case 3:
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));

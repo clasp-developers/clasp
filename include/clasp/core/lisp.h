@@ -199,9 +199,6 @@ class PushLispMode;
 
 struct ThreadInfo {
   MultipleValues multipleValues;
-  size_t _lambda_list_handler_create_bindings_count;
-
-  ThreadInfo() : _lambda_list_handler_create_bindings_count(0){};
 };
 
 extern __thread ThreadInfo *threadLocalInfoPtr;

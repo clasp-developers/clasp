@@ -725,13 +725,6 @@ CL_DEFUN void core__gdb(T_sp msg) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("Return the number of times lambdaListHandler_createBindings");
-CL_DEFUN Integer_sp core__cxx_lambda_list_handler_create_bindings_calls() {
-  size_t calls = threadLocalInfoPtr->_lambda_list_handler_create_bindings_count;
-  return Integer_O::create((Fixnum)calls);
-};
 
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
