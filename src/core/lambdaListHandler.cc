@@ -1199,4 +1199,4 @@ LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _Le
 
 
 }; /* core */
-   
+
