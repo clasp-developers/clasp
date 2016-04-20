@@ -69,12 +69,16 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
       switch (numReq) {
       case 3:
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
+        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 2:
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 1:
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-      case 0:
-        break;
+        return;
       }
       return;
     }
