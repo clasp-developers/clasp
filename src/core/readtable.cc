@@ -277,10 +277,12 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
   stringstream str;
   bool done = false;
   while (!done) {
-    Character_sp nc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    T_sp tc = cl__read_char(sin, _Nil<core::T_O>(), _sym_eof_value, _lisp->_true());
+    if ( tc == _sym_eof_value ) break;
+    ASSERT(tc.characterp());
+    Character_sp nc = gctools::reinterpret_cast_smart_ptr<Character_sp>(tc);
     char cc = clasp_as_char(nc);
-    if (cc == '\n')
-      break;
+    if (cc == '\n') break;
   }
   // Return one value in a MultipleValues object to indicate that something is being returned
   return (Values0<T_O>());
