@@ -52,25 +52,28 @@
          (has-aok (member '&allow-other-keys gf-lambda-list-all))
          (gf-lambda-list (if has-aok (butlast gf-lambda-list-all 1)
                              gf-lambda-list-all)))
-    (flet ((match-key (entry)
-             (cond
-               ((symbolp entry)
-                (intern (string entry) :keyword))
-               ((and (consp entry) (consp (car entry)))
-                (car (car entry)))
-               ((consp entry)
-                (intern (string (car entry)) :keyword))
-               (t (error "Illegal keyword parameter ~a" entry)))))
-      (let* ((key-old (member '&key gf-lambda-list)))
-        (when key-old
-          (let ((key-new (member '&key method-lambda-list))
-                append-keys)
-            (dolist (k (cdr key-new))
-              (when (not (member (match-key k) key-old :key #'match-key))
-                (push k append-keys)))
-            (let ((new-ll (append gf-lambda-list append-keys
-                                  (if has-aok (list '&allow-other-keys) nil))))
-              (core:setf-lambda-list gf new-ll))))))))
+    (if gf-lambda-list
+        (flet ((match-key (entry)
+                 (cond
+                   ((symbolp entry)
+                    (intern (string entry) :keyword))
+                   ((and (consp entry) (consp (car entry)))
+                    (car (car entry)))
+                   ((consp entry)
+                    (intern (string (car entry)) :keyword))
+                   (t (error "Illegal keyword parameter ~a" entry)))))
+          (let* ((key-old (member '&key gf-lambda-list)))
+            (when key-old
+              (let ((key-new (member '&key method-lambda-list))
+                    append-keys)
+                (dolist (k (cdr key-new))
+                  (when (not (member (match-key k) key-old :key #'match-key))
+                    (push k append-keys)))
+                (let ((new-ll (append gf-lambda-list append-keys
+                                      (if has-aok (list '&allow-other-keys) nil))))
+                  (core:setf-lambda-list gf new-ll))))))
+        (progn
+          (core:setf-lambda-list gf method-lambda-list)))))
 
 (defmacro defmethod (&whole whole name &rest args &environment env)
   (declare (notinline make-method-lambda))
