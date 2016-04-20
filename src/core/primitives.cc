@@ -705,6 +705,9 @@ CL_LAMBDA(&optional fmt-control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
 CL_DEFUN void core__break(T_sp fmt, List_sp args) {
+  int frame = core__ihs_top();
+  T_sp tframe = clasp_make_fixnum(frame);
+  DynamicScopeManager scope(_sym_STARstack_top_hintSTAR,tframe);
   if (fmt.notnilp()) {
     cl__format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
   }
