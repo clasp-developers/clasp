@@ -492,7 +492,9 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     core::write_ugly_object(l.cons(),stream);
     clasp_write_string(">",stream);
   } else {
-    SIMPLE_ERROR(BF("Could not write object with tag: %ul") % x.tag());
+    stringstream ss;
+    ss << "#<BAD-OBJECT! set break-point at " << __FILE__ << ":" << __LINE__ << " and check backtrace>";
+    clasp_write_string(ss.str());
   }
   return x;
 }
