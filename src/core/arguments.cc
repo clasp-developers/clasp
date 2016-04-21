@@ -211,15 +211,15 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
 
 void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val) {
   Symbol_sp type = gc::As<Symbol_sp>(oCar(classified));
-  if (type == ext::_sym_specialVar) {
-    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
-    this->DynamicScopeManager::pushSpecialVariableAndSet(sym, val);
-    return;
-  } else if (type == ext::_sym_lexicalVar) {
+  if (type == ext::_sym_lexicalVar) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(classified));
     int idx = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(classified)));
     ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym));
     this->_Environment->new_binding(sym, idx, val);
+    return;
+  } else if (type == ext::_sym_specialVar) {
+    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
+    this->DynamicScopeManager::pushSpecialVariableAndSet(sym, val);
     return;
   }
   SIMPLE_ERROR(BF("Illegal classified type: %s\n") % _rep_(classified));

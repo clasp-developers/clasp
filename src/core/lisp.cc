@@ -1755,6 +1755,7 @@ CL_LAMBDA(form &optional env);
 CL_DECLARE();
 CL_DOCSTRING("macroexpand");
 CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
+  ASSERT(env.generalp());
   bool sawAMacro = false;
   bool expandedMacro = false;
   uint macroExpansionCount = 0;

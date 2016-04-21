@@ -320,8 +320,10 @@ class ClosureWithFrame_O : public FunctionClosure_O {
 public:
   T_sp _closedEnvironment;
 public:
-  T_sp closedEnvironment() const { return this->_closedEnvironment;};
- ClosureWithFrame_O(T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {};
+  T_sp closedEnvironment() const { ASSERT(this->_closedEnvironment.generalp()); return this->_closedEnvironment;};
+ ClosureWithFrame_O(T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {
+    ASSERT(this->_closedEnvironment.generalp());
+  };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "ClosureWithFrame"; };
 };
