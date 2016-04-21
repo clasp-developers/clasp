@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/holder.h>
 #include <clasp/core/lispStream.fwd.h>
-#include <clasp/core/executables.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/numbers.h>
