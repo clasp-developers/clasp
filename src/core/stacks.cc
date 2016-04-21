@@ -86,6 +86,8 @@ Vector_sp ExceptionStack::backtrace() {
   }
   return result;
 }
+
+#if 0
 InvocationHistoryFrame::InvocationHistoryFrame(Closure_sp c, core::T_O *valist_sptr, T_sp env)
     : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL) {
   if (valist_sptr != NULL) {
@@ -107,29 +109,28 @@ InvocationHistoryFrame::InvocationHistoryFrame(Closure_sp c, core::T_O *valist_s
 ATTR_WEAK InvocationHistoryFrame::~InvocationHistoryFrame() {
   this->_Stack->pop();
 }
-
-
-#if 0
-InvocationHistoryFrame::~InvocationHistoryFrame() {
-  this->_Stack->pop();
-}
 #endif
 
-VectorObjects_sp InvocationHistoryFrame::arguments() const {
-  if (this->_NumberOfArguments == 0) {
-    VectorObjects_sp vnone = VectorObjects_O::create(_Nil<T_O>(), 0, cl::_sym_T_O->symbolValue());
-    return vnone;
-  }
-  size_t numberOfArguments = this->_NumberOfArguments;
-  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
-  for (size_t i(0); i < numberOfArguments; ++i) {
-    T_sp obj;
-    if (i < LCC_ARGS_IN_REGISTERS) {
-      obj = core::T_sp((gc::Tagged)(this->_RegisterArguments[LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS + i]));
-    } else {
-      obj = core::T_sp((gc::Tagged)(this->_StackArguments[i - LCC_ARGS_IN_REGISTERS]));
+Function_sp InvocationHistoryFrame::closure() const
+  {
+    VaList_sp args = this->valist_sp();
+    Function_sp res = LCC_VA_LIST_CLOSURE(args);
+    if ( !res ) {
+      printf("%s:%d Frame was found with no closure\n", __FILE__, __LINE__ );
+      abort();
     }
-    vargs->setf_elt(i, obj);
+    return res;
+  }
+
+VectorObjects_sp InvocationHistoryFrame::arguments() const {
+  VaList_sp args = this->valist_sp();
+  size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args);
+  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
+  T_O* objRaw;
+  for (size_t i(0); i < numberOfArguments; ++i) {
+    //objRaw = this->valist_sp().indexed_arg(i);
+    LCC_VA_LIST_INDEXED_ARG(objRaw,args,i);
+    vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
   }
   return vargs;
 }
@@ -156,7 +157,7 @@ string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   return strres->get();
 }
 
-string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure) const {
+string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure,int index) const {
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
@@ -180,22 +181,23 @@ string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure) const {
   } else
     closureType = "toplevel";
   string sargs = this->argumentsAsString(256);
-  ss << (BF("#%3d%2s %20s %5d (%s %s)") % this->_Index % closureType % sourceFileName % lineNumber % funcName % sargs).str();
+  ss << (BF("#%3d%2s %20s %5d (%s %s)") % index % closureType % sourceFileName % lineNumber % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();
 }
 
-string InvocationHistoryFrame::asString() const {
+string InvocationHistoryFrame::asString(int index) const {
   string name;
-  return this->asStringLowLevel(this->closure);
+  return this->asStringLowLevel(this->closure(),index);
 }
 
-void InvocationHistoryFrame::dump() const {
-  string dump = this->asString();
+void InvocationHistoryFrame::dump(int index) const {
+  string dump = this->asString(index);
   printf("%s\n", dump.c_str());
 }
 
+#if 0
 vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {
   vector<InvocationHistoryFrame *> frames;
   frames.resize(this->_Top->index() + 1);
@@ -205,26 +207,43 @@ vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {
   }
   return frames;
 }
+#endif
 
-string InvocationHistoryStack::asString() const {
+
+
+size_t backtrace_size() {
+  InvocationHistoryFrame* frame = thread->_InvocationHistoryStack;
+  size_t count = 0;
+  while (frame) {
+    frame = frame->_Previous;
+    ++count;
+  }
+  return count;
+}
+
+string backtrace_as_string() {
   stringstream ss;
   ss.str("");
   ss << std::endl;
-  vector<InvocationHistoryFrame *> frames = thread->invocationHistoryStack().asVectorFrames();
+  InvocationHistoryFrame* frame = thread->_InvocationHistoryStack;
   ss << "--------STACK TRACE--------" << std::endl;
   int ihsCur = core__ihs_current_frame();
-  for (int i = 0; i < frames.size(); ++i) {
-    InvocationHistoryFrame *cur = frames[i];
+  InvocationHistoryFrame* cur = frame;
+  int i = 0;
+  while (cur) {
     if (i == ihsCur) {
       ss << "-->";
     } else {
       ss << "   ";
     }
     ss << "frame";
-    ss << cur->asString() << std::endl;
+    ss << cur->asString(i) << std::endl;
+    cur = cur->_Previous;
+    ++i;
   }
   return ss.str();
 }
+
 
 SYMBOL_EXPORT_SC_(CorePkg, STARwatchDynamicBindingStackSTAR);
 void DynamicBindingStack::push(Symbol_sp var) {

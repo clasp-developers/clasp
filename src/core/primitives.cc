@@ -705,6 +705,9 @@ CL_LAMBDA(&optional fmt-control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
 CL_DEFUN void core__break(T_sp fmt, List_sp args) {
+  int frame = core__ihs_top();
+  T_sp tframe = clasp_make_fixnum(frame);
+  DynamicScopeManager scope(_sym_STARstack_top_hintSTAR,tframe);
   if (fmt.notnilp()) {
     cl__format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
   }
@@ -725,13 +728,6 @@ CL_DEFUN void core__gdb(T_sp msg) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("Return the number of times lambdaListHandler_createBindings");
-CL_DEFUN Integer_sp core__cxx_lambda_list_handler_create_bindings_calls() {
-  size_t calls = threadLocalInfoPtr->_lambda_list_handler_create_bindings_count;
-  return Integer_O::create((Fixnum)calls);
-};
 
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
@@ -1574,15 +1570,15 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
         return;
       --num;
     }
-    iterator->setFrame(iterator->frame()->previous());
+    iterator->move_to_previous_frame();
   } while (num >= 0);
 }
 
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *cur = thread->invocationHistoryStack().top();
+  InvocationHistoryFrame *cur = thread->_InvocationHistoryStack;
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
-  iterator->setFrame(cur);
+  iterator->setFrame_(cur);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
   return iterator;
 }
@@ -1598,7 +1594,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure();
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1610,25 +1606,22 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure;
-  if (!closure) {
-    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
-  }
-  return closure->closedEnvironment();
+  T_sp closure = this->_Frame->closure();
+  return closure;
 }
 
 int InvocationHistoryFrameIterator_O::index() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  return this->_Frame->index();
+  return this->_Index;
 }
 
 Function_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure;
+  Closure_sp closure = this->_Frame->closure();
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1900,7 +1893,7 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
   if (!msg.nilp()) {
     clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
   }
-  clasp_writeln_string(((BF("%s") % thread->invocationHistoryStack().asString()).str()), ss);
+  clasp_writeln_string((BF("%s") % backtrace_as_string()).str(),ss);
   if (outputDesignator.nilp()) {
     return cl__get_output_stream_string(ss);
   }

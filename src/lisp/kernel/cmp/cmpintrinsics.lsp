@@ -671,9 +671,6 @@ Boehm and MPS use a single pointer"
   (primitive module "va_symbolFunction" +t*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +t*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-;;  (primitive module "FUNCALL_argsInReversedList" +void+ (list +tsp*-or-tmv*+ +closure*+ +tsp*+))
-;;  (primitive module "FUNCALL_argsMultipleValueReturn" +void+ (list +tsp*-or-tmv*+ +closure*+))
-
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
 ;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))

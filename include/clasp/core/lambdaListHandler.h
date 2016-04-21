@@ -306,4 +306,3 @@ public:
 TRANSLATE(core::LambdaListHandler_O);
 
 #endif //]
-   

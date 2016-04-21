@@ -79,6 +79,7 @@ namespace core {
     }
 
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
       printf("Subclass of Functoid must implement 'activate'\n");
       abort();
     };
@@ -167,6 +168,7 @@ public:
 public:
   virtual const char *describe() const { return "Closure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
     printf("Subclass of Closure must implement 'activate'\n");
     abort();
   };
@@ -303,8 +305,9 @@ namespace core {
       return this->_Slots[idx];
     };
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
 #ifdef USE_EXPENSIVE_BACKTRACE
-      core::InvocationHistoryFrame _frame(Closure_sp(this), lcc_arglist, _Nil<T_O>());
+      core::InvocationHistoryFrame _frame(lcc_arglist);
 #endif
       core::T_O* tagged_closure = gctools::tag_general(this);
       return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));
@@ -407,8 +410,9 @@ public:
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
 #ifdef USE_EXPENSIVE_BACKTRACE
-    core::InvocationHistoryFrame _frame(Closure_sp(this), lcc_arglist, this->_closedEnvironment);
+    core::InvocationHistoryFrame _frame(lcc_arglist);
 #endif
     core::T_O* tagged_closure = gctools::tag_general(this);
     return (*(this->fptr))(LCC_PASS_ARGS_ENV(tagged_closure));

@@ -1931,8 +1931,8 @@ CL_DECLARE();
 CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
-  InvocationHistoryFrame *frame = thread->invocationHistoryStack().top();
-  Closure_sp closure = frame->closure;
+  InvocationHistoryFrame *frame = thread->_InvocationHistoryStack;
+  Closure_sp closure = frame->closure();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
   Path_sp path = Path_O::create(sourcePath);
@@ -1944,8 +1944,8 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
-  InvocationHistoryFrame *frame = thread->invocationHistoryStack().top();
-  Closure_sp closure = frame->closure;
+  InvocationHistoryFrame *frame = thread->_InvocationHistoryStack;
+  Closure_sp closure = frame->closure();
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }
 
@@ -2615,7 +2615,7 @@ InvocationHistoryStack &Lisp_O::invocationHistoryStack() {
 
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
-  string bt = thread->invocationHistoryStack().asString();
+  string bt = backtrace_as_string();
   _lisp->print(BF("%s") % bt);
 }
 

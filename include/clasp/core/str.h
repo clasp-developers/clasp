@@ -197,6 +197,8 @@ struct gctools::GCInfo<core::Str_O> {
 namespace core {
 T_sp core__base_string_concatenate(T_sp vargs);
 
+ #if 0
+ // What the hell am I doing here - comment out and see what breaks
 inline T_sp base_string_concatenate(LCC_ARGS_ELLIPSIS) {
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -204,7 +206,10 @@ inline T_sp base_string_concatenate(LCC_ARGS_ELLIPSIS) {
   VaList_sp valist_sp(&lcc_arglist_s);
   return core__base_string_concatenate(valist_sp);
 };
+#endif
 
+
+ 
 inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos); };
 };
 

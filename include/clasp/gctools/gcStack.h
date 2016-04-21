@@ -120,11 +120,14 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   }
   virtual ~VaList_S(){}; // Make it polymorphic
   inline size_t nargs() const { return LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(this->_Args); };
+#if 0
   inline core::T_O *indexed_arg(size_t idx) const {
     core::T_O *res;
-    LCC_VA_LIST_INDEXED_ARG(res, *this, idx);
+    gctools::smart_ptr<VaList_S> valist_sp((gc::Tagged)this);
+    LCC_VA_LIST_INDEXED_ARG(res, valist_sp, idx);
     return res;
   }
+#endif
 };
 };
 

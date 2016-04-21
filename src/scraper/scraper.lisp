@@ -69,7 +69,8 @@ Read all of the scraped info files and interpret their tags."
             (unless (probe-file ifile)
               (format t "Could not find ~a - regenerating it~%" ifile)
               (run-cpp cc 0)))))
-      (update-all-sif-files all-cc :regenerate-sifs regenerate-sifs)
+      ;; update of sif files is done in forked processes
+      #+(or)(update-all-sif-files all-cc :regenerate-sifs regenerate-sifs)
       (format t "Reading sif files~%")
       (let ((tags (read-all-tags-all-sif-files all-cc)))
         (format t "Interpreting tags~%")
@@ -91,5 +92,4 @@ Read all of the scraped info files and interpret their tags."
   (let ((args (cdr (member "--" sb-ext:*posix-argv* :test #'string=))))
   (format t "args: ~a~%" args)
   (do-scraping args))
-  (format t "Scraping done~%")
   (sb-ext:quit))

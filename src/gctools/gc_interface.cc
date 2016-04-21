@@ -87,7 +87,7 @@ typedef bool _Bool;
 #include <clasp/core/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
-
+#include <clasp/gctools/gcStack.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/cxxClass.h>

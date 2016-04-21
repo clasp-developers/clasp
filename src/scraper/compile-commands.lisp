@@ -90,7 +90,7 @@
 (defun run-cpp (cc forki &key print)
   "Run the C-preprocessor on the compile-command"
   (let* ((cpp-cmd (generate-cpp-command cc)))
-    (format t "Child[~d] Running preprocessor to generate ~a~%" forki (cpp-name cc))
+    (format t "[~d] Preprocess/scrape-> ~a~%" forki (cpp-name cc))
     (when print
       (format t "~a~%" (with-output-to-string (sout)
                          (loop for x in cpp-cmd
@@ -102,6 +102,7 @@
         (let ((exit (sb-ext:run-program (car cpp-cmd) (cdr cpp-cmd) :output sout :error serr)))
           (unless (eql (sb-ext:process-exit-code exit) 0)
             (format t "error: ~a~%" (get-output-stream-string serr))))
+        (update-sif-file cc forki)
         (values (get-output-stream-string sout) (get-output-stream-string serr))))))
 
 (defun split-cpps (ccs &optional (num 1))
@@ -128,19 +129,21 @@ Split the list of ccs into a number of lists."
 
 (defun parallel-update-cpps (ccs)
   "Run the c-preprocessor on the commands"
-  (when (> (length ccs) 0)
-    (let* ((pjobs (min (length ccs) (parse-integer (funcall (find-symbol "GETENV" "SB-POSIX") "PJOBS"))))
-           (jobs (split-cpps ccs pjobs))
-           (forki 0))
+  (when ccs
+    (let* ((pjobs (min (length ccs)
+                       (parse-integer (sb-ext:posix-getenv "PJOBS"))))
+           (jobs (split-cpps ccs pjobs)))
       (format t "Running ~d preprocessor jobs in ~d forks~%" (length ccs) pjobs)
       (loop for job in jobs
-         for forki from 0 upto (length jobs)
-         do (when (= (funcall (find-symbol "FORK" "SB-POSIX")) 0)
-              (loop for cc in job
-                 do (run-cpp cc forki))
-              (format t "Child done~%")
-              (sb-ext:quit))))
-    (funcall (find-symbol "WAIT" "SB-POSIX"))))
+            for forki from 0
+            do (when (= (funcall (find-symbol "FORK" "SB-POSIX")) 0)
+                 (loop for cc in job
+                       do (run-cpp cc forki))
+                 (sb-ext:quit)))
+      (loop repeat pjobs
+            do
+           (funcall (find-symbol "WAIT" "SB-POSIX"))))))
+
 
 (defun update-cpps (ccs)
     (if (fork-is-available)
@@ -167,7 +170,6 @@ Split the list of ccs into a number of lists."
       (elt (buffer bufs) pos))))
 
 (defun read-entire-cpp-file (cc)
-  (format t "Scraping ~a~%" (cpp-name cc))
   (with-open-file (stream (pathname (cpp-name cc)))
     (let ((data (make-string (file-length stream))))
       (read-sequence data stream)
@@ -335,7 +337,7 @@ Return T if the scraped-info-file for this compile-command doesn't exist or if i
     (or (not (probe-file sif-pathname))
         (< (file-write-date sif-pathname) (file-write-date cpp-pathname)))))
 
-(defun update-sif-file (compile-command)
+(defun update-sif-file (compile-command forki)
   "* Arguments
 - compile-command :: The compile-command.
 * Description

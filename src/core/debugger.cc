@@ -64,14 +64,16 @@ LispDebugger::LispDebugger() : _CanContinue(true) {
 }
 
 void LispDebugger::printExpression() {
+  int index = core__ihs_current_frame();
   InvocationHistoryFrameIterator_sp frame = this->currentFrame();
   stringstream ss;
-  ss << frame->frame()->asString();
+  ss << frame->frame()->asString(index);
   _lisp->print(BF("%s\n") % ss.str());
 }
 
 InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
-  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(core__ihs_current_frame());
+  int index = core__ihs_current_frame();
+  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(index);
   if (frame->isValid())
     return frame;
   printf("%s:%d  Could not get frame - aborting\n", __FILE__, __LINE__ );
@@ -238,16 +240,15 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
 CL_DEFUN void core__low_level_backtrace() {
-  InvocationHistoryStack &ihs = thread->invocationHistoryStack();
-  InvocationHistoryFrame *top = ihs.top();
+  InvocationHistoryFrame *top = thread->_InvocationHistoryStack;
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");
     return;
   }
-  printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
+  int index = 0;
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    Closure_sp closure = cur->closure;
+    Closure_sp closure = cur->closure();
     if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
@@ -264,7 +265,8 @@ CL_DEFUN void core__low_level_backtrace() {
     if (sfi.notnilp()) {
       sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
     }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
+    ++index;
   }
   printf("----Done\n");
 }
