@@ -166,7 +166,10 @@ THE SOFTWARE.
 #define LCC_raw_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
 #ifdef DEBUG_ASSERTS
-#define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED() ASSERT(reinterpret_cast<core::T_O**>(reinterpret_cast<core::VaList_S*>(gctools::untag_valist(lcc_arglist))->_Args->reg_save_area)[LCC_CLOSURE_REGISTER])
+#define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED() {\
+    core::T_O* e = reinterpret_cast<core::T_O**>(reinterpret_cast<core::VaList_S*>(gctools::untag_valist(lcc_arglist))->_Args->reg_save_area)[LCC_CLOSURE_REGISTER]; \
+    ASSERT(e && gctools::tagged_generalp(e)); \
+  }
 #else
 #define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED()
 #endif
@@ -186,9 +189,10 @@ THE SOFTWARE.
     if (__x < 0) {                                                    \
       _res = ((core::T_O **)(*_args)._Args[0].reg_save_area)[__x + 6]; \
     } else {                                                          \
-      _res = ((core::T_O ***)(*_args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER][__x]; \
+      _res = ((core::T_O **)(*_args)._Args[0].overflow_arg_area)[__x]; \
     }                                                                 \
   }
+
 
 //    _res = ((core::T_O **)(*_args)._Args[0].overflow_arg_area)[__x]; \
 
