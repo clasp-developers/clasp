@@ -44,7 +44,7 @@ THE SOFTWARE.
 #define LCC_PASS_ARGS3_ELLIPSIS(funcRaw,a0, a1, a2) funcRaw, NULL, 3, a0, a1, a2
 
 // Don't need lcc_arglist because no arguments are passed
-#define LCC_PASS_ARGS0_VA_LIST(funcRaw) funcRaw, NULL, 0, NULL, NULL, NULL
+#define LCC_PASS_ARGS0_VA_LIST(funcRaw) funcRaw, lcc_arglist, 0, NULL, NULL, NULL
 #define LCC_PASS_ARGS1_VA_LIST(funcRaw,a0) funcRaw, lcc_arglist, 1, a0, NULL, NULL
 
 #define LCC_PASS_ARGS0_ARGLIST(funcRaw) funcRaw, lcc_arglist, 0, NULL, NULL, NULL
@@ -210,24 +210,31 @@ THE SOFTWARE.
 #endif // #if defined(X86) && defined(_ADDRESS_MODEL_64)
 
 
-#define LCC_CALL_WITH_ARGS_IN_FRAME(_result, _closure, _frame)                                                                   \
-  LCC_RETURN _result;                                                                                                            \
-  core::VaList_S valist_s(_frame);                                                                                               \
-  size_t lcc_nargs = _frame.getLength();                                                                                         \
-  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                                                                               \
-  switch (lcc_nargs) {                                                                                                           \
-  default:                                                                                                                       \
+#define LCC_CALL_THUNK(_result, _closure)                               \
+  core::VaList_S valist_s;                                            \
+  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_closure.raw_());               \
+  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                      \
+  _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(_closure.raw_()));
+
+
+#define LCC_CALL_WITH_ARGS_IN_FRAME(_result, _closure, _frame)          \
+  core::VaList_S valist_s(_frame);                                      \
+  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_closure.raw_());                \
+  size_t lcc_nargs = _frame.getLength();                                \
+  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                      \
+  switch (lcc_nargs) {                                                  \
+  default:                                                              \
       _result = _closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(_closure.raw_(),lcc_arglist, lcc_nargs, _frame[0], _frame[1], _frame[2])); \
-    break;                                                                                                                       \
-  case 2:                                                                                                                        \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(_closure.raw_(),_frame[0], _frame[1]));                                            \
-    break;                                                                                                                       \
-  case 1:                                                                                                                        \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(_closure.raw_(),_frame[0]));                                                       \
-    break;                                                                                                                       \
-  case 0:                                                                                                                        \
-      _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(_closure.raw_()));                                                                \
-    break;                                                                                                                       \
+    break;                                                              \
+  case 2:                                                               \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(_closure.raw_(),_frame[0], _frame[1])); \
+    break;                                                              \
+  case 1:                                                               \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(_closure.raw_(),_frame[0])); \
+    break;                                                              \
+  case 0:                                                               \
+      _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(_closure.raw_())); \
+    break;                                                              \
   };
 
 #define LCC_VA_LIST_TO_VECTOR_OBJECTS(_valist, _vec)                                                                        \

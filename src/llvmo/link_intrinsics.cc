@@ -541,13 +541,23 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numfunP) {
   int numfun = *numfunP;
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
+  T_mv res;
+  core::VaList_S valist_s;
+  // This may be a very bad idea to use NIL 
+  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_Nil<core::T_O>().raw_());
+  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                   
   for (int i = 0; i < numfun; ++i) {
     //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-    *result = (fptr[i])(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
+    res = (fptr[i])(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
   }
+  *result = res;
 }
 
 void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
+  core::VaList_S valist_s;
+  // This may be a very bad idea to use NIL 
+  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_Nil<core::T_O>().raw_());
+  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                   
   if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
     stringstream ss;
     ss << "Time to run " << sourceName;
@@ -1443,6 +1453,7 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
   core::Function_sp func((gctools::Tagged)tfunc);
+  LCC_SPILL_CLOSURE_TO_VA_LIST(mvargs_valist_struct,tfunc);
   ASSERT(func);
   core::T_O *lcc_fixed_arg0 = mvargs[0];
   core::T_O *lcc_fixed_arg1 = mvargs[1];

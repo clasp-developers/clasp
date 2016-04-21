@@ -921,7 +921,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #endif
     Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
     ASSERT(closure);
-    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
+    LCC_CALL_THUNK(result, closure);
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
@@ -930,26 +930,15 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     }
 #endif
 // Save any return value that may be in the multiple value return array
-#if 1 // When this is enabled it breaks sldb
-    // but the test case: (defun test () (block nil (unwind-protect (return (values 1 2)) (print 10)))) works
-    // When it's disabled sldb works but the test case breaks.
-    //
-    // I shouldn't save the result around the unwind form
-    // In commit 22a8d7b1  I commented this and the block below
-    // that restored the return array value.  I can't remember why I did
-    // that and the commit message for 22a8d7b1 simply says "fixed unwind-protect bug"
-    // This save/restore has to be here for UNWIND-PROTECT to work properly
-    // with RETURN-FROM in the protected form.  I don't know why I would think
-    // it was a good idea to comment them out.
     gctools::Vec0<T_sp> savemv;
     T_mv tresult;
     tresult.readFromMultipleValue0();
     tresult.saveToVec0(savemv);
-#endif
     {
       Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
       ASSERT(closure);
-      T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
+      LCC_CALL_THUNK(tresult,closure);
+      // T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
     }
 #if 1 // See comment above about 22a8d7b1
     tresult.loadFromVec0(savemv);
@@ -975,7 +964,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     T_mv tresult;
     Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
     ASSERT(closure);
-    tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
+    LCC_CALL_THUNK(tresult,closure);
+    //tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   }
   result.loadFromVec0(savemv);
   return result;
@@ -1005,8 +995,9 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
   Function_sp fmv = coerce::functionDesignator(funcDesignator);
   Closure_sp func = fmv.asOrNull<Closure_O>();
   ASSERT(func);
+  T_mv result;
   LCC_CALL_WITH_ARGS_IN_FRAME(result, func, accArgs);
-  return T_mv(result);
+  return result;
 }
 
 CL_LAMBDA(func1 func2);
@@ -1036,7 +1027,8 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   try {
     core::Closure_sp closure = thunk.asOrNull<Closure_O>();
     ASSERT(closure);
-    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
+    LCC_CALL_THUNK(result,closure);
+    // result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
 #ifdef DEBUG_FLOW_CONTROL
@@ -1081,7 +1073,8 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
+  LCC_CALL_THUNK(result,closure);
+  //result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
