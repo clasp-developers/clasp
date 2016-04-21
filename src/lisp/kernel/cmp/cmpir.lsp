@@ -856,8 +856,7 @@ Within the _irbuilder_ dynamic environment...
 	 (when ,init (funcall ,init ,alloca-sym))
 	 (when ,cleanup
 	   (multiple-value-bind (,cleanup-gs ,found-gs ,metadata-env-gs) (lookup-metadata env :cleanup)
-	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))
-	     ))
+	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))))
 	 ,alloca-sym))
     ))
 
