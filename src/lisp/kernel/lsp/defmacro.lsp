@@ -402,16 +402,16 @@
         (setq vl (nconc (butlast vl 0) (list '&rest (rest cell))))))
     ;; If we find an &environment variable in the lambda list, we take not of the
     ;; name and remove it from the list so that DESTRUCTURE does not get confused
-    (let ((env (member '&environment vl :test #'eq)))
-      (if env
-          (setq vl (nconc (ldiff vl env) (cddr env))
-                env (second env))
-          (setq env (gensym)
-                decls (list* `(declare (ignore ,env)) decls)))
+    (let ((env-part (member '&environment vl :test #'eq)))
+      (if env-part
+          (setq vl (nconc (ldiff vl env-part) (cddr env-part))
+                env-part (second env-part))
+          (setq env-part (gensym)
+                decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl context)
         #+ecl(values 
-              `(ext::lambda-block ,name (,whole ,env &aux ,@dl)
+              `(ext::lambda-block ,name (,whole ,env-part &aux ,@dl)
                                   (declare (ignorable ,@ignorables))
                                   ,@decls 
                                   ,@arg-check
@@ -419,7 +419,7 @@
               ppn
               doc)
         #+clasp(values 
-                `(lambda (,whole ,env &aux ,@dl)
+                `(lambda (,whole ,env-part &aux ,@dl)
                    (declare (ignorable ,@ignorables) (core:lambda-name ,name))
                    ,@decls
                    (block ,(si::function-block-name name)
