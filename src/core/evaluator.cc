@@ -102,10 +102,15 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   if (lenArgs == 0) {
     eval::errorApplyZeroArguments();
   }
-  T_sp last = T_sp((gc::Tagged)args->indexed_arg(lenArgs - 1));
-  if (last.nilp()) {
+  T_O* lastArgRaw;
+  LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
+  //T_sp last = T_sp((gc::Tagged)args->indexed_arg(lenArgs - 1));
+  if (gctools::tagged_nilp(lastArgRaw)) {
     // Nil as last argument
     LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args, lenArgs - 1);
+#if 1
+    return apply_consume_valist_(func,args);
+#else
     core::T_O *arg0;
     core::T_O *arg1;
     core::T_O *arg2;
@@ -120,13 +125,14 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
                                                arg1,  //LCC_VA_LIST_REGISTER_ARG1(args),
                                                arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
     return res;
-  } else if (last.valistp() && lenArgs == 1) {
-    VaList_sp valast((gc::Tagged)last.raw_());
+#endif
+  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
+    VaList_sp valast((gc::Tagged)lastArgRaw);
     VaList_S valast_copy(*valast);
     VaList_sp valast_copy_sp(&valast_copy);
-    return eval::apply_consume_VaList(func, valast_copy_sp);
-  } else if (last.valistp()) {
-    VaList_sp valast((gc::Tagged)last.raw_());
+    return apply_consume_valist_(func, valast_copy_sp);
+  } else if (gctools::tagged_valistp(lastArgRaw)) {
+    VaList_sp valast((gc::Tagged)lastArgRaw);
     VaList_S valist_scopy(*valast);
     VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
     int lenFirst = lenArgs - 1;
@@ -143,10 +149,11 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return eval::apply_consume_VaList(func, valist);
-  } else if (last.consp() ) {
+    return apply_consume_valist_(func, valist);
+  } else if (gctools::tagged_consp(lastArgRaw)) {
     // Cons as last argument
     int lenFirst = lenArgs - 1;
+    Cons_sp last((gc::Tagged)lastArgRaw);
     int lenRest = cl__length(last);
     int nargs = lenFirst + lenRest;
     STACK_FRAME(buff, frame, nargs);
@@ -161,7 +168,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return eval::apply_consume_VaList(func, valist);
+    return apply_consume_valist_(func, valist);
   }
   eval::errorApplyLastArgumentNotList();
 }
@@ -189,7 +196,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   if (func.nilp()) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
-  T_mv res = eval::apply_consume_VaList(func, args);
+  T_mv res = apply_consume_valist_(func, args);
   return res;
 }
 #else
@@ -1290,7 +1297,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   }
   VaList_S valist_struct(fargs);
   VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
-  return eval::apply_consume_VaList(func, valist);
+  return apply_consume_valist_(func, valist);
 }
 
 
@@ -2212,13 +2219,13 @@ T_mv evaluate(T_sp exp, T_sp environment) {
           printf("%s ", _rep_(T_sp((gc::Tagged)callArgs[i])).c_str());
         }
         printf(" )\n");
-        result = eval::apply_consume_VaList(headFunc, valist);
+        result = apply_consume_valist_(headFunc, valist);
         printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
       } else {
-        result = eval::apply_consume_VaList(headFunc, valist);
+        result = apply_consume_valist_(headFunc, valist);
       }
     } else {
-      result = eval::apply_consume_VaList(headFunc, valist);
+      result = apply_consume_valist_(headFunc, valist);
     }
     goto DONE;
   }

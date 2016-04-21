@@ -1468,7 +1468,7 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (thread->invocationHistoryStack().top() == NULL) {
+    if (thread->_InvocationHistoryStack == NULL) {
       throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
     }
     LispDebugger dbg;

@@ -123,9 +123,10 @@ public:
   size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
   virtual Symbol_sp getKind() const { return kw::_sym_macro; };
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
-    InvocationHistoryFrame _frame(Closure_sp(this), lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
+    InvocationHistoryFrame _frame(lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
     return ((this->mptr)(form, env)).as_return_type();
   };
 };

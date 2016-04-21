@@ -201,9 +201,9 @@ class InvocationHistoryFrameIterator_O : public General_O {
 
 private: // instance variables here
   InvocationHistoryFrame *_Frame;
-
+  int _Index;
 public:
-  InvocationHistoryFrameIterator_O() : _Frame(NULL){};
+ InvocationHistoryFrameIterator_O() : _Frame(NULL), _Index(0){};
   virtual ~InvocationHistoryFrameIterator_O(){};
 
 public: // Functions here
@@ -211,7 +211,8 @@ public: // Functions here
 
 public:
   InvocationHistoryFrameIterator_sp prev(T_sp test);
-  void setFrame(InvocationHistoryFrame *cur) { this->_Frame = cur; };
+  void setFrame_(InvocationHistoryFrame *cur) { this->_Frame = cur; };
+  void move_to_previous_frame() { this->setFrame_(this->frame()->previous()); this->_Index++;};
   InvocationHistoryFrame *frame() { return this->_Frame; };
   int index();
   T_sp functionName();

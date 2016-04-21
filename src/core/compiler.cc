@@ -921,7 +921,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #endif
     Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
     ASSERT(closure);
-    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
@@ -949,7 +949,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     {
       Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
       ASSERT(closure);
-      T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+      T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
     }
 #if 1 // See comment above about 22a8d7b1
     tresult.loadFromVec0(savemv);
@@ -975,7 +975,7 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     T_mv tresult;
     Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
     ASSERT(closure);
-    tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+    tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   }
   result.loadFromVec0(savemv);
   return result;
@@ -1036,7 +1036,7 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   try {
     core::Closure_sp closure = thunk.asOrNull<Closure_O>();
     ASSERT(closure);
-    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+    result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
 #ifdef DEBUG_FLOW_CONTROL
@@ -1081,7 +1081,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST());
+  result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }

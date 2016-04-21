@@ -251,7 +251,7 @@ inline T untag_general(T ptr) {
 template <class T>
 inline void *untag_valist(T ptr) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
-  return reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
+  return reinterpret_cast<core::VaList_S*>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
 }
 
 

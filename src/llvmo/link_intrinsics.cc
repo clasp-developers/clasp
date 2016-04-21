@@ -200,27 +200,6 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_closure));
   return func->invoke_va_list(LCC_PASS_ARGS);
 }
-
-ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure_O *closure, core::T_sp *argsP) {
-  List_sp args(*argsP);
-  size_t nargs = core::cl__length(args);
-  STACK_FRAME(buff, fargs, nargs);
-  for (int i(nargs - 1); i >= 0; --i) {
-    fargs[i] = oCar(args).raw_();
-    args = oCdr(args);
-  }
-  LCC_CALL_WITH_ARGS_IN_FRAME(result, closure, fargs);
-  return result;
-}
-
-ALWAYS_INLINE void mv_FUNCALL_argsInReversedList(core::T_mv *resultP, core::Closure_O *closure, core::T_sp *argsP) {
-  (*resultP) = FUNCALL_argsInReversedList(closure, argsP);
-}
-
-ALWAYS_INLINE void sp_FUNCALL_argsInReversedList(core::T_sp *resultP, core::Closure_O *closure, core::T_sp *argsP) {
-  (*resultP) = FUNCALL_argsInReversedList(closure, argsP);
-}
-
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(std::size_t nargs, VaList_S *vargs, std::size_t startRest, char *fnName) {
   VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
   va_list rargs;
@@ -525,7 +504,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   VaList_S empty_valist(no_args);
   core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
 #ifdef USE_EXPENSIVE_BACKTRACE
-  core::InvocationHistoryFrame invFrame(tc, empty_valist_ptr, *frameP);
+  core::InvocationHistoryFrame invFrame(tc.raw_());
 #endif
   core::T_sp closedEnv = _Nil<T_O>();
   ASSERT(ltvPP != NULL);
@@ -544,7 +523,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #if 0
   *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
 #else
-  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST()); // Was  (ltvP));
+  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_())); // Was  (ltvP));
 #endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
@@ -564,7 +543,7 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
   for (int i = 0; i < numfun; ++i) {
     //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-    *result = (fptr[i])(LCC_PASS_ARGS0_VA_LIST());
+    *result = (fptr[i])(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
   }
 }
 
@@ -573,10 +552,10 @@ void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
     stringstream ss;
     ss << "Time to run " << sourceName;
     simple_timer timer(ss.str());
-    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST());
+    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
     return;
   } else {
-    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST());
+    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
   }
 };
 
@@ -1472,16 +1451,16 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   LCC_RETURN retval(NULL, 0);
   switch (lcc_nargs) {
   default:
-    retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist, lcc_nargs, mvargs[0], mvargs[1], mvargs[2]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(func.raw_(),lcc_arglist, lcc_nargs, mvargs[0], mvargs[1], mvargs[2]));
     break;
   case 2:
-    retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0], mvargs[1]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(func.raw_(),mvargs[0], mvargs[1]));
     break;
   case 1:
-    retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(func.raw_(),mvargs[0]));
     break;
   case 0:
-    retval = func->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
+      retval = func->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(func.raw_()));
     break;
   };
   return retval;

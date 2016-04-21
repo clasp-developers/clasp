@@ -178,13 +178,14 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 }
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
   ++global_interpreted_closure_calls;
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
 #ifdef USE_EXPENSIVE_BACKTRACE
-  InvocationHistoryFrame _frame(this->asSmartPtr(), lcc_arglist);
+  InvocationHistoryFrame _frame(lcc_arglist);
 #endif
   lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
@@ -193,14 +194,6 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
   VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
   newActivationFrame->attachDebuggingInfo(debuggingInfo);
   //        InvocationHistoryFrame _frame(this,newActivationFrame);
-#ifdef USE_EXPENSIVE_BACKTRACE
-  _frame.setActivationFrame(newActivationFrame);
-#endif
-#if 0
-  if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
-    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
-  }
-#endif
   return eval::sp_progn(this->_code, newValueEnvironment).as_return_type();
 };
 
@@ -219,6 +212,7 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
