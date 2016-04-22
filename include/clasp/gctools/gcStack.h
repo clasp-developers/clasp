@@ -87,6 +87,7 @@ struct Frame {
 } // namespace gctools
 
 namespace core {
+
 // A struct that wraps va_list and behaves like a Common Lisp LIST
 typedef gctools::smart_ptr<VaList_S> VaList_sp;
 /*! VaList_S: A class that maintains a C va_list and allows the programmer to
@@ -115,6 +116,7 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 
   VaList_S(){};
 
+  
   void set(VaList_S *other, size_t nargs_remaining) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args, nargs_remaining);
   }

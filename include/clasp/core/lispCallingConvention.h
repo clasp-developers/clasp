@@ -195,7 +195,6 @@ THE SOFTWARE.
     }                                                                 \
   }
 
-
 //    _res = ((core::T_O **)(*_args)._Args[0].overflow_arg_area)[__x]; \
 
 #define LCC_NEXT_ARG_RAW(arglist, arg_idx) va_arg((*arglist)._Args, core::T_O *)
@@ -211,12 +210,6 @@ THE SOFTWARE.
 #error "Add support for accessing LCC_INDEXED_ARG"
 #endif // #if defined(X86) && defined(_ADDRESS_MODEL_64)
 
-
-#define LCC_CALL_THUNK(_result, _closure)                               \
-  core::VaList_S valist_s;                                            \
-  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_closure.raw_());               \
-  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                      \
-  _result = _closure->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(_closure.raw_()));
 
 
 #define LCC_CALL_WITH_ARGS_IN_FRAME(_result, _closure, _frame)          \
@@ -271,6 +264,7 @@ THE SOFTWARE.
     (_va_list_)[0].gp_offset = (gc::frame::IdxRegisterArgumentsStart - gc::frame::IdxRegisterSaveArea) * sizeof(gc::frame::ElementType); \
     (_va_list_)[0].fp_offset = 304;                                                                                                      \
   }
+
 
 /*! Initialize a VaList_S struct from another VaList_S struct */
 #define LCC_SETUP_VA_LIST_FROM_VA_LIST(_dest_, _src_, _nargs_left_)                  \
