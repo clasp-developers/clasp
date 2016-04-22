@@ -1077,8 +1077,8 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  STACK_FRAME(buff,frame,0);
-  LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,frame);
+  STACK_FRAME(buff,frame0,0);
+  LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,frame0);
   //result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
