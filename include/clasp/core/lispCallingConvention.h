@@ -43,6 +43,8 @@ THE SOFTWARE.
 #define LCC_PASS_ARGS2_ELLIPSIS(funcRaw,a0, a1) funcRaw, NULL, 2, a0, a1, NULL
 #define LCC_PASS_ARGS3_ELLIPSIS(funcRaw,a0, a1, a2) funcRaw, NULL, 3, a0, a1, a2
 
+#define LCC_PASS_MAIN() NULL,NULL, 0, NULL, NULL, NULL
+
 // Don't need lcc_arglist because no arguments are passed
 #define LCC_PASS_ARGS0_VA_LIST(funcRaw) funcRaw, lcc_arglist, 0, NULL, NULL, NULL
 #define LCC_PASS_ARGS1_VA_LIST(funcRaw,a0) funcRaw, lcc_arglist, 1, a0, NULL, NULL

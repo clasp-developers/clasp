@@ -542,30 +542,22 @@ void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numf
   int numfun = *numfunP;
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
   T_mv res;
-  core::VaList_S valist_s;
-  // This may be a very bad idea to use NIL 
-  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_Nil<core::T_O>().raw_());
-  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                   
   for (int i = 0; i < numfun; ++i) {
     //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-    res = (fptr[i])(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
+    res = (fptr[i])(LCC_PASS_MAIN());
   }
   *result = res;
 }
 
 void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
-  core::VaList_S valist_s;
-  // This may be a very bad idea to use NIL 
-  LCC_SPILL_CLOSURE_TO_VA_LIST(valist_s,_Nil<core::T_O>().raw_());
-  core::T_O *lcc_arglist = valist_s.asTaggedPtr();                   
   if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
     stringstream ss;
     ss << "Time to run " << sourceName;
     simple_timer timer(ss.str());
-    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
+    core::T_mv result = fptr(LCC_PASS_MAIN());
     return;
   } else {
-    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_()));
+    core::T_mv result = fptr(LCC_PASS_MAIN());
   }
 };
 
