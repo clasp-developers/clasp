@@ -139,19 +139,56 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
   return result;
 }
 
-CL_DEFUN size_t core__closure_length(ClosureWithSlots_sp closure)
+CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
 {
-  return closure->_Slots._Capacity;
-}
-
-CL_DEFUN T_sp core__closure_ref(ClosureWithSlots_sp closure, size_t index)
-{
-  if ( index >= closure->_Slots._Capacity ) {
-    SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Capacity );
+  if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
+    return closure->_Slots._Capacity;
+  } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
+    T_sp env = closure->closedEnvironment();
+    if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
+      env = ve->getActivationFrame();
+    }
+    if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
+      return tvf->length();
+    }
   }
-  return closure->_Slots[index];
+  return 0;
 }
 
+CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
+{
+  if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
+    if ( index >= closure->_Slots._Capacity ) {
+      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Capacity );
+    }
+    return closure->_Slots[index];
+  } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
+    T_sp env = closure->closedEnvironment();
+    if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
+      env = ve->getActivationFrame();
+    }
+    if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
+      if ( index >= tvf->length() ) {
+        SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % tvf->length() );
+      }
+      return (*tvf)[index];
+    }
+  }
+  SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
+}
+
+CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
+  size_t nslots = core__closure_length(closure);
+  printf("Closure has %d slots\n", nslots);
+  for ( int i=0; i<nslots; ++i ) {
+    printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
+  }
+  SourcePosInfo_sp spi = closure->sourcePosInfo();
+  T_mv tsfi = core__source_file_info(spi);
+  if ( SourceFileInfo_sp sfi = tsfi.asOrNull<SourceFileInfo_O>() ) {
+    printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
+  }
+}
 
 T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();

@@ -163,6 +163,13 @@ THE SOFTWARE.
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 
+#define LCC_RESET_VA_LIST_TO_START(_valist_s_) {                                                                          \
+    /* Tricky part!!! write the OVERFLOW_SAVE_REGISTER back into the overflow_arg_area pointer */                                  \
+    /* so we can traverse the valist again */                                                \
+    *(core::T_O**)((_valist_s_)._Args->overflow_arg_area) = ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER]; \
+    (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
+  }
+
 #define LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 #define LCC_raw_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
 #define LCC_raw_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
@@ -232,6 +239,7 @@ THE SOFTWARE.
     break;                                                              \
   };
 
+#if 0
 #define LCC_VA_LIST_TO_VECTOR_OBJECTS(_valist, _vec)                                                                        \
   core::VectorObjects_sp _vec = core::VectorObjects_O::create(_Nil<core::T_O>(), LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_valist)); \
   switch (_vec->vector_length()) {                                                                                          \
@@ -240,14 +248,15 @@ THE SOFTWARE.
       _vec->setf_elt(_zii, LCC_INDEXED_ARG(_valist, _zii));                                                                 \
     }                                                                                                                       \
   case 3:                                                                                                                   \
-      _vec->setf_elt(2,LCC_INDEXED_ARG(_valist,2); \
+      _vec->setf_elt(2,LCC_INDEXED_ARG(_valist,2)); \
   case 2:                                                              \
-      _vec->setf_elt(1,LCC_INDEXED_ARG(_valist,1); \
+      _vec->setf_elt(1,LCC_INDEXED_ARG(_valist,1)); \
   case 1:                                                              \
-      _vec->setf_elt(0,LCC_INDEXED_ARG(_valist,0); \
+      _vec->setf_elt(0,LCC_INDEXED_ARG(_valist,0)); \
   case 0:                                                              \
     break;                                                                                                                  \
   }
+#endif
 
 #define LCC_DECLARE_VA_LIST()                           \
   VaList_S lcc_arglist_struct(lcc_nargs);               \
@@ -277,16 +286,55 @@ THE SOFTWARE.
     (_dest_)[0].fp_offset = 304;                                                     \
   }
 
+
 // Create a VaList_sp from lcc_arglist
 #define LCC_MAKE_VA_LIST_SP(valist_sp) VaList_sp valist_sp((gc::Tagged)lcc_arglist)
 #endif // #ifdef LCC_MACROS
 
+                     
 #ifdef LCC_PROTOTYPES
 typedef LCC_RETURN_RAW (*fnLispCallingConvention)(LCC_ARGS_VA_LIST);
 typedef LCC_RETURN_RAW (*CompiledClosure_fptr_type)(LCC_ARGS_VA_LIST);
 typedef LCC_RETURN (*InitFnPtr)(LCC_ARGS_VA_LIST);
 typedef LCC_RETURN (*GenericFunctionPtr)(core::Instance_sp gf, core::VaList_sp valist_sptr);
 
+extern "C" {
+// Return true if the VaList_S is at the head of the list and false if it is used up
+inline bool dump_VaList_S_ptr(VaList_S* args) {
+  printf("va_list dump\n");
+  bool atHead = ((*args)._Args[0].gp_offset==0x18);
+  printf("           gp_offset = %p (%s)\n", (*args)._Args[0].gp_offset,  atHead ? "at head" : "NOT at head" );
+  printf("           fp_offset = %p\n", (*args)._Args[0].fp_offset );
+  printf("       reg_save_area = %p\n", (*args)._Args[0].reg_save_area );
+  void* overflow_arg_area = (*args)._Args[0].overflow_arg_area;
+  void* overflow_save = ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER];
+  printf("   overflow_arg_area = %p (%s)\n", overflow_arg_area, (overflow_arg_area==overflow_save) ? "at OVERFLOW_SAVE" : "NOT at OVERFLOW_SAVE" );
+  printf("---Register save area@%p relative to start contents\n", (*args)._Args[0].reg_save_area);
+  printf("       CLOSURE_REGISTER@%p = %p\n", LCC_CLOSURE_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
+  printf(" OVERFLOW_SAVE_REGISTER@%p = %p\n", LCC_OVERFLOW_SAVE_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] );
+  printf("         NARGS_REGISTER@%p = %d\n", LCC_NARGS_REGISTER*8, ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER] );
+  printf("          ARG0_REGISTER@%p = %p\n", LCC_ARG0_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
+  printf("          ARG1_REGISTER@%p = %p\n", LCC_ARG1_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
+  printf("          ARG2_REGISTER@%p = %p\n", LCC_ARG2_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
+  int nargs = ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER];
+  nargs -= 3;
+  if (nargs > 0 ) {
+    printf("---Overflow arg area@%p contents\n", (*args)._Args[0].overflow_arg_area);
+    for ( int i=0; i< ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER]-3; ++i ) {
+      core::T_O** addr = &((core::T_O **)(*args)._Args[0].overflow_arg_area)[i];
+      core::T_O* _res = ((core::T_O **)(*args)._Args[0].overflow_arg_area)[i];
+      printf("     [%d]@%p --> %p\n", i, addr, _res);
+    }
+  } else {
+    printf("--- There are no overflow args\n");
+  }
+  return atHead;
+};
+};
+
+    
+    
+                       
 
 
 template <typename FuncType>

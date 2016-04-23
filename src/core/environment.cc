@@ -787,6 +787,7 @@ T_sp LexicalEnvironment_O::setf_metadata(Symbol_sp key, T_sp val) {
 };
 
 void LexicalEnvironment_O::setupParent(T_sp environ) {
+  ASSERT(environ.nilp()||environ.asOrNull<Environment_O>());
   this->_ParentEnvironment = environ;
   this->Base::setupParent(environ);
 }

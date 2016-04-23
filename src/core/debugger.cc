@@ -236,6 +236,21 @@ T_sp LispDebugger::invoke() {
   }
 }
 
+CL_DEFUN void core__test_backtrace() {
+  InvocationHistoryFrame *top = thread->_InvocationHistoryStack;
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
+  }
+  int index = 0;
+  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    T_sp frame = cur->valist_sp();
+    printf("Frame[%d] = %p\n", index, frame.raw_());
+    ++index;
+  }
+  printf("----Done\n");
+}
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelBacktrace");
@@ -248,13 +263,13 @@ CL_DEFUN void core__low_level_backtrace() {
   int index = 0;
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    Closure_sp closure = cur->closure();
+    Function_sp closure = cur->function();
     if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
-      if (closure->_name.notnilp()) {
+      if (closure->name().notnilp()) {
         try {
-          name = _rep_(closure->_name);
+          name = _rep_(closure->name());
         } catch (...) {
           name = "-BAD-NAME-";
         }
@@ -416,9 +431,15 @@ void dbg_lowLevelDescribe(T_sp obj) {
     // Create a copy of the VaList_S with a va_copy of the va_list
     VaList_S vlcopy_s(*vl);
     VaList_sp vlcopy(&vlcopy_s);
-    printf("VaList_sp\n");
-    for (size_t i(0); i < LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i) {
-      printf("entry %3d --> %s\n", i, _rep_(LCC_NEXT_ARG(vlcopy, i)).c_str());
+    printf("Calling dump_VaList_S_ptr\n");
+    bool atHead = dump_VaList_S_ptr(&vlcopy_s);
+    if (atHead) {
+      for (size_t i(0); i < LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i) {
+        T_sp v = LCC_NEXT_ARG(vlcopy,i);
+        printf("entry@%p %3d --> %s\n", v.raw_(), i, _rep_(v).c_str());
+      }
+    } else {
+      printf("The arglist is not safe to read - it is not atHead\n");
     }
   } else if (obj.fixnump()) {
     printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
@@ -430,6 +451,9 @@ void dbg_lowLevelDescribe(T_sp obj) {
     printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
     printf("More info:\n");
     printf("%s\n", _rep_(obj).c_str());
+    if ( Closure_sp closure = obj.asOrNull<Closure_O>() ) {
+      core__closure_slots_dump(closure);
+    }
   } else if (obj.consp()) {
     printf("cons_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
     printf("List:  \n");

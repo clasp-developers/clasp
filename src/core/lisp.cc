@@ -1933,7 +1933,7 @@ CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
   InvocationHistoryFrame *frame = thread->_InvocationHistoryStack;
-  Closure_sp closure = frame->closure();
+  Function_sp closure = frame->function();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
   Path_sp path = Path_O::create(sourcePath);
@@ -1946,7 +1946,7 @@ CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
   InvocationHistoryFrame *frame = thread->_InvocationHistoryStack;
-  Closure_sp closure = frame->closure();
+  Function_sp closure = frame->function();
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }
 

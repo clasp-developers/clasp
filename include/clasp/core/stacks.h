@@ -58,6 +58,12 @@ class InvocationHistoryFrame //: public gctools::StackRoot
    : _Previous(thread->_InvocationHistoryStack),
     _Bds(thread->bindings().size()),
     _RawArgList(rawArgList) {
+#ifdef DEBUG_ASSERTS
+      if ( !(gctools::tagged_valistp(rawArgList))) {
+        printf("Passed a non valistp to InvocationHistoryFrame\n");
+        abort();
+      }
+#endif
       thread->_InvocationHistoryStack = this;
     }
   ~InvocationHistoryFrame() {
@@ -74,44 +80,11 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   virtual string asString(int index) const;
   string asStringLowLevel(Closure_sp closure,int index) const;
   virtual int bds() const { return this->_Bds; };
-  Function_sp closure() const;
+  Function_sp function() const;
 };
 
 #pragma GCC visibility pop
 
- #if 0
-class InvocationHistoryStack {
-private:
-  InvocationHistoryFrame *_Top;
-
-public:
-  InvocationHistoryStack() : _Top(NULL){};
-
-  InvocationHistoryFrame *top() const { return this->_Top; };
-  inline void push(InvocationHistoryFrame *frame) {
-    this->_Top = frame;
-  }
-
-  inline void pop() {
-    GCTOOLS_ASSERT(this->_Top != NULL);
-    this->_Top = this->_Top->previous();
-  }
-
-  uint size() {
-    uint count = 0;
-    InvocationHistoryFrame *cur = this->_Top;
-    while (cur) {
-      ++count;
-      cur = cur->previous();
-    }
-    return count;
-  }
-
-  vector<InvocationHistoryFrame *> asVectorFrames();
-
-  string asString() const;
-};
-#endif
 };
 
 

@@ -88,7 +88,14 @@ project clasp : requirements
         <define>LLVM_VERSION="\\\"$(LLVM_VERSION)\\\""
         <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
-        <target-os>linux:<cxxflags>"-fPIC"
+
+# LTO stuff
+#        <cxxflags>"-flto"
+#        <cflags>"-flto"
+#        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release"
+#         <linkflags>"-object_path_lto clasp.lto.o"
+
+          <target-os>linux:<cxxflags>"-fPIC"
         <cxxflags>"-Wno-unused-local-typedef"
         <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk "
         <include>./

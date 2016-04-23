@@ -229,7 +229,6 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     // I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs, T_O *));
     List_sp eql_spec = _Nil<core::T_O>();
-    ASSERT(cl__listp(spec_type));
     if (spec_type.consp() && (eql_spec = spec_type.unsafe_cons()->memberEql(spec_position_arg)).notnilp()) {
 // For immediate types we need to make sure that EQL will be true
       argtype[spec_no++] = eql_spec;

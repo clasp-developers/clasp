@@ -196,6 +196,10 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   if (func.nilp()) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
+#ifdef _DEBUG_BUILD
+  VaList_S debug_valist(*args);
+  core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
+#endif
   T_mv res = apply_consume_valist_(func, args);
   return res;
 }

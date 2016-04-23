@@ -13,6 +13,7 @@ namespace core {
   FORWARD(FunctionClosure);
   FORWARD(Closure);
   FORWARD(CompiledFunction);
+  FORWARD(ClosureWithFrame);
   FORWARD(ClosureWithSlots);
   FORWARD(InterpretedClosure);
   FORWARD(CompiledClosure);
@@ -322,7 +323,7 @@ public:
 public:
   T_sp closedEnvironment() const { ASSERT(this->_closedEnvironment.generalp()); return this->_closedEnvironment;};
  ClosureWithFrame_O(T_sp fn, Symbol_sp k, T_sp env, SOURCE_INFO) : Base(fn,k,SOURCE_INFO_PASS), _closedEnvironment(env) {
-    ASSERT(this->_closedEnvironment.generalp());
+    ASSERT(env.nilp() || env.asOrNull<Environment_O>() );
   };
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "ClosureWithFrame"; };
@@ -422,6 +423,10 @@ public:
 };
 };
 
+namespace core {
+  void core__closure_slots_dump(Closure_sp func);
+
+};
 
 
 #endif

@@ -197,6 +197,10 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
+#ifdef _DEBUG_BUILD
+  VaList_S saved_arglist_s(lcc_arglist_s);
+  core::T_O* debug_lcc_arglist = saved_arglist_s.asTaggedPtr();
+#endif
   core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_closure));
   return func->invoke_va_list(LCC_PASS_ARGS);
 }
@@ -487,7 +491,10 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             size_t lineno,
                             size_t column,
                             core::LoadTimeValues_O **ltvPP) {
+  ASSERT(ltvPP != NULL);
+#if 0
   ActivationFrame_sp frame = (*frameP);
+#endif
   core::Str_sp name = core::Str_O::create(cpname);
 #if 1
   FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
@@ -500,14 +507,12 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
   core::BuiltinClosure_sp tc(&tempClosure);
 #endif
+#if 0
   STACK_FRAME(buff, no_args, 0);
   VaList_S empty_valist(no_args);
   core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
-#ifdef USE_EXPENSIVE_BACKTRACE
-  core::InvocationHistoryFrame invFrame(tc.raw_());
+  LCC_SPILL_CLOSURE_TO_VA_LIST(empty_valist);
 #endif
-  core::T_sp closedEnv = _Nil<T_O>();
-  ASSERT(ltvPP != NULL);
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -519,11 +524,16 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   STACK_FRAME(zbuff, onearg, 1);
   onearg[0] = *ltvPP; // Leave the tag on
   core::VaList_S onearg_valist_s(onearg);
+  LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
   core::T_O *lcc_arglist = onearg_valist_s.asTaggedPtr();
+#ifdef USE_EXPENSIVE_BACKTRACE
+  // Why do this?
+  core::InvocationHistoryFrame invFrame(lcc_arglist);
+#endif
 #if 0
   *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
 #else
-  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(_Nil<core::T_O>().raw_())); // Was  (ltvP));
+  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_())); 
 #endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
@@ -1435,7 +1445,8 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
      This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
     in cmpintrinsics.lsp it is set not to require a landing pad */
 //    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
-LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
+LCC_RETURN cc_call_multipleValueOneFormCall(core::Function_O *tfunc) {
+  ASSERT(gctools::tagged_generalp(tfunc));
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   size_t lcc_nargs = mvThreadLocal.getSize();
   STACK_FRAME(buff, mvargs, lcc_nargs);
@@ -1444,6 +1455,10 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
   }
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
+#ifdef _DEBUG_BUILD
+  VaList_S debug_valist_s(mvargs_valist_struct);
+  core::T_O* debug_lcc_arglist = debug_valist_s.asTaggedPtr();
+#endif
   core::Function_sp func((gctools::Tagged)tfunc);
   LCC_SPILL_CLOSURE_TO_VA_LIST(mvargs_valist_struct,tfunc);
   ASSERT(func);

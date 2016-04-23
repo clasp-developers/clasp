@@ -1574,11 +1574,17 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
   } while (num >= 0);
 }
 
+int backtrace_length(InvocationHistoryFrame* frame) {
+  int length = 0;
+  while (frame = frame->previous() ) {++length;};
+  return length;
+}
+
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *cur = thread->_InvocationHistoryStack;
-  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
-  iterator->setFrame_(cur);
+  InvocationHistoryFrame *top = thread->_InvocationHistoryStack;
+  int length = backtrace_length(top);
+  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create(top,length);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
   return iterator;
 }
@@ -1594,7 +1600,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure();
+  Function_sp closure = this->_Frame->function();
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1606,7 +1612,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  T_sp closure = this->_Frame->closure();
+  T_sp closure = this->_Frame->function();
   return closure;
 }
 
@@ -1621,7 +1627,7 @@ Function_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure();
+  Function_sp closure = this->_Frame->function();
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1642,13 +1648,14 @@ SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
 ;
 
 
+SYMBOL_EXPORT_SC_(CorePkg, STARbacktraceFrameSelectorHookSTAR);
+SYMBOL_EXPORT_SC_(KeywordPkg, next);
+SYMBOL_EXPORT_SC_(KeywordPkg, prev);
+
 CL_LAMBDA(idx direction);
 CL_DECLARE();
 CL_DOCSTRING("getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator. If idx == NIL return the top frame. If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). *backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace. Test the result to make sure it is valid.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_search(T_sp idx, Symbol_sp direction) {
-  SYMBOL_EXPORT_SC_(CorePkg, STARbacktraceFrameSelectorHookSTAR);
-  SYMBOL_EXPORT_SC_(KeywordPkg, next);
-  SYMBOL_EXPORT_SC_(KeywordPkg, prev);
   T_sp backtraceFrameSelectorHook = core::_sym_STARbacktraceFrameSelectorHookSTAR->symbolValue();
   InvocationHistoryFrameIterator_sp top = InvocationHistoryFrameIterator_O::make(0, backtraceFrameSelectorHook);
   if (idx.nilp())
@@ -1717,8 +1724,7 @@ CL_DECLARE();
 CL_DOCSTRING("ihsTop");
 CL_DEFUN int core__ihs_top() {
   InvocationHistoryFrameIterator_sp top = core__get_invocation_history_frame_top();
-  if (!top->isValid())
-    return 0;
+  if (!top->isValid()) return 0;
   return top->index();
 };
 
@@ -1767,9 +1773,12 @@ CL_DECLARE();
 CL_DOCSTRING("ihsEnv");
 CL_DEFUN T_sp core__ihs_env(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
+  return _Nil<T_O>();
+#if 0
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->environment();
+#endif
 };
 
 CL_LAMBDA(cur);
