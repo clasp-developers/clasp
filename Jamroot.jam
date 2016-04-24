@@ -89,11 +89,11 @@ project clasp : requirements
         <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
 
-# LTO stuff
+### LTO stuff
 #        <cxxflags>"-flto"
 #        <cflags>"-flto"
 #        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release"
-#         <linkflags>"-object_path_lto clasp.lto.o"
+#        <linkflags>"-object_path_lto /tmp/clasp.lto.o"
 
           <target-os>linux:<cxxflags>"-fPIC"
         <cxxflags>"-Wno-unused-local-typedef"
