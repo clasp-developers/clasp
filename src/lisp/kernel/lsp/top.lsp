@@ -611,7 +611,7 @@ Use special code 0 to cancel this operation.")
 		   (setq core:*current-source-pos-info* (core:walk-to-find-source-pos-info - core:*current-source-pos-info*))
 		   (setq values (multiple-value-list
 				 #+ecl(core:eval-with-env - *break-env*)
-                                 #+clasp(funcall core:*eval-with-env-hook* - nil #+(or)*break-env*)
+                                 #+clasp(funcall core:*eval-with-env-hook* - *break-env*)
                                  )
 			 /// // // / / values *** ** ** * * (car /))
 		   (tpl-print values))))))
