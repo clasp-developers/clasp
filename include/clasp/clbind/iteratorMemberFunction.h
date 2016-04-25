@@ -61,7 +61,7 @@ public:
 public:
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(lcc_nargs, 1);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();

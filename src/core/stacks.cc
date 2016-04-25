@@ -100,6 +100,7 @@ Function_sp InvocationHistoryFrame::function() const
   }
 
 VectorObjects_sp InvocationHistoryFrame::arguments() const {
+#if 0
   VaList_sp orig_args = this->valist_sp();
   VaList_S copy_args_s(*orig_args);
   VaList_sp copy_args(&copy_args_s);
@@ -113,6 +114,20 @@ VectorObjects_sp InvocationHistoryFrame::arguments() const {
     vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
   }
   return vargs;
+#else
+  VaList_sp orig_args = this->valist_sp();
+  T_O** register_area = LCC_VA_LIST_REGISTER_SAVE_AREA(orig_args);
+  T_O** overflow_area = LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(orig_args);
+  size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(orig_args);
+  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
+  T_O* objRaw;
+  for (size_t i(0); i < numberOfArguments; ++i) {
+    //objRaw = this->valist_sp().indexed_arg(i);
+    LCC_ORIGINAL_VA_LIST_INDEXED_ARG(objRaw,orig_args,i);
+    vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
+  }
+  return vargs;
+#endif
 }
 
 string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {

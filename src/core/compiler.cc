@@ -648,11 +648,12 @@ void allocateValueFrame5() {
   ValueFrame_sp v = ValueFrame_O::create(5, _Nil<ActivationFrame_O>());
   (void)v;
 }
-
+#if 0
 void allocateStackFrame5() {
   STACK_FRAME(buff, frame, 5);
 }
-
+#endif
+ 
 Cons_sp consList5() {
   T_sp val = _Nil<T_O>();
   return Cons_O::createList(val, val, val, val, val);
@@ -921,8 +922,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #endif
     Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
     ASSERT(closure);
-    STACK_FRAME(buff,frame,0);
-    LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,frame);
+    MAKE_STACK_FRAME(frame,closure.raw_(),0);
+    LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,*frame);
   } catch (...) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
@@ -938,8 +939,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     {
       Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
       ASSERT(closure);
-      STACK_FRAME(buff,frame,0);
-      LCC_CALL_WITH_ARGS_IN_FRAME(tresult,closure,frame);
+      MAKE_STACK_FRAME(frame,closure.raw_(),0);
+      LCC_CALL_WITH_ARGS_IN_FRAME(tresult,closure,*frame);
       // T_mv tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
     }
 #if 1 // See comment above about 22a8d7b1
@@ -966,8 +967,8 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
     T_mv tresult;
     Closure_sp closure = cleanup_fn.asOrNull<Closure_O>();
     ASSERT(closure);
-    STACK_FRAME(buff,frame,0);
-    LCC_CALL_WITH_ARGS_IN_FRAME(tresult,closure,frame);
+    MAKE_STACK_FRAME(frame,closure.raw_(),0);
+    LCC_CALL_WITH_ARGS_IN_FRAME(tresult,closure,*frame);
     //tresult = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   }
   result.loadFromVec0(savemv);
@@ -978,7 +979,10 @@ CL_LAMBDA(function-designator &rest functions);
 CL_DECLARE();
 CL_DOCSTRING("multipleValueFuncall");
 CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp functions) {
-  STACK_FRAME(buff, accArgs, MultipleValues::MultipleValuesLimit);
+  Function_sp fmv = coerce::functionDesignator(funcDesignator);
+  Closure_sp func = fmv.asOrNull<Closure_O>();
+  ASSERT(func);
+  MAKE_STACK_FRAME(frame, func.raw_(), MultipleValues::MultipleValuesLimit);
   size_t numArgs = 0;
   size_t idx = 0;
   MultipleValues& mv = lisp_multipleValues();
@@ -986,20 +990,17 @@ CL_DEFUN T_mv core__multiple_value_funcall(T_sp funcDesignator, List_sp function
     Function_sp func = gc::As<Function_sp>(oCar(cur));
     T_mv result = eval::funcall(func);
     ASSERT(idx < MultipleValues::MultipleValuesLimit);
-    accArgs[idx] = result.raw_();
+    (*frame)[idx] = result.raw_();
     ++idx;
     for (size_t i = 1, iEnd(result.number_of_values()); i < iEnd; ++i) {
       ASSERT(idx < MultipleValues::MultipleValuesLimit);
-      accArgs[idx] = mv._Values[i];
+      (*frame)[idx] = mv._Values[i];
       ++idx;
     }
   }
-  accArgs.setLength(idx);
-  Function_sp fmv = coerce::functionDesignator(funcDesignator);
-  Closure_sp func = fmv.asOrNull<Closure_O>();
-  ASSERT(func);
+  frame->set_number_of_arguments(idx);
   T_mv result;
-  LCC_CALL_WITH_ARGS_IN_FRAME(result, func, accArgs);
+  LCC_CALL_WITH_ARGS_IN_FRAME(result, func, *frame);
   return result;
 }
 
@@ -1030,8 +1031,8 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
   try {
     core::Closure_sp closure = thunk.asOrNull<Closure_O>();
     ASSERT(closure);
-    STACK_FRAME(buff,frame,0);
-    LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,frame);
+    MAKE_STACK_FRAME(frame,closure.raw_(),0);
+    LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,*frame);
     // result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   } catch (CatchThrow &catchThrow) {
     if (catchThrow.getFrame() != frame) {
@@ -1077,8 +1078,8 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   T_mv result;
   Closure_sp closure = result_form.asOrNull<Closure_O>();
   ASSERT(closure);
-  STACK_FRAME(buff,frame0,0);
-  LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,frame0);
+  MAKE_STACK_FRAME(frame0,closure.raw_(),0);
+  LCC_CALL_WITH_ARGS_IN_FRAME(result,closure,*frame0);
   //result = closure->invoke_va_list(LCC_PASS_ARGS0_VA_LIST(closure.raw_()));
   result.saveToMultipleValue0();
   throw CatchThrow(frame);

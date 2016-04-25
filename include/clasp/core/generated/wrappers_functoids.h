@@ -31,27 +31,27 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,18);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),18);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
-translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)fargs[16]));
-translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)fargs[17]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)(*fargs)[16]));
+translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)(*fargs)[17]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v,
     a17._v);
 return Values(translate::to_object<RT>::convert(retval));
@@ -85,26 +85,26 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,17);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),17);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
-translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)fargs[16]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)(*fargs)[16]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -137,25 +137,25 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,16);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -187,24 +187,24 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,15);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -236,23 +236,23 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,14);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -284,22 +284,22 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,13);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -331,21 +331,21 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,12);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -377,20 +377,20 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,11);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -422,19 +422,19 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,10);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -466,18 +466,18 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,9);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -509,17 +509,17 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,8);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -550,16 +550,16 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,7);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -590,15 +590,15 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,6);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -629,14 +629,14 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,5);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -667,13 +667,13 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,4);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -704,12 +704,12 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,3);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
 RT retval =  fptr(a0._v,a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -740,11 +740,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,2);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 RT retval =  fptr(a0._v,a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -775,10 +775,10 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,1);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 RT retval =  fptr(a0._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -842,27 +842,27 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,18);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),18);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
-translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)fargs[16]));
-translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)fargs[17]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)(*fargs)[16]));
+translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)(*fargs)[17]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v,a17._v);
 return Values0<core::T_O>();
 }
@@ -895,26 +895,26 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,17);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),17);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
-translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)fargs[16]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)(*fargs)[16]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v,a16._v);
 return Values0<core::T_O>();
 }
@@ -946,25 +946,25 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,16);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values0<core::T_O>();
 }
@@ -996,24 +996,24 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,15);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
@@ -1045,23 +1045,23 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,14);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
@@ -1093,22 +1093,22 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,13);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
@@ -1140,21 +1140,21 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,12);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
@@ -1186,20 +1186,20 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,11);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
@@ -1231,19 +1231,19 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,10);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
@@ -1275,18 +1275,18 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,9);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
@@ -1317,17 +1317,17 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,8);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
@@ -1358,16 +1358,16 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,7);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
@@ -1398,15 +1398,15 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,6);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
@@ -1437,14 +1437,14 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,5);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
@@ -1475,13 +1475,13 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,4);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
 fptr(a0._v,a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
@@ -1512,12 +1512,12 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,3);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
 fptr(a0._v,a1._v,a2._v);
 return Values0<core::T_O>();
 }
@@ -1548,11 +1548,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,2);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 fptr(a0._v,a1._v);
 return Values0<core::T_O>();
 }
@@ -1583,10 +1583,10 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,1);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 fptr(a0._v);
 return Values0<core::T_O>();
 }
@@ -1651,27 +1651,27 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,18);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),18);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
-translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)fargs[16]));
-translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)fargs[17]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)(*fargs)[16]));
+translate::from_object<ARG17> a17(core::T_sp((gc::Tagged)(*fargs)[17]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v,a16._v,a17._v);
 return retval.as_return_type();
@@ -1707,26 +1707,26 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,17);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),17);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
-translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)fargs[16]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
+translate::from_object<ARG16> a16(core::T_sp((gc::Tagged)(*fargs)[16]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v,a16._v);
 return retval.as_return_type();
@@ -1762,25 +1762,25 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,16);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
-translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)fargs[15]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
+translate::from_object<ARG15> a15(core::T_sp((gc::Tagged)(*fargs)[15]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v);
 return retval.as_return_type();
@@ -1814,24 +1814,24 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,15);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
-translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)fargs[14]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
+translate::from_object<ARG14> a14(core::T_sp((gc::Tagged)(*fargs)[14]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v);
 return retval.as_return_type();
@@ -1865,23 +1865,23 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,14);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
-translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)fargs[13]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
+translate::from_object<ARG13> a13(core::T_sp((gc::Tagged)(*fargs)[13]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v);
 return retval.as_return_type();
@@ -1914,22 +1914,22 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,13);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
-translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)fargs[12]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
+translate::from_object<ARG12> a12(core::T_sp((gc::Tagged)(*fargs)[12]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return retval.as_return_type();
 }
@@ -1961,21 +1961,21 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,12);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
-translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)fargs[11]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
+translate::from_object<ARG11> a11(core::T_sp((gc::Tagged)(*fargs)[11]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return retval.as_return_type();
 }
@@ -2007,20 +2007,20 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,11);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
-translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)fargs[10]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
+translate::from_object<ARG10> a10(core::T_sp((gc::Tagged)(*fargs)[10]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return retval.as_return_type();
 }
@@ -2052,19 +2052,19 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,10);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
-translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)fargs[9]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
+translate::from_object<ARG9> a9(core::T_sp((gc::Tagged)(*fargs)[9]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return retval.as_return_type();
 }
@@ -2096,18 +2096,18 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,9);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
-translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)fargs[8]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
+translate::from_object<ARG8> a8(core::T_sp((gc::Tagged)(*fargs)[8]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval.as_return_type();
 }
@@ -2139,17 +2139,17 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,8);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
-translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)fargs[7]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
+translate::from_object<ARG7> a7(core::T_sp((gc::Tagged)(*fargs)[7]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval.as_return_type();
 }
@@ -2180,16 +2180,16 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,7);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
-translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)fargs[6]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
+translate::from_object<ARG6> a6(core::T_sp((gc::Tagged)(*fargs)[6]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval.as_return_type();
 }
@@ -2220,15 +2220,15 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,6);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
-translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)fargs[5]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
+translate::from_object<ARG5> a5(core::T_sp((gc::Tagged)(*fargs)[5]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval.as_return_type();
 }
@@ -2259,14 +2259,14 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,5);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
-translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)fargs[4]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
+translate::from_object<ARG4> a4(core::T_sp((gc::Tagged)(*fargs)[4]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 return retval.as_return_type();
 }
@@ -2297,13 +2297,13 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,4);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
-translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)fargs[3]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
+translate::from_object<ARG3> a3(core::T_sp((gc::Tagged)(*fargs)[3]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 return retval.as_return_type();
 }
@@ -2334,12 +2334,12 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,3);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
-translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)fargs[2]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
+translate::from_object<ARG2> a2(core::T_sp((gc::Tagged)(*fargs)[2]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v,a2._v);
 return retval.as_return_type();
 }
@@ -2370,11 +2370,11 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,2);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
-translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)fargs[1]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
+translate::from_object<ARG1> a1(core::T_sp((gc::Tagged)(*fargs)[1]));
 gctools::multiple_values<RT> retval =  fptr(a0._v,a1._v);
 return retval.as_return_type();
 }
@@ -2405,10 +2405,10 @@ virtual void* functionAddress() const { return (void*)this->fptr; };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,fargs,1);
+MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(fargs);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)fargs[0]));
+translate::from_object<ARG0> a0(core::T_sp((gc::Tagged)(*fargs)[0]));
 gctools::multiple_values<RT> retval =  fptr(a0._v);
 return retval.as_return_type();
 }

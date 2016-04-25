@@ -75,12 +75,19 @@ namespace core {
       VaList_S lcc_arglist_s;
       va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
       LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
-      core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
+      T_O* lcc_arglist = lcc_arglist_s.asTaggedPtr();
+#ifdef _DEBUG_BUILD
+      VaList_S* vargs = reinterpret_cast<VaList_S*>(gctools::untag_valist(lcc_arglist));
+      if ( (uintptr_t)LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(vargs) < 10000)
+      {
+        printf("%s::%d Caught a bad OVERFLOW_ARG_AREA\n", __FILE__, __LINE__);
+      }
+#endif
       return this->invoke_va_list(LCC_PASS_ARGS);
     }
 
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
       printf("Subclass of Functoid must implement 'activate'\n");
       abort();
     };
@@ -169,7 +176,7 @@ public:
 public:
   virtual const char *describe() const { return "Closure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     printf("Subclass of Closure must implement 'activate'\n");
     abort();
   };
@@ -306,7 +313,7 @@ namespace core {
       return this->_Slots[idx];
     };
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
-      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
 #ifdef USE_EXPENSIVE_BACKTRACE
       core::InvocationHistoryFrame _frame(lcc_arglist);
 #endif
@@ -413,7 +420,7 @@ public:
   core::LambdaListHandler_sp lambdaListHandler() const { return _Nil<core::LambdaListHandler_O>(); };
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
-    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
 #ifdef USE_EXPENSIVE_BACKTRACE
     core::InvocationHistoryFrame _frame(lcc_arglist);
 #endif

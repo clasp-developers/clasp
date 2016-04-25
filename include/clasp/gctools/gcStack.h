@@ -28,61 +28,71 @@ THE SOFTWARE.
 #define gc_gcStack_H
 
 namespace gctools {
-namespace frame {
-typedef core::T_O *ElementType;
+#if 0
 static const size_t IdxRegisterSaveArea = 0;
 static const size_t IdxNumElements = LCC_NARGS_REGISTER;                                 // Where the num arguments (RAW - do not fix!!!)
 static const size_t IdxOverflowArgs = LCC_TOTAL_REGISTERS;                               // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
 static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs - LCC_ARGS_IN_REGISTERS; // Where the register arguments start
 static const size_t IdxValuesArray = IdxRegisterArgumentsStart;                          // where the stack based arguments start
+ #endif
 /*! Frame: A class that maintains an array of T_O* pointers on a thread-local stack for setting up calls.
 This class always needs to be allocated on the stack.
 It uses RAII to pop its array of pointers from the stack when the Frame goes out of scope.
 */
 
 struct Frame {
-  size_t _ArrayLength;
-  size_t _ElementCapacity; // May be larger than length
-  ElementType *_frameBlock;
+  typedef core::T_O *ElementType;
+  ElementType _register_save_area[LCC_ABI_ARGS_IN_REGISTERS];
+  ElementType _overflow_area[];
   /*! Calculate the number of elements required to represent the frame.
      It's IdxValuesArray+#elements */
-  static inline size_t FrameElements(size_t frame_elements) {
-    return std::max((frame_elements + IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS, IdxOverflowArgs + 1);
+  static inline size_t FrameElements_(size_t frame_elements) {
+    return std::max(LCC_ABI_ARGS_IN_REGISTERS,(int)frame_elements-LCC_ARGS_IN_REGISTERS+LCC_ABI_ARGS_IN_REGISTERS);
   }
-  static inline size_t FrameBytes(size_t elements) {
-    return FrameElements(elements) * sizeof(ElementType);
+  static inline size_t FrameBytes_(size_t elements) {
+    return FrameElements_(elements) * sizeof(ElementType);
   }
-#ifdef USE_ALLOCA_FOR_FRAME
-  Frame(ElementType *buffer, size_t numArguments);
-#else
-  Frame(size_t numArguments);
-#endif
+  void* reg_save_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_register_save_area[0])); };
+  void* overflow_arg_area_ptr() const { return const_cast<void*>(reinterpret_cast<const void*>(&this->_overflow_area[0])); };
+  Frame(core::T_O* closure, size_t numArguments) {
+    this->_register_save_area[LCC_CLOSURE_REGISTER] = closure;
+    this->_register_save_area[LCC_OVERFLOW_SAVE_REGISTER] = reinterpret_cast<core::T_O*>(&this->_overflow_area[0]);
+    this->_register_save_area[LCC_NARGS_REGISTER] = reinterpret_cast<core::T_O*>(numArguments);
+    for ( int i=3; i<LCC_ABI_ARGS_IN_REGISTERS; ++i ) {
+      this->_register_save_area[i] = gctools::tag_unbound<core::T_O*>();
+    }
+    int num_overflow_args = (int)numArguments - LCC_ARGS_IN_REGISTERS;
+    for ( int j=0; j<num_overflow_args; ++j ) {
+      this->_overflow_area[j] = gctools::tag_unbound<core::T_O*>();
+    }
+  }
 
-  inline ElementType &lowLevelElementRef(size_t idx) {
-    GCTOOLS_ASSERT(idx >= 0 && idx < this->_ElementCapacity);
-    return this->_frameBlock[idx];
+  inline size_t number_of_arguments() const {
+    return reinterpret_cast<size_t>(this->_register_save_area[LCC_NARGS_REGISTER]);
   }
-  inline const ElementType &lowLevelElementRef(size_t idx) const {
-    GCTOOLS_ASSERT(idx >= 0 && idx < this->_ElementCapacity);
-    return this->_frameBlock[idx];
+
+  inline void set_number_of_arguments(size_t num) {
+    this->_register_save_area[LCC_NARGS_REGISTER] = reinterpret_cast<core::T_O*>(num);
   }
-  inline void setLength(size_t l) { this->_ArrayLength = l; };
-  inline size_t getLength() const { return this->_ArrayLength; };
+
+  inline ElementType& operator[](size_t idx) {
+    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),BF("idx = %d  number_of_arguments=%d") % idx % this->number_of_arguments());
+    // This works because the overflow area follows the register save area
+    return this->_register_save_area[idx+LCC_ARG0_REGISTER];
+  }
+  inline const ElementType& operator[](size_t idx) const {
+    GCTOOLS_ASSERTF(idx >= 0 && idx < this->number_of_arguments(),BF("idx = %d  number_of_arguments=%d") % idx % this->number_of_arguments());
+    // This works because the overflow area follows the register save area
+    return this->_register_save_area[idx+LCC_ARG0_REGISTER];
+  }
   //! Describe the Frame
   void dump() const;
-  ~Frame();
-  inline ElementType &operator[](size_t idx) { return this->lowLevelElementRef(idx + IdxValuesArray); }
-  inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged) this->lowLevelElementRef(idx + IdxValuesArray)); }
-};
+  inline core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged) this->operator[](idx)); }
 };
 
-#ifdef USE_ALLOCA_FOR_FRAME
-#define STACK_FRAME(buffername, framename, num_elements)                                                                                                        \
-  gctools::frame::ElementType *buffername = reinterpret_cast<gctools::frame::ElementType *>(__builtin_alloca(gctools::frame::Frame::FrameBytes(num_elements))); \
-  gctools::frame::Frame framename(buffername, num_elements);
-#else
-#define STACK_FRAME(buffername, framename, num_elements) gctools::frame::Frame framename(num_elements);
-#endif
+#define MAKE_STACK_FRAME( framename, closure, num_elements)                                                                                                        \
+  gctools::Frame *framename = reinterpret_cast<gctools::Frame *>(__builtin_alloca(gctools::Frame::FrameBytes_(num_elements))); \
+  new(framename) gctools::Frame(closure, num_elements);
 
 } // namespace gctools
 
@@ -103,7 +113,11 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   core::T_O *asTaggedPtr() {
     return gctools::tag_valist<core::T_O *>(this);
   }
-  VaList_S(gc::frame::Frame &frame) {
+  VaList_S(gc::Frame* frame) {
+    LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, *frame);
+  };
+
+  VaList_S(const gc::Frame& frame) {
     LCC_SETUP_VA_LIST_FROM_FRAME(this->_Args, frame);
   };
 

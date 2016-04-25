@@ -139,13 +139,13 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     int lenRest = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
     int nargs = lenFirst + lenRest;
     // Allocate a frame on the side stack that can take all arguments
-    STACK_FRAME(buff, frame, nargs);
+    MAKE_STACK_FRAME(frame, func.raw_(), nargs);
     T_sp obj = args;
     for (int i(0); i < lenFirst; ++i) {
-      frame[i] = LCC_NEXT_ARG_RAW(args, i);
+      (*frame)[i] = LCC_NEXT_ARG_RAW(args, i);
     }
     for (int i(lenFirst); i < nargs; ++i) {
-      frame[i] = LCC_NEXT_ARG_RAW(lastArgs, i);
+      (*frame)[i] = LCC_NEXT_ARG_RAW(lastArgs, i);
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
@@ -156,14 +156,14 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     Cons_sp last((gc::Tagged)lastArgRaw);
     int lenRest = cl__length(last);
     int nargs = lenFirst + lenRest;
-    STACK_FRAME(buff, frame, nargs);
+    MAKE_STACK_FRAME( frame, func.raw_(), nargs);
     T_sp obj = args;
     for (int i(0); i < lenFirst; ++i) {
-      frame[i] = LCC_NEXT_ARG_RAW(args, i);
+      (*frame)[i] = LCC_NEXT_ARG_RAW(args, i);
     }
     List_sp cargs = gc::As<Cons_sp>(last);
     for (int i(lenFirst); i < nargs; ++i) {
-      frame[i] = oCar(cargs).raw_();
+      (*frame)[i] = oCar(cargs).raw_();
       cargs = oCdr(cargs);
     }
     VaList_S valist_struct(frame);
@@ -1301,8 +1301,7 @@ T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
 
 T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   ASSERT(env.generalp());
-  Function_sp func;
-  func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
+  Function_sp func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
   List_sp resultList = _Nil<T_O>();
   Cons_sp *cur = reinterpret_cast<Cons_sp *>(&resultList);
   core::MultipleValues& mv = core::lisp_multipleValues();
@@ -1317,10 +1316,10 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
     }
   }
   size_t sz = cl__length(resultList);
-  STACK_FRAME(buff, fargs, sz);
+  MAKE_STACK_FRAME( fargs, func.raw_(), sz);
   size_t i(0);
   for (auto c : resultList) {
-    fargs[i] = oCar(c).raw_();
+    (*fargs)[i] = oCar(c).raw_();
     ++i;
   }
   VaList_S valist_struct(fargs);
@@ -2237,21 +2236,21 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     //
     //		LOG(BF("Symbol[%s] is a normal form - evaluating arguments") % head->__repr__() );
     size_t nargs = cl__length(oCdr(form));
-    STACK_FRAME(buff, callArgs, nargs);
+    Function_sp headFunc = gc::reinterpret_cast_smart_ptr<Function_sp>(theadFunc);
+    MAKE_STACK_FRAME(callArgs, headFunc.raw_(), nargs);
     size_t argIdx = 0;
     for (auto cur : (List_sp)oCdr(form)) {
-      callArgs[argIdx] = eval::evaluate(oCar(cur), environment).raw_();
+      (*callArgs)[argIdx] = eval::evaluate(oCar(cur), environment).raw_();
       ++argIdx;
     }
     VaList_S valist_struct(callArgs);
     VaList_sp valist(&valist_struct); // = callArgs.setupVaList(valist_struct);
-    Function_sp headFunc = gc::As<Function_sp>(theadFunc);
     if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
       if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
         InterpreterTrace itrace;
         printf("eval::evaluate Trace [%d] > (%s ", global_interpreter_trace_depth, _rep_(headSym).c_str());
         for (int i(0), iEnd(nargs); i < iEnd; ++i) {
-          printf("%s ", _rep_(T_sp((gc::Tagged)callArgs[i])).c_str());
+          printf("%s ", _rep_(T_sp((gc::Tagged)(*callArgs)[i])).c_str());
         }
         printf(" )\n");
         result = apply_consume_valist_(headFunc, valist);

@@ -96,7 +96,7 @@ namespace core {
 
 #ifdef USE_EXPENSIVE_BACKTRACE
 #define INVOCATION_HISTORY_FRAME() \
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();\
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);\
   core::InvocationHistoryFrame zzzFrame(lcc_arglist);
 #else
 #define INVOCATION_HISTORY_FRAME()

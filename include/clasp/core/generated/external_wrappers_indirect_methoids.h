@@ -38,25 +38,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -64,7 +64,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -147,24 +147,24 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -172,7 +172,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -251,23 +251,23 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -275,7 +275,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -351,29 +351,29 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -446,28 +446,28 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -537,27 +537,27 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -624,26 +624,26 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -707,25 +707,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -786,24 +786,24 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -861,23 +861,23 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -931,22 +931,22 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -997,21 +997,21 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1059,20 +1059,20 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1117,19 +1117,19 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1171,18 +1171,18 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1221,17 +1221,17 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
@@ -1272,25 +1272,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1298,7 +1298,7 @@ returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1380,31 +1380,31 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1483,30 +1483,30 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1582,29 +1582,29 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1677,28 +1677,28 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1768,27 +1768,27 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1855,26 +1855,26 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1938,25 +1938,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2017,24 +2017,24 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2091,23 +2091,23 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2161,22 +2161,22 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2227,21 +2227,21 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2289,20 +2289,20 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2347,19 +2347,19 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2401,18 +2401,18 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2451,17 +2451,17 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
@@ -2502,25 +2502,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2528,7 +2528,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2613,24 +2613,24 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2638,7 +2638,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2717,23 +2717,23 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2741,7 +2741,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2817,29 +2817,29 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2912,28 +2912,28 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3003,27 +3003,27 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3090,26 +3090,26 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3173,25 +3173,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3252,24 +3252,24 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3327,23 +3327,23 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3397,22 +3397,22 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3463,21 +3463,21 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3525,20 +3525,20 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3583,19 +3583,19 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3637,18 +3637,18 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3687,17 +3687,17 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
@@ -3738,25 +3738,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3764,7 +3764,7 @@ returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3848,31 +3848,31 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3951,30 +3951,30 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4050,29 +4050,29 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4145,28 +4145,28 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4236,27 +4236,27 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4323,26 +4323,26 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4406,25 +4406,25 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4485,24 +4485,24 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4559,23 +4559,23 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4629,22 +4629,22 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4695,21 +4695,21 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4757,20 +4757,20 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4815,19 +4815,19 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4869,18 +4869,18 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4919,17 +4919,17 @@ inline LCC_RETURN LISP_CALLING_CONVENTION()
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
