@@ -32,25 +32,25 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 return Values(translate::to_object<RT>::convert(retval));
@@ -83,24 +83,24 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -131,23 +131,23 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -178,22 +178,22 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -224,21 +224,21 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -269,20 +269,20 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -313,19 +313,19 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -356,18 +356,18 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -398,17 +398,17 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -439,16 +439,16 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -478,15 +478,15 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -516,14 +516,14 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -553,13 +553,13 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -589,12 +589,12 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -624,11 +624,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -658,10 +658,10 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -693,25 +693,25 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values0<core::T_O>();
 }
@@ -742,24 +742,24 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
@@ -790,23 +790,23 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
@@ -837,22 +837,22 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
@@ -883,21 +883,21 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
@@ -928,20 +928,20 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
@@ -972,19 +972,19 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
@@ -1015,18 +1015,18 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
@@ -1057,17 +1057,17 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
@@ -1097,16 +1097,16 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
@@ -1136,15 +1136,15 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
@@ -1174,14 +1174,14 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
@@ -1211,13 +1211,13 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
@@ -1247,12 +1247,12 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values0<core::T_O>();
 }
@@ -1282,11 +1282,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
 return Values0<core::T_O>();
 }
@@ -1316,10 +1316,10 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
 }
@@ -1353,25 +1353,25 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v,a15._v);
 return retval.as_return_type();
@@ -1406,24 +1406,24 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v);
 return retval.as_return_type();
@@ -1456,23 +1456,23 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v);
 return retval.as_return_type();
@@ -1504,22 +1504,22 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v);
 return retval.as_return_type();
@@ -1551,21 +1551,21 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v);
 return retval.as_return_type();
@@ -1597,20 +1597,20 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return retval.as_return_type();
 }
@@ -1641,19 +1641,19 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return retval.as_return_type();
 }
@@ -1684,18 +1684,18 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval.as_return_type();
 }
@@ -1726,17 +1726,17 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval.as_return_type();
 }
@@ -1767,16 +1767,16 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval.as_return_type();
 }
@@ -1806,15 +1806,15 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval.as_return_type();
 }
@@ -1844,14 +1844,14 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return retval.as_return_type();
 }
@@ -1881,13 +1881,13 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return retval.as_return_type();
 }
@@ -1917,12 +1917,12 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return retval.as_return_type();
 }
@@ -1952,11 +1952,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return retval.as_return_type();
 }
@@ -1986,10 +1986,10 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval.as_return_type();
 }
@@ -2021,25 +2021,25 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 return Values(translate::to_object<RT>::convert(retval));
@@ -2072,24 +2072,24 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2120,23 +2120,23 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2167,22 +2167,22 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2213,21 +2213,21 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2258,20 +2258,20 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2302,19 +2302,19 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2345,18 +2345,18 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2387,17 +2387,17 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2428,16 +2428,16 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2467,15 +2467,15 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2505,14 +2505,14 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2542,13 +2542,13 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2578,12 +2578,12 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2613,11 +2613,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
 RT retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2647,10 +2647,10 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*ot.untag_object()).*mptr)();
 return Values(translate::to_object<RT>::convert(retval));
 }
@@ -2682,25 +2682,25 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 return Values0<core::T_O>();
 }
@@ -2731,24 +2731,24 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 return Values0<core::T_O>();
 }
@@ -2779,23 +2779,23 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 return Values0<core::T_O>();
 }
@@ -2826,22 +2826,22 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 return Values0<core::T_O>();
 }
@@ -2872,21 +2872,21 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 return Values0<core::T_O>();
 }
@@ -2917,20 +2917,20 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return Values0<core::T_O>();
 }
@@ -2961,19 +2961,19 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return Values0<core::T_O>();
 }
@@ -3004,18 +3004,18 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return Values0<core::T_O>();
 }
@@ -3046,17 +3046,17 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return Values0<core::T_O>();
 }
@@ -3086,16 +3086,16 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return Values0<core::T_O>();
 }
@@ -3125,15 +3125,15 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return Values0<core::T_O>();
 }
@@ -3163,14 +3163,14 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return Values0<core::T_O>();
 }
@@ -3200,13 +3200,13 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return Values0<core::T_O>();
 }
@@ -3236,12 +3236,12 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
 ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return Values0<core::T_O>();
 }
@@ -3271,11 +3271,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
 ((*ot.untag_object()).*mptr)(a1._v);
 return Values0<core::T_O>();
 }
@@ -3305,10 +3305,10 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 ((*ot.untag_object()).*mptr)();
 return Values0<core::T_O>();
 }
@@ -3342,25 +3342,25 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v,a15._v);
 return retval.as_return_type();
@@ -3395,24 +3395,24 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v,a14._v);
 return retval.as_return_type();
@@ -3446,23 +3446,23 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v,a13._v);
 return retval.as_return_type();
@@ -3494,22 +3494,22 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v,a12._v);
 return retval.as_return_type();
@@ -3541,21 +3541,21 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,
     a11._v);
 return retval.as_return_type();
@@ -3587,20 +3587,20 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 return retval.as_return_type();
 }
@@ -3631,19 +3631,19 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 return retval.as_return_type();
 }
@@ -3674,18 +3674,18 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 return retval.as_return_type();
 }
@@ -3716,17 +3716,17 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 return retval.as_return_type();
 }
@@ -3757,16 +3757,16 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 return retval.as_return_type();
 }
@@ -3796,15 +3796,15 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v,a5._v);
 return retval.as_return_type();
 }
@@ -3834,14 +3834,14 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v,a4._v);
 return retval.as_return_type();
 }
@@ -3871,13 +3871,13 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v,a3._v);
 return retval.as_return_type();
 }
@@ -3907,12 +3907,12 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v,a2._v);
 return retval.as_return_type();
 }
@@ -3942,11 +3942,11 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-translate::from_object<ARG1> a1(frame.arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+translate::from_object<ARG1> a1(frame->arg(1));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)(a1._v);
 return retval.as_return_type();
 }
@@ -3976,10 +3976,10 @@ virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
 lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
+gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
 gctools::multiple_values<RT> retval =  ((*ot.untag_object()).*mptr)();
 return retval.as_return_type();
 }

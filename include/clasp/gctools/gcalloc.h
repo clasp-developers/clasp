@@ -1240,7 +1240,9 @@ public:
 #endif
 #endif
 #ifdef USE_MPS
+    #ifndef USE_ALLOCA_FOR_FRAME
     mpsAllocateStack(this);
+    #endif
 #endif
     return true;
   };
@@ -1256,7 +1258,9 @@ public:
 #endif
 #endif
 #ifdef USE_MPS
+    #ifndef USE_ALLOCA_FOR_FRAME
     mpsDeallocateStack(this);
+    #endif
 #endif
   };
 

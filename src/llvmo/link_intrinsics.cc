@@ -521,8 +521,8 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
-  STACK_FRAME(zbuff, onearg, 1);
-  onearg[0] = *ltvPP; // Leave the tag on
+  MAKE_STACK_FRAME( onearg, tc.raw_(), 1);
+  (*onearg)[0] = *ltvPP; // Leave the tag on
   core::VaList_S onearg_valist_s(onearg);
   LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
   core::T_O *lcc_arglist = onearg_valist_s.asTaggedPtr();
@@ -1446,12 +1446,12 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
     in cmpintrinsics.lsp it is set not to require a landing pad */
 //    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
 LCC_RETURN cc_call_multipleValueOneFormCall(core::Function_O *tfunc) {
-  ASSERT(gctools::tagged_generalp(tfunc));
+  ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   size_t lcc_nargs = mvThreadLocal.getSize();
-  STACK_FRAME(buff, mvargs, lcc_nargs);
+  MAKE_STACK_FRAME( mvargs, tfunc, lcc_nargs);
   for (size_t i(0); i < lcc_nargs; ++i) {
-    mvargs[i] = mvThreadLocal[i];
+    (*mvargs)[i] = mvThreadLocal[i];
   }
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
@@ -1462,27 +1462,28 @@ LCC_RETURN cc_call_multipleValueOneFormCall(core::Function_O *tfunc) {
   core::Function_sp func((gctools::Tagged)tfunc);
   LCC_SPILL_CLOSURE_TO_VA_LIST(mvargs_valist_struct,tfunc);
   ASSERT(func);
-  core::T_O *lcc_fixed_arg0 = mvargs[0];
-  core::T_O *lcc_fixed_arg1 = mvargs[1];
-  core::T_O *lcc_fixed_arg2 = mvargs[2];
+#if 0
+  core::T_O *lcc_fixed_arg0 = (*mvargs)[0];
+  core::T_O *lcc_fixed_arg1 = (*mvargs)[1];
+  core::T_O *lcc_fixed_arg2 = (*mvargs)[2];
+#endif
   /*! TODO: Move the logic into lispCallingConvention */
   LCC_RETURN retval(NULL, 0);
   switch (lcc_nargs) {
   default:
-      retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(func.raw_(),lcc_arglist, lcc_nargs, mvargs[0], mvargs[1], mvargs[2]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(func.raw_(),lcc_arglist, lcc_nargs, (*mvargs)[0], (*mvargs)[1], (*mvargs)[2]));
     break;
   case 2:
-      retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(func.raw_(),mvargs[0], mvargs[1]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(func.raw_(),(*mvargs)[0], (*mvargs)[1]));
     break;
   case 1:
-      retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(func.raw_(),mvargs[0]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(func.raw_(),(*mvargs)[0]));
     break;
   case 0:
       retval = func->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(func.raw_()));
     break;
   };
   return retval;
-  //return closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]);
 }
 
 #if 0

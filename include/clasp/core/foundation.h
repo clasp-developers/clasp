@@ -396,7 +396,6 @@ typedef long long int LongLongInt;
 namespace core {
 class T_O;
 typedef T_O FIXNUM;
-typedef T_O STACK_FRAME;
 class Cons_O;
 class General_O;
 class Pointer_O;

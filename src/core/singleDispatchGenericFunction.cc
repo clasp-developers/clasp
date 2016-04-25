@@ -109,14 +109,14 @@ CL_DEFUN void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp rec
 
 
 LCC_RETURN SingleDispatchCxxEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   LCC_MAKE_VA_LIST_SP(sdargs);
   return (*this->_onlyCxxMethodFunction)(LCC_PASS_ARGS2_ELLIPSIS(this->_onlyCxxMethodFunction.raw_(),sdargs.raw_(),_Nil<T_O>().raw_()));
 };
 
 
 LCC_RETURN SingleDispatchEffectiveMethodFunction_O::LISP_CALLING_CONVENTION() {
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   VaList_sp orig_args((gctools::Tagged)lcc_arglist);
   VaList_S &orig_args_s = *orig_args;
   for ( auto cur : this->_Befores ) {
@@ -180,7 +180,7 @@ void SingleDispatchGenericFunctionClosure_O::addMethod(SingleDispatchMethod_sp m
       std-compute-discriminating-function (gf) AMOP-303 top
     */
 LCC_RETURN SingleDispatchGenericFunctionClosure_O::LISP_CALLING_CONVENTION() {
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   Function_sp func;
   Cache_sp cache = _lisp->singleDispatchMethodCachePtr();
   gctools::Vec0<T_sp> &vektor = cache->keys();

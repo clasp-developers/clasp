@@ -35,12 +35,12 @@ $var NumArgs = 16
                     {
                         INVOCATION_HISTORY_FRAME();
                         $if numArgs>0 [[
-                          STACK_FRAME(buff,frame,$numArgs);
+                          MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
                           lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                       $for Args_ [[
-                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));
+                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame->arg($Args_));
                         //IncWhen<typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type >::go(args);
                       ]]
                       $if ret==RetVoid [[]] $elif ret==Ret_unique_ptr [[ std::unique_ptr<UPRT> retval = ]] $else [[ RT retval = ]] fptr($for Args_ ,[[a$Args_._v]]);

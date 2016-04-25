@@ -215,7 +215,7 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 }
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   ++global_interpreted_closure_calls;
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());

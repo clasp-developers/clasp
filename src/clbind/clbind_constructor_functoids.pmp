@@ -31,12 +31,12 @@ $var NumArgs = 8
                     {
                         INVOCATION_HISTORY_FRAME();
                         $if numArgs>0 [[
-                          STACK_FRAME(buff,frame,$numArgs);
+                          MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
                           core::StackFrameDynamicScopeManager scope(frame);
                           lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                         ]]
                       $for Args_ [[
-                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame.arg($Args_));
+                        translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$(1+Args_)> >::type > a$Args_(frame->arg($Args_));
                       ]]
                       T* naked_ptr(new T($for Args_ ,[[a$Args_._v]]));
                       gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr,reg::registered_class<T>::id);

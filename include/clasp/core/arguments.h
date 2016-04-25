@@ -194,13 +194,13 @@ public:
 
 class StackFrameDynamicScopeManager : public DynamicScopeManager {
 private:
-  gc::frame::Frame &frame;
+  gc::Frame &frame;
 
 public:
   VaList_S VaRest;
 
 public:
-  StackFrameDynamicScopeManager(gc::frame::Frame &f) : frame(f){};
+  StackFrameDynamicScopeManager(gc::Frame* fP) : frame(*fP){};
 
 public:
   virtual VaList_S &valist() { return this->VaRest; };

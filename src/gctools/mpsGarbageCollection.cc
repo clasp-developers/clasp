@@ -454,7 +454,7 @@ static void cons_pad(mps_addr_t base, size_t size) {
 // Code to deal with the thread local side-stacks
 //
 //
-
+#if 0
 static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit) {
   STACK_TELEMETRY2(telemetry::label_stack_frame_scan_start,
                    (uintptr_t)base,
@@ -468,8 +468,8 @@ static mps_res_t stack_frame_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit
       switch (ftype) {
       case GCStack::frame_t: {
         uintptr_t *frameStart = FRAME_START(headerAndFrame);
-        size_t elements = frameStart[gc::frame::IdxNumElements];
-        uintptr_t *taggedPtr = &frameStart[gc::frame::IdxValuesArray];
+        size_t elements = frameStart[gc::IdxNumElements];
+        uintptr_t *taggedPtr = &frameStart[gc::IdxValuesArray];
         for (size_t i = 0; i < elements; ++i) {
           taggedPtrFix(_ss, _mps_zs, _mps_w, _mps_ufs, _mps_wt, reinterpret_cast<gctools::Tagged *>(taggedPtr));
           ++taggedPtr;
@@ -527,6 +527,7 @@ static void stack_frame_pad(mps_addr_t addr, size_t size) {
   FRAME_HEADER_SIZE_FIELD(obj) = size;
 }
 
+
 void mpsAllocateStack(gctools::GCStack *stack) {
   mps_res_t res;
   MPS_ARGS_BEGIN(args) {
@@ -570,6 +571,7 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
   mps_arena_release(_global_arena);
   //  printf("%s:%d deallocateStack\n", __FILE__, __LINE__ );
 };
+#endif
 
 // -----------------------------------------------------------
 // -----------------------------------------------------------
