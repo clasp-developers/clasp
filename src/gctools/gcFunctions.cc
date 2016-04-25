@@ -29,6 +29,8 @@ extern "C" {
 
 namespace gctools {
 
+size_t global_next_unused_kind = KIND_max+1;
+
 /*! Hardcode a few kinds of objects for bootstrapping
  */
 
@@ -99,9 +101,13 @@ CL_DEFUN core::T_sp gctools__bytes_allocated() {
 }
 
 
+CL_DOCSTRING("Return the next unused kind");
+CL_DEFUN size_t core__next_unused_kind() {
+  size_t next = global_next_unused_kind;
+  ++global_next_unused_kind;
+  return next;
+}
 
-CL_LAMBDA();
-CL_DECLARE();
 CL_DOCSTRING("Return the header kind for the object");
 CL_DEFUN Fixnum core__header_kind(core::T_sp obj) {
   if (obj.consp()) {

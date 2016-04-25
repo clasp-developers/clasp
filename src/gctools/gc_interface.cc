@@ -302,9 +302,10 @@ const char *obj_kind_name(core::T_O *tagged_ptr) {
 }
 
 const char *obj_name(gctools::kind_t kind) {
-  if (kind == (gctools::kind_t)KIND_null || kind > (gctools::kind_t)KIND_max) {
+  if (kind == (gctools::kind_t)KIND_null) {
     return "UNDEFINED";
   }
+  if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
   size_t kind_index = (size_t)kind;
   ASSERT(kind_index<=global_kind_max);
 //  printf("%s:%d obj_name kind= %d  kind_index = %d\n", __FILE__, __LINE__, kind, kind_index);
@@ -379,6 +380,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
+    if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
     const Kind_layout& kind_layout = global_kind_layout[kind];
 #ifndef RUNNING_GC_BUILDER
     if ( kind_layout.layout_op == class_container_op ) {
@@ -448,6 +450,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
         kind = header->kind();
+        if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
         const Kind_layout& kind_layout = global_kind_layout[kind];
 #ifndef RUNNING_GC_BUILDER
         size = kind_layout.size;

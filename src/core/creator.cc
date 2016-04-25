@@ -50,8 +50,10 @@ THE SOFTWARE.
 
 namespace core {
 T_sp InstanceCreator_O::allocate() {
-      GC_ALLOCATE(Instance_O, output);
-      return output;
+  Instance_sp instance = gctools::GCObjectAllocator<Instance_O>::allocate_kind(gctools::GCKind<Instance_O>::Kind, gctools::sizeof_with_header<Instance_O>());
+  return instance;
+//      GC_ALLOCATE(Instance_O, output);
+//      return output;
     };
 
 

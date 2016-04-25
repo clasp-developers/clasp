@@ -107,11 +107,13 @@ VectorObjects_sp InvocationHistoryFrame::arguments() const {
   size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(copy_args);
   VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
   T_O* objRaw;
+#if 0
   for (size_t i(0); i < numberOfArguments; ++i) {
     //objRaw = this->valist_sp().indexed_arg(i);
     LCC_VA_LIST_INDEXED_ARG(objRaw,copy_args,i);
     vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
   }
+#endif
   return vargs;
 }
 
