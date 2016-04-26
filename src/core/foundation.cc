@@ -85,7 +85,7 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 
-thread_local core::ThreadLocalState* thread = NULL;
+__thread core::ThreadLocalState* my_thread;
 
 
 namespace reg {
@@ -431,18 +431,15 @@ CL_DEFUN Str_sp core__magic_name(const std::string& name) {
   return Str_O::create(pkg_sym);
 };
 
-void lisp_setThreadLocalInfoPtr(ThreadInfo *address) {
-  threadLocalInfoPtr = address;
-}
 
 MultipleValues &lisp_multipleValues() {
   //	return &(_lisp->multipleValues());
-  return threadLocalInfoPtr->multipleValues;
+  return my_thread->_MultipleValues;
 }
 
 MultipleValues &lisp_callArgs() {
   //	return (_lisp->callArgs());
-  return threadLocalInfoPtr->multipleValues;
+  return my_thread->_MultipleValues;
 }
 
 void errorFormatted(boost::format fmt) {
@@ -1468,7 +1465,7 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (thread->_InvocationHistoryStack == NULL) {
+    if (my_thread->_InvocationHistoryStack == NULL) {
       throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
     }
     LispDebugger dbg;

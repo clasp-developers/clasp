@@ -196,11 +196,11 @@ class class_;
 
 class PushLispMode;
 
+ #if 0
 struct ThreadInfo {
   MultipleValues multipleValues;
 };
-
-extern __thread ThreadInfo *threadLocalInfoPtr;
+#endif
 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);

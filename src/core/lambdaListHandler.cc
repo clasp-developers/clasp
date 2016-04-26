@@ -93,7 +93,7 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
-  //	TopLevelIHF stackFrame(thread->invocationHistoryStack(),form);
+  //	TopLevelIHF stackFrame(my_thread->invocationHistoryStack(),form);
   return eval::evaluate(form, env);
 }
 

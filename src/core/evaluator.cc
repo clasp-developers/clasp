@@ -913,7 +913,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   }
   LOG(BF("sp_tagbody has extended the environment to: %s") % tagbodyEnv->__repr__());
   T_sp tagbodyId = gc::As<TagbodyFrame_sp>(Environment_O::clasp_getActivationFrame(tagbodyEnv));
-  int frame = thread->exceptionStack().push(TagbodyFrame, tagbodyId);
+  int frame = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
   // Start to evaluate the tagbody
   List_sp ip = args;
   while (ip.notnilp()) {
@@ -938,7 +938,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
     ip = oCdr(ip);
   }
   LOG(BF("Leaving sp_tagbody"));
-  thread->exceptionStack().unwind(frame);
+  my_thread->exceptionStack().unwind(frame);
   return Values0<T_O>();
 };
 
@@ -955,7 +955,7 @@ T_mv sp_go(List_sp args, T_sp env) {
   }
   ActivationFrame_sp af = Environment_O::clasp_getActivationFrame(env);
   T_sp tagbodyId = core::tagbody_frame_lookup(af,depth,index);
-  int frame = thread->exceptionStack().findKey(TagbodyFrame, tagbodyId);
+  int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbodyId);
   if (frame < 0) {
     SIMPLE_ERROR(BF("Could not find tagbody frame for tag %s") % _rep_(tag));
   }
@@ -1171,7 +1171,7 @@ T_mv sp_block(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
   BlockEnvironment_sp newEnvironment = BlockEnvironment_O::make(blockSymbol, environment);
-  int frame = thread->exceptionStack().push(BlockFrame, blockSymbol);
+  int frame = my_thread->exceptionStack().push(BlockFrame, blockSymbol);
   LOG(BF("sp_block has extended the environment to: %s") % newEnvironment->__repr__());
   T_mv result;
   try {
@@ -1185,14 +1185,14 @@ T_mv sp_block(List_sp args, T_sp environment) {
     result = gctools::multiple_values<T_O>::createFromValues(); // returnFrom.getReturnedObject();
   }
   LOG(BF("Leaving sp_block"));
-  thread->exceptionStack().unwind(frame);
+  my_thread->exceptionStack().unwind(frame);
   return result;
 }
 
 T_mv sp_returnFrom(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   Symbol_sp blockSymbol = gc::As<Symbol_sp>(oCar(args));
-  int frame = thread->exceptionStack().findKey(BlockFrame, blockSymbol);
+  int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
   if (frame < 0) {
     SIMPLE_ERROR(BF("Could not find block named %s in lexical environment: %s") % _rep_(blockSymbol) % _rep_(environment));
   }
@@ -1248,7 +1248,7 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
 T_mv sp_catch(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp mytag = eval::evaluate(oCar(args), environment);
-  int frame = thread->exceptionStack().push(CatchFrame, mytag);
+  int frame = my_thread->exceptionStack().push(CatchFrame, mytag);
   T_mv result;
   try {
     result = eval::sp_progn(oCdr(args), environment);
@@ -1258,7 +1258,7 @@ T_mv sp_catch(List_sp args, T_sp environment) {
     }
     result = gctools::multiple_values<T_O>::createFromValues();
   }
-  thread->exceptionStack().unwind(frame);
+  my_thread->exceptionStack().unwind(frame);
   return result;
 }
 
@@ -1266,7 +1266,7 @@ T_mv sp_throw(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_sp throwTag = eval::evaluate(oCar(args), environment);
   T_mv result = Values(_Nil<T_O>());
-  int frame = thread->exceptionStack().findKey(CatchFrame, throwTag);
+  int frame = my_thread->exceptionStack().findKey(CatchFrame, throwTag);
   if (frame < 0) {
     CONTROL_ERROR();
   }

@@ -151,7 +151,9 @@ extern void create_source_main_host();
 
 namespace core {
 
+#if 0
 __thread ThreadInfo *threadLocalInfoPtr;
+#endif
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
@@ -1381,7 +1383,7 @@ CL_DEFUN void core__low_level_repl() {
 void Lisp_O::readEvalPrintInteractive() {
   _OF();
   Cons_sp expression;
-  //	TopLevelIHF topFrame(thread->invocationHistoryStack(),_Nil<T_O>());
+  //	TopLevelIHF topFrame(my_thread->invocationHistoryStack(),_Nil<T_O>());
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 }
 
@@ -1932,7 +1934,7 @@ CL_DECLARE();
 CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
-  InvocationHistoryFrame *frame = thread->_InvocationHistoryStack;
+  InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStack;
   Function_sp closure = frame->function();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
@@ -1945,7 +1947,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
-  InvocationHistoryFrame *frame = thread->_InvocationHistoryStack;
+  InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStack;
   Function_sp closure = frame->function();
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }

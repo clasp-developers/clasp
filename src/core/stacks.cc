@@ -196,7 +196,7 @@ void InvocationHistoryFrame::dump(int index) const {
 
 
 size_t backtrace_size() {
-  InvocationHistoryFrame* frame = thread->_InvocationHistoryStack;
+  InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
   size_t count = 0;
   while (frame) {
     frame = frame->_Previous;
@@ -209,7 +209,7 @@ string backtrace_as_string() {
   stringstream ss;
   ss.str("");
   ss << std::endl;
-  InvocationHistoryFrame* frame = thread->_InvocationHistoryStack;
+  InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
   ss << "--------STACK TRACE--------" << std::endl;
   int ihsCur = core__ihs_current_frame();
   InvocationHistoryFrame* cur = frame;
@@ -296,7 +296,7 @@ GC_RESULT DynamicBindingStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 
 #ifdef OLD_MPS
 GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-  InvocationHistoryStack &ihs = thread->invocationHistoryStack(); // in multithreaded code there is one for every thread
+  InvocationHistoryStack &ihs = my_thread->invocationHistoryStack(); // in multithreaded code there is one for every thread
   InvocationHistoryFrame *cur = ihs.top();
   GC_SCANNER_BEGIN() {
     while (cur) {

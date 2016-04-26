@@ -58,7 +58,7 @@ struct Frame {
     this->_register_save_area[LCC_CLOSURE_REGISTER] = closure;
     this->_register_save_area[LCC_OVERFLOW_SAVE_REGISTER] = reinterpret_cast<core::T_O*>(&this->_overflow_area[0]);
     this->_register_save_area[LCC_NARGS_REGISTER] = reinterpret_cast<core::T_O*>(numArguments);
-    for ( int i=3; i<LCC_ABI_ARGS_IN_REGISTERS; ++i ) {
+    for ( int i=(LCC_ABI_ARGS_IN_REGISTERS-LCC_ARGS_IN_REGISTERS); i<LCC_ABI_ARGS_IN_REGISTERS; ++i ) {
       this->_register_save_area[i] = gctools::tag_unbound<core::T_O*>();
     }
     int num_overflow_args = (int)numArguments - LCC_ARGS_IN_REGISTERS;

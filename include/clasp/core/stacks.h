@@ -55,8 +55,8 @@ class InvocationHistoryFrame //: public gctools::StackRoot
   T_O*  _RawArgList;
  public:
  InvocationHistoryFrame(T_O* rawArgList)
-   : _Previous(thread->_InvocationHistoryStack),
-    _Bds(thread->bindings().size()),
+   : _Previous(my_thread->_InvocationHistoryStack),
+    _Bds(my_thread->bindings().size()),
     _RawArgList(rawArgList) {
 #ifdef DEBUG_ASSERTS
       if ( !(gctools::tagged_valistp(rawArgList))) {
@@ -64,10 +64,10 @@ class InvocationHistoryFrame //: public gctools::StackRoot
         abort();
       }
 #endif
-      thread->_InvocationHistoryStack = this;
+      my_thread->_InvocationHistoryStack = this;
     }
   ~InvocationHistoryFrame() {
-    thread->_InvocationHistoryStack = this->_Previous;
+    my_thread->_InvocationHistoryStack = this->_Previous;
   }
   //Closure_sp fc, core::T_O *valist_args, T_sp env = _Nil<T_O>());
 

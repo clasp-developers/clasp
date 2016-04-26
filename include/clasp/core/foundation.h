@@ -524,9 +524,7 @@ void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
 }
 
 namespace core {
-struct ThreadInfo;
 class MultipleValues;
-void lisp_setThreadLocalInfoPtr(ThreadInfo *address);
 MultipleValues &lisp_multipleValues();
 MultipleValues &lisp_callArgs();
 };
@@ -1171,11 +1169,16 @@ namespace core {
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
+    MultipleValues _MultipleValues;
 
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
   };
+
 };
+
+/*! Declare this in the top namespace */
+extern __thread core::ThreadLocalState *my_thread;
 
 
 namespace core {
@@ -1186,7 +1189,6 @@ namespace core {
   void thread_local_invocation_history_stack_push_frame(InvocationHistoryFrame* frame);
   int thread_local_invocation_bindings_size();
 };
-extern thread_local core::ThreadLocalState* thread;
 
 
 

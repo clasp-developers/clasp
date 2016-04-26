@@ -680,19 +680,6 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   return (Values(_Nil<T_O>()));
 };
 
-#if 0
-CL_LAMBDA(symbol);
-CL_DECLARE();
-CL_DOCSTRING("See CLHS: special-operator-p");
-CL_DEFUN T_sp core__treat_as_special_operator_p(T_sp sym) {
-  SYMBOL_EXPORT_SC_(CorePkg, debug_message);
-  if (sym == cl::_sym_unwind_protect)
-    return _Nil<T_O>(); // All handled in macros
-  if (sym == core::_sym_debug_message)
-    return _lisp->_true();
-  return cl__special_operator_p(sym);
-};
-#endif
 
 CL_DECLARE();
 CL_DOCSTRING("CLHS: ash");
@@ -1582,7 +1569,7 @@ int backtrace_length(InvocationHistoryFrame* frame) {
 
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *top = thread->_InvocationHistoryStack;
+  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
   int length = backtrace_length(top);
   InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create(top,length);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
@@ -1828,35 +1815,35 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("bdsTop");
 CL_DEFUN int core__bds_top() {
-  return thread->bindings().top();
+  return my_thread->bindings().top();
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVar");
 CL_DEFUN Symbol_sp core__bds_var(int idx) {
-  return thread->bindings().var(idx);
+  return my_thread->bindings().var(idx);
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVal");
 CL_DEFUN T_sp core__bds_val(int idx) {
-  return thread->bindings().val(idx);
+  return my_thread->bindings().val(idx);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStack");
 CL_DEFUN Vector_sp core__exception_stack() {
-  return thread->exceptionStack().backtrace();
+  return my_thread->exceptionStack().backtrace();
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStackDump");
 CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = thread->exceptionStack();
+  ExceptionStack &stack = my_thread->exceptionStack();
   printf("Exception stack size: %zu members\n", stack.size());
   for (int i(0); i < stack.size(); ++i) {
     string kind;
@@ -1883,7 +1870,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
-  DynamicBindingStack &bd = thread->bindings();
+  DynamicBindingStack &bd = my_thread->bindings();
   for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
     out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
   };
