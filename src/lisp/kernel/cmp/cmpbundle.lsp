@@ -91,7 +91,11 @@
 (defun execute-link (in-bundle-file in-all-names)
   ;; options are a list of strings like (list "-v")
   (let ((options nil)
-        (all-names (mapcar (lambda (n) (ensure-string n)) (if (listp in-all-names) in-all-names (list in-all-names))))
+        (all-names (mapcar (lambda (n)
+                             (ensure-string n))
+                           (if (listp in-all-names)
+                               in-all-names
+                               (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
     (cond
       ((member :target-os-darwin *features*)

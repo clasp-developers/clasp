@@ -72,6 +72,45 @@
 		 :successors (cleavir-ast-to-hir::successors context)))
 
 
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:debug-message-ast) context)
+  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
+  (format t "cleavir-ast-to-hir::compile-ast on debug-message-ast successors: ~a~%" (cleavir-ast-to-hir::successors context))
+  (make-instance 'clasp-cleavir-hir:debug-message-instruction 
+		 :debug-message (clasp-cleavir-ast:debug-message ast)
+		 :successors (cleavir-ast-to-hir::successors context)))
+
+
+
+(defmethod compile-ast ((ast clasp-cleavir-ast:intrinsic-call-ast) context)
+  (with-accessors ((results results)
+		   (successors successors))
+      context
+    (let* ((all-args (cleavir-ast:argument-asts ast))
+	   (temps (make-temps all-args)))
+      (compile-arguments
+       all-args
+       temps
+       (ecase (length successors)
+	 (1
+	  (if (typep results 'cleavir-ir:values-location)
+	      (make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+                             :function-name (function-name ast)
+                             :inputs temps
+                             :outputs (list results)
+                             :successors successors)
+	      (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
+		(make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+                               :function-name (function-name ast)
+                               :inputs temps
+                               :outputs (list values-temp)
+                               :successors
+                               (list (cleavir-ir:make-multiple-to-fixed-instruction
+                                      values-temp results (first successors)))))))
+	 (2
+	  (error "INTRINSIC-CALL-AST appears in a Boolean context.")))
+       (invocation context)))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Compile precalculated value AST nodes to HIR

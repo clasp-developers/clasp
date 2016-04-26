@@ -44,6 +44,7 @@
    #:make-precalc-vector-function-ast
    #:named-function-ast
    #:debug-message-ast
+   #:intrinsic-call-ast
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -76,6 +77,7 @@
    #:jump-id
    #:make-named-enter-instruction
    #:debug-message-instruction
+   #:intrinsic-call-instruction
    #:make-precalc-symbol-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction

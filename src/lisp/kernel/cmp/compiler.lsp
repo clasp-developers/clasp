@@ -1193,6 +1193,7 @@ jump to blocks within this tagbody."
     ((eq sym 'cl:catch) nil)  ;; handled with macro
     ((eq sym 'cl:throw) nil)  ;; handled with macro
     ((eq sym 'core:debug-message) t)   ;; special operator
+    ((eq sym 'core:intrinsic-call) t)  ;; Call intrinsic functions
     (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
