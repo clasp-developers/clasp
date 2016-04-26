@@ -95,6 +95,17 @@ boehm-release-cxx:
 boehm-release-cxx-a:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/release gc=boehm release clasp_install -a
 
+clasp-mps-o:
+	make etags
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install
+	(cd $(CLASP_HOME)/build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp clasp-mps-o ; fi)
+
+clasp-mps-o-a:
+	make etags
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install -a
+	(cd $(CLASP_HOME)/build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp clasp-mps-o ; fi)
+
+
 mps-release-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install
 
@@ -221,6 +232,15 @@ debug-mps:
 	bash
 
 
+etags:
+	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
+	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
+	$(CLASP_SBCL) \
+		--load $(CLASP_HOME)/src/common/build-json.lisp \
+		--eval "(build-json:dump-source-files \"bjam.out\" \"etags-source-files.txt\")" \
+		--eval "(quit)"
+	etags `cat etags-source-files.txt`
+
 
 
 scrape-all:
@@ -244,18 +264,10 @@ mps-interface-clasp:
 compile-commands:
 	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
 	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	clasp_boehmdc_o -f bclasp \
-		-l $(CLASP_HOME)/src/common/build-json.lisp \
-		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
-		-e "(quit)"
-
-compile-commands-boot:
-	-$(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install -n -a >bjam.out
-	-install -d $(CLASP_APP_RESOURCES_DIR)/build-databases
-	clasp_boehmdc_o -f bclasp \
-		-l $(CLASP_HOME)/src/common/build-json.lisp \
-		-e "(build-json:build-db \"bjam.out\" \"clasp_compile_commands\")" \
-		-e "(quit)"
+	$(CLASP_SBCL) \
+		--load $(CLASP_HOME)/src/common/build-json.lisp \
+		--eval "(build-json:build-db \"bjam.out\" \"$(CLASP_APP_RESOURCES_DIR)/build-databases/clasp_compile_commands.json\")" \
+		--eval "(quit)"
 
 mps-interface-run-boot:
 	clasp_boehmdc_o -f bclasp  \
