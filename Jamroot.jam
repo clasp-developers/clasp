@@ -4,7 +4,7 @@ import bitcode ;
 
 
 CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
-LLVM_VERSION = [ os.environ LLVM_VERSION ] ;
+LLVM_VERSION = [ os.environ LLVM_VERSION_X100 ] ;
 
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
 
@@ -64,6 +64,8 @@ project clasp : requirements
         <include>"/usr/include"
         <linkflags>"-L/usr/lib"
         <include>include    #clasp/include/*
+        <program>cando:<include>projects/cando/include
+        <include>./
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
@@ -73,12 +75,10 @@ project clasp : requirements
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
         <define>LLVM_VERSION=$(LLVM_VERSION)
-        <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
         <target-os>linux:<cxxflags>"-fPIC"
         <cxxflags>"-Wno-unused-local-typedef"
         <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk "
-        <include>./
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)

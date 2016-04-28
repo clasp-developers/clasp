@@ -7,6 +7,7 @@
       sb-alien::*default-c-string-external-format* :utf-8)
 
 (let ((lt (or *compile-file-truename* *load-truename*)))
+  (format t "lt = ~a~%" lt)
   (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
 
 (load "packages.lisp")
@@ -53,12 +54,14 @@ Read all of the scraped info files and interpret their tags."
 (defparameter *packages-to-create* nil)
 (defun do-scraping (args &key (run-preprocessor t) regenerate-sifs)
   (declare (optimize (debug 3)))
+  (format t "do-scraping args -> ~a~%" args)
   (let* ((*clang-path* (first args))
          (main-path (second args))
          (*default-pathname-defaults* (make-pathname :name nil :type nil :defaults main-path))
          (all-commands-fn (third args))
          (cpp-commands-fn (fourth args))
          (app-config (setup-application-config)))
+    (format t "do-scraping *default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
     ;; Run C-preprocessor to generate the missing files
     (let ((all-cc (read-compile-commands all-commands-fn))
           (cpp-cc (read-compile-commands cpp-commands-fn)))
@@ -91,6 +94,7 @@ Read all of the scraped info files and interpret their tags."
 #-testing-scraper
 (progn
   (let ((args (cdr (member "--" sb-ext:*posix-argv* :test #'string=))))
-  (format t "args: ~a~%" args)
-  (do-scraping args))
+    (format t "args: ~a~%" args)
+    (format t "*default-pathname-defaults* --> ~a~%" *default-pathname-defaults*)
+    (do-scraping args))
   (sb-ext:quit))

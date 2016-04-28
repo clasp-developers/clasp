@@ -50,11 +50,7 @@ THE SOFTWARE.
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/TargetSelect.h>
-#if LLVM_VERSION<370 // LLVM3.6
-#include <llvm/Target/TargetLibraryInfo.h>
-#else // LLVM3.7
 #include <llvm/Analysis/TargetLibraryInfo.h>
-#endif
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
@@ -1736,125 +1732,7 @@ struct to_object<llvm::ExecutionEngine *> {
 };
     ;
 
-#if LLVM_VERSION<370
-namespace llvmo {
-FORWARD(DataLayoutPass);
-c l a s s DataLayoutPass_O : public ImmutablePass_O {
-  L I S P_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DataLayoutPass, DataLayoutPass_O, "DataLayoutPass", ImmutablePass_O);
-  typedef llvm::DataLayoutPass ExternalType;
-  typedef llvm::DataLayoutPass *PointerToExternalType;
 
-public:
-  static DataLayoutPass_sp make();
-
-public:
-  PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  DataLayoutPass_O() : Base(){};
-  ~DataLayoutPass_O() {}
-}; // DataLayoutPass_O
-}; // llvmo
-/* from_object translators */
-#endif
-
-
-#if LLVM_VERSION<370
-namespace translate {
-template <>
-struct from_object<llvm::DataLayoutPass *, std::true_type> {
-  typedef llvm::DataLayoutPass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr()){};
-};
-template <>
-struct from_object<llvm::DataLayoutPass const &, std::true_type> {
-  typedef llvm::DataLayoutPass const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr())){};
-};
-};
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::DataLayoutPass *> {
-  static core::T_sp convert(llvm::DataLayoutPass *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayoutPass_O, llvm::DataLayoutPass *>(ptr)));
-  }
-};
-};
-
-namespace translate {
-template <>
-struct to_object<const llvm::DataLayoutPass *> {
-  static core::T_sp convert(const llvm::DataLayoutPass *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayoutPass_O, llvm::DataLayoutPass *>(const_cast<llvm::DataLayoutPass *>(ptr))));
-  }
-};
-};
-#endif
-
-#if LLVM_VERSION<370
-// LLVM3.6
-namespace llvmo {
-FORWARD(TargetLibraryInfo);
-c l a s s TargetLibraryInfo_O : public ImmutablePass_O {
-  L I S P_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfo, TargetLibraryInfo_O, "TargetLibraryInfo", ImmutablePass_O);
-  typedef llvm::TargetLibraryInfo ExternalType;
-  typedef llvm::TargetLibraryInfo *PointerToExternalType;
-
-public:
-  static TargetLibraryInfo_sp make(llvm::Triple *triple);
-
-public:
-  PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    //	    if (this->_ptr != NULL ) delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  TargetLibraryInfo_O() : Base(){};
-  ~TargetLibraryInfo_O() { /*if (this->_ptr) delete this->_ptr;*/
-  }
-}; // TargetLibraryInfo_O
-}; // llvmo
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::TargetLibraryInfo *, std::true_type> {
-  typedef llvm::TargetLibraryInfo *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::TargetLibraryInfo_sp>(object)->wrappedPtr()){};
-};
-template <>
-struct from_object<llvm::TargetLibraryInfo const &, std::true_type> {
-  typedef llvm::TargetLibraryInfo const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::TargetLibraryInfo_sp>(object)->wrappedPtr())){};
-};
-template <>
-struct to_object<llvm::TargetLibraryInfo *> {
-  static core::T_sp convert(llvm::TargetLibraryInfo *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfo_O, llvm::TargetLibraryInfo *>(ptr)));
-  }
-};
-template <>
-struct to_object<const llvm::TargetLibraryInfo *> {
-  static core::T_sp convert(const llvm::TargetLibraryInfo *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfo_O, llvm::TargetLibraryInfo *>(const_cast<llvm::TargetLibraryInfo *>(ptr))));
-  }
-};
-};
-    ;
-
-#else
 //
 // This is needed for llvm3.7     What did I do before this?????
 //
@@ -1911,7 +1789,6 @@ struct to_object<const llvm::TargetLibraryInfoWrapperPass *> {
 };
     ;
 
-#endif
 
 #if 0
 namespace llvmo

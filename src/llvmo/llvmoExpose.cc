@@ -534,7 +534,6 @@ CL_DEFMETHOD void TargetOptions_O::setfNoFramePointerElim(bool val) {
   // if val == true then turn OFF FramePointerElim
   this->wrappedPtr()->NoFramePointerElim = val;
 }
-#endif
 
 CL_LISPIFY_NAME("JITEmitDebugInfo");
 CL_DEFMETHOD bool TargetOptions_O::JITEmitDebugInfo() {
@@ -1133,39 +1132,6 @@ CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
 
 }; // llvmo
 
-#if LLVM_VERSION<370
-namespace llvmo {
-
-
-CL_LAMBDA();
-CL_PKG_NAME(LlvmoPkg,"makeDataLayoutPass");
-CL_DEFUN DataLayoutPass_sp DataLayoutPass_O::make() {
-  GC_ALLOCATE(DataLayoutPass_O, self);
-  self->_ptr = new llvm::DataLayoutPass();
-  return self;
-};
-
-
-}; // llvmo
-#endif
-
-#if LLVM_VERSION<370
-// LLVM 3.6
-namespace llvmo {
-
-
-CL_LAMBDA(triple);
-CL_PKG_NAME(LlvmoPkg,"makeTargetLibraryInfo");
-CL_DEFUN TargetLibraryInfo_sp TargetLibraryInfo_O::make(llvm::Triple *tripleP) {
-  GC_ALLOCATE(TargetLibraryInfo_O, self);
-  self->_ptr = new llvm::TargetLibraryInfo(*tripleP);
-  ASSERT(self->_ptr);
-  return self;
-};
-
-}; // llvmo
-
-#else
 // This is needed for llvm3.7
 //
 namespace llvmo {
@@ -1182,7 +1148,6 @@ CL_DEFUN TargetLibraryInfoWrapperPass_sp TargetLibraryInfoWrapperPass_O::make(ll
 ;
 
 }; // llvmo
-#endif //
 
 #if 0 // TargetData was depreciated
 namespace llvmo

@@ -163,7 +163,7 @@ typedef bool _Bool;
 #include <clasp/asttooling/Marshallers.h>
 
 #define GC_INTERFACE_INCLUDE
-#include <project_headers.h>
+#include <include/project_headers.h>
 #undef GC_INTERFACE_INCLUDE
 
 #define NAMESPACE_gctools
