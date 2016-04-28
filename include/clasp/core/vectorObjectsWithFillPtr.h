@@ -34,8 +34,7 @@ THE SOFTWARE.
 namespace core {
 FORWARD(VectorObjectsWithFillPtr);
 class VectorObjectsWithFillPtr_O : public VectorObjects_O {
-  LISP_BASE1(VectorObjects_O);
-  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr");
+  LISP_CLASS(core, CorePkg, VectorObjectsWithFillPtr_O, "VectorObjectsWithFillPtr",VectorObjects_O);
   void archiveBase(SNode_sp node);
 
 public:
@@ -51,17 +50,18 @@ public:
 public: // Functions here
   gc::Fixnum length() const { return this->_FillPtr; };
 
+  void clear() { this->_FillPtr = 0; };
   virtual bool arrayHasFillPointerP() const { return true; };
-  virtual T_sp &operator[](uint index);
+  virtual T_sp &operator[](uint index) {  return this->_Values[index]; };
+  virtual const T_sp &operator[](uint index) const { return this->_Values[index];};
 
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);
 
-
   string __repr__() const;
 
   cl_index fillPointer() const { return this->_FillPtr; };
-  void setf_fillPointer(cl_index fp);
+  void setFillPointer(size_t fp);
   void unsafe_setf_fill_pointer(Fixnum fp) { this->_FillPtr = fp; };
   T_sp vectorPush(T_sp newElement);
   Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 16);
@@ -69,14 +69,12 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::VectorObjectsWithFillPtr_O);
 
 template <>
 struct gctools::GCInfo<core::VectorObjectsWithFillPtr_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorObjectsWithFillPtr_H */

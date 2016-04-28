@@ -29,7 +29,9 @@ THE SOFTWARE.
 #define _singleDispatchMethod_fwd_H_
 
 namespace core {
+  FORWARD(SingleDispatchMethodFunction);
 FORWARD(SingleDispatchMethod);
+ FORWARD(CxxMethodFunction);
 };
 
 #endif /* _singleDispatchMethod_fwd_H_ */

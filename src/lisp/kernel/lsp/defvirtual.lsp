@@ -27,6 +27,8 @@
                                                  :body ,compiled-body))))))
 ||#
 
+(defmacro define-single-dispatch-generic-function (name lambda-list)
+  `(core:ensure-single-dispatch-generic-function ',name ,lambda-list))
 
 (defmacro defvirtual (name &rest args)
   (let ((lambda-list (if args
@@ -49,6 +51,6 @@
                                                                      ',declares 'function)
                                                :docstring ,docstring
                                                :body ,fn))))))
-(export 'defvirtual)
+(export '(define-single-dispatch-generic-function defvirtual))
 
       

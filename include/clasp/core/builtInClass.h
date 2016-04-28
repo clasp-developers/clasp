@@ -39,9 +39,8 @@ namespace core {
 
 SMART(BuiltInClass);
 class BuiltInClass_O : public Class_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, ClPkg, BuiltInClass_O, "BuiltInClass");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, ClPkg, BuiltInClass_O, "BuiltInClass",Class_O);
 
 private:
   //	string			_InitializationArgumentString;
@@ -66,17 +65,15 @@ public:
   /*! Allocate and initialize an instance of this class
          */
   T_sp allocateAndInitialize();
-  explicit BuiltInClass_O() {};
-  virtual ~BuiltInClass_O() {};
+  explicit BuiltInClass_O(){};
+  virtual ~BuiltInClass_O(){};
 };
 };
-TRANSLATE(core::BuiltInClass_O);
 template <>
 struct gctools::GCInfo<core::BuiltInClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]

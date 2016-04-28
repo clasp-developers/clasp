@@ -73,13 +73,13 @@ namespace llvmo {
 #define ARGS_af_addGlobalBootFunctionsSizePass "(pass-manager)"
 #define DECL_af_addGlobalBootFunctionsSizePass ""
 #define DOCS_af_addGlobalBootFunctionsSizePass "addGlobalBootFunctionsSizePass"
-void af_addGlobalBootFunctionsSizePass(llvmo::PassManager_sp passManager) {
+CL_DEFUN void llvm_sys__addGlobalBootFunctionsSizePass(llvmo::PassManager_sp passManager) {
   ModulePass *claspLinkPass = new ClaspLinkPass();
   passManager->wrappedPtr()->add(claspLinkPass);
 }
 
 void initialize_claspLinkPass() {
-  core::af_def(LlvmoPkg, "addGlobalBootFunctionsSizePass", &af_addGlobalBootFunctionsSizePass);
+//  core::af_def(LlvmoPkg, "addGlobalBootFunctionsSizePass", &af_addGlobalBootFunctionsSizePass);
 }
 };
 

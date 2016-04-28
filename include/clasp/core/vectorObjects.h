@@ -40,9 +40,7 @@ namespace core {
 FORWARD(VectorObjects);
 class VectorObjects_O : public Vector_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
-  LISP_BASE1(Vector_O);
-  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects");
-  DECLARE_INIT();
+  LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
 
   void archiveBase(SNode_sp node);
 
@@ -54,7 +52,7 @@ public:
   typedef gctools::Vec0<T_sp> vector_type;
   typedef gctools::Vec0<T_sp>::iterator iterator;
 
-GCPROTECTED: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
+public: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
   T_sp _ElementType;
   bool _Adjustable;
   vector_type _Values;
@@ -82,9 +80,13 @@ public: // Functions here
   bool adjustableArrayP() const { return this->_Adjustable; };
 
   virtual T_sp aset_unsafe(int j, T_sp val);
-  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };
 
-  virtual std::vector<cl_index> dimensions() const { std::vector<cl_index> dims; dims.push_back(this->length()); return dims;};
+  virtual std::vector<cl_index> dimensions() const {
+    std::vector<cl_index> dims;
+    dims.push_back(this->length());
+    return dims;
+  };
   virtual gc::Fixnum dimension() const { return this->_Values.size(); };
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;
@@ -101,7 +103,7 @@ public: // Functions here
   /*! Swap the contents of the VectorObjects */
   void swap(VectorObjects_sp vec);
 
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   virtual T_sp setf_aref(List_sp indices_val);
 
   virtual T_sp elt(int index) const;
@@ -122,13 +124,11 @@ public: // Functions here
 };
 
 }; /* core */
-TRANSLATE(core::VectorObjects_O);
 template <>
 struct gctools::GCInfo<core::VectorObjects_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif /* _core_VectorObjects_H */

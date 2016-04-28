@@ -29,11 +29,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_af_pointerRelease "(arg)"
-#define DECL_af_pointerRelease ""
-#define DOCS_af_pointerRelease "pointerRelease"
-Pointer_sp af_pointerRelease(T_sp ptr) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pointerRelease");
+CL_DEFUN Pointer_sp core__pointer_release(T_sp ptr) {
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
   };
@@ -43,11 +42,10 @@ Pointer_sp af_pointerRelease(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-#define ARGS_af_pointerDelete "(arg)"
-#define DECL_af_pointerDelete ""
-#define DOCS_af_pointerDelete "pointerDelete"
-void af_pointerDelete(T_sp ptr) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pointerDelete");
+CL_DEFUN void core__pointer_delete(T_sp ptr) {
   if (ptr.nilp()) {
     return;
   };
@@ -58,7 +56,7 @@ void af_pointerDelete(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not release pointer for %s") % _rep_(ptr));
 }
 
-EXPOSE_CLASS(core, WrappedPointer_O);
+
 
 T_sp WrappedPointer_O::instanceClassSet(Class_sp cl) {
   this->_Class = cl;
@@ -66,29 +64,26 @@ T_sp WrappedPointer_O::instanceClassSet(Class_sp cl) {
 }
 
 void WrappedPointer_O::setInstanceClassUsingSymbol(Symbol_sp classSymbol) {
-  Class_sp cl = gc::As<Class_sp>(cl_findClass(classSymbol));
+  Class_sp cl = gc::As<Class_sp>(cl__find_class(classSymbol));
   this->instanceClassSet(cl);
 }
 
 bool WrappedPointer_O::eql_(T_sp obj) const {
-  _G();
-  if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>() ) {
+  if (WrappedPointer_sp wo = obj.asOrNull<WrappedPointer_O>()) {
     return (wo->mostDerivedPointer() == this->mostDerivedPointer());
   }
   return false;
 }
 
 Pointer_sp WrappedPointer_O::address() const {
-  _G();
   void *addr = this->mostDerivedPointer();
   return Pointer_O::create(addr);
 }
 
-#define ARGS_af_pointerAddress "(arg)"
-#define DECL_af_pointerAddress ""
-#define DOCS_af_pointerAddress "pointerAddress"
-T_sp af_pointerAddress(T_sp ptr) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("pointerAddress");
+CL_DEFUN T_sp core__pointer_address(T_sp ptr) {
   if (ptr.nilp()) {
     return _Nil<Pointer_O>();
   };
@@ -98,18 +93,6 @@ T_sp af_pointerAddress(T_sp ptr) {
   SIMPLE_ERROR(BF("Could not get address of pointer for %s") % _rep_(ptr));
 };
 
-void WrappedPointer_O::exposeCando(core::Lisp_sp e) {
-  class_<WrappedPointer_O>()
-      .def("validp", &WrappedPointer_O::validp);
-  Defun(pointerRelease);
-  Defun(pointerDelete);
-  Defun(pointerAddress);
-}
 
-void WrappedPointer_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, WrappedPointer, "", "", _lisp);
-#endif //]
-}
+
 };

@@ -37,7 +37,7 @@ extern "C" {
 #include <stdint.h>
 
 #include <clasp/core/foundation.h>
-#include <clasp/gctools/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -46,7 +46,7 @@ extern "C" {
 using namespace core;
 
 namespace cl {
-extern core::Symbol_sp _sym_fixnum;
+extern core::Symbol_sp& _sym_fixnum;
 };
 
 namespace gctools {
@@ -54,38 +54,13 @@ namespace gctools {
 uint64_t globalBytesAllocated = 0;
 bool _GlobalDebugAllocations = false;
 
-
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 
-
-
-
-
-
-#pragma GCC visibility push(default)
-#define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef GcToolsPkg_SYMBOLS
-#pragma GCC visibility pop
-
-void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
+void GcToolsExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
-
-#define GcToolsPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)                   \
-  {                                                                     \
-    gctools::cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
-    gctools::cname->exportYourself(exportp);                            \
-  }
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef GcToolsPkg_SYMBOLS
 
   } break;
   case candoFunctions: {
@@ -94,12 +69,36 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
     SYMBOL_EXPORT_SC_(GcToolsPkg, maxBootstrapKinds);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindsP);
     SYMBOL_EXPORT_SC_(GcToolsPkg, bootstrapKindSymbols);
+    SYMBOL_EXPORT_SC_(GcToolsPkg, STARkind_field_layout_table_cmdsSTAR );
+
+    SYMBOL_EXPORT_SC_(GcToolsPkg,class_kind);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,container_kind);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,templated_kind);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,fixed_field);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,variable_array0);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,variable_capacity);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,variable_field);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,templated_class_jump_table_index);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,container_jump_table_index);
+    SYMBOL_EXPORT_SC_(GcToolsPkg,layout_end);
+
     initialize_gc_functions();
-    telemetry::initialize_telemetry_functions();
     //nothing
   };
       break;
   case candoGlobals: {
+    core::SymbolToEnumConverter_sp conv = core::SymbolToEnumConverter_O::create("kind field layout cmds");
+    _sym_STARkind_field_layout_table_cmdsSTAR->defparameter(conv);
+    conv->addSymbolEnumPair(_sym_class_kind,_sym_class_kind,class_kind);
+    conv->addSymbolEnumPair(_sym_container_kind,_sym_container_kind,container_kind);
+    conv->addSymbolEnumPair(_sym_templated_kind,_sym_templated_kind,templated_kind);
+    conv->addSymbolEnumPair(_sym_fixed_field,_sym_fixed_field,fixed_field);
+    conv->addSymbolEnumPair(_sym_variable_array0,_sym_variable_array0,variable_array0);
+    conv->addSymbolEnumPair(_sym_variable_capacity,_sym_variable_capacity,variable_capacity);
+    conv->addSymbolEnumPair(_sym_variable_field,_sym_variable_field,variable_field);
+    conv->addSymbolEnumPair(_sym_templated_class_jump_table_index,_sym_templated_class_jump_table_index,templated_class_jump_table_index);
+    conv->addSymbolEnumPair(_sym_container_jump_table_index,_sym_container_jump_table_index,container_jump_table_index);
+    conv->addSymbolEnumPair(_sym_layout_end,_sym_layout_end,layout_end);
   };
       break;
   case pythonClasses:
@@ -111,12 +110,3 @@ void GcToolsExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what
 }
 };
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-#define _CLASS_MACRO(_U_) \
-  STATIC_CLASS_INFO(_U_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#include INIT_CLASSES_INC_H
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

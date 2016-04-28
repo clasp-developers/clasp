@@ -35,32 +35,22 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/clbind/clbind_wrappers.h>
 #include <clasp/llvmo/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/asttooling/translators.h>
 #include <clasp/asttooling/astVisitor.h>
 
 namespace asttooling {
 
-#define ARGS_af_makeAstVisitor "(target)"
-#define DECL_af_makeAstVisitor ""
-#define DOCS_af_makeAstVisitor "makeAstVisitor"
-AstVisitor_sp af_makeAstVisitor(core::T_sp target) {
-  _G();
+#define ARGS_ast_tooling__makeAstVisitor "(target)"
+#define DECL_ast_tooling__makeAstVisitor ""
+#define DOCS_ast_tooling__makeAstVisitor "makeAstVisitor"
+CL_DEFUN AstVisitor_sp ast_tooling__makeAstVisitor(core::T_sp target) {
   return AstVisitor_O::create(target);
 };
 
-EXPOSE_CLASS(asttooling, AstVisitor_O);
 
-void AstVisitor_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<AstVisitor_O>();
-}
 
-void AstVisitor_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, AstVisitor, "", "", _lisp);
-#endif
-};
+
 
 SYMBOL_EXPORT_SC_(AstToolingPkg, VisitStmt);
 
@@ -1450,7 +1440,7 @@ bool AstVisitor_O::VisitStmt(clang::Stmt *node) {
 #endif
 
 void initialize_astVisitor() {
-  Defun(makeAstVisitor);
+//  Defun(makeAstVisitor);
 
   {
     using namespace clbind;

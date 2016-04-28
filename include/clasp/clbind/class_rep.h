@@ -88,9 +88,8 @@ struct class_registration;
 struct conversion_storage;
 
 class ClassRep_O : public core::BuiltInClass_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(core::BuiltInClass_O);
-  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::BuiltInClass_O);
 
   friend struct class_registration;
 
@@ -101,14 +100,14 @@ public:
 
   ClassRep_O() : m_derivable(false){};
 
-  ClassRep_O(type_id const &type, const char *name, bool derivable);
+  ClassRep_O(type_id const &type, const std::string &name, bool derivable);
 
-  ClassRep_O(const char *name, bool derivable);
+  ClassRep_O(const std::string &name, bool derivable);
 
   virtual ~ClassRep_O();
 
 public:
-  static ClassRep_sp create(type_id const &mtype, const char *name, bool derivable) {
+  static ClassRep_sp create(type_id const &mtype, const std::string &name, bool derivable) {
     GC_ALLOCATE_VARIADIC(ClassRep_O, val, mtype, name, derivable);
     return val;
   }
@@ -132,7 +131,7 @@ public:
   void set_type(type_id const &t) { m_type = t; }
   type_id const &type() const throw() { return m_type; }
 
-  const char *name() const throw() { return m_name; }
+  std::string name() const throw() { return m_name; }
 
 #if 0 // begin_meister_disabled
         // the lua reference to the metatable for this class' instances
@@ -182,7 +181,7 @@ GCPRIVATE:
   gctools::Vec0<core::Cons_sp> m_bases;
 
   // the class' name (as given when registered to lua with class_)
-  const char *m_name;
+  std::string m_name;
 
   detail::cast_graph *m_casts;
   /* What does this store???? */
@@ -196,8 +195,7 @@ template <>
 struct gctools::GCInfo<clbind::ClassRep_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 //#include <clasp/clbind/detail/overload_rep_impl.hpp>

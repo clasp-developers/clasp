@@ -35,18 +35,18 @@ THE SOFTWARE.
 
 namespace core {
 
-void Cache::setup(int keySize, int cacheSize) {
+void Cache_O::setup(int keySize, int cacheSize) {
   this->_keys.resize(keySize, _Nil<T_O>());
   CacheRecord empty(_Nil<T_O>(), _Nil<T_O>(), 0);
   this->_table.resize(cacheSize, empty);
 }
 
-void Cache::removeOne(T_sp firstKey) {
-  // For multithreading ecl_cache_remove_one does an ecl_atomic_push
+void Cache_O::removeOne(T_sp firstKey) {
+  // For multithreading ecl_cache_remove_one does an ecl__atomic_push
   this->clearOneFromCache(firstKey);
 }
 
-void Cache::clearOneFromCache(T_sp target) {
+void Cache_O::clearOneFromCache(T_sp target) {
   for (int i(0); i < this->_table.size(); ++i) {
     T_sp key = this->_table[i]._key;
     if (key.notnilp()) {
@@ -58,7 +58,7 @@ void Cache::clearOneFromCache(T_sp target) {
   }
 }
 
-void Cache::empty() {
+void Cache_O::empty() {
   this->_generation = 0;
   for (int i(0); i < this->_table.size(); ++i) {
     CacheRecord &self = this->_table[i];
@@ -68,7 +68,7 @@ void Cache::empty() {
   }
 }
 
-cl_intptr_t Cache::vector_hash_key(gctools::Vec0<T_sp> &keys) {
+cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
 #if DEBUG_CLOS >= 2
   printf("MLOG vector_hash_key keys->vector.fillp = %d %s:%d\n", keys->fillPointer(), __FILE__, __LINE__);
   if (keys->fillPointer() > 0) {
@@ -97,7 +97,7 @@ cl_intptr_t Cache::vector_hash_key(gctools::Vec0<T_sp> &keys) {
 }
 
 /*! TODO: I don't think this cache is location aware - it may need to be tuned to handle a moving garbage collector */
-void Cache::search_cache(CacheRecord *&min_e) {
+void Cache_O::search_cache(CacheRecord *&min_e) {
   ++this->_searches;
   gctools::Vec0<CacheRecord> &table = this->_table;
   gctools::Vec0<T_sp> &keys = this->_keys;
@@ -127,10 +127,10 @@ void Cache::search_cache(CacheRecord *&min_e) {
       }
       /* Else we only know that the record has been
 	 * deleted, but we might find our data ahead. */
-    } else if (argno == cl_length(gc::As<VectorObjects_sp>(hkey))) { // if (argno == hkey->vector.fillp) {
+    } else if (argno == gctools::reinterpret_cast_smart_ptr<VectorObjects_O>(hkey)->_Values.size()) {
       int n;                                                         // cl_index n;
       for (n = 0; n < argno; n++) {
-        if (keys[n] != gc::As<VectorObjects_sp>(hkey)->operator[](n))
+        if (keys[n] != gctools::reinterpret_cast_smart_ptr<VectorObjects_O>(hkey)->_Values[n])
           // if (keys->vector.self.t[n] != hkey->vector.self.t[n])
           goto NO_MATCH;
       }
@@ -184,17 +184,14 @@ FOUND:
   }
 }
 
-#define ARGS_core_clearGenericFunctionDispatchCache "()"
-#define DECL_core_clearGenericFunctionDispatchCache ""
-#define DOCS_core_clearGenericFunctionDispatchCache "clearGenericFunctionDispatchCache"
-void core_clearGenericFunctionDispatchCache() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("clearGenericFunctionDispatchCache");
+CL_DEFUN void core__clear_generic_function_dispatch_cache() {
   printf("%s:%d Clearing generic function dispatch cache\n", __FILE__, __LINE__);
   _lisp->methodCachePtr()->empty();
 };
 
 void initialize_cache() {
-  _G();
-  CoreDefun(clearGenericFunctionDispatchCache);
 }
 };

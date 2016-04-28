@@ -1,4 +1,0 @@
-// symbolTable
-// SYMBOL_TABLE_ENTRY    ClbindPkg    0 ClassRep_O                     CLASS-REP                      export ; cName=_sym_ClassRep_O lispName=CLASS-REP
-// SYMBOL_TABLE_ENTRY    ClbindPkg    1 STARtheClassRegistrySTAR       *THE-CLASS-REGISTRY*           export ; cName=_sym_STARtheClassRegistrySTAR lispName=*THE-CLASS-REGISTRY*
-// SYMBOL_TABLE_ENTRY    ClbindPkg    2 ClassRegistry_O                CLASS-REGISTRY                 export ; cName=_sym_ClassRegistry_O lispName=CLASS-REGISTRY

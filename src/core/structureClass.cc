@@ -52,6 +52,7 @@ StructureClass_sp StructureClass_O::createUncollectable() {
 #endif
 
 StructureClass_O::StructureClass_O() {
+//  printf("%s:%d In StructureClass_O ctor\n", __FILE__, __LINE__ );
 }
 
 void StructureClass_O::initialize() {
@@ -67,9 +68,29 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 }
 #endif // defined(XML_ARCHIVE)
 
+
+CL_LISPIFY_NAME("core:ensure-structure-class");
+CL_DEFUN StructureClass_sp StructureClass_O::ensure_structure_class(Symbol_sp name, T_sp included_class, List_sp mixins)
+{
+  GC_ALLOCATE(StructureClass_O, sc);
+  sc->setName(name);
+  List_sp direct_superclasses = _Nil<T_O>();
+  if ( included_class.notnilp() ) {
+    direct_superclasses = Cons_O::create(included_class,_Nil<T_O>());
+  }
+  for ( auto cur : mixins ) {
+    T_sp mix = oCar(cur);
+    direct_superclasses = Cons_O::create(mix,direct_superclasses);
+  }
+  sc->setInstanceBaseClasses(direct_superclasses);
+  eval::funcall(core::_sym_setf_findClass,sc,name);
+  return sc;
+}
+
+
 #if 0 // All functions
     void	StructureClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
-    {_G();
+    {
 	IMPLEMENT_ME(); // Create a forward-referenced-class
 	if ( node==NULL ) return;
 	this->_SlotSpecifiers.clear();
@@ -107,7 +128,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
       [Cons of metaclasses] - return the cons of metaclasses.
     */
     Cons_sp StructureClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp)
-    {_G();
+    {
 	Cons_sp baseClasses;
 	if ( baseClassesDesignator.nilp() )
 	{
@@ -145,7 +166,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
     }
 
     void	StructureClass_O::describe()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	_lisp->print(BF("------------  StructureClass name: %s    instanceClassSymbol: %d") % this->_Name->__repr__() % this->_InstanceClassSymbol );
@@ -166,7 +187,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
     }
 
     string StructureClass_O::dumpInfo()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	stringstream ss;
@@ -195,7 +216,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     StructureClass_O::slotIterator StructureClass_O::find(Symbol_sp sym)
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	ASSERTNOTNULL(sym);
@@ -221,7 +242,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     T_sp StructureClass_O::allocate_newNil()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
@@ -236,7 +257,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     void StructureClass_O::appendInstanceVariablesFromListOfSymbols(Cons_sp instanceVariableNames)
-    {_G();
+    {
 	StructureClass_O::slotIterator si;
 	for (Cons_sp ci = instanceVariableNames; ci.notnilp(); ci=ci->cdr() )
 	{
@@ -250,7 +271,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 	}
     }
     void StructureClass_O::appendInstanceVariablesFromStructureClass(StructureClass_sp cc)
-    {_G();
+    {
 	StructureClass_O::slotIterator si;
 	for (si = cc->begin(); si!=cc->end(); si++ )
 	{
@@ -265,7 +286,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 
     void StructureClass_O::resetSlots()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	this->_SlotSpecifiers.clear();
@@ -275,7 +296,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 
     void StructureClass_O::setupAccessors(List_sp slotNames)
-    {_G();
+    {
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
 	this->_InstanceVariableNames = slotNames;
@@ -297,15 +318,7 @@ void StructureClass_O::archiveBase(ArchiveP node) {
 
 #endif
 
-void StructureClass_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureClass_O>();
-}
-void StructureClass_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StructureClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StructureClass_O);
+
+
 };

@@ -51,19 +51,13 @@ namespace core {
 */
 const char *keywords_saveArchive[] = {":debug", ""};
 
-EXPOSE_CLASS(core, SexpSaveArchive_O);
 
-void SexpSaveArchive_O::exposeCando(Lisp_sp lisp) {
-  _G();
-  class_<SexpSaveArchive_O>("make-sexp-save-archive")
-      .def("sexpSaveArchiveWrite", &SexpSaveArchive_O::sexpSaveArchiveWrite);
-}
-void SexpSaveArchive_O::exposePython(Lisp_sp lisp) {
-  _G();
-}
+
+
 
 void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream) {
-  _G();
+  DEPRECIATED();
+#if 0
   if (snode->refCount() > 1) {
     T_sp ref = snodeToRef->gethash(snode, _Nil<T_O>());
     if (ref.notnilp()) {
@@ -111,9 +105,11 @@ void SexpSaveArchive_O::write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stre
     }
     clasp_write_char(')', stream);
   }
+#endif
 }
 
-void SexpSaveArchive_O::sexpSaveArchiveWrite(T_sp streamDesignator) {
+CL_LISPIFY_NAME("sexpSaveArchiveWrite");
+CL_DEFMETHOD void SexpSaveArchive_O::sexpSaveArchiveWrite(T_sp streamDesignator) {
   DynamicScopeManager scope(_sym_STARserializerArchiveSTAR, this->asSmartPtr());
   T_sp stream = coerce::outputStreamDesignator(streamDesignator);
   HashTable_sp sNodeToRef = HashTable_O::create(cl::_sym_eq);

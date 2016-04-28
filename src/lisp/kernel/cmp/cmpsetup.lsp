@@ -76,12 +76,6 @@ Options are :tagbody :go :all :eh-landing-pads
 
 
 ;;
-;; Define the first environment id
-;;
-(defvar *next-environment-id* 2000000)
-
-
-;;
 ;; Keep track of with-try basic blocks
 ;;
 (defparameter *next-try-id* 0)

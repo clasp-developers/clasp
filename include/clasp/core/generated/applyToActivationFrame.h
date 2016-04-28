@@ -4,38 +4,38 @@
 
 #ifdef APPLY_TO_ACTIVATION_FRAME    // Reg = -1
 case 0:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
+return (*func)(func.raw_(), LCC_UNUSED, 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED    );
 // Reg = 0
 case 1:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 1 , LCC_FROM_SMART_PTR(frame[0])  , LCC_UNUSED , LCC_UNUSED    );
+return (*func)(func.raw_(), LCC_UNUSED, 1 , LCC_FROM_SMART_PTR(frame[0])  , LCC_UNUSED , LCC_UNUSED    );
 // Reg = 1
 case 2:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 2 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1])  , LCC_UNUSED    );
+return (*func)(func.raw_(), LCC_UNUSED, 2 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1])  , LCC_UNUSED    );
 // Reg = 2
 case 3:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 3 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 3 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])     );
 // Reg = 2
 case 4:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 4 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 4 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 );
 // Reg = 2
 case 5:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 5 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 5 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 );
 // Reg = 2
 case 6:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 6 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 6 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
 );
 // Reg = 2
 case 7:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 7 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 7 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -43,7 +43,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 7 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FR
 );
 // Reg = 2
 case 8:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 8 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 8 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -52,7 +52,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 8 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FR
 );
 // Reg = 2
 case 9:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 9 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 9 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -62,7 +62,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 9 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FR
 );
 // Reg = 2
 case 10:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 10 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 10 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -73,7 +73,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 10 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 11:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 11 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 11 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -85,7 +85,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 11 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 12:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 12 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 12 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -98,7 +98,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 12 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 13:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 13 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 13 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -112,7 +112,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 13 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 14:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 14 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 14 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -127,7 +127,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 14 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 15:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 15 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 15 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -143,7 +143,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 15 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 16:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 16 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 16 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -160,7 +160,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 16 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 17:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 17 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 17 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -178,7 +178,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 17 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 18:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 18 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 18 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -197,7 +197,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 18 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 19:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 19 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 19 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -217,7 +217,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 19 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 20:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 20 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 20 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -238,7 +238,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 20 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 21:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 21 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 21 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -260,7 +260,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 21 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 22:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 22 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 22 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -283,7 +283,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 22 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 23:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 23 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 23 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -307,7 +307,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 23 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 24:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 24 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 24 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -332,7 +332,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 24 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 25:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 25 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 25 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -358,7 +358,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 25 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 26:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 26 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 26 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -385,7 +385,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 26 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 27:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 27 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 27 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -413,7 +413,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 27 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 28:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 28 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 28 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -442,7 +442,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 28 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 29:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 29 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 29 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -472,7 +472,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 29 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 30:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 30 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 30 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -503,7 +503,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 30 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 31:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 31 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 31 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -535,7 +535,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 31 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 32:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 32 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 32 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -568,7 +568,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 32 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 33:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 33 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 33 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -602,7 +602,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 33 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 34:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 34 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 34 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -637,7 +637,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 34 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 35:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 35 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 35 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -673,7 +673,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 35 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 36:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 36 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 36 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -710,7 +710,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 36 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 37:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 37 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 37 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -748,7 +748,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 37 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 38:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 38 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 38 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -787,7 +787,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 38 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 39:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 39 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 39 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -827,7 +827,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 39 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 40:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 40 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 40 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -868,7 +868,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 40 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 41:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 41 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 41 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -910,7 +910,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 41 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 42:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 42 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 42 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -953,7 +953,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 42 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 43:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 43 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 43 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -997,7 +997,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 43 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 44:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 44 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 44 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1042,7 +1042,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 44 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 45:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 45 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 45 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1088,7 +1088,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 45 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 46:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 46 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 46 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1135,7 +1135,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 46 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 47:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 47 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 47 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1183,7 +1183,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 47 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 48:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 48 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 48 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1232,7 +1232,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 48 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 49:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 49 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 49 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1282,7 +1282,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 49 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 50:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 50 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 50 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1333,7 +1333,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 50 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 51:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 51 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 51 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1385,7 +1385,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 51 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 52:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 52 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 52 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1438,7 +1438,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 52 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 53:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 53 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 53 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1492,7 +1492,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 53 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 54:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 54 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 54 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1547,7 +1547,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 54 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 55:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 55 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 55 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1603,7 +1603,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 55 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 56:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 56 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 56 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1660,7 +1660,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 56 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 57:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 57 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 57 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1718,7 +1718,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 57 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 58:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 58 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 58 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1777,7 +1777,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 58 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 59:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 59 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 59 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1837,7 +1837,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 59 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 60:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 60 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 60 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1898,7 +1898,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 60 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 61:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 61 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 61 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -1960,7 +1960,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 61 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 62:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 62 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 62 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -2023,7 +2023,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 62 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 63:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 63 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 63 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -2087,7 +2087,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 63 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 );
 // Reg = 2
 case 64:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 64 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
+return (*func)(func.raw_(), LCC_UNUSED, 64 , LCC_FROM_SMART_PTR(frame[0]) , LCC_FROM_SMART_PTR(frame[1]) ,
     LCC_FROM_SMART_PTR(frame[2])       , LCC_FROM_SMART_PTR(frame[3])
 , LCC_FROM_SMART_PTR(frame[4])
 , LCC_FROM_SMART_PTR(frame[5])
@@ -2153,41 +2153,41 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 64 , LCC_FROM_SMART_PTR(frame[0]) , LCC_F
 #endif
 #ifdef APPLY_TO_TAGGED_FRAME    // Reg = -1
 case 0:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
+return (*func)(func.raw_(), LCC_UNUSED, 0  , LCC_UNUSED , LCC_UNUSED , LCC_UNUSED     );
 // Reg = 0
 case 1:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 1 , frame[0]  , LCC_UNUSED , LCC_UNUSED     );
+return (*func)(func.raw_(), LCC_UNUSED, 1 , frame[0]  , LCC_UNUSED , LCC_UNUSED     );
 // Reg = 1
 case 2:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 2 , frame[0] , frame[1]  , LCC_UNUSED     );
+return (*func)(func.raw_(), LCC_UNUSED, 2 , frame[0] , frame[1]  , LCC_UNUSED     );
 // Reg = 2
 case 3:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 3 , frame[0] , frame[1] , frame[2]      );
+return (*func)(func.raw_(), LCC_UNUSED, 3 , frame[0] , frame[1] , frame[2]      );
 // Reg = 2
 case 4:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 4 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 4 , frame[0] , frame[1] , frame[2]        , frame[3]
 );
 // Reg = 2
 case 5:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 5 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 5 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 );
 // Reg = 2
 case 6:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 6 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 6 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 );
 // Reg = 2
 case 7:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 7 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 7 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
 );
 // Reg = 2
 case 8:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 8 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 8 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2195,7 +2195,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 8 , frame[0] , frame[1] , frame[2]       
 );
 // Reg = 2
 case 9:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 9 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 9 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2204,7 +2204,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 9 , frame[0] , frame[1] , frame[2]       
 );
 // Reg = 2
 case 10:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 10 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 10 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2214,7 +2214,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 10 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 11:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 11 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 11 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2225,7 +2225,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 11 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 12:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 12 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 12 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2237,7 +2237,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 12 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 13:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 13 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 13 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2250,7 +2250,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 13 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 14:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 14 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 14 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2264,7 +2264,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 14 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 15:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 15 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 15 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2279,7 +2279,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 15 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 16:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 16 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 16 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2295,7 +2295,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 16 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 17:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 17 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 17 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2312,7 +2312,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 17 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 18:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 18 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 18 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2330,7 +2330,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 18 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 19:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 19 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 19 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2349,7 +2349,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 19 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 20:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 20 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 20 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2369,7 +2369,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 20 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 21:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 21 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 21 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2390,7 +2390,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 21 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 22:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 22 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 22 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2412,7 +2412,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 22 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 23:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 23 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 23 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2435,7 +2435,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 23 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 24:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 24 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 24 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2459,7 +2459,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 24 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 25:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 25 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 25 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2484,7 +2484,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 25 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 26:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 26 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 26 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2510,7 +2510,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 26 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 27:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 27 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 27 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2537,7 +2537,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 27 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 28:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 28 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 28 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2565,7 +2565,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 28 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 29:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 29 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 29 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2594,7 +2594,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 29 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 30:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 30 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 30 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2624,7 +2624,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 30 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 31:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 31 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 31 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2655,7 +2655,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 31 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 32:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 32 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 32 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2687,7 +2687,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 32 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 33:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 33 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 33 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2720,7 +2720,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 33 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 34:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 34 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 34 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2754,7 +2754,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 34 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 35:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 35 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 35 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2789,7 +2789,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 35 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 36:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 36 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 36 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2825,7 +2825,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 36 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 37:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 37 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 37 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2862,7 +2862,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 37 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 38:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 38 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 38 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2900,7 +2900,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 38 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 39:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 39 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 39 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2939,7 +2939,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 39 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 40:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 40 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 40 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -2979,7 +2979,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 40 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 41:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 41 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 41 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3020,7 +3020,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 41 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 42:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 42 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 42 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3062,7 +3062,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 42 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 43:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 43 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 43 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3105,7 +3105,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 43 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 44:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 44 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 44 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3149,7 +3149,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 44 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 45:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 45 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 45 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3194,7 +3194,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 45 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 46:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 46 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 46 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3240,7 +3240,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 46 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 47:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 47 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 47 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3287,7 +3287,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 47 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 48:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 48 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 48 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3335,7 +3335,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 48 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 49:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 49 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 49 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3384,7 +3384,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 49 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 50:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 50 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 50 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3434,7 +3434,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 50 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 51:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 51 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 51 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3485,7 +3485,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 51 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 52:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 52 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 52 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3537,7 +3537,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 52 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 53:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 53 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 53 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3590,7 +3590,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 53 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 54:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 54 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 54 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3644,7 +3644,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 54 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 55:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 55 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 55 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3699,7 +3699,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 55 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 56:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 56 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 56 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3755,7 +3755,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 56 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 57:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 57 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 57 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3812,7 +3812,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 57 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 58:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 58 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 58 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3870,7 +3870,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 58 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 59:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 59 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 59 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3929,7 +3929,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 59 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 60:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 60 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 60 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -3989,7 +3989,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 60 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 61:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 61 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 61 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -4050,7 +4050,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 61 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 62:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 62 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 62 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -4112,7 +4112,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 62 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 63:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 63 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 63 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -4175,7 +4175,7 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 63 , frame[0] , frame[1] , frame[2]      
 );
 // Reg = 2
 case 64:
-return (*func)(LCC_UNUSED, LCC_UNUSED, 64 , frame[0] , frame[1] , frame[2]        , frame[3]
+return (*func)(func.raw_(), LCC_UNUSED, 64 , frame[0] , frame[1] , frame[2]        , frame[3]
 , frame[4]
 , frame[5]
 , frame[6]
@@ -4238,4 +4238,3 @@ return (*func)(LCC_UNUSED, LCC_UNUSED, 64 , frame[0] , frame[1] , frame[2]      
 , frame[63]
 );
 #endif
-

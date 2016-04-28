@@ -254,7 +254,7 @@ static _clasp_big_binary_op bignum_operations[16] = {
 	} else {
             do {
                 y = ecl_va_arg(ARGS);
-                x = ecl_boole(op, x, y);
+                x = ecl__boole(op, x, y);
             } while (--narg);
 	}
 	return x;
@@ -299,11 +299,10 @@ T_sp clasp_boole(int op, T_sp x, T_sp y) {
   return x;
 }
 
-#define ARGS_core_bitArrayOp "(op x y &optional r)"
-#define DECL_core_bitArrayOp ""
-#define DOCS_core_bitArrayOp "bitArrayOp"
-T_sp core_bitArrayOp(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
-  _G();
+CL_LAMBDA(op x y &optional r);
+CL_DECLARE();
+CL_DOCSTRING("bitArrayOp");
+CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   if (o.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 1, o, cl::_sym_fixnum);
   }
@@ -356,7 +355,7 @@ T_sp core_bitArrayOp(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   }
 L1:
   if (!r)
-    r = SimpleBitVector_O::create(d);
+    r = SimpleBitVector_O::make(d);
   rp = r->bytes();
   ro = r->offset();
   op = fixnum_operations[opval];
@@ -367,12 +366,12 @@ L1:
   (place) = ((place) & (-0400 >> (8 - (nbits)))) | ((value) & ~(-0400 >> (8 - (nbits))));
 
 #define extract_byte(integer, pointer, index, offset) \
-  (integer) = (pointer)[(index) + 1] & 0377;          \
+  (integer) = (pointer)[(index)+1] & 0377;            \
   (integer) = ((pointer)[index] << (offset)) | ((integer) >> (8 - (offset)));
 
 #define store_byte(pointer, index, offset, value)               \
   set_low((pointer)[index], 8 - (offset), (value) >> (offset)); \
-  set_high((pointer)[(index) + 1], offset, (value) << (8 - (offset)));
+  set_high((pointer)[(index)+1], offset, (value) << (8 - (offset)));
 
   //
   if (xo == 0 && yo == 0 && ro == 0) {
@@ -416,9 +415,7 @@ ERROR:
 }
 
 /*! Copied from ECL */
-T_sp
-cl_logbitp(Integer_sp p, Integer_sp x)
-{
+CL_DEFUN T_sp cl__logbitp(Integer_sp p, Integer_sp x) {
   bool i;
   if (p.fixnump()) {
     cl_index n = clasp_to_size(p);
@@ -577,25 +574,25 @@ cl_logbitp(Integer_sp p, Integer_sp x)
             }
 
     T_sp
-    cl_logandc1(T_sp x, T_sp y)
+    cl__logandc1(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLANDC1, x, y))
             }
 
     T_sp
-    cl_logandc2(T_sp x, T_sp y)
+    cl__logandc2(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLANDC2, x, y))
             }
 
     T_sp
-    cl_logorc1(T_sp x, T_sp y)
+    cl__logorc1(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLORC1, x, y))
             }
 
     T_sp
-    cl_logorc2(T_sp x, T_sp y)
+    cl__logorc2(T_sp x, T_sp y)
     {
 	@(return clasp_boole(CLASP_BOOLORC2, x, y))
             }
@@ -611,7 +608,7 @@ cl_logbitp(Integer_sp p, Integer_sp x)
     }
 
     T_sp
-    cl_boole(T_sp o, T_sp x, T_sp y)
+    cl__boole(T_sp o, T_sp x, T_sp y)
     {
 	/* INV: log_op2() checks types */
 	@(return clasp_boole(coerce_to_logical_operator(o), x, y))
@@ -619,7 +616,7 @@ cl_logbitp(Integer_sp p, Integer_sp x)
 
 
     T_sp
-    cl_ash(T_sp x, T_sp y)
+    cl__ash(T_sp x, T_sp y)
     {
 	T_sp r;
 	int sign_x;
@@ -692,11 +689,10 @@ cl_logbitp(Integer_sp p, Integer_sp x)
 
 #endif
 
-#define ARGS_cl_boole "(op arg1 arg2)"
-#define DECL_cl_boole ""
-#define DOCS_cl_boole "boole"
-T_sp cl_boole(T_sp op, T_sp arg1, T_sp arg2) {
-  _G();
+CL_LAMBDA(op arg1 arg2);
+CL_DECLARE();
+CL_DOCSTRING("boole");
+CL_DEFUN T_sp cl__boole(T_sp op, T_sp arg1, T_sp arg2) {
   if (op.nilp()) {
     ERROR_WRONG_TYPE_NTH_ARG(cl::_sym_boole, 1, op, cl::_sym_integer);
   }
@@ -704,7 +700,6 @@ T_sp cl_boole(T_sp op, T_sp arg1, T_sp arg2) {
   return clasp_boole(unbox_fixnum(fnop), arg1, arg2);
 };
 
-void initialize_bits() {
   SYMBOL_EXPORT_SC_(ClPkg, boole_1);
   SYMBOL_EXPORT_SC_(ClPkg, boole_2);
   SYMBOL_EXPORT_SC_(ClPkg, boole_and);
@@ -722,6 +717,8 @@ void initialize_bits() {
   SYMBOL_EXPORT_SC_(ClPkg, boole_set);
   SYMBOL_EXPORT_SC_(ClPkg, boole_xor);
 
+
+void initialize_bits() {
   cl::_sym_boole_1->defconstant(make_fixnum(boole_1));
   cl::_sym_boole_2->defconstant(make_fixnum(boole_2));
   cl::_sym_boole_and->defconstant(make_fixnum(boole_and));
@@ -739,7 +736,6 @@ void initialize_bits() {
   cl::_sym_boole_set->defconstant(make_fixnum(boole_set));
   cl::_sym_boole_xor->defconstant(make_fixnum(boole_xor));
 
-  ClDefun(boole);
-  af_def(ClPkg,"logbitp",&cl_logbitp);
+//  af_def(ClPkg, "logbitp", &cl_logbitp);
 };
 };

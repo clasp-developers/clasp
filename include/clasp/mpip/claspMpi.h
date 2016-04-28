@@ -42,11 +42,8 @@ namespace bmpi = boost::mpi;
 namespace mpip {
 
 FORWARD(Mpi);
-class Mpi_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(mpip, MpiPkg, Mpi_O, "Mpi");
-  DECLARE_INIT_GLOBALS();
-
+class Mpi_O : public core::General_O {
+  LISP_CLASS(mpip, MpiPkg, Mpi_O, "Mpi",core::General_O);
 private:
   //	bool		_Running;
   int _LastReturnCode;
@@ -109,5 +106,4 @@ public:
 };
 };
 
-TRANSLATE(mpip::Mpi_O);
 #endif //]

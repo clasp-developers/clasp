@@ -48,9 +48,8 @@ SMART(ObjectDictionary);
 SMART(Name);
 
 SMART(Binder);
-class Binder_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Binder_O, "Binder");
+class Binder_O : public General_O {
+  LISP_CLASS(core, CorePkg, Binder_O, "Binder",General_O);
   void initialize();
 
 #if defined(OLD_SERIALIZE)
@@ -108,6 +107,5 @@ public:
 };
 };
 
-TRANSLATE(core::Binder_O);
 
 #endif //]

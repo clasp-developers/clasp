@@ -37,46 +37,43 @@ THE SOFTWARE.
 
 namespace core {
 
-  SMART(CxxClass);
-  class CxxClass_O : public Class_O {
-    LISP_META_CLASS(StandardClass);
-    LISP_BASE1(Class_O);
-    LISP_CLASS(core, CorePkg, CxxClass_O, "CxxClass");
+SMART(CxxClass);
+class CxxClass_O : public Class_O {
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, CorePkg, CxxClass_O, "CxxClass",Class_O);
 
-  private:
+private:
   //	string			_InitializationArgumentString;
   //	LambdaListHandler_sp	_InitializationArguments;
-  public:
+public:
 #if defined(XML_ARCHIVE)
-    void archive(ArchiveP node);
+  void archive(ArchiveP node);
 #endif // defined(XML_ARCHIVE)
-    void initialize();
+  void initialize();
 
-  public:
+public:
   /*! The normal CxxClass creator used once the Lisp environment has been bootstrapped */
-    static CxxClass_sp create(Symbol_sp instanceClassSymbol);
+  static CxxClass_sp create(Symbol_sp instanceClassSymbol);
   /*! Create a CxxClass_sp that will always be considered a root object */
-    static CxxClass_sp createUncollectable();
+  static CxxClass_sp createUncollectable();
 
-  public:
-    virtual void describe(T_sp stream);
+public:
+  virtual void describe(T_sp stream);
 
-    virtual bool cxxClassP() const { return true; }
+  virtual bool cxxClassP() const { return true; }
 
   /*! Allocate and initialize an instance of this class
          */
-    T_sp allocateAndInitialize();
-    explicit CxxClass_O() {};
-    virtual ~CxxClass_O() {};
-  };
+  T_sp allocateAndInitialize();
+  explicit CxxClass_O(){};
+  virtual ~CxxClass_O(){};
 };
-TRANSLATE(core::CxxClass_O);
+};
 template <>
 struct gctools::GCInfo<core::CxxClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]

@@ -44,17 +44,9 @@ THE SOFTWARE.
 
 namespace core {
 
-EXPOSE_CLASS(core, Reader_O);
-void Reader_O::exposeCando(Lisp_sp lisp) {
-  class_<Reader_O>();
-}
 
-void Reader_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Reader, "", "", _lisp);
-#endif
-}
+
+
 
 Reader_sp Reader_O::create(T_sp sin) {
   Reader_sp reader = Reader_O::create();
@@ -71,17 +63,15 @@ void Reader_O::initialize() {
 }
 
 string Reader_O::fileName() {
-  return gc::As<SourceFileInfo_sp>(core_sourceFileInfo(this->_Input))->fileName();
+  return gc::As<SourceFileInfo_sp>(core__source_file_info(this->_Input))->fileName();
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_suppressSTAR);
 bool Reader_O::suppressRead() const {
-  _G();
   return cl::_sym_STARread_suppressSTAR->symbolValue().isTrue();
 }
 
 T_sp Reader_O::internSymbol(const string &chars) {
-  _G();
   Symbol_sp sym = _lisp->intern(chars);
   return sym;
 }
@@ -192,13 +182,11 @@ INTERPRET_SYMBOL:
 struct ReadSuppress {
   bool _SavedReadSuppress;
   ReadSuppress() {
-    _G();
     Symbol_sp rs = cl::_sym_STARread_suppressSTAR;
     this->_SavedReadSuppress = rs->symbolValue().isTrue();
     rs->setf_symbolValue(_lisp->_true());
   }
   virtual ~ReadSuppress() {
-    _G();
     cl::_sym_STARread_suppressSTAR->setf_symbolValue(_lisp->_boolean(this->_SavedReadSuppress));
   }
 };
@@ -253,7 +241,9 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       goto RETURN;
     }
     case singleQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
 #if 0
       size_t filepos = clasp_input_filePos(this->_Input);
       uint lineno = clasp_input_lineno(this->_Input);
@@ -266,7 +256,9 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       }
       //		SourceLocation sourceLoc = this->_Input->sourceLocation();
       result = Cons_O::createList(cl::_sym_quote, quotedObject);
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
+#endif
       goto RETURN;
     }
     case quotedString: {
@@ -279,7 +271,9 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       goto RETURN;
     }
     case sharpQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -287,7 +281,9 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       }
       //		SourceLocation sl = this->_Input->sourceLocation();
       result = Cons_O::createList(cl::_sym_function, quotedObject);
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
+#endif
       goto RETURN;
     }
     case sharpMinus: {
@@ -344,14 +340,18 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
     }
 
     case backQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
         goto RETURN;
       }
       result = Cons_O::createList(_sym_backquote, quotedObject);
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
+#endif
       goto RETURN;
     }
     // This is like a backQuote but two arguments must follow.
@@ -369,7 +369,9 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
     //
 
     case doubleBackQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
       T_sp templateObject = this->primitive_read(true, _Nil<T_O>(), true);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       (void)quotedObject;
@@ -378,29 +380,39 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
         goto RETURN;
       }
       result = Cons_O::createList(_sym_double_backquote, templateObject);
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
+#endif
       goto RETURN;
     }
     case comma: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
         goto RETURN;
       }
       result = Cons_O::createList(_sym_unquote, quotedObject);
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
+#endif
       goto RETURN;
     }
     case commaAt: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
         goto RETURN;
       }
       result = Cons_O::createList(_sym_unquote_splice, quotedObject);
+#ifdef SOURCE_TRACKING
       lisp_registerSourcePosInfo(result, spi);
+#endif
       goto RETURN;
     }
     case symbol: {
@@ -552,7 +564,7 @@ string Reader_O::readDoubleQuoteString() {
 
 string Reader_O::posAsString() {
   stringstream ss;
-  ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << gc::As<SourceFileInfo_sp>(core_sourceFileInfo(this->_Input))->fileName();
+  ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << gc::As<SourceFileInfo_sp>(core__source_file_info(this->_Input))->fileName();
   return ss.str();
 }
 
@@ -637,14 +649,16 @@ List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP) {
   Cons_sp cur = first;
   while (1) {
     this->skipWhiteSpace();
-    SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+#ifdef SOURCE_TRACKING
+    SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
+#endif
     char c = this->peekChar();
     if (c == endChar) {
       this->nextChar();
       break;
     }
-//    uint lineNumber = clasp_input_lineno(this->_Input);
-//    uint column = clasp_input_column(this->_Input);
+    //    uint lineNumber = clasp_input_lineno(this->_Input);
+    //    uint column = clasp_input_column(this->_Input);
     //	    uint filePos = this->_Input->tell();
     T_sp element = this->primitive_read(true, _Unbound<T_O>(), true);
     ASSERTNOTNULL(element);
@@ -652,7 +666,9 @@ List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP) {
       ERROR_END_OF_FILE(this->_Input);
     }
     Cons_sp one = Cons_O::create(element, _Nil<T_O>());
+#ifdef SOURCE_TRACKING
     lisp_registerSourcePosInfo(one, spi);
+#endif
     cur->setCdr(one);
     cur = one;
   }

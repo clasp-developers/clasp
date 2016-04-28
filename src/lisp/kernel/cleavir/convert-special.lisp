@@ -93,6 +93,22 @@
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 1))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Converting CORE:INTRINSIC-CALL
+;;;
+;;; This is converted into an intrinsic call
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core:intrinsic-call)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:intrinsic-call-ast
+                 :function-name (cadr form)
+                 :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))
+
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:intrinsic-call)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 nil))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

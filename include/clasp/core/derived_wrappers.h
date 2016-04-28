@@ -77,14 +77,6 @@ struct DispatchOn {
 // ----------------------------------------
 // ----------------------------------------
 
-struct MethodDefinition {
-  string _Name;
-  int _ClassSymbol;
-  Functoid *_Methoid;
-};
-
-//    typedef	enum { no_init,class_name_init, make_class_name_init } maker_enum;
-
 extern Symbol_sp _sym_STARallCxxClassesSTAR;
 
 template <typename OT>

@@ -51,6 +51,7 @@
     (macrolet  codegen-macrolet)
     (dbg-i32  codegen-dbg-i32)
     (load-time-value  codegen-load-time-value)
+    (core:intrinsic-call codegen-intrinsic-call)
     (symbol-macrolet  codegen-symbol-macrolet)
     (cmp:llvm-inline codegen-llvm-inline)
     (cmp::gc-profiling codegen-gc-profiling)

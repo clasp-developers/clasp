@@ -65,7 +65,7 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
   _G();
   _RandomAccessIterator k;
   _RandomAccessIterator n = en - 1;
-//  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
+  //  typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _ValueType;
   typedef typename _RandomAccessIterator::value_type _ValueType;
   if (m < n) {
 #ifdef DEBUG_SORT

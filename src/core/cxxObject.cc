@@ -37,18 +37,8 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 
 namespace core {
-EXPOSE_CLASS(core, CxxObject_O);
 
-void CxxObject_O::exposeCando(Lisp_sp e) {
-  class_<CxxObject_O>()
-    ;
-}
 
-void CxxObject_O::exposePython(Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, CxxObject, "", "", _lisp);
-#endif //]
-}
 
 
 };

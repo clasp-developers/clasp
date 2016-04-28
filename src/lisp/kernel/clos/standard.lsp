@@ -176,11 +176,14 @@
 
 (defmethod make-instance ((class class) &rest initargs)
   ;; Without finalization we can not find initargs.
+  (gf-log "make-instance (class class)")
   (unless (class-finalized-p class)
+    (gf-log "About to finalize-inheritance")
     (finalize-inheritance class))
   ;; We add the default-initargs first, because one of these initargs might
   ;; be (:allow-other-keys t), which disables the checking of the arguments.
   ;; (Paul Dietz's ANSI test suite, test CLASS-24.4)
+  (gf-log "add-default-initargs")
   (setf initargs (add-default-initargs class initargs))
   (let ((keywords (if (slot-boundp class 'valid-initargs)
 		      (progn
@@ -188,6 +191,7 @@
 		      (progn
 			(precompute-valid-initarg-keywords class)))))
     (check-initargs class initargs nil (class-slots class) keywords))
+  (gf-log "apply allocate-instance")
   (let ((instance (apply #'allocate-instance class initargs)))
     (apply #'initialize-instance instance initargs)
     instance))

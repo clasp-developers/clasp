@@ -54,7 +54,7 @@ THE SOFTWARE.
 
 #include <clasp/clbind/clbind.h>
 #include <clasp/clbind/class_registry.h>
-#include <clasp/clbind/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 //#include <clasp/clbind/function.h>
 //#include <clasp/clbind/get_main_thread.h>
 
@@ -65,7 +65,7 @@ detail::cast_graph *globalCastGraph;
 //! Take the place of __clbind_class_id_map
 detail::class_id_map *globalClassIdMap;
 //! Take the place of __clbind_class_map
-    gctools::tagged_pointer<detail::class_map> globalClassMap;
+gctools::tagged_pointer<detail::class_map> globalClassMap;
 
 namespace {
 #if 0
@@ -73,12 +73,12 @@ namespace {
   {
       IMPLEMENT_ME();
 #if 0
-      int args = cl_gettop(L);
+      int args = cl__gettop(L);
 
       if (args == 0 || args > 2)
       {
           cl_pushstring(L, "make_property() called with wrong number of arguments.");
-          cl_error(L);
+          cl__error(L);
       }
 
       if (args == 1)
@@ -100,7 +100,7 @@ namespace {
           "directly calling the base class __init() function. "
           "This error can be disabled by calling 'clbind::disable_super_deprecation()'."
       );
-      cl_error(L);
+      cl__error(L);
 
       return 0;
 #endif

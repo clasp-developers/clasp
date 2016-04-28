@@ -37,8 +37,7 @@ namespace core {
 
 SMART(SexpSaveArchive);
 class SexpSaveArchive_O : public SaveArchive_O {
-  LISP_BASE1(SaveArchive_O);
-  LISP_CLASS(core, CorePkg, SexpSaveArchive_O, "SexpSaveArchive");
+  LISP_CLASS(core, CorePkg, SexpSaveArchive_O, "SexpSaveArchive",SaveArchive_O);
 
 public:
   void write(SNode_sp snode, HashTable_sp snodeToRef, T_sp stream);
@@ -50,5 +49,4 @@ public:
 
 }; // namespace core
 
-TRANSLATE(core::SexpSaveArchive_O);
 #endif //]

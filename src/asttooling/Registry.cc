@@ -54,33 +54,38 @@ THE SOFTWARE.
 namespace asttooling {
 namespace RegMap {
 
-using asttooling::internal::MatcherDescriptor;
+using asttooling::MatcherDescriptor_O;
 
-void RegistryMaps::_registerMatcher(core::Symbol_sp MatcherName,
-                                    gctools::tagged_pointer<MatcherDescriptor> Callback) const {
+void RegistryMaps_O::_registerMatcher(core::Symbol_sp MatcherName,
+                                    gctools::smart_ptr<MatcherDescriptor_O> Callback) const {
 #ifdef DEBUG_ON
   ConstructorMap::iterator pos = this->find(MatcherName);
   ASSERTF(pos == Constructors.end(), BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
 #endif
-  Constructors.emplace_back(SymbolMatcherDescriptorPair(MatcherName, Callback));
+  Constructors.emplace_back(SymbolMatcherDescriptorPair_O(MatcherName, Callback));
   //Constructors[MatcherName] = Callback;
 }
 
 #define REGISTER_MATCHER(name)                                                             \
-  _registerMatcher(core::lispify_intern_keyword(#name), internal::makeMatcherAutoMarshall( \
-                                                            ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
+  _registerMatcher(core::lispify_intern_keyword(#name), \
+                   makeMatcherAutoMarshall( ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)            \
   static_cast<::clang::ast_matchers::name##_Type##Id>( \
       ::clang::ast_matchers::name)
 #define REGISTER_OVERLOADED_2(name) \
   do { \
-  gctools::tagged_pointer<MatcherDescriptor> Callbacks[] = {internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), core::lispify_intern_keyword(#name)), internal::makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), core::lispify_intern_keyword(#name))}; \
-    _registerMatcher(core::lispify_intern_keyword(#name), gctools::ClassAllocator<internal::OverloadedMatcherDescriptor>::allocateClass(Callbacks) /*new internal::OverloadedMatcherDescriptor(Callbacks)*/);                                                  \
+    gctools::smart_ptr<MatcherDescriptor_O> Callbacks[] = { \
+        makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), \
+                                          core::lispify_intern_keyword(#name)), \
+        makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
+                                          core::lispify_intern_keyword(#name))}; \
+    _registerMatcher(core::lispify_intern_keyword(#name), \
+                     gctools::GC<OverloadedMatcherDescriptor_O>::allocate(Callbacks) /*new OverloadedMatcherDescriptor(Callbacks)*/); \
   } while (0)
 
 /// \brief Generate a registry map with all the known matchers.
-RegistryMaps::RegistryMaps() : Initialized(false){};
-void RegistryMaps::lazyInitialize() const {
+RegistryMaps_O::RegistryMaps_O() : Initialized(false){};
+void RegistryMaps_O::lazyInitialize() const {
   if (this->Initialized)
     return;
   // TODO: Here is the list of the missing matchers, grouped by reason.
@@ -321,7 +326,7 @@ void RegistryMaps::lazyInitialize() const {
   REGISTER_MATCHER(withInitializer);
 }
 
-RegistryMaps::~RegistryMaps() {
+RegistryMaps_O::~RegistryMaps_O() {
   for (ConstructorMap::iterator it = Constructors.begin(),
                                 end = Constructors.end();
        it != end; ++it) {
@@ -330,7 +335,7 @@ RegistryMaps::~RegistryMaps() {
 }
 
 //        static gctools::ManagedStatic<RegistryMaps> RegistryData;
-    gctools::tagged_pointer<RegistryMaps> RegistryData;
+gctools::smart_ptr<RegistryMaps_O> RegistryData;
 
 } // RegMap namespace - was anonymous namespace
 using namespace RegMap;
@@ -347,7 +352,7 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructMatcher(core::Sy
                                                                         core::Cons_sp NameRange,
                                                                         core::Vector_sp Args,
                                                                         Diagnostics *Error) {
-  RegistryMaps::const_iterator it = RegistryData->find(MatcherName);
+  RegistryMaps_O::const_iterator it = RegistryData->find(MatcherName);
   if (it == RegistryData->end()) {
     core::Symbol_sp sym = MatcherName;
     core::Str_sp strName = sym->symbolName();
@@ -372,9 +377,9 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(cor
   clang::ast_matchers::dynamic::VariantMatcher Out = constructMatcher(MatcherName, NameRange, Args, Error);
   if (Out.isNull())
     return Out;
-  llvm::Optional<internal::DynTypedMatcher> Result = Out.getSingleMatcher();
+  llvm::Optional<DynTypedMatcher> Result = Out.getSingleMatcher();
   if (Result.hasValue()) {
-    llvm::Optional<internal::DynTypedMatcher> Bound = Result->tryBind(BindID);
+    llvm::Optional<DynTypedMatcher> Bound = Result->tryBind(BindID);
     if (Bound.hasValue()) {
       return clang::ast_matchers::dynamic::VariantMatcher::SingleMatcher(*Bound);
     }
@@ -384,6 +389,7 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(cor
 }
 
 void initialize_Registry() {
-  RegistryData = gctools::RootClassAllocator<RegistryMaps>::allocate();
+//  RegistryData = gctools::RootClassAllocator<RegistryMaps_O>::allocate();
+  RegistryData = gctools::GC<RegistryMaps_O>::allocate();
 }
 };

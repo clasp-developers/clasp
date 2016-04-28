@@ -107,7 +107,9 @@
 (defparameter *keep-documentation* t)
 
 #|
-
+;; In Clasp I implemented the following functions in documentation.cc
+;; in C++ so that they would be available during startup before
+;; the CL code is loaded.
 ;; The following functions are defined in documentation.cc
 
 (defun record-cons (record key sub-key)

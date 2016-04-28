@@ -33,10 +33,8 @@ THE SOFTWARE.
 #include <clasp/cffi/cffi.fwd.h>
 
 namespace cffi {
-class Pointer_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(cffi, CffiPkg, Pointer_O, "Pointer");
-  DECLARE_INIT();
+class Pointer_O : public core::General_O {
+  LISP_CLASS(cffi, CffiPkg, Pointer_O, "Pointer",core::General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   explicit Pointer_O();
@@ -68,10 +66,4 @@ public: // Functions here
 }; // Pointer class
 
 }; // cffi namespace
-TRANSLATE(cffi::Pointer_O);
-
-namespace cffi {
-
-void initialize_cffi();
-};
 #endif /* _core_ffi_H_ */

@@ -35,9 +35,5 @@ namespace core {
 //
 void initializePackagesAndClasses(Lisp_sp lisp) {
   DEPRECIATED();
-#define Use_CorePkg
-#define Use_MbbPackage
-// #define Use_WxPackage
-#include INIT_CLASSES_INC_H
 };
 };

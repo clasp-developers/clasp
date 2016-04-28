@@ -23,19 +23,19 @@ $for template_ [[
         // numVoids = $numVoids    
     /* Specialization */
     template <$if ret==RetVoid [[]] $else [[typename RT $if numArgs [[,]] ]] $for Args_ ,[[typename ARG$Args_]] >
-        class VariadicFunctoid
+        class VariadicFunctor
     <$if ret==RetVoid [[void]] $elif ret==RetSV [[RT ]] $else [[gctools::multiple_values<RT>]]($for Args_ , [[ARG$Args_]]) >
-        : public BuiltinClosure {
+        : public BuiltinClosure_O {
         public:
-            typedef BuiltinClosure TemplatedBase;
+            typedef BuiltinClosure_O TemplatedBase;
         public:
-	virtual const char* describe() const {return "VariadicFunctoid";};
+	virtual const char* describe() const {return "VariadicFunctor";};
 
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](*Type) ($for Args_ , [[ARG$Args_]]);
         Type fptr;
         public:
         enum { NumParams = $numArgs };
-        VariadicFunctoid(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+        VariadicFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this); };
 	virtual void* functionAddress() const { return (void*)this->fptr; };
@@ -43,12 +43,12 @@ $for template_ [[
         {
             INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
-              STACK_FRAME(buff,fargs,$numArgs);
+              MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),$numArgs);
 	      core::StackFrameDynamicScopeManager scope(fargs);
-              lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+              lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
             ]]
             $if numArgs>0 [[
-              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)fargs[$Args_]));
+              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)(*fargs)[$Args_]));
               ]]
             ]]
             $$ Do the call ------

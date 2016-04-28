@@ -134,6 +134,7 @@
  #P"kernel/cleavir/gml-drawing"
  #P"kernel/cleavir/landing-pad"
  #P"kernel/cleavir/arguments"
+ #P"kernel/cleavir/closure-optimize"
  #P"kernel/cleavir/translate"
  #P"kernel/cleavir/inline-prep"
  :PRE-INLINE

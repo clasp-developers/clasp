@@ -42,50 +42,37 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_makeSmallMultimap "()"
-#define DECL_core_makeSmallMultimap ""
-#define DOCS_core_makeSmallMultimap "makeSmallMultimap"
-SmallMultimap_sp core_makeSmallMultimap() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("makeSmallMultimap");
+CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
   GC_ALLOCATE(SmallMultimap_O, sm);
   return sm;
 };
 
-void SmallMultimap_O::describe() {
-  for ( auto it = this->map.begin(); it!=this->map.end(); ++it ) {
-    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str() );
+CL_LISPIFY_NAME("small_multimap_describe");
+CL_DEFMETHOD void SmallMultimap_O::describe() {
+  for (auto it = this->map.begin(); it != this->map.end(); ++it) {
+    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str());
   }
 }
 
-void SmallMultimap_O::describeRange(T_sp key) {
-  pair<map_type::iterator,map_type::iterator> range = this->map.equal_range(key);
-  for ( auto it = range.first; it!=range.second; ++it ) {
-    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str() );
+CL_LISPIFY_NAME("small_multimap_describe_range");
+CL_DEFMETHOD void SmallMultimap_O::describeRange(T_sp key) {
+  pair<map_type::iterator, map_type::iterator> range = this->map.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    printf("%s:%d  key: %s   value: %s\n", __FILE__, __LINE__, _rep_(it->first).c_str(), _rep_(it->second).c_str());
   }
 }
 
-void SmallMultimap_O::insert(T_sp key, T_sp val) {
+CL_LISPIFY_NAME("small_multimap_insert");
+CL_DEFMETHOD void SmallMultimap_O::insert(T_sp key, T_sp val) {
   pair<map_type::iterator, bool> found = this->map.insert(std::make_pair(key, val));
   (void)found;
 }
 
 
-void SmallMultimap_O::exposeCando(Lisp_sp lisp) {
-  class_<SmallMultimap_O>()
-      .def("small_multimap_describe", &SmallMultimap_O::describe)
-      .def("small_multimap_describe_range", &SmallMultimap_O::describeRange)
-      .def("small_multimap_insert", &SmallMultimap_O::insert)
-      .def("small_multimap_size", &SmallMultimap_O::size)
-    ;
-  CoreDefun(makeSmallMultimap);
-}
 
-void SmallMultimap_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, SmallMultimap, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, SmallMultimap_O);
+
 };

@@ -26,28 +26,28 @@ $for isConst [[
       template <int DispatchOn $if ret==RetVoid [[]] $else [[,typename RT]], typename OT $if numArgs>1 [[,]]  $for Args_ ,[[typename ARG$Args_]] >
       class VariadicMethoid
       <DispatchOn,$if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]] (OT::*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-        : public BuiltinClosure {
+        : public BuiltinClosure_O {
       public:
-        typedef BuiltinClosure TemplatedBase;
+        typedef BuiltinClosure_O TemplatedBase;
       public:
 	virtual const char* describe() const {return "VariadicMethoid";};
         typedef $if ret==RetVoid [[void]] $elif ret==RetSV [[RT]] $else [[gctools::multiple_values<RT>]](OT::*Type)($for Args_ , [[ARG$Args_]]) $if isConst [[const]];
         Type mptr;
       public:
         enum { NumParams = $numArgs };
-        VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+        VariadicMethoid(T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
         DISABLE_NEW();
         virtual size_t templatedSizeof() const { return sizeof(*this);};
         inline LCC_RETURN LISP_CALLING_CONVENTION()
         {   
           INVOCATION_HISTORY_FRAME();
           $if numArgs>0 [[
-            STACK_FRAME(buff,frame,$numArgs);
+            MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
             core::StackFrameDynamicScopeManager scope(frame);
-            lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+            lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
           ]]
-          gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-          $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame.arg($Args_));
+          gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+          $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame->arg($Args_));
           ]]
           $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.untag_object()).*mptr)($for Args_ ,[[a$Args_._v]]);
           $if ret==RetVoid [[

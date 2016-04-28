@@ -40,8 +40,8 @@ namespace core {
 using namespace policies;
 
 template <typename Policies, typename OT, typename Method>
-class IndirectVariadicMethoid : public BuiltinClosure {
-  typedef BuiltinClosure TemplatedBase;
+class IndirectVariadicMethoid : public BuiltinClosure_O {
+  typedef BuiltinClosure_O TemplatedBase;
   virtual size_t templatedSizeof() const { return sizeof(*this); };
   virtual const char *describe() const { return "IndirectVariadicMethoid"; };
 };
@@ -51,15 +51,15 @@ class IndirectVariadicMethoid : public BuiltinClosure {
 
 namespace core {
 template <class D, class C>
-class GetterMethoid : public BuiltinClosure {
+class GetterMethoid : public BuiltinClosure_O {
 public:
-  typedef BuiltinClosure TemplatedBase;
+  typedef BuiltinClosure_O TemplatedBase;
 
 public:
   //        typedef std::function<void (OT& ,)> Type;
   typedef D(C::*MemPtr);
   MemPtr mptr;
-  GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure(name), mptr(ptr){};
+  GetterMethoid(core::T_sp name, MemPtr ptr) : BuiltinClosure_O(name), mptr(ptr){};
   DISABLE_NEW();
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 };
@@ -77,7 +77,7 @@ namespace core {
 // ----------------------------------------
 // ----------------------------------------
 // ----------------------------------------
-extern Symbol_sp _sym_STARallCxxClassesSTAR;
+extern Symbol_sp& _sym_STARallCxxClassesSTAR;
 
 template <typename OT>
 class externalClass_ {
@@ -108,8 +108,11 @@ public:
       LOG(BF("Adding class(%s) to environment") % OT::static_className());
       lisp_addClass(OT::static_classSymbol(),
                     OT::static_creator,
-                    OT::Bases::baseClass1Id(),
-                    OT::Bases::baseClass2Id());
+                    OT::Bases::baseClass1Id() );
+#if 0
+      ,
+        OT::Bases::baseClass2Id());
+#endif
     }
     if (makerName != "") {
       // use make-<className>
@@ -138,8 +141,8 @@ public:
   externalClass_ &def(string const &name, RT (OT::*mp)(ARGS...), string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gctools::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -148,8 +151,8 @@ public:
                       string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    BuiltinClosure_sp m = gctools::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -158,8 +161,8 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...)>>::allocate(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -168,8 +171,8 @@ public:
                       const string &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocateClass(symbol, mp);
-    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS) + 1);
+    BuiltinClosure_sp m = gctools::GC<IndirectVariadicMethoid<policies_<>, OT, RT (OT::ExternalType::*)(ARGS...) const>>::allocate(symbol, mp);
+    lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
 
@@ -177,7 +180,7 @@ public:
   externalClass_ &def_readonly(string const &name, D C::*mem_ptr) {
 #if 0
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<GetterMethoid<D, C>>::allocateClass(symbol, mem_ptr);
+    BuiltinClosure_sp m = gctools::ClassAllocator<GetterMethoid<D, C>>::allocate_class(symbol, mem_ptr);
             lisp_defineSingleDispatchMethod(symbol
                                             ,this->_ClassSymbol
                                             ,m

@@ -66,7 +66,6 @@ public:
   VariantValue Value;
   ParserValue(core::Cons_sp range, const VariantValue &value) : Range(range), Value(value){};
   virtual ~ParserValue(){};
-  DECLARE_onHeapScanGCRoots();
 };
 
 /// \brief Parser context types.
@@ -107,9 +106,6 @@ public:
   ContextType Type;
   core::Cons_sp Range;
   std::vector<std::string> Args;
-#ifdef USE_MPS
-  DECLARE_onHeapScanGCRoots();
-#endif
 };
 
 class Message {
@@ -155,8 +151,8 @@ public:
   ArgStream addError(core::Cons_sp Range, ErrorType Error);
   gctools::Vec0<ErrorContent>::iterator b = Errors.begin();
   gctools::Vec0<ErrorContent>::iterator e = Errors.end();
-  ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(&(*b),&(*e));}
-  
+  ArrayRef<ErrorContent> errors() const { return ArrayRef<ErrorContent>(&(*b), &(*e)); }
+
   /// \brief Returns a simple string representation of each error.
   ///
   /// Each error only shows the error message without any context.
@@ -215,7 +211,6 @@ class OverloadContext {
 public:
   OverloadContext(Diagnostics *Error);
   virtual ~OverloadContext();
-  DECLARE_onStackScanGCRoots();
   /// \brief Revert all errors that happened within this context.
   void revertErrors();
 

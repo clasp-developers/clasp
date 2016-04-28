@@ -35,15 +35,14 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/llvmo/llvmoDwarf.h>
-#include <clasp/llvmo/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
 namespace llvmo {
 
-#define ARGS_af_dwTag "(tagsym &optional (debug-version llvm-sys:llvmdebug-version8))"
-#define DECL_af_dwTag ""
-#define DOCS_af_dwTag "Convert a DW_TAG and version to an integer"
-uint af_dwTag(core::Symbol_sp tagsym, uint debugVersion) {
-  _G();
+CL_LAMBDA(tagsym &optional (debug-version llvm-sys:llvmdebug-version8));
+CL_DOCSTRING("Convert a DW_TAG and version to an integer");
+CL_NAME(dw-tag);
+CL_DEFUN uint llvm_sys__dwTag(core::Symbol_sp tagsym, uint debugVersion) {
   core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(_sym_STARdwarfConstantsSTAR->symbolValue());
   uint itag = converter->enumIndexForSymbol(tagsym);
   uint dwtag = itag + debugVersion;
@@ -51,9 +50,8 @@ uint af_dwTag(core::Symbol_sp tagsym, uint debugVersion) {
 }
 
 void initialize_dwarf_constants() {
-  _G();
   SYMBOL_EXPORT_SC_(LlvmoPkg, dwTag);
-  core::af_def(LlvmoPkg, "dwTag", &af_dwTag, ARGS_af_dwTag, DECL_af_dwTag, DOCS_af_dwTag);
+//  core::af_def(LlvmoPkg, "dwTag", &af_dwTag, ARGS_af_dwTag, DECL_af_dwTag, DOCS_af_dwTag);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, LLVMDebugVersion11);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LLVMDebugVersion10);
@@ -153,78 +151,79 @@ void initialize_dwarf_constants() {
   // Tags defined in llvm->dwarf.h
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARdwarfConstantsSTAR);
-  core::enum_<llvm::dwarf::Tag>(_sym_STARdwarfConstantsSTAR, "llvm::dwarf::Constants")
-      .value(_sym_DW_TAG_array_type, llvm::dwarf::DW_TAG_array_type)
-      .value(_sym_DW_TAG_class_type, llvm::dwarf::DW_TAG_class_type)
-      .value(_sym_DW_TAG_entry_point, llvm::dwarf::DW_TAG_entry_point)
-      .value(_sym_DW_TAG_enumeration_type, llvm::dwarf::DW_TAG_enumeration_type)
-      .value(_sym_DW_TAG_formal_parameter, llvm::dwarf::DW_TAG_formal_parameter)
-      .value(_sym_DW_TAG_imported_declaration, llvm::dwarf::DW_TAG_imported_declaration)
-      .value(_sym_DW_TAG_label, llvm::dwarf::DW_TAG_label)
-      .value(_sym_DW_TAG_lexical_block, llvm::dwarf::DW_TAG_lexical_block)
-      .value(_sym_DW_TAG_member, llvm::dwarf::DW_TAG_member)
-      .value(_sym_DW_TAG_pointer_type, llvm::dwarf::DW_TAG_pointer_type)
-      .value(_sym_DW_TAG_reference_type, llvm::dwarf::DW_TAG_reference_type)
-      .value(_sym_DW_TAG_compile_unit, llvm::dwarf::DW_TAG_compile_unit)
-      .value(_sym_DW_TAG_string_type, llvm::dwarf::DW_TAG_string_type)
-      .value(_sym_DW_TAG_structure_type, llvm::dwarf::DW_TAG_structure_type)
-      .value(_sym_DW_TAG_subroutine_type, llvm::dwarf::DW_TAG_subroutine_type)
-      .value(_sym_DW_TAG_typedef, llvm::dwarf::DW_TAG_typedef)
-      .value(_sym_DW_TAG_union_type, llvm::dwarf::DW_TAG_union_type)
-      .value(_sym_DW_TAG_unspecified_parameters, llvm::dwarf::DW_TAG_unspecified_parameters)
-      .value(_sym_DW_TAG_variant, llvm::dwarf::DW_TAG_variant)
-      .value(_sym_DW_TAG_common_block, llvm::dwarf::DW_TAG_common_block)
-      .value(_sym_DW_TAG_common_inclusion, llvm::dwarf::DW_TAG_common_inclusion)
-      .value(_sym_DW_TAG_inheritance, llvm::dwarf::DW_TAG_inheritance)
-      .value(_sym_DW_TAG_inlined_subroutine, llvm::dwarf::DW_TAG_inlined_subroutine)
-      .value(_sym_DW_TAG_module, llvm::dwarf::DW_TAG_module)
-      .value(_sym_DW_TAG_ptr_to_member_type, llvm::dwarf::DW_TAG_ptr_to_member_type)
-      .value(_sym_DW_TAG_set_type, llvm::dwarf::DW_TAG_set_type)
-      .value(_sym_DW_TAG_subrange_type, llvm::dwarf::DW_TAG_subrange_type)
-      .value(_sym_DW_TAG_with_stmt, llvm::dwarf::DW_TAG_with_stmt)
-      .value(_sym_DW_TAG_access_declaration, llvm::dwarf::DW_TAG_access_declaration)
-      .value(_sym_DW_TAG_base_type, llvm::dwarf::DW_TAG_base_type)
-      .value(_sym_DW_TAG_catch_block, llvm::dwarf::DW_TAG_catch_block)
-      .value(_sym_DW_TAG_const_type, llvm::dwarf::DW_TAG_const_type)
-      .value(_sym_DW_TAG_constant, llvm::dwarf::DW_TAG_constant)
-      .value(_sym_DW_TAG_enumerator, llvm::dwarf::DW_TAG_enumerator)
-      .value(_sym_DW_TAG_file_type, llvm::dwarf::DW_TAG_file_type)
-      .value(_sym_DW_TAG_friend, llvm::dwarf::DW_TAG_friend)
-      .value(_sym_DW_TAG_namelist, llvm::dwarf::DW_TAG_namelist)
-      .value(_sym_DW_TAG_namelist_item, llvm::dwarf::DW_TAG_namelist_item)
-      .value(_sym_DW_TAG_packed_type, llvm::dwarf::DW_TAG_packed_type)
-      .value(_sym_DW_TAG_subprogram, llvm::dwarf::DW_TAG_subprogram)
-      .value(_sym_DW_TAG_template_type_parameter, llvm::dwarf::DW_TAG_template_type_parameter)
-      .value(_sym_DW_TAG_template_value_parameter, llvm::dwarf::DW_TAG_template_value_parameter)
-      .value(_sym_DW_TAG_thrown_type, llvm::dwarf::DW_TAG_thrown_type)
-      .value(_sym_DW_TAG_try_block, llvm::dwarf::DW_TAG_try_block)
-      .value(_sym_DW_TAG_variant_part, llvm::dwarf::DW_TAG_variant_part)
-      .value(_sym_DW_TAG_variable, llvm::dwarf::DW_TAG_variable)
-      .value(_sym_DW_TAG_volatile_type, llvm::dwarf::DW_TAG_volatile_type)
-      .value(_sym_DW_TAG_dwarf_procedure, llvm::dwarf::DW_TAG_dwarf_procedure)
-      .value(_sym_DW_TAG_restrict_type, llvm::dwarf::DW_TAG_restrict_type)
-      .value(_sym_DW_TAG_interface_type, llvm::dwarf::DW_TAG_interface_type)
-      .value(_sym_DW_TAG_namespace, llvm::dwarf::DW_TAG_namespace)
-      .value(_sym_DW_TAG_imported_module, llvm::dwarf::DW_TAG_imported_module)
-      .value(_sym_DW_TAG_unspecified_type, llvm::dwarf::DW_TAG_unspecified_type)
-      .value(_sym_DW_TAG_partial_unit, llvm::dwarf::DW_TAG_partial_unit)
-      .value(_sym_DW_TAG_imported_unit, llvm::dwarf::DW_TAG_imported_unit)
-      .value(_sym_DW_TAG_condition, llvm::dwarf::DW_TAG_condition)
-      .value(_sym_DW_TAG_shared_type, llvm::dwarf::DW_TAG_shared_type)
-      .value(_sym_DW_TAG_type_unit, llvm::dwarf::DW_TAG_type_unit)
-      .value(_sym_DW_TAG_rvalue_reference_type, llvm::dwarf::DW_TAG_rvalue_reference_type)
-      .value(_sym_DW_TAG_template_alias, llvm::dwarf::DW_TAG_template_alias)
-      .value(_sym_DW_TAG_MIPS_loop, llvm::dwarf::DW_TAG_MIPS_loop)
-      .value(_sym_DW_TAG_format_label, llvm::dwarf::DW_TAG_format_label)
-      .value(_sym_DW_TAG_function_template, llvm::dwarf::DW_TAG_function_template)
-      .value(_sym_DW_TAG_class_template, llvm::dwarf::DW_TAG_class_template)
-      .value(_sym_DW_TAG_GNU_template_template_param, llvm::dwarf::DW_TAG_GNU_template_template_param)
-      .value(_sym_DW_TAG_GNU_template_parameter_pack, llvm::dwarf::DW_TAG_GNU_template_parameter_pack)
-      .value(_sym_DW_TAG_GNU_formal_parameter_pack, llvm::dwarf::DW_TAG_GNU_formal_parameter_pack)
-      .value(_sym_DW_TAG_lo_user, llvm::dwarf::DW_TAG_lo_user)
-      .value(_sym_DW_TAG_APPLE_property, llvm::dwarf::DW_TAG_APPLE_property)
-      .value(_sym_DW_TAG_hi_user, llvm::dwarf::DW_TAG_hi_user);
-
+  CL_BEGIN_ENUM(llvm::dwarf::Tag,_sym_STARdwarfConstantsSTAR, "llvm::dwarf::Constants");
+  CL_VALUE_ENUM(_sym_DW_TAG_array_type, llvm::dwarf::DW_TAG_array_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_class_type, llvm::dwarf::DW_TAG_class_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_entry_point, llvm::dwarf::DW_TAG_entry_point);
+  CL_VALUE_ENUM(_sym_DW_TAG_enumeration_type, llvm::dwarf::DW_TAG_enumeration_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_formal_parameter, llvm::dwarf::DW_TAG_formal_parameter);
+  CL_VALUE_ENUM(_sym_DW_TAG_imported_declaration, llvm::dwarf::DW_TAG_imported_declaration);
+  CL_VALUE_ENUM(_sym_DW_TAG_label, llvm::dwarf::DW_TAG_label);
+  CL_VALUE_ENUM(_sym_DW_TAG_lexical_block, llvm::dwarf::DW_TAG_lexical_block);
+  CL_VALUE_ENUM(_sym_DW_TAG_member, llvm::dwarf::DW_TAG_member);
+  CL_VALUE_ENUM(_sym_DW_TAG_pointer_type, llvm::dwarf::DW_TAG_pointer_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_reference_type, llvm::dwarf::DW_TAG_reference_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_compile_unit, llvm::dwarf::DW_TAG_compile_unit);
+  CL_VALUE_ENUM(_sym_DW_TAG_string_type, llvm::dwarf::DW_TAG_string_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_structure_type, llvm::dwarf::DW_TAG_structure_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_subroutine_type, llvm::dwarf::DW_TAG_subroutine_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_typedef, llvm::dwarf::DW_TAG_typedef);
+  CL_VALUE_ENUM(_sym_DW_TAG_union_type, llvm::dwarf::DW_TAG_union_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_unspecified_parameters, llvm::dwarf::DW_TAG_unspecified_parameters);
+  CL_VALUE_ENUM(_sym_DW_TAG_variant, llvm::dwarf::DW_TAG_variant);
+  CL_VALUE_ENUM(_sym_DW_TAG_common_block, llvm::dwarf::DW_TAG_common_block);
+  CL_VALUE_ENUM(_sym_DW_TAG_common_inclusion, llvm::dwarf::DW_TAG_common_inclusion);
+  CL_VALUE_ENUM(_sym_DW_TAG_inheritance, llvm::dwarf::DW_TAG_inheritance);
+  CL_VALUE_ENUM(_sym_DW_TAG_inlined_subroutine, llvm::dwarf::DW_TAG_inlined_subroutine);
+  CL_VALUE_ENUM(_sym_DW_TAG_module, llvm::dwarf::DW_TAG_module);
+  CL_VALUE_ENUM(_sym_DW_TAG_ptr_to_member_type, llvm::dwarf::DW_TAG_ptr_to_member_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_set_type, llvm::dwarf::DW_TAG_set_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_subrange_type, llvm::dwarf::DW_TAG_subrange_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_with_stmt, llvm::dwarf::DW_TAG_with_stmt);
+  CL_VALUE_ENUM(_sym_DW_TAG_access_declaration, llvm::dwarf::DW_TAG_access_declaration);
+  CL_VALUE_ENUM(_sym_DW_TAG_base_type, llvm::dwarf::DW_TAG_base_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_catch_block, llvm::dwarf::DW_TAG_catch_block);
+  CL_VALUE_ENUM(_sym_DW_TAG_const_type, llvm::dwarf::DW_TAG_const_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_constant, llvm::dwarf::DW_TAG_constant);
+  CL_VALUE_ENUM(_sym_DW_TAG_enumerator, llvm::dwarf::DW_TAG_enumerator);
+  CL_VALUE_ENUM(_sym_DW_TAG_file_type, llvm::dwarf::DW_TAG_file_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_friend, llvm::dwarf::DW_TAG_friend);
+  CL_VALUE_ENUM(_sym_DW_TAG_namelist, llvm::dwarf::DW_TAG_namelist);
+  CL_VALUE_ENUM(_sym_DW_TAG_namelist_item, llvm::dwarf::DW_TAG_namelist_item);
+  CL_VALUE_ENUM(_sym_DW_TAG_packed_type, llvm::dwarf::DW_TAG_packed_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_subprogram, llvm::dwarf::DW_TAG_subprogram);
+  CL_VALUE_ENUM(_sym_DW_TAG_template_type_parameter, llvm::dwarf::DW_TAG_template_type_parameter);
+  CL_VALUE_ENUM(_sym_DW_TAG_template_value_parameter, llvm::dwarf::DW_TAG_template_value_parameter);
+  CL_VALUE_ENUM(_sym_DW_TAG_thrown_type, llvm::dwarf::DW_TAG_thrown_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_try_block, llvm::dwarf::DW_TAG_try_block);
+  CL_VALUE_ENUM(_sym_DW_TAG_variant_part, llvm::dwarf::DW_TAG_variant_part);
+  CL_VALUE_ENUM(_sym_DW_TAG_variable, llvm::dwarf::DW_TAG_variable);
+  CL_VALUE_ENUM(_sym_DW_TAG_volatile_type, llvm::dwarf::DW_TAG_volatile_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_dwarf_procedure, llvm::dwarf::DW_TAG_dwarf_procedure);
+  CL_VALUE_ENUM(_sym_DW_TAG_restrict_type, llvm::dwarf::DW_TAG_restrict_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_interface_type, llvm::dwarf::DW_TAG_interface_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_namespace, llvm::dwarf::DW_TAG_namespace);
+  CL_VALUE_ENUM(_sym_DW_TAG_imported_module, llvm::dwarf::DW_TAG_imported_module);
+  CL_VALUE_ENUM(_sym_DW_TAG_unspecified_type, llvm::dwarf::DW_TAG_unspecified_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_partial_unit, llvm::dwarf::DW_TAG_partial_unit);
+  CL_VALUE_ENUM(_sym_DW_TAG_imported_unit, llvm::dwarf::DW_TAG_imported_unit);
+  CL_VALUE_ENUM(_sym_DW_TAG_condition, llvm::dwarf::DW_TAG_condition);
+  CL_VALUE_ENUM(_sym_DW_TAG_shared_type, llvm::dwarf::DW_TAG_shared_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_type_unit, llvm::dwarf::DW_TAG_type_unit);
+  CL_VALUE_ENUM(_sym_DW_TAG_rvalue_reference_type, llvm::dwarf::DW_TAG_rvalue_reference_type);
+  CL_VALUE_ENUM(_sym_DW_TAG_template_alias, llvm::dwarf::DW_TAG_template_alias);
+  CL_VALUE_ENUM(_sym_DW_TAG_MIPS_loop, llvm::dwarf::DW_TAG_MIPS_loop);
+  CL_VALUE_ENUM(_sym_DW_TAG_format_label, llvm::dwarf::DW_TAG_format_label);
+  CL_VALUE_ENUM(_sym_DW_TAG_function_template, llvm::dwarf::DW_TAG_function_template);
+  CL_VALUE_ENUM(_sym_DW_TAG_class_template, llvm::dwarf::DW_TAG_class_template);
+  CL_VALUE_ENUM(_sym_DW_TAG_GNU_template_template_param, llvm::dwarf::DW_TAG_GNU_template_template_param);
+  CL_VALUE_ENUM(_sym_DW_TAG_GNU_template_parameter_pack, llvm::dwarf::DW_TAG_GNU_template_parameter_pack);
+  CL_VALUE_ENUM(_sym_DW_TAG_GNU_formal_parameter_pack, llvm::dwarf::DW_TAG_GNU_formal_parameter_pack);
+  CL_VALUE_ENUM(_sym_DW_TAG_lo_user, llvm::dwarf::DW_TAG_lo_user);
+  CL_VALUE_ENUM(_sym_DW_TAG_APPLE_property, llvm::dwarf::DW_TAG_APPLE_property);
+  CL_VALUE_ENUM(_sym_DW_TAG_hi_user, llvm::dwarf::DW_TAG_hi_user);;
+  CL_END_ENUM(_sym_STARdwarfConstantsSTAR);
+  
   SYMBOL_EXPORT_SC_(LlvmoPkg, DW_LANG_COMMON_LISP);
   _sym_DW_LANG_COMMON_LISP->defconstant(core::make_fixnum(llvm::dwarf::DW_LANG_lo_user));
 

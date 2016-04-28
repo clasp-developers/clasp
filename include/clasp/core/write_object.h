@@ -37,6 +37,5 @@ namespace core {
 bool will_print_as_hash(T_sp x);
 T_sp write_object(T_sp x, T_sp stream);
 
-void initialize_write_object();
 };
 #endif

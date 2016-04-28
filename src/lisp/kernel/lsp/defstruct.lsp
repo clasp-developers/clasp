@@ -290,7 +290,6 @@
   (create-type-name name)
   ;; We are going to modify this list!!!
   (setf slot-descriptions (copy-tree slot-descriptions))
-  ;; FIXME! We could do the same with ENSURE-CLASS!
   #+clos
   (unless type
     (eval `(defclass ,name ,(and include (list include))

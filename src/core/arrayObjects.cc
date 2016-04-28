@@ -36,19 +36,16 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, ArrayObjects_O);
 
-#define ARGS_ArrayObjects_O_make "(dimensions element-type initial-element adjustable)"
-#define DECL_ArrayObjects_O_make ""
-#define DOCS_ArrayObjects_O_make "make ArrayObjects args: dimensions element-type initial-element"
-    ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
-  _G();
+
+CL_LISPIFY_NAME(make-array-objects);
+CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;
   List_sp dim;
   if (dim_desig.nilp()) {
     dim = dim_desig;
-  } else if (cl_atom(dim_desig)) {
+  } else if (cl__atom(dim_desig)) {
     int idim = clasp_to_int(gc::As<Integer_sp>(dim_desig));
     dim = Cons_O::create(make_fixnum(idim));
   } else {
@@ -58,17 +55,8 @@ EXPOSE_CLASS(core, ArrayObjects_O);
   return ((array));
 }
 
-void ArrayObjects_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<ArrayObjects_O>();
-  Defun_maker(CorePkg, ArrayObjects);
-}
 
-void ArrayObjects_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ArrayObjects, "", "", _lisp);
-#endif
-}
+
 
 #if defined(XML_ARCHIVE)
 void ArrayObjects_O::archiveBase(::core::ArchiveP node) {
@@ -96,38 +84,43 @@ void ArrayObjects_O::initialize() {
 }
 
 void ArrayObjects_O::rowMajorAset(cl_index idx, T_sp value) {
-  _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   this->_Values[idx] = value;
 }
 
 T_sp ArrayObjects_O::aset_unsafe(int idx, T_sp value) {
-  _G();
   this->_Values[idx] = value;
   return value;
 }
 
 bool ArrayObjects_O::equalp(T_sp o) const {
-  if ( this->eq(o) ) return true;
-  if ( ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>() ) {
-    const std::vector<cl_index>& my_dimensions = this->_Dimensions;
-    const std::vector<cl_index>& other_dimensions = other->_Dimensions;
-    if ( my_dimensions.size() != other_dimensions.size() ) return false;
+  if (this->eq(o)) return true;
+  if (ArrayObjects_sp other = o.asOrNull<ArrayObjects_O>()) {
+    const std::vector<cl_index> &my_dimensions = this->_Dimensions;
+    const std::vector<cl_index> &other_dimensions = other->_Dimensions;
+    if (my_dimensions.size() != other_dimensions.size())
+      return false;
     size_t size = 1;
-    for ( int i(0); i<my_dimensions.size(); ++i ) {
+    for (int i(0); i < my_dimensions.size(); ++i) {
       size *= my_dimensions[i];
-      if ( my_dimensions[i] != other_dimensions[i] ) return false;
+      if (my_dimensions[i] != other_dimensions[i])
+        return false;
     }
-    for ( size_t i(0); i<size; ++i ) {
-      if ( !cl_equalp(this->rowMajorAref(i),other->rowMajorAref(i)) ) return false;
+    for (size_t i(0); i < size; ++i) {
+      if (!cl__equalp(this->rowMajorAref(i), other->rowMajorAref(i)))
+        return false;
     }
     return true;
-  } if ( Vector_sp vec = o.asOrNull<Vector_O>() ) {
-    if ( this->_Dimensions.size() != 1 ) return false;
-    if ( this->_Dimensions[0] != cl_length(vec) ) return false;
+  }
+  if (Vector_sp vec = o.asOrNull<Vector_O>()) {
+    if (this->_Dimensions.size() != 1)
+      return false;
+    if (this->_Dimensions[0] != cl__length(vec))
+      return false;
     size_t size = this->_Dimensions[0];
-    for ( int i(0); i<size; ++i ) {
-      if ( !cl_equalp(this->rowMajorAref(i),vec->aref_unsafe(i)) ) return false;
+    for (int i(0); i < size; ++i) {
+      if (!cl__equalp(this->rowMajorAref(i), vec->aref_unsafe(i)))
+        return false;
     }
     return true;
   }
@@ -135,23 +128,21 @@ bool ArrayObjects_O::equalp(T_sp o) const {
 }
 
 T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
-  _G();
   ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
   return ((this->_Values[idx]));
 };
 
-T_sp ArrayObjects_O::aref(List_sp indices) const {
+T_sp ArrayObjects_O::aref(VaList_sp indices) const {
   LOG(BF("indices[%s]") % _rep_(indices));
-  int index = this->index(indices);
+  Fixnum index = this->index_(indices);
   return ((this->_Values[index]));
 }
 
 T_sp ArrayObjects_O::setf_aref(List_sp indices_val) {
-  _OF();
-  List_sp val_cons;
-  LongLongInt index = this->index_val(indices_val, true, val_cons);
-  this->_Values[index] = oCar(val_cons);
-  return ((oCar(val_cons)));
+  T_sp val;
+  LongLongInt index = this->index_val_(indices_val, true, val);
+  this->_Values[index] = val;
+  return val;
 }
 
 T_sp ArrayObjects_O::shallowCopy() const {
@@ -169,6 +160,7 @@ void ArrayObjects_O::arrayFill(T_sp val) {
   }
 }
 
+#if 0
 T_sp ArrayObjects_O::deepCopy() const {
   _OF();
   GC_ALLOCATE(ArrayObjects_O, narray);
@@ -180,9 +172,10 @@ T_sp ArrayObjects_O::deepCopy() const {
   }
   return ((narray));
 }
+#endif
+
 
 T_sp ArrayObjects_O::svref(int index) const {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     return ((this->_Values[index]));
@@ -191,7 +184,6 @@ T_sp ArrayObjects_O::svref(int index) const {
 }
 
 T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
-  _G();
   if (this->_Dimensions.size() == 1) {
     ASSERT(index >= 0 && index < this->_Dimensions[0]);
     this->_Values[index] = value;
@@ -203,8 +195,8 @@ T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
 LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   _OF();
   LongLongInt elements = 1;
-  int newRank = cl_length(dim);
-  if ( newRank >= CLASP_ARRAY_RANK_LIMIT ) {
+  int newRank = cl__length(dim);
+  if (newRank >= CLASP_ARRAY_RANK_LIMIT) {
     SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
   }
   this->_Dimensions.resize(newRank);

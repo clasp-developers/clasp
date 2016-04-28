@@ -37,9 +37,8 @@ THE SOFTWARE.
 namespace core {
 
 FORWARD(WeakHashTable);
-class WeakHashTable_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable");
+class WeakHashTable_O : public General_O {
+  LISP_CLASS(core, CorePkg, WeakHashTable_O, "WeakHashTable",General_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -54,18 +53,15 @@ template <>
 struct gctools::GCInfo<core::WeakHashTable_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::WeakHashTable_O);
 
 namespace core {
 
 FORWARD(WeakKeyHashTable);
 class WeakKeyHashTable_O : public WeakHashTable_O {
-  LISP_BASE1(WeakHashTable_O);
-  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable");
+  LISP_CLASS(core, CorePkg, WeakKeyHashTable_O, "WeakKeyHashTable",WeakHashTable_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif  // defined(XML_ARCHIVE)
@@ -88,9 +84,9 @@ public: // instance variables here
   HashTableType _HashTable;
 
 public:
-  WeakKeyHashTable_O() : _HashTable(16){};
-  WeakKeyHashTable_O(uint sz) : _HashTable(sz){};
-
+ WeakKeyHashTable_O(size_t sz) : _HashTable(sz) {};
+ WeakKeyHashTable_O() : _HashTable(16) {};
+  void initialize(); 
 public:
   virtual int tableSize() const;
   int size() const { return this->tableSize(); };
@@ -114,16 +110,14 @@ public:
 }; /* core */
 template <>
 struct gctools::GCInfo<core::WeakKeyHashTable_O> {
-  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::WeakKeyHashTable_O);
 
 namespace core {
-WeakKeyHashTable_sp core_makeWeakKeyHashTable(Fixnum_sp size);
+WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size);
 };
 
 #endif /* _core_WeakHashTable_H */

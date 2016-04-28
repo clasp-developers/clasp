@@ -41,6 +41,10 @@
 (defun alloca-i8* (&optional (label "var"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8*+ (%i32 1) label))
 
+(defun alloca-i8 (num &optional (label "var"))
+  "Allocate a block of memory in the stack frame"
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+i8+ (%i32 num) label))
+
 (defun alloca-return_type (&optional (label "return-value"))
   (let ((instr (llvm-sys:create-alloca *entry-irbuilder* cmp:+return_type+ (%i32 1) label)))
     instr))
@@ -238,4 +242,32 @@
                    (cmp:irc-create-call intrinsic-name args label)
                    (cmp:irc-create-invoke intrinsic-name args landing-pad label))))
           (%store result-in-registers return-value))))))
-               
+
+
+(defun unsafe-intrinsic-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
+  ;; Write excess arguments into the multiple-value array
+  (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
+         (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
+                        (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
+                        arguments)))
+    (with-return-values (return-vals return-value abi)
+      (let* ((args (list* real-args))
+             (func (llvm-sys:get-function cmp:*the-module* intrinsic-name)))
+        (unless func
+          (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+                (varargs nil))
+            (setq func (llvm-sys:function-create
+                        (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                        'llvm-sys::External-linkage
+                        intrinsic-name
+                        cmp:*the-module*)))
+          (let ((result-in-registers
+                 (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic"))
+                #+(or)(if (eq call-or-invoke :call)
+                          (cmp:irc-create-call intrinsic-name args label)
+                          (cmp:irc-create-invoke intrinsic-name args landing-pad label)))
+            (%store result-in-registers return-value)))))))
+
+
+
+

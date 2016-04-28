@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_pointer_fwd_H_
-#define _core_pointer_fwd_H_
+#ifndef _core__pointer_fwd_H_
+#define _core__pointer_fwd_H_
 
 namespace core {
 FORWARD(Pointer);
 };
-#endif /* _core_pointer.fwd_H_ */
+#endif /* _core__pointer.fwd_H_ */

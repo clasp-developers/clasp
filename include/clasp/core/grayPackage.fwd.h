@@ -27,6 +27,7 @@ THE SOFTWARE.
 #ifndef grayPackage_fwd_H
 #define grayPackage_fwd_H
 
+PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(gray, GrayPkg, "GRAY")
 
 #endif

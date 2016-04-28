@@ -145,9 +145,8 @@ namespace translate {
 
 namespace llvmo {
 FORWARD(DINodeArray);
- class DINodeArray_O : public core::T_O {
-   LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DINodeArray_O, "DINodeArray");
+ class DINodeArray_O : public core::CxxObject_O {
+   LISP_CLASS(llvmo, LlvmoPkg, DINodeArray_O, "DINodeArray",core::CxxObject_O);
   typedef llvm::DINodeArray OtherType;
  private:
   OtherType _Val;
@@ -180,9 +179,8 @@ struct from_object<llvm::DINodeArray, std::true_type> {
 
 namespace llvmo {
 FORWARD(DITypeRefArray);
- class DITypeRefArray_O : public core::T_O {
-   LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, DITypeRefArray_O, "DITypeRefArray");
+ class DITypeRefArray_O : public core::CxxObject_O {
+   LISP_CLASS(llvmo, LlvmoPkg, DITypeRefArray_O, "DITypeRefArray", core::CxxObject_O);
   typedef llvm::DITypeRefArray OtherType;
  private:
   OtherType _Val;

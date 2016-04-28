@@ -73,7 +73,7 @@ public:
   }
 };
 };
-
+#if 0
 #define DERIVABLE_TRANSLATE(oclass)                                         \
   TRANSLATE(oclass);                                                        \
   namespace translate {                                                     \
@@ -83,5 +83,18 @@ public:
     from_object(core::T_sp o) : _v(&(*gc::As<gc::smart_ptr<oclass>>(o))){}; \
   };                                                                        \
   };
+#else
+// switched to template programming for translators
+#define DERIVABLE_TRANSLATE(oclass);
+#endif
+/*! Every Derivable class needs to have the unmanaged GCInfo<T>::Policy
+*/
+
+template <class T>
+struct gctools::GCInfo<clbind::Derivable<T>> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
 
 #endif

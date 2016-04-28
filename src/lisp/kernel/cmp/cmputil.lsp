@@ -70,8 +70,6 @@
                        (prefix "Style Warning")
                        (format +warn-format+))))
 
-
-
 (defun compiler-error (form message &rest args)
   (multiple-value-bind (source-dir source-file file-pos lineno column)
       (walk-form-for-source-info form)

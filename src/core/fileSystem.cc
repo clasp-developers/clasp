@@ -63,7 +63,6 @@ namespace core {
 /*! Return a list of Path objects representing the contents of the directory
   that match the fileNameRegex */
 List_sp directory(Path_sp rpath, const string &fileNameRegex) {
-  _G();
   bf::path p(rpath->getPath());
   Cons_sp first;
   List_sp tail;
@@ -89,24 +88,20 @@ List_sp directory(Path_sp rpath, const string &fileNameRegex) {
 }
 
 void rename_file(Path_sp rpath1, Path_sp rpath2) {
-  _G();
   return bf::rename(rpath1->getPath(), rpath2->getPath());
 }
 
 bool delete_file(Path_sp rpath) {
-  _G();
   return bf::remove(rpath->getPath());
 }
 
 int delete_all_files(Path_sp rpath) {
-  _G();
   return bf::remove_all(rpath->getPath());
 }
 
 /*! Rename src to dest but first check if dest already exists and create a backup
       of it.  If the backup already exists then it is deleted */
 void safeRename(Path_sp src, Path_sp dest) {
-  _G();
   // If the OriginalFilePath exists then create a backup
   if (dest->exists()) {
     LOG(BF("destination file[%s] exists") % dest->asString());
@@ -123,14 +118,10 @@ void safeRename(Path_sp src, Path_sp dest) {
   rename_file(src, dest);
 }
 
-#define LOCK_af_ensure_directories_exist 1
-#define ARGS_af_ensure_directories_exist "(pathspec)"
-#define DECL_af_ensure_directories_exist ""
-#define DOCS_af_ensure_directories_exist \
-  "Look for <path> and return it."       \
-  "If it doesn't exist create every missing directory along the path."
-T_mv af_ensure_directories_exist(T_sp pathspec) {
-  _G();
+CL_LAMBDA(pathspec);
+CL_DECLARE();
+CL_DOCSTRING("Look for <path> and return it. If it doesn't exist create every missing directory along the path.");
+CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   Path_sp path_to_create = coerce::pathDesignator(pathspec);
   bf::path parent = path_to_create->getPath().parent_path();
   try {
@@ -141,7 +132,7 @@ T_mv af_ensure_directories_exist(T_sp pathspec) {
   return (Values(pathspec, _lisp->_true()));
 }
 
-Path_O::Path_O(Path_O const &other) : T_O(other) {
+Path_O::Path_O(Path_O const &other) : Base(other) {
   this->_Path = other._Path;
 }
 
@@ -173,7 +164,6 @@ Path_sp Path_O::create(boost_filesystem::path p) {
 #define DECL_af_makePath ""
 #define DOCS_af_makePath "make Path args: path"
 Path_mv af_makePath(List_sp args) {
-  _G();
   Path_sp me(Path_O::create());
   while (args.notnilp()) {
     me->path_append(gc::As<Str_sp>(oCar(args))->get());
@@ -202,14 +192,15 @@ void Path_O::sxhash_(HashGenerator &hg) const {
   hg.addPart(bn);
 }
 
-Integer_sp Path_O::last_write_time() const {
-  _G();
+CL_LISPIFY_NAME("last_write_time");
+CL_DEFMETHOD Integer_sp Path_O::last_write_time() const {
   std::time_t ttime = boost_filesystem::last_write_time(this->_Path);
   gc::Fixnum ui64 = ttime;
   return Integer_O::create(ui64);
 }
 
-Path_sp Path_O::path_append(string const &pp) {
+CL_LISPIFY_NAME("path-append");
+CL_DEFMETHOD Path_sp Path_O::path_append(string const &pp) {
   _OF();
   LOG(BF("Appending string[%s] to the path") % pp);
   this->_Path /= pp;
@@ -241,8 +232,8 @@ void Path_O::setPath(const boost_filesystem::path &path) {
   this->_Path = path;
 }
 
-Path_sp Path_O::absolute() const {
-  _G();
+CL_LISPIFY_NAME("path-absolute");
+CL_DEFMETHOD Path_sp Path_O::absolute() const {
   if (this->_Path.is_absolute())
     return this->copyPath();
   GC_ALLOCATE(Path_O, abs);
@@ -250,23 +241,23 @@ Path_sp Path_O::absolute() const {
   return abs;
 }
 
-Path_sp Path_O::copyPath() const {
+CL_LISPIFY_NAME("copyPath");
+CL_DEFMETHOD Path_sp Path_O::copyPath() const {
   _OF();
   GC_COPY(Path_O, copy, *this);
   return copy;
 }
 
-void Path_O::setPathFromString(const string &pth) {
-  _G();
+CL_LISPIFY_NAME("setPathFromString");
+CL_DEFMETHOD void Path_O::setPathFromString(const string &pth) {
   bf::path p(pth);
   this->_Path = p;
 }
 
-#define ARGS_Path_O_parts "(self)"
-#define DECL_Path_O_parts ""
-#define DOCS_Path_O_parts "Returns a list of path parts as strings"
-List_sp Path_O::parts() const {
-  _G();
+CL_LAMBDA(self);
+CL_DOCSTRING("Returns a list of path parts as strings");
+CL_LISPIFY_NAME("path-parts");
+CL_DEFMETHOD List_sp Path_O::parts() const {
   bf::path::iterator it;
   ql::list l(_lisp);
   for (it = this->_Path.begin(); it != this->_Path.end(); ++it) {
@@ -275,7 +266,8 @@ List_sp Path_O::parts() const {
   return l.cons();
 }
 
-string Path_O::asString() const {
+CL_LISPIFY_NAME("asString");
+CL_DEFMETHOD string Path_O::asString() const {
   _OF();
   return this->_Path.string();
 }
@@ -288,13 +280,13 @@ string Path_O::__repr__() const {
   return ss.str();
 }
 
-string Path_O::stem() {
-  _G();
+CL_LISPIFY_NAME("path-stem");
+CL_DEFMETHOD string Path_O::stem() {
   return this->_Path.stem().string();
 }
 
-string Path_O::extension() {
-  _G();
+CL_LISPIFY_NAME("extension");
+CL_DEFMETHOD string Path_O::extension() {
   return this->_Path.extension().string();
 }
 
@@ -305,91 +297,49 @@ void Path_O::appendToExtension(string const &str) {
   this->replaceExtension(newExtension.str());
 }
 
-Path_sp Path_O::replaceExtension(string const &str) {
+CL_LISPIFY_NAME("replaceExtension");
+CL_DEFMETHOD Path_sp Path_O::replaceExtension(string const &str) {
   _OF();
   //	bf::path newExt(str);
   this->_Path.replace_extension(str);
   return this->sharedThis<Path_O>();
 }
 
-Path_sp Path_O::parent_path() {
+CL_LISPIFY_NAME("parent_path");
+CL_DEFMETHOD Path_sp Path_O::parent_path() {
   _OF();
   return Path_O::create(this->_Path.parent_path());
 }
 
-string Path_O::fileName() const {
-  _G();
+CL_LISPIFY_NAME("path-fileName");
+CL_DEFMETHOD string Path_O::fileName() const {
   return this->_Path.filename().string();
 }
 
-bool Path_O::exists() {
+CL_LISPIFY_NAME("exists");
+CL_DEFMETHOD bool Path_O::exists() {
   return boost_filesystem::exists(this->_Path);
 }
 
-EXPOSE_CLASS(core, Path_O);
 
-void Path_O::exposeCando(Lisp_sp lisp) {
-  _G();
-  class_<Path_O>()
-      .def("path-parts", &Path_O::parts, ARGS_Path_O_parts, DECL_Path_O_parts, DOCS_Path_O_parts)
-      .def("isAbsolute", &Path_O::isAbsolute)
-      .def("last_write_time", &Path_O::last_write_time)
-      .def("setPathFromString", &Path_O::setPathFromString)
-      .def("parent_path", &Path_O::parent_path)
-      .def("copyPath", &Path_O::copyPath)
-      .def("path-stem", &Path_O::stem)
-      .def("path-append", &Path_O::path_append)
-      .def("extension", &Path_O::extension)
-      .def("replaceExtension", &Path_O::replaceExtension)
-      .def("exists", &Path_O::exists)
-      .def("path-absolute", &Path_O::absolute)
-      .def("asString", &Path_O::asString)
-      .def("path-fileName", &Path_O::fileName);
-}
 
-void Path_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, Path, "", "", _lisp)
-      .def("setPathFromString", &Path_O::setPathFromString)
-      .def("parent_path", &Path_O::parent_path)
-      .def("copyPath", &Path_O::copyPath)
-      .def("stem", &Path_O::stem)
-      .def("path-append", &Path_O::path_append)
-      .def("extension", &Path_O::extension)
-      .def("exists", &Path_O::exists)
-      .def("asString", &Path_O::asString);
-#endif
-  // 	defInPackage(CorePkg,"directory",&directory, _LISP);
-  // 	defInPackage(CorePkg,"remove",&remove, _LISP);
-  // 	defInPackage(CorePkg,"rename",&rename, _LISP);
-  // 	defInPackage(CorePkg,"removeAll",&removeAll, _LISP);
-  // 	defNoWrapPackageWithArguments(CorePkg,"ensure-directories-exist",&ensureDirectoriesExist, "(path)", _LISP);
-}
+
+
 
 DirectoryIterator_sp DirectoryIterator_O::create(Path_sp path) {
-  _G();
   GC_ALLOCATE(DirectoryIterator_O, di);
   di->setPath(path);
   return di;
 }
 
-EXPOSE_CLASS(core, DirectoryIterator_O);
 
-void DirectoryIterator_O::exposeCando(Lisp_sp lisp) {
-  class_<DirectoryIterator_O>();
-}
 
-void DirectoryIterator_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, DirectoryIterator, "", "", _lisp);
-#endif
-}
+
+
 
 #if 0
     T_sp DirectoryIterator_O::make_init(Function_sp exec, Cons_sp args, T_sp bargs)
-    {_G();
+    {
 	Path_sp path = coerce::pathDesignator(af_interpreter_lookup_variable(_sym_path,bargs));
 	if ( path.nilp() )
 	{
@@ -405,7 +355,6 @@ void DirectoryIterator_O::exposePython(Lisp_sp lisp) {
 #define DECL_af_makeDirectoryIterator ""
 #define DOCS_af_makeDirectoryIterator "make DirectoryIterator args: path"
 DirectoryIterator_mv af_makeDirectoryIterator(Path_sp path) {
-  _G();
   IMPLEMENT_MEF(BF("What the heck was I doing below?"));
 #if 0
 	DirectoryIterator_sp me(DirectoryIterator_O::create());
@@ -478,31 +427,22 @@ DirectoryIterator_O::~DirectoryIterator_O() {
 }
 
 RecursiveDirectoryIterator_sp RecursiveDirectoryIterator_O::create(Path_sp path) {
-  _G();
   GC_ALLOCATE(RecursiveDirectoryIterator_O, di);
   di->setPath(path);
   return di;
 }
 
-EXPOSE_CLASS(core, RecursiveDirectoryIterator_O);
 
-void RecursiveDirectoryIterator_O::exposeCando(Lisp_sp lisp) {
-  class_<RecursiveDirectoryIterator_O>();
-}
 
-void RecursiveDirectoryIterator_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, RecursiveDirectoryIterator, "", "", _lisp);
-#endif
-}
+
+
 
 #if 0
 #define ARGS_af_makeRecursiveDirectoryIterator "(path)"
 #define DECL_af_makeRecursiveDirectoryIterator ""
 #define DOCS_af_makeRecursiveDirectoryIterator "make RecursiveDirectoryIterator args: path"
     RecursiveDirectoryIterator_mv af_makeRecursiveDirectoryIterator(Path_sp path)
-    {_G();
+    {
 	RecursiveDirectoryIterator_sp me(RecursiveDirectoryIterator_O::create());
 	GlueEnvironment_sp env(GlueEnvironment_O::create((ql::list(_lisp) << _sym_path << path).cons()) );
 	me->make_init__(core::_Nil<Function_O>(),env->args(),env,_lisp);
@@ -511,7 +451,7 @@ void RecursiveDirectoryIterator_O::exposePython(Lisp_sp lisp) {
 
 
     T_sp RecursiveDirectoryIterator_O::make_init__(Function_sp exec, Cons_sp args, Environment_sp bargs, Lisp_sp lisp)
-    {_G();
+    {
 	Path_sp path = coerce::pathDesignator(bargs->lookup(_sym_path));
 	if ( path.nilp() )
 	{
@@ -585,23 +525,9 @@ RecursiveDirectoryIterator_O::~RecursiveDirectoryIterator_O() {
   }
 }
 
-EXPOSE_CLASS(core, DirectoryEntry_O);
-void DirectoryEntry_O::exposeCando(Lisp_sp lisp) {
-  class_<DirectoryEntry_O>()
-      .def("fileStatus", &DirectoryEntry_O::fileStatus)
-      .def("symlinkStatus", &DirectoryEntry_O::symlinkStatus)
-      .def("path", &DirectoryEntry_O::path);
-}
 
-void DirectoryEntry_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, DirectoryEntry, "", "", _lisp)
-      .def("fileStatus", &DirectoryEntry_O::fileStatus)
-      .def("symlinkStatus", &DirectoryEntry_O::symlinkStatus)
-      .def("path", &DirectoryEntry_O::path);
-#endif
-}
+
+
 
 void DirectoryEntry_O::initialize() {
   this->Base::initialize();
@@ -618,21 +544,24 @@ void DirectoryEntry_O::setEntry(const boost_filesystem::directory_entry &entry) 
   this->_Entry = new boost_filesystem::directory_entry(p, s, ss);
 }
 
-FileStatus_sp DirectoryEntry_O::fileStatus() {
+CL_LISPIFY_NAME("fileStatus");
+CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::fileStatus() {
   _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
   fs->setFileStatus(this->_Entry->status());
   return fs;
 }
 
-FileStatus_sp DirectoryEntry_O::symlinkStatus() {
+CL_LISPIFY_NAME("symlinkStatus");
+CL_DEFMETHOD FileStatus_sp DirectoryEntry_O::symlinkStatus() {
   _OF();
   FileStatus_sp fs = _lisp->create<FileStatus_O>();
   fs->setFileStatus(this->_Entry->symlink_status());
   return fs;
 }
 
-Path_sp DirectoryEntry_O::path() {
+CL_LISPIFY_NAME("path");
+CL_DEFMETHOD Path_sp DirectoryEntry_O::path() {
   _OF();
   Path_sp path = _lisp->create<Path_O>();
   path->setPath(this->_Entry->path());
@@ -644,27 +573,9 @@ DirectoryEntry_O::~DirectoryEntry_O() {
     delete this->_Entry;
 }
 
-EXPOSE_CLASS(core, FileStatus_O);
-void FileStatus_O::exposeCando(Lisp_sp lisp) {
-  class_<FileStatus_O>()
-      .def("exists", &FileStatus_O::exists)
-      .def("isDirectory", &FileStatus_O::isDirectory)
-      .def("isRegularFile", &FileStatus_O::isRegularFile)
-      .def("isSymlink", &FileStatus_O::isSymlink)
-      .def("isOther", &FileStatus_O::isOther);
-}
 
-void FileStatus_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, FileStatus, "", "", _lisp)
-      .def("exists", &FileStatus_O::exists)
-      .def("isDirectory", &FileStatus_O::isDirectory)
-      .def("isRegularFile", &FileStatus_O::isRegularFile)
-      .def("isSymlink", &FileStatus_O::isSymlink)
-      .def("isOther", &FileStatus_O::isOther);
-#endif
-}
+
+
 
 void FileStatus_O::initialize() {
   this->Base::initialize();
@@ -675,23 +586,28 @@ void FileStatus_O::setFileStatus(const boost_filesystem::file_status &fs) {
   this->_FileStatus = fs;
 }
 
-bool FileStatus_O::exists() {
+CL_LISPIFY_NAME("exists");
+CL_DEFMETHOD bool FileStatus_O::exists() {
   _OF();
   return boost_filesystem::exists(this->_FileStatus);
 }
-bool FileStatus_O::isRegularFile() {
+CL_LISPIFY_NAME("isRegularFile");
+CL_DEFMETHOD bool FileStatus_O::isRegularFile() {
   _OF();
   return boost_filesystem::is_regular_file(this->_FileStatus);
 }
-bool FileStatus_O::isDirectory() {
+CL_LISPIFY_NAME("isDirectory");
+CL_DEFMETHOD bool FileStatus_O::isDirectory() {
   _OF();
   return boost_filesystem::is_directory(this->_FileStatus);
 }
-bool FileStatus_O::isSymlink() {
+CL_LISPIFY_NAME("isSymlink");
+CL_DEFMETHOD bool FileStatus_O::isSymlink() {
   _OF();
   return boost_filesystem::is_symlink(this->_FileStatus);
 }
-bool FileStatus_O::isOther() {
+CL_LISPIFY_NAME("isOther");
+CL_DEFMETHOD bool FileStatus_O::isOther() {
   _OF();
   return boost_filesystem::is_other(this->_FileStatus);
 }
@@ -702,7 +618,7 @@ Pathname_sp getcwd(bool change_d_p_d) {
   size_t i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->schar(i - 1)))
     namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
-  Pathname_sp pathname = af_parseNamestring(namestring);
+  Pathname_sp pathname = cl__parse_namestring(namestring);
   if (change_d_p_d) {
     cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(pathname);
   }
@@ -752,6 +668,6 @@ Pathname_sp homedirPathname(T_sp tuser) {
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->schar(i - 1)))
     namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
-  return af_parseNamestring(namestring);
+  return cl__parse_namestring(namestring);
 }
 };

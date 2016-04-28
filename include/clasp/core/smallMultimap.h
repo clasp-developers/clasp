@@ -44,21 +44,19 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-  using namespace core;
+using namespace core;
 
-
-  
 SMART(SmallMultimap);
-class SmallMultimap_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, SmallMultimap_O, "SmallMultimap");
+class SmallMultimap_O : public General_O {
+  LISP_CLASS(core, CorePkg, SmallMultimap_O, "SmallMultimap",General_O);
 GCPRIVATE:
-  typedef gctools::SmallMultimap<Symbol_sp, T_sp, SymbolComparer > map_type;
+  typedef gctools::SmallMultimap<Symbol_sp, T_sp, SymbolComparer> map_type;
   map_type map;
 
 public:
   void insert(T_sp key, T_sp val);
-  int size() const { return this->map.size(); };
+CL_LISPIFY_NAME("small_multimap_size");
+CL_DEFMETHOD   int size() const { return this->map.size(); };
   void erase(T_sp key);
   void describe();
   void describeRange(T_sp key);
@@ -67,7 +65,4 @@ public:
 };
 };
 
-
-
-TRANSLATE(core::SmallMultimap_O);
 #endif

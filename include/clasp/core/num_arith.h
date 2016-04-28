@@ -35,7 +35,6 @@ namespace core {
 Integer_sp clasp_gcd(Integer_sp x, Integer_sp y, int yidx = 1);
 Integer_sp clasp_integer_divide(Integer_sp x, Integer_sp y);
 
-void initialize_num_arith();
 };
 
 #endif

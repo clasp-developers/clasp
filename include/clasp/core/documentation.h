@@ -32,6 +32,8 @@ THE SOFTWARE.
 
 namespace core {
 
-void initialize_documentation_primitives(Lisp_sp lisp);
+  T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value);
+
+  void initialize_documentation_primitives(Lisp_sp lisp);
 };
 #endif /* _documentation_H_ */

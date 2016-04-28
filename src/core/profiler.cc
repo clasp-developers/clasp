@@ -27,7 +27,6 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
-#include <clasp/core/executables.fwd.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/lightProfiler.h>
 
@@ -58,7 +57,6 @@ int timerFixedNonbondRestraint;
 int forcesGreaterThan10000;
 
 void initializeProfiler(LightProfiler &profiler, const Lisp_sp &lisp) {
-  _G();
   LOG(BF("Initializing this"));
   timerLibrary = profiler.createTimer(0, "Force field library");
   timerPreconditioner = profiler.createTimer(timerLibrary, "Preconditioning");

@@ -1,5 +1,7 @@
 (in-package :clasp-cleavir)
 
+#+(or)(eval-when (:compile-toplevel :load-toplevel :execute)
+        (setq core::*echo-repl-read* t))
 
 ;;; Stubs to keep the already compiled code working
 

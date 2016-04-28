@@ -22,10 +22,15 @@
     (when (and (eq y z) (plusp n)) (return nil))))
 
 (declaim (ftype (function (list list &optional list) list) pairlis))
-(defun pairlis (keys data &optional alist)
-  "Create an alist with keys KEYS paired with data DATA, appended to an existing ALIST."
-  ;; bit inefficient but this is low-use
-  (append (mapcar #'cons keys data) alist))
+;;; Copied from SBCL
+(defun pairlis (keys data &optional (alist '()))
+  "Construct an association list from KEYS and DATA (adding to ALIST)."
+  (do ((x keys (cdr x))
+       (y data (cdr y)))
+      ((and (endp x) (endp y)) alist)
+    (if (or (endp x) (endp y))
+        (error "The lists of keys and data are of unequal length."))
+        (setq alist (acons (car x) (car y) alist))))
 
 ;; if not already defined
 (deftype function-name () '(or symbol (cons (eql setf) (cons symbol null))))
@@ -38,10 +43,27 @@
   (declare (ignore x))
   nil)
 
+;;; Copied from SBCL
 (declaim (ftype (function (list) list) copy-alist))
 (defun copy-alist (alist)
   "Copy the list structure and conses of an alist."
-  (loop for (a . b) in alist collecting (cons a b)))
+  (if (endp alist)
+      alist
+      (let ((result
+              (cons (if (atom (car alist))
+                        (car alist)
+                        (cons (caar alist) (cdar alist)))
+                    nil)))
+        (do ((x (cdr alist) (cdr x))
+             (splice result
+                     (cdr (rplacd splice
+                                  (cons
+                                   (if (atom (car x))
+                                       (car x)
+                                       (cons (caar x) (cdar x)))
+                                   nil)))))
+            ((endp x)))
+        result)))
 
 #+(or) ;; numlib provides this
 (progn
@@ -111,29 +133,29 @@
 (defun short-site-name () nil)
 (defun long-site-name () nil)
 
-
-(defun digit-char (weight &optional radix)
-  (if (>= weight radix)
-      nil
-      (code-char (+ weight (if (< weight 10) 48 55)))))
-
+(defun digit-char (weight &optional (radix 10))
+  (check-type radix (integer 2 36))
+  (when (< weight radix)
+    (code-char (+ weight (if (< weight 10) 48 55)))))
 
 ;; Donated by Shinmera in #clasp on April 2015 "free of charge"
 (in-package :cl)
-(defun string-capitalize (string)
-  (with-output-to-string (stream)
-    (loop with capitalize = T
-          for char across (string string)
-          do (cond ((alphanumericp char)
-                    (cond (capitalize
-                           (setf capitalize NIL)
-                           (write-char (char-upcase char) stream))
-                          (T
-                           (write-char (char-downcase char) stream))))
-                   (T
-                    (setf capitalize T)
-                    (write-char char stream))))))
 
+(defun nstring-capitalize (string &key (start 0) end)
+  (loop with capitalize = t
+        for i from start below (or end (length string))
+        for char = (char string i)
+        do (cond ((not (alphanumericp char))
+                  (setf capitalize t))
+                 (capitalize
+                  (setf capitalize nil)
+                  (setf (char string i) (char-upcase char)))
+                 (t
+                  (setf (char string i) (char-downcase char)))))
+  string)
+
+(defun string-capitalize (string &key (start 0) end)
+  (nstring-capitalize (copy-seq (string string)) :start start :end end))
 
 (defun float-radix (arg)
   ;; Unless you are internally representing

@@ -149,7 +149,7 @@ Returns the arc sine of NUMBER."
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+(or)(c-num-op "asin" xr) (core:asin xr) x)
+	    (float #+ecl(c-num-op "asin" xr) #+clasp(core:num-op-asin xr) x)
 	    (complex-asin x)))))
 
 ;; Ported from CMUCL
@@ -172,7 +172,7 @@ Returns the arc cosine of NUMBER."
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+(or)(c-num-op "acos" xr) (core:acos xr) (float x))
+	    (float #+ecl(c-num-op "acos" xr) #+clasp(core:num-op-acos xr) (float x))
 	    (complex-acos x)))))
 
 ;; Ported from CMUCL
@@ -211,7 +211,7 @@ Returns the hyperbolic arc sine of NUMBER."
 	(complex (imagpart result)
 		 (- (realpart result))))
       #-(or ecl-min)
-      (float #+(or)(c-num-op "asinh" x) (core:asinh x) (float x))))
+      (float #+ecl(c-num-op "asinh" x) #+clasp(core:num-op-asinh x) (float x))))
 
 ;; Ported from CMUCL
 (defun acosh (x)
@@ -225,7 +225,7 @@ Returns the hyperbolic arc cosine of NUMBER."
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (<= 1.0 xr)
-	    (float #+(or)(c-num-op "acosh" xr) (core:acosh xr) (float x))
+	    (float #+ecl(c-num-op "acosh" xr) #+clasp(core:num-op-acosh xr) (float x))
 	    (complex-acosh x)))))
 
 (defun complex-acosh (z)
@@ -247,7 +247,7 @@ Returns the hyperbolic arc tangent of NUMBER."
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+(or)(c-num-op "atanh" xr) (core:atanh xr) (float x))
+	    (float #+ecl(c-num-op "atanh" xr) #+clasp(core:num-op-atanh xr) (float x))
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)
@@ -301,41 +301,95 @@ Returns the size part (in ECL, the car part) of the byte specifier BYTE."
 Returns the position part (in ECL, the cdr part) of the byte specifier BYTE."
   (cdr bytespec))
 
+(defun %ldb (size position integer)
+  (logand (ash integer (- position))
+          (lognot (ash -1 size))))
+
 (defun ldb (bytespec integer)
   "Args: (bytespec integer)
 Extracts a byte from INTEGER at the specified byte position, right-justifies
 the byte, and returns the result as an integer."
-  (logand (ash integer (- (byte-position bytespec)))
-	  (lognot (ash -1 (byte-size bytespec)))))
+  (%ldb (byte-size bytespec) (byte-position bytespec) integer))
+
+(defun parse-bytespec (bytespec)
+  (when (and (consp bytespec)
+             (eql (car bytespec) 'byte)
+             (consp (cdr bytespec))
+             (consp (cddr bytespec))
+             (null (cdddr bytespec)))
+    (values (cadr bytespec) (caddr bytespec))))
+
+(define-compiler-macro ldb (&whole whole bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%ldb ,size ,position ,integer)
+        whole)))
+
+(defun %ldb-test (size position integer)
+  (not (zerop (%mask-field size position integer))))
 
 (defun ldb-test (bytespec integer)
   "Args: (bytespec integer)
 Returns T if at least one bit of the specified byte is 1; NIL otherwise."
-  (not (zerop (mask-field bytespec integer))))
+  (%ldb-test (byte-size bytespec) (byte-position bytespec) integer))
+
+(define-compiler-macro ldb-test (&whole whole bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%ldb-test ,size ,position ,integer)
+        whole)))
+
+(defun %mask-field (size position integer)
+  (logand (ash (lognot (ash -1 size))
+	       position)
+	  integer))
 
 (defun mask-field (bytespec integer)
   "Args: (bytespec integer)
 Extracts the specified byte from INTEGER and returns the result as an integer."
-  (logand (ash (lognot (ash -1 (byte-size bytespec)))
-	       (byte-position bytespec))
-	  integer))
+  (%mask-field (byte-size bytespec) (byte-position bytespec) integer))
+
+(define-compiler-macro mask-field (&whole whole bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%mask-field ,size ,position ,integer)
+        whole)))
+
+(defun %dpb (newbyte size position integer)
+  (let ((mask (ash (lognot (ash -1 size)) position)))
+    (logior (logandc2 integer mask)
+	    (logand (ash newbyte position) mask))))
 
 (defun dpb (newbyte bytespec integer)
   "Args: (newbyte bytespec integer)
 Replaces the specified byte of INTEGER with NEWBYTE (an integer) and returns
 the result."
-  (let* ((pos (byte-position bytespec))
-	 (size (byte-size bytespec))
-	 (mask (ash (lognot (ash -1 size)) pos)))
+  (%dpb newbyte (byte-size bytespec) (byte-position bytespec) integer))
+
+(define-compiler-macro dpb (&whole whole newbyte bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%dpb ,newbyte ,size ,position ,integer)
+        whole)))
+
+(defun %deposit-field (newbyte size position integer)
+  (let ((mask (ash (lognot (ash -1 size)) position)))
     (logior (logandc2 integer mask)
-	    (logand (ash newbyte pos) mask))))
+	    (logand newbyte mask))))
+
+(defun %deposit-field (newbyte size position integer)
+  (let ((mask (ash (lognot (ash -1 size)) position)))
+    (logior (logandc2 integer mask)
+	    (logand newbyte mask))))
 
 (defun deposit-field (newbyte bytespec integer)
   "Args: (integer1 bytespec integer2)
 Returns an integer represented by the bit sequence obtained by replacing the
 specified bits of INTEGER2 with the specified bits of INTEGER1."
-  (let* ((pos (byte-position bytespec))
-	 (size (byte-size bytespec))
-	 (mask (ash (lognot (ash -1 size)) pos)))
-    (logior (logandc2 integer mask)
-	    (logand newbyte mask))))
+  (%deposit-field newbyte (byte-size bytespec) (byte-position bytespec) integer))
+
+(define-compiler-macro deposit-field (&whole whole newbyte bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%deposit-field ,newbyte ,size ,position ,integer)
+        whole)))

@@ -57,8 +57,6 @@ THE SOFTWARE.
 
 namespace asttooling {
 
-namespace internal {
-
 using namespace clang::ast_matchers::dynamic;
 
 /// \brief Helper template class to just from argument type to the right is/get
@@ -111,11 +109,12 @@ struct ArgTypeTraits<unsigned> {
 ///
 /// Provides a \c create() method that constructs the matcher from the provided
 /// arguments.
-class MatcherDescriptor {
+ FORWARD(MatcherDescriptor);
+ class MatcherDescriptor_O : public core::General_O {
   struct metadata_always_fix_pointers_to_derived_classes;
-
+  LISP_ABSTRACT_CLASS(asttooling,AstToolingPkg,MatcherDescriptor_O,"MatcherDescriptor",core::General_O);
 public:
-  virtual ~MatcherDescriptor() {}
+  virtual ~MatcherDescriptor_O() {}
   virtual VariantMatcher create(core::Cons_sp NameRange,
                                 ArrayRef<ParserValue> Args,
                                 Diagnostics *Error) const = 0;
@@ -127,8 +126,8 @@ public:
 /// function into a MatcherDescriptor.
 /// The marshaller is in charge of taking the VariantValue arguments, checking
 /// their types, unpacking them and calling the underlying function.
-class FixedArgCountMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER(FixedArgCountMatcherDescriptor);
+class FixedArgCountMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,FixedArgCountMatcherDescriptor_O,"FixedArgCountMatcherDescriptor",MatcherDescriptor_O);
 public:
   typedef VariantMatcher (*MarshallerType)(void (*Func)(),
                                            core::Symbol_sp MatcherName,
@@ -139,7 +138,7 @@ public:
   /// \param Marshaller Function to unpack the arguments and call \c Func
   /// \param Func Matcher construct function. This is the function that
   ///   compile-time matcher expressions would use to create the matcher.
-  FixedArgCountMatcherDescriptor(MarshallerType Marshaller, void (*Func)(),
+  FixedArgCountMatcherDescriptor_O(MarshallerType Marshaller, void (*Func)(),
                                  core::Symbol_sp MatcherName)
       : Marshaller(Marshaller), Func(Func), MatcherName(MatcherName) {}
 
@@ -162,18 +161,17 @@ GCPRIVATE:
 /// This allows us to have one implementation of the interface for as many free
 /// functions as we want, reducing the number of symbols and size of the
 /// object file.
-class FreeFuncMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER(asttooling::internal::FreeFuncMatcherDescriptor);
-
+class FreeFuncMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,FreeFuncMatcherDescriptor_O,"FreeFuncMatcherDescriptor",MatcherDescriptor_O);
 public:
   typedef VariantMatcher (*RunFunc)(core::Symbol_sp MatcherName,
                                     core::Cons_sp NameRange,
                                     ArrayRef<ParserValue> Args,
                                     Diagnostics *Error);
 
-  FreeFuncMatcherDescriptor(RunFunc Func, core::Symbol_sp MatcherName)
+  FreeFuncMatcherDescriptor_O(RunFunc Func, core::Symbol_sp MatcherName)
       : Func(Func), MatcherName(MatcherName) {}
-
+  
   VariantMatcher create(core::Cons_sp NameRange,
                         ArrayRef<ParserValue> Args,
                         Diagnostics *Error) const {
@@ -182,7 +180,7 @@ public:
 
 GCPRIVATE:
   const RunFunc Func;
-    core::Symbol_sp MatcherName;
+  core::Symbol_sp MatcherName;
 };
 
 /// \brief Helper macros to check the arguments on all marshaller functions.
@@ -323,7 +321,7 @@ template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
 class AdaptativeOverloadCollector {
 public:
   AdaptativeOverloadCollector(core::Symbol_sp Name,
-                              gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> &Out)
+                              gctools::Vec0<gctools::smart_ptr<MatcherDescriptor_O>> &Out)
       : Name(Name), Out(Out) {
     collect(FromTypes());
   }
@@ -341,7 +339,7 @@ private:
   inline void collect(FromTypeList);
 
   const core::Symbol_sp Name;
-  gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> &Out;
+  gctools::Vec0<gctools::smart_ptr<MatcherDescriptor_O>> &Out;
 };
 
 /// \brief MatcherDescriptor that wraps multiple "overloads" of the same
@@ -349,24 +347,26 @@ private:
 ///
 /// It will try every overload and generate appropriate errors for when none or
 /// more than one overloads match the arguments.
-class OverloadedMatcherDescriptor : public MatcherDescriptor {
+class OverloadedMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,OverloadedMatcherDescriptor_O,"OverloadedMatcherDescriptor",MatcherDescriptor_O);
   FRIEND_GC_SCANNER(asttooling::internal::OverloadedMatcherDescriptor);
- public:
-// gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
 
-//    gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
-  OverloadedMatcherDescriptor( const gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
+public:
+  // gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+
+  //    gctools::tagged_pointer<OverloadedMatcherDescriptor>rrayRef<MatcherDescriptor *> Callbacks) : Overloads(Callbacks) {};
+  OverloadedMatcherDescriptor_O(const gctools::Vec0<gctools::smart_ptr<MatcherDescriptor_O>> Callbacks) {
     for (auto it = Callbacks.begin(); it != Callbacks.end(); ++it) {
       Overloads.push_back(*it);
     }
   }
-  OverloadedMatcherDescriptor( ArrayRef<gctools::tagged_pointer<MatcherDescriptor>> Callbacks) {
+  OverloadedMatcherDescriptor_O(ArrayRef<gctools::smart_ptr<MatcherDescriptor_O>> Callbacks) {
     for (auto it = Callbacks.begin(); it != Callbacks.end(); ++it) {
       Overloads.push_back(*it);
     }
   }
 
-  virtual ~OverloadedMatcherDescriptor() {
+  virtual ~OverloadedMatcherDescriptor_O() {
     printf("%s:%d In ~OverloadedMatcherDescriptor  - I think I need to dereference the MatcherDescriptors and pass them back to LLVM to delete them - This isn't compatible with the garbage collector and tagged pointers - I am going to have to make some big changes here to make this compatible with LLVM/Clang\n", __FILE__, __LINE__);
     //llvm::DeleteContainerPointers(Overloads);
   }
@@ -396,15 +396,15 @@ class OverloadedMatcherDescriptor : public MatcherDescriptor {
   }
 
 GCPRIVATE:
-  gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Overloads;
+  gctools::Vec0<gctools::smart_ptr<MatcherDescriptor_O>> Overloads;
 };
 
 /// \brief Variadic operator marshaller function.
-class VariadicOperatorMatcherDescriptor : public MatcherDescriptor {
-  FRIEND_GC_SCANNER(asttooling::internal::VariadicOperatorMatcherDescriptor);
+class VariadicOperatorMatcherDescriptor_O : public MatcherDescriptor_O {
+  LISP_CLASS(asttooling,AstToolingPkg,VariadicOperatorMatcherDescriptor_O,"VariadicOperatorMatcherDescriptor",MatcherDescriptor_O);
 public:
   typedef clang::ast_matchers::internal::DynTypedMatcher::VariadicOperator VarOp;
-  VariadicOperatorMatcherDescriptor(unsigned MinCount, unsigned MaxCount,
+  VariadicOperatorMatcherDescriptor_O(unsigned MinCount, unsigned MaxCount,
                                     VarOp op, core::Symbol_sp MatcherName)
       : MinCount(MinCount), MaxCount(MaxCount), Op(op),
         MatcherName(MatcherName) {}
@@ -438,7 +438,7 @@ GCPRIVATE:
   const unsigned MinCount;
   const unsigned MaxCount;
   const VarOp Op;
-    core::Symbol_sp MatcherName;
+  core::Symbol_sp MatcherName;
 };
 
 /// Helper functions to select the appropriate marshaller functions.
@@ -446,78 +446,51 @@ GCPRIVATE:
 
 /// \brief 0-arg overload
 template <typename ReturnType>
-  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(),
-                                           core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
-  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
-#else
-  return new FixedArgCountMatcherDescriptor(
-      matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func),
-      MatcherName);
-#endif
+MatcherDescriptor_sp makeMatcherAutoMarshall(ReturnType (*Func)(),
+                                             core::Symbol_sp MatcherName) {
+  return gc::GC<FixedArgCountMatcherDescriptor_O>::allocate(matcherMarshall0<ReturnType>, reinterpret_cast<void (*)()>(Func), MatcherName);
 }
 
 /// \brief 1-arg overload
 template <typename ReturnType, typename ArgType1>
-  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
-                                           core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
-  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
+MatcherDescriptor_sp makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1),
+                                                              core::Symbol_sp MatcherName) {
+  return gctools::GC<FixedArgCountMatcherDescriptor_O>::allocate(
       matcherMarshall1<ReturnType, ArgType1>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
-#else
-  return new FixedArgCountMatcherDescriptor(
-      matcherMarshall1<ReturnType, ArgType1>,
-      reinterpret_cast<void (*)()>(Func), MatcherName);
-#endif
 }
 
 /// \brief 2-arg overload
 template <typename ReturnType, typename ArgType1, typename ArgType2>
-  gc::tagged_pointer<MatcherDescriptor> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
-                                                              ArgType2),
-                                           core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
-  return gctools::ClassAllocator<FixedArgCountMatcherDescriptor>::allocateClass(
+gc::smart_ptr<MatcherDescriptor_O> makeMatcherAutoMarshall(ReturnType (*Func)(ArgType1,
+                                                                                 ArgType2),
+                                                              core::Symbol_sp MatcherName) {
+  return gctools::GC<FixedArgCountMatcherDescriptor_O>::allocate(
       matcherMarshall2<ReturnType, ArgType1, ArgType2>,
       reinterpret_cast<void (*)()>(Func), MatcherName);
-#else
-  return new FixedArgCountMatcherDescriptor(
-      matcherMarshall2<ReturnType, ArgType1, ArgType2>,
-      reinterpret_cast<void (*)()>(Func), MatcherName);
-#endif
 }
 
 /// \brief Variadic overload.
 template <typename ResultT, typename ArgT,
           ResultT (*Func)(ArrayRef<const ArgT *>)>
-  gc::tagged_pointer<MatcherDescriptor>
+  gc::smart_ptr<MatcherDescriptor_O>
 makeMatcherAutoMarshall(llvm::VariadicFunction<ResultT, ArgT, Func> VarFunc,
                         core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
-  return gctools::ClassAllocator<FreeFuncMatcherDescriptor>::allocateClass(
+  return gctools::GC<FreeFuncMatcherDescriptor_O>::allocate(
       &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
-#else
-  return new FreeFuncMatcherDescriptor(
-      &variadicMatcherDescriptor<ResultT, ArgT, Func>, MatcherName);
-#endif
 }
 
 /// \brief Argument adaptative overload.
 template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
           typename FromTypes, typename ToTypes>
-  gc::tagged_pointer<MatcherDescriptor>
+gc::smart_ptr<MatcherDescriptor_O>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::ArgumentAdaptingMatcherFunc<
                             ArgumentAdapterT, FromTypes, ToTypes>,
                         core::Symbol_sp MatcherName) {
-  gctools::Vec0<gctools::tagged_pointer<MatcherDescriptor>> Overloads;
+  gctools::Vec0<gctools::smart_ptr<MatcherDescriptor_O>> Overloads;
   AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes, ToTypes>(MatcherName,
                                                                     Overloads);
-#ifndef USE_NEW
-  return gctools::ClassAllocator<OverloadedMatcherDescriptor>::allocateClass(Overloads);
-#else
-  return new OverloadedMatcherDescriptor(Overloads);
-#endif
+  return gctools::GC<OverloadedMatcherDescriptor_O>::allocate(Overloads);
 }
 
 template <template <typename ToArg, typename FromArg> class ArgumentAdapterT,
@@ -532,19 +505,13 @@ inline void AdaptativeOverloadCollector<ArgumentAdapterT, FromTypes,
 
 /// \brief Variadic operator overload.
 template <unsigned MinCount, unsigned MaxCount>
-  gc::tagged_pointer<MatcherDescriptor>
+gc::smart_ptr<MatcherDescriptor_O>
 makeMatcherAutoMarshall(clang::ast_matchers::internal::VariadicOperatorMatcherFunc<MinCount, MaxCount> Func,
                         core::Symbol_sp MatcherName) {
-#ifndef USE_NEW
-  return gctools::ClassAllocator<VariadicOperatorMatcherDescriptor>::allocateClass(MinCount, MaxCount, Func.Op,
+  return gctools::GC<VariadicOperatorMatcherDescriptor_O>::allocate(MinCount, MaxCount, Func.Op,
                                                                                    MatcherName);
-#else
-  return new VariadicOperatorMatcherDescriptor(MinCount, MaxCount, Func.Func,
-                                               MatcherName);
-#endif
 }
 
-} // namespace internal
 } // namespace asttooling
 
 #endif // LLVM_CLANG_AST_MATCHERS_DYNAMIC_MARSHALLERS_H

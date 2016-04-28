@@ -36,24 +36,12 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, HashTableEqual_O);
 
-void HashTableEqual_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<HashTableEqual_O>()
-      //	.initArgs("(self)")
-      ;
-}
 
-void HashTableEqual_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), HashTableEqual, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 HashTableEqual_sp HashTableEqual_O::create(uint sz, Number_sp rehashSize, double rehashThreshold) {
-  _G();
   GC_ALLOCATE(HashTableEqual_O, hashTable);
   hashTable->setup(sz, rehashSize, rehashThreshold);
   return hashTable;
@@ -61,7 +49,6 @@ HashTableEqual_sp HashTableEqual_O::create(uint sz, Number_sp rehashSize, double
 
 SYMBOL_EXPORT_SC_(ClPkg, equal);
 HashTableEqual_sp HashTableEqual_O::create_default() {
-  _G();
   DoubleFloat_sp rhs = DoubleFloat_O::create(2.0);
   HashTableEqual_sp ht = HashTableEqual_O::create(16, rhs, 1.0);
   return ht;
@@ -84,7 +71,7 @@ void HashTableEqual_O::archiveBase(::core::ArchiveP node) {
 
 bool HashTableEqual_O::keyTest(T_sp entryKey, T_sp searchKey) const {
   _OF();
-  return cl_equal(entryKey, searchKey);
+  return cl__equal(entryKey, searchKey);
 }
 
 gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) const {
@@ -94,7 +81,7 @@ gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddK
   HashGenerator hg;
 #endif
 #ifdef USE_MPS
-  HashTable_O::sxhash_equal(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL);
+  HashTable_O::sxhash_equal(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
 #else
   HashTable_O::sxhash_equal(hg, obj, NULL);
 #endif

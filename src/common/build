@@ -1,11 +1,22 @@
 #! /bin/bash -f
 #
 # grovel project directories for symbols and classes
+#  NOTE: As of Jan 4 2016 we don't need to use the python scraper anymore
+#(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat ../../src/main/project-directories.config` 2>registerClasses.log)
+
 #
-(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/symbolGroveler.py include/generated/symbols_scraped_inc.h `cat project-directories.config`)
-(export PYTHONPATH=$CLASP_HOME/src/common:$PYTHONPATH; $PYTHON2 $CLASP_HOME/src/common/classGroveler.py include/generated/initClasses_inc.h `cat project-directories.config` 2>registerClasses.log)
+# Run the new SBCL scraper
+# currently it needs the files generated above by the python grovelers
+#
+install -d bin
+$BJAM $* -n -a >bin/all-commands.txt
+$BJAM $* -n >bin/commands.txt
+export SBCL_OPTIONS="--lose-on-corruption --dynamic-space-size 4096 --disable-debugger --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANGXX_PATH `pwd`/ bin/all-commands.txt bin/commands.txt"
+echo Running $CLASP_SBCL $SBCL_OPTIONS
+$CLASP_SBCL $SBCL_OPTIONS
+
 #
 # run bjam to build app
 #
-echo bjam $*
-bjam $*
+echo $BJAM $*
+$BJAM $*

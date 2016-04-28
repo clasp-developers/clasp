@@ -10,57 +10,57 @@
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,
     typename ARG14,typename ARG15 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 16 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame->arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
-translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame.arg(15));
+translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame->arg(15));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<16> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -141,55 +141,55 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,
     typename ARG14 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 15 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame->arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -265,53 +265,53 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 14 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -383,51 +383,51 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 13 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -495,49 +495,49 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 12 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -601,47 +601,47 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 11 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -701,45 +701,45 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 10 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -795,43 +795,43 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 9 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -883,41 +883,41 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 8 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -965,39 +965,39 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 7 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1040,37 +1040,37 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 6
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 6 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1109,35 +1109,35 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 5
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3, ARG4), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 5 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1172,33 +1172,33 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 4
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2, ARG3), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 4 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1229,31 +1229,31 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 3
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1,typename ARG2 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1, ARG2), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1, ARG2);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 3 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1280,29 +1280,29 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 2
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0,typename ARG1 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0, ARG1), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0, ARG1);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 2 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 RT retval =  fptr(a0._v,a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1325,27 +1325,27 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 1
 /* Specialization */
 template <typename Pols , typename RT  ,typename ARG0 >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(ARG0), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)(ARG0);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 1 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 RT retval =  fptr(a0._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1364,18 +1364,18 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 // numArgs = 0
 /* Specialization */
 template <typename Pols , typename RT   >
-class VariadicFunctoid
+class VariadicFunctor
 <  RT  (*)(), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef RT(*Type)();
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 0 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -1394,57 +1394,57 @@ return LCC_RETURN(translate::to_object<RT,typename AdoptPointer<Pols,result>::ty
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14,
     typename ARG15 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 16 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame->arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
-translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame.arg(15));
+translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame->arg(15));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<16> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1523,55 +1523,55 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 15 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame->arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1646,53 +1646,53 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 14 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1763,51 +1763,51 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 13 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1874,49 +1874,49 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 12 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1979,47 +1979,47 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 11 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2078,45 +2078,45 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8,typename ARG9 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 10 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2171,43 +2171,43 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7,typename ARG8 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 9 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2258,41 +2258,41 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6,
     typename ARG7 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 8 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2338,39 +2338,39 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 7
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 7 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2412,37 +2412,37 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 6
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 6 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2480,35 +2480,35 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 5
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3, ARG4), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 5 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2542,33 +2542,33 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 4
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2, ARG3), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 4 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2598,31 +2598,31 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 3
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1,typename ARG2 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1, ARG2), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1, ARG2);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 3 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 fptr(a0._v,a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2648,29 +2648,29 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 2
 /* Specialization */
 template <typename Pols  ,typename ARG0,typename ARG1 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0, ARG1), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0, ARG1);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 2 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 fptr(a0._v,a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2692,27 +2692,27 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 1
 /* Specialization */
 template <typename Pols  ,typename ARG0 >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(ARG0), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)(ARG0);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 1 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 fptr(a0._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2730,18 +2730,18 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 // numArgs = 0
 /* Specialization */
 template <typename Pols   >
-class VariadicFunctoid
+class VariadicFunctor
 < void (*)(), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef void(*Type)();
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 0 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
@@ -2759,59 +2759,59 @@ return Values0<core::T_O>();
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,
     typename ARG14,typename ARG15 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14, ARG15);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 16 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame->arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
-translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame.arg(15));
+translate::from_object<ARG15,typename DoesNotContain_<Pols,pureOutValue<16> >::type > a15(frame->arg(15));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<16> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,
     a14._v,a15._v);
@@ -2894,56 +2894,56 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,
     typename ARG14 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 15 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
-translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame.arg(14));
+translate::from_object<ARG14,typename DoesNotContain_<Pols,pureOutValue<15> >::type > a14(frame->arg(14));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<15> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,
     a14._v);
@@ -3021,53 +3021,53 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 14 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
-translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame.arg(13));
+translate::from_object<ARG13,typename DoesNotContain_<Pols,pureOutValue<14> >::type > a13(frame->arg(13));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<14> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3140,51 +3140,51 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 13 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
-translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame.arg(12));
+translate::from_object<ARG12,typename DoesNotContain_<Pols,pureOutValue<13> >::type > a12(frame->arg(12));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<13> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3253,49 +3253,49 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 12 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
-translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame.arg(11));
+translate::from_object<ARG11,typename DoesNotContain_<Pols,pureOutValue<12> >::type > a11(frame->arg(11));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<12> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3360,47 +3360,47 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 11 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
-translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame.arg(10));
+translate::from_object<ARG10,typename DoesNotContain_<Pols,pureOutValue<11> >::type > a10(frame->arg(10));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<11> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3461,45 +3461,45 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 10 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
-translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame.arg(9));
+translate::from_object<ARG9,typename DoesNotContain_<Pols,pureOutValue<10> >::type > a9(frame->arg(9));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<10> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3556,43 +3556,43 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7,typename ARG8 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 9 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
-translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame.arg(8));
+translate::from_object<ARG8,typename DoesNotContain_<Pols,pureOutValue<9> >::type > a8(frame->arg(8));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<9> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3645,41 +3645,41 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6,typename ARG7 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 8 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
-translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame.arg(7));
+translate::from_object<ARG7,typename DoesNotContain_<Pols,pureOutValue<8> >::type > a7(frame->arg(7));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<8> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3728,39 +3728,39 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,
     typename ARG6 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 7 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
-translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame.arg(6));
+translate::from_object<ARG6,typename DoesNotContain_<Pols,pureOutValue<7> >::type > a6(frame->arg(6));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<7> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3804,37 +3804,37 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 6
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4, ARG5);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 6 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
-translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame.arg(5));
+translate::from_object<ARG5,typename DoesNotContain_<Pols,pureOutValue<6> >::type > a5(frame->arg(5));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<6> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3874,35 +3874,35 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 5
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3, ARG4), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3, ARG4);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 5 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
-translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame.arg(4));
+translate::from_object<ARG4,typename DoesNotContain_<Pols,pureOutValue<5> >::type > a4(frame->arg(4));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<5> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3938,33 +3938,33 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 4
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2,typename ARG3 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2, ARG3), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2, ARG3);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 4 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
-translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame.arg(3));
+translate::from_object<ARG3,typename DoesNotContain_<Pols,pureOutValue<4> >::type > a3(frame->arg(3));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<4> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3996,31 +3996,31 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 3
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1,typename ARG2 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1, ARG2), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1, ARG2);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 3 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
-translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame.arg(2));
+translate::from_object<ARG2,typename DoesNotContain_<Pols,pureOutValue<3> >::type > a2(frame->arg(2));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<3> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4048,29 +4048,29 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 2
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0,typename ARG1 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0, ARG1), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0, ARG1);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 2 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
-translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame.arg(1));
+translate::from_object<ARG1,typename DoesNotContain_<Pols,pureOutValue<2> >::type > a1(frame->arg(1));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<2> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v,a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4094,27 +4094,27 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 1
 /* Specialization */
 template <typename Pols , typename UPRT  ,typename ARG0 >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(ARG0), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)(ARG0);
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 1 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
 INVOCATION_HISTORY_FRAME();
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame.arg(0));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG0,typename DoesNotContain_<Pols,pureOutValue<1> >::type > a0(frame->arg(0));
 //IncWhen<typename DoesNotContain_<Pols,pureOutValue<1> >::type >::go(args);
 std::unique_ptr<UPRT> retval =  fptr(a0._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -4134,18 +4134,18 @@ return LCC_RETURN(translate::to_object<std::unique_ptr<UPRT>, typename AdoptPoin
 // numArgs = 0
 /* Specialization */
 template <typename Pols , typename UPRT   >
-class VariadicFunctoid
+class VariadicFunctor
 <  std::unique_ptr<UPRT>  (*)(), Pols>
-: public core::BuiltinClosure {
+: public core::BuiltinClosure_O {
 public:
-typedef core::BuiltinClosure TemplatedBase;
+typedef core::BuiltinClosure_O TemplatedBase;
 public:
 typedef  std::unique_ptr<UPRT> (*Type)();
 Type fptr;
 public:
-virtual const char* describe() const { return "VariadicFunctoid"; };
+virtual const char* describe() const { return "VariadicFunctor"; };
 enum { NumParams = 0 };
-VariadicFunctoid(core::T_sp name, Type ptr) : core::BuiltinClosure(name), fptr(ptr) {};
+VariadicFunctor(core::T_sp name, Type ptr) : core::BuiltinClosure_O(name), fptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this);};
 inline LCC_RETURN LISP_CALLING_CONVENTION()

@@ -34,66 +34,85 @@ THE SOFTWARE.
 namespace core {
 class T_O;
 class WrappedPointer_O;
-class Functoid;
-class Creator;
+class Function_O;
+class Creator_O;
 class Iterator_O;
-    class SequenceStepper;
+class SequenceStepper_O;
 };
 namespace asttooling {
-    namespace internal {
-        class MatcherDescriptor;
-    };
+namespace internal {
+  class MatcherDescriptor_O;
+};
 };
 namespace clbind {
-class ConstructorCreator;
+class ConstructorCreator_O;
 };
 
-#define GC_INTERFACE_FORWARD
-#include PROJECT_HEADERS_INCLUDE
-#undef GC_INTERFACE_FORWARD
+
+
+
+//#define GC_INTERFACE_FORWARD
+//#include <project_headers.h>
+//#undef GC_INTERFACE_FORWARD
 
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-    #define DECLARE_FORWARDS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef DECLARE_FORWARDS
-  #endif // ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+#define DECLARE_FORWARDS
+#include "clasp_gc.cc"
+#undef DECLARE_FORWARDS
+#endif // ifndef RUNNING_GC_BUILDER
 #endif
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
-    // nothing
-  #else
-    #define DECLARE_FORWARDS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef DECLARE_FORWARDS
-  #endif
+#ifdef USE_CXX_DYNAMIC_CAST
+// nothing
+#else
+#define DECLARE_FORWARDS
+#include "clasp_gc.cc"
+#undef DECLARE_FORWARDS
+#endif
 #endif
 
 namespace gctools {
 
 #ifdef USE_MPS
-  #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
-    #define GC_KIND_SELECTORS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_KIND_SELECTORS
-  #endif // ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
+#define GC_KIND_SELECTORS
+#include "clasp_gc.cc"
+#undef GC_KIND_SELECTORS
+#endif // ifndef RUNNING_GC_BUILDER
 #endif
 #ifdef USE_BOEHM
-  #ifdef USE_CXX_DYNAMIC_CAST
-    // Nothing
-  #else
-    #define GC_KIND_SELECTORS
-    #include STATIC_ANALYZER_PRODUCT
-    #undef GC_KIND_SELECTORS
-  #endif
+#ifdef USE_CXX_DYNAMIC_CAST
+// Nothing
+#else
+#define GC_KIND_SELECTORS
+#include "clasp_gc.cc"
+#undef GC_KIND_SELECTORS
+#endif
 #endif
 };
 
 #include <clasp/gctools/other_tagged_casts.h>
 
 extern "C" {
-char* obj_name(gctools::GCKindEnum kind);
-extern void obj_dump_base(void* base);
+const char *obj_name(gctools::kind_t kind);
+extern void obj_dump_base(void *base);
+extern void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj);
+
+extern int global_symbol_count;
+extern gctools::smart_ptr<core::Symbol_O> global_symbols[];
+
+extern void client_validate_internal(void* tagged_client);
+extern void client_validate_recursive(void* tagged_client, std::set<void*>& seen );
+
 };
+
+
+void initialize_clasp();
+
+void initialize_functions();
+void initialize_source_info();
+void initialize_classes_and_methods();
+
 
 #endif

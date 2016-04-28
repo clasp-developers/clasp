@@ -232,7 +232,7 @@ private:
             {
                 string tname = m_name;
                 if (m_name == "") { tname = "default-ctor"; };
-                core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocateClass(tname);
+                core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocate_class(tname);
                 return f;
             }
 
@@ -262,7 +262,7 @@ private:
         {
             constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,Pointer,constructor<>,Policies>(policies,name,arguments,declares,docstring) {};
             core::Creator* registerDefaultConstructor_() const {
-                core::Creator* allocator = gctools::ClassAllocator<DefaultConstructorAllocatorFunctor<Class,Pointer>>::allocateClass();
+                core::Creator* allocator = gctools::ClassAllocator<DefaultConstructorAllocatorFunctor<Class,Pointer>>::allocate_class();
                 return allocator;
             }
         };
@@ -299,7 +299,7 @@ private:
             void register_() const
             {
                 const string n(name);
-                core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocateClass(n,get);
+                core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocate_class(n,get);
 //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
 //                printf("%p\n", i);
                 core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();

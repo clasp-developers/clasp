@@ -32,10 +32,6 @@
 (in-package :compiler)
 
 
-(defun irc-next-environment-id ()
-    (prog1 *next-environment-id*
-      (incf *next-environment-id*)))
-
 (defun irc-single-step-callback (env)
   (irc-intrinsic "singleStepCallback" ))
 
@@ -545,6 +541,8 @@
 (defun irc-icmp-slt (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-slt *irbuilder* lhs rhs name))
 
+(defun irc-icmp-sgt (lhs rhs &optional (name ""))
+  (llvm-sys:create-icmp-sgt *irbuilder* lhs rhs name))
 
 (defun irc-icmp-ne (lhs rhs &optional (name ""))
   (llvm-sys:create-icmp-ne *irbuilder* lhs rhs name))
@@ -854,8 +852,7 @@ Within the _irbuilder_ dynamic environment...
 	 (when ,init (funcall ,init ,alloca-sym))
 	 (when ,cleanup
 	   (multiple-value-bind (,cleanup-gs ,found-gs ,metadata-env-gs) (lookup-metadata env :cleanup)
-	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))
-	     ))
+	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))))
 	 ,alloca-sym))
     ))
 
@@ -912,7 +909,7 @@ Within the _irbuilder_ dynamic environment...
     :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
 
 (defun irc-make-value-frame (result-af size)
-  (irc-intrinsic "makeValueFrame" result-af (jit-constant-i32 size) (jit-constant-i32 (irc-next-environment-id))))
+  (irc-intrinsic "makeValueFrame" result-af (jit-constant-size_t size)))
 
 (defun irc-make-tagbody-frame (env result-af)
   (irc-intrinsic "makeTagbodyFrame" result-af))

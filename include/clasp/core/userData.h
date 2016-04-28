@@ -35,10 +35,9 @@ namespace core {
 
 // set this class up by hand
 SMART(LightUserData);
-class LightUserData_O : public core::T_O // StandardObject_O
-                        {
-  LISP_BASE1(core::T_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, LightUserData_O, "LightUserData");
+class LightUserData_O : public core::General_O // StandardObject_O
+{
+  LISP_CLASS(core, CorePkg, LightUserData_O, "LightUserData",General_O);
 
 public:
   void *_ptr;
@@ -66,10 +65,9 @@ typedef void (*DestructUserDataFn)(void *data);
 
 // set this class up by hand
 SMART(UserData);
-class UserData_O : public core::LightUserData_O // StandardObject_O
-                   {
-  LISP_BASE1(core::LightUserData_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, UserData_O, "UserData");
+class UserData_O : public core::LightUserData_O
+{
+  LISP_CLASS(core, CorePkg, UserData_O, "UserData",core::LightUserData_O);
 
 private:
   DestructUserDataFn _Dtor;

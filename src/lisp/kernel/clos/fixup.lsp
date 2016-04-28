@@ -34,6 +34,14 @@
 |#
 
 
+;;; This will print every form as its compiled
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "Starting fixup.lsp")
+  (setq *echo-repl-tpl-read* t)
+  (setq *load-print* t)
+  (setq *echo-repl-read* t))
+
 #+compare(print "MLOG ******* Entering fixup.lsp *********")
 #+compare(print "MLOG About to do first defmethod in fixup.lsp")
 #+compare(print "")
@@ -210,7 +218,7 @@ their lambda lists ~A and ~A are not congruent."
   (let* ((aux-name 'temp-method)
          (method (eval `(defmethod ,aux-name ,signature)))
          (generic-function (fdefinition aux-name)))
-    (setf (method-function method) (wrapped-method-function (fdefinition name)))
+    (setf (method-function method) (wrapped-method-function-from-defun (fdefinition name)))
     (setf (fdefinition name) generic-function)
     (setf (generic-function-name generic-function) name)
     (fmakunbound aux-name)))
@@ -227,27 +235,18 @@ their lambda lists ~A and ~A are not congruent."
   (update-dependents gf (list 'remove-method method))
   gf)
 
-#+compare (print "MLOG About to function-to-method add-method")
-
 ;;#+clasp(defmacro fixup-log (&rest args) `(print (list "FIXUP-LOG" ,@args)))
 #+clasp(defmacro fixup-log (&rest args) nil)
 
 ;;(setq cmp:*debug-compiler* t)
-#+clasp(eval-when (compile) (fixup-log "function-to-method add-method"))
 (function-to-method 'add-method '((gf standard-generic-function)
                                   (method standard-method)))
 
-#+compare (print "MLOG About to function-to-method remove-method")
-#+clasp(eval-when (compile) (fixup-log "function-to-method remove-method"))
 (function-to-method 'remove-method '((gf standard-generic-function)
 				     (method standard-method)))
 
-#+compare (print "MLOG About to function-to-method find-method")
-#+clasp(eval-when (compile) (fixup-log "function-to-method find-method"))
 (function-to-method 'find-method '((gf standard-generic-function)
 				   qualifiers specializers &optional error))
-
-#+compare (print "MLOG Done with function-to-method for now")
 
 ;;; COMPUTE-APPLICABLE-METHODS is used by the core in various places,
 ;;; including instance initialization. This means we cannot just redefine it.
@@ -291,8 +290,6 @@ their lambda lists ~A and ~A are not congruent."
   ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
   (std-compute-applicable-methods-using-classes gf classes))
 
-  #+compare (print "MLOG About to function-to-method compute-effective-method")
-  #+clasp(eval-when (compile) (fixup-log "function-to-method compute-effective-method"))
   (function-to-method 'compute-effective-method
 		      '((gf standard-generic-function) method-combination applicable-methods))
 

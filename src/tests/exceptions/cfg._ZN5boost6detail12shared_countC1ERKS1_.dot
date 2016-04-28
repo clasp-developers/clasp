@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN5boost6detail12shared_countC1ERKS1_' function" {
-	label="CFG for '_ZN5boost6detail12shared_countC1ERKS1_' function";
-
-	Node0x7fd441775b90 [shape=record,label="{entry:\l  %this.addr = alloca %\"class.boost::detail::shared_count\"*, align 8\l  %r.addr = alloca %\"class.boost::detail::shared_count\"*, align 8\l  store %\"class.boost::detail::shared_count\"* %this, %\"class.boost::detail::shared_count\"** %this.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{%\"class.boost::detail::shared_count\"** %this.addr\}, metadata !20515), !dbg !20517\l  store %\"class.boost::detail::shared_count\"* %r, %\"class.boost::detail::shared_count\"** %r.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{%\"class.boost::detail::shared_count\"** %r.addr\}, metadata !20518), !dbg !20517\l  %this1 = load %\"class.boost::detail::shared_count\"** %this.addr\l  %0 = load %\"class.boost::detail::shared_count\"** %r.addr, !dbg !20519\l  call void @_ZN5boost6detail12shared_countC2ERKS1_(%\"class.boost::detail::shared_count\"* %this1, %\"class.boost::detail::shared_count\"* %0), !dbg !20519\l  ret void, !dbg !20519\l}"];
-}

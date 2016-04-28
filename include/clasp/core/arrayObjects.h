@@ -35,8 +35,7 @@ namespace core {
 
 FORWARD(ArrayObjects);
 class ArrayObjects_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects");
+  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects",Array_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -46,11 +45,12 @@ class ArrayObjects_O : public Array_O {
 public:
   explicit ArrayObjects_O() : Base(){};
   virtual ~ArrayObjects_O(){};
-  friend void write_array_inner(bool, T_sp, T_sp );
+  friend void write_array_inner(bool, T_sp, T_sp);
+
 public:
   void initialize();
 
- private: // instance variables here
+private: // instance variables here
   vector<cl_index> _Dimensions;
   T_sp _ElementType;
   gctools::Vec0<T_sp> _Values;
@@ -71,13 +71,13 @@ public:
   /* Copy the dimensions for printing */
   virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
-  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index];};
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };
 
   LongLongInt setDimensions(List_sp dims, T_sp initialElement);
 
   void setElementType(T_sp et) { this->_ElementType = et; };
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
 
   /*! Return the value at the indices */
   virtual T_sp setf_aref(List_sp indices_val);
@@ -89,7 +89,7 @@ public:
   virtual void arrayFill(T_sp val);
 
   /*! Return a deepCopy of the ArrayObjects */
-  virtual T_sp deepCopy() const;
+//  virtual T_sp deepCopy() const;
 
   virtual T_sp svref(int index) const;
   virtual T_sp setf_svref(int index, T_sp value);
@@ -97,6 +97,5 @@ public:
 
 }; /* core */
 
-TRANSLATE(core::ArrayObjects_O);
 
 #endif /* _core_ArrayObjects_H */

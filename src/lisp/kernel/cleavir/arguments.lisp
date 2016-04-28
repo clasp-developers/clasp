@@ -207,7 +207,7 @@
 					 outputs
 					 calling-conv )
   ;; TODO:  Should I be spilling the registers into the reg_save_area???
-;;  (cmp:calling-convention-write-passed-arguments-to-multiple-values calling-conv INSERT-ENVIRONMENT!!!!)
+  ;;  (cmp:calling-convention-write-passed-arguments-to-multiple-values calling-conv INSERT-ENVIRONMENT!!!!)
   (let* ((arg-idx-alloca (alloca-size_t "arg-idx-alloca"))
 	 true-val)
     (%store (%size_t 0) arg-idx-alloca)
@@ -243,12 +243,16 @@
 	(let ((target-output-ref (translate-datum (pop outputs)))
 	      (supplied-output-ref (translate-datum (pop outputs))))
 	  (%store (cmp:irc-load (translate-datum target)) target-output-ref)
-	  (%store (cmp:irc-load (translate-datum supplied)) supplied-output-ref)))
-      )))
+	  (%store (cmp:irc-load (translate-datum supplied)) supplied-output-ref))))
+    (unless rest-var
+      ;; Check if there were too many arguments passed
+      (unless key-flag
+        (cmp:compile-error-if-too-many-arguments (cmp:calling-convention-nargs calling-conv) (+ (car reqargs) (car optargs))))) 
+    ))
 
 
 (defun compile-<=3-required-arguments (reqargs outputs cc)
-;;  (cmp:compile-error-if-wrong-number-of-arguments (calling-convention-nargs cc) (car reqargs))
+  (cmp:compile-error-if-wrong-number-of-arguments (cmp:calling-convention-nargs cc) (car reqargs))
   (let ((fixed-args (cmp:calling-convention-register-args cc)))
     (do* ((cur-target (cdr reqargs) (cdr cur-target))
 	  (cur-fixed-args fixed-args (cdr cur-fixed-args))

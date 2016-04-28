@@ -33,10 +33,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/bignum.fwd.h>
 
-
 namespace core {
-
-
 
 struct BignumExportBuffer {
   BignumExportBuffer() : buffer(NULL), bufferSize(0){};
@@ -50,9 +47,7 @@ struct BignumExportBuffer {
 };
 
 class Bignum_O : public Integer_O {
-  LISP_BASE1(Integer_O);
-  LISP_CLASS(core, ClPkg, Bignum_O, "Bignum");
-  //	DECLARE_INIT();
+  LISP_CLASS(core, ClPkg, Bignum_O, "Bignum",Integer_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(Bignum_O);
@@ -124,6 +119,7 @@ public:
 
   //	virtual	bool	eqn(T_sp obj) const;
   virtual bool eql_(T_sp obj) const;
+
 public:
   virtual string valueAsString() const {
     stringstream ss;
@@ -152,7 +148,6 @@ public:
 }; // Bignum class
 
 }; // core namespace
-TRANSLATE(core::Bignum_O);
 
 namespace translate {
 template <>
@@ -182,13 +177,13 @@ inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
 
 inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
   Integer_mv res_mv = big_floor(a, b);
-  *rP = Real_sp(res_mv.valueGet(1));
+  *rP = Real_sp(res_mv.valueGet_(1));
   return res_mv;
 };
 
 inline Integer_sp _clasp_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
   Integer_mv res_mv = big_ceiling(a, b);
-  *rP = Real_sp(res_mv.valueGet(1));
+  *rP = Real_sp(res_mv.valueGet_(1));
   return res_mv;
 }
 

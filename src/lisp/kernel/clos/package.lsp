@@ -106,7 +106,6 @@
           GENERIC-FUNCTION-METHODS 
           *OPTIMIZE-SLOT-ACCESS* 
           SLOT-MAKUNBOUND-USING-CLASS 
-          *NEXT-METHODS* 
           STANDARD-ACCESSOR-METHOD 
           SLOT-DEFINITION-WRITERS 
           METHOD-LAMBDA-LIST 
@@ -121,7 +120,6 @@
           FINALIZE-INHERITANCE 
           UPDATE-INSTANCE 
           CLASS-FINALIZED-P 
-          .COMBINED-METHOD-ARGS. 
           COMPUTE-DISCRIMINATING-FUNCTION 
           SLOT-DEFINITION-READERS 
           ADD-DEPENDENT 
@@ -158,3 +156,11 @@
         )
 
 (export '*environment-contains-closure-hook*)
+
+#+(or)(defmacro gf-log (fmt &rest fmt-args)
+        `(progn
+           (format t "GF-LOG:  ")
+           (format t ,fmt ,@fmt-args)
+           (format t "~%")))
+
+(defmacro gf-log (fmt &rest fmt-args) nil)
