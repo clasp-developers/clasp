@@ -46,5 +46,5 @@
     (setf (gethash :enum_inc_h config) #P"include/generated/enum_inc.h")
     (setf (gethash :initializers_inc_h config) #P"include/generated/initializers_inc.h")
     (setf (gethash :lisp-wrappers config) #P"include/generated/lisp/cl-wrappers.lisp")
-    (setf (gethash :c-wrappers config) #P"include/generated/c-wrappers.cc")
+    (setf (gethash :c-wrappers config) #P"include/generated/c-wrappers.h")
     config))
