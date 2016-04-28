@@ -185,7 +185,7 @@ Convert colons to underscores"
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
         (if (search "&va-rest" (lambda-list% func))
-            (format cl-code "(bformat t \"I can't compile lambda lists with &va-list yet - not exposing %s\\n\" ~s)~%" wrapped-name)
+            (format cl-code "(bformat t \"I can't compile lambda lists with &va-rest yet - not exposing %s\\n\" ~s)~%" wrapped-name)
             (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name ))))))
                                
 (defun generate-code-for-direct-call-functions (functions)

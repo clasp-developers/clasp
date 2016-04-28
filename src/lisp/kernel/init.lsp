@@ -672,6 +672,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defvar *build-files*
   (list
    :init
+   #P"kernel/lsp/direct-calls"
+   #'add-direct-calls
+   :min-start
    #P"kernel/init"
    :start
    #P"kernel/cmp/jit-setup"
@@ -730,9 +733,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
    :cmp
    :min
    :cmprepl
-   #P"kernel/lsp/direct-calls"
-   #'add-direct-calls
-   :direct-calls
    #P"kernel/cmp/cmpwalk"
    :was-pre-cmp
    #P"kernel/lsp/sharpmacros"
@@ -967,20 +967,20 @@ Return files."
 
 (export '(compile-min))
 (defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
-  (if (out-of-date-bitcodes :init :cmp)
+  (if (out-of-date-bitcodes :min-start :cmp)
       (progn
         (load-system :start :cmp :system system)
         (let* ((*target-backend* target-backend)
-               (files (out-of-date-bitcodes :init :cmp :system system)))
+               (files (out-of-date-bitcodes :min-start :cmp :system system)))
           (compile-system files :reload t)))))
 
 (export 'link-min)
 (defun link-min (&key force)
   (min-features)
-  (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :init)))
+  (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :min-start)))
       (progn
         (load-system :start :cmp)
-        (link-system :init :cmp (default-prologue-form) +minimal-epilogue-form+))))
+        (link-system :min-start :cmp (default-prologue-form) +minimal-epilogue-form+))))
                    
 (defun recursive-remove-from-list (item list)
   (if list

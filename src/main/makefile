@@ -105,6 +105,16 @@ clasp-mps-o-a:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install -a
 	(cd $(CLASP_HOME)/build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp clasp-mps-o ; fi)
 
+clasp-mps-d:
+	make etags
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install
+	(cd $(CLASP_HOME)/build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp clasp-mps-d ; fi)
+
+clasp-mps-d-a:
+	make etags
+	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/debug gc=mps debug clasp_install -a
+	(cd $(CLASP_HOME)/build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp clasp-mps-d ; fi)
+
 
 mps-release-cxx:
 	$(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/release gc=mps release clasp_install

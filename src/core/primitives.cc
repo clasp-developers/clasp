@@ -452,13 +452,6 @@ CL_DEFUN bool core__is_true(T_sp arg) {
   return arg.isTrue();
 };
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("substitute");
-CL_DEFUN T_mv core__substitute() {
-  IMPLEMENT_MEF(BF("Implement substitute"));
-};
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the UNBOUND value");

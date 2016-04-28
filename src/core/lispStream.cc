@@ -1623,7 +1623,9 @@ CL_DEFUN T_sp core__make_string_output_stream_from_string(T_sp s) {
   T_sp strm = StringOutputStream_O::create();
   bool stringp = cl__stringp(s);
   unlikely_if(!stringp || !gc::As<Array_sp>(s)->arrayHasFillPointerP())
+  {
       FEerror("~S is not a string with a fill-pointer.", 1, s.raw_());
+  }
   StreamOps(strm) = str_out_ops; // duplicate_dispatch_table(&str_out_ops);
   StreamMode(strm) = clasp_smm_string_output;
   StringOutputStreamOutputString(strm) = s;

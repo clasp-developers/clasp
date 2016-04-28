@@ -222,6 +222,7 @@ SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
+SYMBOL_EXPORT_SC_(ClPkg, substitute);
 
 SYMBOL_EXPORT_SC_(CorePkg, intrinsic_call);
 SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );

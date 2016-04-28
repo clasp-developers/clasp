@@ -4,7 +4,6 @@
 (in-package :cclasp-build)
 (format t "Loading cleavir-system.lsp~%")
 (cclasp-features)
-(core::add-cleavir-to-*system-files*)
 (setq core:*target-backend* (core::default-target-backend))
 (core:clean-system nil :no-prompt t :stage "cclasp")
 (core:load-system :bclasp :cclasp) ;; :pre-inline)
