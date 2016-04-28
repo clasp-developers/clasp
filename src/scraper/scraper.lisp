@@ -24,6 +24,7 @@
 (load "sourcepos.lisp")
 (load "interpret-tags.lisp")
 (load "format.lisp")
+(load "csubst.lisp")
 (load "code-generator.lisp")
 
 (defun update-all-sif-files (all-cc &key regenerate-sifs)

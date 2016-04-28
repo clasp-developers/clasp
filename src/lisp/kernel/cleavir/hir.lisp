@@ -33,7 +33,7 @@
 
 (defmethod cleavir-ir-graphviz:label ((instr intrinsic-call-instruction))
   (with-output-to-string (s)
-    (format s "intrinsic-call(~a)" (intrinsic-call instr))))
+    (format s "intrinsic-call(~a)" (function-name instr))))
 
 (defmethod make-intrinsic-call-instruction
     (function-name inputs outputs &optional (successor nil successor-p))

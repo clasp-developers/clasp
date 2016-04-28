@@ -85,7 +85,7 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 
-__thread core::ThreadLocalState* my_thread;
+THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 
 namespace reg {
@@ -373,6 +373,19 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
   SIMPLE_ERROR(BF("Could not convert %s into package:symbol_name") % name);
 }
 
+CL_LAMBDA("name &optional (package \"\")");
+CL_DOCSTRING(R"doc(Intern the package:name or name/package combination)doc");
+CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
+{
+  std::string pkg_sym = magic_name(name,package);
+  std::string sym;
+  std::string pkg;
+  colon_split(pkg_sym,pkg,sym);
+  Package_sp p = _lisp->findPackage(pkg);
+  return p->intern(Str_O::create(sym));
+}
+
+
 /*!
 * Arguments
 - name :: A string.
@@ -420,14 +433,16 @@ std::string magic_name(const std::string& name,const std::string& package_name)
 }
 
 
-CL_LAMBDA(name);
+CL_LAMBDA("name &optional (package \"\")");
 CL_DECLARE();
 CL_DOCSTRING(R"doc(* Arguments
 - name :: A string.
+- package :: A string
 * Description
-Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, run them through lispify_symbol_name and then recombine them as pkg:name.)doc");
-CL_DEFUN Str_sp core__magic_name(const std::string& name) {
-  std::string pkg_sym = magic_name(name);
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
+run them through lispify_symbol_name and then recombine them as pkg:name.)doc");
+CL_DEFUN Str_sp core__magic_name(const std::string& name, const std::string& package) {
+  std::string pkg_sym = magic_name(name,package);
   return Str_O::create(pkg_sym);
 };
 

@@ -928,5 +928,9 @@ void initialize_clasp()
 //  initialize_source_info();
 };
 
+extern "C" {
 
+#include <generated/c-wrappers.cc>
+
+};
 

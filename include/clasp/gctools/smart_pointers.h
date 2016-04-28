@@ -259,7 +259,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     this->theObject = other.theObject;
     other.theObject = temp;
   };
-
+  
   template <class o_class>
     inline smart_ptr<o_class> asOrNull() {
     o_class *cast = TaggedCast<o_class *, Type *>::castOrNULL(this->theObject);
@@ -344,6 +344,9 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };
+
+  
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
 
 #if ALLOW_NIL_OTHER
   bool nilp() const { return tagged_nilp(this->theObject); }
@@ -612,6 +615,8 @@ public:
   template <class From>
   inline smart_ptr(smart_ptr<From> const &rhs) : tagged_ptr<Type>((Tagged)rhs.theObject){};
 
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
+
   template <class o_class>
   inline smart_ptr<o_class> asOrNull() {
     return smart_ptr<o_class>((Tagged)TaggedCast<o_class *, Type *>::castOrNULL(this->theObject));
@@ -686,6 +691,7 @@ public:
   inline operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged) this->theObject); };
 
 public:
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
   inline bool nilp() const { return tagged_nilp(this->theObject); }
   inline bool notnilp() const { return (!this->nilp()); };
   inline bool fixnump() const { return tagged_fixnump(this->theObject); };
@@ -812,12 +818,13 @@ public:
   /*! If theObject!=NULL then return true */
   explicit operator bool() const { return this->theObject != NULL; };
 
-  bool nilp() const { return tagged_nilp(this->theObject); }
-  bool notnilp() const { return (!this->nilp()); };
-  bool isTrue() const { return !this->nilp(); };
-  bool fixnump() const { return tagged_fixnump(this->theObject); };
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
+  inline bool nilp() const { return tagged_nilp(this->theObject); }
+  inline bool notnilp() const { return (!this->nilp()); };
+  inline bool isTrue() const { return !this->nilp(); };
+  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
   Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
-  bool unboundp() const { return tagged_unboundp(this->theObject); };
+  inline bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool deletedp() const { return tagged_deletedp(this->theObject); };
   bool sameAsKeyp() const { return tagged_sameAsKeyp(this->theObject); };
   bool characterp() const { return tagged_characterp<Type *>(this->theObject); };
@@ -1045,6 +1052,7 @@ public:
     return reinterpret_cast<core::Cons_O *>(reinterpret_cast<uintptr_t>(this->theObject) - cons_tag);
   };
   inline bool objectp() const { return this->generalp() || this->consp(); };
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
   inline bool nilp() const { return tagged_nilp(this->theObject); };
   inline bool notnilp() const { return !this->nilp(); };
   inline bool isTrue() const { return !this->nilp(); };
@@ -1643,8 +1651,9 @@ public:
     THROW_HARD_ERROR(BF("Unreachable"));
   }
 
-  bool nilp() const { return tagged_nilp(this->theObject); }
-  bool notnilp() const { return !tagged_nilp(this->theObject); }
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
+  inline bool nilp() const { return tagged_nilp(this->theObject); }
+  inline bool notnilp() const { return !tagged_nilp(this->theObject); }
 
   Type *operator->() {
     GCTOOLS_ASSERT(this->notnilp());
@@ -1731,8 +1740,9 @@ public:
     THROW_HARD_ERROR(BF("Unreachable"));
   }
 
-  bool nilp() const { return tagged_nilp(this->theObject); }
-  bool notnilp() const { return !tagged_nilp(this->theObject); }
+  inline return_type as_return_type() { return return_type(this->theObject,1);};
+  inline bool nilp() const { return tagged_nilp(this->theObject); }
+  inline bool notnilp() const { return !tagged_nilp(this->theObject); }
 
   Type *operator->() {
     GCTOOLS_ASSERT(this->notnilp());

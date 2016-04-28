@@ -541,7 +541,9 @@ struct return_type {
   core::T_O *ret0;
   size_t nvals;
   return_type() : ret0(NULL), nvals(0){};
-  return_type(core::T_O *r0, size_t nv) : ret0(r0), nvals(nv){};
+  return_type(core::T_O *r0, size_t nv) : ret0(r0), nvals(nv) {};
+  template <typename T>
+  return_type(T* r0, size_t nv) : ret0(reinterpret_cast<core::T_O*>(r0)), nvals(nv) {};
 };
 };
 
@@ -1177,8 +1179,11 @@ namespace core {
 
 };
 
+/*! Should be thread_local on linux or __thread on OS X */
+#define THREAD_LOCAL
+
 /*! Declare this in the top namespace */
-extern __thread core::ThreadLocalState *my_thread;
+extern THREAD_LOCAL core::ThreadLocalState *my_thread;
 
 
 namespace core {

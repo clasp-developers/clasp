@@ -11,7 +11,8 @@
 
 (in-package :cscrape)
 
-(cscrape::do-scraping
+(progn
+  (cscrape::do-scraping
     (list
      "/Users/meister/Development/externals-clasp/build/debug/bin/clang"
      (namestring (merge-pathnames "src/main/" cl-user::*clasp-home*))
@@ -19,10 +20,34 @@
      "bin/commands.txt")
   :run-preprocessor nil
   :regenerate-sifs t)
-(print "Done")
+  (print "Done"))
+
+
+
+(gethash :lisp-wrappers (cscrape::setup-application-config))
 (cscrape::split-type-name "const string &name")
 
 
+(substitute #\_ #\: "a::b")
+
+(defparameter *a* (second cscrape::*functions*))
+(print *a*)
+
+(mapc (lambda (x)
+        (format t "Function: ~a~%" x)
+        (format t "types: ~a~%" (multiple-value-list (cscrape::parse-types-from-signature (cscrape::signature% x)))))
+      cscrape::*functions*)
+
+(cscrape::parse-types-from-signature (cscrape::signature% *a*))
+
+(member #\space cscrape::+white-space+)
+
+
+(position-if
+ (lambda (c)
+   (format t "Looking at char:~a:~%" c)
+   (member c +white-space+))
+ "abcd efg" :from-end t)
 (split-cpps '(1 2 3 4 5 6 7) 2)
 (apropos "wait")
 (sb-posix:wait 

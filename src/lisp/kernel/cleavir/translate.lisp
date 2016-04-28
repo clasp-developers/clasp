@@ -383,6 +383,13 @@
 	  (cmp:irc-br final-block)))
       (cmp:irc-begin-block final-block))))
 
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:intrinsic-call-instruction) return-value inputs outputs (abi abi-x86-64))
+  (cmp:irc-low-level-trace :flow)
+  (let ((call (clasp-cleavir:unsafe-intrinsic-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
+    (cc-dbg-when *debug-log*
+		 (format *debug-log* "    translate-simple-instruction intrinsic-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
@@ -395,6 +402,7 @@
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
+
 
 
 (defmethod translate-simple-instruction

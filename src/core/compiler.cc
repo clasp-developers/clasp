@@ -55,6 +55,14 @@ THE SOFTWARE.
 #import <mach-o/dyld.h>
 #endif
 
+extern "C" {
+gctools::return_type wrapped_test(core::T_O* arg0, core::T_O* arg1, core::T_O* arg2 )
+{
+  printf("%s:%d wrapped_test called (%p, %p, %p)\n", __FILE__, __LINE__, arg0, arg1, arg2 );
+  return gctools::return_type();
+}
+
+};
 namespace core {
 
 int f(Environment_sp &e) {
@@ -342,10 +350,10 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
-CL_LAMBDA(handle name);
+CL_LAMBDA(name &optional (handle :rtld-default));
 CL_DECLARE();
 CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
-CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
+CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   void *handle = NULL;
   if (ohandle.nilp()) {
     SIMPLE_ERROR(BF("Invalid ohandle passed -> nil"));
@@ -1115,3 +1123,6 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 }
 
 }; /* namespace */
+
+
+        

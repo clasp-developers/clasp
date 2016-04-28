@@ -653,86 +653,104 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-path))
 (export 'compile-kernel-file)
 
+(defun add-cleavir-build-files ()
+  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp)))
+         cleavir-files)
+    (unwind-protect
+         (progn
+           (setq cleavir-files (read fin)))
+      (close fin))
+    cleavir-files))
 
-(defvar *init-files*
-  '(
-    :init
-    #P"kernel/init"
-    :start
-    #P"kernel/cmp/jit-setup"
-    #P"kernel/clsymbols"
-    #P"kernel/lsp/packages"
-    #P"kernel/lsp/foundation"
-    #P"kernel/lsp/export"
-    #P"kernel/lsp/defmacro"
-    :defmacro
-    #P"kernel/lsp/helpfile"
-    #P"kernel/lsp/evalmacros"
-    #P"kernel/lsp/claspmacros"
-    #P"kernel/lsp/source-transformations"
-    :macros
+(defun add-direct-calls ()
+  (let* ((project (string-downcase (lisp-implementation-type)))
+         (project-generated-dir (bformat nil "sys:generated;%s;cl-wrappers.lisp" project)))
+    (if (probe-file (pathname project-generated-dir))
+        (list (pathname (bformat nil "generated/%s/cl-wrappers" project)))
+        nil)))
+
+(defvar *build-files*
+  (list
+   :init
+   #P"kernel/init"
+   :start
+   #P"kernel/cmp/jit-setup"
+   #P"kernel/clsymbols"
+   #P"kernel/lsp/packages"
+   #P"kernel/lsp/foundation"
+   #P"kernel/lsp/export"
+   #P"kernel/lsp/defmacro"
+   :defmacro
+   #P"kernel/lsp/helpfile"
+   #P"kernel/lsp/evalmacros"
+   #P"kernel/lsp/claspmacros"
+   #P"kernel/lsp/source-transformations"
+   :macros
    #P"kernel/lsp/testing"
-    #P"kernel/lsp/makearray"
-    #P"kernel/lsp/arraylib"
-    #P"kernel/lsp/setf"
-    #P"kernel/lsp/listlib"
-    #P"kernel/lsp/mislib"
-    #P"kernel/lsp/defstruct"
-    #P"kernel/lsp/predlib"
-    #P"kernel/lsp/seq"
-    #P"kernel/lsp/cmuutil"
-    #P"kernel/lsp/seqmacros"
-    #P"kernel/lsp/seqlib"
-    #P"kernel/lsp/iolib"
-;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
-    #P"kernel/lsp/logging"
-    #P"kernel/lsp/trace"
-    :pre-cmp
-    ;; Compiler code
-    #P"kernel/cmp/packages"
-    #P"kernel/cmp/cmpsetup"
-;;    #P"kernel/cmp/cmpenv-fun"
-;;    #P"kernel/cmp/cmpenv-proclaim"
-    #P"kernel/cmp/cmpglobals"
-    #P"kernel/cmp/cmptables"
-    #P"kernel/cmp/cmpvar"
-    #P"kernel/cmp/cmputil"
-    #P"kernel/cmp/cmpintrinsics"
-    #P"kernel/cmp/cmpir"
-    #P"kernel/cmp/cmpeh"
-    #P"kernel/cmp/debuginfo"
-;;    #P"kernel/cmp/arguments"
-    #P"kernel/cmp/lambdalistva"
-    #P"kernel/cmp/cmpvars"
-    #P"kernel/cmp/cmpquote"
-    #P"kernel/cmp/cmpobj"
-;;    #P"kernel/cmp/mincomp"
-    #P"kernel/cmp/compiler"
-    #P"kernel/cmp/compilefile"
-    #P"kernel/cmp/cmpbundle"
-    :pre-repl
-    #P"kernel/cmp/cmprepl"
-    :cmp
-    :min
-    :cmprepl
-    #P"kernel/cmp/cmpwalk"
-    :was-pre-cmp
-    #P"kernel/lsp/sharpmacros"
-    #P"kernel/lsp/assert"
-    #P"kernel/lsp/numlib"
-    #P"kernel/lsp/describe"
-    #P"kernel/lsp/module"
-    #P"kernel/lsp/loop2"
-    #P"kernel/lsp/shiftf-rotatef"
-    #P"kernel/lsp/assorted"
-    #P"kernel/lsp/packlib"
-;;    cmp/cmpinterpreted
-    #P"kernel/lsp/defpackage"
-    #P"kernel/lsp/format"
-    #|
-    arraylib
-    numlib
-    |#
+   #P"kernel/lsp/makearray"
+   #P"kernel/lsp/arraylib"
+   #P"kernel/lsp/setf"
+   #P"kernel/lsp/listlib"
+   #P"kernel/lsp/mislib"
+   #P"kernel/lsp/defstruct"
+   #P"kernel/lsp/predlib"
+   #P"kernel/lsp/seq"
+   #P"kernel/lsp/cmuutil"
+   #P"kernel/lsp/seqmacros"
+   #P"kernel/lsp/seqlib"
+   #P"kernel/lsp/iolib"
+   ;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
+   #P"kernel/lsp/logging"
+   #P"kernel/lsp/trace"
+   :pre-cmp
+   ;; Compiler code
+   #P"kernel/cmp/packages"
+   #P"kernel/cmp/cmpsetup"
+   ;;    #P"kernel/cmp/cmpenv-fun"
+   ;;    #P"kernel/cmp/cmpenv-proclaim"
+   #P"kernel/cmp/cmpglobals"
+   #P"kernel/cmp/cmptables"
+   #P"kernel/cmp/cmpvar"
+   #P"kernel/cmp/cmputil"
+   #P"kernel/cmp/cmpintrinsics"
+   #P"kernel/cmp/cmpir"
+   #P"kernel/cmp/cmpeh"
+   #P"kernel/cmp/debuginfo"
+   ;;    #P"kernel/cmp/arguments"
+   #P"kernel/cmp/lambdalistva"
+   #P"kernel/cmp/cmpvars"
+   #P"kernel/cmp/cmpquote"
+   #P"kernel/cmp/cmpobj"
+   ;;    #P"kernel/cmp/mincomp"
+   #P"kernel/cmp/compiler"
+   #P"kernel/cmp/compilefile"
+   #P"kernel/cmp/cmpbundle"
+   :pre-repl
+   #P"kernel/cmp/cmprepl"
+   :cmp
+   :min
+   :cmprepl
+   #P"kernel/lsp/direct-calls"
+   #'add-direct-calls
+   :direct-calls
+   #P"kernel/cmp/cmpwalk"
+   :was-pre-cmp
+   #P"kernel/lsp/sharpmacros"
+   #P"kernel/lsp/assert"
+   #P"kernel/lsp/numlib"
+   #P"kernel/lsp/describe"
+   #P"kernel/lsp/module"
+   #P"kernel/lsp/loop2"
+   #P"kernel/lsp/shiftf-rotatef"
+   #P"kernel/lsp/assorted"
+   #P"kernel/lsp/packlib"
+   ;;    cmp/cmpinterpreted
+   #P"kernel/lsp/defpackage"
+   #P"kernel/lsp/format"
+   #|
+   arraylib
+   numlib
+   |#
     #P"kernel/clos/package"
     #P"kernel/clos/hierarchy"
     #P"kernel/clos/cpl"
@@ -768,23 +786,42 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     :front
     #P"kernel/lsp/top"
     :all
+    :bclasp
+    #'add-cleavir-build-files
+    :cclasp
 ;;    lsp;pprint
     ))
-(defvar *system-files* *init-files*)
-(export '(*system-files* *init-files*))
 
-(defun add-cleavir-to-*system-files* ()
-  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp)))
-         cleavir-files)
-    (unwind-protect
-         (progn
-           (setq cleavir-files (read fin)))
-      (close fin))
-    (setq *system-files* (append *init-files*
-                                 (list :bclasp)
-                                 cleavir-files
-                                 (list :cclasp)))))
-(export 'add-cleavir-to-*system-files*)
+(defun expand-build-file-list (sources)
+  "Copy the list of symbols and pathnames into files
+and if S-exps are encountered, funcall them with
+no arguments and splice the resulting list into files.
+Return files."
+  (let* (files
+         (cur sources))
+    (tagbody
+     top
+       (if (null cur) (go done))
+       (let ((entry (car cur)))
+         (if (or (pathnamep entry) (keywordp entry))
+             (setq files (cons entry files))
+             (if (functionp entry)
+                 (let* ((ecur (funcall entry)))
+                   (tagbody
+                    inner-top
+                      (if (null ecur) (go inner-done))
+                      (setq files (cons (car ecur) files))
+                      (setq ecur (cdr ecur))
+                      (go inner-top)
+                    inner-done))
+                 (error "I don't know what to do with ~a" entry))))
+       (setq cur (cdr cur))
+       (go top)
+     done)
+    (nreverse files)))
+
+(defvar *system-files* (expand-build-file-list *build-files*))
+(export '(*system-files*))
 
 (defvar *asdf-files*
   '(:init
@@ -1016,7 +1053,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '(compile-cclasp))
 (defun compile-cclasp ()
   (cclasp-features)
-  (add-cleavir-to-*system-files*)
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :cclasp)
         (time
@@ -1026,7 +1062,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
              (compile-system files)))))))
 (export '(recompile-cclasp))
 (defun recompile-cclasp ()
-  (add-cleavir-to-*system-files*)
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :cclasp)
         (time
@@ -1036,7 +1071,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export 'link-cclasp)
 (defun link-cclasp (&key force)
   (cclasp-features)
-  (add-cleavir-to-*system-files*)
   (let ((*target-backend* (default-target-backend)))
     (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cclasp :first-file :init)))
         (progn

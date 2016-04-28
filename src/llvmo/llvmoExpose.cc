@@ -1145,7 +1145,7 @@ CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
 namespace llvmo {
 
 
-CL_LAMBDA(module);
+CL_LAMBDA();
 CL_PKG_NAME(LlvmoPkg,"makeDataLayoutPass");
 CL_DEFUN DataLayoutPass_sp DataLayoutPass_O::make() {
   GC_ALLOCATE(DataLayoutPass_O, self);

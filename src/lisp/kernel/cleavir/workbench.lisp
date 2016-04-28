@@ -23,35 +23,43 @@
   (format t "Done loading inline.lisp~%"))
 
 (in-package :clasp-cleavir)
+
+(clasp-cleavir::cleavir-compile 'test-wrapped-test '(lambda (x y z) (core:intrinsic-call "wrapped_test" x y z)))
+
+(clasp-cleavir::cleavir-compile nil '(lambda (x y z) (core:intrinsic-call "wrapped_test" x y z)) :debug t)
+(apropos "argument-asts")
 (clasp-cleavir::cleavir-compile 'foo '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug t)
-(clasp-cleavir::cleavir-compile 'dt '(lambda () (deftype blarg1 ()   (if start-p
-                                                                         (let (rat-start
-                                                                               real-start
-                                                                               rat-end
-                                                                               real-end)
-                                                                           (cond ((consp start)
-                                                                                  (setq start (first start)
-                                                                                        rat-start (list (rational start))
-                                                                                        real-start (list (float start))))
-                                                                                 ((numberp start)
-                                                                                  (setq rat-start (rational start)
-                                                                                        real-start (float start)))
-                                                                                 (t
-                                                                                  (setq rat-start start
-                                                                                        real-start start)))
-                                                                           (cond ((consp end)
-                                                                                  (setq end (first end)
-                                                                                        rat-end (list (rational end))
-                                                                                        real-end (list (float end))))
-                                                                                 ((numberp end)
-                                                                                  (setq rat-end (rational end)
-                                                                                        real-end (float end)))
-                                                                                 (t
-                                                                                  (setq rat-end end
-                                                                                        real-end end)))
-                                                                           `(OR (RATIONAL ,rat-start ,rat-end) (FLOAT ,real-start ,real-end)))
-                                                                         '(OR RATIONAL FLOAT)))
-                                      ) :debug t)
+(clasp-cleavir::cleavir-compile
+ 'dt '
+ (lambda ()
+   (deftype blarg1 ()   (if start-p
+                            (let (rat-start
+                                  real-start
+                                  rat-end
+                                  real-end)
+                              (cond ((consp start)
+                                     (setq start (first start)
+                                           rat-start (list (rational start))
+                                           real-start (list (float start))))
+                                    ((numberp start)
+                                     (setq rat-start (rational start)
+                                           real-start (float start)))
+                                    (t
+                                     (setq rat-start start
+                                           real-start start)))
+                              (cond ((consp end)
+                                     (setq end (first end)
+                                           rat-end (list (rational end))
+                                           real-end (list (float end))))
+                                    ((numberp end)
+                                     (setq rat-end (rational end)
+                                           real-end (float end)))
+                                    (t
+                                     (setq rat-end end
+                                           real-end end)))
+                              `(OR (RATIONAL ,rat-start ,rat-end) (FLOAT ,real-start ,real-end)))
+                            '(OR RATIONAL FLOAT)))
+   ) :debug t)
 
 (apropos "slot-")
 (mapcar (lambda (x) (clos::slot-definition-name x)) (clos::class-slots (find-class 'cc-mir:stack-enclose-instruction)))
