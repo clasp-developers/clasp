@@ -1002,10 +1002,11 @@ nil)
                       a))
                (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
                (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-          ;;(warn "Turn on CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-          (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
+          ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+          ;; Beach says remove-useless-instructions is a bad idea right now - removing
+          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
+          ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
+          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
           (cc-dbg-when *debug-log*
                        (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
                                                           :type "dot" 
@@ -1058,10 +1059,11 @@ nil)
                    (hir (progn
                           (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                           (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
-              ;;(warn "Turn on run CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-              (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
+              ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+              ;; Beach says remove-useless-instructions is a bad idea right now - removing
+              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
+              ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
+              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
