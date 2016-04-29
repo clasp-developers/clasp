@@ -37,6 +37,7 @@ THE SOFTWARE.
 
 namespace llvmo {
 
+#if 0
 CL_NAME(debug-loc-get);
 CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugInfo) {
   GC_ALLOCATE(DebugLoc_O, oip);
@@ -45,12 +46,10 @@ CL_DEFUN DebugLoc_sp DebugLoc_O::get(int lineno, int column, DebugInfo_sp debugI
   return oip;
 }
 
-
-
-
-
 CL_LISPIFY_NAME("getScope");
 CL_DEFMETHOD MDNode_sp DebugLoc_O::getScope(LLVMContext_sp context) const {
   return translate::to_object<llvm::MDNode *>::convert(this->_DebugLoc.getScope(*(context->wrappedPtr())));
 }
+#endif
+
 };

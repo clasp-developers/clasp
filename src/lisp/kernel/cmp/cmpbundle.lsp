@@ -210,8 +210,7 @@
                     (multiple-value-bind (failure error-msg)
                         (llvm-sys:link-in-module linker part-module)
                       (when failure
-                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-                      ))))
+                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))))))
               (when *debug-generate-prepass-llvm-ir*
                 (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc"))))
               #+(or)(let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))

@@ -47,7 +47,7 @@ typedef bool _Bool;
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Verifier.h>
 #include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
@@ -163,7 +163,7 @@ typedef bool _Bool;
 #include <clasp/asttooling/Marshallers.h>
 
 #define GC_INTERFACE_INCLUDE
-#include <include/project_headers.h>
+#include <project_headers.h>
 #undef GC_INTERFACE_INCLUDE
 
 #define NAMESPACE_gctools

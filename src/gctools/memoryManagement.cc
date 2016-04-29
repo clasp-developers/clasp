@@ -244,7 +244,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   GC_init();
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
   core::ThreadLocalState thread_local_state;
-  thread = &thread_local_state;
+  my_thread = &thread_local_state;
   int exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
 #endif
   telemetry::global_telemetry_search->close();

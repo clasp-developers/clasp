@@ -51,7 +51,7 @@ THE SOFTWARE.
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Verifier.h>
 #include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
@@ -123,13 +123,17 @@ namespace llvmo {
 CL_LISPIFY_NAME(make-linker);
 CL_DEFUN Linker_sp Linker_O::make(Module_sp module) {
   GC_ALLOCATE(Linker_O, self);
-  self->_ptr = new llvm::Linker(module->wrappedPtr());
+  self->_ptr = new llvm::Linker(*module->wrappedPtr());
   return self;
 };
 
 CL_DEFUN core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module) {
   std::string errorMsg = "llvm::Linker::linkInModule reported an error";
-  bool res = linker->wrappedPtr()->linkInModule(module->wrappedPtr());
+  // Take ownership of the pointer and give it to the linker
+  llvm::Module* mptr = module->wrappedPtr();
+  module->reset_wrappedPtr();
+  std::unique_ptr<llvm::Module> u_module(mptr);
+  bool res = linker->wrappedPtr()->linkInModule(std::move(u_module));
   return Values(_lisp->_boolean(res), core::Str_O::create(errorMsg));
 };
 
@@ -524,36 +528,7 @@ CL_DEFUN TargetOptions_sp TargetOptions_O::make() {
   return self;
 };
 
-CL_LISPIFY_NAME("NoFramePointerElim");
-CL_DEFMETHOD bool TargetOptions_O::NoFramePointerElim() {
-  return this->wrappedPtr()->NoFramePointerElim;
-}
 
-CL_LISPIFY_NAME("setfNoFramePointerElim");
-CL_DEFMETHOD void TargetOptions_O::setfNoFramePointerElim(bool val) {
-  // if val == true then turn OFF FramePointerElim
-  this->wrappedPtr()->NoFramePointerElim = val;
-}
-
-CL_LISPIFY_NAME("JITEmitDebugInfo");
-CL_DEFMETHOD bool TargetOptions_O::JITEmitDebugInfo() {
-  return this->wrappedPtr()->JITEmitDebugInfo;
-}
-
-CL_LISPIFY_NAME("setfJITEmitDebugInfo");
-CL_DEFMETHOD void TargetOptions_O::setfJITEmitDebugInfo(bool val) {
-  this->wrappedPtr()->JITEmitDebugInfo = val;
-}
-
-CL_LISPIFY_NAME("JITEmitDebugInfoToDisk");
-CL_DEFMETHOD bool TargetOptions_O::JITEmitDebugInfoToDisk() {
-  return this->wrappedPtr()->JITEmitDebugInfoToDisk;
-}
-
-CL_LISPIFY_NAME("setfJITEmitDebugInfoToDisk");
-CL_DEFMETHOD void TargetOptions_O::setfJITEmitDebugInfoToDisk(bool val) {
-  this->wrappedPtr()->JITEmitDebugInfoToDisk = val;
-} ;
 
 }; // llvmo
 
@@ -1179,19 +1154,19 @@ CL_LAMBDA(module);
 CL_PKG_NAME(LlvmoPkg,"makeFunctionPassManager");
 CL_DEFUN FunctionPassManager_sp FunctionPassManager_O::make(llvm::Module *module) {
   GC_ALLOCATE(FunctionPassManager_O, self);
-  self->_ptr = new llvm::FunctionPassManager(module);
+  self->_ptr = new llvm::legacy::FunctionPassManager(module);
   return self;
 };
 
 
   CL_LISPIFY_NAME(function-pass-manager-add);
-  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::FunctionPassManager::add);
+CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::add);
   CL_LISPIFY_NAME(doInitialization);
-  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::FunctionPassManager::doInitialization);
+  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::doInitialization);
   CL_LISPIFY_NAME(doFinalization);
-  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::FunctionPassManager::doFinalization);
+  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::doFinalization);
   CL_LISPIFY_NAME(function-pass-manager-run);
-  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::FunctionPassManager::run);;
+  CL_EXTERN_DEFMETHOD(FunctionPassManager_O, &llvm::legacy::FunctionPassManager::run);;
 
 ;
 
@@ -1204,7 +1179,7 @@ CL_LAMBDA();
 CL_PKG_NAME(LlvmoPkg,"makePassManager");
 CL_DEFUN PassManager_sp PassManager_O::make() {
   GC_ALLOCATE(PassManager_O, self);
-  self->_ptr = new llvm::PassManager();
+  self->_ptr = new llvm::legacy::PassManager();
   return self;
 };
 
@@ -1420,15 +1395,14 @@ namespace llvmo {
 namespace llvmo {
 
 CL_LISPIFY_NAME(constant-expr-get-in-bounds-get-element-ptr);
-CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList) {
+CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList) {
   GC_ALLOCATE(Constant_O, res);
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : idxList) {
     vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
   }
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
-  llvm::Type* ct = etype;
-  llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(ct,constant->wrappedPtr(), array_ref_vector_IdxList);
+  llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(element_type,constant->wrappedPtr(), array_ref_vector_IdxList);
   res->set_wrapped(llvm_res);
   return res;
 }
@@ -1996,6 +1970,7 @@ CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	printf("                       new DebugLocation: %d\n", dlnew.getLine() );
 }
 
+#if 0
 CL_LISPIFY_NAME("SetCurrentDebugLocationToLineColumnScope");
 CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
   this->_CurrentDebugLocationSet = true;
@@ -2003,6 +1978,7 @@ CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int 
   llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
 }
+#endif
 
 }; // llvmo
 
@@ -2907,15 +2883,8 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   CL_LISPIFY_NAME(createAAEvalPass);
   CL_EXTERN_DEFUN( &llvm::createAAEvalPass);
 
-  CL_LISPIFY_NAME(createScalarEvolutionAliasAnalysisPass);
-  CL_EXTERN_DEFUN( &llvm::createScalarEvolutionAliasAnalysisPass);
-  //    core::af_def(LlvmoPkg,"createProfileLoaderPass",&llvm::createProfileLoaderPass);
-  //    core::af_def(LlvmoPkg,"createNoProfileInfoPass",&llvm::createNoProfileInfoPass);
-  //    core::af_def(LlvmoPkg,"createProfileEstimatorPass",&llvm::createProfileEstimatorPass);
-  //    core::af_def(LlvmoPkg,"createProfileVerifierPass",&llvm::createProfileVerifierPass);
-  //    core::af_def(LlvmoPkg,"createPathProfileLoaderPass",&llvm::createPathProfileLoaderPass);
-  //    core::af_def(LlvmoPkg,"createNoPathProfileInfoPass",&llvm::createNoPathProfileInfoPass);
-  //    core::af_def(LlvmoPkg,"createPathProfileVerifierPass",&llvm::createPathProfileVerifierPass);
+//  CL_LISPIFY_NAME(createScalarEvolutionAliasAnalysisPass);
+//  CL_EXTERN_DEFUN( &llvm::createScalarEvolutionAliasAnalysisPass);
   CL_LISPIFY_NAME(createLazyValueInfoPass);
   CL_EXTERN_DEFUN( &llvm::createLazyValueInfoPass);
   CL_LISPIFY_NAME(createInstCountPass);
@@ -2987,8 +2956,8 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   CL_EXTERN_DEFUN( &llvm::createLowerExpectIntrinsicPass);
   CL_LISPIFY_NAME(createTypeBasedAliasAnalysisPass);
   CL_EXTERN_DEFUN( &llvm::createTypeBasedAliasAnalysisPass);
-  CL_LISPIFY_NAME(createBasicAliasAnalysisPass);
-  CL_EXTERN_DEFUN( &llvm::createBasicAliasAnalysisPass);
+//  CL_LISPIFY_NAME(createBasicAliasAnalysisPass);
+//  CL_EXTERN_DEFUN( &llvm::createBasicAliasAnalysisPass);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARatomic_orderingSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, NotAtomic);

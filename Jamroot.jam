@@ -4,6 +4,7 @@ import bitcode ;
 
 
 CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
+LLVM_CONFIG = [ os.environ LLVM_CONFIG ] ;
 LLVM_VERSION = [ os.environ LLVM_VERSION_X100 ] ;
 
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
@@ -22,10 +23,17 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 ### Build clasp or cando
 ###
-feature.feature program : clasp cando
+path-constant TOP : . ;
+path-constant INCLUDE : $(TOP)/include ;
+path-constant CLASP-MAIN : $(TOP)/src/main/include ;
+path-constant CANDO-MAIN : $(TOP)/projects/cando/src/main/include ;
+
+feature.feature program : clasp cando clasp-clbind cando-clbind
                 : symmetric composite propagated link-incompatible ;
-feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="\"<clasp/main/application.config>\"" ;
-feature.compose <program>cando : <define>PROGRAM_CANDO <define>APPLICATION_CONFIG="\"<projects/cando/include/cando/main/application.config>\"" ;
+feature.compose <program>clasp : <define>PROGRAM_CLASP <include>"$(CLASP-MAIN)" ;
+feature.compose <program>clasp-clbind : <define>PROGRAM_CLASP <define>PROGRAM_CLBIND <include>"$(CLASP-MAIN)" ;
+feature.compose <program>cando : <define>PROGRAM_CANDO <include>"$(CANDO-MAIN)" ;
+feature.compose <program>cando-clbind : <define>PROGRAM_CANDO <define>PROGRAM_CLBIND <include>"$(CANDO-MAIN)" ;
 feature.compose <program>other : <define>PROGRAM_OTHER ;   #  Define APPLICATION_CONFIG yourself
 
 GIT_COMMIT = [ os.environ GIT_COMMIT ] ;
@@ -62,30 +70,39 @@ init clasp ;
 
 project clasp : requirements
         <include>"/usr/include"
+        <include>"$(INCLUDE)"
         <linkflags>"-L/usr/lib"
-        <include>include    #clasp/include/*
-        <program>cando:<include>projects/cando/include
-        <include>./
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
+#### Define this until we get rid of tagged_pointer<...>
+        <define>TAGGED_POINTER 
         <warnings>off
         <toolset>clang-darwin:<cxxflags>"-ferror-limit=999"
         <toolset>clang-linux:<cxxflags>"-ferror-limit=999"
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
-        <define>LLVM_VERSION=$(LLVM_VERSION)
+        <define>LLVM_VERSION="\\\"$(LLVM_VERSION)\\\""
+        <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
-        <target-os>linux:<cxxflags>"-fPIC"
+
+### LTO stuff
+#        <cxxflags>"-flto"
+#        <cflags>"-flto"
+#        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release"
+#        <linkflags>"-Wl,-object_path_lto,clasp.lto.o"
+
+          <target-os>linux:<cxxflags>"-fPIC"
         <cxxflags>"-Wno-unused-local-typedef"
         <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk "
+        <include>./
         <cxxflags>"-Wno-deprecated-register"
         <define>CLBIND_DYNAMIC_LINK
         <define>NDEBUG     # turns off some weird tests in clbind (will I eat these words?)
         <target-os>linux:<cxxflags>"-Wno-unused-local-typedef"
 	<target-os>linux:<linkflags>"-lpthread -ldl -lrt"
+        <target-os>linux:<linkflags>"-Wl,-rpath,'$ORIGIN/../../../../Resources/lib/common/lib'"
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
-	<toolset>clang:<cxxflags>-std=c++11
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
         <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
@@ -108,12 +125,9 @@ project clasp : requirements
 # CONFIGURE CLASP BUILD
 #
 
-        <define>USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
-
-
 
 ### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
-    <define>GC_MONITOR_ALLOCATIONS
+#    <define>GC_MONITOR_ALLOCATIONS
     
 ## I wrote a drop in replacement for std::vector<X> that should work with the AMCpool
 ## If you turn on USE_STD_VECTOR then gctools::Vector0<X> will inherit from std::vector<X>
@@ -131,13 +145,45 @@ project clasp : requirements
 #       <define>SOURCE_DEBUG
 #-------- mps options
 
+
+#### Memory sanitizer and don't omit frame pointers
+#          <cflags>"-fsanitize=memory -fno-omit-frame-pointer"
+#          <cflags>"-fsanitize=address"
+
+### USE_AMC_POOL  --- controls if certain objects (Closures) are allocated in a non-moving pool or AMC
+     <define>USE_AMC_POOL
+### USE_INVOCATION_HISTORY_FRAME saves a frame for every function invocation for backtraces
+     <define>USE_EXPENSIVE_BACKTRACE
+#### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
+#        <define>DEBUG_SPLAT_FORWARD
+#### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory
+#     <define>DEBUG_GUARD
+#### DEBUG_VALIDATE_GUARD  - Test the memory guards in lots of places - requires DEBUG_GUARD to be defined.
+#     <define>DEBUG_VALIDATE_GUARD
 #	<define>DEBUG_THROW_IF_INVALID_CLIENT_ON      # turns on checks for DEBUG_THROW_IF_INVALID_CLIENT
-	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
-	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
-##### DEBUG_MPS_UNDERSCANNING does a garbage collection after every allocation
-##### This really, really slows things down
-        <define>DEBUG_MPS_UNDERSCANNING
-        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
+#        <define>DEBUG_TELEMETRY_DUMP       # dump telemetry information as it is generated
+#	<define>DEBUG_TELEMETRY      # generate telemetry data for debugging general GC
+#	<define>DEBUG_STACK_TELEMETRY      # generate telemetry data for debugging stack GC
+#        <define>DEBUG_MPS_FENCEPOST_FREE
+
+#### DEBUG_FRAME_BOUNDS  - check limits of writing/reading activation frames
+#      <define>DEBUG_FRAME_BOUNDS
+
+#### DEBUG_TRACE_INTERPRETED_CLOSURES
+       <define>DEBUG_TRACE_INTERPRETED_CLOSURES
+#### DEBUG_MPS_UNDERSCANNING  - When defined, does a garbage collection for every allocation
+#### DEBUG_MPS_UNDERSCANNING_INITIAL - (true|false)  - when DEBUG_MPS_UNDERSCANNING is defined you can
+####                                                   control it using (gctools:enable-underscanning (t|nil))
+####                                                   This sets the initial value of global_underscanning.
+#        <define>DEBUG_MPS_UNDERSCANNING
+#        <define>DEBUG_MPS_UNDERSCANNING_INITIAL="true"
+#### DEBUG_PROGRESS - Print startup progress
+#     <define>DEBUG_PROGRESS
+
+#### DEBUG_RECURSIVE_ALLOCATIONS - Inexpensive test for allocations that invoke other allocations
+####                               This is not allowed in the MPS
+#         <define>DEBUG_RECURSIVE_ALLOCATIONS
+#        <define>CONFIG_VAR_COOL # Detailed, slow MPS debugging
 #        <define>CONFIG_PF_ANSI  # Use the generic "ANSI" platform (see mps/code/config.h)
 #        <define>CONFIG_THREAD_SINGLE #  Single threaded
          <define>USE_CLASP_DYNAMIC_CAST
@@ -241,8 +287,6 @@ project clasp : requirements
 
 
 
-path-constant TOP : . ;
-path-constant INCLUDE : $(TOP)/include/clasp ;
 path-constant COMMON : src/common ;
 path-constant APPTOP : [ os.environ CLASP_INTERNAL_BUILD_TARGET_DIR ] ;
 path-constant APPCONT : $(APPTOP)/Contents ;
@@ -253,7 +297,8 @@ path-constant APPRES-LIB-COMMON : $(APPRES-LIB)/common ;
 path-constant APPRES-LIB-COMMON-LIB : $(APPRES-LIB-COMMON)/lib ;
 path-constant APPRES-LIB-COMMON-INCLUDE : $(APPRES-LIB-COMMON)/include ;
 path-constant APPRES-LISP : $(APPRES)/lisp ;
-path-constant APPRES-CANDO-LISP : $(APPRES)/cando/lisp ;
+path-constant APPRES-CANDO : $(APPRES)/cando ;
+path-constant APPRES-CANDO-LISP : $(APPRES-CANDO)/lisp ;
 path-constant APPBIN : $(APPTOP)/bin ;
 path-constant APPBIN-DARWIN : $(APPTOP)/MacOS ;
 path-constant APPBIN-LINUX : $(APPTOP)/bin ;
@@ -261,6 +306,7 @@ path-constant APPINC : $(APPRES)/include ;
 path-constant APPLIB : $(APPRES)/lib ;
 path-constant APP-DEBUG-LIB : $(APPLIB)/debug ;
 path-constant APP-RELEASE-LIB : $(APPLIB)/release ;
+
 
 use-project externals : ./externals ;
 use-project internals : src ;
@@ -275,8 +321,8 @@ use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
 use-project internals/main : src/main ;
-
-
+use-project internals/include/clasp : include/clasp ;
+use-project internals/src : src ;
 
 
 ## If using cando

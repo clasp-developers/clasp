@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/TargetSelect.h>
@@ -902,9 +902,9 @@ struct to_object<llvm::ImmutablePass *> {
 namespace llvmo {
 FORWARD(PassManagerBase);
 class PassManagerBase_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PassManagerBase, PassManagerBase_O, "PassManagerBase", core::ExternalObject_O);
-  typedef llvm::PassManagerBase ExternalType;
-  typedef llvm::PassManagerBase *PointerToExternalType;
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::PassManagerBase, PassManagerBase_O, "PassManagerBase", core::ExternalObject_O);
+  typedef llvm::legacy::PassManagerBase ExternalType;
+  typedef llvm::legacy::PassManagerBase *PointerToExternalType;
 
 protected:
   PointerToExternalType _ptr;
@@ -937,14 +937,14 @@ public:
 
 namespace translate {
 template <>
-struct from_object<llvm::PassManagerBase *, std::true_type> {
-  typedef llvm::PassManagerBase *DeclareType;
+  struct from_object<llvm::legacy::PassManagerBase *, std::true_type> {
+  typedef llvm::legacy::PassManagerBase *DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
 };
 template <>
-struct from_object<llvm::PassManagerBase &, std::true_type> {
-  typedef llvm::PassManagerBase &DeclareType;
+  struct from_object<llvm::legacy::PassManagerBase &, std::true_type> {
+  typedef llvm::legacy::PassManagerBase &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
 };
@@ -954,10 +954,10 @@ struct from_object<llvm::PassManagerBase &, std::true_type> {
 
 namespace translate {
 template <>
-struct to_object<llvm::PassManagerBase *> {
-  static core::T_sp convert(llvm::PassManagerBase *ptr) {
+  struct to_object<llvm::legacy::PassManagerBase *> {
+  static core::T_sp convert(llvm::legacy::PassManagerBase *ptr) {
     _G();
-    return ((core::RP_Create_wrapped<llvmo::PassManagerBase_O, llvm::PassManagerBase *>(ptr)));
+    return ((core::RP_Create_wrapped<llvmo::PassManagerBase_O, llvm::legacy::PassManagerBase *>(ptr)));
   }
 };
 };
@@ -1636,7 +1636,11 @@ public:
     return this->_ptr;
   };
   PointerToExternalType wrappedPtr() const {
-    return this->_ptr;
+    if ( this->_ptr ) return this->_ptr;
+    SIMPLE_ERROR(BF("The Module has a NULL pointer"));
+  }
+  void reset_wrappedPtr() {
+    this->_ptr = NULL;
   }
 
 public:
@@ -1861,9 +1865,9 @@ namespace translate
 namespace llvmo {
 FORWARD(FunctionPassManager);
 class FunctionPassManager_O : public PassManagerBase_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::FunctionPassManager, FunctionPassManager_O, "FUNCTION-PASS-MANAGER", PassManagerBase_O);
-  typedef llvm::FunctionPassManager ExternalType;
-  typedef llvm::FunctionPassManager *PointerToExternalType;
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::FunctionPassManager, FunctionPassManager_O, "FUNCTION-PASS-MANAGER", PassManagerBase_O);
+  typedef llvm::legacy::FunctionPassManager ExternalType;
+  typedef llvm::legacy::FunctionPassManager *PointerToExternalType;
 
 public:
   static FunctionPassManager_sp make(llvm::Module *module);
@@ -1887,14 +1891,14 @@ public:
 
 namespace translate {
 template <>
-struct from_object<llvm::FunctionPassManager *, std::true_type> {
-  typedef llvm::FunctionPassManager *DeclareType;
+  struct from_object<llvm::legacy::FunctionPassManager *, std::true_type> {
+  typedef llvm::legacy::FunctionPassManager *DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr(); };
 };
 template <>
-struct from_object<llvm::FunctionPassManager &, std::true_type> {
-  typedef llvm::FunctionPassManager &DeclareType;
+  struct from_object<llvm::legacy::FunctionPassManager &, std::true_type> {
+  typedef llvm::legacy::FunctionPassManager &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr()){};
 };
@@ -1904,9 +1908,9 @@ struct from_object<llvm::FunctionPassManager &, std::true_type> {
 
 namespace translate {
 template <>
-struct to_object<llvm::FunctionPassManager *> {
-  static core::T_sp convert(llvm::FunctionPassManager *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::FunctionPassManager *>(ptr)));
+  struct to_object<llvm::legacy::FunctionPassManager *> {
+  static core::T_sp convert(llvm::legacy::FunctionPassManager *ptr) {
+    return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::legacy::FunctionPassManager *>(ptr)));
   }
 };
 };
@@ -1915,9 +1919,9 @@ struct to_object<llvm::FunctionPassManager *> {
 namespace llvmo {
 FORWARD(PassManager);
 class PassManager_O : public PassManagerBase_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PassManager, PassManager_O, "PASS-MANAGER", PassManagerBase_O);
-  typedef llvm::PassManager ExternalType;
-  typedef llvm::PassManager *PointerToExternalType;
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::PassManager, PassManager_O, "PASS-MANAGER", PassManagerBase_O);
+  typedef llvm::legacy::PassManager ExternalType;
+  typedef llvm::legacy::PassManager *PointerToExternalType;
 
 public:
   static PassManager_sp make();
@@ -1941,8 +1945,8 @@ public:
 
 namespace translate {
 template <>
-struct from_object<llvm::PassManager *, std::true_type> {
-  typedef llvm::PassManager *DeclareType;
+  struct from_object<llvm::legacy::PassManager *, std::true_type> {
+  typedef llvm::legacy::PassManager *DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::PassManager_sp>(object)->wrappedPtr(); };
 };
@@ -1952,10 +1956,10 @@ struct from_object<llvm::PassManager *, std::true_type> {
 
 namespace translate {
 template <>
-struct to_object<llvm::PassManager *> {
-  static core::T_sp convert(llvm::PassManager *ptr) {
+  struct to_object<llvm::legacy::PassManager *> {
+  static core::T_sp convert(llvm::legacy::PassManager *ptr) {
     _G();
-    return ((core::RP_Create_wrapped<llvmo::PassManager_O, llvm::PassManager *>(ptr)));
+    return ((core::RP_Create_wrapped<llvmo::PassManager_O, llvm::legacy::PassManager *>(ptr)));
   }
 };
 };
@@ -2082,7 +2086,7 @@ public:
 
 namespace translate {
 template <>
-struct from_object<llvm::PassManagerBuilder *, std::true_type> {
+  struct from_object<llvm::PassManagerBuilder *, std::true_type> {
   typedef llvm::PassManagerBuilder *DeclareType;
   DeclareType _v;
   from_object(T_P object) {
