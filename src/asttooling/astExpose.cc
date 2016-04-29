@@ -1217,7 +1217,8 @@ void initialize_astExpose() {
         .def("getTypeLoc", &clang::TypeSourceInfo::getTypeLoc),
     class_<clang::TemplateArgumentList>("TemplateArgumentList", no_default_constructor)
         .def("size", &clang::TemplateArgumentList::size)
-        .def("TemplateArgumentList-get", &clang::TemplateArgumentList::get),
+        .def("TemplateArgumentList-get", &clang::TemplateArgumentList::get)
+    ,
     class_<clang::IdentifierInfo>("IdentifierInfo", no_default_constructor)
   ];
 }

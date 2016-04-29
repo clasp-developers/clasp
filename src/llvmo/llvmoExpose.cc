@@ -139,8 +139,8 @@ CL_DEFUN core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module)
 
 
 
-  CL_LISPIFY_NAME(getModule);
-  CL_EXTERN_DEFMETHOD(Linker_O, &llvm::Linker::getModule);
+//  CL_LISPIFY_NAME(getModule);
+//  CL_EXTERN_DEFMETHOD(Linker_O, &llvm::Linker::getModule);
 
 ;
 
@@ -599,21 +599,7 @@ namespace llvmo {
   CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::getType);;
 
 }; // llvmo
-namespace llvmo {
-}
 
-namespace llvmo {
-
-  CL_LISPIFY_NAME(dump);
-  CL_EXTERN_DEFMETHOD(Metadata_O, &llvm::Metadata::dump);;
-
-
-}; // llvmo
-
-namespace llvmo {
-
-
-}; // llvmo
 
 namespace llvmo {
 
@@ -882,7 +868,7 @@ namespace llvmo {
   CL_LISPIFY_NAME(getTargetTriple);
   CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getTargetTriple);
   CL_LISPIFY_NAME(setDataLayout);
-  CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(const llvm::DataLayout *)) & llvm::Module::setDataLayout);;
+  CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(const llvm::DataLayout& )) & llvm::Module::setDataLayout);;
   CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
@@ -1078,19 +1064,6 @@ CL_DEFMETHOD Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name)
 
 }; // llvmo
 
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-  CL_LISPIFY_NAME(getDataLayout);
-  CL_EXTERN_DEFMETHOD(TargetSubtargetInfo_O, &llvm::TargetSubtargetInfo::getDataLayout);;
-}; // llvmo
 
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
@@ -1186,9 +1159,9 @@ CL_DEFUN PassManager_sp PassManager_O::make() {
 
 
   CL_LISPIFY_NAME(passManagerAdd);
-  CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::PassManager::add);
+CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::add);
   CL_LISPIFY_NAME(passManagerRun);
-  CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::PassManager::run);;
+CL_EXTERN_DEFMETHOD(PassManager_O, &llvm::legacy::PassManager::run);;
 
 ;
 
@@ -2135,8 +2108,9 @@ string IRBuilder_O::__repr__() const {
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAtomicCmpXchg);
   CL_LISPIFY_NAME(CreateAtomicRMW);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAtomicRMW);
-  CL_LISPIFY_NAME(CreateConstGEP1-32);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP1_32);
+CL_LISPIFY_NAME(CreateConstGEP1-32);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(llvm::Value *Ptr, unsigned Idx0, const llvm::Twine &Name ))
+                    &IRBuilder_O::ExternalType::CreateConstGEP1_32);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP1-32);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_32);
   CL_LISPIFY_NAME(CreateConstGEP2-32);
@@ -2246,27 +2220,32 @@ string IRBuilder_O::__repr__() const {
   CL_LISPIFY_NAME(CreatePHI);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePHI);
   CL_LISPIFY_NAME(CreateCallArrayRef);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name))&IRBuilder_O::ExternalType::CreateCall);
-  CL_LISPIFY_NAME(CreateCall2);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall2);
-  CL_LISPIFY_NAME(CreateCall3);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall3);
-  CL_LISPIFY_NAME(CreateCall4);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall4);
-  CL_LISPIFY_NAME(CreateCall5);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall5);
+CL_LAMBDA(callee args name &optional fpmathtag);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilder_O::ExternalType::CreateCall);
+//CL_LISPIFY_NAME(CreateCall0);
+// CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
+//CL_LISPIFY_NAME(CreateCall1);
+// CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
+//  CL_LISPIFY_NAME(CreateCall2);
+//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall2);
+//  CL_LISPIFY_NAME(CreateCall3);
+//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall3);
+//  CL_LISPIFY_NAME(CreateCall4);
+//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall4);
+//  CL_LISPIFY_NAME(CreateCall5);
+//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall5);
   CL_LISPIFY_NAME(CreateSelect);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSelect);
   CL_LISPIFY_NAME(CreateVAArg);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateVAArg);
   CL_LISPIFY_NAME(CreateExtractElement);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateExtractElement);
+  CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *Vec, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilder_O::ExternalType::CreateExtractElement);
   CL_LISPIFY_NAME(CreateInsertElement);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateInsertElement);
-  CL_LISPIFY_NAME(CreateShuffleVector);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateShuffleVector);
-  CL_LISPIFY_NAME(CreateLandingPad);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateLandingPad);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *Vec, llvm::Value *NewElt, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilder_O::ExternalType::CreateInsertElement);
+CL_LISPIFY_NAME(CreateShuffleVector);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *V1, llvm::Value *V2, llvm::ArrayRef<int> IntMask, const llvm::Twine &Name) ) &IRBuilder_O::ExternalType::CreateShuffleVector);
+CL_LISPIFY_NAME(CreateLandingPad);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateLandingPad);
   CL_LISPIFY_NAME(CreateIsNull);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateIsNull);
   CL_LISPIFY_NAME(CreateIsNotNull);
@@ -2315,10 +2294,6 @@ CL_LISPIFY_NAME(CreateLoad_value_twine);
  CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::LoadInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateLoad);
 CL_LISPIFY_NAME(CreateLoad_value_bool_twine);
  CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::LoadInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, bool, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateLoad);
-CL_LISPIFY_NAME(CreateCall0);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
-CL_LISPIFY_NAME(CreateCall1);
- CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
 CL_LISPIFY_NAME(CreateGEP0);
  CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::Value *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateGEP);
 CL_LISPIFY_NAME(CreateGEPArray);
@@ -2872,8 +2847,8 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   // Compiler optimization passes
   //
   //    core::af_def(LlvmoPkg,"createDebugIRPass",&llvmo::af_createDebugIRPass);
-  CL_LISPIFY_NAME(createAliasAnalysisCounterPass);
-  CL_EXTERN_DEFUN( &llvm::createAliasAnalysisCounterPass);
+//  CL_LISPIFY_NAME(createAliasAnalysisCounterPass);
+//  CL_EXTERN_DEFUN( &llvm::createAliasAnalysisCounterPass);
   CL_LISPIFY_NAME(createFunctionInliningPass);
   CL_EXTERN_DEFUN( (llvm::Pass * (*)(unsigned, unsigned)) & llvm::createFunctionInliningPass);
 
@@ -2954,8 +2929,8 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   CL_EXTERN_DEFUN( &llvm::createEarlyCSEPass);
   CL_LISPIFY_NAME(createLowerExpectIntrinsicPass);
   CL_EXTERN_DEFUN( &llvm::createLowerExpectIntrinsicPass);
-  CL_LISPIFY_NAME(createTypeBasedAliasAnalysisPass);
-  CL_EXTERN_DEFUN( &llvm::createTypeBasedAliasAnalysisPass);
+//  CL_LISPIFY_NAME(createTypeBasedAliasAnalysisPass);
+//  CL_EXTERN_DEFUN( &llvm::createTypeBasedAliasAnalysisPass);
 //  CL_LISPIFY_NAME(createBasicAliasAnalysisPass);
 //  CL_EXTERN_DEFUN( &llvm::createBasicAliasAnalysisPass);
 

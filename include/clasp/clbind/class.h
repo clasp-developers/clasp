@@ -541,7 +541,8 @@ struct constructor_registration<Class, reg::null_type, default_constructor, Poli
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    return gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate();
+//    return gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate();
+    return gctools::GC<DefaultConstructorCreator_O<Class,Class*>>::allocate();
   }
 };
 
