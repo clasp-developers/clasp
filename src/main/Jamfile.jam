@@ -4,6 +4,7 @@
 project internals/main : requirements
 	<define>EXPAT
         <cxxflags>-std=c++11
+        <include>.
 	<toolset>darwin:<define>READLINE
 	<toolset>darwin:<define>darwin
 	<toolset>darwin,<variant>debug:<cxxflags>"-g3"

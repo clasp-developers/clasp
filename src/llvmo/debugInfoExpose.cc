@@ -44,7 +44,7 @@ THE SOFTWARE.
 #include <llvm/Support/FormattedStream.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Verifier.h>
 #include "llvm/IR/AssemblyAnnotationWriter.h" // Should be llvm/IR was
@@ -76,145 +76,54 @@ THE SOFTWARE.
 
 namespace llvmo {
 
-
-}; // llvmo
-
-namespace llvmo {
-
-
-
-}; // llvmo
-
-namespace llvmo {
-
-
-};
-
-namespace llvmo {
-
-
-};
-
-namespace llvmo {
-
-
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-
-namespace llvmo {
-
+CL_LAMBDA(module);
 CL_LISPIFY_NAME(make-dibuilder);
 CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
+  _G();
   GC_ALLOCATE(DIBuilder_O, me);
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
 };
 
+CL_LISPIFY_NAME(createCompileUnit);
+CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createCompileUnit);
+CL_LISPIFY_NAME(createFile);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
+CL_LISPIFY_NAME(createFunction);
+CL_EXTERN_DEFMETHOD(DIBuilder_O,
+                    (llvm::DISubprogram* (llvm::DIBuilder::*)
+                     (llvm::DIScope*,    // Scope
+                      llvm::StringRef,       // Name
+                      llvm::StringRef,       // LinkageName
+                      llvm::DIFile*,          // File
+                      unsigned,        // lineno
+                      llvm::DISubroutineType*, // Ty
+                      bool, //isLocalToUnit
+                      bool, //isDefinition
+                      unsigned, // scopeLine
+                      unsigned, //flags
+                      bool, // isOptimized
+                      llvm::DITemplateParameterArray, // TParams
+                      llvm::DISubprogram * // decl
+))&llvm::DIBuilder::createFunction );
+CL_LISPIFY_NAME(createLexicalBlock);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
+CL_LISPIFY_NAME(createBasicType);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createBasicType);
+CL_LISPIFY_NAME(createNullPtrType);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createNullPtrType);
+CL_LISPIFY_NAME(createUnspecifiedParameter);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createUnspecifiedParameter);
+CL_LISPIFY_NAME(createSubroutineType);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createSubroutineType);
+CL_LISPIFY_NAME(finalize);
+CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);;
 
 
-  CL_LISPIFY_NAME(createCompileUnit);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createCompileUnit);
-  CL_LISPIFY_NAME(createFile);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createFile);
-  CL_LISPIFY_NAME(createFunction);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O,
-                      (llvm::DISubprogram
-                       (llvm::DIBuilder::*)
-                       ( llvm::DIDescriptor,    // Scope
-                         llvm::StringRef,       // Name
-                         llvm::StringRef,       // LinkageName
-                         llvm::DIFile,          // File
-                         unsigned,        // lineno
-                         llvm::DICompositeType, // Ty
-                         bool,
-                         bool,
-                         unsigned,
-                         unsigned,
-                         bool,
-                         llvm::Function *,
-                         llvm::MDNode *,
-                         llvm::MDNode *))&llvm::DIBuilder::createFunction );
-  CL_LISPIFY_NAME(createLexicalBlock);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
-  CL_LISPIFY_NAME(createBasicType);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createBasicType);
-  CL_LISPIFY_NAME(createNullPtrType);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createNullPtrType);
-  CL_LISPIFY_NAME(createUnspecifiedParameter);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createUnspecifiedParameter);
-  CL_LISPIFY_NAME(createSubroutineType);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createSubroutineType);
-  CL_LISPIFY_NAME(finalize);
-  CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::finalize);
 
-;
-
-
-CL_LISPIFY_NAME("getOrCreateArray");
-CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
+CL_LISPIFY_NAME(getOrCreateArray);
+CL_DEFMETHOD DINodeArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
+  _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
   vector<llvm::Metadata *> vector_values;
@@ -223,25 +132,22 @@ CL_DEFMETHOD DIArray_sp DIBuilder_O::getOrCreateArray(core::List_sp elements) {
       //			printf("      push_back val->wrappedPtr() --> %p\n", val->wrappedPtr());
       llvm::ValueAsMetadata *vd = llvm::ValueAsMetadata::get(val->wrappedPtr());
       vector_values.push_back(vd); // val->wrappedPtr());
-    } else if (DebugInfo_sp di = oCar(cur).asOrNull<DebugInfo_O>()) {
-      //			printf("      getting DIDescriptor*\n");
-      llvm::DIDescriptor *didescriptor = di->operator llvm::DIDescriptor *();
-      //			printf("      convert DIDescrptor* to MDNode* --> %p\n", didescriptor );
-      llvm::MDNode *mdnode_didescriptor = *didescriptor;
-      //			printf("      push_back mdnode_didescriptor --> %p\n", mdnode_didescriptor );
-      vector_values.push_back(mdnode_didescriptor);
+    } else if (DINode_sp di = oCar(cur).asOrNull<DINode_O>()) {
+      llvm::MDNode *mdnode = di->operator llvm::MDNode *();
+      vector_values.push_back(mdnode);
     } else {
       SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)));
     }
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
-  llvm::DIArray diarray = this->wrappedPtr()->getOrCreateArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DIArray_O, obj, diarray);
+  llvm::DINodeArray diarray = this->wrappedPtr()->getOrCreateArray(array);
+  GC_ALLOCATE_VARIADIC(llvmo::DINodeArray_O, obj, diarray);
   return obj;
 }
 
-CL_LISPIFY_NAME("getOrCreateTypeArray");
-CL_DEFMETHOD DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements) {
+CL_LISPIFY_NAME(getOrCreateTypeArray);
+CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elements) {
+  _G();
   //		printf("%s:%d About to convert Cons into ArrayRef<llvm::Value*>\n", __FILE__, __LINE__);
   //		printf("     cons --> %s\n", cur->__repr__().c_str() );
   vector<llvm::Metadata *> vector_values;
@@ -251,21 +157,20 @@ CL_DEFMETHOD DITypeArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp elem
       llvm::ValueAsMetadata *vd = llvm::ValueAsMetadata::get(val->wrappedPtr());
       vector_values.push_back(vd); // val->wrappedPtr());
                                    //vector_values.push_back(val->wrappedPtr());
-    } else if (DebugInfo_sp di = oCar(cur).asOrNull<DebugInfo_O>()) {
-      //			printf("      getting DIDescriptor*\n");
-      llvm::DIDescriptor *didescriptor = di->operator llvm::DIDescriptor *();
-      //			printf("      convert DIDescrptor* to MDNode* --> %p\n", didescriptor );
-      llvm::MDNode *mdnode_didescriptor = *didescriptor;
-      //			printf("      push_back mdnode_didescriptor --> %p\n", mdnode_didescriptor );
-      vector_values.push_back(mdnode_didescriptor);
+    } else if (DINode_sp di = oCar(cur).asOrNull<DINode_O>()) {
+      llvm::MDNode *mdnode = di->operator llvm::MDNode *();
+      vector_values.push_back(mdnode);
     } else {
       SIMPLE_ERROR(BF("Handle conversion of %s to llvm::Value*") % _rep_(oCar(cur)));
     }
   }
   llvm::ArrayRef<llvm::Metadata *> array(vector_values);
-  llvm::DITypeArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
-  GC_ALLOCATE_VARIADIC(llvmo::DITypeArray_O, obj, diarray);
+  llvm::DITypeRefArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
+  GC_ALLOCATE_VARIADIC(llvmo::DITypeRefArray_O, obj, diarray);
   return obj;
 }
 
+
+
 }; // llvmo
+

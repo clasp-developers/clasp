@@ -7,7 +7,6 @@
 	 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
 	 (triple (llvm-sys:make-triple normalized-triple-string))
 	 (target-options (llvm-sys:make-target-options)))
-    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (multiple-value-bind (target msg)
 	(llvm-sys:target-registry-lookup-target "" triple)
       (unless target (error msg))
@@ -20,15 +19,10 @@
 							     'llvm-sys:code-model-default
 							     'llvm-sys:code-gen-opt-default ))
 	     (pm (llvm-sys:make-pass-manager))
-	     (tli #+(or)(llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#)
-		  (llvm-sys:make-target-library-info triple #|| LLVM3.6||#))
-	     (data-layout-pass (llvm-sys:make-data-layout-pass))
-	     (target-subtarget-info (llvm-sys:get-subtarget-impl target-machine))
-	     (data-layout (llvm-sys:get-data-layout target-subtarget-info))
-	     )
-	(if data-layout (llvm-sys:set-data-layout module data-layout))
+	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+	     (data-layout (llvm-sys:create-data-layout target-machine)))
+	(llvm-sys:set-data-layout module data-layout)
 	(llvm-sys:pass-manager-add pm tli)
-	(llvm-sys:pass-manager-add pm data-layout-pass)
 	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
 
 

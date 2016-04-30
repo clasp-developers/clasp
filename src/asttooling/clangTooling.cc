@@ -147,10 +147,11 @@ struct from_object<clang::tooling::ArgumentsAdjuster> {
       SIMPLE_ERROR(BF("You cannot pass nil as a function"));
     } else if (core::Function_sp func = o.asOrNull<core::Function_O>()) {
 #if 1
-      this->_v = [func](const clang::tooling::CommandLineArguments &args) -> clang::tooling::CommandLineArguments {
+      this->_v = [func](const clang::tooling::CommandLineArguments &args, StringRef filename ) -> clang::tooling::CommandLineArguments {
 			// Should resolve to vector<string>
           core::T_sp targs = translate::to_object<clang::tooling::CommandLineArguments>::convert(args);
-          core::T_mv result = core::eval::funcall(func,targs);;
+          core::T_sp tfilename = translate::to_object<StringRef>::convert(filename);
+          core::T_mv result = core::eval::funcall(func,targs,tfilename);;
           translate::from_object<const clang::tooling::CommandLineArguments&> cresult(result);
           return cresult._v;
       };

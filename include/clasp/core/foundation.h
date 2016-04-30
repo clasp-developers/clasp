@@ -326,6 +326,7 @@ const handleType UniqueIdHandle = 1;
 #include <set>
 #include <ostream>
 #include <iostream>
+#include <sstream>
 #include <boost/format.hpp>
 
 using string = std::string;
@@ -1108,7 +1109,7 @@ public:
   ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
   size_t size() const { return this->_Stack.size(); };
   string summary() {
-    stringstream ss;
+    std::stringstream ss;
     ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
     for (int idx = this->size() - 1; idx >= 0; --idx) {
       FrameKind fk = this->_Stack[idx]._FrameKind;

@@ -48,7 +48,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(DebugLoc_O);
 
 public:
-  static DebugLoc_sp get(int lineno, int column, DebugInfo_sp debugInfo);
+  static DebugLoc_sp get(int lineno, int column, DINode_sp debugInfo);
 
 private: // instance variables here
   llvm::DebugLoc _DebugLoc;

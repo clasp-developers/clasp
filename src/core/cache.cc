@@ -83,7 +83,7 @@ cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
     c += (cl_intptr_t)(keys[--n].get());
     b += (cl_intptr_t)(keys[--n].get());
     a += (cl_intptr_t)(keys[--n].get());
-    mix(a, b, c);
+    hash_mix(a, b, c);
   }
   switch (n) {
   case 2:
@@ -91,7 +91,7 @@ cl_intptr_t Cache_O::vector_hash_key(gctools::Vec0<T_sp> &keys) {
   case 1:
     a += (cl_intptr_t)(keys[--n].get());
     c += keys.size();
-    mix(a, b, c);
+    hash_mix(a, b, c);
   }
   return c;
 }

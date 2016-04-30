@@ -41,7 +41,7 @@ THE SOFTWARE.
  * 64 bit version
  */
 #define GOLDEN_RATIO 0x9e3779b97f4a7c13L
-#define mix(a, b, c)   \
+#define hash_mix(a, b, c)   \
   {                    \
     a = a - b;         \
     a = a - c;         \
@@ -97,7 +97,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     k += 8;
     c += extract_word(k);
     k += 8;
-    mix(a, b, c);
+    hash_mix(a, b, c);
   }
 
   /*------------------------------------- handle the last 11 bytes */
@@ -153,7 +153,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     a += k[0];
     /* case 0: nothing left to add */
   }
-  mix(a, b, c);
+  hash_mix(a, b, c);
   /*-------------------------------------------- report the result */
   return c;
 }
@@ -164,7 +164,7 @@ hash_string(int initval, const unsigned char *k, int length) {
  */
 
 #define GOLDEN_RATIO 0x9e3779b9L
-#define mix(a, b, c) \
+#define hash_mix(a, b, c) \
   {                  \
     a -= b;          \
     a -= c;          \
@@ -208,7 +208,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     k += 4;
     c += extract_word(k);
     k += 4;
-    mix(a, b, c);
+    hash_mix(a, b, c);
   }
 
   /*------------------------------------- handle the last 11 bytes */
@@ -240,7 +240,7 @@ hash_string(int initval, const unsigned char *k, int length) {
     a += k[0];
     /* case 0: nothing left to add */
   }
-  mix(a, b, c);
+  hash_mix(a, b, c);
   /*-------------------------------------------- report the result */
   return c;
 }
@@ -248,7 +248,7 @@ hash_string(int initval, const unsigned char *k, int length) {
 
 inline cl_intptr_t hash_word(cl_intptr_t c, cl_intptr_t w) {
   cl_intptr_t a = w + GOLDEN_RATIO, b = GOLDEN_RATIO;
-  mix(a, b, c);
+  hash_mix(a, b, c);
   return c;
 }
 
@@ -261,7 +261,7 @@ inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
     s++;
     h += *s;
     s++;
-    mix(a, b, h);
+    hash_mix(a, b, h);
   }
   switch (i) {
   case 2:
@@ -272,7 +272,7 @@ inline cl_intptr_t hash_base_string(const char *s, int len, cl_intptr_t h) {
   default:
     h += len;
   }
-  mix(a, b, h);
+  hash_mix(a, b, h);
   return h;
 }
 

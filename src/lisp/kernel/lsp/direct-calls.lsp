@@ -30,10 +30,9 @@
     (error "Only magic-intern is supported"))
   (let ((evaluated-lisp-name (apply 'core:magic-intern (cdr raw-lisp-name))))
     (if (dlsym c-name)
-        `(core:fset ',evaluated-lisp-name
-                    #'(lambda ,lambda-list
-                        (core:intrinsic-call ,c-name ,@(core:names-of-lexical-variables
-                                                        (core:make-lambda-list-handler
-                                                         lambda-list nil 'function)))))
+        `(defun ,evaluated-lisp-name ,lambda-list
+           (core:intrinsic-call ,c-name ,@(core:names-of-lexical-variables
+                                           (core:make-lambda-list-handler
+                                            lambda-list nil 'function))))
         nil)))
 

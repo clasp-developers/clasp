@@ -86,6 +86,7 @@
           irc-load
           irc-low-level-trace
           irc-phi
+          irc-personality-function
           irc-phi-add-incoming
           irc-preserve-exception-info
           irc-renv

@@ -138,6 +138,7 @@ public:
   static gctools::smart_ptr<WrapperType> create(OT *naked, class_id classId) {
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
+    ASSERT(!classSymbol.unboundp());
     obj->setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
@@ -522,6 +523,32 @@ struct from_object<std::unique_ptr<T>> {
   }
 };
 
+ template <typename T>
+   struct from_object<clbind::Derivable<T>*> {
+  typedef T *DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    if (o.generalp()) {
+      clbind::Derivable<T> *dp = dynamic_cast<clbind::Derivable<T> *>(o.unsafe_general());
+      this->_v = dp->pointerToAlienWithin();
+      return;
+    }
+    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
+           __FILE__, __LINE__, _rep_(o).c_str());
+    printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
+    if ( o.generalp() ) {
+      core::General_sp go = o.as<core::General_O>();
+      printf("dynamic_cast<clbind::Derivable<T>*>(go.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T> *>(&(*go)));
+      printf("o.px_ref() = %p\n", go.raw_());
+      printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
+      printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
+      SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s\n") % _rep_(go) % typeid(go).name() % typeid(T *).name());
+    } else {
+      printf("%s:%d Not a General object\n", __FILE__, __LINE__ );
+    }
+  }
+};
+
 template <typename T>
 struct from_object<T *> {
   typedef T *DeclareType;
@@ -536,25 +563,18 @@ struct from_object<T *> {
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = static_cast<T *>(pp->ptr());
       return;
-    } else if (o.generalp()) {
+    }
+#if 0
+    else if (o.generalp()) {
       clbind::Derivable<T> *dp = dynamic_cast<clbind::Derivable<T> *>(o.unsafe_general());
       this->_v = dp->pointerToAlienWithin();
       return;
     }
+#endif
 
     printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
            __FILE__, __LINE__, _rep_(o).c_str());
     printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
-    if ( o.generalp() ) {
-      core::General_sp go = o.as<core::General_O>();
-      printf("dynamic_cast<clbind::Derivable<T>*>(go.px_ref()) = %p (SHOULD NOT BE NULL!!!)\n", dynamic_cast<clbind::Derivable<T> *>(&(*go)));
-      printf("o.px_ref() = %p\n", go.raw_());
-      printf("typeid(T*)@%p  typeid(T*).name=%s\n", &typeid(T *), typeid(T *).name());
-      printf("typeid(clbind::Derivable<T>*)@%p   typeid(clbind::Derivable<T>*).name() = %s\n", &typeid(clbind::Derivable<T> *), typeid(clbind::Derivable<T> *).name());
-      SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s\n") % _rep_(go) % typeid(go).name() % typeid(T *).name());
-    } else {
-      printf("%s:%d Not a General object\n", __FILE__, __LINE__ );
-    }
   }
 };
 

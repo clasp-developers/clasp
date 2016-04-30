@@ -3140,7 +3140,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments.
 It converts relative -I../... arguments to absolute paths"
-  (lambda (args) 
+  (lambda (args filename) 
     (let ((result (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
                                (vector "-DUSE_MPS"
                                        "-DRUNNING_GC_BUILDER"))))

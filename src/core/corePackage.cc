@@ -234,6 +234,7 @@ SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARnotify_on_compileSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtrace_startupSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARllvmVersionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
@@ -1113,6 +1114,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
+  _sym_STARllvmVersionSTAR->defparameter(clasp_make_fixnum(atoi(LLVM_VERSION)));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   List_sp hooks = _Nil<T_O>();

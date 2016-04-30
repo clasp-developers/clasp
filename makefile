@@ -78,6 +78,7 @@ export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 
 export LLVM_VERSION := $(shell $(LLVM_CONFIG) --version)
 export LLVM_MAJOR_MINOR_VERSION := $(shell echo $(LLVM_VERSION) | sed 's/^\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)/\1.\2/')
+export LLVM_VERSION_X100 := $(shell echo $(LLVM_VERSION) | sed 's/[.]//g' )
 #$(info llvm-version is $(LLVM_VERSION))
 #$(info llvm-major-minor-version is $(LLVM_MAJOR_MINOR_VERSION))
 export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
@@ -179,7 +180,7 @@ boehm-all:
 	install -d build/clasp/Contents/Resources
 	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
-	(cd src/main; make $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
 	make executable-symlinks
 	make -C src/main min-boehm
 	make -C src/main bclasp-boehm-bitcode
@@ -204,16 +205,15 @@ mps-all:
 	install -d build/clasp/Contents/Resources
 	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=mps bundle )
-	(cd src/main; make clasp-mps-o)
-#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
+	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps/$(VARIANT) gc=mps $(VARIANT) clasp_install )
 	make executable-symlinks
-	time make -C src/main min-mps
-	time make -C src/main bclasp-mps-bitcode
-	time make -C src/main bclasp-mps-fasl
-	time make -C src/main cclasp-from-bclasp-mps-bitcode
+	make -C src/main min-mps
+	make -C src/main bclasp-mps-bitcode
+	make -C src/main bclasp-mps-fasl
+	make -C src/main cclasp-from-bclasp-mps-bitcode
 #	make -C src/main cclasp-mps-fasl
-	time make -C src/main cclasp-mps-fasl
-	time make -C src/main cclasp-mps-addons
+	make -C src/main cclasp-mps-fasl
+	make -C src/main cclasp-mps-addons
 	echo Clasp is now built
 
 lisp-source:
@@ -247,21 +247,10 @@ boot:
 	make -C src/main min-boehmdc
 	make -C src/main bclasp-boehmdc-bitcode
 	make -C src/main bclasp-boehmdc-fasl
-	make -C src/main bclasp-boehmdc-addons
-	make -C src/main cclasp-boehmdc-bitcode
-	make -C src/main cclasp-boehmdc-fasl
-	make -C src/main cclasp-boehmdc-addons
+#	make -C src/main bclasp-boehmdc-addons
 
 boot-mps-interface:
-	make submodules
-	make asdf
-	make boost_build
-	make boehm
-	make -C src/main boehmdc-release-cxx
-	make executable-symlinks
-	make -C src/main min-boehmdc
-	make -C src/main bclasp-boehmdc-bitcode
-	make -C src/main bclasp-boehmdc-fasl
+	make boot
 	make -C src/main mps-interface-boot
 #	make -C src/main bclasp-boehmdc
 #	make -C src/main bclasp-boehmdc-addons
@@ -271,12 +260,12 @@ clasp-libraries:
 
 executable-symlinks:
 	install -d $(BINDIR)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehm/release/bin/clasp; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehmdc/release/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehm/debug/bin/clasp ; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehmdc/debug/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d ; fi)
+	if test -e ../Contents/execs/boehm/release/bin/clasp; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o ; fi
+	if test -e ../Contents/execs/boehmdc/release/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o ; fi
+	if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o ; fi
+	if test -e ../Contents/execs/boehm/debug/bin/clasp ; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d ; fi
+	if test -e ../Contents/execs/boehmdc/debug/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d ; fi
+	if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d ; fi
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
@@ -412,7 +401,7 @@ cloc-files:
 clean:
 	git submodule sync
 	make boehm-clean
-	-(cd include/clasp/main/generated; rm *.h)
+	(cd include/clasp/main/generated; rm *.h)
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)

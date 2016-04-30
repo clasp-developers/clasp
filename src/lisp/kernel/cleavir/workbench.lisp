@@ -16,618 +16,549 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+
 (progn
   (load "sys:kernel;cleavir;auto-compile.lisp")
   (format t "Loading inline.lisp~%")
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(in-package :clasp-cleavir)
+(eval '(defmethod foo () (zzzzz)))
+(eval '(defmethod m () (undefined)))
 
-(clasp-cleavir::cleavir-compile 'test-wrapped-test '(lambda (x y z) (core:intrinsic-call "wrapped_test" x y z)))
+(print clasp-cleavir:*my-env*)
 
-(clasp-cleavir::cleavir-compile nil '(lambda (x y z) (core:intrinsic-call "wrapped_test" x y z)) :debug t)
-(apropos "argument-asts")
-(clasp-cleavir::cleavir-compile 'foo '(lambda () (lambda (a b) (let ((x 1)) (declare (special x)) (+ x a b)))) :debug t)
-(clasp-cleavir::cleavir-compile
- 'dt '
- (lambda ()
-   (deftype blarg1 ()   (if start-p
-                            (let (rat-start
-                                  real-start
-                                  rat-end
-                                  real-end)
-                              (cond ((consp start)
-                                     (setq start (first start)
-                                           rat-start (list (rational start))
-                                           real-start (list (float start))))
-                                    ((numberp start)
-                                     (setq rat-start (rational start)
-                                           real-start (float start)))
-                                    (t
-                                     (setq rat-start start
-                                           real-start start)))
-                              (cond ((consp end)
-                                     (setq end (first end)
-                                           rat-end (list (rational end))
-                                           real-end (list (float end))))
-                                    ((numberp end)
-                                     (setq rat-end (rational end)
-                                           real-end (float end)))
-                                    (t
-                                     (setq rat-end end
-                                           real-end end)))
-                              `(OR (RATIONAL ,rat-start ,rat-end) (FLOAT ,real-start ,real-end)))
-                            '(OR RATIONAL FLOAT)))
-   ) :debug t)
+(defgeneric foo (x y))
+(macroexpand '(defmethod foo-close-over (x y) (flet ((xxx () (call-next-method))) #'xxx)))
+(macroexpand '(defmethod foo-dont-close-over (x y) t))
+(trace clos::walk-method-lambda)
 
-(apropos "slot-")
-(mapcar (lambda (x) (clos::slot-definition-name x)) (clos::class-slots (find-class 'cc-mir:stack-enclose-instruction)))
-(clasp-cleavir::cleavir-compile nil '(lambda () (defun foo (x) (declare (dynamic-extent x)))) :debug t)
-(clasp-cleavir::cleavir-compile nil '(lambda () (defun foo (x) )) :debug t)
+(apropos "my-env")
+clasp-cleavir:*my-env*
 
-
-
-(defmacro predicate-let* ((setup test-form) &rest cont-forms)
-  `(let* ,setup
-     (when ,test-form
-       ,@cont-forms)))
-
-(apropos "defining-instruction")
-(defun find-potential-stack-enclose (top-instruction)
-  (let (encloses)
-    (cleavir-ir:map-instructions
-     (lambda (i)
-       (let ((enclose
-              (predicate-let*
-               (()
-                (typep i 'cleavir-ir:funcall-instruction))
-               (predicate-let*
-                (((input1 (car (cleavir-ir:inputs i)))
-                  (input4 (fourth (cleavir-ir:inputs i)))
-                  (fdefs (cleavir-ir:defining-instructions input1))
-                  (fencs (and input4 (cleavir-ir:defining-instructions input4)))
-                  (fdef (car fdefs))
-                  (enclose (car fencs)))
-                 (and (= (length fdefs) 1)
-                      (typep fdef 'cleavir-ir:fdefinition-instruction)
-                      (= (length fencs) 1)
-                      (typep enclose 'cleavir-ir:enclose-instruction)))
-                (predicate-let*
-                 (((fdef-input (car (cleavir-ir:inputs fdef)))
-                   (cwvb (car (cleavir-ir:defining-instructions fdef-input))))
-                  (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction))
-                 (let ((orig (cadr (clasp-cleavir-hir:precalc-symbol-instruction-original-object cwvb))))
-                   (and (typep cwvb 'clasp-cleavir-hir:precalc-symbol-instruction)
-                        (eq orig
-                            'cleavir-primop:call-with-variable-bound))))
-                enclose))))
-         (when enclose
-           (format t "   found enclose: ~a~%" i)
-           (push enclose encloses))))
-     top-instruction)
-    encloses))
-(apropos "call-with-variable-bound")
-(find-potential-stack-enclose clasp-cleavir::*hir*)
-
+(trace clasp-cleavir::code-walk-for-method-lambda-closure)
 
 
 (apropos "method-p")
-     (trace clos::define-complex-method-combination)
-     (defgeneric foo1 (a b))
-     (defmethod foo1 ((a integer) b) (+ 1 2))
+(trace clos::define-complex-method-combination)
+(defgeneric foo1 (a b))
+(defmethod foo1 ((a integer) b) (+ 1 2))
 
-     (clos::method-p (defmethod zzz (a b)))
-     (trace)
-     (untrace clos::effective-method-function)
-     (trace clos::effective-method-function)
-     (time (progn (gctools:gc-monitor-allocations t) (foo1 1 2) (foo1 1 2) (gctools:gc-monitor-allocations nil)))
-
-
-     (clasp-cleavir::cleavir-compile 'foo '(lambda() (defun effective-method-function (form &optional top-level &aux first)
-                                                       (cond ((functionp form)
-                                                              form)
-                                                             ((method-p form)
-                                                              (method-function form))
-                                                             ((atom form)
-                                                              (error "Malformed effective method form:~%~A" form))
-                                                             ((eq (setf first (first form)) 'MAKE-METHOD)
-                                                              (coerce `(lambda (.combined-method-args. *next-methods*)
-                                                                         (declare (special .combined-method-args. *next-methods*))
-                                                                         ,(second form))
-                                                                      'function))
-                                                             ((eq first 'CALL-METHOD)
-                                                              (combine-method-functions
-                                                               (effective-method-function (second form))
-                                                               (mapcar #'effective-method-function (third form))))
-                                                             (top-level
-                                                              (coerce `(lambda (.combined-method-args. no-next-methods)
-                                                                         (declare (ignorable no-next-methods))
-                                                                         ,form)
-                                                                      'function))
-                                                             (t
-                                                              (error "Malformed effective method form:~%~A" form))))) :debug t)
+(clos::method-p (defmethod zzz (a b)))
+(trace)
+(untrace clos::effective-method-function)
+(trace clos::effective-method-function)
+(time (progn (gctools:gc-monitor-allocations t) (foo1 1 2) (foo1 1 2) (gctools:gc-monitor-allocations nil)))
 
 
-     (macrolet ((mac () `(defmethod x ()))) (mac))
-     (setq core:*eval-with-env-hook* #'cclasp-eval)
-     (eq  core:*eval-with-env-hook* #'cclasp-eval)
-
-     (trace core::eval-with-env-default)
-     (trace clasp-cleavir::cclasp-eval)
-
-
-     (trace clos::compute-effective-method)
-     (clos::effective-method-function 
-      (progn
-        (trace cmp::irc-make-tagbody-frame)
-        (trace cmp::codegen-tagbody)
-        (trace cmp::compile-file*)
-        (trace cmp::compile-file-t1expr)
-        (trace cmp::t1expr)
-        (trace clasp-cleavir:cleavir-compile-file)
-        (trace clasp-cleavir::cleavir-compile-file-form))
-      (print "Hello")
-      (clasp-cleavir:cleavir-compile-file "sys:tests;tgf.lsp")
-      (load "sys:tests;tgf.fasl")
-      (time (baz 1))
-      (+ 48 32)
-      (getpid)91639
-
-      (clasp-cleavir:cleavir-compile 'bar '(lambda () (defmethod foo (a b) (+ a b))) :debug nil)
-      (clasp-cleavir:cleavir-compile 'bar2 '(lambda () (defun baz (n) (core:trap-execution "a") (gctools:gc-monitor-allocations t) (dotimes (i n) (foo 1 2)) (gctools:gc-monitor-allocations nil))))
-      (bar)
-      (bar2)
-      (time (baz 2))
+(clasp-cleavir::cleavir-compile 'foo '(lambda() (defun effective-method-function (form &optional top-level &aux first)
+  (cond ((functionp form)
+	 form)
+	((method-p form)
+	 (method-function form))
+	((atom form)
+	 (error "Malformed effective method form:~%~A" form))
+	((eq (setf first (first form)) 'MAKE-METHOD)
+	 (coerce `(lambda (.combined-method-args. *next-methods*)
+		    (declare (special .combined-method-args. *next-methods*))
+		    ,(second form))
+		 'function))
+	((eq first 'CALL-METHOD)
+	 (combine-method-functions
+	  (effective-method-function (second form))
+	  (mapcar #'effective-method-function (third form))))
+	(top-level
+	 (coerce `(lambda (.combined-method-args. no-next-methods)
+		    (declare (ignorable no-next-methods))
+		    ,form)
+		 'function))
+	(t
+	 (error "Malformed effective method form:~%~A" form))))) :debug t)
 
 
-      (foo 1 2)
-      (time (baz 3))
-      (time (progn (foo 1 2) (foo 1 2) (foo 1 2)))
-      (print "Hello")
-      (trace cmp::irc-make-tagbody-frame)
+(macrolet ((mac () `(defmethod x ()))) (mac))
+(setq core:*eval-with-env-hook* #'cclasp-eval)
+(eq  core:*eval-with-env-hook* #'cclasp-eval)
 
-      (macroexpand '(defmethod foo (a b)))
-
-
-      (bar)
-      (time (progn (+ 1 2) (+ 1 2) (+ 1 2) ))
-      (- 936 744)
-
-      (foo 1 2 3 4 5 6)
-      (time (progn (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6)))
-
-      (time (dotimes (i 10000) (foo 1 2 3 4 5 6)))
-
-      (defgeneric bar (a)
-        (:method (a) (1+ a))
-        (:method ((a number)) (call-next-method))
-        (:method ((a real)) (call-next-method))
-        (:method ((a integer)) (call-next-method)))
-
-      (foo 0)
-      (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction))
-        nil)
-
-      (let ((clasp-cleavir:*debug-cleavir* t))
-        (compile-file "sys:tests;tp.lsp")
-        )
-      (apropos "foo-bar")
-      (load "sys:tests;tp.fasl")
-      (boundp '*foo-bar3*)
-      *foo-bar3*
-
-      (trace cleavir-remove-useless-instructions:remove-useless-instructions)
-      (trace cleavir-ir:delete-instruction)
+(trace core::eval-with-env-default)
+(trace clasp-cleavir::cclasp-eval)
 
 
-      (clasp-cleavir:cleavir-compile 'yyy '(lambda (z) (car z)) :debug t)
-      (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")
-      (trace cleavir-ir:delete-instruction)
-      (trace cleavir-remove-useless-instructions:remove-useless-instructions)
-      (trace clasp-cleavir::cleavir-compile-t1expr)
-      (apropos "delete-instruction")
+(trace clos::compute-effective-method)
+(clos::effective-method-function 
+(progn
+  (trace cmp::irc-make-tagbody-frame)
+  (trace cmp::codegen-tagbody)
+  (trace cmp::compile-file*)
+  (trace cmp::compile-file-t1expr)
+  (trace cmp::t1expr)
+  (trace clasp-cleavir:cleavir-compile-file)
+  (trace clasp-cleavir::cleavir-compile-file-form))
+(print "Hello")
+(clasp-cleavir:cleavir-compile-file "sys:tests;tgf.lsp")
+(load "sys:tests;tgf.fasl")
+(time (bar 1))
 
-      (apropos "compiled-function")
-
-      (declaim (inline bar2))
-      (defun-inline-hook 'bar2 '(defun bar2 () 1))
-
-      (print "Ready")
-
-      (apropos "*compiler*")
-
-      cleavir-generate-ast:*compiler*
+:r1
 
 
-      (apropos "do-inline-hook")
+(+ 48 32)
+(getpid)91639
+
+(clasp-cleavir:cleavir-compile 'bar '(lambda () (defmethod foo (a b) (+ a b))) :debug nil)
+(clasp-cleavir:cleavir-compile 'bar2 '(lambda () (defun baz (n) (core:trap-execution "a") (gctools:gc-monitor-allocations t) (dotimes (i n) (foo 1 2)) (gctools:gc-monitor-allocations nil))))
+(bar)
+(bar2)
+(time (baz 2))
+
+
+(foo 1 2)
+(time (baz 3))
+(time (progn (foo 1 2) (foo 1 2) (foo 1 2)))
+(print "Hello")
+(trace cmp::irc-make-tagbody-frame)
+
+(macroexpand '(defmethod foo (a b)))
+
+
+(bar)
+(time (progn (+ 1 2) (+ 1 2) (+ 1 2) ))
+(- 936 744)
+
+(foo 1 2 3 4 5 6)
+(time (progn (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6) (foo 1 2 3 4 5 6)))
+
+(time (dotimes (i 10000) (foo 1 2 3 4 5 6)))
+
+(defgeneric bar (a)
+  (:method (a) (1+ a))
+  (:method ((a number)) (call-next-method))
+  (:method ((a real)) (call-next-method))
+  (:method ((a integer)) (call-next-method)))
+
+(foo 0)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction))
+  nil)
+
+(let ((clasp-cleavir:*debug-cleavir* t))
+  (compile-file "sys:tests;tp.lsp")
+  )
+(apropos "foo-bar")
+(load "sys:tests;tp.fasl")
+(boundp '*foo-bar3*)
+*foo-bar3*
+
+(trace cleavir-remove-useless-instructions:remove-useless-instructions)
+(trace cleavir-ir:delete-instruction)
+
+
+(clasp-cleavir:cleavir-compile 'yyy '(lambda (z) (car z)) :debug t)
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")
+(trace cleavir-ir:delete-instruction)
+(trace cleavir-remove-useless-instructions:remove-useless-instructions)
+(trace clasp-cleavir::cleavir-compile-t1expr)
+(apropos "delete-instruction")
+
+(apropos "compiled-function")
+
+(declaim (inline bar2))
+(defun-inline-hook 'bar2 '(defun bar2 () 1))
+
+(print "Ready")
+
+(apropos "*compiler*")
+
+cleavir-generate-ast:*compiler*
+
+
+(apropos "do-inline-hook")
 
 
 ;;; Wipe out .cache/common-lisp/*
 ;;; wipe out .slime/fasl/2015-06-27/*
 ;;; clasp_boehm_o -f bclasp -f flow -f cclasp-eh
-      (room)
-
-      (clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf-part.lsp")
-      (trace cleavir-generate-ast:generate-ast)
-      (progn
-        (progn ;; Set up everything for building cclasp from bclasp with auto-compile
-          (format t "Loading ASDF system~%")
-          (time (require :asdf))
-          (load "sys:local-asdf-config.lisp")
-          (pushnew :cleavir *features*)
-          (format t "Loading :clasp-cleavir system~%")
-          (time (require :clasp-cleavir))
-          (format t "Loading inline.lisp~%")
-          (load "sys:kernel;cleavir;inline.lisp")
-          (print (core:getpid)))
-        (load "sys:kernel;cleavir;auto-compile.lisp")
-        (print "Done - you are ready to go"))
-
-      (print "Hello")
-
-      (clasp-cleavir:cleavir-compile-file "sys:tests;tlist.lsp")
-
-
-      (deftype boolean () '(member nil t))
-
-      (trace process-declarations)
-
-      (defun remove-documentation (body)
-        (multiple-value-bind (decls body doc)
-            (process-declarations body t)
-          (values body doc)))
+(room)
+
+(clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf-part.lsp")
+(trace cleavir-generate-ast:generate-ast)
+(progn
+  (progn ;; Set up everything for building cclasp from bclasp with auto-compile
+    (format t "Loading ASDF system~%")
+    (time (require :asdf))
+    (load "sys:local-asdf-config.lisp")
+    (pushnew :cleavir *features*)
+    (format t "Loading :clasp-cleavir system~%")
+    (time (require :clasp-cleavir))
+    (format t "Loading inline.lisp~%")
+    (load "sys:kernel;cleavir;inline.lisp")
+    (print (core:getpid)))
+  (load "sys:kernel;cleavir;auto-compile.lisp")
+  (print "Done - you are ready to go"))
+
+(print "Hello")
+
+(clasp-cleavir:cleavir-compile-file "sys:tests;tlist.lsp")
+
+
+(deftype boolean () '(member nil t))
+
+(trace process-declarations)
+
+(defun remove-documentation (body)
+  (multiple-value-bind (decls body doc)
+      (process-declarations body t)
+    (values body doc)))
 
-      (clasp-cleavir::cleavir-compile-file #p"sys:tests;tmv.lsp")
-      (load "sys:tests;tmv.fasl")
+(clasp-cleavir::cleavir-compile-file #p"sys:tests;tmv.lsp")
+(load "sys:tests;tmv.fasl")
 
 
-      (foo)
+(foo)
 
-      (multiple-value-bind (body doc) (remove-documentation '("Hello there" '(member nil t))) (list :body body :doc doc))
+(multiple-value-bind (body doc) (remove-documentation '("Hello there" '(member nil t))) (list :body body :doc doc))
 
-      (multiple-value-call #'list (values 1 2 3))
+(multiple-value-call #'list (values 1 2 3))
 
-      (trace remove-documentation)
+(trace remove-documentation)
 
 
-      (defmacro deftype2 (name lambda-list &rest body &environment env)
-        (format t "body: ~s~%" body)
-        (multiple-value-bind (body doc)
-            (remove-documentation body)
-          (format t "removed docs body: ~s~%" body)
-          (setq lambda-list (copy-list lambda-list))
-          (dolist (x '(&optional &key))
-            (do ((l (rest (member x lambda-list)) (rest l)))
-                ((null l))
-              (let ((variable (first l)))
-                (when (and (symbolp variable)
-                           (not (member variable lambda-list-keywords)))
-                  (cons-setf-car l `(,variable '*))))))
-          (multiple-value-bind (decls lambda-body doc)
-              (process-declarations body t)
-            (if doc (setq doc (list doc)))
-            (let ((function `(function 
-                              #+ecl(LAMBDA-BLOCK ,name ,lambda-list ,@body)
-                              #+clasp(lambda ,lambda-list 
-                               (declare (core:lambda-name ,name) ,@decls) 
-                               ,@doc 
-                               (block ,name ,@lambda-body))
-                              )))
-              (when (and (null lambda-list) (consp body) (null (rest body)))
-                (let ((form (first body)))
-                  (when (constantp form env)
-                    (setq function form))))
-              `(eval-when (:compile-toplevel :load-toplevel :execute)
-                 ,@(si::expand-set-documentation name 'type doc)
-                 (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
-                             ,function))))))
+(defmacro deftype2 (name lambda-list &rest body &environment env)
+  (format t "body: ~s~%" body)
+  (multiple-value-bind (body doc)
+      (remove-documentation body)
+    (format t "removed docs body: ~s~%" body)
+    (setq lambda-list (copy-list lambda-list))
+    (dolist (x '(&optional &key))
+      (do ((l (rest (member x lambda-list)) (rest l)))
+	  ((null l))
+	(let ((variable (first l)))
+	  (when (and (symbolp variable)
+		     (not (member variable lambda-list-keywords)))
+	    (cons-setf-car l `(,variable '*))))))
+    (multiple-value-bind (decls lambda-body doc)
+	(process-declarations body t)
+      (if doc (setq doc (list doc)))
+      (let ((function `(function 
+			#+ecl(LAMBDA-BLOCK ,name ,lambda-list ,@body)
+			#+clasp(lambda ,lambda-list 
+			 (declare (core:lambda-name ,name) ,@decls) 
+			 ,@doc 
+			 (block ,name ,@lambda-body))
+			)))
+	(when (and (null lambda-list) (consp body) (null (rest body)))
+	  (let ((form (first body)))
+	    (when (constantp form env)
+	      (setq function form))))
+	`(eval-when (:compile-toplevel :load-toplevel :execute)
+	   ,@(si::expand-set-documentation name 'type doc)
+	   (do-deftype ',name '(DEFTYPE ,name ,lambda-list ,@body)
+		       ,function))))))
 
-      (deftype2 boolean ()
-        "A BOOLEAN is an object which is either NIL or T."
-        '(member nil t))
+(deftype2 boolean ()
+  "A BOOLEAN is an object which is either NIL or T."
+  '(member nil t))
 
 
-      (apropos "defun-inline-hook")
+(apropos "defun-inline-hook")
 
 
-      (progn ;; Set up everything for building cclasp from bclasp
-        (format t "Loading ASDF system~%")
-        (time (require :asdf))
-        (load "sys:local-asdf-config.lisp")
-        (pushnew :cleavir *features*)
-        (format t "Loading :clasp-cleavir system~%")
-        (time (require :clasp-cleavir))
-        ;;  (format t "Loading inline-prep.lisp~%")
-        ;;  (load "sys:kernel;cleavir;inline-prep.lisp")
-        (format t "Loading inline.lisp")
-        (load "sys:kernel;cleavir;inline.lisp"))
-      (load "sys:kernel;cleavir;auto-compile.lisp")
+(progn ;; Set up everything for building cclasp from bclasp
+  (format t "Loading ASDF system~%")
+  (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
+  (pushnew :cleavir *features*)
+  (format t "Loading :clasp-cleavir system~%")
+  (time (require :clasp-cleavir))
+;;  (format t "Loading inline-prep.lisp~%")
+;;  (load "sys:kernel;cleavir;inline-prep.lisp")
+  (format t "Loading inline.lisp")
+  (load "sys:kernel;cleavir;inline.lisp"))
+(load "sys:kernel;cleavir;auto-compile.lisp")
 
-      (defun foo (x) (consp x))
-      (untrace)
+(defun foo (x) (consp x))
+(untrace)
 
-      (trace cleavir-generate-ast::convert-form)
+(trace cleavir-generate-ast::convert-form)
 
 
 
-      (progn ;; Set up everything for building cclasp from bclasp
-        (format t "Loading ASDF system~%")
-        (time (require :asdf))
-        (load "sys:local-asdf-config.lisp")
-        (pushnew :cleavir *features*)
-        (format t "Loading :clasp-cleavir system~%")
-        (time (require :clasp-cleavir))
-        (format t "Done.~%"))
+(progn ;; Set up everything for building cclasp from bclasp
+  (format t "Loading ASDF system~%")
+  (time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
+  (pushnew :cleavir *features*)
+  (format t "Loading :clasp-cleavir system~%")
+  (time (require :clasp-cleavir))
+  (format t "Done.~%"))
 
 
-      (defparameter *a* 1)
-      (clasp-cleavir::ast-form '(lambda () (multiple-value-call #'list (values 1 2 3))))
-      (clasp-cleavir::hir-form '(lambda () (setq *a* 'foo)))
-      (clasp-cleavir::hir-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
+(defparameter *a* 1)
+(clasp-cleavir::ast-form '(lambda () (multiple-value-call #'list (values 1 2 3))))
+(clasp-cleavir::hir-form '(lambda () (setq *a* 'foo)))
+(clasp-cleavir::hir-form '(lambda () (let ((a 'foo)) (declare (special a)) (print a))))
 
-      (clasp-cleavir::hir-form '(lambda () 1))
-      (clasp-cleavir::hir-form '(lambda ()(block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
+(clasp-cleavir::hir-form '(lambda () 1))
+(clasp-cleavir::hir-form '(lambda ()(block bar (let ((a 'foo)) (declare (special a)) (print a) (return-from bar nil)))))
 
 
 
-      (clasp-cleavir::cleavir-compile 'foo '(lambda () (multiple-value-bind (x y) (values 1 2) (list x y))))
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (multiple-value-bind (x y) (values 1 2) (list x y))))
 
-      (foo)
+(foo)
 
 
 
-      (clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
-      (load "sys:tests;tsmall.fasl")
-      (foob)
-      (ext:compiled-function-file #'foob)
+(clasp-cleavir::cleavir-compile-file "sys:tests;tsmall.lsp")
+(load "sys:tests;tsmall.fasl")
+(foob)
+(ext:compiled-function-file #'foob)
 
 
 
-      (print "Hello")
+(print "Hello")
 
-      (compile-file "sys:tests;tfib.lsp")
+(compile-file "sys:tests;tfib.lsp")
 
-      (getpid)
-      (error "foo")
-      (quit)
-      (setq core::*debug-flow-control* t)
-      (setq cmp::*low-level-trace-print* t)
-      (print "Hello")
+(getpid)
+(error "foo")
+(quit)
+(setq core::*debug-flow-control* t)
+(setq cmp::*low-level-trace-print* t)
+(print "Hello")
 
 
-      (clasp-cleavir::cleavir-compile
-       'foo
-       '(lambda (depth target-depth &optional targets)
-         (unless targets (bformat t "---------------------- depth: %s   target-depth: %s\n" depth target-depth))
-         (block here
-           (if (= depth 0 )
-               (throw 'top nil)
-               (foo (1- depth) target-depth (push #'(lambda (x) (return-from here x)) targets))))
-         (bformat t "Returning from depth: %s\n" depth)))
+(clasp-cleavir::cleavir-compile
+ 'foo
+ '(lambda (depth target-depth &optional targets)
+   (unless targets (bformat t "---------------------- depth: %s   target-depth: %s\n" depth target-depth))
+   (block here
+     (if (= depth 0 )
+         (throw 'top nil)
+         (foo (1- depth) target-depth (push #'(lambda (x) (return-from here x)) targets))))
+   (bformat t "Returning from depth: %s\n" depth)))
 
-      (clasp-cleavir::cleavir-compile
-       'do-foo
-       '(lambda (depth)
-         (catch 'top
-           (foo depth 0))
-         (bformat t "Done do-foo\n")))
+(clasp-cleavir::cleavir-compile
+ 'do-foo
+ '(lambda (depth)
+   (catch 'top
+     (foo depth 0))
+   (bformat t "Done do-foo\n")))
 
-      (do-foo 5)
+(do-foo 5)
 
 
-      (setq core::*debug-flow-control* nil)
-      (foo 6 3)
+(setq core::*debug-flow-control* nil)
+(foo 6 3)
 
 
-      (elt '(1 2 3 4 5) 2)
+(elt '(1 2 3 4 5) 2)
 
-      (disassemble 'cfibn)
+(disassemble 'cfibn)
 
-      (clasp-cleavir::cleavir-compile
-       'cfibn
-       '(lambda (reps num &aux (rnum 0) (p1 0) (p2 0) (z 0))
-         (declare (optimize (speed 3) (safety 0) (debug 0)))
-         (declare (type fixnum reps num rnum p1 p2 z))
-         (dotimes (r reps)
-           (setq p1 1
-                 p2 1
-                 rnum (- num 2))
-           (dotimes (i rnum)
-             (setq z (+ p1 p2)
-                   p2 p1
-                   p1 z)))
-         z))
+(clasp-cleavir::cleavir-compile
+ 'cfibn
+ '(lambda (reps num &aux (rnum 0) (p1 0) (p2 0) (z 0))
+   (declare (optimize (speed 3) (safety 0) (debug 0)))
+   (declare (type fixnum reps num rnum p1 p2 z))
+   (dotimes (r reps)
+     (setq p1 1
+	   p2 1
+	   rnum (- num 2))
+     (dotimes (i rnum)
+       (setq z (+ p1 p2)
+	     p2 p1
+	     p1 z)))
+   z))
 
-      (float (/ 19.3 3.24))
+(float (/ 19.3 3.24))
 
-      (
+(
 
 
-       (progn
-         (clasp-cleavir::cleavir-compile
-          'xx
-          '(lambda ()
-            (format t "Inside returning (should be EXIT-LAMBDA)--> ~s~%"
-             (block nil
-               (let ((nle (lambda ()
-                            (format t "In exit lambda~%")
-                            (return-from nil 'exit-lambda))))
-                 (unwind-protect
-                      (funcall nle)
-                   (format t "In protected form~%")))))))
-         (xx)
-         (clasp-cleavir::cleavir-compile
-          'yy
-          '(lambda ()
-            (block nil
-              (let ((nle (lambda ()
-                           (format t "In exit lambda~%")
-                           (return-from nil 'exit-lambda))))
-                (unwind-protect
-                     (funcall nle)
-                  (format t "In protected form~%"))))) :debug t)
-         (format t "Outside returning (should be EXIT-LAMBDA)--> ~s~%" (yy)))
+(progn
+  (clasp-cleavir::cleavir-compile
+   'xx
+   '(lambda ()
+     (format t "Inside returning (should be EXIT-LAMBDA)--> ~s~%"
+      (block nil
+	(let ((nle (lambda ()
+		     (format t "In exit lambda~%")
+		     (return-from nil 'exit-lambda))))
+	  (unwind-protect
+	       (funcall nle)
+	    (format t "In protected form~%")))))))
+  (xx)
+  (clasp-cleavir::cleavir-compile
+   'yy
+   '(lambda ()
+     (block nil
+       (let ((nle (lambda ()
+		    (format t "In exit lambda~%")
+		    (return-from nil 'exit-lambda))))
+	 (unwind-protect
+	      (funcall nle)
+	   (format t "In protected form~%"))))) :debug t)
+  (format t "Outside returning (should be EXIT-LAMBDA)--> ~s~%" (yy)))
 
 
-       (setq cmp:*low-level-trace-print* t)
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tnle.lsp")
-       (load "sys:tests;tnle.fasl")
-       (load "sys:tests;tnle.bc")
-       (let ((x (xx))) (format t "In let returning (should be EXIT-VALUE): ~s~%" x))
+(setq cmp:*low-level-trace-print* t)
+(clasp-cleavir::cleavir-compile-file "sys:tests;tnle.lsp")
+(load "sys:tests;tnle.fasl")
+(load "sys:tests;tnle.bc")
+(let ((x (xx))) (format t "In let returning (should be EXIT-VALUE): ~s~%" x))
 
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tnle2.lsp")
-       (load "sys:tests;tnle2.fasl")
-       (let ((x (xx))) (format t "In let returning: ~a~%" x))
+(clasp-cleavir::cleavir-compile-file "sys:tests;tnle2.lsp")
+(load "sys:tests;tnle2.fasl")
+(let ((x (xx))) (format t "In let returning: ~a~%" x))
 
 
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tunwind.lsp")
-       (load "sys:tests;tunwind.fasl")
-       (xx)
-       (print "Hello")
+(clasp-cleavir::cleavir-compile-file "sys:tests;tunwind.lsp")
+(load "sys:tests;tunwind.fasl")
+(xx)
+(print "Hello")
 
-       (clasp-cleavir::build-and-draw-ast "/tmp/test.png" '(lambda () (load-time-value (print 10))))
+(clasp-cleavir::build-and-draw-ast "/tmp/test.png" '(lambda () (load-time-value (print 10))))
 
-       (clasp-cleavir::cleavir-compile 'foo '(lambda () (load-time-value (print 10))) :debug t)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (load-time-value (print 10))) :debug t)
 
-       (print "Hello")
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tmacro.lsp")
+(print "Hello")
+(clasp-cleavir::cleavir-compile-file "sys:tests;tmacro.lsp")
 
 
-       (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form))) :debug t)
-       (foo)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (let (*) (return-from in nil)) (return-from nil nil)))) form))) :debug t)
+(foo)
 
-       (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (unwind-protect (return-from in)) (return)))) form))) :debug t)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (block in (unwind-protect (return-from in)) (return)))) form))) :debug t)
 
-       (block nil
-         (let ((form (block in
-                       (let (*)
-                         (return-from in))
-                       (return-from nil nil))))
-           form))
+(block nil
+  (let ((form (block in
+                (let (*)
+                  (return-from in))
+                (return-from nil nil))))
+    form))
 
-       (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (funcall #'(lambda () (return-from nil nil))) (print "Returned"))) :debug t)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (funcall #'(lambda () (return-from nil nil))) (print "Returned"))) :debug t)
 
 
 
-       (clasp-cleavir::cleavir-compile
-        'foo '(lambda () (block nil (return-from nil 'foo))) :debug t)
+(clasp-cleavir::cleavir-compile
+ 'foo '(lambda () (block nil (return-from nil 'foo))) :debug t)
 
 
-       (clasp-cleavir::cleavir-compile
-        'foo '(lambda ()
-               (block nil
-                 (let ((form
-                        (BLOCK main
-                          (LET ((CORE::*HANDLER-CLUSTERS* nil))
-                            (RETURN-FROM main (FOO))
-                            )
-                          (RETURN-FROM main
-                            (return-from nil nil)
-                            )
-                          )))
-                   form))) :debug t)
+(clasp-cleavir::cleavir-compile
+ 'foo '(lambda ()
+        (block nil
+          (let ((form
+                 (BLOCK main
+                   (LET ((CORE::*HANDLER-CLUSTERS* nil))
+                     (RETURN-FROM main (FOO))
+                     )
+                   (RETURN-FROM main
+                         (return-from nil nil)
+                     )
+                   )))
+            form))) :debug t)
 
-       (macroexpand '(return))
+(macroexpand '(return))
 
 
 
 
-       (block nil (let ((form (BLOCK main (LET ((CORE::*HANDLER-CLUSTERS* nil)) (RETURN-FROM main (FOO))) (RETURN-FROM main (return-from nil nil))))) form))
+(block nil (let ((form (BLOCK main (LET ((CORE::*HANDLER-CLUSTERS* nil)) (RETURN-FROM main (FOO))) (RETURN-FROM main (return-from nil nil))))) form))
 
 
-       (clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (handler-case (foo) (error () (return))))) form))) :debug t)
-       (foo)
+(clasp-cleavir::cleavir-compile 'foo '(lambda () (block nil (let ((form (handler-case (foo) (error () (return))))) form))) :debug t)
+(foo)
 
-       (clasp-cleavir::cleavir-compile-file "sys:kernel;asdf;build;asdf.lisp" 
-                                            :output-file (compile-file-pathname "sys:modules;asdf;asdf.lisp" 
-                                                                                :target-backend (default-target-backend)
-                                                                                )
-                                            :print t)
-       (default-target-backend)
+(clasp-cleavir::cleavir-compile-file "sys:kernel;asdf;build;asdf.lisp" 
+              :output-file (compile-file-pathname "sys:modules;asdf;asdf.lisp" 
+                                                  :target-backend (default-target-backend)
+                                                  )
+              :print t)
+(default-target-backend)
 
 
-       (compile 'foo '(lambda (x y) (flet ((bar (&optional (x y) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
-       (boundp '*a*)
+(compile 'foo '(lambda (x y) (flet ((bar (&optional (x y) (y y)) (format t "bar>>x: ~s  y: ~s~%" x y))) (format t "foo>>x: ~s  y: ~s~%" x y) (bar))))
+(boundp '*a*)
 
-       (defun foo (y)
-         (flet ((bar (&optional (x y) (y y))
-                  (format t "bar>>  x: ~s  y: ~s~%" x y)))
-           (format t "foo>> y: ~s~%" y)
-           (bar)))
+(defun foo (y)
+  (flet ((bar (&optional (x y) (y y))
+           (format t "bar>>  x: ~s  y: ~s~%" x y)))
+    (format t "foo>> y: ~s~%" y)
+    (bar)))
 
 
-       (foo 1)
+(foo 1)
 
-       (trace cleavir-environment:eval)
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tevalwhen.lsp")
-       (apropos "function-name-p")
+(trace cleavir-environment:eval)
+(clasp-cleavir::cleavir-compile-file "sys:tests;tevalwhen.lsp")
+(apropos "function-name-p")
 
 
 ;;; Stassats has a problem with this code:
-       (defun foo () (loop for i below 10 collect i))
+(defun foo () (loop for i below 10 collect i))
 ;;;   No applicable method for CLEAVIR-ENVIRONMENT:MACRO-FUNCTION with arguments of types SYMBOL VALUE-FRAME 
 
-       (setq *print-circle* t)
-       (defparameter *a* #0='(clasp . #0#))
-       *a*
+(setq *print-circle* t)
+(defparameter *a* #0='(clasp . #0#))
+*a*
 
-       (cleavir-env:eval '(progn (defmacro zfoo()) (zfoo)) nil nil)
+(cleavir-env:eval '(progn (defmacro zfoo()) (zfoo)) nil nil)
 
-       (clasp-cleavir::cleavir-compile 'nil
-                                       '(defun fibn (reps num &aux rnum p1 p2 z)
-                                         (dotimes (r reps)
-                                           (setq p1 1
-                                                 p2 1
-                                                 rnum (- num 2))
-                                           (dotimes (i rnum)
-                                             (setq z (+ p1 p2)
-                                                   p2 p1
-                                                   p1 z)))
-                                         z) :debug nil)
+(clasp-cleavir::cleavir-compile 'nil
+                                '(defun fibn (reps num &aux rnum p1 p2 z)
+                                  (dotimes (r reps)
+                                    (setq p1 1
+                                          p2 1
+                                          rnum (- num 2))
+                                    (dotimes (i rnum)
+                                      (setq z (+ p1 p2)
+                                            p2 p1
+                                            p1 z)))
+                                  z) :debug nil)
 
-       (time (fibn 10000000 78))
-       (defparameter *reps* 100000000)
-       (defparameter *num* 78)
-       (time (fibn *reps* *num*))
-       (time (core:cxx-fibn *reps* *num*))
+(time (fibn 10000000 78))
+(defparameter *reps* 100000000)
+(defparameter *num* 78)
+(time (fibn *reps* *num*))
+(time (core:cxx-fibn *reps* *num*))
 
-       (defun fibn (reps num &aux rnum p1 p2 z)
-         (dotimes (r reps)
-           (setq p1 1
-                 p2 1
-                 rnum (- num 2))
-           (dotimes (i rnum)
-             (setq z (+ p1 p2)
-                   p2 p1
-                   p1 z)))
-         z)
+(defun fibn (reps num &aux rnum p1 p2 z)
+  (dotimes (r reps)
+    (setq p1 1
+          p2 1
+          rnum (- num 2))
+    (dotimes (i rnum)
+      (setq z (+ p1 p2)
+            p2 p1
+            p1 z)))
+  z)
 
-       (time (core:cxx-fibn 10000000 78))
+(time (core:cxx-fibn 10000000 78))
 
 
-       COMPILE
-       (time (fibn 10000000 78))
-       real time          : 13.295 secs
-       run time           : 13.280 secs
-       GC bytes consed    : 0 bytes
-       Clasp bytes consed : 520 bytes
-       LLVM time          : 0.000 secs
-       LLVM compiles      : 0
+COMPILE
+(time (fibn 10000000 78))
+real time          : 13.295 secs
+run time           : 13.280 secs
+GC bytes consed    : 0 bytes
+Clasp bytes consed : 520 bytes
+LLVM time          : 0.000 secs
+LLVM compiles      : 0
 
-       COMPILE-FILE
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tfib.lsp")
-       (load "sys:tests;tfib.fasl")
-       (load-bundle "/Users/meister/Development/clasp/src/lisp/tests/tfib.inlined.bc")
+COMPILE-FILE
+(clasp-cleavir::cleavir-compile-file "sys:tests;tfib.lsp")
+(load "sys:tests;tfib.fasl")
+(load-bundle "/Users/meister/Development/clasp/src/lisp/tests/tfib.inlined.bc")
 
-       (translate-logical-pathname #P"sys:tests;tfib.inlined.bc")
-       (time (fibn 10000000 78))
-       real time          : 10.694 secs
-       run time           : 10.681 secs
-       GC bytes consed    : 0 bytes
-       Clasp bytes consed : 520 bytes
-       LLVM time          : 0.000 secs
-       LLVM compiles      : 0
+(translate-logical-pathname #P"sys:tests;tfib.inlined.bc")
+(time (fibn 10000000 78))
+real time          : 10.694 secs
+run time           : 10.681 secs
+GC bytes consed    : 0 bytes
+Clasp bytes consed : 520 bytes
+LLVM time          : 0.000 secs
+LLVM compiles      : 0
 
 
 
@@ -637,42 +568,42 @@
 
 
 
-       (/ (* (/ 10000000 100000) 16) 13.46)
+(/ (* (/ 10000000 100000) 16) 13.46)
 
 
 
 
 
 
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tadd.lsp")
-       (getpid)3290
+(clasp-cleavir::cleavir-compile-file "sys:tests;tadd.lsp")
+(getpid)3290
 
-       (load "sys:tests;tadd.fasl")
+(load "sys:tests;tadd.fasl")
 
-       (clasp-cleavir::cleavir-compile 't+ '(lambda (x y) (test-two-arg-+ x y)))
-       (clasp-cleavir::cleavir-compile 't< '(lambda (x y) (test-two-arg-< x y)))
-       (clasp-cleavir::cleavir-compile 'foo< '(lambda (x y) (t< x y)))
-       (disassemble 'foo<)
+(clasp-cleavir::cleavir-compile 't+ '(lambda (x y) (test-two-arg-+ x y)))
+(clasp-cleavir::cleavir-compile 't< '(lambda (x y) (test-two-arg-< x y)))
+(clasp-cleavir::cleavir-compile 'foo< '(lambda (x y) (t< x y)))
+(disassemble 'foo<)
 
-       (tadd 1 2)
-       (+ most-positive-fixnum)4611686018427387903
-       (+ most-negative-fixnum)-4611686018427387904
+(tadd 1 2)
+(+ most-positive-fixnum)4611686018427387903
+(+ most-negative-fixnum)-4611686018427387904
 
-       (tadd most-positive-fixnum 1) --> Convert this value: -4611686018427387904 to a bignum
-       NIL
+(tadd most-positive-fixnum 1) --> Convert this value: -4611686018427387904 to a bignum
+NIL
 
-       (+ -4611686018427387904 (expt 2 63) )4611686018427387904
-       (+ most-positive-fixnum 0)4611686018427387903
+(+ -4611686018427387904 (expt 2 63) )4611686018427387904
+(+ most-positive-fixnum 0)4611686018427387903
 
 
 
-       (tadd most-negative-fixnum -1)Convert this value: 4611686018427387903 to a bignum
+(tadd most-negative-fixnum -1)Convert this value: 4611686018427387903 to a bignum
 
-       (- 4611686018427387903 (expt 2 63)) --> -4611686018427387905
-       (+ -4611686018427387904 (expt 2 63) )4611686018427387904
-       (+ most-negative-fixnum 0)-4611686018427387904
+(- 4611686018427387903 (expt 2 63)) --> -4611686018427387905
+(+ -4611686018427387904 (expt 2 63) )4611686018427387904
+(+ most-negative-fixnum 0)-4611686018427387904
 
-       (expt 2 4)
+(expt 2 4)
 
 
 
@@ -681,335 +612,335 @@
 
 
 
-       *features*
+*features*
 
 
-       (clasp-cleavir:cleavir-compile nil '(progn (defmacro #1=#.(gensym)()) (#1#)) :debug t)
+(clasp-cleavir:cleavir-compile nil '(progn (defmacro #1=#.(gensym)()) (#1#)) :debug t)
 
-       (macroexpand '(and form1)) -> (LET ((#:G1665 FORM1)) (IF #:G1665 #:G1665 NIL))
+(macroexpand '(and form1)) -> (LET ((#:G1665 FORM1)) (IF #:G1665 #:G1665 NIL))
 
-       (apropos "backtrace")
-       (trace (cleavir-environment:eval :print ((core:ihs-backtrace))))
-       (trace cleavir-environment:eval)
-       (trace clasp-cleavir::cleavir-compile-file-form)
-       (trace cleavir-generate-ast:generate-ast)
-       (trace cleavir-generate-ast:convert)
-       (untrace)
+(apropos "backtrace")
+(trace (cleavir-environment:eval :print ((core:ihs-backtrace))))
+(trace cleavir-environment:eval)
+(trace clasp-cleavir::cleavir-compile-file-form)
+(trace cleavir-generate-ast:generate-ast)
+(trace cleavir-generate-ast:convert)
+(untrace)
 
-       (clasp-cleavir::cleavir-compile-file "sys:tests;tmacro-6times.lsp")
+(clasp-cleavir::cleavir-compile-file "sys:tests;tmacro-6times.lsp")
 
-       (clasp-cleavir::cleavir-compile 'foo-+ '(lambda (x y) (core:test-two-arg-+ x y)) :debug t)
+(clasp-cleavir::cleavir-compile 'foo-+ '(lambda (x y) (core:test-two-arg-+ x y)) :debug t)
 
-       (apropos "test-two-arg-+")
+(apropos "test-two-arg-+")
 
 
 
-       (untrace)
-       (trace cleavir-generate-ast:convert-special)
-       (trace cleavir-generate-ast::convert-form)
+(untrace)
+(trace cleavir-generate-ast:convert-special)
+(trace cleavir-generate-ast::convert-form)
 
-       (time (foo 1000))
+(time (foo 1000))
 
 
-       (pushnew :cleavir *features*)
-       (cc::compile-clasp :init :cclasp :force-recompile nil)
-       (cc::link :init :cclasp :system clasp-cleavir::*clasp-cleavir-files*)
+(pushnew :cleavir *features*)
+(cc::compile-clasp :init :cclasp :force-recompile nil)
+(cc::link :init :cclasp :system clasp-cleavir::*clasp-cleavir-files*)
 
-       *clasp-cleavir-files*
+*clasp-cleavir-files*
 
-       (load "sys:kernel;cleavir;cmpclasp.lisp")
+(load "sys:kernel;cleavir;cmpclasp.lisp")
 
 
 
-       (progn
-         (format t "Loading clasp-cleavir~%")
-         (require :clasp-cleavir))
+(progn
+  (format t "Loading clasp-cleavir~%")
+  (require :clasp-cleavir))
 
 
-       (progn
-         (setq *echo-repl-tpl-read* t)
-         (setq *echo-repl-read* t)
-         (setq *load-print* t)
-         (setq *print-source-code-cons* t))
+(progn
+  (setq *echo-repl-tpl-read* t)
+  (setq *echo-repl-read* t)
+  (setq *load-print* t)
+  (setq *print-source-code-cons* t))
 
 
 
-       (disassemble 'cleavir-primop:rplaca)
-       (clasp-cleavir:cleavir-compile 'test-consp '(lambda () (consp (cons 1 2))))
-       (clasp-cleavir:cleavir-compile 'test-car '(lambda () (car (cons 1 2))))
-       (clasp-cleavir:cleavir-compile 'test-cdr '(lambda () (cdr (cons 1 2))))
+(disassemble 'cleavir-primop:rplaca)
+(clasp-cleavir:cleavir-compile 'test-consp '(lambda () (consp (cons 1 2))))
+(clasp-cleavir:cleavir-compile 'test-car '(lambda () (car (cons 1 2))))
+(clasp-cleavir:cleavir-compile 'test-cdr '(lambda () (cdr (cons 1 2))))
 
-       (clasp-cleavir:cleavir-compile 'test-rplaca '(lambda (x y) (rplaca x y)))
-       (clasp-cleavir:cleavir-compile 'test-rplacd '(lambda (x y) (rplacd x y)))
-       (test-consp)
-       (test-cdr)
-       (defparameter *a* (cons 1 2))
-       (test-rplaca *a* 99)
-       (test-rplacd *a* 100)
-       (setq *load-print* t)
-       (setq *load-verbose* t)
+(clasp-cleavir:cleavir-compile 'test-rplaca '(lambda (x y) (rplaca x y)))
+(clasp-cleavir:cleavir-compile 'test-rplacd '(lambda (x y) (rplacd x y)))
+(test-consp)
+(test-cdr)
+(defparameter *a* (cons 1 2))
+(test-rplaca *a* 99)
+(test-rplacd *a* 100)
+(setq *load-print* t)
+(setq *load-verbose* t)
 
-       (load "sys:kernel;cleavir;cmpclasp.lisp")
+(load "sys:kernel;cleavir;cmpclasp.lisp")
 
 
-       (print "Hello")
-       (disassemble 'test-car)
+(print "Hello")
+(disassemble 'test-car)
 
 
-       (ast-form '(lambda (x) (cleavir-primop:car x)))
-       (hir-form '(lambda (x) (cleavir-primop:car x)))
+(ast-form '(lambda (x) (cleavir-primop:car x)))
+(hir-form '(lambda (x) (cleavir-primop:car x)))
 
-       (ast-form '(lambda (x y) (cleavir-primop:rplaca x y)))
-       (hir-form '(lambda (x y) (cleavir-primop:rplaca x y)))
-       (mir-form '(lambda (x y) (cleavir-primop:rplaca x y)))
-       (mir-form '(lambda (x y) (cleavir-primop:rplacd x y)))
+(ast-form '(lambda (x y) (cleavir-primop:rplaca x y)))
+(hir-form '(lambda (x y) (cleavir-primop:rplaca x y)))
+(mir-form '(lambda (x y) (cleavir-primop:rplaca x y)))
+(mir-form '(lambda (x y) (cleavir-primop:rplacd x y)))
 
-       (clasp-cleavir::cleavir-compile 'unsafe-car '(lambda (x) (cleavir-primop:car x)))
-       (clasp-cleavir::cleavir-compile 'unsafe-cdr '(lambda (x) (cleavir-primop:cdr x)))
-       (clasp-cleavir::cleavir-compile 'do-rplaca '(lambda (x y) (clasp-cleavir::my-rplaca x y)))
-       (clasp-cleavir::cleavir-compile 'unsafe-cdr '(lambda (x) (cleavir-primop:cdr x)))
+(clasp-cleavir::cleavir-compile 'unsafe-car '(lambda (x) (cleavir-primop:car x)))
+(clasp-cleavir::cleavir-compile 'unsafe-cdr '(lambda (x) (cleavir-primop:cdr x)))
+(clasp-cleavir::cleavir-compile 'do-rplaca '(lambda (x y) (clasp-cleavir::my-rplaca x y)))
+(clasp-cleavir::cleavir-compile 'unsafe-cdr '(lambda (x) (cleavir-primop:cdr x)))
 
-       (clasp-cleavir:cleavir-compile 'do-rplaca '(lambda (x y) (clasp-cleavir::my-rplaca x y)))
-       (disassemble 'my-rplaca)
+(clasp-cleavir:cleavir-compile 'do-rplaca '(lambda (x y) (clasp-cleavir::my-rplaca x y)))
+(disassemble 'my-rplaca)
 
 
-       (clasp-cleavir:cleavir-compile 'do-car '(lambda (x) (car x)))
+(clasp-cleavir:cleavir-compile 'do-car '(lambda (x) (car x)))
 
-       (do-car (cons 2 2))
-       (disassemble 'do-car)
+(do-car (cons 2 2))
+(disassemble 'do-car)
 
 
 
-       (defparameter *a* (cons 1 2))
+(defparameter *a* (cons 1 2))
 
-       (do-rplaca *a* 10)
-       (print *a*)
-       (disassemble 'do-rplaca)
+(do-rplaca *a* 10)
+(print *a*)
+(disassemble 'do-rplaca)
 
 
-       (clasp-cleavir::cleavir-compile-file #P"sys:tests;tinline.lsp")
+(clasp-cleavir::cleavir-compile-file #P"sys:tests;tinline.lsp")
 
-       (print "Hello")
+(print "Hello")
 
-       (in-package :clasp-cleavir)
+(in-package :clasp-cleavir)
 
-       lambda-list-keywords
-       (trace cleavir-env:function-info
-              cleavir-generate-ast::function-info
-              cleavir-environment::make-info
-              cleavir-environment::defining-function-info)
+lambda-list-keywords
+(trace cleavir-env:function-info
+       cleavir-generate-ast::function-info
+       cleavir-environment::make-info
+       cleavir-environment::defining-function-info)
 
-       (setf *print-escape* t)
-       (trace cleavir-environment::make-info cleavir-environment::function-inline)
-       (clasp-cleavir::cleavir-compile 'test-consp '(lambda (x) (if (my-consp x) t nil)) :debug nil)
+(setf *print-escape* t)
+(trace cleavir-environment::make-info cleavir-environment::function-inline)
+(clasp-cleavir::cleavir-compile 'test-consp '(lambda (x) (if (my-consp x) t nil)) :debug nil)
 
-       (draw-ast (cleavir-generate-ast:generate-ast '(lambda (x) (cleavir-primop:car x)) *clasp-env* *clasp-system*))
+(draw-ast (cleavir-generate-ast:generate-ast '(lambda (x) (cleavir-primop:car x)) *clasp-env* *clasp-system*))
 
-       (clasp-cleavir:cleavir-compile-file #P"sys:tests;tinline.lsp")
+(clasp-cleavir:cleavir-compile-file #P"sys:tests;tinline.lsp")
 
-       (load #P"sys:tests;tinline.fasl")
+(load #P"sys:tests;tinline.fasl")
 
-       (foo-consp 1)
+(foo-consp 1)
 
-       (getpid)98985
+(getpid)98985
 
 
 
-       (defparameter *m* (mir-form '(lambda (x) (declare (core:lambda-name inline-me)) (if (my-consp x) t nil))))
-       (cc-mir::assign-mir-instruction-datum-ids *m*)
-       (clasp-cleavir:finalize-unwind-and-landing-pad-instructions *m*)
+(defparameter *m* (mir-form '(lambda (x) (declare (core:lambda-name inline-me)) (if (my-consp x) t nil))))
+(cc-mir::assign-mir-instruction-datum-ids *m*)
+(clasp-cleavir:finalize-unwind-and-landing-pad-instructions *m*)
 
 
-       (draw-ast (global-function-inline-ast 'my-consp) "/tmp/tconsp.png")
+(draw-ast (global-function-inline-ast 'my-consp) "/tmp/tconsp.png")
 
 
 
-       (cleavir-env:function-info *clasp-env* 'my-consp)
+(cleavir-env:function-info *clasp-env* 'my-consp)
 
-       (trace cleavir-generate-ast:convert-code
-              cleavir-generate-ast::convert-special
-              cleavir-env:function-info)
-       (ast-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
-       (hoisted-ast-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
-       (hir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
-       (mir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(trace cleavir-generate-ast:convert-code
+       cleavir-generate-ast::convert-special
+       cleavir-env:function-info)
+(ast-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(hoisted-ast-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(hir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
+(mir-form '(lambda (x) (if (cleavir-primop:consp x) t nil)))
 
-       (trace cleavir-env:variable-info)
-       (clasp-cleavir::cleavir-compile 'my-consp '(lambda (x) (if (cleavir-primop:consp x) t nil)) :debug t)
+(trace cleavir-env:variable-info)
+(clasp-cleavir::cleavir-compile 'my-consp '(lambda (x) (if (cleavir-primop:consp x) t nil)) :debug t)
 
-       (my-consp 'foo)
+(my-consp 'foo)
 
-       (
-        (constantp 'nil)
+(
+(constantp 'nil)
 
-        (cleavir-compile-file #P"sys:tests;tadd.lsp")
+(cleavir-compile-file #P"sys:tests;tadd.lsp")
 
-        (setq cmp:*low-level-trace-print* t)
-        (apropos "low-level-trace")
+(setq cmp:*low-level-trace-print* t)
+(apropos "low-level-trace")
 
-        (load #P"sys:tests;tadd.bc")
+(load #P"sys:tests;tadd.bc")
 
-        (print "Hello")
+(print "Hello")
 
-        (probe-file #P"sys:..;tests;lisp;tadd.bc")
-        (fdefinition 'add)
+(probe-file #P"sys:..;tests;lisp;tadd.bc")
+(fdefinition 'add)
 
-        (add 1 2)
+(add 1 2)
 
-        (find-symbol (string '#:+fn-prototype-argument-names+) :cmp)
+(find-symbol (string '#:+fn-prototype-argument-names+) :cmp)
 
 
-        (print "Done")
-        (foo)
+(print "Done")
+(foo)
 
-        (clasp-cleavir:cleavir-compile 'baz '(lambda () (with-simple-restart (geton "geton restart") (error "testing"))))
-        (baz)
+(clasp-cleavir:cleavir-compile 'baz '(lambda () (with-simple-restart (geton "geton restart") (error "testing"))))
+(baz)
 
-        (cmp:bclasp-compile 'bcatcher '(lambda (f) (declare (core:lambda-name bcatcherl))(catch 'zot (funcall f))))
-        (cmp:bclasp-compile 'bthrower '(lambda () (throw 'zot 'baz)))
-        (compile 'cthrower '(lambda () (throw 'zot 'baz)))
-        (compile 'ccatcher '(lambda (f) (declare (core:lambda-name ccatcher-lambda)) (catch 'zot (funcall f))))
-        ;;                     Using throw-ast    using throwFunction
-        (bcatcher #'bthrower) ;; --> works           works
-        (bcatcher #'cthrower) ;; --> works           fails
-        (ccatcher #'bthrower) ;; --> fails           fails
-        (ccatcher #'cthrower) ;; --> fails           fails
+(cmp:bclasp-compile 'bcatcher '(lambda (f) (declare (core:lambda-name bcatcherl))(catch 'zot (funcall f))))
+(cmp:bclasp-compile 'bthrower '(lambda () (throw 'zot 'baz)))
+(compile 'cthrower '(lambda () (throw 'zot 'baz)))
+(compile 'ccatcher '(lambda (f) (declare (core:lambda-name ccatcher-lambda)) (catch 'zot (funcall f))))
+;;                     Using throw-ast    using throwFunction
+(bcatcher #'bthrower) ;; --> works           works
+(bcatcher #'cthrower) ;; --> works           fails
+(ccatcher #'bthrower) ;; --> fails           fails
+(ccatcher #'cthrower) ;; --> fails           fails
 
 
 
-        (clasp-cleavir:cleavir-compile 'foo '(lambda () (let ((*x* 3)) 
-                                                          (progv '(*x*) '(4) 
-                                                            (list *x* (symbol-value '*x*))))))
-        (foo)
+(clasp-cleavir:cleavir-compile 'foo '(lambda () (let ((*x* 3)) 
+						  (progv '(*x*) '(4) 
+						    (list *x* (symbol-value '*x*))))))
+(foo)
 
 
-        (clasp-cleavir:cleavir-compile 'foo '(lambda () (block foo (funcall #'(lambda () (declare (core:lambda-name inner)) (return-from foo (values 1 2 3)))) (print "Skip")) (print "Done")) :debug t)
+(clasp-cleavir:cleavir-compile 'foo '(lambda () (block foo (funcall #'(lambda () (declare (core:lambda-name inner)) (return-from foo (values 1 2 3)))) (print "Skip")) (print "Done")) :debug t)
 
-        (foo)
+(foo)
 
-        (clasp-cleavir:cleavir-compile 'a '(lambda () (catch 'foo (b))))
-        (clasp-cleavir:cleavir-compile 'b '(lambda () (c)))
-        (clasp-cleavir:cleavir-compile 'c '(lambda () (d)))
-        (clasp-cleavir:cleavir-compile 'd '(lambda () (declare (core:lambda-name thrower)) (throw 'foo 'bar)))
-        (getpid)
+(clasp-cleavir:cleavir-compile 'a '(lambda () (catch 'foo (b))))
+(clasp-cleavir:cleavir-compile 'b '(lambda () (c)))
+(clasp-cleavir:cleavir-compile 'c '(lambda () (d)))
+(clasp-cleavir:cleavir-compile 'd '(lambda () (declare (core:lambda-name thrower)) (throw 'foo 'bar)))
+(getpid)
 
-        (catch 'foo (d))
+(catch 'foo (d))
 
-        (llvm-sys:dump cmp:*the-module*)
+(llvm-sys:dump cmp:*the-module*)
 
-        (apropos "table")
+(apropos "table")
 
-        (catch 'foo (d))
-        (a)
+(catch 'foo (d))
+(a)
 
-        (print clasp-cleavir:*debug-cleavir*)
-        (core:load-time-values-symbols-dump "<compile>")
+(print clasp-cleavir:*debug-cleavir*)
+(core:load-time-values-symbols-dump "<compile>")
 
-        (setq cmp:*low-level-trace-print* t)
+(setq cmp:*low-level-trace-print* t)
 
-        (progn
-          'foo
-          'bbar
-          'cbar)
+(progn
+  'foo
+  'bbar
+  'cbar)
 
 
-        (let ((cmp:*dump-module-on-completion* t)
-              (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
-          (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad.bc" )))
+(let ((cmp:*dump-module-on-completion* t)
+      (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+  (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad.bc" )))
 
-        (let ((cmp:*dump-module-on-completion* t)
-              (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
-          (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad01.bc" )))
+(let ((cmp:*dump-module-on-completion* t)
+      (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+  (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad01.bc" )))
 
-        (getpid)
-        (fdefinition 'badthrow)#<COMMON-LISP:COMPILED-FUNCTION CORE::UNNAMED-LAMBDA :address 0x11c778080>
+(getpid)
+(fdefinition 'badthrow)#<COMMON-LISP:COMPILED-FUNCTION CORE::UNNAMED-LAMBDA :address 0x11c778080>
 
-        (let ((cmp:*dump-module-on-completion* t)
-              (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
-          (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad03.bc" )))
+(let ((cmp:*dump-module-on-completion* t)
+      (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+  (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad03.bc" )))
 
-        (let ((cmp:*dump-module-on-completion* t)
-              (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
-          (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad04.bc" )))
+(let ((cmp:*dump-module-on-completion* t)
+      (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+  (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad04.bc" )))
 
-        (fdefinition 'badthrow)
-        (getpid)
+(fdefinition 'badthrow)
+(getpid)
 
 
-        (catch 'foo (badthrow))
+(catch 'foo (badthrow))
 
 
-        (let ((cmp:*dump-module-on-completion* t)
-              (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
-          (compile 'goodthrow (list "COMMON-LISP:LAMBDA" nil "/Users/meister/Development/clasp/src/tests/lisp/good01.bc" )))
+(let ((cmp:*dump-module-on-completion* t)
+      (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+  (compile 'goodthrow (list "COMMON-LISP:LAMBDA" nil "/Users/meister/Development/clasp/src/tests/lisp/good01.bc" )))
 
-        (defun zzz ()
-          (badthrow))
+(defun zzz ()
+  (badthrow))
 
-        (defun yyy ()
-          (zzz))
+(defun yyy ()
+  (zzz))
 
-        (catch 'foo (yyy))
+(catch 'foo (yyy))
 
-        (goodthrow)
+(goodthrow)
 
-        (fdefinition 'clasp-cleavir:my-cleavir-compile-t1expr)
+(fdefinition 'clasp-cleavir:my-cleavir-compile-t1expr)
 
-        (in-package :clasp-cleavir)
-        (defun my-cleavir-compile-t1expr (name info env pathname)
-          (format t "In my-cleavir-compile-t1expr~%")
-          (let ((cleavir-generate-ast:*compiler* 'cl:compile)
-                (main-name (first info))
-                (run-setup (second info))
-                (bitcode-filename (third info)))
-            (format t "In B~%")
-            (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-                ;; The Load the module from the file 
-                (let ((module (llvm-sys:parse-bitcode-file bitcode-filename cmp:*llvm-context*)))
-                  (format t "Loaded bitcode module: ~a~%" module)
-                  (setq cmp:*the-module* module))
-              (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname))
-              (format t "In C~%")
-              (when cmp:*dump-module-on-completion* (llvm-sys:dump cmp:*the-module*))
-              (if (not cmp:*run-time-execution-engine*)
-                  (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
-                  (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
-              (setq cmp:*the-module* nil)
-              (let* ((fn-name main-name)
-                     (fn (llvm-sys:find-function-named cmp:*run-time-execution-engine* fn-name)))
-                (or fn (error "Could not find fn ~a" fn-name))
-                (let ((setup-function
-                       (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-                        cmp:*run-time-execution-engine*
-                        'REPL           ; main fn name
-                        fn              ; llvm-fn
-                        nil             ; environment
-                        cmp:*run-time-literals-external-name*
-                        "repl-fn.txt"
-                        0
-                        0
-                        nil)))
-                  (unless (compiled-function-p setup-function)
-                    (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
-                    (return-from my-cleavir-compile-t1expr (values nil t)))
-                  (if run-setup
-                      (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
-                        (format t "Ran the setup function~%")
-                        (cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
-                        (values enclosed-function warnp failp))
-                      setup-function
-                      ))))))
+(in-package :clasp-cleavir)
+(defun my-cleavir-compile-t1expr (name info env pathname)
+  (format t "In my-cleavir-compile-t1expr~%")
+  (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+	(main-name (first info))
+	(run-setup (second info))
+	(bitcode-filename (third info)))
+    (format t "In B~%")
+    (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+	;; The Load the module from the file 
+	(let ((module (llvm-sys:parse-bitcode-file bitcode-filename cmp:*llvm-context*)))
+	  (format t "Loaded bitcode module: ~a~%" module)
+	  (setq cmp:*the-module* module))
+      (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname))
+    (format t "In C~%")
+      (when cmp:*dump-module-on-completion* (llvm-sys:dump cmp:*the-module*))
+      (if (not cmp:*run-time-execution-engine*)
+	  (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
+	  (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))
+      (setq cmp:*the-module* nil)
+      (let* ((fn-name main-name)
+	     (fn (llvm-sys:find-function-named cmp:*run-time-execution-engine* fn-name)))
+	(or fn (error "Could not find fn ~a" fn-name))
+	(let ((setup-function
+	       (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+		cmp:*run-time-execution-engine*
+		'REPL			; main fn name
+		fn			; llvm-fn
+		nil			; environment
+		cmp:*run-time-literals-external-name*
+		"repl-fn.txt"
+		0
+		0
+		nil)))
+	  (unless (compiled-function-p setup-function)
+	    (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
+	    (return-from my-cleavir-compile-t1expr (values nil t)))
+	  (if run-setup
+	      (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
+		(format t "Ran the setup function~%")
+		(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
+		(values enclosed-function warnp failp))
+	      setup-function
+	      ))))))
 
 
-        (lambda () (tagbody (funcall #'(lambda () (go b))) (print "skip") b (print "Done"))) :debug t)
+(lambda () (tagbody (funcall #'(lambda () (go b))) (print "skip") b (print "Done"))) :debug t)
 
-       (foo)
+(foo)
 
-       (llvm-sys:dump cmp:*the-module*)
+(llvm-sys:dump cmp:*the-module*)
 
-       (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;teh.lsp")
-       (load "sys:..;tests;lisp;teh.fasl")
-       (foo)
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;teh.lsp")
+(load "sys:..;tests;lisp;teh.fasl")
+(foo)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1017,126 +948,126 @@
 ;;; Compile parts of clasp
 ;;;
 
-       ;; Compile everything
-       (load "sys:kernel;cleavir-system.lsp")
-       (clasp-cleavir:compile-clasp :init :cleavir-clasp :system *cleavir-system* :dont-link t)
-       (cc:link :init :clasp-cleavir  :system clasp-cleavir:*cleavir-system*)
+;; Compile everything
+(load "sys:kernel;cleavir-system.lsp")
+(clasp-cleavir:compile-clasp :init :cleavir-clasp :system *cleavir-system* :dont-link t)
+(cc:link :init :clasp-cleavir  :system clasp-cleavir:*cleavir-system*)
 
 
-       ;; Compile auto-compile only
-       (load "sys:kernel;cleavir-system.lsp")
-       (clasp-cleavir:compile-clasp :pre-auto-compile :cleavir-clasp :system *cleavir-system* :dont-link t)
-       (cc:link :init :clasp-cleavir  :system clasp-cleavir:*cleavir-system*)
-       (print "Done linking")
+;; Compile auto-compile only
+(load "sys:kernel;cleavir-system.lsp")
+(clasp-cleavir:compile-clasp :pre-auto-compile :cleavir-clasp :system *cleavir-system* :dont-link t)
+(cc:link :init :clasp-cleavir  :system clasp-cleavir:*cleavir-system*)
+(print "Done linking")
 
-       (macroexpand '(cmp:irc-low-level-trace))
-       (trace cmp:irc-low-level-trace)
+(macroexpand '(cmp:irc-low-level-trace))
+(trace cmp:irc-low-level-trace)
 
-       (symbol-package '|kernel/contrib/sicl/Code/Cleavir/Generate-AST/utilities|)
-       (cc:link :init :clasp-cleavir  :system clasp-cleavir:*cleavir-clasp-all*)
+(symbol-package '|kernel/contrib/sicl/Code/Cleavir/Generate-AST/utilities|)
+(cc:link :init :clasp-cleavir  :system clasp-cleavir:*cleavir-clasp-all*)
 
-       (print "Here Done")
+(print "Here Done")
 
 
 
-       (trace CLEAVIR-GENERATE-AST::CONVERT
-              CLEAVIR-GENERATE-AST::CONVERT-FORM
-              cleavir-generate-ast::function-info
-              cleavir-env:function-info
-              cleavir-env:variable-info)
+(trace CLEAVIR-GENERATE-AST::CONVERT
+       CLEAVIR-GENERATE-AST::CONVERT-FORM
+       cleavir-generate-ast::function-info
+       cleavir-env:function-info
+       cleavir-env:variable-info)
 
 
-       (defun try-cf ()
-         (trace CLEAVIR-GENERATE-AST::CONVERT
-                CLEAVIR-GENERATE-AST::CONVERT-FORM
-                cleavir-generate-ast::function-info
-                cleavir-env:function-info
-                cleavir-env:variable-info)
-         (clasp-cleavir:cleavir-compile-file "sys:.. ;tests;lisp;tfun.lsp")
-         (untrace))
+(defun try-cf ()
+  (trace CLEAVIR-GENERATE-AST::CONVERT
+	 CLEAVIR-GENERATE-AST::CONVERT-FORM
+	 cleavir-generate-ast::function-info
+	 cleavir-env:function-info
+	 cleavir-env:variable-info)
+  (clasp-cleavir:cleavir-compile-file "sys:.. ;tests;lisp;tfun.lsp")
+  (untrace))
 
-       (try-cf)
+(try-cf)
 
-       (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tgo.lsp")
-       (apropos "function-info")
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tgo.lsp")
+(apropos "function-info")
 
 
 
 
-       (with-open-file (clasp-cleavir::*debug-log* "/tmp/rest/rest.log" :direction :output)
-         (let ((clasp-cleavir::*debug-log-on* t))
-           (clasp-cleavir:compile-clasp 'core:kernel/cmp/compilefile :auto-cleavir :system *cleavir-system* :dont-link t)))
+(with-open-file (clasp-cleavir::*debug-log* "/tmp/rest/rest.log" :direction :output)
+  (let ((clasp-cleavir::*debug-log-on* t))
+    (clasp-cleavir:compile-clasp 'core:kernel/cmp/compilefile :auto-cleavir :system *cleavir-system* :dont-link t)))
 
 
 
-       (compile 'foo '(lambda () (tagbody (funcall #'(lambda () (go a))) (print "skip") a (print "done"))))
+(compile 'foo '(lambda () (tagbody (funcall #'(lambda () (go a))) (print "skip") a (print "done"))))
 
-       (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;cf.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;cf.lsp")
 
 
-       (compile-file "sys:..;tests;lisp;tgo.lsp")
-       (load "sys:..;tests;lisp;tgo.bc")
-       (foo 0 5)
+(compile-file "sys:..;tests;lisp;tgo.lsp")
+(load "sys:..;tests;lisp;tgo.bc")
+(foo 0 5)
 
-       (clasp-cleavir:cleavir-compile 'foo '(lambda () (declare (core:lambda-name outer)) (tagbody (funcall #'(lambda () (declare (core:lambda-name inner)) (go a))) (print "skip") a (print "done"))) :debug t )
-       (foo)
+(clasp-cleavir:cleavir-compile 'foo '(lambda () (declare (core:lambda-name outer)) (tagbody (funcall #'(lambda () (declare (core:lambda-name inner)) (go a))) (print "skip") a (print "done"))) :debug t )
+(foo)
 
-       (load "sys:kernel;cleavir;cmpclasp.lisp")
+(load "sys:kernel;cleavir;cmpclasp.lisp")
 
-       (print "Hello")
+(print "Hello")
 
-       (load "sys:kernel;cleavir-system.lsp")
+(load "sys:kernel;cleavir-system.lsp")
 
-       core:*all-cxx-classes*
+core:*all-cxx-classes*
 
 
-       (print "Hello")
+(print "Hello")
 
-       (clasp-cleavir:compile-clasp 'core:kernel/lsp/assert 'core:kernel/cleavir/auto-compile :system *cleavir-system* :dont-link t)
+(clasp-cleavir:compile-clasp 'core:kernel/lsp/assert 'core:kernel/cleavir/auto-compile :system *cleavir-system* :dont-link t)
 
 
-       (clasp-cleavir:compile-clasp :temp :cleavir-clasp :system *cleavir-system* :dont-link t)
-       (cc:link :init :all  :system clasp-cleavir:*cleavir-clasp-all*)
-       *cleavir-clasp-all*
+(clasp-cleavir:compile-clasp :temp :cleavir-clasp :system *cleavir-system* :dont-link t)
+(cc:link :init :all  :system clasp-cleavir:*cleavir-clasp-all*)
+*cleavir-clasp-all*
 
-       (symbol-package (find-symbol "TOP-LEVEL"))
+(symbol-package (find-symbol "TOP-LEVEL"))
 
 
-       (with-open-file (clasp-cleavir::*debug-log* "/tmp/tgo/tgo.log" :direction :output)
-         (let ((clasp-cleavir::*debug-log-on* t))
-           #+(or)(trace cleavir-generate-ast:convert-special)
-           (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tgo.lsp")
-           #+(or)(untrace cleavir-generate-ast:convert-special)
-           ))
+(with-open-file (clasp-cleavir::*debug-log* "/tmp/tgo/tgo.log" :direction :output)
+  (let ((clasp-cleavir::*debug-log-on* t))
+    #+(or)(trace cleavir-generate-ast:convert-special)
+    (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tgo.lsp")
+    #+(or)(untrace cleavir-generate-ast:convert-special)
+    ))
 
-       (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tgo.lsp")
-       (compile-file "sys:..;tests;lisp;tgo.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tgo.lsp")
+(compile-file "sys:..;tests;lisp;tgo.lsp")
 
-       (load "sys:..;tests;lisp;tgo.bc")
-       (foo 0 5)
+(load "sys:..;tests;lisp;tgo.bc")
+(foo 0 5)
 
-       (clasp-cleavir:save-all-files)
-       (load "sys:kernel;cleavir-system.lsp")
-       (apropos "translate")
+(clasp-cleavir:save-all-files)
+(load "sys:kernel;cleavir-system.lsp")
+(apropos "translate")
 
-       (load "sys:..;..;..;..;temp;t.fasl")
+(load "sys:..;..;..;..;temp;t.fasl")
 
 
 
-       (compile-file "sys:..;tests;lisp;ds.lsp" :output-file "sys:..;tests;lisp;bds.fasl")
+(compile-file "sys:..;tests;lisp;ds.lsp" :output-file "sys:..;tests;lisp;bds.fasl")
 
-       (load "sys:..;tests;lisp;ds1.fasl")
-       (find-class 'foo2)
+(load "sys:..;tests;lisp;ds1.fasl")
+(find-class 'foo2)
 
 
 
-       (print "Hello")
-       (clasp-cleavir:cleavir-compile 'foo '(lambda () (multiple-value-bind (a b) (values 1 2) (values a b))) :debug t)
-       (foo)
+(print "Hello")
+(clasp-cleavir:cleavir-compile 'foo '(lambda () (multiple-value-bind (a b) (values 1 2) (values a b))) :debug t)
+(foo)
 
-       (disassemble 'foo)
+(disassemble 'foo)
 
-       (clasp-cleavir:compile-clasp 'core:kernel/cleavir/auto-compile 'core:kernel/cleavir/auto-compile)
+(clasp-cleavir:compile-clasp 'core:kernel/cleavir/auto-compile 'core:kernel/cleavir/auto-compile)
 
 
 
@@ -1145,239 +1076,239 @@
 
 
 
-       (find-class 'foo2)
+(find-class 'foo2)
 
-       (core:load-time-values-dump "DS1")
-       (load-time-values-dump-values "DS1")
+(core:load-time-values-dump "DS1")
+(load-time-values-dump-values "DS1")
 
-       (print *x*)
+(print *x*)
 
-       (find-class 'foo2)
-       (load-time-value (find-class 'foo2))
-       (make-foo2)
+(find-class 'foo2)
+(load-time-value (find-class 'foo2))
+(make-foo2)
 
-       (find-class 'foo1)
-       (make-foo1)
-       core:*pi*
-       (funcall core:*pi*)
+(find-class 'foo1)
+(make-foo1)
+core:*pi*
+(funcall core:*pi*)
 
 
 
-       (flet ((foo () (tagbody (print "A") AGAIN (return-from foo nil) (print "B")))) (foo))) :debug t)
+(flet ((foo () (tagbody (print "A") AGAIN (return-from foo nil) (print "B")))) (foo))) :debug t)
 
-     (funcall (tret))
-     (print "Hello")
+(funcall (tret))
+(print "Hello")
 
 
-     (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tm.lsp")
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tm.lsp")
 
-     (load "sys:..;tests;lisp;tm.fasl")
+(load "sys:..;tests;lisp;tm.fasl")
 
-     (baz)
+(baz)
 
-     (time (clasp-cleavir:compile-clasp 'core:kernel/clos/conditions 'core:kernel/clos/conditions))
-     (cc:link :init :all)
-     (print "Done")
+(time (clasp-cleavir:compile-clasp 'core:kernel/clos/conditions 'core:kernel/clos/conditions))
+(cc:link :init :all)
+(print "Done")
 
 
-     (clasp-cleavir:cleavir-compile 
-      'packit 
-      '(lambda (packages options maybe-list)
-        (block packages-iterator
-          (let ((all-symbols nil))
-            (when (or (atom packages) (not maybe-list))
-              (setq packages (list packages)))
-            (dolist (p packages)
-              (let ((package (si::coerce-to-package p)))
-                (multiple-value-bind (hash-ext hash-int packages-used)
-                    (si::package-hash-tables package)
-                  (when (member :external options)
-                    (push (list package :external hash-ext) all-symbols))
-                  (when (member :internal options)
-                    (push (list package :internal hash-int) all-symbols))
-                  (when (member :inherited options)
-                    (dolist (p packages-used)
-                      (push (list package :inherited (si::package-hash-tables p))
-                            all-symbols))))))
-            (unless all-symbols
-              (return-from packages-iterator #'(lambda () (values nil nil nil nil))))
-            (let* ((current (pop all-symbols))
-                   (package (first current))
-                   (type (second current))
-                   (iterator (si::hash-table-iterator (third current))))
-              (flet ((iterate ()
-                       (tagbody
-                          (format t "iterate top all-symbols: ~a~%" all-symbols)
-                        AGAIN
-                          (multiple-value-bind (found key value)
-                              (funcall iterator)
-                            (declare (ignore key))
-                            (format t "found: ~a  value: ~a~%" found value)
-                            (cond 
-                              (found
-                               (when (eq type :inherited)
-                                 (multiple-value-bind (s access)
-                                     (find-symbol (symbol-name value) package)
-                                   (unless (and (eq s value) (eq access type))
-                                     (go AGAIN))))
-                               (format t "About to return~%")
-                               (return-from iterate (values t value type package))
-                               (format t "Return never happened~%")
-                               (go DONE))
-                              ((null all-symbols)
-                               (format t "null all-symbols~%")
-                               (return-from iterate (values nil nil nil nil)))
-                              (t
-                               (setq current (pop all-symbols))
-                               (format t "Popped all-symbols: ~a~%" all-symbols)
-                               (setq package (first current)
-                                     type (second current)
-                                     iterator (si::hash-table-iterator (third current))
-                                     ))))
-                          (go AGAIN)
-                        DONE
-                          (format t "Leaving through DONE~%"))))
-                #'iterate))))))
+(clasp-cleavir:cleavir-compile 
+ 'packit 
+ '(lambda (packages options maybe-list)
+   (block packages-iterator
+     (let ((all-symbols nil))
+       (when (or (atom packages) (not maybe-list))
+	 (setq packages (list packages)))
+       (dolist (p packages)
+	 (let ((package (si::coerce-to-package p)))
+	   (multiple-value-bind (hash-ext hash-int packages-used)
+	       (si::package-hash-tables package)
+	     (when (member :external options)
+	       (push (list package :external hash-ext) all-symbols))
+	     (when (member :internal options)
+	       (push (list package :internal hash-int) all-symbols))
+	     (when (member :inherited options)
+	       (dolist (p packages-used)
+		 (push (list package :inherited (si::package-hash-tables p))
+		       all-symbols))))))
+       (unless all-symbols
+	 (return-from packages-iterator #'(lambda () (values nil nil nil nil))))
+       (let* ((current (pop all-symbols))
+	      (package (first current))
+	      (type (second current))
+	      (iterator (si::hash-table-iterator (third current))))
+	 (flet ((iterate ()
+		  (tagbody
+		     (format t "iterate top all-symbols: ~a~%" all-symbols)
+		   AGAIN
+		     (multiple-value-bind (found key value)
+			 (funcall iterator)
+		       (declare (ignore key))
+		       (format t "found: ~a  value: ~a~%" found value)
+		       (cond 
+			 (found
+			  (when (eq type :inherited)
+			    (multiple-value-bind (s access)
+				(find-symbol (symbol-name value) package)
+			      (unless (and (eq s value) (eq access type))
+				(go AGAIN))))
+			  (format t "About to return~%")
+			  (return-from iterate (values t value type package))
+			  (format t "Return never happened~%")
+			  (go DONE))
+			 ((null all-symbols)
+			  (format t "null all-symbols~%")
+			  (return-from iterate (values nil nil nil nil)))
+			 (t
+			  (setq current (pop all-symbols))
+			  (format t "Popped all-symbols: ~a~%" all-symbols)
+			  (setq package (first current)
+				type (second current)
+				iterator (si::hash-table-iterator (third current))
+				))))
+		     (go AGAIN)
+		   DONE
+		     (format t "Leaving through DONE~%"))))
+	   #'iterate))))))
 
-     (defvar *pi* (packit :gray '(:external) t))
+(defvar *pi* (packit :gray '(:external) t))
 
-     (funcall *pi*)
-     (print "Hello")
+(funcall *pi*)
+(print "Hello")
 
 
-     (time (clasp-cleavir:compile-clasp :init :cleavir-clasp))
+(time (clasp-cleavir:compile-clasp :init :cleavir-clasp))
 
 
-     (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tclosure.lsp")
-     (load "sys:..;tests;lisp;tclosure.fasl")
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tclosure.lsp")
+(load "sys:..;tests;lisp;tclosure.fasl")
 
 
 
 
-     (apropos "load-time-value")
+(apropos "load-time-value")
 
-     (define-symbol-macro foo bar)
-     (macroexpand 'foo)
+(define-symbol-macro foo bar)
+(macroexpand 'foo)
 
 
-     (apropos "lookup-symbol-macro")
-     (core:lookup-symbol-macro 'foo nil)
-     (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tml.lsp")
+(apropos "lookup-symbol-macro")
+(core:lookup-symbol-macro 'foo nil)
+(clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tml.lsp")
 
 
-     (with-open-file (clasp-cleavir::*debug-log* "/tmp/boot/boot.log" :direction :output)
-       (let ((clasp-cleavir::*debug-log-on* t))
-         (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tml.lsp")))
-     (trace cleavir-environment:macro-function)
-     (untrace cl:macroexpand-1)
+(with-open-file (clasp-cleavir::*debug-log* "/tmp/boot/boot.log" :direction :output)
+  (let ((clasp-cleavir::*debug-log-on* t))
+    (clasp-cleavir:cleavir-compile-file "sys:..;tests;lisp;tml.lsp")))
+(trace cleavir-environment:macro-function)
+(untrace cl:macroexpand-1)
 
 
-     (compile-file "sys:..;tests;lisp;tml.lsp")
-     (load "sys:..;tests;lisp;tmacro.bc")
+(compile-file "sys:..;tests;lisp;tml.lsp")
+(load "sys:..;tests;lisp;tmacro.bc")
 
-     (defparameter *v* #(0 0 0 0))
-     (write0 *v* 1)
+(defparameter *v* #(0 0 0 0))
+(write0 *v* 1)
 
 
-     (time (clasp-cleavir:compile-cleavir-clasp))
+(time (clasp-cleavir:compile-cleavir-clasp))
 
-     (with-open-file (clasp-cleavir::*debug-log* "/tmp/boot/boot.log" :direction :output)
-       (let ((clasp-cleavir::*debug-log-on* t))
-         (time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/clos/boot 'core::kernel/clos/boot :force-recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
-         ))
+(with-open-file (clasp-cleavir::*debug-log* "/tmp/boot/boot.log" :direction :output)
+  (let ((clasp-cleavir::*debug-log-on* t))
+    (time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/clos/boot 'core::kernel/clos/boot :force-recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
+    ))
 
-     ;;
-     ;; Compile from :MIN to :CLEAVIR-CLASP
-     ;;
+;;
+;; Compile from :MIN to :CLEAVIR-CLASP
+;;
 
-     (trace cleavir-environment:symbol-macro-expansion)
+(trace cleavir-environment:symbol-macro-expansion)
 
-     (time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/lsp/assert :cleavir-clasp :force-recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
+(time (clasp-cleavir:compile-clasp-with-cleavir 'core::kernel/lsp/assert :cleavir-clasp :force-recompile t :reload nil :system clasp-cleavir::*cleavir-clasp-all*))
 
-     (print "Hello")
+(print "Hello")
 
 
-     (defun bitcode-pathname (module &key (target-backend (core::default-target-backend)))
-       (merge-pathnames (pathname (string module)) 
-                        (make-pathname :host target-backend :directory '(:absolute) :type "bc")))
+(defun bitcode-pathname (module &key (target-backend (core::default-target-backend)))
+  (merge-pathnames (pathname (string module)) 
+		   (make-pathname :host target-backend :directory '(:absolute) :type "bc")))
 
 
-     (defun select-bitcode-files (start end &key (target-backend (core::default-target-backend))
-                                              (system core::*system-files*))
-       (let ((rest (member start system)))
-         (loop for mod in (member start system)
-            until (eq mod end)
-            unless (keywordp mod)
-            collect (bitcode-pathname mod :target-backend target-backend))))
+(defun select-bitcode-files (start end &key (target-backend (core::default-target-backend))
+					 (system core::*system-files*))
+  (let ((rest (member start system)))
+    (loop for mod in (member start system)
+       until (eq mod end)
+       unless (keywordp mod)
+       collect (bitcode-pathname mod :target-backend target-backend))))
 
 
-     (defun link-clasp (start end &key (target-backend "CLEAVIR-BOEHM"))
-       (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend)))
-         (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
-                                                             :target-backend target-backend)
-                              :lisp-bitcode-files bitcode-files
-                              :prologue-form '(progn
-                                               (if (member :interactive *features*) 
-                                                   (core:bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-                              :epilogue-form '(progn
-                                               (cl:in-package :cl-user)
-                                               (core::process-command-line-load-eval-sequence)
-                                               (when (member :interactive *features*) (core:run-repl)))
-                              :target-backend target-backend)
-         ))
+(defun link-clasp (start end &key (target-backend "CLEAVIR-BOEHM"))
+  (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend)))
+    (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
+							:target-backend target-backend)
+			 :lisp-bitcode-files bitcode-files
+			 :prologue-form '(progn
+					  (if (member :interactive *features*) 
+					      (core:bformat t "Starting %s Clasp %s ... loading image... it takes a few seconds\n" (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
+			 :epilogue-form '(progn
+					  (cl:in-package :cl-user)
+					  (core::process-command-line-load-eval-sequence)
+					  (when (member :interactive *features*) (core:run-repl)))
+			 :target-backend target-backend)
+    ))
 
 
-     (link-clasp :init :cmp :target-backend "CLEAVIR-BOEHM")
-     (print "Done")
+(link-clasp :init :cmp :target-backend "CLEAVIR-BOEHM")
+(print "Done")
 
-     (apropos "with-early-accessors")
+(apropos "with-early-accessors")
 
 
 
 
-     (select-bitcode-files :init :cmp)
+(select-bitcode-files :init :cmp)
 
-     (print "Hello")
+(print "Hello")
 
 
-     (locate 'c '(a b c d e f))
+(locate 'c '(a b c d e f))
 
 
-     (core:lisp-source-pathname 'core:kernel/lsp/foundation)
+(core:lisp-source-pathname 'core:kernel/lsp/foundation)
 
 
-     (print "Hello")
+(print "Hello")
 
 
 
 
 
-     (with-open-file (fout "sys:kernel;all-files.lsp" :direction :output)
-       (print clasp-cleavir::*cleavir-clasp-all* fout))
+(with-open-file (fout "sys:kernel;all-files.lsp" :direction :output)
+  (print clasp-cleavir::*cleavir-clasp-all* fout))
 
 
-     (defparameter *files* (let* ((fin (open "sys:kernel;all-files.lsp" :direction :input)) (files (read fin))) (close fin) (remove 'core::cmprepl files) ))
+(defparameter *files* (let* ((fin (open "sys:kernel;all-files.lsp" :direction :input)) (files (read fin))) (close fin) (remove 'core::cmprepl files) ))
 
 
-     (compile-clasp-with-cleavir 'core:clos/conditions :all)
+(compile-clasp-with-cleavir 'core:clos/conditions :all)
 
 
 
-     (load "sys:kernel;cleavir;cleavir-files.lisp")
+(load "sys:kernel;cleavir;cleavir-files.lisp")
 
-     (defvar *cleavir-clasp-only* (lisp-executable.creation:determine-complete-set-of-asdf-source-files (list :clasp-cleavir)))
+(defvar *cleavir-clasp-only* (lisp-executable.creation:determine-complete-set-of-asdf-source-files (list :clasp-cleavir)))
 
-     (defvar *cleavir-clasp-all* (append core:*init-files* *cleavir-clasp-only* (list :cleavir-clasp)))
+(defvar *cleavir-clasp-all* (append core:*init-files* *cleavir-clasp-only* (list :cleavir-clasp)))
 
-     (first *cleavir-clasp-only*)|kernel/contrib/sicl/Code/Cleavir/Input-output/packages|
+(first *cleavir-clasp-only*)|kernel/contrib/sicl/Code/Cleavir/Input-output/packages|
 
-     *cleavir-clasp-all*
-     (core::lisp-source-pathname '|kernel/contrib/sicl/Code/Cleavir/Input-output/packages|)
+*cleavir-clasp-all*
+(core::lisp-source-pathname '|kernel/contrib/sicl/Code/Cleavir/Input-output/packages|)
 
-     (clasp-cleavir:compile-system :all :cleavir-clasp :system *cleavir-clasp-all*)
+(clasp-cleavir:compile-system :all :cleavir-clasp :system *cleavir-clasp-all*)
 
 
-     (append (remove 'core:cmp/cmprepl core:*init-files*) (lisp-executable.creation:determine-complete-set-of-asdf-source-files (list :clasp-cleavir)) (list :cleavir-clasp)))
+(append (remove 'core:cmp/cmprepl core:*init-files*) (lisp-executable.creation:determine-complete-set-of-asdf-source-files (list :clasp-cleavir)) (list :cleavir-clasp)))
 
 (clasp-cleavir:compile-system :all :cleavir-clasp :system *cleavir-clasp*)
 

@@ -90,17 +90,41 @@ THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 namespace reg {
 
-class_id allocate_class_id(type_id const &cls) {
-  typedef std::map<type_id, class_id> map_type;
-  static map_type registered;
-  static class_id id = 0;
+typedef std::map<type_id, class_id> map_type;
+map_type* global_registered_ids_ptr = NULL;
+class_id global_next_id = 0;
 
-  std::pair<map_type::iterator, bool> inserted = registered.insert(
-      std::make_pair(cls, id));
+void dump_class_ids() {
+  if ( global_registered_ids_ptr == NULL ) {
+    printf("The global_registered_ids_ptr is NULL\n");
+    return;
+  }
+  char buffer[1024];
+  for ( auto it : (*global_registered_ids_ptr) ) {
+    const char* fnName = it.first.name();
+    size_t length;
+    int status;
+    char *ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
+    if (status == 0) {
+      printf("  %s --> %d : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      delete ret;
+    } else {
+        // demangling failed. Output function name as a C function with
+        // no arguments.
+      printf("  %s --> %d : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+    }
+  }
+}
+
+class_id allocate_class_id(type_id const &cls) {
+  if ( global_registered_ids_ptr == NULL ) {
+    global_registered_ids_ptr = new map_type();
+  }
+  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(cls, global_next_id));
 
   if (inserted.second) {
     //            printf("%s:%d allocate_class_id for %40s %ld\n", __FILE__, __LINE__, cls.name(), id );
-    ++id;
+    ++global_next_id;
   }
 
   return inserted.first->second;
@@ -124,6 +148,15 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
   return sym;
 }
 };
+
+namespace core {
+
+CL_DEFUN void core__dump_class_ids()
+{
+  reg::dump_class_ids();
+}
+};
+
 
 void lisp_errorIllegalDereference(void *v) {
   SIMPLE_ERROR(BF("Tried to dereference px=%p") % v);

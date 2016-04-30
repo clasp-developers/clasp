@@ -4,13 +4,10 @@ import bitcode ;
 
 
 CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
-
 LLVM_CONFIG = [ os.environ LLVM_CONFIG ] ;
-LLVM_VERSION = [ SHELL "($LLVM_CONFIG --version | tr -d '\n') || echo unknown-version" ] ;
+LLVM_VERSION = [ os.environ LLVM_VERSION_X100 ] ;
 
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
-echo "LLVM_VERSION " $(LLVM_VERSION) ;
-
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ;
 

@@ -153,6 +153,7 @@
 	   (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-block (cmp:irc-basic-block-create "body")))
+      (llvm-sys:set-personality-fn fn (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
       (push fn cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*
@@ -895,9 +896,7 @@
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	;; After make-engine-builder MODULE becomes invalid!!!!!
 	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:setf-no-frame-pointer-elim target-options t)
-    (llvm-sys:setf-jitemit-debug-info target-options t)
-    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+;;    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
     (let*((execution-engine (llvm-sys:create engine-builder))
