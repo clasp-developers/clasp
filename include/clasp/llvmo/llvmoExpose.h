@@ -1217,24 +1217,22 @@ struct to_object<llvm::Attribute> {
 
 namespace llvmo {
 FORWARD(DataLayout);
-class DataLayout_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DataLayout, DataLayout_O, "DataLayout", core::ExternalObject_O);
-  typedef llvm::DataLayout ExternalType;
-  typedef llvm::DataLayout *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
+ /*! DataLayout_O
+As of llvm3.7 the llvm::DataLayout seems to be passed around as a simple object
+and pointers to it are no longer required by functions or returned by functions.
+So I'm changing DataLayout_O so that it wraps a complete llvm::DataLayout object
+*/
+class DataLayout_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, DataLayout_O, "DataLayout", core::General_O);
+ protected:
+  llvm::DataLayout _DataLayout;
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  DataLayout_O() : Base(){};
+  size_t getTypeAllocSize(llvm::Type* ty);
+  const llvm::DataLayout& dataLayout() { return this->_DataLayout; };
+ DataLayout_O(const llvm::DataLayout& orig) : _DataLayout(orig) {};
+  /*! Delete the default constructor because llvm::DataLayout doesn't have one */
+  DataLayout_O() = delete;
   ~DataLayout_O() {}
-
   DataLayout_sp copy() const;
 
 }; // DataLayout_O
@@ -1242,44 +1240,71 @@ public:
 /* from_object translators */
 
 namespace translate {
-template <>
-struct from_object<llvm::DataLayout *, std::true_type> {
-  typedef llvm::DataLayout *DeclareType;
-  DeclareType _v;
+  // Since llvm3.8 there don't appear to be functions that
+  // take or return llvm::DataLayout* pointers.  So I am commenting out
+  // their converters and I changed the DataLayout_O class to store a llvm::DataLayout
+  template <>
+    struct from_object<llvm::DataLayout const &, std::true_type> {
+    typedef llvm::DataLayout const &DeclareType;
+    DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->dataLayout()) {};
+  };
+
+#if 0
+  template <>
+    struct from_object<llvm::DataLayout *, std::true_type> {
+    typedef llvm::DataLayout *DeclareType;
+    DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()){};
-};
-
-template <>
-struct from_object<const llvm::DataLayout *, std::true_type> {
-  typedef llvm::DataLayout *DeclareType;
-  DeclareType _v;
+  };
+#endif
+#if 0
+  template <>
+    struct from_object<const llvm::DataLayout *, std::true_type> {
+    typedef llvm::DataLayout *DeclareType;
+    DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()){};
-};
+  };
+#endif
 
-template <>
-struct from_object<llvm::DataLayout const &, std::true_type> {
-  typedef llvm::DataLayout const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr())){};
-};
+  // ----------   to_object converters
+  template <>
+    struct to_object<const llvm::DataLayout &> {
+    static core::T_sp convert(const llvm::DataLayout & ref) {
+      // Use the copy constructor to create a DataLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,ref);
+      return val;
+    }
+  };
 
-template <>
-struct to_object<const llvm::DataLayout *> {
-  static core::T_sp convert(const llvm::DataLayout *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(const_cast<llvm::DataLayout *>(ptr))));
-  }
-};
+  /*! This copies the DataLayout so it doesn't deal with pointers at all */
+  template <>
+    struct to_object<llvm::DataLayout const, translate::dont_adopt_pointer> {
+    static core::T_sp convert(llvm::DataLayout orig) {
+      // Use the copy constructor to create a DataLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,orig);
+      return val;
+    }
+  };
 
-template <>
-struct to_object<llvm::DataLayout *> {
-  static core::T_sp convert(llvm::DataLayout *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(ptr)));
-  }
+#if 0
+  template <>
+    struct to_object<const llvm::DataLayout *> {
+    static core::T_sp convert(const llvm::DataLayout *ptr) {
+      _G();
+      return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(const_cast<llvm::DataLayout *>(ptr))));
+    }
+  };
+#endif
+#if 0
+  template <>
+    struct to_object<llvm::DataLayout *> {
+    static core::T_sp convert(llvm::DataLayout *ptr) {
+      return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(ptr)));
+    }
+  };
+#endif
 };
-};
-    ;
 
 
 namespace llvmo {

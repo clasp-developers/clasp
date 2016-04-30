@@ -403,9 +403,16 @@ Boehm and MPS use a single pointer"
 ;;   tsp matches shared_ptr<xxx> and
 ;;   tmv matches multiple_values<xxx>
 ;;
-(let ((tsp-size (llvm-sys:data-layout-get-type-alloc-size *data-layout* +tsp+))
-      (tmv-size (llvm-sys:data-layout-get-type-alloc-size *data-layout* +tmv+)))
-  (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size))
+(let* ((module (llvm-create-module (next-run-time-module-name)))
+       (engine-builder (llvm-sys:make-engine-builder module))
+       (target-options (llvm-sys:make-target-options)))
+  ;; module is invalid after make-engine-builder call
+  (llvm-sys:set-target-options engine-builder target-options)
+  (let* ((execution-engine (llvm-sys:create engine-builder))
+         (data-layout (llvm-sys:get-data-layout execution-engine))
+         (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tsp+))
+         (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tmv+)))
+    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size)))
 
 ;;
 ;; Define exception types in the module

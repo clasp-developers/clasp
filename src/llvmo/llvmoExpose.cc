@@ -201,6 +201,9 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   }
 }
 
+// This was depreciated in llvm3.7
+  CL_LISPIFY_NAME(createDataLayout);
+  CL_EXTERN_DEFMETHOD(TargetMachine_O, &llvm::TargetMachine::createDataLayout);
   CL_LISPIFY_NAME(getSubtargetImpl);
   CL_EXTERN_DEFMETHOD(TargetMachine_O, (const llvm::TargetSubtargetInfo *(llvm::TargetMachine::*)() const) & llvm::TargetMachine::getSubtargetImpl);
   CL_LISPIFY_NAME(addPassesToEmitFileAndRunPassManager);
@@ -1068,15 +1071,18 @@ CL_DEFMETHOD Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name)
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
 CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
-  GC_ALLOCATE(DataLayout_O, cp);
-  cp->_ptr = new llvm::DataLayout(*(this->wrappedPtr()));
+  GC_ALLOCATE_VARIADIC(DataLayout_O, cp, this->_DataLayout);
   return cp;
 };
 
 
 
-  CL_LISPIFY_NAME(DataLayout-getTypeAllocSize);
-  CL_EXTERN_DEFMETHOD(DataLayout_O, &DataLayout_O::ExternalType::getTypeAllocSize);
+CL_LISPIFY_NAME(DataLayout-getTypeAllocSize);
+CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
+{
+  return this->_DataLayout.getTypeAllocSize(ty);
+}
+  
 
 }; // llvmo
 
@@ -2028,7 +2034,7 @@ string IRBuilder_O::__repr__() const {
   return ss.str();
 }
 
-  CL_LAMBDA (irbuilder cond true-branch false-branch &optional branch-weights);
+  CL_LAMBDA (irbuilder cond true-branch false-branch &optional branch-weights unpred);
   CL_LISPIFY_NAME(CreateCondBr);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCondBr);
 
@@ -2220,7 +2226,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(ll
   CL_LISPIFY_NAME(CreatePHI);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePHI);
   CL_LISPIFY_NAME(CreateCallArrayRef);
-CL_LAMBDA(callee args name &optional fpmathtag);
+CL_LAMBDA(irbuilder callee args name &optional (fpmathtag nil));
 CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilder_O::ExternalType::CreateCall);
 //CL_LISPIFY_NAME(CreateCall0);
 // CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
@@ -2437,6 +2443,8 @@ CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setDoesNotReturn);
   CL_LISPIFY_NAME(doesNotReturn);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::doesNotReturn);
+  CL_LISPIFY_NAME(setPersonalityFn);
+  CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setPersonalityFn);
   CL_LISPIFY_NAME(addFnAttr);
   CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::Attribute::AttrKind)) & llvm::Function::addFnAttr);;
 ;

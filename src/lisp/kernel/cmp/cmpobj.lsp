@@ -19,13 +19,10 @@
 							     'llvm-sys:code-model-default
 							     'llvm-sys:code-gen-opt-default ))
 	     (pm (llvm-sys:make-pass-manager))
-	     (tli #+llvm37(llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#)
-                  #+llvm36(llvm-sys:make-target-library-info triple #|| LLVM3.6||#))
-	     #+llvm36(data-layout-pass (llvm-sys:make-data-layout-pass))
-	     (data-layout (llvm-sys:get-data-layout target-machine)))
-	(if data-layout (llvm-sys:set-data-layout module data-layout))
+	     (tli (llvm-sys:make-target-library-info-wrapper-pass triple #||LLVM3.7||#))
+	     (data-layout (llvm-sys:create-data-layout target-machine)))
+	(llvm-sys:set-data-layout module data-layout)
 	(llvm-sys:pass-manager-add pm tli)
-	#+llvm36(llvm-sys:pass-manager-add pm data-layout-pass)
 	(llvm-sys:add-passes-to-emit-file-and-run-pass-manager target-machine pm output-stream file-type module)))))
 
 

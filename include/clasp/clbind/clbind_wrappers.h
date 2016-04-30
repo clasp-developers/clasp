@@ -138,6 +138,7 @@ public:
   static gctools::smart_ptr<WrapperType> create(OT *naked, class_id classId) {
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
+    ASSERT(!classSymbol.unboundp());
     obj->setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }

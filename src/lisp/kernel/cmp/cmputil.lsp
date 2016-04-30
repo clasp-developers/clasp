@@ -26,6 +26,7 @@
 
 (in-package :cmp)
 
+
 (defconstant +note-format+  "    %s\n")
 (defconstant +warn-format+  "!   %s\n")
 (defconstant +error-format+ "*   %s\n")

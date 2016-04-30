@@ -76,7 +76,7 @@
   (llvm-sys:add-clause landpad type))
 
 (defun irc-switch (go-value default-block num-cases)
-  (llvm-sys:create-switch *irbuilder* go-value default-block num-cases nil))
+  (llvm-sys:create-switch *irbuilder* go-value default-block num-cases nil nil))
 
 
 (defun irc-gep (array indices &optional (name "gep"))
@@ -1057,7 +1057,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
   ;;  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
-         (code (llvm-sys:create-call-array-ref *irbuilder* func ra label)))
+         (code (llvm-sys:create-call-array-ref *irbuilder* func ra label nil)))
     (unless code (error "irc-create-call returning nil"))
     code))
 
