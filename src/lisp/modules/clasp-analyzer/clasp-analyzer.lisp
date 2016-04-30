@@ -1148,7 +1148,7 @@ can be saved and reloaded within the project for later analysis"
                      (:is-derived-from
                       (:for-each
                        (:record-decl
-                        (:bind :base-name (:record-decl))
+                        (:bind :base-name (:cxxrecord-decl))
                         (:has-ancestor
                          (:namespace-decl
                           (:bind :base-ns (:namespace-decl))))

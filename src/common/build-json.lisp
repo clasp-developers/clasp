@@ -34,7 +34,7 @@ if there were an empty string between them."
 (defun build-db (bjam-cmds output)
   (let ((lines (read-entire-file bjam-cmds))
         (db-pn (pathname output)))
-    (with-open-file (fout db-pn :direction :output)
+    (with-open-file (fout db-pn :direction :output :if-exists :supersede)
       (format fout "[~%")
       (loop for (line . rest ) on lines
          for compile-command = (replace-substr line " -c " " -c -v ")
