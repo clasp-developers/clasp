@@ -383,7 +383,7 @@
 		   ',linkage
 		    (cmp:jit-function-name ,lisp-function-name)
 		    cmp:*the-module*)))
-       (llvm-ir:set-personality-fn (cmp:irc-personality-function))
+       (llvm-sys:set-personality-fn (cmp:irc-personality-function))
        ,@body
        ,fn-gs)))
 

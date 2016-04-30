@@ -59,35 +59,34 @@ using features defined in corePackage.cc"
 
 (defun create-llvm-module-for-compile-file (module-name)
   "Return a new module"
-  (let ((module (llvm-create-module module-name))
-	fpm)
+  (let ((module (llvm-create-module module-name)))
     ;; Define the primitives for the module
     (define-primitives-in-module module)
-    (if *use-function-pass-manager-for-compile-file*
-	(setq fpm (create-function-pass-manager-for-compile-file module)))
-    (values module fpm)))
+    module))
 
 
 
-(defvar *use-function-pass-manager-for-compile-file* t)
+#+(or)(defvar *use-function-pass-manager-for-compile-file* t)
+#+(or)
 (defun create-function-pass-manager-for-compile-file (module)
   (let ((fpm (llvm-sys:make-function-pass-manager module)))
     (warn "Look at what passes the Kaleidoscope demo is making")
-;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
+    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
-;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
+    ;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
     (llvm-sys:do-initialization fpm)
     fpm))
 
 
+#+(or)
 (defun create-function-pass-manager-for-compile (module)
   (let ((fpm (llvm-sys:make-function-pass-manager module)))
     (warn "Look at what passes the Kaleidoscope demo is making")
-;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
+    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
