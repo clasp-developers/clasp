@@ -1,0 +1,146 @@
+Matcher<*>	eachOf	Matcher<*>, ..., Matcher<*>
+Matcher<*>	forEachDescendant	Matcher<*>
+Matcher<*>	forEach	Matcher<*>
+Matcher<*>	hasAncestor	Matcher<*>
+Matcher<*>	hasDescendant	Matcher<*>
+Matcher<*>	has	Matcher<*>
+Matcher<*>	hasParent	Matcher<*>
+Matcher<AbstractConditionalOperator>	hasCondition	Matcher<Expr> InnerMatcher
+Matcher<AbstractConditionalOperator>	hasFalseExpression	Matcher<Expr> InnerMatcher
+Matcher<AbstractConditionalOperator>	hasTrueExpression	Matcher<Expr> InnerMatcher
+Matcher<AddrLabelExpr>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<ArraySubscriptExpr>	hasBase	Matcher<Expr> InnerMatcher
+Matcher<ArraySubscriptExpr>	hasIndex	Matcher<Expr> InnerMatcher
+Matcher<ArraySubscriptExpr>	hasLHS	Matcher<Expr> InnerMatcher
+Matcher<ArraySubscriptExpr>	hasRHS	Matcher<Expr> InnerMatcher
+Matcher<ArrayTypeLoc>	hasElementTypeLoc	Matcher<TypeLoc>
+Matcher<ArrayType>	hasElementType	Matcher<Type>
+Matcher<AtomicTypeLoc>	hasValueTypeLoc	Matcher<TypeLoc>
+Matcher<AtomicType>	hasValueType	Matcher<Type>
+Matcher<AutoType>	hasDeducedType	Matcher<Type>
+Matcher<BinaryOperator>	hasEitherOperand	Matcher<Expr> InnerMatcher
+Matcher<BinaryOperator>	hasLHS	Matcher<Expr> InnerMatcher
+Matcher<BinaryOperator>	hasRHS	Matcher<Expr> InnerMatcher
+Matcher<BlockPointerTypeLoc>	pointeeLoc	Matcher<TypeLoc>
+Matcher<BlockPointerType>	pointee	Matcher<Type>
+Matcher<CXXConstructExpr>	forEachArgumentWithParam	Matcher<Expr> ArgMatcher, Matcher<ParmVarDecl> ParamMatcher
+Matcher<CXXConstructExpr>	hasAnyArgument	Matcher<Expr> InnerMatcher
+Matcher<CXXConstructExpr>	hasArgument	unsigned N, Matcher<Expr> InnerMatcher
+Matcher<CXXConstructExpr>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<CXXConstructorDecl>	forEachConstructorInitializer	Matcher<CXXCtorInitializer> InnerMatcher
+Matcher<CXXConstructorDecl>	hasAnyConstructorInitializer	Matcher<CXXCtorInitializer> InnerMatcher
+Matcher<CXXCtorInitializer>	forField	Matcher<FieldDecl> InnerMatcher
+Matcher<CXXCtorInitializer>	withInitializer	Matcher<Expr> InnerMatcher
+Matcher<CXXForRangeStmt>	hasBody	Matcher<Stmt> InnerMatcher
+Matcher<CXXForRangeStmt>	hasLoopVariable	Matcher<VarDecl> InnerMatcher
+Matcher<CXXForRangeStmt>	hasRangeInit	Matcher<Expr> InnerMatcher
+Matcher<CXXMemberCallExpr>	onImplicitObjectArgument	Matcher<Expr> InnerMatcher
+Matcher<CXXMemberCallExpr>	on	Matcher<Expr> InnerMatcher
+Matcher<CXXMemberCallExpr>	thisPointerType	Matcher<Decl> InnerMatcher
+Matcher<CXXMemberCallExpr>	thisPointerType	Matcher<QualType> InnerMatcher
+Matcher<CXXMethodDecl>	ofClass	Matcher<CXXRecordDecl> InnerMatcher
+Matcher<CXXRecordDecl>	hasMethod	Matcher<CXXMethodDecl> InnerMatcher
+Matcher<CXXRecordDecl>	isDerivedFrom	Matcher<NamedDecl> Base
+Matcher<CXXRecordDecl>	isSameOrDerivedFrom	Matcher<NamedDecl> Base
+Matcher<CallExpr>	callee	Matcher<Decl> InnerMatcher
+Matcher<CallExpr>	callee	Matcher<Stmt> InnerMatcher
+Matcher<CallExpr>	forEachArgumentWithParam	Matcher<Expr> ArgMatcher, Matcher<ParmVarDecl> ParamMatcher
+Matcher<CallExpr>	hasAnyArgument	Matcher<Expr> InnerMatcher
+Matcher<CallExpr>	hasArgument	unsigned N, Matcher<Expr> InnerMatcher
+Matcher<CallExpr>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<CaseStmt>	hasCaseConstant	Matcher<Expr> InnerMatcher
+Matcher<CastExpr>	hasSourceExpression	Matcher<Expr> InnerMatcher
+Matcher<ClassTemplateSpecializationDecl>	hasAnyTemplateArgument	Matcher<TemplateArgument> InnerMatcher
+Matcher<ClassTemplateSpecializationDecl>	hasTemplateArgument	unsigned N, Matcher<TemplateArgument> InnerMatcher
+Matcher<ComplexTypeLoc>	hasElementTypeLoc	Matcher<TypeLoc>
+Matcher<ComplexType>	hasElementType	Matcher<Type>
+Matcher<CompoundStmt>	hasAnySubstatement	Matcher<Stmt> InnerMatcher
+Matcher<DecayedType>	hasDecayedType	Matcher<QualType> InnerType
+Matcher<DeclRefExpr>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<DeclRefExpr>	throughUsingDecl	Matcher<UsingShadowDecl> InnerMatcher
+Matcher<DeclRefExpr>	to	Matcher<Decl> InnerMatcher
+Matcher<DeclStmt>	containsDeclaration	unsigned N, Matcher<Decl> InnerMatcher
+Matcher<DeclStmt>	hasSingleDecl	Matcher<Decl> InnerMatcher
+Matcher<DeclaratorDecl>	hasTypeLoc	Matcher<TypeLoc> Inner
+Matcher<Decl>	hasDeclContext	Matcher<Decl> InnerMatcher
+Matcher<DoStmt>	hasBody	Matcher<Stmt> InnerMatcher
+Matcher<DoStmt>	hasCondition	Matcher<Expr> InnerMatcher
+Matcher<ElaboratedType>	hasQualifier	Matcher<NestedNameSpecifier> InnerMatcher
+Matcher<ElaboratedType>	namesType	Matcher<QualType> InnerMatcher
+Matcher<EnumType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<ExplicitCastExpr>	hasDestinationType	Matcher<QualType> InnerMatcher
+Matcher<Expr>	hasType	Matcher<Decl> InnerMatcher
+Matcher<Expr>	hasType	Matcher<QualType> InnerMatcher
+Matcher<Expr>	ignoringImpCasts	Matcher<Expr> InnerMatcher
+Matcher<Expr>	ignoringParenCasts	Matcher<Expr> InnerMatcher
+Matcher<Expr>	ignoringParenImpCasts	Matcher<Expr> InnerMatcher
+Matcher<ForStmt>	hasBody	Matcher<Stmt> InnerMatcher
+Matcher<ForStmt>	hasCondition	Matcher<Expr> InnerMatcher
+Matcher<ForStmt>	hasIncrement	Matcher<Stmt> InnerMatcher
+Matcher<ForStmt>	hasLoopInit	Matcher<Stmt> InnerMatcher
+Matcher<FunctionDecl>	hasAnyParameter	Matcher<ParmVarDecl> InnerMatcher
+Matcher<FunctionDecl>	hasBody	Matcher<Stmt> InnerMatcher
+Matcher<FunctionDecl>	hasParameter	unsigned N, Matcher<ParmVarDecl> InnerMatcher
+Matcher<FunctionDecl>	returns	Matcher<QualType> InnerMatcher
+Matcher<IfStmt>	hasCondition	Matcher<Expr> InnerMatcher
+Matcher<IfStmt>	hasConditionVariableStatement	Matcher<DeclStmt> InnerMatcher
+Matcher<IfStmt>	hasElse	Matcher<Stmt> InnerMatcher
+Matcher<IfStmt>	hasThen	Matcher<Stmt> InnerMatcher
+Matcher<ImplicitCastExpr>	hasImplicitDestinationType	Matcher<QualType> InnerMatcher
+Matcher<InitListExpr>	hasSyntacticForm	Matcher<Expr> InnerMatcher
+Matcher<InjectedClassNameType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<LabelStmt>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<MemberExpr>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<MemberExpr>	hasObjectExpression	Matcher<Expr> InnerMatcher
+Matcher<MemberExpr>	member	Matcher<ValueDecl> InnerMatcher
+Matcher<MemberPointerTypeLoc>	pointeeLoc	Matcher<TypeLoc>
+Matcher<MemberPointerType>	pointee	Matcher<Type>
+Matcher<NestedNameSpecifierLoc>	hasPrefix	Matcher<NestedNameSpecifierLoc> InnerMatcher
+Matcher<NestedNameSpecifierLoc>	specifiesTypeLoc	Matcher<TypeLoc> InnerMatcher
+Matcher<NestedNameSpecifier>	hasPrefix	Matcher<NestedNameSpecifier> InnerMatcher
+Matcher<NestedNameSpecifier>	specifiesNamespace	Matcher<NamespaceDecl> InnerMatcher
+Matcher<NestedNameSpecifier>	specifiesType	Matcher<QualType> InnerMatcher
+Matcher<ObjCMessageExpr>	hasArgument	unsigned N, Matcher<Expr> InnerMatcher
+Matcher<ObjCMessageExpr>	hasReceiverType	Matcher<QualType> InnerMatcher
+Matcher<OpaqueValueExpr>	hasSourceExpression	Matcher<Expr> InnerMatcher
+Matcher<ParenType>	innerType	Matcher<Type>
+Matcher<PointerTypeLoc>	pointeeLoc	Matcher<TypeLoc>
+Matcher<PointerType>	pointee	Matcher<Type>
+Matcher<QualType>	hasCanonicalType	Matcher<QualType> InnerMatcher
+Matcher<QualType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<QualType>	pointsTo	Matcher<Decl> InnerMatcher
+Matcher<QualType>	pointsTo	Matcher<QualType> InnerMatcher
+Matcher<QualType>	references	Matcher<Decl> InnerMatcher
+Matcher<QualType>	references	Matcher<QualType> InnerMatcher
+Matcher<RecordType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<ReferenceTypeLoc>	pointeeLoc	Matcher<TypeLoc>
+Matcher<ReferenceType>	pointee	Matcher<Type>
+Matcher<ReturnStmt>	hasReturnValue	Matcher<Expr> InnerMatcher
+Matcher<StmtExpr>	hasAnySubstatement	Matcher<Stmt> InnerMatcher
+Matcher<Stmt>	alignOfExpr	Matcher<UnaryExprOrTypeTraitExpr> InnerMatcher
+Matcher<Stmt>	sizeOfExpr	Matcher<UnaryExprOrTypeTraitExpr> InnerMatcher
+Matcher<SwitchStmt>	forEachSwitchCase	Matcher<SwitchCase> InnerMatcher
+Matcher<TagType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<TemplateArgument>	isExpr	Matcher<Expr> InnerMatcher
+Matcher<TemplateArgument>	refersToDeclaration	Matcher<Decl> InnerMatcher
+Matcher<TemplateArgument>	refersToIntegralType	Matcher<QualType> InnerMatcher
+Matcher<TemplateArgument>	refersToType	Matcher<QualType> InnerMatcher
+Matcher<TemplateSpecializationType>	hasAnyTemplateArgument	Matcher<TemplateArgument> InnerMatcher
+Matcher<TemplateSpecializationType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<TemplateSpecializationType>	hasTemplateArgument	unsigned N, Matcher<TemplateArgument> InnerMatcher
+Matcher<TemplateTypeParmType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<T>	findAll	Matcher<T> Matcher
+Matcher<TypedefNameDecl>	hasType	Matcher<QualType> InnerMatcher
+Matcher<TypedefType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<UnaryExprOrTypeTraitExpr>	hasArgumentOfType	Matcher<QualType> InnerMatcher
+Matcher<UnaryOperator>	hasUnaryOperand	Matcher<Expr> InnerMatcher
+Matcher<UnresolvedUsingType>	hasDeclaration	Matcher<Decl> InnerMatcher
+Matcher<UsingDecl>	hasAnyUsingShadowDecl	Matcher<UsingShadowDecl> InnerMatcher
+Matcher<UsingShadowDecl>	hasTargetDecl	Matcher<NamedDecl> InnerMatcher
+Matcher<ValueDecl>	hasType	Matcher<Decl> InnerMatcher
+Matcher<ValueDecl>	hasType	Matcher<QualType> InnerMatcher
+Matcher<VarDecl>	hasInitializer	Matcher<Expr> InnerMatcher
+Matcher<VariableArrayType>	hasSizeExpr	Matcher<Expr> InnerMatcher
+Matcher<WhileStmt>	hasBody	Matcher<Stmt> InnerMatcher
+Matcher<WhileStmt>	hasCondition	Matcher<Expr> InnerMatcher
+
