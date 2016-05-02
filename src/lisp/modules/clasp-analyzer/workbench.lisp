@@ -12,11 +12,12 @@
    #P"app-resources:build-databases;clasp_compile_commands.json"
    :selection-pattern ".*hashTable.cc.*"))
 
-
 (clasp-analyzer:search/generate-code *db*)
 
 (time (clasp-analyzer:load-project *db*))
 
+
+(getpid)1433
 (analyze-only *db*)
 
 

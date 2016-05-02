@@ -72,6 +72,7 @@ project clasp : requirements
         <include>"/usr/include"
         <include>"$(INCLUDE)"
         <linkflags>"-L/usr/lib"
+        <cxxflags>-ferror-limit=0
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC

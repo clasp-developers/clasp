@@ -367,13 +367,12 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   return Values(oCdr(firstRep), oCdr(firstRang));
 }
 
-#define ARGS_ast_tooling__testDerivable "(obj)"
-#define DECL_ast_tooling__testDerivable ""
-#define DOCS_ast_tooling__testDerivable "testDerivable"
+#if 1
 CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
   printf("%s:%d - got DerivableMatchCallback object --> %p\n", __FILE__, __LINE__, ptr);
   ptr->onEndOfTranslationUnit();
 };
+#endif
 };
 
 namespace asttooling {

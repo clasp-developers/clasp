@@ -1137,17 +1137,17 @@ can be saved and reloaded within the project for later analysis"
 
 (defparameter *class-matcher*
   '(:bind :whole
-    (:record-decl
+    (:cxxrecord-decl
      ;; The class must be a definition
      (:is-definition))))
 (clang-tool:compile-matcher *class-matcher*)
 
 
 (defparameter *base-class-submatcher*
-  (clang-tool:compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:cxxrecord-decl
                      (:is-derived-from
                       (:for-each
-                       (:record-decl
+                       (:cxxrecord-decl
                         (:bind :base-name (:cxxrecord-decl))
                         (:has-ancestor
                          (:namespace-decl
@@ -1159,7 +1159,7 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defparameter *field-submatcher*
-  (clang-tool:compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:cxxrecord-decl
                      (:for-each ;; -descendant
                       (:field-decl
                        (:bind :field (:field-decl))
@@ -1171,18 +1171,18 @@ can be saved and reloaded within the project for later analysis"
 
 (defparameter *metadata-submatcher*
   (clang-tool:compile-matcher
-   '(:record-decl
+   '(:cxxrecord-decl
      (:for-each ;; -descendant
-      (:record-decl
+      (:cxxrecord-decl
        (:matches-name "metadata_.*")
-       (:bind :metadata (:record-decl)))))))
+       (:bind :metadata (:cxxrecord-decl)))))))
 
 
 (defparameter *method-submatcher*
-  (clang-tool:compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:cxxrecord-decl
                      (:for-each ;; -descendant
-                      (:method-decl
-                       (:bind :method (:method-decl)))))))
+                      (:cxxmethod-decl
+                       (:bind :method (:cxxmethod-decl)))))))
 
 
 (defun setup-cclass-search (mtool)
@@ -1292,7 +1292,7 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defparameter *lispalloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "GCObjectAllocator"))
@@ -1342,7 +1342,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defparameter *classalloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "ClassAllocator"))
@@ -1392,7 +1392,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defparameter *rootclassalloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "RootClassAllocator"))
@@ -1437,11 +1437,11 @@ and the inheritance hierarchy that the garbage collector will need"
 ;;
 
 (defparameter *containeralloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:is-same-or-derived-from
-     (:record-decl
+     (:cxxrecord-decl
       (:has-name "GCContainer")))))
 
 (defun setup-containeralloc-search (mtool)
@@ -1607,7 +1607,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defparameter *gcinfo-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "GCInfo"))
@@ -3255,7 +3255,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 
 (defun run-test ()
   (defparameter *test-matcher*
-    '(:record-decl
+    '(:cxxrecord-decl
       ;;        (:is-definition)
       ;;        (:is-template-instantiation)
       (:matches-name ".*GCInfo.*")))

@@ -52,12 +52,55 @@ THE SOFTWARE.
 #include <llvm/ADT/StringRef.h>
 
 namespace asttooling {
+
+SYMBOL_EXPORT_SC_(AstToolingPkg,STARmatcher_namesSTAR);
+
+/*! Many ASTMatchers like recordDecl() were renamed to cxxRecordDecl() with
+messes with Clasp's name lispification.  lispify(cxxRecordDecl) --> CXX-RECORD-DECL
+But the class that cxxRecordDecl() is supposed to match is CXXRECORD-DECL (lispify(CXXRecordDecl)) 
+So I'll fix it here by converting names that start with "cxx" to start with "CXX" 
+Also fix up CUDA and RV.*/
+CL_DEFUN std::string ast_tooling__fix_matcher_name(const string& orig_name)
+{
+  if ( orig_name.substr(0,3) == "cxx") {
+    stringstream fixed;
+    fixed << "CXX" << orig_name.substr(3);
+    return fixed.str();
+  }
+  if ( orig_name.substr(0,4) == "cuda") {
+    stringstream fixed;
+    fixed << "CUDA" << orig_name.substr(4);
+    return fixed.str();
+  }
+  if ( orig_name.substr(0,2) == "rV") {
+    stringstream fixed;
+    fixed << "RV" << orig_name.substr(2);
+    return fixed.str();
+  }
+  return orig_name;
+}
+
+
+CL_DEFUN core::Symbol_sp ast_tooling__intern_matcher_keyword(const string& orig_name)
+{
+  core::Symbol_sp name = core::lispify_intern_keyword(ast_tooling__fix_matcher_name(orig_name));
+  return name;
+}
+
+void add_matcher_name(const string& name, core::Symbol_sp symbol)
+{
+  core::List_sp one = core::Cons_O::createList(symbol,core::Str_O::create(name));
+  _sym_STARmatcher_namesSTAR->defparameter(core::Cons_O::create(one,_sym_STARmatcher_namesSTAR->symbolValue()));
+}
+
 namespace RegMap {
 
 using asttooling::MatcherDescriptor_O;
 
-void RegistryMaps_O::_registerMatcher(core::Symbol_sp MatcherName,
+void RegistryMaps_O::_registerMatcher(const string& name,
+                                      core::Symbol_sp MatcherName,
                                     gctools::smart_ptr<MatcherDescriptor_O> Callback) const {
+  add_matcher_name(name,MatcherName);
 #ifdef DEBUG_ON
   ConstructorMap::iterator pos = this->find(MatcherName);
   ASSERTF(pos == Constructors.end(), BF("The MatcherName %s has already had a constructor defined for it") % _rep_(MatcherName));
@@ -66,9 +109,12 @@ void RegistryMaps_O::_registerMatcher(core::Symbol_sp MatcherName,
   //Constructors[MatcherName] = Callback;
 }
 
+
+
 #define REGISTER_MATCHER(name)                                                             \
-  _registerMatcher(core::lispify_intern_keyword(#name), \
-                   makeMatcherAutoMarshall( ::clang::ast_matchers::name, core::lispify_intern_keyword(#name)));
+  _registerMatcher(ast_tooling__fix_matcher_name(#name),\
+                   ast_tooling__intern_matcher_keyword(#name),\
+                   makeMatcherAutoMarshall( ::clang::ast_matchers::name, ast_tooling__intern_matcher_keyword(#name)));
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)            \
   static_cast<::clang::ast_matchers::name##_Type##Id>( \
       ::clang::ast_matchers::name)
@@ -76,10 +122,10 @@ void RegistryMaps_O::_registerMatcher(core::Symbol_sp MatcherName,
   do { \
     gctools::smart_ptr<MatcherDescriptor_O> Callbacks[] = { \
         makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 0), \
-                                          core::lispify_intern_keyword(#name)), \
+                                ast_tooling__intern_matcher_keyword(#name)), \
         makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
-                                          core::lispify_intern_keyword(#name))}; \
-    _registerMatcher(core::lispify_intern_keyword(#name), \
+                                ast_tooling__intern_matcher_keyword(#name))}; \
+    _registerMatcher(ast_tooling__fix_matcher_name(#name),ast_tooling__intern_matcher_keyword(#name), \
                      gctools::GC<OverloadedMatcherDescriptor_O>::allocate(Callbacks) /*new OverloadedMatcherDescriptor(Callbacks)*/); \
   } while (0)
 
@@ -101,15 +147,18 @@ void RegistryMaps_O::lazyInitialize() const {
   // equals
   // equalsNode
 
+
+  // These are copied from llvm38/tools/clang/lib/ASTMatchers/Dynamic/Registry.cpp
+  // If there are changes to Registry.cpp - copy them here.
   REGISTER_OVERLOADED_2(callee);
   REGISTER_OVERLOADED_2(hasPrefix);
   REGISTER_OVERLOADED_2(hasType);
   REGISTER_OVERLOADED_2(isDerivedFrom);
   REGISTER_OVERLOADED_2(isSameOrDerivedFrom);
+  REGISTER_OVERLOADED_2(loc);
   REGISTER_OVERLOADED_2(pointsTo);
   REGISTER_OVERLOADED_2(references);
   REGISTER_OVERLOADED_2(thisPointerType);
-//  REGISTER_OVERLOADED_2(equalsNode);
 
   REGISTER_MATCHER(accessSpecDecl);
   REGISTER_MATCHER(alignOfExpr);
@@ -119,21 +168,18 @@ void RegistryMaps_O::lazyInitialize() const {
   REGISTER_MATCHER(argumentCountIs);
   REGISTER_MATCHER(arraySubscriptExpr);
   REGISTER_MATCHER(arrayType);
-  REGISTER_MATCHER(asString);
   REGISTER_MATCHER(asmStmt);
+  REGISTER_MATCHER(asString);
   REGISTER_MATCHER(atomicType);
   REGISTER_MATCHER(autoType);
   REGISTER_MATCHER(binaryOperator);
-  REGISTER_MATCHER(cxxBindTemporaryExpr);
   REGISTER_MATCHER(blockPointerType);
-  REGISTER_MATCHER(cxxBoolLiteral);
+  REGISTER_MATCHER(booleanType);
   REGISTER_MATCHER(breakStmt);
   REGISTER_MATCHER(builtinType);
-  REGISTER_MATCHER(cStyleCastExpr);
   REGISTER_MATCHER(callExpr);
   REGISTER_MATCHER(caseStmt);
   REGISTER_MATCHER(castExpr);
-  REGISTER_MATCHER(cxxCatchStmt);
   REGISTER_MATCHER(characterLiteral);
   REGISTER_MATCHER(classTemplateDecl);
   REGISTER_MATCHER(classTemplateSpecializationDecl);
@@ -141,32 +187,56 @@ void RegistryMaps_O::lazyInitialize() const {
   REGISTER_MATCHER(compoundLiteralExpr);
   REGISTER_MATCHER(compoundStmt);
   REGISTER_MATCHER(conditionalOperator);
-  REGISTER_MATCHER(cxxConstCastExpr);
   REGISTER_MATCHER(constantArrayType);
-  REGISTER_MATCHER(cxxConstructExpr);
-  REGISTER_MATCHER(cxxConstructorDecl);
   REGISTER_MATCHER(containsDeclaration);
   REGISTER_MATCHER(continueStmt);
+  REGISTER_MATCHER(cStyleCastExpr);
+  REGISTER_MATCHER(cudaKernelCallExpr);
+  REGISTER_MATCHER(cxxBindTemporaryExpr);
+  REGISTER_MATCHER(cxxBoolLiteral);
+  REGISTER_MATCHER(cxxCatchStmt);
+  REGISTER_MATCHER(cxxConstCastExpr);
+  REGISTER_MATCHER(cxxConstructExpr);
+  REGISTER_MATCHER(cxxConstructorDecl);
+  REGISTER_MATCHER(cxxConversionDecl);
   REGISTER_MATCHER(cxxCtorInitializer);
+  REGISTER_MATCHER(cxxDefaultArgExpr);
+  REGISTER_MATCHER(cxxDeleteExpr);
+  REGISTER_MATCHER(cxxDestructorDecl);
+  REGISTER_MATCHER(cxxDynamicCastExpr);
+  REGISTER_MATCHER(cxxForRangeStmt);
+  REGISTER_MATCHER(cxxFunctionalCastExpr);
+  REGISTER_MATCHER(cxxMemberCallExpr);
+  REGISTER_MATCHER(cxxMethodDecl);
+  REGISTER_MATCHER(cxxNewExpr);
+  REGISTER_MATCHER(cxxNullPtrLiteralExpr);
+  REGISTER_MATCHER(cxxOperatorCallExpr);
+  REGISTER_MATCHER(cxxRecordDecl);
+  REGISTER_MATCHER(cxxReinterpretCastExpr);
+  REGISTER_MATCHER(cxxStaticCastExpr);
+  REGISTER_MATCHER(cxxTemporaryObjectExpr);
+  REGISTER_MATCHER(cxxThisExpr);
+  REGISTER_MATCHER(cxxThrowExpr);
+  REGISTER_MATCHER(cxxTryStmt);
+  REGISTER_MATCHER(cxxUnresolvedConstructExpr);
+  REGISTER_MATCHER(decayedType);
   REGISTER_MATCHER(decl);
+  REGISTER_MATCHER(declaratorDecl);
   REGISTER_MATCHER(declCountIs);
   REGISTER_MATCHER(declRefExpr);
   REGISTER_MATCHER(declStmt);
-  REGISTER_MATCHER(declaratorDecl);
-  REGISTER_MATCHER(cxxDefaultArgExpr);
   REGISTER_MATCHER(defaultStmt);
-  REGISTER_MATCHER(cxxDeleteExpr);
   REGISTER_MATCHER(dependentSizedArrayType);
-  REGISTER_MATCHER(cxxDestructorDecl);
   REGISTER_MATCHER(doStmt);
-  REGISTER_MATCHER(cxxDynamicCastExpr);
   REGISTER_MATCHER(eachOf);
   REGISTER_MATCHER(elaboratedType);
   REGISTER_MATCHER(enumConstantDecl);
   REGISTER_MATCHER(enumDecl);
   REGISTER_MATCHER(equalsBoundNode);
+  REGISTER_MATCHER(equalsIntegralValue);
   REGISTER_MATCHER(explicitCastExpr);
   REGISTER_MATCHER(expr);
+  REGISTER_MATCHER(exprWithCleanups);
   REGISTER_MATCHER(fieldDecl);
   REGISTER_MATCHER(floatLiteral);
   REGISTER_MATCHER(forEach);
@@ -174,13 +244,11 @@ void RegistryMaps_O::lazyInitialize() const {
   REGISTER_MATCHER(forEachDescendant);
   REGISTER_MATCHER(forEachSwitchCase);
   REGISTER_MATCHER(forField);
-  REGISTER_MATCHER(cxxForRangeStmt);
   REGISTER_MATCHER(forStmt);
   REGISTER_MATCHER(friendDecl);
   REGISTER_MATCHER(functionDecl);
   REGISTER_MATCHER(functionTemplateDecl);
   REGISTER_MATCHER(functionType);
-  REGISTER_MATCHER(cxxFunctionalCastExpr);
   REGISTER_MATCHER(gotoStmt);
   REGISTER_MATCHER(has);
   REGISTER_MATCHER(hasAncestor);
@@ -192,45 +260,61 @@ void RegistryMaps_O::lazyInitialize() const {
   REGISTER_MATCHER(hasAnyUsingShadowDecl);
   REGISTER_MATCHER(hasArgument);
   REGISTER_MATCHER(hasArgumentOfType);
+//  REGISTER_MATCHER(hasAttr);   // I can't support this matcher
+  REGISTER_MATCHER(hasAutomaticStorageDuration);
   REGISTER_MATCHER(hasBase);
   REGISTER_MATCHER(hasBody);
   REGISTER_MATCHER(hasCanonicalType);
   REGISTER_MATCHER(hasCaseConstant);
   REGISTER_MATCHER(hasCondition);
   REGISTER_MATCHER(hasConditionVariableStatement);
-  REGISTER_MATCHER(hasDeclContext);
+  REGISTER_MATCHER(hasDecayedType);
   REGISTER_MATCHER(hasDeclaration);
+  REGISTER_MATCHER(hasDeclContext);
   REGISTER_MATCHER(hasDeducedType);
   REGISTER_MATCHER(hasDescendant);
   REGISTER_MATCHER(hasDestinationType);
   REGISTER_MATCHER(hasEitherOperand);
   REGISTER_MATCHER(hasElementType);
+  REGISTER_MATCHER(hasElse);
   REGISTER_MATCHER(hasFalseExpression);
+  REGISTER_MATCHER(hasGlobalStorage);
   REGISTER_MATCHER(hasImplicitDestinationType);
   REGISTER_MATCHER(hasIncrement);
   REGISTER_MATCHER(hasIndex);
   REGISTER_MATCHER(hasInitializer);
+  REGISTER_MATCHER(hasKeywordSelector);
   REGISTER_MATCHER(hasLHS);
   REGISTER_MATCHER(hasLocalQualifiers);
+  REGISTER_MATCHER(hasLocalStorage);
   REGISTER_MATCHER(hasLoopInit);
+  REGISTER_MATCHER(hasLoopVariable);
   REGISTER_MATCHER(hasMethod);
   REGISTER_MATCHER(hasName);
+  REGISTER_MATCHER(hasNullSelector);
   REGISTER_MATCHER(hasObjectExpression);
   REGISTER_MATCHER(hasOperatorName);
   REGISTER_MATCHER(hasOverloadedOperatorName);
   REGISTER_MATCHER(hasParameter);
   REGISTER_MATCHER(hasParent);
   REGISTER_MATCHER(hasQualifier);
+  REGISTER_MATCHER(hasRangeInit);
+  REGISTER_MATCHER(hasReceiverType);
   REGISTER_MATCHER(hasRHS);
+  REGISTER_MATCHER(hasSelector);
   REGISTER_MATCHER(hasSingleDecl);
   REGISTER_MATCHER(hasSize);
   REGISTER_MATCHER(hasSizeExpr);
   REGISTER_MATCHER(hasSourceExpression);
+  REGISTER_MATCHER(hasStaticStorageDuration);
   REGISTER_MATCHER(hasTargetDecl);
   REGISTER_MATCHER(hasTemplateArgument);
+  REGISTER_MATCHER(hasThen);
+  REGISTER_MATCHER(hasThreadStorageDuration);
   REGISTER_MATCHER(hasTrueExpression);
   REGISTER_MATCHER(hasTypeLoc);
   REGISTER_MATCHER(hasUnaryOperand);
+  REGISTER_MATCHER(hasUnarySelector);
   REGISTER_MATCHER(hasValueType);
   REGISTER_MATCHER(ifStmt);
   REGISTER_MATCHER(ignoringImpCasts);
@@ -239,99 +323,128 @@ void RegistryMaps_O::lazyInitialize() const {
   REGISTER_MATCHER(implicitCastExpr);
   REGISTER_MATCHER(incompleteArrayType);
   REGISTER_MATCHER(initListExpr);
+  REGISTER_MATCHER(injectedClassNameType);
   REGISTER_MATCHER(innerType);
   REGISTER_MATCHER(integerLiteral);
-  REGISTER_MATCHER(decayedType);
-  REGISTER_MATCHER(hasDecayedType);
-  REGISTER_MATCHER(isVariadic);
+  REGISTER_MATCHER(isAnonymous);
   REGISTER_MATCHER(isArrow);
-  REGISTER_MATCHER(isStruct);
+  REGISTER_MATCHER(isBaseInitializer);
+  REGISTER_MATCHER(isCatchAll);
   REGISTER_MATCHER(isClass);
-  REGISTER_MATCHER(isUnion);
   REGISTER_MATCHER(isConst);
   REGISTER_MATCHER(isConstQualified);
+  REGISTER_MATCHER(isCopyConstructor);
+  REGISTER_MATCHER(isDefaultConstructor);
   REGISTER_MATCHER(isDefinition);
+  REGISTER_MATCHER(isDeleted);
+  REGISTER_MATCHER(isExceptionVariable);
+  REGISTER_MATCHER(isExplicit);
   REGISTER_MATCHER(isExplicitTemplateSpecialization);
+  REGISTER_MATCHER(isExpr);
   REGISTER_MATCHER(isExternC);
+  REGISTER_MATCHER(isFinal);
+  REGISTER_MATCHER(isInline);
   REGISTER_MATCHER(isImplicit);
+  REGISTER_MATCHER(isExpansionInFileMatching);
+  REGISTER_MATCHER(isExpansionInMainFile);
+  REGISTER_MATCHER(isInstantiated);
+  REGISTER_MATCHER(isExpansionInSystemHeader);
   REGISTER_MATCHER(isInteger);
+  REGISTER_MATCHER(isIntegral);
+  REGISTER_MATCHER(isInTemplateInstantiation);
+  REGISTER_MATCHER(isListInitialization);
+  REGISTER_MATCHER(isMemberInitializer);
+  REGISTER_MATCHER(isMoveConstructor);
+  REGISTER_MATCHER(isNoThrow);
   REGISTER_MATCHER(isOverride);
   REGISTER_MATCHER(isPrivate);
   REGISTER_MATCHER(isProtected);
   REGISTER_MATCHER(isPublic);
+  REGISTER_MATCHER(isPure);
+  REGISTER_MATCHER(isStruct);
   REGISTER_MATCHER(isTemplateInstantiation);
+  REGISTER_MATCHER(isUnion);
+  REGISTER_MATCHER(isVariadic);
   REGISTER_MATCHER(isVirtual);
+  REGISTER_MATCHER(isVolatileQualified);
   REGISTER_MATCHER(isWritten);
-  REGISTER_MATCHER(lValueReferenceType);
   REGISTER_MATCHER(labelStmt);
   REGISTER_MATCHER(lambdaExpr);
+  REGISTER_MATCHER(lValueReferenceType);
   REGISTER_MATCHER(matchesName);
+  REGISTER_MATCHER(matchesSelector);
   REGISTER_MATCHER(materializeTemporaryExpr);
   REGISTER_MATCHER(member);
-  REGISTER_MATCHER(cxxMemberCallExpr);
   REGISTER_MATCHER(memberExpr);
   REGISTER_MATCHER(memberPointerType);
-  REGISTER_MATCHER(cxxMethodDecl);
   REGISTER_MATCHER(namedDecl);
-  REGISTER_MATCHER(namesType);
+  REGISTER_MATCHER(namespaceAliasDecl);
   REGISTER_MATCHER(namespaceDecl);
+  REGISTER_MATCHER(namesType);
   REGISTER_MATCHER(nestedNameSpecifier);
   REGISTER_MATCHER(nestedNameSpecifierLoc);
-  REGISTER_MATCHER(cxxNewExpr);
-  REGISTER_MATCHER(cxxNullPtrLiteralExpr);
   REGISTER_MATCHER(nullStmt);
+  REGISTER_MATCHER(numSelectorArgs);
   REGISTER_MATCHER(ofClass);
+  REGISTER_MATCHER(objcInterfaceDecl);
+  REGISTER_MATCHER(objcMessageExpr);
+  REGISTER_MATCHER(objcObjectPointerType);
   REGISTER_MATCHER(on);
   REGISTER_MATCHER(onImplicitObjectArgument);
-  REGISTER_MATCHER(cxxOperatorCallExpr);
   REGISTER_MATCHER(parameterCountIs);
   REGISTER_MATCHER(parenType);
   REGISTER_MATCHER(parmVarDecl);
   REGISTER_MATCHER(pointee);
   REGISTER_MATCHER(pointerType);
   REGISTER_MATCHER(qualType);
-  REGISTER_MATCHER(rValueReferenceType);
   REGISTER_MATCHER(recordDecl);
-  REGISTER_MATCHER(cxxRecordDecl);
   REGISTER_MATCHER(recordType);
   REGISTER_MATCHER(referenceType);
   REGISTER_MATCHER(refersToDeclaration);
+  REGISTER_MATCHER(refersToIntegralType);
   REGISTER_MATCHER(refersToType);
-  REGISTER_MATCHER(cxxReinterpretCastExpr);
-  REGISTER_MATCHER(returnStmt);
   REGISTER_MATCHER(returns);
+  REGISTER_MATCHER(returnStmt);
+  REGISTER_MATCHER(rValueReferenceType);
   REGISTER_MATCHER(sizeOfExpr);
   REGISTER_MATCHER(specifiesNamespace);
   REGISTER_MATCHER(specifiesType);
   REGISTER_MATCHER(specifiesTypeLoc);
   REGISTER_MATCHER(statementCountIs);
-  REGISTER_MATCHER(cxxStaticCastExpr);
+  REGISTER_MATCHER(staticAssertDecl);
   REGISTER_MATCHER(stmt);
   REGISTER_MATCHER(stringLiteral);
+  REGISTER_MATCHER(substNonTypeTemplateParmExpr);
+  REGISTER_MATCHER(substTemplateTypeParmType);
   REGISTER_MATCHER(switchCase);
   REGISTER_MATCHER(switchStmt);
+  REGISTER_MATCHER(templateArgument);
+  REGISTER_MATCHER(templateArgumentCountIs);
   REGISTER_MATCHER(templateSpecializationType);
-  REGISTER_MATCHER(cxxTemporaryObjectExpr);
-  REGISTER_MATCHER(cxxThisExpr);
+  REGISTER_MATCHER(templateTypeParmType);
   REGISTER_MATCHER(throughUsingDecl);
-  REGISTER_MATCHER(cxxThrowExpr);
   REGISTER_MATCHER(to);
-  REGISTER_MATCHER(cxxTryStmt);
+  REGISTER_MATCHER(translationUnitDecl);
   REGISTER_MATCHER(type);
-  REGISTER_MATCHER(typeLoc);
+  REGISTER_MATCHER(typedefDecl);
   REGISTER_MATCHER(typedefType);
+  REGISTER_MATCHER(typeLoc);
   REGISTER_MATCHER(unaryExprOrTypeTraitExpr);
   REGISTER_MATCHER(unaryOperator);
   REGISTER_MATCHER(unaryTransformType);
   REGISTER_MATCHER(unless);
-  REGISTER_MATCHER(cxxUnresolvedConstructExpr);
+  REGISTER_MATCHER(unresolvedUsingTypenameDecl);
   REGISTER_MATCHER(unresolvedUsingValueDecl);
   REGISTER_MATCHER(userDefinedLiteral);
   REGISTER_MATCHER(usingDecl);
+  REGISTER_MATCHER(usingDirectiveDecl);
+  REGISTER_MATCHER(valueDecl);
   REGISTER_MATCHER(varDecl);
   REGISTER_MATCHER(variableArrayType);
+  REGISTER_MATCHER(voidType);
   REGISTER_MATCHER(whileStmt);
   REGISTER_MATCHER(withInitializer);
+
 }
 
 RegistryMaps_O::~RegistryMaps_O() {
@@ -399,5 +512,7 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(cor
 void initialize_Registry() {
 //  RegistryData = gctools::RootClassAllocator<RegistryMaps_O>::allocate();
   RegistryData = gctools::GC<RegistryMaps_O>::allocate();
+  _sym_STARmatcher_namesSTAR->defparameter(_Nil<core::T_O>());
+  RegistryData->lazyInitialize();
 }
 };

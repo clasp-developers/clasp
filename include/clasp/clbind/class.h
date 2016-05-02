@@ -467,6 +467,7 @@ struct CountConstructorArguments<constructor<ARGS...>> {
   enum { value = sizeof...(ARGS) };
 };
 
+ 
 template <class Class, class Pointer, class Signature, class Policies>
 struct constructor_registration_base : public registration {
   constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring)
@@ -490,14 +491,19 @@ struct constructor_registration_base : public registration {
   string m_docstring;
 };
 
-template <class Class, class Pointer, class Signature, class Policies>
+ /*! constructor_registration can construct either a derivable class or a non-derivable class */
+ 
+ class construct_non_derivable_class {};
+ class construct_derivable_class {};
+ 
+ template <class Class, class Pointer, class Signature, class Policies, class DerivableType>
 struct constructor_registration : public constructor_registration_base<Class, Pointer, Signature, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, Signature, Policies>(policies, name, arguments, declares, docstring){};
 };
 
 /*! This is the constructor registration for default constructors */
 template <class Class, class Pointer, class Policies>
-struct constructor_registration<Class, Pointer, default_constructor, Policies> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
+  struct constructor_registration<Class, Pointer, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
     core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate();
@@ -511,7 +517,7 @@ struct constructor_registration<Class, Pointer, default_constructor, Policies> :
          * instantiates a constructor functoid that uses the garbage collector
          */
 template <class Class, class Policies>
-struct constructor_registration_base<Class, reg::null_type, default_constructor, Policies> : public registration {
+  struct constructor_registration_base<Class, reg::null_type, default_constructor, Policies> : public registration {
   constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring)
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
@@ -533,11 +539,11 @@ struct constructor_registration_base<Class, reg::null_type, default_constructor,
   string m_docstring;
 };
 
-/*! This is the constructor registration for default constructors of derivable classes,
+/*! This is the constructor registration for default constructors of non derivable classes,
          Specialized by making second template parameter reg::null_type
         */
 template <class Class, class Policies>
-struct constructor_registration<Class, reg::null_type, default_constructor, Policies> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
+  struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
   core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
@@ -1027,7 +1033,7 @@ private:
 
     this->set_default_constructor(
         new detail::constructor_registration<
-            construct_type, HeldType, Signature, Policies>(
+        construct_type, HeldType, Signature, Policies,detail::construct_non_derivable_class>(
             Policies(), name, arguments, declares, docstring));
     return *this;
   }
@@ -1041,7 +1047,7 @@ private:
 
     this->add_member(
         new detail::constructor_registration<
-            construct_type, HeldType, signature, Policies>(
+        construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(
             Policies(), name, arguments, declares, docstring));
 
 #if 0

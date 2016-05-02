@@ -748,15 +748,16 @@ void setup_bootstrap_packages(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
 template <class TheClass>
 void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const std::string& full_name )
 {
+  std::string orig_package_part, orig_symbol_part;
+  core::colon_split( full_name, orig_package_part, orig_symbol_part);
   std::string package_part, symbol_part;
-  core::colon_split( full_name, package_part, symbol_part);
-  package_part = core::lispify_symbol_name(package_part);
-  symbol_part = core::lispify_symbol_name(symbol_part);
+  package_part = core::lispify_symbol_name(orig_package_part);
+  symbol_part = core::lispify_symbol_name(orig_symbol_part);
 //  printf("%s:%d set_one_static_class_symbol --> %s:%s\n", __FILE__, __LINE__, package_part.c_str(), symbol_part.c_str() );
   core::SymbolStorage store;
   bool found =  symbols->lookupSymbol(package_part,symbol_part, store );
   if ( !found ) {
-    printf("%s:%d ERROR!!!! The static class symbol %s was not found!\n", __FILE__, __LINE__, full_name.c_str() );
+    printf("%s:%d ERROR!!!! The static class symbol %s was not found orig_symbol_part=|%s| symbol_part=|%s|!\n", __FILE__, __LINE__, full_name.c_str(), orig_symbol_part.c_str(), symbol_part.c_str() );
     abort();
   }
   TheClass::set_static_class_symbol(store._Symbol);

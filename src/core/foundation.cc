@@ -527,7 +527,8 @@ Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageNam
   return sym;
 }
 
-bool lispify_match(const char *&cur, const char *match) {
+typedef enum { ignore, upperCaseAlpha } NextCharTest;
+bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTest = ignore) {
   const char *ccur = cur;
   while (*match) {
     if (*ccur == '\0')
@@ -537,15 +538,70 @@ bool lispify_match(const char *&cur, const char *match) {
     ++ccur;
     ++match;
   }
-  cur = ccur;
-  return true;
+  if ( nextCharTest == ignore ) {
+    cur = ccur;
+    return true;
+  }
+  if ( nextCharTest == upperCaseAlpha ) {
+    if (*match && isalpha(*match) && isupper(*match)) {
+      cur = ccur;
+      return true;
+    }
+    return false;
+  }
+  SIMPLE_ERROR(BF("Unknown nextCharTest(%d)") % nextCharTest );
+}
+
+/*! This checks for names like CXXObject and will convert them to CXX-OBJECT.
+It looks for [A-Z]+[A-Z][a-z] - a run of more than 
+two upper case characters followed by a lower case
+alpha character. If it sees this it returns true and the first N-1 characters of the
+upper case sequence and it advances cur to the last upper case character */
+
+ bool lispify_more_than_two_upper_case_followed_by_lower_case(const char*&cur, stringstream& accumulate)
+{
+  const char *ccur = cur;
+  stringstream ss_acc;
+  while (*ccur) {
+    if (isalpha(*ccur)) {
+      if (isupper(*ccur)) {
+        if (!*(ccur+1)) return false;
+        if (isalpha(*(ccur+1))) {
+          if (isupper(*(ccur+1))) {
+            if (!*(ccur+2) ) return false;
+            if (isalpha(*(ccur+2))) {
+              if ( islower(*(ccur+2))) {
+                accumulate << ss_acc.str() << '-';
+                cur = ccur;
+                return true;
+              } else {
+                ss_acc << *ccur;
+                ++ccur;
+                continue;
+              }
+            } else return false;
+          } else return false;
+        } else return false;
+      } else return false;
+    } else return false;
+  }
 }
 
 string lispify_symbol_name(const string &s) {
+  bool new_rule_change = false;
   LOG(BF("lispify_symbol_name pass1 source[%s]") % s);
+  /*! Temporarily store the string in a buffer */
+#define LISPIFY_BUFFER_SIZE 1024
+  char buffer[LISPIFY_BUFFER_SIZE];
+  int name_length = s.size();
+  if ((name_length+2)>=LISPIFY_BUFFER_SIZE) {
+    printf("%s:%d The C++ string is too large to lispify - increase LISPIFY_BUFFER_SIZE to at least %d\n", (name_length+2));
+    abort();
+  }
+  memset(buffer,0,name_length+2);
+  strncpy(buffer,s.c_str(),name_length);
   stringstream stream_pass1;
-  const char *start_pass1 = s.c_str();
-  const char *cur = start_pass1;
+  const char *cur = buffer;
   while (*cur) {
     if (lispify_match(cur, "_SHARP_")) {
       stream_pass1 << "#";
@@ -619,6 +675,26 @@ string lispify_symbol_name(const string &s) {
       stream_pass1 << "&";
       continue;
     }
+#if 0
+    // Lispify all names like CXXRecordDecl to CXX-RECORD-DECL
+    // This specific rule is to make it easier to integrate ASTMatchers into Clasp
+    // Because the ASTMatcher cxxRecordDecl() --> CXX-RECORD-DECL
+    // and without this rule the AST Class CXXRecordDecl() --> CXXRECORD-DECL
+    //
+    if (lispify_match(cur, "CXX", upperCaseAlpha )) {
+      stream_pass1 << "CXX-";
+      new_rule_change = true;
+      continue;
+    }
+#endif
+#if 0
+    // This will mess up too many symbols
+    string matched;
+    if ( lispify_more_than_two_upper_case_followed_by_lower_case(cur,stream_pass1) ) {
+      printf("%s:%d A symbol changed according to the new rule ([A-Z]+)([A-Z][a-z]) -> \\1-\\2-\n", __FILE__, __LINE__ );
+      continue;
+    }
+#endif
     if (lispify_match(cur, "_")) {
       stream_pass1 << "-";
       continue;
@@ -643,6 +719,9 @@ string lispify_symbol_name(const string &s) {
     ++cur;
   }
   LOG(BF("lispify_symbol_name output[%s]") % stream_pass2.str());
+  if ( new_rule_change ) {
+    printf("%s:%d The symbol |%s| changed according to the new rule ([A-Z]+)([A-Z][a-z]) -> \\1-\\2-\n", __FILE__, __LINE__, stream_pass2.str().c_str() );
+  }
   return stream_pass2.str();
 }
 
