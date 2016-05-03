@@ -216,7 +216,7 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
 #endif
 }
 
-CL_LAMBDA(package_desig);
+CL_LAMBDA(package-desig);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS package_shadowing_symbols");
 CL_DEFUN T_sp cl__package_shadowing_symbols(T_sp package_desig) {
@@ -241,7 +241,7 @@ CL_DEFUN T_mv cl__import(T_sp symbols_desig, T_sp package_desig) {
   return (Values(_lisp->_true()));
 }
 
-CL_LAMBDA(symbol-names-desig &optional (package_desig *package*));
+CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: shadow");
 CL_DEFUN T_mv cl__shadow(List_sp symbol_names_desig, T_sp package_desig) {

@@ -46,7 +46,7 @@ if there were an empty string between them."
          for abs-path = (truename (make-pathname :name nil :type nil :defaults (merge-pathnames (pathname directory) bjam-cmds)))
          do (progn
               (format fout "  {~%")
-              (format fout "  \"directory\" : ~a,~%" (namestring abs-path))
+              (format fout "  ~s : ~s,~%" "directory" (namestring abs-path))
               (format fout "  \"command\" : ~s,~%" compile-command)
               (format fout "  \"file\" : ~s~%" source-file-name)
               (format fout "  }~a~%" (if rest "," ""))))

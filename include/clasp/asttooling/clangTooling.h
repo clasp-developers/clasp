@@ -178,7 +178,8 @@ class DerivableMatchCallback
 public:
   virtual void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     const clang::ast_matchers::MatchFinderMatchResult conv(Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
-    core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv));
+    core::T_sp val =  translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
+    core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), val);
   }
 
   void default_run(const clang::ast_matchers::MatchFinderMatchResult &Result) {

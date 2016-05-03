@@ -5861,7 +5861,7 @@ T_sp IOFileStream_O::make(const string &name, int fd, enum StreamMode smm, T_sp 
   return stream;
 }
 
-CL_LAMBDA(&optional strm (eof_error_p t) eof_value);
+CL_LAMBDA(&optional strm (eof-error-p t) eof-value);
 CL_DECLARE();
 CL_DOCSTRING("readByte");
 CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
@@ -5879,7 +5879,7 @@ CL_DEFUN T_sp cl__read_byte(T_sp strm, T_sp eof_error_p, T_sp eof_value) {
   return c;
 }
 
-CL_LAMBDA(&optional peek_type strm (eof_errorp t) eof_value recursivep);
+CL_LAMBDA(&optional peek-type strm (eof-errorp t) eof-value recursivep);
 CL_DECLARE();
 CL_DOCSTRING("peekChar");
 CL_DEFUN T_sp cl__peek_char(T_sp peek_type, T_sp strm, T_sp eof_errorp, T_sp eof_value, T_sp recursive_p) {
@@ -5924,7 +5924,7 @@ HANDLE_EOF:
   return eof_value;
 }
 
-CL_LAMBDA(&optional strm (eof_error_p t) eof_value recursive_p);
+CL_LAMBDA(&optional strm (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("readChar");
 CL_DEFUN T_sp cl__read_char(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {
@@ -5942,7 +5942,7 @@ CL_DEFUN T_sp cl__read_char(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp re
   return clasp_make_character(c);
 }
 
-CL_LAMBDA(&optional strm (eof_error_p t) eof_value recursive_p);
+CL_LAMBDA(&optional strm (eof-error-p t) eof-value recursive-p);
 CL_DECLARE();
 CL_DOCSTRING("readCharNoHang");
 CL_DEFUN T_sp cl__read_char_no_hang(T_sp strm, T_sp eof_error_p, T_sp eof_value, T_sp recursive_p) {

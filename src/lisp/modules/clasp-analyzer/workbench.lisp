@@ -17,6 +17,50 @@
 (time (clasp-analyzer:load-project *db*))
 
 
+
+
+(clang-tool:load-asts *db*)
+
+(getpid)4787
+
+
+(trace clang-tool::compile-matcher*)
+(clang-tool:compile-matcher
+ '(:record-decl
+     (:bind :whole (:record-decl))))
+ 
+(clang-tool:with-compilation-tool-database *db*
+  (clang-tool:match-run-loaded-asts
+   '(:cxxrecord-decl)
+   :limit 10
+   :callback
+   (make-instance
+    'clang-tool:code-match-callback
+    :match-code (lambda (match-info)
+                  (let* ((node (clang-tool:mtag-node match-info :whole))
+                         (name (cast:get-qualified-name-as-string node))
+                         (source-pos (clang-tool:mtag-loc-start match-info :whole)))
+                    (cast:dump node)
+                    (format t "Name: ~a~%" name)
+                    (format t "Source: ~a~%" source-pos))))))
+
+
+(clang-tool:with-compilation-tool-database *db*
+  (clang-tool:match-run-loaded-asts
+   '(:record-decl (:bind :whole (:record-decl)))
+   :limit 10
+   :callback
+   (make-instance
+    'clang-tool:code-match-callback
+    :match-code (lambda (match-info)
+                  (let* ((node (clang-tool:mtag-node match-info :whole))
+                         (name (cast:get-qualified-name-as-string node))
+                         (source-pos (clang-tool:mtag-loc-start match-info :whole)))
+                    (cast:dump node)
+                    (format t "Name: ~a~%" name)
+                    (format t "Source: ~a~%" source-pos))))))
+
+
 (getpid)1433
 (analyze-only *db*)
 

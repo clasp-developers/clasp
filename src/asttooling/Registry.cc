@@ -112,7 +112,7 @@ void RegistryMaps_O::_registerMatcher(const string& name,
 
 
 #define REGISTER_MATCHER(name)                                                             \
-  _registerMatcher(ast_tooling__fix_matcher_name(#name),\
+  _registerMatcher(#name,\
                    ast_tooling__intern_matcher_keyword(#name),\
                    makeMatcherAutoMarshall( ::clang::ast_matchers::name, ast_tooling__intern_matcher_keyword(#name)));
 #define SPECIFIC_MATCHER_OVERLOAD(name, Id)            \
@@ -125,7 +125,7 @@ void RegistryMaps_O::_registerMatcher(const string& name,
                                 ast_tooling__intern_matcher_keyword(#name)), \
         makeMatcherAutoMarshall(SPECIFIC_MATCHER_OVERLOAD(name, 1), \
                                 ast_tooling__intern_matcher_keyword(#name))}; \
-    _registerMatcher(ast_tooling__fix_matcher_name(#name),ast_tooling__intern_matcher_keyword(#name), \
+    _registerMatcher(#name,ast_tooling__intern_matcher_keyword(#name), \
                      gctools::GC<OverloadedMatcherDescriptor_O>::allocate(Callbacks) /*new OverloadedMatcherDescriptor(Callbacks)*/); \
   } while (0)
 
@@ -473,6 +473,8 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructMatcher(core::Sy
                                                                         core::Cons_sp NameRange,
                                                                         core::Vector_sp Args,
                                                                         Diagnostics *Error) {
+  printf("%s:%d Try constructMatcher name: %s NameRange: %s Args: %s\n",
+         __FILE__, __LINE__, _rep_(MatcherName).c_str(), _rep_(NameRange).c_str(), _rep_(Args).c_str());
   RegistryMaps_O::const_iterator it = RegistryData->find(MatcherName);
   if (it == RegistryData->end()) {
     core::Symbol_sp sym = MatcherName;
@@ -495,6 +497,7 @@ clang::ast_matchers::dynamic::VariantMatcher Registry::constructBoundMatcher(cor
                                                                              StringRef BindID,
                                                                              core::Vector_sp Args,
                                                                              Diagnostics *Error) {
+  printf("%s:%d Try constructBoundMatcher name: %s NameRange: %s Args: %s  BindID: %s \n", __FILE__, __LINE__, _rep_(MatcherName).c_str(), _rep_(NameRange).c_str(), _rep_(Args).c_str(), BindID);
   clang::ast_matchers::dynamic::VariantMatcher Out = constructMatcher(MatcherName, NameRange, Args, Error);
   if (Out.isNull())
     return Out;

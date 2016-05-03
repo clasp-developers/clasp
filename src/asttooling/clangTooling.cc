@@ -50,7 +50,8 @@ THE SOFTWARE.
 #include <clang/Lex/Preprocessor.h>
 #include <clang/ASTMatchers/Dynamic/VariantValue.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
-
+#include <clang/ASTMatchers/Dynamic/Diagnostics.h>
+#include <clang/ASTMatchers/Dynamic/Parser.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/hashTable.h>
@@ -402,6 +403,7 @@ size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record)
   return size;
 }
 
+
 void initialize_clangTooling() {
 
   // overloaded functions that had trouble resolving
@@ -572,4 +574,17 @@ void initialize_clangTooling() {
                                     class_<clang::comments::FullComment, clang::comments::Comment>("FullComment", no_default_constructor)
                                     ];
 }
+
+
+CL_DEFUN core::T_sp ast_tooling__parse_dynamic_matcher(const string& matcher)
+{
+  clang::ast_matchers::dynamic::Diagnostics error;
+  llvm::Optional<clang::ast_matchers::dynamic::DynTypedMatcher> Matcher =
+    clang::ast_matchers::dynamic::Parser::parseMatcherExpression(matcher, NULL, NULL, &error);
+  if (!Matcher) {
+    SIMPLE_ERROR(BF("Could not parse expression %s") % matcher);
+  }
+  return translate::to_object<clang::ast_matchers::dynamic::DynTypedMatcher>::convert(*Matcher);
+};
+
 };

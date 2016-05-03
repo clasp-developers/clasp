@@ -762,7 +762,7 @@ CL_DEFUN T_mv cl__identity(T_sp arg) {
   return (Values(arg));
 };
 
-CL_LAMBDA(macro_function form macro_env);
+CL_LAMBDA(macro-function form macro-env);
 CL_DECLARE();
 CL_DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
 CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
@@ -1105,7 +1105,7 @@ CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
 */
 SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 
-CL_LAMBDA(func_desig &rest lists);
+CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for mapcar");
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
@@ -1156,7 +1156,7 @@ CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-CL_LAMBDA(func_desig &rest lists);
+CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {

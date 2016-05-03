@@ -43,7 +43,7 @@ namespace core {
 
 #define USE_INSTANCES_FOR_STRUCTURES
 
-CL_LAMBDA(type &rest slot_values);
+CL_LAMBDA(type &rest slot-values);
 CL_DECLARE();
 CL_DOCSTRING("makeStructure");
 CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
