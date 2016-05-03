@@ -140,7 +140,7 @@ CL_DEFUN T_mv cl__get_dispatch_macro_character(Character_sp dispChar, Character_
   return (Values(readtable->get_dispatch_macro_character(dispChar, subChar)));
 };
 
-CL_LAMBDA(ch func_desig &optional non-terminating-p (readtable *readtable*));
+CL_LAMBDA(ch func-desig &optional non-terminating-p (readtable *readtable*));
 CL_DECLARE();
 CL_DOCSTRING("setMacroCharacter");
 CL_DEFUN T_mv cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non_terminating_p, ReadTable_sp readtable) {

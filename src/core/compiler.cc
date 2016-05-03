@@ -145,7 +145,7 @@ T_sp varArgsList(int n_args, ...) {
   return first;
 }
 
-CL_LAMBDA(object &optional is_function);
+CL_LAMBDA(object &optional is-function);
 CL_DECLARE();
 CL_DOCSTRING("mangleName");
 CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {

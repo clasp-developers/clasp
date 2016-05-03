@@ -78,7 +78,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
-  #+target-os-linux "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/3.6.2"
+  #+target-os-linux "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/3.8.0"
   #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
@@ -185,7 +185,7 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 Setup the default arguments adjusters."
   (push (ast-tooling:get-clang-syntax-only-adjuster) (arguments-adjuster-list compilation-tool-database))
   (push (ast-tooling:get-clang-strip-output-adjuster) (arguments-adjuster-list compilation-tool-database))
-  (push (lambda (args)
+  (push (lambda (args filename)
           (concatenate 'vector
                        args
                        (vector "-isystem" +isystem-dir+
@@ -194,11 +194,11 @@ Setup the default arguments adjusters."
         (arguments-adjuster-list compilation-tool-database))
   (cond
     ((eq convert-relative-includes-to-absolute t)
-     (push (lambda (args)
+     (push (lambda (args filename)
              (convert-relative-includes-to-absolute args (main-pathname compilation-tool-database)))
            (arguments-adjuster-list compilation-tool-database)))
     (convert-relative-includes-to-absolute
-     (push (lambda (args)
+     (push (lambda (args filename)
              (convert-relative-includes-to-absolute args convert-relative-includes-to-absolute))
            (arguments-adjuster-list compilation-tool-database)))
     (t #| Do nothing |#)))
@@ -607,6 +607,10 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
          (setq *asts* asts)
          (format t "Built asts: ~a~%" asts))))))
 
+(defun safe-add-dynamic-matcher (match-finder compiled-matcher callback &key matcher-sexp)
+  (or (ast-tooling:add-dynamic-matcher match-finder compiled-matcher callback)
+      (error "Could not add dynamic-matcher ~s" matcher-sexp)))
+
 (defun batch-run-matcher (match-sexp &key compilation-tool-database callback run-and-save)
   (declare (type list match-sexp)
            (type ast-tooling:match-callback callback))
@@ -615,9 +619,9 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                                     (source-namestrings compilation-tool-database))))
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
     (let ((*run-and-save* run-and-save)
-          (matcher (compile-matcher `(:bind :whole ,match-sexp)))
+          (matcher (compile-matcher match-sexp))
           (match-finder (let ((mf (ast-tooling:new-match-finder)))
-                          (ast-tooling:add-dynamic-matcher mf matcher callback)
+                          (safe-add-dynamic-matcher mf matcher callback :matcher-sexp match-sexp)
                           mf))
           (factory (ast-tooling:new-frontend-action-factory match-finder)))
       (time (if (not run-and-save)
@@ -640,15 +644,18 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
   name
   initializer
   matcher
+  matcher-sexp
   callback
 )
 
-(defun multitool-add-matcher (mtool &key name matcher callback initializer)
+(defun multitool-add-matcher (mtool &key name matcher-sexp callback initializer)
   "Keep track of matchers and callbacks so they don't go out of scope while the tool is alive"
-  (let ((tool (make-single-tool :name name
-                                :initializer initializer
-                                :matcher matcher
-                                :callback callback)))
+  (let* ((matcher (compile-matcher matcher-sexp))
+         (tool (make-single-tool :name name
+                                 :initializer initializer
+                                 :matcher matcher
+                                 :matcher-sexp matcher-sexp
+                                 :callback callback)))
     (push tool (multitool-all-tools mtool)))
 )
 
@@ -685,7 +692,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
            (tools (multitool-active-tools mtool))
            (match-finder (let ((mf (ast-tooling:new-match-finder)))
                            (dolist (tool tools)
-                             (ast-tooling:add-dynamic-matcher mf (single-tool-matcher tool) (single-tool-callback tool)))
+                             (safe-add-dynamic-matcher mf (single-tool-matcher tool) (single-tool-callback tool) :matcher-sexp (single-tool-matcher-sexp tool)))
                            mf))
            (factory (ast-tooling:new-frontend-action-factory match-finder)))
       (dolist (tool tools)
@@ -697,7 +704,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
       (format t "Number of matches ~a~%" *match-counter*))))
 
-(defun sub-match-run (compiled-matcher node ast-context code)
+(defun sub-match-run (compiled-matcher matcher-sexp node ast-context code)
   "* Arguments
 - compiled-matcher :: The matcher that you want to run on the node and everything under it.
 - node :: The node that you want to run the matcher on.
@@ -707,7 +714,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
 Run a matcher on a node and everything underneath it."
   (with-unmanaged-object (callback (make-instance 'code-match-callback :match-code code))
     (let ((sub-match-finder (ast-tooling:new-match-finder)))
-      (ast-tooling:add-dynamic-matcher sub-match-finder compiled-matcher callback)
+      (safe-add-dynamic-matcher sub-match-finder compiled-matcher callback :matcher-sexp matcher-sexp)
       (match sub-match-finder node ast-context))))
 
 (defun run-matcher-on-loaded-asts (match-sexp &key callback counter-limit)
@@ -721,10 +728,10 @@ Limit the number of times you call the callback with counter-limit."
   (unless (contains-hint-request match-sexp)
     (let* ((*match-counter* 0)
            (*match-counter-limit* counter-limit)
-           (whole-matcher-sexp `(:bind :whole ,match-sexp))
+           (whole-matcher-sexp `(:bind :whole ,match-sexp)) ;(:bind :whole ,match-sexp))
            (matcher (compile-matcher whole-matcher-sexp))
            (match-finder (ast-tooling:new-match-finder)))
-      (ast-tooling:add-dynamic-matcher match-finder matcher callback)
+      (safe-add-dynamic-matcher match-finder matcher callback :matcher-sexp match-sexp)
       (catch 'match-counter-reached-limit
         (map 'list #'(lambda (x) (match-ast match-finder (get-astcontext x))) *asts*))
       (format t "Number of matches ~a~%" *match-counter*))))
@@ -1079,6 +1086,19 @@ correspond to the environment names superclasses that are also part of the clang
     (contains-hint-request-impl sexp)
     nil))
 
+(defvar *use-dynamic-ast-matcher-library* t)
+(defun compile-matcher-safe (sexp)
+  (if *use-dynamic-ast-matcher-library*
+      (let ((matcher-cform (cform-matcher sexp)))
+        (format t "Converted matcher to: ~a~%" matcher-cform)
+        (ast-tooling:parse-dynamic-matcher matcher-cform))
+      (let* ((diag (ast-tooling:new-diagnostics))
+             (dyn-matcher (compile-matcher-impl sexp diag))
+             (single-matcher (ast-tooling:get-single-matcher dyn-matcher)))
+        (if (null single-matcher)
+            (error "Error while constructing matcher - diagnostics:~% ~a" (to-string-full diag))
+            single-matcher))))
+  
 
 (defun compile-matcher (sexp)
   "* Arguments
@@ -1089,12 +1109,7 @@ Compile an ASTMatcher from an S-expression.
 Return nil if no matcher could be compiled."
   (if (contains-hint-request sexp)
       nil
-      (let* ((diag (ast-tooling:new-diagnostics))
-             (dyn-matcher (compile-matcher* sexp diag))
-             (single-matcher (ast-tooling:get-single-matcher dyn-matcher)))
-        (if (null single-matcher)
-            (error "Error while constructing matcher - diagnostics:~% ~a" (to-string-full diag))
-            single-matcher))))
+      (compile-matcher-safe sexp)))
 
 ;;;
 ;;;  Convert my matchers back into C-style matchers

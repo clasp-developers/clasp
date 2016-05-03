@@ -69,7 +69,7 @@ redirect its virtual functions to the Derivable<T> functions. */
     /*! Define a pointerToAlienWithin() virtual function that returns
         a void* pointer to the Derivable<Alien> Alien object.
         This will be used by translators. */
-    virtual void *pointerToAlienWithin() { return static_cast<void *>(this); };
+    virtual void *pointerToAlienWithin() { return reinterpret_cast<void*>(static_cast<Alien*>(this)); };
     bool cxxAdapterClassP() const { return true; };
     void describe() {
       printf("#<Derivable>@%p\n", this);

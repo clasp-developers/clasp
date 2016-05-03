@@ -187,7 +187,7 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
 };
 #if 1
 // fast funcall
-CL_LAMBDA(function_desig &va-rest args);
+CL_LAMBDA(function-desig &va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: funcall");
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
@@ -205,7 +205,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
 }
 #else
 // slow funcall
-CL_LAMBDA(function_desig &rest args);
+CL_LAMBDA(function-desig &rest args);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: funcall");
 CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {

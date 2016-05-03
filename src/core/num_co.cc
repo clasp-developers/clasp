@@ -1018,7 +1018,7 @@ CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
   return ix;
 }
 
-CL_LAMBDA(Float_sp x);
+CL_LAMBDA(Float-sp x);
 CL_DECLARE();
 CL_DOCSTRING("floatPrecision");
 CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {

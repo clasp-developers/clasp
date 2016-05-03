@@ -2468,7 +2468,7 @@ namespace llvmo {
 CL_LISPIFY_NAME(getParent);
 CL_EXTERN_DEFMETHOD(BasicBlock_O,(llvm::Function *(llvm::BasicBlock::*)())&llvm::BasicBlock::getParent);
 
-CL_LAMBDA("context &optional (name \"\") parent basic_block");
+CL_LAMBDA("context &optional (name \"\") parent basic-block");
 CL_LISPIFY_NAME(basic-block-create);
 CL_EXTERN_DEFUN( &llvm::BasicBlock::Create );
 

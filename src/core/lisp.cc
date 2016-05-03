@@ -1638,7 +1638,7 @@ CL_DEFUN T_mv core__find_file_in_lisp_path(Str_sp partialPath) {
   return (Values(fullPath));
 }
 
-CL_LAMBDA(name_desig);
+CL_LAMBDA(name-desig);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: find-package");
 CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
@@ -1840,7 +1840,7 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
   __END_DOC
 */
 
-CL_LAMBDA(string_desig &optional package_desig);
+CL_LAMBDA(string-desig &optional package-desig);
 CL_DECLARE();
 CL_DOCSTRING("apropos");
 CL_DEFUN T_sp cl__apropos(Str_sp string_desig, T_sp package_desig) {
@@ -2124,7 +2124,7 @@ CL_DEFUN void core__export_to_python(T_sp symbolsDesig) {
   }
 }
 
-CL_LAMBDA(symbol_name &optional (package-desig *package*));
+CL_LAMBDA(symbol-name &optional (package-desig *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: intern");
 CL_DEFUN T_mv cl__intern(Str_sp symbol_name, T_sp package_desig) {
