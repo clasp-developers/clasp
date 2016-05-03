@@ -605,8 +605,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (export '(default-target-backend target-backend-pathname))
 
-(defun bitcode-exists-and-up-to-date (filename)
-  (let* ((source-path (build-pathname filename))
+(defun bitcode-exists-and-up-to-date (entry)
+  (let* ((filename (entry-filename entry))
+         (source-path (build-pathname filename))
          (bitcode-path (build-pathname filename :bc))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode

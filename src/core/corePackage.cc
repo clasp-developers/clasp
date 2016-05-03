@@ -1142,6 +1142,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   std::list<string> nicknames;
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
+  _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
 #if 0
 
   _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

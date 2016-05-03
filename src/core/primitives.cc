@@ -808,6 +808,7 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fsetSTAR);
 CL_LAMBDA(function-name fn &optional is-macro pretty-print (lambda-list nil lambda-list-p));
 CL_DECLARE();
 CL_DOCSTRING(R"doc(* Arguments
@@ -816,11 +817,20 @@ CL_DOCSTRING(R"doc(* Arguments
 - is-macro :: A boolean.
 - pretty-print : A boolean.
 - lambda-list : A lambda-list or nil.
+- lambda-list-p : T if lambda-list is passed
 * Description
 Bind a function to the function slot of a symbol
 - handles symbol function-name and (SETF XXXX) names. 
-IS-MACRO defines if the function is a macro or not. PRETTY-PRINT was inherited from ecl - I don't know what its for.  LAMBDA-LIST passes the lambda-list.)doc");
+IS-MACRO defines if the function is a macro or not. 
+PRETTY-PRINT was inherited from ecl - I don't know what its for.  
+LAMBDA-LIST passes the lambda-list.)doc");
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
+#ifdef DEBUG_DRAG
+  if (_sym_STARdebug_fsetSTAR->symbolValue().isTrue()) {
+    printf("%s:%d FSET called with\n   functionName: %s\n   function: %s\n   is_macro: %s\n   pretty_print: %s\n   lambda_list: %s\n   lambda_list_p: %s\n",
+           __FILE__, __LINE__, _rep_(functionName).c_str(), _rep_(functor).c_str(), _rep_(is_macro).c_str(), _rep_(pretty_print).c_str(), _rep_(lambda_list).c_str(), _rep_(lambda_list_p).c_str());
+  }
+#endif // DEBUG_DRAG
   if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
     if (is_macro.isTrue()) {
       functionObject->set_kind(kw::_sym_macro);

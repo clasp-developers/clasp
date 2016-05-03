@@ -13,6 +13,10 @@
 
 (in-package :sys)
 
+(eval-when (:compile-toplevel)
+  (setq core:*debug-fset* t)
+  (bformat t "Turning ON *debug-fset*\n"))
+
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
@@ -30,7 +34,11 @@ last FORM.  If not, simply returns NIL."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(si::fset ',name ,function t ,pprint ',vl))
+       ,(ext:register-with-pde whole `(si::fset ',name ,function
+                                                t  ; macro
+                                                ,pprint ; ecl pprint
+                                                ',vl ; lambda-list lambda-list-p
+                                                ))
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
 
@@ -217,6 +225,9 @@ Establishes a NIL block and executes FORMs repeatedly.  The loop is normally
 terminated by a non-local exit."
   `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
 )
+
+(eval-when (:compile-toplevel)
+  (bformat t "(macroexpand '(defmacro lambda (&rest body) `(function (lambda ,@body)))) --> %s\n" (macroexpand '(defmacro lambda (&rest body) `(function (lambda ,@body))))))
 
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
 
@@ -481,3 +492,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (in-package :core)
 (import 'ext:truly-the)
 (export 'truly-the)
+
+(eval-when (:compile-toplevel)
+  (setq core:*debug-fset* nil)
+  (bformat t "Turning OFF *debug-fset*\n"))

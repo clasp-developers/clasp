@@ -459,7 +459,11 @@
 		  (when *dump-defmacro-definitions*
 		    (print function)
 		    (setq function `(si::bc-disassemble ,function)))
-		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint ',vl)))))))
+		  (ext:register-with-pde def `(si::fset ',name ,function
+                                                        t ; macro
+                                                        ,pprint ; ecl pprint
+                                                        ',vl ; lambda-list
+                                                        )))))))
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:
