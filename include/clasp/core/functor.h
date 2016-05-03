@@ -114,7 +114,7 @@ namespace core {
     CL_DEFMETHOD virtual void setf_cleavir_ast(T_sp ast) = 0;
     virtual List_sp declares() const = 0;
     CL_DEFMETHOD virtual T_sp docstring() const = 0;
-    virtual void *functionAddress() const = 0;
+    virtual void *functionAddress() const { return NULL; };
     CL_DEFMETHOD virtual bool macroP() const = 0;
     virtual void set_kind(Symbol_sp k) = 0;
     virtual Symbol_sp getKind() const = 0;
@@ -227,7 +227,6 @@ namespace core {
     virtual List_sp declares() const {NOT_APPLICABLE();};
     virtual T_sp docstring() const {NOT_APPLICABLE();};
     virtual T_sp closedEnvironment() const { return _Nil<T_O>();};
-    virtual void* functionAddress() const { NOT_APPLICABLE();};
     virtual void setAssociatedFunctions(List_sp funcs) {NOT_APPLICABLE();};
   };
 

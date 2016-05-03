@@ -62,9 +62,12 @@ string Function_O::__repr__() const {
   T_sp name = this->name();
   stringstream ss;
   ss << "#<" << this->_instanceClass()->classNameAsString();
-  ss << "/" << this->describe();
   ss << " " << _rep_(name);
+  ss << " :ftype " << _rep_(this->getKind());
   ss << " lambda-list: " << _rep_(this->lambda_list());
+  if ( this->fptr() != NULL ) {
+    ss << " :fptr " << reinterpret_cast<void*>(this->fptr());
+  }
   ss << ">";
   return ss.str();
 }
