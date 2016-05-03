@@ -46,8 +46,7 @@
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
 		     (irc-intrinsic "invokeMainFunction" *gv-source-namestring* ltv-manager-fn)
-                     (irc-intrinsic "cc_setTmvToNil" fn-result)
-		     ))))
+                     (irc-intrinsic "cc_setTmvToNil" fn-result)))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")
     main-fn))
@@ -237,9 +236,16 @@
       (funcall compile-file-hook form)
       (t1expr form)))
 
-(defun compile-form-into-module (form name)
-  "This is used to generate a module from a single form - specifically
-to compile prologue and epilogue code when linking modules"
+(defun compile-form-into-module (form name &key epilogue-module-p)
+  "* Arguments
+- form :: A form.
+- name :: The name of the module
+- epilogue-module-p :: T or NIL
+* Description
+This is used to generate a module from a single form - specifically
+to compile prologue and epilogue code when linking modules.
+If epilogue-module-p is T then tell make-boot-function-global-variable
+to append a NULL function to the list of main functions."
   (let* ((module (create-llvm-module-for-compile-file name))
          conditions
 	 (*compile-file-pathname* nil)
@@ -254,7 +260,7 @@ to compile prologue and epilogue code when linking modules"
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-top-level form)
             (let ((main-fn (compile-main-function name ltv-init-fn )))
-              (make-boot-function-global-variable *the-module* main-fn)
+              (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
               (add-main-function *the-module*)))
           )))
     module))
@@ -323,8 +329,16 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) )
-  "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
+(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) epilogue-module-p )
+  "* Arguments
+- given-input-pathname :: A pathname.
+- output-path :: A pathname.
+- compile-file-hook :: A function that will do the compile-file
+- type :: :kernel or :user (I'm not sure this is useful anymore
+- source-debug-namestring :: A namestring.
+- source-debug-offset :: An integer.
+- epilogue-module-p :: T if this is an epilogue module.
+Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((clasp-source-root (translate-logical-pathname "SYS:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
@@ -373,9 +387,8 @@ and the pathname of the source file - this will also be used as the module initi
 				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
 			       (compile-file-t1expr form compile-file-hook))))))
 		  (let ((main-fn (compile-main-function output-path ltv-init-fn )))
-		    (make-boot-function-global-variable *the-module* main-fn)
-		    (add-main-function *the-module*)))
-		)
+		    (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
+		    (add-main-function *the-module*))))
 	      (cmp-log "About to verify the module\n")
 	      (cmp-log-dump *the-module*)
 	      (if *dump-module-on-completion*
@@ -409,9 +422,11 @@ and the pathname of the source file - this will also be used as the module initi
                         (output-type :fasl)
 ;;; type can be either :kernel or :user
                         (type :user)
+                        epilogue-module-p
                       &aux conditions
                         )
-  "See CLHS compile-file"
+  "See CLHS compile-file. If epilogue-module-p is T then compile-file an 
+epilogue module - one that terminates a series of linked modules. "
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
   (with-compiler-env (conditions)
@@ -423,7 +438,8 @@ and the pathname of the source file - this will also be used as the module initi
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 
 					     :source-debug-offset source-debug-offset
-                                             :compile-file-hook compile-file-hook )))
+                                             :compile-file-hook compile-file-hook
+                                             :epilogue-module-p epilogue-module-p)))
 	(cond
 	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))

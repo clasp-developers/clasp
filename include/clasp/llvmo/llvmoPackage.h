@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #define CLASP_LINK_PASS_NAME "ClaspLinkPass"
 #define GLOBAL_BOOT_FUNCTIONS_NAME "globalClaspBootFunctions"
+#define GLOBAL_EPILOGUE_NAME "claspEpilogue"
 #define GLOBAL_BOOT_FUNCTIONS_SIZE_NAME "globalClaspBootFunctionsSize"
 
 NAMESPACE_PACKAGE_ASSOCIATION(llvmo, LlvmoPkg, "LLVM-SYS");

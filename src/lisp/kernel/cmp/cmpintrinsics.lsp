@@ -321,6 +321,8 @@ Boehm and MPS use a single pointer"
 
 (defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
   "An array of pointers to the function prototype")
+(defvar +fn-prototype*[2]+ (llvm-sys:array-type-get +fn-prototype*+ 2)
+  "An array of pointers to the function prototype")
 
 ;;
 ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
@@ -345,16 +347,38 @@ Boehm and MPS use a single pointer"
                                  "source-file-info-handle"))
 
 
-(defun make-boot-function-global-variable (module func-ptr)
+(defun make-boot-function-global-variable (module func-ptr &key epilogue-module-p)
+  "* Arguments
+- module :: An llvm module
+- func-ptr :: An llvm function
+- epilogue-module-p :: T or NIL
+* Description
+Add the global variable llvm-sys::+global-boot-functions-name+ to the Module (linkage appending)
+and initialize it with an array consisting of one function pointer or, iff epilogue-module-p is T
+then one function pointer and a NULL pointer.   The latter case is only for modules that
+are linked very last in a list of modules and it terminates the global-boot-functions array."
   (llvm-sys:make-global-variable module
-                                 +fn-prototype*[1]+ ; type
-                                 t ; is constant
+                                 (if epilogue-module-p
+                                     +fn-prototype*[2]+
+                                     +fn-prototype*[1]+) ; type
+                                 t                  ; is constant
                                  'llvm-sys:appending-linkage
-                                 (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr))
+                                 (if epilogue-module-p
+                                     (llvm-sys:constant-array-get +fn-prototype*[2]+
+                                                                  (list func-ptr
+                                                                        (llvm-sys:constant-pointer-null-get +fn-prototype*+)))
+                                     (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr)))
                                  llvm-sys:+global-boot-functions-name+)
+  (when epilogue-module-p
+    (llvm-sys:make-global-variable module
+                                   +i32+ ; type
+                                   t     ; is constant
+                                   'llvm-sys:external-linkage
+                                   (jit-constant-i32 #xdeadbeef)
+                                   llvm-sys:+global-epilogue-name+))
   (llvm-sys:make-global-variable module
-                                 +i32+ ; type
-                                 t ; is constant
+                                 +i32+  ; type
+                                 t      ; is constant
                                  'llvm-sys:internal-linkage
                                  (jit-constant-i32 1)
                                  llvm-sys:+global-boot-functions-name-size+))
