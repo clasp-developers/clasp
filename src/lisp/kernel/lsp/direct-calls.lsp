@@ -21,7 +21,7 @@
                              (core:intrinsic-call ,c-name ,@(core:names-of-lexical-variables
                                                              (core:make-lambda-list-handler
                                                               lambda-list nil 'function)))))
-             nil))))
+             `(bformat t "Could not generate wrapper for %s - the symbol is not available\n" ,evaluated-lisp-name)))))
  t #| its a macro |#)
 
 (defmacro generate-direct-call-defun (raw-lisp-name lambda-list c-name)
@@ -34,5 +34,5 @@
            (core:intrinsic-call ,c-name ,@(core:names-of-lexical-variables
                                            (core:make-lambda-list-handler
                                             lambda-list nil 'function))))
-        nil)))
+        `(bformat t "Could not generate wrapper for %s - the symbol is not available\n" ',evaluated-lisp-name))))
 
