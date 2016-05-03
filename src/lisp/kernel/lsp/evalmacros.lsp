@@ -13,7 +13,7 @@
 
 (in-package :sys)
 
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :execute)
   (setq core:*debug-fset* t)
   (bformat t "Turning ON *debug-fset*\n"))
 
@@ -226,12 +226,12 @@ terminated by a non-local exit."
   `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
 )
 
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :execute)
   (bformat t "(macroexpand '(defmacro lambda (&rest body) `(function (lambda ,@body)))) --> %s\n" (macroexpand '(defmacro lambda (&rest body) `(function (lambda ,@body))))))
 
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
 
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :execute)
   (bformat t "!!!!!!!!!!!!!!!!!!!!!!  The macro-function for lambda is: %s\n" (macro-function 'lambda)))
 
 #+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
@@ -493,6 +493,6 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (import 'ext:truly-the)
 (export 'truly-the)
 
-(eval-when (:compile-toplevel)
+(eval-when (:compile-toplevel :execute)
   (setq core:*debug-fset* nil)
   (bformat t "Turning OFF *debug-fset*\n"))

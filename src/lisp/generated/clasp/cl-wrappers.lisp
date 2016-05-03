@@ -2154,154 +2154,154 @@
 ;;; Found at ../../src/core/random.cc:42
 (generate-direct-call-defun (core:magic-intern "make-random-state" "COMMON-LISP") (&optional state) "wrapped_RandomState_O__make" )
 ;;; Generating code for core::core__set_kind
-;;; Found at ../../src/core/primitives.cc:1932
+;;; Found at ../../src/core/primitives.cc:1936
 (generate-direct-call-defun (core:magic-intern "core__set_kind") (fn kind) "wrapped_core__set_kind" )
 ;;; Generating code for core::core__function_source_pos_info
-;;; Found at ../../src/core/primitives.cc:1923
+;;; Found at ../../src/core/primitives.cc:1927
 (generate-direct-call-defun (core:magic-intern "core__function_source_pos_info") (function) "wrapped_core__function_source_pos_info" )
 ;;; Generating code for core::core__function_lambda_list
-;;; Found at ../../src/core/primitives.cc:1905
+;;; Found at ../../src/core/primitives.cc:1909
 (generate-direct-call-defun (core:magic-intern "core__function_lambda_list") (function) "wrapped_core__function_lambda_list" )
 ;;; Generating code for core::core__ihs_backtrace
-;;; Found at ../../src/core/primitives.cc:1881
+;;; Found at ../../src/core/primitives.cc:1885
 (generate-direct-call-defun (core:magic-intern "core__ihs_backtrace") (&optional (out t) msg) "wrapped_core__ihs_backtrace" )
 ;;; Generating code for core::core__dynamic_binding_stack_dump
-;;; Found at ../../src/core/primitives.cc:1871
+;;; Found at ../../src/core/primitives.cc:1875
 (generate-direct-call-defun (core:magic-intern "core__dynamic_binding_stack_dump") () "wrapped_core__dynamic_binding_stack_dump" )
 ;;; Generating code for core::core__exception_stack_dump
-;;; Found at ../../src/core/primitives.cc:1844
+;;; Found at ../../src/core/primitives.cc:1848
 (generate-direct-call-defun (core:magic-intern "core__exception_stack_dump") () "wrapped_core__exception_stack_dump" )
 ;;; Generating code for core::core__exception_stack
-;;; Found at ../../src/core/primitives.cc:1837
+;;; Found at ../../src/core/primitives.cc:1841
 (generate-direct-call-defun (core:magic-intern "core__exception_stack") () "wrapped_core__exception_stack" )
 ;;; Generating code for core::core__bds_val
-;;; Found at ../../src/core/primitives.cc:1830
+;;; Found at ../../src/core/primitives.cc:1834
 (generate-direct-call-defun (core:magic-intern "core__bds_val") (idx) "wrapped_core__bds_val" )
 ;;; Generating code for core::core__bds_var
-;;; Found at ../../src/core/primitives.cc:1823
+;;; Found at ../../src/core/primitives.cc:1827
 (generate-direct-call-defun (core:magic-intern "core__bds_var") (idx) "wrapped_core__bds_var" )
 ;;; Generating code for core::core__bds_top
-;;; Found at ../../src/core/primitives.cc:1816
+;;; Found at ../../src/core/primitives.cc:1820
 (generate-direct-call-defun (core:magic-intern "core__bds_top") () "wrapped_core__bds_top" )
 ;;; Generating code for core::core__set_ihs_current_frame
-;;; Found at ../../src/core/primitives.cc:1804
+;;; Found at ../../src/core/primitives.cc:1808
 (generate-direct-call-defun (core:magic-intern "core__set_ihs_current_frame") () "wrapped_core__set_ihs_current_frame" )
 ;;; Generating code for core::core__ihs_current_frame
-;;; Found at ../../src/core/primitives.cc:1783
+;;; Found at ../../src/core/primitives.cc:1787
 (generate-direct-call-defun (core:magic-intern "core__ihs_current_frame") () "wrapped_core__ihs_current_frame" )
 ;;; Generating code for core::core__ihs_bds
-;;; Found at ../../src/core/primitives.cc:1773
+;;; Found at ../../src/core/primitives.cc:1777
 (generate-direct-call-defun (core:magic-intern "core__ihs_bds") (cur) "wrapped_core__ihs_bds" )
 ;;; Generating code for core::core__ihs_env
-;;; Found at ../../src/core/primitives.cc:1760
+;;; Found at ../../src/core/primitives.cc:1764
 (generate-direct-call-defun (core:magic-intern "core__ihs_env") (cur) "wrapped_core__ihs_env" )
 ;;; Generating code for core::core__ihs_arguments
-;;; Found at ../../src/core/primitives.cc:1750
+;;; Found at ../../src/core/primitives.cc:1754
 (generate-direct-call-defun (core:magic-intern "core__ihs_arguments") (arg) "wrapped_core__ihs_arguments" )
 ;;; Generating code for core::core__ihs_fun
-;;; Found at ../../src/core/primitives.cc:1740
+;;; Found at ../../src/core/primitives.cc:1744
 (generate-direct-call-defun (core:magic-intern "core__ihs_fun") (arg) "wrapped_core__ihs_fun" )
 ;;; Generating code for core::core__ihs_next
-;;; Found at ../../src/core/primitives.cc:1730
+;;; Found at ../../src/core/primitives.cc:1734
 (generate-direct-call-defun (core:magic-intern "core__ihs_next") (cur) "wrapped_core__ihs_next" )
 ;;; Generating code for core::core__ihs_prev
-;;; Found at ../../src/core/primitives.cc:1720
+;;; Found at ../../src/core/primitives.cc:1724
 (generate-direct-call-defun (core:magic-intern "core__ihs_prev") (cur) "wrapped_core__ihs_prev" )
 ;;; Generating code for core::core__ihs_top
-;;; Found at ../../src/core/primitives.cc:1711
+;;; Found at ../../src/core/primitives.cc:1715
 (generate-direct-call-defun (core:magic-intern "core__ihs_top") () "wrapped_core__ihs_top" )
 ;;; Generating code for core::core__ihs_backtrace_no_args
-;;; Found at ../../src/core/primitives.cc:1704
+;;; Found at ../../src/core/primitives.cc:1708
 (generate-direct-call-defun (core:magic-intern "core__ihs_backtrace_no_args") () "wrapped_core__ihs_backtrace_no_args" )
 ;;; Generating code for core::core__get_invocation_history_frame_next
-;;; Found at ../../src/core/primitives.cc:1694
+;;; Found at ../../src/core/primitives.cc:1698
 (generate-direct-call-defun (core:magic-intern "core__get_invocation_history_frame_next") () "wrapped_core__get_invocation_history_frame_next" )
 ;;; Generating code for core::core__get_invocation_history_frame_prev
-;;; Found at ../../src/core/primitives.cc:1686
+;;; Found at ../../src/core/primitives.cc:1690
 (generate-direct-call-defun (core:magic-intern "core__get_invocation_history_frame_prev") () "wrapped_core__get_invocation_history_frame_prev" )
 ;;; Generating code for core::core__get_invocation_history_frame
-;;; Found at ../../src/core/primitives.cc:1678
+;;; Found at ../../src/core/primitives.cc:1682
 (generate-direct-call-defun (core:magic-intern "core__get_invocation_history_frame") () "wrapped_core__get_invocation_history_frame" )
 ;;; Generating code for core::core__get_invocation_history_frame_top
-;;; Found at ../../src/core/primitives.cc:1671
+;;; Found at ../../src/core/primitives.cc:1675
 (generate-direct-call-defun (core:magic-intern "core__get_invocation_history_frame_top") () "wrapped_core__get_invocation_history_frame_top" )
 ;;; Generating code for core::core__get_invocation_history_frame_search
-;;; Found at ../../src/core/primitives.cc:1644
+;;; Found at ../../src/core/primitives.cc:1648
 (generate-direct-call-defun (core:magic-intern "core__get_invocation_history_frame_search") (idx direction) "wrapped_core__get_invocation_history_frame_search" )
 ;;; Generating code for core::InvocationHistoryFrameIterator_O::make
-;;; Found at ../../src/core/primitives.cc:1570
+;;; Found at ../../src/core/primitives.cc:1574
 (generate-direct-call-defun (core:magic-intern "CORE:make-invocation-history-frame-iterator") (first test) "wrapped_InvocationHistoryFrameIterator_O__make" )
 ;;; Generating code for core::cl__sxhash
-;;; Found at ../../src/core/primitives.cc:1512
+;;; Found at ../../src/core/primitives.cc:1516
 (generate-direct-call-defun (core:magic-intern "cl__sxhash") (obj) "wrapped_cl__sxhash" )
 ;;; Generating code for core::cl__type_of
-;;; Found at ../../src/core/primitives.cc:1505
+;;; Found at ../../src/core/primitives.cc:1509
 (generate-direct-call-defun (core:magic-intern "cl__type_of") (obj) "wrapped_cl__type_of" )
 ;;; Generating code for core::core__type_to_symbol
-;;; Found at ../../src/core/primitives.cc:1343
+;;; Found at ../../src/core/primitives.cc:1347
 (generate-direct-call-defun (core:magic-intern "core__type_to_symbol") (x) "wrapped_core__type_to_symbol" )
 ;;; Generating code for core::cl__gensym
-;;; Found at ../../src/core/primitives.cc:1315
+;;; Found at ../../src/core/primitives.cc:1319
 (generate-direct-call-defun (core:magic-intern "cl__gensym") (&optional x) "wrapped_cl__gensym" )
 ;;; Generating code for core::core__sequence_start_end
-;;; Found at ../../src/core/primitives.cc:1293
+;;; Found at ../../src/core/primitives.cc:1297
 (generate-direct-call-defun (core:magic-intern "core__sequence_start_end") (func sequence start end) "wrapped_core__sequence_start_end" )
 ;;; Generating code for core::cl__append
-;;; Found at ../../src/core/primitives.cc:1267
+;;; Found at ../../src/core/primitives.cc:1271
 (generate-direct-call-defun (core:magic-intern "cl__append") (&rest lists) "wrapped_cl__append" )
 ;;; Generating code for core::cl__mapcan
-;;; Found at ../../src/core/primitives.cc:1245
+;;; Found at ../../src/core/primitives.cc:1249
 (generate-direct-call-defun (core:magic-intern "cl__mapcan") (op &rest lists) "wrapped_cl__mapcan" )
 ;;; Generating code for core::cl__mapcon
-;;; Found at ../../src/core/primitives.cc:1236
+;;; Found at ../../src/core/primitives.cc:1240
 (generate-direct-call-defun (core:magic-intern "cl__mapcon") (op &rest lists) "wrapped_cl__mapcon" )
 ;;; Generating code for core::core__mapappend
-;;; Found at ../../src/core/primitives.cc:1221
+;;; Found at ../../src/core/primitives.cc:1225
 (generate-direct-call-defun (core:magic-intern "core__mapappend") (fun &rest cargs) "wrapped_core__mapappend" )
 ;;; Generating code for core::cl__mapl
-;;; Found at ../../src/core/primitives.cc:1212
+;;; Found at ../../src/core/primitives.cc:1216
 (generate-direct-call-defun (core:magic-intern "cl__mapl") (op &rest lists) "wrapped_cl__mapl" )
 ;;; Generating code for core::cl__maplist
-;;; Found at ../../src/core/primitives.cc:1168
+;;; Found at ../../src/core/primitives.cc:1172
 (generate-direct-call-defun (core:magic-intern "cl__maplist") (func-desig &rest lists) "wrapped_cl__maplist" )
 ;;; Generating code for core::cl__mapc
-;;; Found at ../../src/core/primitives.cc:1138
+;;; Found at ../../src/core/primitives.cc:1142
 (generate-direct-call-defun (core:magic-intern "cl__mapc") (op &rest lists) "wrapped_cl__mapc" )
 ;;; Generating code for core::cl__mapcar
-;;; Found at ../../src/core/primitives.cc:1117
+;;; Found at ../../src/core/primitives.cc:1121
 (generate-direct-call-defun (core:magic-intern "cl__mapcar") (func-desig &rest lists) "wrapped_cl__mapcar" )
 ;;; Generating code for core::cl__notevery
-;;; Found at ../../src/core/primitives.cc:1101
+;;; Found at ../../src/core/primitives.cc:1105
 (generate-direct-call-defun (core:magic-intern "cl__notevery") (predicate &rest sequences) "wrapped_cl__notevery" )
 ;;; Generating code for core::cl__notany
-;;; Found at ../../src/core/primitives.cc:1091
+;;; Found at ../../src/core/primitives.cc:1095
 (generate-direct-call-defun (core:magic-intern "cl__notany") (predicate &rest sequences) "wrapped_cl__notany" )
 ;;; Generating code for core::cl__some
-;;; Found at ../../src/core/primitives.cc:1079
+;;; Found at ../../src/core/primitives.cc:1083
 (generate-direct-call-defun (core:magic-intern "cl__some") (predicate &rest sequences) "wrapped_cl__some" )
 ;;; Generating code for core::cl__every
-;;; Found at ../../src/core/primitives.cc:1069
+;;; Found at ../../src/core/primitives.cc:1073
 (generate-direct-call-defun (core:magic-intern "cl__every") (predicate &rest sequences) "wrapped_cl__every" )
 ;;; Generating code for core::cl__read_preserving_whitespace
-;;; Found at ../../src/core/primitives.cc:958
+;;; Found at ../../src/core/primitives.cc:962
 (generate-direct-call-defun (core:magic-intern "cl__read_preserving_whitespace") (&optional input-stream-designator (eof-error-p t) eof-value recursive-p) "wrapped_cl__read_preserving_whitespace" )
 ;;; Generating code for core::cl__read
-;;; Found at ../../src/core/primitives.cc:943
+;;; Found at ../../src/core/primitives.cc:947
 (generate-direct-call-defun (core:magic-intern "cl__read") (&optional input-stream-designator (eof-error-p t) eof-value recursive-p) "wrapped_cl__read" )
 ;;; Generating code for core::cl__read_delimited_list
-;;; Found at ../../src/core/primitives.cc:924
+;;; Found at ../../src/core/primitives.cc:928
 (generate-direct-call-defun (core:magic-intern "cl__read_delimited_list") (char &optional input-stream-designator recursive-p) "wrapped_cl__read_delimited_list" )
 ;;; Generating code for core::cl__fmakunbound
-;;; Found at ../../src/core/primitives.cc:903
+;;; Found at ../../src/core/primitives.cc:907
 (generate-direct-call-defun (core:magic-intern "cl__fmakunbound") (function-name) "wrapped_cl__fmakunbound" )
 ;;; Generating code for core::cl__fboundp
-;;; Found at ../../src/core/primitives.cc:882
+;;; Found at ../../src/core/primitives.cc:886
 (generate-direct-call-defun (core:magic-intern "cl__fboundp") (function-name) "wrapped_cl__fboundp" )
 ;;; Generating code for core::cl__fdefinition
-;;; Found at ../../src/core/primitives.cc:863
+;;; Found at ../../src/core/primitives.cc:867
 (generate-direct-call-defun (core:magic-intern "cl__fdefinition") (function-name) "wrapped_cl__fdefinition" )
 ;;; Generating code for core::core__fset
-;;; Found at ../../src/core/primitives.cc:825
+;;; Found at ../../src/core/primitives.cc:827
 (generate-direct-call-defun (core:magic-intern "core__fset") (function-name fn &optional is-macro pretty-print (lambda-list nil lambda-list-p)) "wrapped_core__fset" )
 ;;; Generating code for core::cl__class_of
 ;;; Found at ../../src/core/primitives.cc:806
@@ -2574,16 +2574,16 @@
 ;;; Found at ../../src/core/vectorDisplaced.cc:45
 (generate-direct-call-defun (core:magic-intern "core__make_vector_displaced") (dim element-type displaced-to displaced-offset) "wrapped_core__make_vector_displaced" )
 ;;; Generating code for core::core__closure_slots_dump
-;;; Found at ../../src/core/functor.cc:180
+;;; Found at ../../src/core/functor.cc:183
 (generate-direct-call-defun (core:magic-intern "core__closure_slots_dump") (closure) "wrapped_core__closure_slots_dump" )
 ;;; Generating code for core::core__closure_ref
-;;; Found at ../../src/core/functor.cc:158
+;;; Found at ../../src/core/functor.cc:161
 (generate-direct-call-defun (core:magic-intern "core__closure_ref") (tclosure index) "wrapped_core__closure_ref" )
 ;;; Generating code for core::core__closure_length
-;;; Found at ../../src/core/functor.cc:142
+;;; Found at ../../src/core/functor.cc:145
 (generate-direct-call-defun (core:magic-intern "core__closure_length") (tclosure) "wrapped_core__closure_length" )
 ;;; Generating code for core::core__closure_with_slots_size
-;;; Found at ../../src/core/functor.cc:136
+;;; Found at ../../src/core/functor.cc:139
 (generate-direct-call-defun (core:magic-intern "core__closure_with_slots_size") (slots) "wrapped_core__closure_with_slots_size" )
 ;;; Generating code for core::core__interpreted_closure_calls
 ;;; Found at ../../src/core/functor.cc:56
