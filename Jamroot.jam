@@ -90,7 +90,7 @@ project clasp : requirements
 ### LTO stuff
 #        <cxxflags>"-flto"
 #        <cflags>"-flto"
-#        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release"
+#        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release/lib"
 #        <linkflags>"-Wl,-object_path_lto,clasp.lto.o"
 
           <target-os>linux:<cxxflags>"-fPIC"

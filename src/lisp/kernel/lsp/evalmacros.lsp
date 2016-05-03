@@ -218,17 +218,16 @@ terminated by a non-local exit."
   `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
 )
 
-(defmacro lambda (&rest body)
-  `(function (lambda ,@body)))
+(defmacro lambda (&rest body) `(function (lambda ,@body)))
+
+(eval-when (:compile-toplevel)
+  (bformat t "!!!!!!!!!!!!!!!!!!!!!!  The macro-function for lambda is: %s\n" (macro-function 'lambda)))
 
 #+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
        (multiple-value-bind (decls body doc)
 	   (si::process-declarations lambda-body t)
 	 `(lambda ,lambda-list (declare (core:lambda-block ,name) ,@decls) ,@doc
 		  (block ,(si::function-block-name name) ,@body))))
-
-
-
 ; assignment
 
 #-ecl-min
