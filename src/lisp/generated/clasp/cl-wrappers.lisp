@@ -2705,9 +2705,6 @@
 ;;; Generating code for gctools::gctools__next_header_kind
 ;;; Found at ../../src/gctools/memoryManagement.cc:186
 (generate-direct-call-defun (core:magic-intern "gctools__next_header_kind") () "wrapped_gctools__next_header_kind" )
-;;; Generating code for gctools::gctools__enable_underscanning
-;;; Found at ../../src/gctools/mpsGarbageCollection.cc:1081
-(generate-direct-call-defun (core:magic-intern "gctools__enable_underscanning") (us) "wrapped_gctools__enable_underscanning" )
 ;;; Generating code for telemetry::core__telemetry_count
 ;;; Found at ../../src/gctools/telemetry.cc:215
 (generate-direct-call-defun (core:magic-intern "core__telemetry_count") () "wrapped_core__telemetry_count" )
@@ -2744,15 +2741,6 @@
 ;;; Generating code for gctools::gctools__stack_depth
 ;;; Found at ../../src/gctools/gcFunctions.cc:547
 (generate-direct-call-defun (core:magic-intern "gctools__stack_depth") () "wrapped_gctools__stack_depth" )
-;;; Generating code for gctools::gctools__mpsTelemetryReset
-;;; Found at ../../src/gctools/gcFunctions.cc:541
-(generate-direct-call-defun (core:magic-intern "gctools__mpsTelemetryReset") (flags) "wrapped_gctools__mpsTelemetryReset" )
-;;; Generating code for gctools::gctools__mpsTelemetrySet
-;;; Found at ../../src/gctools/gcFunctions.cc:537
-(generate-direct-call-defun (core:magic-intern "gctools__mpsTelemetrySet") (flags) "wrapped_gctools__mpsTelemetrySet" )
-;;; Generating code for gctools::gctools__mpsTelemetryFlush
-;;; Found at ../../src/gctools/gcFunctions.cc:533
-(generate-direct-call-defun (core:magic-intern "gctools__mpsTelemetryFlush") () "wrapped_gctools__mpsTelemetryFlush" )
 ;;; Generating code for gctools::cl__room
 ;;; Found at ../../src/gctools/gcFunctions.cc:469
 (generate-direct-call-defun (core:magic-intern "cl__room") (&optional x (marker 0) msg) "wrapped_cl__room" )
