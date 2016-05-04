@@ -19,4 +19,4 @@ $CLASP_SBCL $SBCL_OPTIONS
 # run bjam to build app
 #
 echo $BJAM $*
-$BJAM $*
+$BJAM --build-dir=$CLASP_HOME/build/clasp/Contents/Resources/cxx $*
