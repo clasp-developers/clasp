@@ -548,17 +548,41 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   ASSERTNOTNULL(*resultP);
 };
 
-void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numfunP) {
+/*! Invoke the main functions from the main function array.
+If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
+Otherwise there is just one. */
+void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], size_t isNullTerminatedArray ) {
   int numfun = *numfunP;
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
   T_mv res;
-  for (int i = 0; i < numfun; ++i) {
+  if (isNullTerminatedArray) {
+    int i=0;
+    while (fptr[i]) {
     //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-    res = (fptr[i])(LCC_PASS_MAIN());
+      if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
+        stringstream ss;
+        ss << "Time to run " << sourceName;
+        simple_timer timer(ss.str());
+        res = (fptr[i])(LCC_PASS_MAIN());
+      } else {
+        res = (fptr[i])(LCC_PASS_MAIN());
+      }
+      ++i;
+    }
+  } else {
+    if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
+      stringstream ss;
+      ss << "Time to run " << sourceName;
+      simple_timer timer(ss.str());
+      res = (fptr[0])(LCC_PASS_MAIN());
+    } else {
+      res = (fptr[0])(LCC_PASS_MAIN());
+    }
   }
   *result = res;
 }
 
+#if 0
 void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
   if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
     stringstream ss;
@@ -570,6 +594,9 @@ void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
     core::T_mv result = fptr(LCC_PASS_MAIN());
   }
 };
+#endif
+
+
 
 };
 

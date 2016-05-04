@@ -70,7 +70,7 @@ class type_info;
 
 #include <map>
 
-#define CLASP_MAIN_FUNCTION_NAME "CLASP_MAIN"
+//#define CLASP_MAIN_FUNCTION_NAME "CLASP_MAIN"
 
 #define VARARGS
 

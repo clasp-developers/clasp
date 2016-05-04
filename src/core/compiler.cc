@@ -249,11 +249,7 @@ LOAD:
   /* Look up the initialization function. */
   string stem = cl__string_downcase(gc::As<Str_sp>(path->_Name))->get();
   size_t dsp = 0;
-  if ((dsp = stem.find("_dbg")) != string::npos)
-    stem = stem.substr(0, dsp);
-  else if ((dsp = stem.find("_opt")) != string::npos)
-    stem = stem.substr(0, dsp);
-  else if ((dsp = stem.find("_d")) != string::npos)
+  if ((dsp = stem.find("_d")) != string::npos)
     stem = stem.substr(0, dsp);
   else if ((dsp = stem.find("_o")) != string::npos)
     stem = stem.substr(0, dsp);
@@ -274,13 +270,15 @@ LOAD:
     //    return (Values(_Nil<T_O>(), Str_O::create(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
-  string mainName = CLASP_MAIN_FUNCTION_NAME;
-  InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle, mainName.c_str());
-  if (mainFunctionPointer == NULL) {
-    SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName);
+  InitFnPtr[] mainFunctionsPointer = (InitFnPtr)dlsym(handle, GLOBAL_BOOT_FUNCTIONS_NAME);
+  if (mainFunctionsPointer == NULL) {
+    SIMPLE_ERROR(BF("Could not find initialization functions %s") % mainName);
   }
   //	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
-  (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
+  void* epilogueP = dlsym(handle,GLOBAL_EPILOGUE_NAME);
+  size_t hasEpilogue = (epilogueP != NULL) ? 1 : 0;
+  T_mv result;
+  invokeMainFunctions(&result,mainFunctionsPointer,hasEpilogue);
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 

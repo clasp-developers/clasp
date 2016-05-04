@@ -292,15 +292,14 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
 //    initialize_claspLinkPass();
-    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_ClaspMainFunctionName_PLUS_);
+//    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_ClaspMainFunctionName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsNameSize_PLUS_);
-    _sym__PLUS_ClaspMainFunctionName_PLUS_->defconstant(core::Str_O::create(CLASP_MAIN_FUNCTION_NAME));
-
+//    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsNameSize_PLUS_);
+//    _sym__PLUS_ClaspMainFunctionName_PLUS_->defconstant(core::Str_O::create(CLASP_MAIN_FUNCTION_NAME));
     _sym__PLUS_globalBootFunctionsName_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_NAME));
     _sym__PLUS_globalEpilogueName_PLUS_->defconstant(core::Str_O::create(GLOBAL_EPILOGUE_NAME));
-    _sym__PLUS_globalBootFunctionsNameSize_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_SIZE_NAME));
+    //_sym__PLUS_globalBootFunctionsNameSize_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_SIZE_NAME));
 
     //	initializeLlvmConstants(_lisp);
   };

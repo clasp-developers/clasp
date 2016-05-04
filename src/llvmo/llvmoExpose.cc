@@ -1052,8 +1052,8 @@ CL_DEFMETHOD void ExecutionEngine_O::addModule(Module_sp module) {
   ee->addModule(std::move(mod));
 }
 
-CL_LISPIFY_NAME("FindFunctionNamed");
-CL_DEFMETHOD Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name) {
+CL_LISPIFY_NAME("find_function_named");
+CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::Str_sp name) {
   return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
 }
 
@@ -2726,6 +2726,31 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
   gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
   return functoid;
+}
+
+
+
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::Str_sp globalRunTimeValueName, core::T_sp fileName) {
+  // Stuff to support MCJIT
+  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+  finalizeEngineAndTime(engine);
+  void *main_functions_ptr = engine->getGlobalValueAddress(GLOBAL_BOOT_FUNCTIONS_NAME);
+  void* epilogue_ptr = engine->getGlobalValueAddress(GLOBAL_EPILOGUE_NAME);
+  if (!main_functions_ptr) {
+    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(functionName));
+  }
+  size_t hasEpilogue = (epilogue_ptr!=NULL) ? 1 : 0;
+  T_mv result;
+  invokeMainFunctions(&result,main_functions_ptr,hasEpilogue);
+#if 0
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
+  core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
+  core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
+  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
+  //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
+  return functoid;
+#endif
 }
 
 CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {

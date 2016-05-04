@@ -201,11 +201,14 @@
 ;;; Do nothing yet for function createAlwaysInlinerPass
 ;;; Do nothing yet for function createFunctionInliningPass
 ;;; Generating code for llvmo::TargetRegistryLookupTarget
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2790
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2815
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:TargetRegistryLookupTarget") (ArchName triple) "wrapped_TargetRegistryLookupTarget" )
 ;;; Generating code for llvmo::finalizeClosure
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2731
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2756
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:finalizeClosure") (oengine func) "wrapped_finalizeClosure" )
+;;; Generating code for llvmo::finalizeEngineAndRegisterWithGcAndRunMainFunctions
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2733
+(generate-direct-call-defun (core:magic-intern "LLVM-SYS:finalizeEngineAndRegisterWithGcAndRunMainFunctions") (oengine globalRunTimeValueName fileName) "wrapped_finalizeEngineAndRegisterWithGcAndRunMainFunctions" )
 ;;; Generating code for llvmo::finalizeEngineAndRegisterWithGcAndGetCompiledFunction
 ;;; Found at ../../src/llvmo/llvmoExpose.cc:2713
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:finalizeEngineAndRegisterWithGcAndGetCompiledFunction") (oengine functionName fn activationFrameEnvironment globalRunTimeValueName fileName filePos linenumber lambdaList) "wrapped_finalizeEngineAndRegisterWithGcAndGetCompiledFunction" )
@@ -2490,40 +2493,40 @@
 ;;; Found at ../../src/core/genericFunction.cc:177
 (generate-direct-call-defun (core:magic-intern "core__maybe_expand_generic_function_arguments") (args) "wrapped_core__maybe_expand_generic_function_arguments" )
 ;;; Generating code for core::core__progv_function
-;;; Found at ../../src/core/compiler.cc:1099
+;;; Found at ../../src/core/compiler.cc:1097
 (generate-direct-call-defun (core:magic-intern "core__progv_function") (symbols values func) "wrapped_core__progv_function" )
 ;;; Generating code for core::core__throw_function
-;;; Found at ../../src/core/compiler.cc:1075
+;;; Found at ../../src/core/compiler.cc:1073
 (generate-direct-call-defun (core:magic-intern "core__throw_function") (tag result) "wrapped_core__throw_function" )
 ;;; Generating code for core::core__catch_function
-;;; Found at ../../src/core/compiler.cc:1030
+;;; Found at ../../src/core/compiler.cc:1028
 (generate-direct-call-defun (core:magic-intern "core__catch_function") (tag func) "wrapped_core__catch_function" )
 ;;; Generating code for core::core__multiple_value_prog1_function
-;;; Found at ../../src/core/compiler.cc:1018
+;;; Found at ../../src/core/compiler.cc:1016
 (generate-direct-call-defun (core:magic-intern "core__multiple_value_prog1_function") (func1 func2) "wrapped_core__multiple_value_prog1_function" )
 ;;; Generating code for core::core__multiple_value_funcall
-;;; Found at ../../src/core/compiler.cc:989
+;;; Found at ../../src/core/compiler.cc:987
 (generate-direct-call-defun (core:magic-intern "core__multiple_value_funcall") (function-designator &rest functions) "wrapped_core__multiple_value_funcall" )
 ;;; Generating code for core::core__funwind_protect
-;;; Found at ../../src/core/compiler.cc:922
+;;; Found at ../../src/core/compiler.cc:920
 (generate-direct-call-defun (core:magic-intern "core__funwind_protect") (protected-fn cleanup-fn) "wrapped_core__funwind_protect" )
 ;;; Generating code for core::core__call_with_variable_bound
-;;; Found at ../../src/core/compiler.cc:913
+;;; Found at ../../src/core/compiler.cc:911
 (generate-direct-call-defun (core:magic-intern "core__call_with_variable_bound") (sym val thunk) "wrapped_core__call_with_variable_bound" )
 ;;; Generating code for core::compiler__implicit_compile_hook_default
-;;; Found at ../../src/core/compiler.cc:418
+;;; Found at ../../src/core/compiler.cc:416
 (generate-direct-call-defun (core:magic-intern "compiler__implicit_compile_hook_default") (form &optional environment) "wrapped_compiler__implicit_compile_hook_default" )
 ;;; Generating code for core::core__dladdr
-;;; Found at ../../src/core/compiler.cc:402
+;;; Found at ../../src/core/compiler.cc:400
 (generate-direct-call-defun (core:magic-intern "core__dladdr") (addr) "wrapped_core__dladdr" )
 ;;; Generating code for core::core__call_dl_main_function
-;;; Found at ../../src/core/compiler.cc:394
+;;; Found at ../../src/core/compiler.cc:392
 (generate-direct-call-defun (core:magic-intern "core__call_dl_main_function") (addr) "wrapped_core__call_dl_main_function" )
 ;;; Generating code for core::core__dlsym
-;;; Found at ../../src/core/compiler.cc:356
+;;; Found at ../../src/core/compiler.cc:354
 (generate-direct-call-defun (core:magic-intern "core__dlsym") (name &optional (handle :rtld-default)) "wrapped_core__dlsym" )
 ;;; Generating code for core::core__dlopen
-;;; Found at ../../src/core/compiler.cc:339
+;;; Found at ../../src/core/compiler.cc:337
 (generate-direct-call-defun (core:magic-intern "core__dlopen") (pathDesig) "wrapped_core__dlopen" )
 ;;; Generating code for core::core__load_bundle
 ;;; Found at ../../src/core/compiler.cc:217

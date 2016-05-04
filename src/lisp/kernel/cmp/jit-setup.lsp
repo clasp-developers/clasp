@@ -286,23 +286,10 @@ No DIBuilder is defined for the default module")
 	      (target-options (llvm-sys:make-target-options)))
 	 (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-	 (let* ((execution-engine (llvm-sys:create engine-builder))
-		(stem (string-downcase (pathname-name filename)))
-		(main-fn-name llvm-sys:+clasp-main-function-name+)
-		(time-jit-start (clock-gettime-nanoseconds))
-		(main-llvm-function (llvm-sys:find-function-named execution-engine llvm-sys:+clasp-main-function-name+)))
-	   (let ((main-fn (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-			   execution-engine 
-			   (intern llvm-sys:+clasp-main-function-name+)	      ; main fn name as symbol
-			   main-llvm-function ; llvm-fn
-			   nil		      ; environment
-			   *load-time-value-holder-name*
-			   (namestring (truename filename)) ; file name
-			   0 
-			   0 
-			   nil)))
-	     (funcall main-fn)
-	     ))))
+	 (let* ((execution-engine (llvm-sys:create engine-builder)))
+           (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
+                                                                                 *load-time-value-holder-name*
+                                                                                 (namestring (truename filename)))))))
      t)
  nil)
 (export 'load-bitcode)

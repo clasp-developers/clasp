@@ -33,7 +33,8 @@
 
 
 
-(defun compile-main-function (name ltv-manager-fn  )
+#+(or)
+(defun compile-main-function (name ltv-manager-fn)
   (cmp-log "In compile-main-function\n")
   (let ((main-fn (with-new-function (main-fn fn-env fn-result
 					     :function-name name
@@ -259,9 +260,10 @@ to append a NULL function to the list of main functions."
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-top-level form)
-            (let ((main-fn (compile-main-function name ltv-init-fn )))
-              (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
-              (add-main-function *the-module*)))
+            (make-boot-function-global-variable *the-module* ltv-init-fn :epilogue-module-p epilogue-module-p)
+            #+(or)(let ((main-fn (compile-main-function name ltv-init-fn )))
+                    (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
+                    #+(or)(add-main-function *the-module*)))
           )))
     module))
 
@@ -386,9 +388,10 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 			     (let ((core:*current-source-pos-info* 
 				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
 			       (compile-file-t1expr form compile-file-hook))))))
-		  (let ((main-fn (compile-main-function output-path ltv-init-fn )))
-		    (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
-		    (add-main-function *the-module*))))
+                  (make-boot-function-global-variable *the-module* ltv-init-fn :epilogue-module-p epilogue-module-p)
+		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
+                          (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
+                          #+(or)(add-main-function *the-module*))))
 	      (cmp-log "About to verify the module\n")
 	      (cmp-log-dump *the-module*)
 	      (if *dump-module-on-completion*

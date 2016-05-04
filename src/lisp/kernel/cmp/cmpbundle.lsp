@@ -181,14 +181,14 @@
             (if prologue-module
                 (progn
                   (bformat t "Linking prologue-form\n")
-                  (remove-main-function-if-exists prologue-module)
+                  #+(or)(remove-main-function-if-exists prologue-module)
                   (llvm-sys:link-in-module linker prologue-module)))
             ;; This is where I used to link the additional-bitcode-pathnames
             (dolist (part-pn part-pathnames)
               (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
                 (bformat t "Linking %s\n" bc-file)
                 (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  #+(or)(remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                   (multiple-value-bind (failure error-msg)
                       (llvm-sys:link-in-module linker part-module)
                     (when failure
@@ -196,16 +196,16 @@
             (if epilogue-module
                 (progn
                   (bformat t "Linking epilogue-form\n")
-                  (remove-main-function-if-exists epilogue-module)
+                  #+(or)(remove-main-function-if-exists epilogue-module)
                   (llvm-sys:link-in-module linker epilogue-module)))
-            (reset-global-boot-functions-name-size *the-module*)
-            (add-main-function *the-module*) ;; Here add the main function
+            #+(or)(reset-global-boot-functions-name-size *the-module*)
+            #+(or)(add-main-function *the-module*)
             ;; The following links in additional-bitcode-pathnames
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn))
                 (bformat t "Linking %s\n" bc-file)
                 (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                  (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  #+(or)(remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                   (multiple-value-bind (failure error-msg)
                       (llvm-sys:link-in-module linker part-module)
                     (when failure
@@ -237,7 +237,11 @@
          ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (cfp-output-file-default output-pathname :linked-bitcode)))
     (let* ((prologue-module (if prologue-form (compile-form-into-module prologue-form 'prologue-form)))
-           (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form 'epilogue-form)))
+           ;; An epilogue form is added whether one is specified or not
+           ;; This will add a NULL terminator to the main function list whether there is one or not
+           (epilogue-module (if epilogue-form
+                                (compile-form-into-module epilogue-form 'epilogue-form :epilogue-module-p t)
+                                (compile-form-into-module `(progn) 'epilogue-form :epilogue-module-p t)))
            (module (link-bitcode-modules part-pathnames
                                          :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                            (list intrinsics-bitcode-path)
