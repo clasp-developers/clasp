@@ -125,6 +125,7 @@ namespace core {
     virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     virtual T_sp lambda_list() const = 0;
     CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
+    CL_DEFMETHOD T_sp associatedFunctions() const {SUBIMP(); };
     virtual string __repr__() const;
   };
 };
@@ -265,7 +266,7 @@ namespace core {
   public:
     core::T_sp llvmFunction;
     core::CompiledClosure_fptr_type fptr;
-    core::T_sp associatedFunctions;
+    core::T_sp _associatedFunctions;
     core::T_sp _lambdaList;
   //! Slots must be the last field
     typedef core::T_sp value_type;
@@ -285,10 +286,11 @@ namespace core {
                      SOURCE_INFO)
     : Base(functionName, type, SOURCE_INFO_PASS),
       fptr(ptr),
-      associatedFunctions(assocFuncs),
+      _associatedFunctions(assocFuncs),
       _lambdaList(ll), 
       _Slots(_Unbound<T_O>(),capacity) {};
-    void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
+    void setAssociatedFunctions(core::List_sp assocFuncs) { this->_associatedFunctions = assocFuncs; };
+    T_sp associatedFunctions() const { return this->_associatedFunctions; };
     bool compiledP() const { return true; };
     core::T_sp lambda_list() const { return this->_lambdaList; };
     void setf_lambda_list(core::List_sp lambda_list) { this->_lambdaList = lambda_list; };
@@ -401,7 +403,7 @@ class CompiledClosure_O : public core::ClosureWithFrame_O {
 public:
   core::T_sp llvmFunction;
   core::CompiledClosure_fptr_type fptr;
-  core::T_sp associatedFunctions;
+  core::T_sp _associatedFunctions;
   core::T_sp _lambdaList;
  public:
   virtual const char *describe() const { return "CompiledClosure"; };
@@ -411,8 +413,9 @@ public:
 public:
   CompiledClosure_O(core::T_sp functionName, core::Symbol_sp type, core::CompiledClosure_fptr_type ptr, core::T_sp llvmFunc, core::T_sp renv, core::T_sp assocFuncs,
                   core::T_sp ll, SOURCE_INFO)
-      : Base(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), associatedFunctions(assocFuncs), _lambdaList(ll){};
-  void setAssociatedFunctions(core::List_sp assocFuncs) { this->associatedFunctions = assocFuncs; };
+      : Base(functionName, type, renv, SOURCE_INFO_PASS), fptr(ptr), _associatedFunctions(assocFuncs), _lambdaList(ll){};
+  void setAssociatedFunctions(core::List_sp assocFuncs) { this->_associatedFunctions = assocFuncs; };
+    T_sp associatedFunctions() const { return this->_associatedFunctions; };
   bool compiledP() const { return true; };
   core::T_sp lambda_list() const;
   void setf_lambda_list(core::List_sp lambda_list);
