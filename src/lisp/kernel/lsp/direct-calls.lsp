@@ -6,6 +6,7 @@
 ;;;If the c-name symbol is available then compile a direct call defun to that symbol
 
 
+#+(or)
 (defmacro generate-direct-call-defun (raw-lisp-name lambda-list c-name)
   (unless (and (consp raw-lisp-name)
                (eq (car raw-lisp-name) 'core:magic-intern))
@@ -14,7 +15,6 @@
   `(bformat t "Not exposing %s to debug crash in evalmacros\n" ',evaluated-lisp-name)))
 
 
-#+(or)
 (defmacro generate-direct-call-defun (raw-lisp-name lambda-list c-name)
   (unless (and (consp raw-lisp-name)
                (eq (car raw-lisp-name) 'core:magic-intern))

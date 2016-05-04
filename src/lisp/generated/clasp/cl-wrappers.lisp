@@ -150,22 +150,22 @@
 ;;; Found at ../../src/sockets/sockets.cc:96
 (generate-direct-call-defun (core:magic-intern "sockets_internal__ff_socket") (domain type protocol) "wrapped_sockets_internal__ff_socket" )
 ;;; Generating code for llvmo::llvm_sys__viewCFG
-;;; Found at ../../src/llvmo/llvmoPackage.cc:228
+;;; Found at ../../src/llvmo/llvmoPackage.cc:232
 (generate-direct-call-defun (core:magic-intern "llvm_sys__viewCFG") (fn &optional only) "wrapped_llvm_sys__viewCFG" )
 ;;; Generating code for llvmo::llvm_sys__disassembleSTAR
-;;; Found at ../../src/llvmo/llvmoPackage.cc:223
+;;; Found at ../../src/llvmo/llvmoPackage.cc:227
 (generate-direct-call-defun (core:magic-intern "llvm_sys__disassembleSTAR") (cf) "wrapped_llvm_sys__disassembleSTAR" )
 ;;; Generating code for llvmo::llvm_sys__getOrCreateExternalGlobal
-;;; Found at ../../src/llvmo/llvmoPackage.cc:182
+;;; Found at ../../src/llvmo/llvmoPackage.cc:184
 (generate-direct-call-defun (core:magic-intern "llvm_sys__getOrCreateExternalGlobal") (module name type) "wrapped_llvm_sys__getOrCreateExternalGlobal" )
 ;;; Generating code for llvmo::llvm_sys__throwIfMismatchedStructureSizes
-;;; Found at ../../src/llvmo/llvmoPackage.cc:133
+;;; Found at ../../src/llvmo/llvmoPackage.cc:135
 (generate-direct-call-defun (core:magic-intern "llvm_sys__throwIfMismatchedStructureSizes") (&key tsp tmv ihf) "wrapped_llvm_sys__throwIfMismatchedStructureSizes" )
 ;;; Generating code for llvmo::llvm_sys__cxxDataStructuresInfo
-;;; Found at ../../src/llvmo/llvmoPackage.cc:98
+;;; Found at ../../src/llvmo/llvmoPackage.cc:100
 (generate-direct-call-defun (core:magic-intern "llvm_sys__cxxDataStructuresInfo") () "wrapped_llvm_sys__cxxDataStructuresInfo" )
 ;;; Generating code for llvmo::llvm_sys__mangleSymbolName
-;;; Found at ../../src/llvmo/llvmoPackage.cc:79
+;;; Found at ../../src/llvmo/llvmoPackage.cc:81
 (generate-direct-call-defun (core:magic-intern "llvm_sys__mangleSymbolName") (name) "wrapped_llvm_sys__mangleSymbolName" )
 ;;; Do nothing yet for function createLowerExpectIntrinsicPass
 ;;; Do nothing yet for function createEarlyCSEPass
@@ -1338,94 +1338,94 @@
 ;;; Found at ../../src/core/object.cc:103
 (generate-direct-call-defun (core:magic-intern "core__make_cxx_object") (class-name &rest args) "wrapped_core__make_cxx_object" )
 ;;; Generating code for core::core__all_source_files
-;;; Found at ../../src/core/lisp.cc:2797
+;;; Found at ../../src/core/lisp.cc:2798
 (generate-direct-call-defun (core:magic-intern "core__all_source_files") () "wrapped_core__all_source_files" )
 ;;; Generating code for core::Lisp_O::forget_all_single_dispatch_generic_functions
-;;; Found at ../../src/core/lisp.cc:2422
+;;; Found at ../../src/core/lisp.cc:2423
 (generate-direct-call-defun (core:magic-intern "CORE:forget_all_single_dispatch_generic_functions") () "wrapped_Lisp_O__forget_all_single_dispatch_generic_functions" )
 ;;; Generating code for core::Lisp_O::setf_find_single_dispatch_generic_function
-;;; Found at ../../src/core/lisp.cc:2416
+;;; Found at ../../src/core/lisp.cc:2417
 (generate-direct-call-defun (core:magic-intern "CORE:setf_find_single_dispatch_generic_function") (gf-symbol gf) "wrapped_Lisp_O__setf_find_single_dispatch_generic_function" )
 ;;; Generating code for core::Lisp_O::find_single_dispatch_generic_function
-;;; Found at ../../src/core/lisp.cc:2402
+;;; Found at ../../src/core/lisp.cc:2403
 (generate-direct-call-defun (core:magic-intern "CORE:find_single_dispatch_generic_function") (gf-symbol &optional errorp) "wrapped_Lisp_O__find_single_dispatch_generic_function" )
 ;;; Generating code for core::cl__not
-;;; Found at ../../src/core/lisp.cc:2297
+;;; Found at ../../src/core/lisp.cc:2298
 (generate-direct-call-defun (core:magic-intern "cl__not") (arg) "wrapped_cl__not" )
 ;;; Generating code for core::core__repr
-;;; Found at ../../src/core/lisp.cc:2272
+;;; Found at ../../src/core/lisp.cc:2273
 (generate-direct-call-defun (core:magic-intern "core__repr") (arg) "wrapped_core__repr" )
 ;;; Generating code for core::core__is_sub_class_of
-;;; Found at ../../src/core/lisp.cc:2255
+;;; Found at ../../src/core/lisp.cc:2256
 (generate-direct-call-defun (core:magic-intern "core__is_sub_class_of") (tag mc) "wrapped_core__is_sub_class_of" )
 ;;; Generating code for core::cl__cerror
-;;; Found at ../../src/core/lisp.cc:2210
+;;; Found at ../../src/core/lisp.cc:2211
 (generate-direct-call-defun (core:magic-intern "cl__cerror") (cformat eformat &rest arguments) "wrapped_cl__cerror" )
 ;;; Generating code for core::cl__error
-;;; Found at ../../src/core/lisp.cc:2184
+;;; Found at ../../src/core/lisp.cc:2185
 (generate-direct-call-defun (core:magic-intern "cl__error") (datum &rest arguments) "wrapped_cl__error" )
 ;;; Generating code for core::core__invoke_internal_debugger_from_gdb
-;;; Found at ../../src/core/lisp.cc:2176
+;;; Found at ../../src/core/lisp.cc:2177
 (generate-direct-call-defun (core:magic-intern "core__invoke_internal_debugger_from_gdb") () "wrapped_core__invoke_internal_debugger_from_gdb" )
 ;;; Generating code for core::core__single_dispatch_generic_function_table
-;;; Found at ../../src/core/lisp.cc:2169
+;;; Found at ../../src/core/lisp.cc:2170
 (generate-direct-call-defun (core:magic-intern "core__single_dispatch_generic_function_table") () "wrapped_core__single_dispatch_generic_function_table" )
 ;;; Generating code for core::core__invoke_internal_debugger
-;;; Found at ../../src/core/lisp.cc:2154
+;;; Found at ../../src/core/lisp.cc:2155
 (generate-direct-call-defun (core:magic-intern "core__invoke_internal_debugger") (&optional condition) "wrapped_core__invoke_internal_debugger" )
 ;;; Generating code for core::core__universal_error_handler
-;;; Found at ../../src/core/lisp.cc:2138
+;;; Found at ../../src/core/lisp.cc:2139
 (generate-direct-call-defun (core:magic-intern "core__universal_error_handler") (continue-string datum initializers) "wrapped_core__universal_error_handler" )
 ;;; Generating code for core::cl__intern
-;;; Found at ../../src/core/lisp.cc:2130
+;;; Found at ../../src/core/lisp.cc:2131
 (generate-direct-call-defun (core:magic-intern "cl__intern") (symbol-name &optional (package-desig *package*)) "wrapped_cl__intern" )
 ;;; Generating code for core::core__export_to_python
-;;; Found at ../../src/core/lisp.cc:2118
+;;; Found at ../../src/core/lisp.cc:2119
 (generate-direct-call-defun (core:magic-intern "core__export_to_python") (symbolsDesig) "wrapped_core__export_to_python" )
 ;;; Generating code for core::cl__export
-;;; Found at ../../src/core/lisp.cc:2106
+;;; Found at ../../src/core/lisp.cc:2107
 (generate-direct-call-defun (core:magic-intern "cl__export") (symDes &optional (packageDes *package*)) "wrapped_cl__export" )
 ;;; Generating code for core::core__debug_log_off
-;;; Found at ../../src/core/lisp.cc:2091
+;;; Found at ../../src/core/lisp.cc:2092
 (generate-direct-call-defun (core:magic-intern "core__debug_log_off") () "wrapped_core__debug_log_off" )
 ;;; Generating code for core::core__debug_log_on
-;;; Found at ../../src/core/lisp.cc:2073
+;;; Found at ../../src/core/lisp.cc:2074
 (generate-direct-call-defun (core:magic-intern "core__debug_log_on") () "wrapped_core__debug_log_on" )
 ;;; Generating code for core::core__is_top_level_script
-;;; Found at ../../src/core/lisp.cc:2054
+;;; Found at ../../src/core/lisp.cc:2055
 (generate-direct-call-defun (core:magic-intern "core__is_top_level_script") () "wrapped_core__is_top_level_script" )
 ;;; Generating code for core::core__set_current_working_directory
-;;; Found at ../../src/core/lisp.cc:2038
+;;; Found at ../../src/core/lisp.cc:2039
 (generate-direct-call-defun (core:magic-intern "core__set_current_working_directory") (dir) "wrapped_core__set_current_working_directory" )
 ;;; Generating code for core::core__database_dir
-;;; Found at ../../src/core/lisp.cc:2022
+;;; Found at ../../src/core/lisp.cc:2023
 (generate-direct-call-defun (core:magic-intern "core__database_dir") () "wrapped_core__database_dir" )
 ;;; Generating code for core::core__lisp_code_path
-;;; Found at ../../src/core/lisp.cc:2001
+;;; Found at ../../src/core/lisp.cc:2002
 (generate-direct-call-defun (core:magic-intern "core__lisp_code_path") (&optional rel-path) "wrapped_core__lisp_code_path" )
 ;;; Generating code for core::core__library_path
-;;; Found at ../../src/core/lisp.cc:1988
+;;; Found at ../../src/core/lisp.cc:1989
 (generate-direct-call-defun (core:magic-intern "core__library_path") (&optional rel-path) "wrapped_core__library_path" )
 ;;; Generating code for core::core__script_dir
-;;; Found at ../../src/core/lisp.cc:1980
+;;; Found at ../../src/core/lisp.cc:1981
 (generate-direct-call-defun (core:magic-intern "core__script_dir") () "wrapped_core__script_dir" )
 ;;; Generating code for core::core__source_line_column
-;;; Found at ../../src/core/lisp.cc:1955
+;;; Found at ../../src/core/lisp.cc:1956
 (generate-direct-call-defun (core:magic-intern "core__source_line_column") () "wrapped_core__source_line_column" )
 ;;; Generating code for core::core__source_file_name
-;;; Found at ../../src/core/lisp.cc:1941
+;;; Found at ../../src/core/lisp.cc:1942
 (generate-direct-call-defun (core:magic-intern "core__source_file_name") () "wrapped_core__source_file_name" )
 ;;; Generating code for core::cl__sort
-;;; Found at ../../src/core/lisp.cc:1916
+;;; Found at ../../src/core/lisp.cc:1917
 (generate-direct-call-defun (core:magic-intern "cl__sort") (sequence predicate) "wrapped_cl__sort" )
 ;;; Generating code for core::core__sorted
-;;; Found at ../../src/core/lisp.cc:1888
+;;; Found at ../../src/core/lisp.cc:1889
 (generate-direct-call-defun (core:magic-intern "core__sorted") (unsorted) "wrapped_core__sorted" )
 ;;; Generating code for core::cl__apropos
-;;; Found at ../../src/core/lisp.cc:1846
+;;; Found at ../../src/core/lisp.cc:1847
 (generate-direct-call-defun (core:magic-intern "cl__apropos") (string-desig &optional package-desig) "wrapped_cl__apropos" )
 ;;; Generating code for core::cl__macroexpand
-;;; Found at ../../src/core/lisp.cc:1765
+;;; Found at ../../src/core/lisp.cc:1766
 (generate-direct-call-defun (core:magic-intern "cl__macroexpand") (form &optional env) "wrapped_cl__macroexpand" )
 ;;; Generating code for core::cl__macroexpand_1
 ;;; Found at ../../src/core/lisp.cc:1706
@@ -1659,7 +1659,7 @@
 ;;; Found at ../../src/core/lambdaListHandler.cc:332
 (generate-direct-call-defun (core:magic-intern "core__process_macro_lambda_list") (lambda-list) "wrapped_core__process_macro_lambda_list" )
 ;;; Generating code for core::core__magic_name
-;;; Found at ../../src/core/foundation.cc:477
+;;; Found at ../../src/core/foundation.cc:478
 (generate-direct-call-defun (core:magic-intern "core__magic_name") (name &optional (package "")) "wrapped_core__magic_name" )
 ;;; Generating code for core::core__magic_intern
 ;;; Found at ../../src/core/foundation.cc:411
@@ -2805,194 +2805,194 @@
 ;;; Found at ../../src/gctools/gc_boot.cc:171
 (generate-direct-call-defun (core:magic-intern "gctools__size_of_kind_field_layout_table") () "wrapped_gctools__size_of_kind_field_layout_table" )
 ;;; Generating code for core::core__sharp_equal_wrapper_p
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/sharpEqualWrapper.h:73
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/sharpEqualWrapper.h:73
 (generate-direct-call-defun (core:magic-intern "core__sharp_equal_wrapper_p") (o) "wrapped_core__sharp_equal_wrapper_p" )
 ;;; Generating code for core::make_sharp_equal_wrapper
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/sharpEqualWrapper.h:64
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/sharpEqualWrapper.h:64
 (generate-direct-call-defun (core:magic-intern "CORE:make_sharp_equal_wrapper") () "wrapped_make_sharp_equal_wrapper" )
 ;;; Generating code for core::core__test_add
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/primitives.h:184
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/primitives.h:184
 (generate-direct-call-defun (core:magic-intern "core__test_add") (x y) "wrapped_core__test_add" )
 ;;; Generating code for core::cl__listp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:70
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:70
 (generate-direct-call-defun (core:magic-intern "cl__listp") (obj) "wrapped_cl__listp" )
 ;;; Generating code for core::cl__characterp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:66
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:66
 (generate-direct-call-defun (core:magic-intern "cl__characterp") (obj) "wrapped_cl__characterp" )
 ;;; Generating code for core::cl__consp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:62
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:62
 (generate-direct-call-defun (core:magic-intern "cl__consp") (obj) "wrapped_cl__consp" )
 ;;; Generating code for core::cl__atom
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:58
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:58
 (generate-direct-call-defun (core:magic-intern "cl__atom") (arg) "wrapped_cl__atom" )
 ;;; Generating code for core::cl__endp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:47
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:47
 (generate-direct-call-defun (core:magic-intern "cl__endp") (arg) "wrapped_cl__endp" )
 ;;; Generating code for core::core__fixnump
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:39
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:39
 (generate-direct-call-defun (core:magic-intern "core__fixnump") (arg) "wrapped_core__fixnump" )
 ;;; Generating code for core::cl__symbolp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/predicates.h:35
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/predicates.h:35
 (generate-direct-call-defun (core:magic-intern "cl__symbolp") (obj) "wrapped_cl__symbolp" )
 ;;; Generating code for core::clasp_negate
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1148
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1148
 (generate-direct-call-defun (core:magic-intern "CORE:negate") (num) "wrapped_clasp_negate" )
 ;;; Generating code for core::clasp_one_minus
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1126
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1126
 (generate-direct-call-defun (core:magic-intern "CORE:oneMinus") (num) "wrapped_clasp_one_minus" )
 ;;; Generating code for core::clasp_one_plus
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1114
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1114
 (generate-direct-call-defun (core:magic-intern "CORE:onePlus") (num) "wrapped_clasp_one_plus" )
 ;;; Generating code for core::clasp_signum
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1094
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1094
 (generate-direct-call-defun (core:magic-intern "signum" "COMMON-LISP") (num) "wrapped_clasp_signum" )
 ;;; Generating code for core::clasp_abs
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1084
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1084
 (generate-direct-call-defun (core:magic-intern "abs" "COMMON-LISP") (num) "wrapped_clasp_abs" )
 ;;; Generating code for core::clasp_oddp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1076
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1076
 (generate-direct-call-defun (core:magic-intern "oddp" "COMMON-LISP") (num) "wrapped_clasp_oddp" )
 ;;; Generating code for core::clasp_evenp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1068
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1068
 (generate-direct-call-defun (core:magic-intern "evenp" "COMMON-LISP") (num) "wrapped_clasp_evenp" )
 ;;; Generating code for core::clasp_minusp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1058
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1058
 (generate-direct-call-defun (core:magic-intern "minusp" "COMMON-LISP") (num) "wrapped_clasp_minusp" )
 ;;; Generating code for core::clasp_plusp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/numbers.h:1048
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/numbers.h:1048
 (generate-direct-call-defun (core:magic-intern "plusp" "COMMON-LISP") (num) "wrapped_clasp_plusp" )
 ;;; Generating code for core::cl__equalp
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/object.h:577
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/object.h:577
 (generate-direct-call-defun (core:magic-intern "cl__equalp") (x y) "wrapped_cl__equalp" )
 ;;; Generating code for core::cl__equal
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/object.h:549
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/object.h:549
 (generate-direct-call-defun (core:magic-intern "cl__equal") (x y) "wrapped_cl__equal" )
 ;;; Generating code for core::cl__eql
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/object.h:524
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/object.h:524
 (generate-direct-call-defun (core:magic-intern "cl__eql") (x y) "wrapped_cl__eql" )
 ;;; Generating code for core::cl__eq
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/object.h:517
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/object.h:517
 (generate-direct-call-defun (core:magic-intern "cl__eq") (x y) "wrapped_cl__eq" )
 ;;; Generating code for core::oTenth
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:559
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:559
 (generate-direct-call-defun (core:magic-intern "Tenth" "COMMON-LISP") (o) "wrapped_oTenth" )
 ;;; Generating code for core::oNinth
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:557
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:557
 (generate-direct-call-defun (core:magic-intern "Ninth" "COMMON-LISP") (o) "wrapped_oNinth" )
 ;;; Generating code for core::oEighth
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:555
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:555
 (generate-direct-call-defun (core:magic-intern "Eighth" "COMMON-LISP") (o) "wrapped_oEighth" )
 ;;; Generating code for core::oSeventh
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:553
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:553
 (generate-direct-call-defun (core:magic-intern "Seventh" "COMMON-LISP") (o) "wrapped_oSeventh" )
 ;;; Generating code for core::oSixth
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:551
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:551
 (generate-direct-call-defun (core:magic-intern "Sixth" "COMMON-LISP") (o) "wrapped_oSixth" )
 ;;; Generating code for core::oFifth
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:549
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:549
 (generate-direct-call-defun (core:magic-intern "Fifth" "COMMON-LISP") (o) "wrapped_oFifth" )
 ;;; Generating code for core::oFourth
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:547
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:547
 (generate-direct-call-defun (core:magic-intern "Fourth" "COMMON-LISP") (o) "wrapped_oFourth" )
 ;;; Generating code for core::oThird
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:545
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:545
 (generate-direct-call-defun (core:magic-intern "Third" "COMMON-LISP") (o) "wrapped_oThird" )
 ;;; Generating code for core::oSecond
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:543
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:543
 (generate-direct-call-defun (core:magic-intern "Second" "COMMON-LISP") (o) "wrapped_oSecond" )
 ;;; Generating code for core::oFirst
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:541
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:541
 (generate-direct-call-defun (core:magic-intern "First" "COMMON-LISP") (o) "wrapped_oFirst" )
 ;;; Generating code for core::oCddddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:539
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:539
 (generate-direct-call-defun (core:magic-intern "cddddr" "COMMON-LISP") (o) "wrapped_oCddddr" )
 ;;; Generating code for core::oCddadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:537
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:537
 (generate-direct-call-defun (core:magic-intern "cddadr" "COMMON-LISP") (o) "wrapped_oCddadr" )
 ;;; Generating code for core::oCdaddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:535
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:535
 (generate-direct-call-defun (core:magic-intern "cdaddr" "COMMON-LISP") (o) "wrapped_oCdaddr" )
 ;;; Generating code for core::oCdaadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:533
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:533
 (generate-direct-call-defun (core:magic-intern "cdaadr" "COMMON-LISP") (o) "wrapped_oCdaadr" )
 ;;; Generating code for core::oCadddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:531
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:531
 (generate-direct-call-defun (core:magic-intern "cadddr" "COMMON-LISP") (o) "wrapped_oCadddr" )
 ;;; Generating code for core::oCadadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:529
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:529
 (generate-direct-call-defun (core:magic-intern "cadadr" "COMMON-LISP") (o) "wrapped_oCadadr" )
 ;;; Generating code for core::oCaaddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:527
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:527
 (generate-direct-call-defun (core:magic-intern "caaddr" "COMMON-LISP") (o) "wrapped_oCaaddr" )
 ;;; Generating code for core::oCaaadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:525
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:525
 (generate-direct-call-defun (core:magic-intern "caaadr" "COMMON-LISP") (o) "wrapped_oCaaadr" )
 ;;; Generating code for core::oCdddar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:523
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:523
 (generate-direct-call-defun (core:magic-intern "cdddar" "COMMON-LISP") (o) "wrapped_oCdddar" )
 ;;; Generating code for core::oCddaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:521
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:521
 (generate-direct-call-defun (core:magic-intern "cddaar" "COMMON-LISP") (o) "wrapped_oCddaar" )
 ;;; Generating code for core::oCdadar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:519
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:519
 (generate-direct-call-defun (core:magic-intern "cdadar" "COMMON-LISP") (o) "wrapped_oCdadar" )
 ;;; Generating code for core::oCdaaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:517
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:517
 (generate-direct-call-defun (core:magic-intern "cdaaar" "COMMON-LISP") (o) "wrapped_oCdaaar" )
 ;;; Generating code for core::oCaddar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:515
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:515
 (generate-direct-call-defun (core:magic-intern "caddar" "COMMON-LISP") (o) "wrapped_oCaddar" )
 ;;; Generating code for core::oCadaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:513
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:513
 (generate-direct-call-defun (core:magic-intern "cadaar" "COMMON-LISP") (o) "wrapped_oCadaar" )
 ;;; Generating code for core::oCaadar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:511
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:511
 (generate-direct-call-defun (core:magic-intern "caadar" "COMMON-LISP") (o) "wrapped_oCaadar" )
 ;;; Generating code for core::oCaaaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:509
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:509
 (generate-direct-call-defun (core:magic-intern "caaaar" "COMMON-LISP") (o) "wrapped_oCaaaar" )
 ;;; Generating code for core::oCdddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:507
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:507
 (generate-direct-call-defun (core:magic-intern "cdddr" "COMMON-LISP") (o) "wrapped_oCdddr" )
 ;;; Generating code for core::oCddar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:505
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:505
 (generate-direct-call-defun (core:magic-intern "cddar" "COMMON-LISP") (o) "wrapped_oCddar" )
 ;;; Generating code for core::oCdadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:503
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:503
 (generate-direct-call-defun (core:magic-intern "cdadr" "COMMON-LISP") (o) "wrapped_oCdadr" )
 ;;; Generating code for core::oCdaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:501
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:501
 (generate-direct-call-defun (core:magic-intern "cdaar" "COMMON-LISP") (o) "wrapped_oCdaar" )
 ;;; Generating code for core::oCaddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:499
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:499
 (generate-direct-call-defun (core:magic-intern "caddr" "COMMON-LISP") (o) "wrapped_oCaddr" )
 ;;; Generating code for core::oCadar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:497
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:497
 (generate-direct-call-defun (core:magic-intern "cadar" "COMMON-LISP") (o) "wrapped_oCadar" )
 ;;; Generating code for core::oCaadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:495
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:495
 (generate-direct-call-defun (core:magic-intern "caadr" "COMMON-LISP") (o) "wrapped_oCaadr" )
 ;;; Generating code for core::oCaaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:493
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:493
 (generate-direct-call-defun (core:magic-intern "caaar" "COMMON-LISP") (o) "wrapped_oCaaar" )
 ;;; Generating code for core::oCddr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:491
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:491
 (generate-direct-call-defun (core:magic-intern "cddr" "COMMON-LISP") (o) "wrapped_oCddr" )
 ;;; Generating code for core::oCdar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:489
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:489
 (generate-direct-call-defun (core:magic-intern "cdar" "COMMON-LISP") (o) "wrapped_oCdar" )
 ;;; Generating code for core::oCadr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:487
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:487
 (generate-direct-call-defun (core:magic-intern "cadr" "COMMON-LISP") (o) "wrapped_oCadr" )
 ;;; Generating code for core::oCaar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:485
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:485
 (generate-direct-call-defun (core:magic-intern "caar" "COMMON-LISP") (o) "wrapped_oCaar" )
 ;;; Generating code for core::cl__rest
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:477
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:477
 (generate-direct-call-defun (core:magic-intern "cl__rest") (obj) "wrapped_cl__rest" )
 ;;; Generating code for core::oCdr
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:469
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:469
 (generate-direct-call-defun (core:magic-intern "cdr" "COMMON-LISP") (obj) "wrapped_oCdr" )
 ;;; Generating code for core::oCar
-;;; Found at /home/meister/Dev/clasp/include/clasp/core/cons.h:461
+;;; Found at /Users/meister/Development/clasp/include/clasp/core/cons.h:461
 (generate-direct-call-defun (core:magic-intern "car" "COMMON-LISP") (obj) "wrapped_oCar" )
