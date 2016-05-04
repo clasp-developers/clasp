@@ -473,10 +473,14 @@ CL_DOCSTRING(R"doc(* Arguments
 - package :: A string
 * Description
 Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
-run them through lispify_symbol_name and then recombine them as pkg:name.)doc");
-CL_DEFUN Str_sp core__magic_name(const std::string& name, const std::string& package) {
+run them through lispify_symbol_name and then recombine them as pkg:name.
+Then split them again (sorry) and return (values pkg:sym pkg sym).)doc");
+CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
   std::string pkg_sym = magic_name(name,package);
-  return Str_O::create(pkg_sym);
+  std::string sym;
+  std::string pkg;
+  colon_split(pkg_sym,pkg,sym);
+  return Values(Str_O::create(pkg_sym),Str_O::create(pkg),Str_O::create(sym));
 };
 
 

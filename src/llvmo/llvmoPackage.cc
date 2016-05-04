@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include <stdint.h>
 
+#include <llvm/Support/raw_ostream.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -46,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
@@ -203,18 +205,20 @@ void dump_funcs(core::Function_sp compiledFunction) {
   if (!(cb)) {
     SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
   }
-  core::T_sp funcs = cb->associatedFunctions;
+  core::T_sp funcs = cb->associatedFunctions();
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
   if (cl__consp(funcs)) {
     core::List_sp cfuncs = funcs;
     for (auto cur : cfuncs) {
       core::T_sp func = oCar(cur);
       if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-        printf("%s:%d Dumping function\n", __FILE__, __LINE__ );
-        f->describe(cl::_sym_STARstandard_outputSTAR->symbolValue());
+        f->wrappedPtr()->print(sout);
       } else {
         printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
       }
     }
+    core::clasp_write_string(outstr);
     return;
   }
   STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
@@ -227,8 +231,8 @@ CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
 CL_LAMBDA(fn &optional only);
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction.as<core::CompiledClosure_O>()) {
-    core::T_sp funcs = cl->associatedFunctions;
+  if (auto cl = compiledFunction.asOrNull<core::CompiledClosure_O>()) {
+    core::T_sp funcs = cl->associatedFunctions();
     if (cl__consp(funcs)) {
       core::List_sp cfuncs = funcs;
       for (auto cur : cfuncs) {
@@ -241,8 +245,9 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
           }
         }
       }
-      return;
     }
+  } else {
+    SIMPLE_ERROR(BF("The function is not a compiled function"));
   }
 }
 
