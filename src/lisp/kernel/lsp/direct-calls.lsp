@@ -24,8 +24,11 @@
     (let ((lisp-name (find-symbol sym pkg)))
       (if (dlsym c-name)
           `(defun ,lisp-name ,lambda-list
+             (format t "Call to ~a with arguments ~a~%" ',lisp-name (list ,@(core:names-of-lexical-variables
+                                                                             (core:make-lambda-list-handler
+                                                                              lambda-list nil 'function))))
              (core:intrinsic-call ,c-name ,@(core:names-of-lexical-variables
                                              (core:make-lambda-list-handler
                                               lambda-list nil 'function))))
-          `(bformat t "Could not generate wrapper for %s - the symbol is not available\n" ',evaluated-lisp-name))))
+          `(bformat t "Could not generate wrapper for %s - the symbol is not available\n" ',lisp-name)))))
 
