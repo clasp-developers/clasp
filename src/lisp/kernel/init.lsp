@@ -1041,6 +1041,13 @@ Return files."
   (remove-stage-features)
   (setq *features* (list* :ecl-min *features*)))
 
+(export 'clean-compile-link-min)
+(defun clean-compile-link-min ()
+  (min-features)
+  (clean-system :init :no-prompt t)
+  (compile-min)
+  (link-min))
+
 (export 'bclasp-features)
 (defun bclasp-features()
   (remove-stage-features)
@@ -1075,6 +1082,13 @@ Return files."
     (if (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :all :first-file :init))
         (link-system :init :all nil nil))))
 
+(export 'clean-compile-link-bclasp)
+(defun clean-compile-link-bclasp ()
+  (bclasp-features)
+  (clean-system :init :no-prompt t)
+  (compile-bclasp)
+  (link-bclasp))
+
 (export '(compile-cclasp))
 (defun compile-cclasp ()
   (cclasp-features)
@@ -1104,6 +1118,13 @@ Return files."
     (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cclasp :first-file :init)))
         (progn
           (link-system :init :cclasp nil nil)))))
+
+(export 'clean-compile-link-cclasp)
+(defun clean-compile-link-cclasp ()
+  (cclasp-features)
+  (clean-system :init :no-prompt t)
+  (compile-cclasp)
+  (link-cclasp))
 
 (defun help-build ()
   (bformat t "Useful build commands:\n")
