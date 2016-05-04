@@ -516,6 +516,6 @@ void initialize_Registry() {
 //  RegistryData = gctools::RootClassAllocator<RegistryMaps_O>::allocate();
   RegistryData = gctools::GC<RegistryMaps_O>::allocate();
   _sym_STARmatcher_namesSTAR->defparameter(_Nil<core::T_O>());
-  RegistryData->lazyInitialize();
+//  RegistryData->lazyInitialize();
 }
 };
