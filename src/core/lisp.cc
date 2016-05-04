@@ -1707,8 +1707,9 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   T_sp expansionFunction = _Nil<T_O>();
   if (form.nilp()) {
     return form;
-  } else if (Cons_sp cform = form.asOrNull<Cons_O>()) {
-    T_sp head = oCar(cform);
+  } else if (form.consp()) {
+    Cons_sp cform(reinterpret_cast<gctools::Tagged>(form.unsafe_cons()));
+    T_sp head = cons_car(cform);
     if (cl__symbolp(head)) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
       if (env.nilp()) {
