@@ -203,7 +203,7 @@
             ;; The following links in additional-bitcode-pathnames
             (dolist (part-pn additional-bitcode-pathnames)
               (let* ((bc-file part-pn))
-                (bformat t "Linking %s\n" bc-file)
+                (bformat t "Linking %s\n" (truename bc-file))
                 (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
                   #+(or)(remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
                   (multiple-value-bind (failure error-msg)

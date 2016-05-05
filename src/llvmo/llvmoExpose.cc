@@ -82,6 +82,7 @@ THE SOFTWARE.
 #include <clasp/core/lightProfiler.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/symbolTable.h>
@@ -872,6 +873,8 @@ namespace llvmo {
   CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getTargetTriple);
   CL_LISPIFY_NAME(setDataLayout);
   CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(const llvm::DataLayout& )) & llvm::Module::setDataLayout);;
+  CL_LISPIFY_NAME(setDataLayout.string);
+  CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(llvm::StringRef )) & llvm::Module::setDataLayout);;
   CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
@@ -2734,13 +2737,13 @@ CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
-  void *main_functions_ptr = engine->getGlobalValueAddress(GLOBAL_BOOT_FUNCTIONS_NAME);
-  void* epilogue_ptr = engine->getGlobalValueAddress(GLOBAL_EPILOGUE_NAME);
+  core::InitFnPtr* main_functions_ptr = reinterpret_cast<core::InitFnPtr*>(engine->getGlobalValueAddress(GLOBAL_BOOT_FUNCTIONS_NAME));
+  void* epilogue_ptr = reinterpret_cast<void*>(engine->getGlobalValueAddress(GLOBAL_EPILOGUE_NAME));
   if (!main_functions_ptr) {
-    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(functionName));
+    SIMPLE_ERROR(BF("Could not get a pointer to the array of run-all functions: %s") % _rep_(fileName));
   }
   size_t hasEpilogue = (epilogue_ptr!=NULL) ? 1 : 0;
-  T_mv result;
+  core::T_mv result;
   invokeMainFunctions(&result,main_functions_ptr,hasEpilogue);
 #if 0
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
@@ -2822,11 +2825,23 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   return Values(targeto, _Nil<core::T_O>());
 }
 
+/*! Return (values target nil) if successful or (values nil error-message) if not */
+CL_LISPIFY_NAME(TargetRegistryLookupTarget.string);
+CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple) {
+  string message;
+  llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
+  if (target == NULL) {
+    return Values(_Nil<core::T_O>(), core::Str_O::create(message));
+  }
+  Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
+  return Values(targeto, _Nil<core::T_O>());
+}
 
 
 
 
-  SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
+
+    SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, AvailableExternallyLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceAnyLinkage);
@@ -3156,14 +3171,14 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
 
 
 
-void initialize_llvmo_expose() {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmPrinter();
-  llvm::InitializeNativeTargetAsmParser();
-  _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-  _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-  _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
-  llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
-}
+  void initialize_llvmo_expose() {
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+    _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+    _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
+    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
+  }
 
 }; // llvmo

@@ -270,9 +270,9 @@ LOAD:
     //    return (Values(_Nil<T_O>(), Str_O::create(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
-  InitFnPtr[] mainFunctionsPointer = (InitFnPtr)dlsym(handle, GLOBAL_BOOT_FUNCTIONS_NAME);
+  InitFnPtr* mainFunctionsPointer = (InitFnPtr*)dlsym(handle, GLOBAL_BOOT_FUNCTIONS_NAME);
   if (mainFunctionsPointer == NULL) {
-    SIMPLE_ERROR(BF("Could not find initialization functions %s") % mainName);
+    SIMPLE_ERROR(BF("Could not find the array of main functions: %s") % GLOBAL_BOOT_FUNCTIONS_NAME);
   }
   //	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
   void* epilogueP = dlsym(handle,GLOBAL_EPILOGUE_NAME);

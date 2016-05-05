@@ -373,16 +373,9 @@ are linked very last in a list of modules and it terminates the global-boot-func
     (llvm-sys:make-global-variable module
                                    +i32+ ; type
                                    t     ; is constant
-                                   'llvm-sys:external-linkage
+                                   'llvm-sys:weak-any-linkage
                                    (jit-constant-i32 #xdeadbeef)
-                                   llvm-sys:+global-epilogue-name+))
-  #+(or)
-  (llvm-sys:make-global-variable module
-                                 +i32+  ; type
-                                 t      ; is constant
-                                 'llvm-sys:internal-linkage
-                                 (jit-constant-i32 1)
-                                 llvm-sys:+global-boot-functions-name-size+))
+                                   llvm-sys:+global-epilogue-name+)))
 
 #+(or)
 (defun reset-global-boot-functions-name-size (module)

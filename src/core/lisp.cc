@@ -31,6 +31,7 @@ THE SOFTWARE.
 #endif
 
 #include <errno.h>
+#include <dlfcn.h>
 #include <sys/wait.h>
 #include <stdlib.h>
 #pragma GCC diagnostic push
@@ -135,7 +136,7 @@ THE SOFTWARE.
 #include <clasp/core/stacks.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
-//#i n c l u d e "clos.h"
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/python_wrappers.h>
 
@@ -2683,42 +2684,10 @@ void Lisp_O::dump_backtrace(int numcol) {
     }
 #endif
 
-#if 0
-    string Lisp_O::backTraceAsString(int numcol) const
-    {
-	stringstream strace;
-	Cons_sp btReversed = this->getBackTrace();
-	List_sp bt = btReversed->reverse();
-	strace << "Cando-backtrace number of entries: " << cl__length(bt) <<std::endl;
-	while ( bt.notnilp() )
-	{
-	    T_sp code = bt->ocar();
-	    stringstream sline;
-	    if ( code->consP() )
-	    {
-		List_sp entry = code;
-		if ( entry->hasParsePos() )
-		{
-		    sline << core__source_file_info(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
-		} else
-		{
-		    sline << "no-function: " << entry->__repr__();
-		}
-	    } else
-	    {
-		sline << "no-function: " << code->__repr__();
-	    }
-	    strace << sline.str().substr(0,numcol) << std::endl;
-	    bt = bt->cdr();
-	}
-	strace << "----- backtrace done ------" << std::endl;
-	return strace.str();
-    }
-#endif
 
 void Lisp_O::run() {
 #ifdef DEBUG_PROGRESS
-    printf("%s:%d run\n", __FILE__, __LINE__ );
+  printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif
 
   // If the user adds "-f debug-startup" to the command line
@@ -2732,8 +2701,14 @@ void Lisp_O::run() {
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
     }
   }
-  //	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
-  if (!this->_IgnoreInitImage) {
+  // Check if the Common Lisp compiled code is linked into this executable
+  InitFnPtr* mainFunctionsPointer = (InitFnPtr*)dlsym(RTLD_DEFAULT,GLOBAL_BOOT_FUNCTIONS_NAME);
+  if (mainFunctionsPointer) {
+    void* epilogueP = dlsym(RTLD_DEFAULT,GLOBAL_EPILOGUE_NAME);
+    size_t hasEpilogue = (epilogueP != NULL) ? 1 : 0;
+    T_mv result;
+    invokeMainFunctions(&result,mainFunctionsPointer,hasEpilogue);
+  } else if (!this->_IgnoreInitImage) {
     Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
     DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
     T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
@@ -2755,18 +2730,15 @@ void Lisp_O::run() {
       }
     }
   } else {
-    {
-      _BLOCK_TRACE("Interactive REPL");
+    _BLOCK_TRACE("Interactive REPL");
       //
       // Implement a Read-Eval-Print-Loop
       //
-      this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-      this->print(BF("Low level repl\n"));
-      while (1) {
-        this->readEvalPrintInteractive();
-      }
+    this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+    this->print(BF("Low level repl\n"));
+    while (1) {
+      this->readEvalPrintInteractive();
     }
-    LOG(BF("Leaving lisp run"));
   }
 };
 

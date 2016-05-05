@@ -200,32 +200,35 @@
 ;;; Do nothing yet for function createAAEvalPass
 ;;; Do nothing yet for function createAlwaysInlinerPass
 ;;; Do nothing yet for function createFunctionInliningPass
+;;; Generating code for llvmo::TargetRegistryLookupTarget_string
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2830
+(generate-direct-call-defun (core:magic-intern "LLVM-SYS:TargetRegistryLookupTarget.string") (Triple) "wrapped_TargetRegistryLookupTarget_string" )
 ;;; Generating code for llvmo::TargetRegistryLookupTarget
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2815
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2818
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:TargetRegistryLookupTarget") (ArchName triple) "wrapped_TargetRegistryLookupTarget" )
 ;;; Generating code for llvmo::finalizeClosure
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2756
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2759
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:finalizeClosure") (oengine func) "wrapped_finalizeClosure" )
 ;;; Generating code for llvmo::finalizeEngineAndRegisterWithGcAndRunMainFunctions
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2733
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2736
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:finalizeEngineAndRegisterWithGcAndRunMainFunctions") (oengine globalRunTimeValueName fileName) "wrapped_finalizeEngineAndRegisterWithGcAndRunMainFunctions" )
 ;;; Generating code for llvmo::finalizeEngineAndRegisterWithGcAndGetCompiledFunction
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2713
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2716
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:finalizeEngineAndRegisterWithGcAndGetCompiledFunction") (oengine functionName fn activationFrameEnvironment globalRunTimeValueName fileName filePos linenumber lambdaList) "wrapped_finalizeEngineAndRegisterWithGcAndGetCompiledFunction" )
 ;;; Generating code for llvmo::PointerType_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2677
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2680
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:pointer-type-get") (element-type &optional (address-space 0)) "wrapped_PointerType_O__get" )
 ;;; Generating code for llvmo::ArrayType_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2659
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2662
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:array-type-get") (element-type num-elements) "wrapped_ArrayType_O__get" )
 ;;; Generating code for llvmo::StructType_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2620
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2623
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:struct-type-get") (context elements isPacked) "wrapped_StructType_O__get" )
 ;;; Generating code for llvmo::StructType_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2605
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2608
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:struct-type-create") (context &key elements name is-packed) "wrapped_StructType_O__make" )
 ;;; Generating code for llvmo::FunctionType_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2567
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2570
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:function-type-get") (result &optional params is-var-arg) "wrapped_FunctionType_O__get" )
 ;;; Do nothing yet for function getInt64PtrTy
 ;;; Do nothing yet for function getInt32PtrTy
@@ -240,43 +243,43 @@
 ;;; Do nothing yet for function getFloatTy
 ;;; Do nothing yet for function Create
 ;;; Generating code for llvmo::llvm_sys__FunctionCreate
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2404
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2407
 (generate-direct-call-defun (core:magic-intern "llvm_sys__FunctionCreate") (tysp linkage nsp modulesp) "wrapped_llvm_sys__FunctionCreate" )
 ;;; Generating code for llvmo::ValueAsMetadata_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2378
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2381
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:value-as-metadata-get") (val) "wrapped_ValueAsMetadata_O__get" )
 ;;; Generating code for llvmo::MDString_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2359
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2362
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:mdstring-get") (context str) "wrapped_MDString_O__get" )
 ;;; Generating code for llvmo::MDNode_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:2335
+;;; Found at ../../src/llvmo/llvmoExpose.cc:2338
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:mdnode-get") (context values) "wrapped_MDNode_O__get" )
 ;;; Generating code for llvmo::IRBuilder_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1966
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1969
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:make-irbuilder") (context) "wrapped_IRBuilder_O__make" )
 ;;; Generating code for llvmo::toInteger
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1896
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1899
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:toInteger") (api &optional (issigned t)) "wrapped_toInteger" )
 ;;; Generating code for llvmo::APInt_O::makeAPInt64
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1872
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1875
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:makeAPInt64") (value) "wrapped_APInt_O__makeAPInt64" )
 ;;; Generating code for llvmo::APInt_O::makeAPInt32
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1868
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1871
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:makeAPInt32") (value) "wrapped_APInt_O__makeAPInt32" )
 ;;; Generating code for llvmo::APInt_O::makeAPIntWidth
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1832
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1835
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:makeAPIntWidth") (value width sign) "wrapped_APInt_O__makeAPIntWidth" )
 ;;; Generating code for llvmo::APInt_O::makeAPInt1
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1817
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1820
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:makeAPInt1") (value) "wrapped_APInt_O__makeAPInt1" )
 ;;; Generating code for llvmo::APInt_O::makeAPInt
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1797
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1800
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:makeAPInt") (value) "wrapped_APInt_O__makeAPInt" )
 ;;; Generating code for llvmo::APFloat_O::makeAPFloatDouble
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1775
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1778
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:makeAPFloatDouble") (value) "wrapped_APFloat_O__makeAPFloatDouble" )
 ;;; Generating code for llvmo::APFloat_O::makeAPFloatFloat
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1767
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1770
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:make-apfloat-float") (value) "wrapped_APFloat_O__makeAPFloatFloat" )
 ;;; Do nothing yet for function get
 ;;; Do nothing yet for function get
@@ -286,96 +289,96 @@
 ;;; Do nothing yet for function get
 ;;; Do nothing yet for function get
 ;;; Generating code for llvmo::GlobalVariable_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1410
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1413
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:make-global-variable") (module type is-constant linkage initializer name &optional (insert-before nil) (thread-local-mode 'llvm-sys:not-thread-local)) "wrapped_GlobalVariable_O__make" )
 ;;; Generating code for llvmo::ConstantExpr_O::getInBoundsGetElementPtr
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1377
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1380
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:constant-expr-get-in-bounds-get-element-ptr") (type constant idxList) "wrapped_ConstantExpr_O__getInBoundsGetElementPtr" )
 ;;; Generating code for llvmo::BlockAddress_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1359
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1362
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:block-address-get") (function basic-block) "wrapped_BlockAddress_O__get" )
 ;;; Generating code for llvmo::ConstantArray_O::get
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1336
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1339
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:constant-array-get") (type values) "wrapped_ConstantArray_O__get" )
 ;;; Generating code for llvmo::ConstantDataArray_O::getUInt32
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1306
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1309
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:constant-data-array-get-uint32") (type values) "wrapped_ConstantDataArray_O__getUInt32" )
 ;;; Generating code for llvmo::PassManagerBuilderSetfSizeLevel
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1262
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1265
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:PassManagerBuilderSetfSizeLevel") (pmb level) "wrapped_PassManagerBuilderSetfSizeLevel" )
 ;;; Generating code for llvmo::PassManagerBuilderSetfOptLevel
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1258
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1261
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:PassManagerBuilderSetfOptLevel") (pmb optLevel) "wrapped_PassManagerBuilderSetfOptLevel" )
 ;;; Generating code for llvmo::PassManagerBuilderSetfInliner
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1253
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1256
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:PassManagerBuilderSetfInliner") (pmb inliner) "wrapped_PassManagerBuilderSetfInliner" )
 ;;; Generating code for llvmo::PassManagerBuilder_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1247
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1250
 (generate-direct-call-defun (core:magic-intern "make-PassManagerBuilder" "LLVM-SYS") () "wrapped_PassManagerBuilder_O__make" )
 ;;; Generating code for llvmo::EngineBuilder_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1181
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1184
 (generate-direct-call-defun (core:magic-intern "make-EngineBuilder" "LLVM-SYS") (module) "wrapped_EngineBuilder_O__make" )
 ;;; Generating code for llvmo::PassManager_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1159
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1162
 (generate-direct-call-defun (core:magic-intern "makePassManager" "LLVM-SYS") () "wrapped_PassManager_O__make" )
 ;;; Generating code for llvmo::FunctionPassManager_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1134
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1137
 (generate-direct-call-defun (core:magic-intern "makeFunctionPassManager" "LLVM-SYS") (module) "wrapped_FunctionPassManager_O__make" )
 ;;; Generating code for llvmo::TargetLibraryInfoWrapperPass_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:1096
+;;; Found at ../../src/llvmo/llvmoExpose.cc:1099
 (generate-direct-call-defun (core:magic-intern "makeTargetLibraryInfoWRapperPass" "LLVM-SYS") (triple) "wrapped_TargetLibraryInfoWrapperPass_O__make" )
 ;;; Generating code for llvmo::llvm_sys__module_get_function_list
-;;; Found at ../../src/llvmo/llvmoExpose.cc:848
+;;; Found at ../../src/llvmo/llvmoExpose.cc:849
 (generate-direct-call-defun (core:magic-intern "llvm_sys__module_get_function_list") (module) "wrapped_llvm_sys__module_get_function_list" )
 ;;; Generating code for llvmo::Module_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:841
+;;; Found at ../../src/llvmo/llvmoExpose.cc:842
 (generate-direct-call-defun (core:magic-intern "make-Module" "LLVM-SYS") (module-name context) "wrapped_Module_O__make" )
 ;;; Generating code for llvmo::llvm_sys__valid
-;;; Found at ../../src/llvmo/llvmoExpose.cc:803
+;;; Found at ../../src/llvmo/llvmoExpose.cc:804
 (generate-direct-call-defun (core:magic-intern "llvm_sys__valid") (value) "wrapped_llvm_sys__valid" )
 ;;; Generating code for llvmo::llvm_sys__makeStringGlobal
-;;; Found at ../../src/llvmo/llvmoExpose.cc:768
+;;; Found at ../../src/llvmo/llvmoExpose.cc:769
 (generate-direct-call-defun (core:magic-intern "llvm_sys__makeStringGlobal") (module svalue) "wrapped_llvm_sys__makeStringGlobal" )
 ;;; Do nothing yet for function get
 ;;; Generating code for llvmo::llvm_sys__valuep
-;;; Found at ../../src/llvmo/llvmoExpose.cc:673
+;;; Found at ../../src/llvmo/llvmoExpose.cc:674
 (generate-direct-call-defun (core:magic-intern "llvm_sys__valuep") (arg) "wrapped_llvm_sys__valuep" )
 ;;; Generating code for llvmo::llvm_sys__parseBitcodeFile
-;;; Found at ../../src/llvmo/llvmoExpose.cc:647
+;;; Found at ../../src/llvmo/llvmoExpose.cc:648
 (generate-direct-call-defun (core:magic-intern "llvm_sys__parseBitcodeFile") (filename context) "wrapped_llvm_sys__parseBitcodeFile" )
 ;;; Generating code for llvmo::llvm_sys__writeBitcodeToFile
-;;; Found at ../../src/llvmo/llvmoExpose.cc:637
+;;; Found at ../../src/llvmo/llvmoExpose.cc:638
 (generate-direct-call-defun (core:magic-intern "llvm_sys__writeBitcodeToFile") (module pathname) "wrapped_llvm_sys__writeBitcodeToFile" )
 ;;; Generating code for llvmo::llvm_sys__verifyFunction
-;;; Found at ../../src/llvmo/llvmoExpose.cc:629
+;;; Found at ../../src/llvmo/llvmoExpose.cc:630
 (generate-direct-call-defun (core:magic-intern "llvm_sys__verifyFunction") (function) "wrapped_llvm_sys__verifyFunction" )
 ;;; Generating code for llvmo::llvm_sys__verifyModule
-;;; Found at ../../src/llvmo/llvmoExpose.cc:621
+;;; Found at ../../src/llvmo/llvmoExpose.cc:622
 (generate-direct-call-defun (core:magic-intern "llvm_sys__verifyModule") (module action) "wrapped_llvm_sys__verifyModule" )
 ;;; Generating code for llvmo::llvm_sys__writeIrToFile
-;;; Found at ../../src/llvmo/llvmoExpose.cc:609
+;;; Found at ../../src/llvmo/llvmoExpose.cc:610
 (generate-direct-call-defun (core:magic-intern "llvm_sys__writeIrToFile") (module path) "wrapped_llvm_sys__writeIrToFile" )
 ;;; Generating code for llvmo::TargetOptions_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:528
+;;; Found at ../../src/llvmo/llvmoExpose.cc:529
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:make-target-options") () "wrapped_TargetOptions_O__make" )
 ;;; Do nothing yet for function normalize
 ;;; Generating code for llvmo::Triple_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:272
+;;; Found at ../../src/llvmo/llvmoExpose.cc:273
 (generate-direct-call-defun (core:magic-intern "make-triple" "LLVM-SYS") (triple-str) "wrapped_Triple_O__make" )
 ;;; Generating code for llvmo::llvm_sys__link_in_module
-;;; Found at ../../src/llvmo/llvmoExpose.cc:130
+;;; Found at ../../src/llvmo/llvmoExpose.cc:131
 (generate-direct-call-defun (core:magic-intern "llvm_sys__link_in_module") (linker module) "wrapped_llvm_sys__link_in_module" )
 ;;; Generating code for llvmo::Linker_O::make
-;;; Found at ../../src/llvmo/llvmoExpose.cc:124
+;;; Found at ../../src/llvmo/llvmoExpose.cc:125
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:make-linker") (module) "wrapped_Linker_O__make" )
 ;;; Generating code for llvmo::LLVMContext_O::get_global_context
-;;; Found at ../../src/llvmo/llvmoExpose.cc:107
+;;; Found at ../../src/llvmo/llvmoExpose.cc:108
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:get_global_context") () "wrapped_LLVMContext_O__get_global_context" )
 ;;; Generating code for llvmo::llvm_sys__llvm_value_p
-;;; Found at ../../src/llvmo/llvmoExpose.cc:96
+;;; Found at ../../src/llvmo/llvmoExpose.cc:97
 (generate-direct-call-defun (core:magic-intern "llvm_sys__llvm_value_p") (o) "wrapped_llvm_sys__llvm_value_p" )
 ;;; Generating code for llvmo::compiler__setAssociatedFuncs
-;;; Found at ../../src/llvmo/llvmoExpose.cc:92
+;;; Found at ../../src/llvmo/llvmoExpose.cc:93
 (generate-direct-call-defun (core:magic-intern "compiler__setAssociatedFuncs") (cf associatedFuncs) "wrapped_compiler__setAssociatedFuncs" )
 ;;; Generating code for llvmo::llvm_sys__dwTag
 ;;; Found at ../../src/llvmo/llvmoDwarf.cc:45
@@ -383,9 +386,6 @@
 ;;; Generating code for llvmo::DIBuilder_O::make
 ;;; Found at ../../src/llvmo/debugInfoExpose.cc:81
 (generate-direct-call-defun (core:magic-intern "LLVM-SYS:make-dibuilder") (module) "wrapped_DIBuilder_O__make" )
-;;; Generating code for llvmo::llvm_sys__addGlobalBootFunctionsSizePass
-;;; Found at ../../src/llvmo/claspLinkPass.cc:76
-(generate-direct-call-defun (core:magic-intern "llvm_sys__addGlobalBootFunctionsSizePass") (passManager) "wrapped_llvm_sys__addGlobalBootFunctionsSizePass" )
 ;;; Generating code for cffi::Pointer_O::null_pointer
 ;;; Found at ../../src/cffi/cffi.cc:263
 (generate-direct-call-defun (core:magic-intern "null-pointer" "CFFI-SYS") () "wrapped_Pointer_O__null_pointer" )
@@ -1341,163 +1341,163 @@
 ;;; Found at ../../src/core/object.cc:103
 (generate-direct-call-defun (core:magic-intern "core__make_cxx_object") (class-name &rest args) "wrapped_core__make_cxx_object" )
 ;;; Generating code for core::core__all_source_files
-;;; Found at ../../src/core/lisp.cc:2798
+;;; Found at ../../src/core/lisp.cc:2770
 (generate-direct-call-defun (core:magic-intern "core__all_source_files") () "wrapped_core__all_source_files" )
 ;;; Generating code for core::Lisp_O::forget_all_single_dispatch_generic_functions
-;;; Found at ../../src/core/lisp.cc:2423
+;;; Found at ../../src/core/lisp.cc:2424
 (generate-direct-call-defun (core:magic-intern "CORE:forget_all_single_dispatch_generic_functions") () "wrapped_Lisp_O__forget_all_single_dispatch_generic_functions" )
 ;;; Generating code for core::Lisp_O::setf_find_single_dispatch_generic_function
-;;; Found at ../../src/core/lisp.cc:2417
+;;; Found at ../../src/core/lisp.cc:2418
 (generate-direct-call-defun (core:magic-intern "CORE:setf_find_single_dispatch_generic_function") (gf-symbol gf) "wrapped_Lisp_O__setf_find_single_dispatch_generic_function" )
 ;;; Generating code for core::Lisp_O::find_single_dispatch_generic_function
-;;; Found at ../../src/core/lisp.cc:2403
+;;; Found at ../../src/core/lisp.cc:2404
 (generate-direct-call-defun (core:magic-intern "CORE:find_single_dispatch_generic_function") (gf-symbol &optional errorp) "wrapped_Lisp_O__find_single_dispatch_generic_function" )
 ;;; Generating code for core::cl__not
-;;; Found at ../../src/core/lisp.cc:2298
+;;; Found at ../../src/core/lisp.cc:2299
 (generate-direct-call-defun (core:magic-intern "cl__not") (arg) "wrapped_cl__not" )
 ;;; Generating code for core::core__repr
-;;; Found at ../../src/core/lisp.cc:2273
+;;; Found at ../../src/core/lisp.cc:2274
 (generate-direct-call-defun (core:magic-intern "core__repr") (arg) "wrapped_core__repr" )
 ;;; Generating code for core::core__is_sub_class_of
-;;; Found at ../../src/core/lisp.cc:2256
+;;; Found at ../../src/core/lisp.cc:2257
 (generate-direct-call-defun (core:magic-intern "core__is_sub_class_of") (tag mc) "wrapped_core__is_sub_class_of" )
 ;;; Generating code for core::cl__cerror
-;;; Found at ../../src/core/lisp.cc:2211
+;;; Found at ../../src/core/lisp.cc:2212
 (generate-direct-call-defun (core:magic-intern "cl__cerror") (cformat eformat &rest arguments) "wrapped_cl__cerror" )
 ;;; Generating code for core::cl__error
-;;; Found at ../../src/core/lisp.cc:2185
+;;; Found at ../../src/core/lisp.cc:2186
 (generate-direct-call-defun (core:magic-intern "cl__error") (datum &rest arguments) "wrapped_cl__error" )
 ;;; Generating code for core::core__invoke_internal_debugger_from_gdb
-;;; Found at ../../src/core/lisp.cc:2177
+;;; Found at ../../src/core/lisp.cc:2178
 (generate-direct-call-defun (core:magic-intern "core__invoke_internal_debugger_from_gdb") () "wrapped_core__invoke_internal_debugger_from_gdb" )
 ;;; Generating code for core::core__single_dispatch_generic_function_table
-;;; Found at ../../src/core/lisp.cc:2170
+;;; Found at ../../src/core/lisp.cc:2171
 (generate-direct-call-defun (core:magic-intern "core__single_dispatch_generic_function_table") () "wrapped_core__single_dispatch_generic_function_table" )
 ;;; Generating code for core::core__invoke_internal_debugger
-;;; Found at ../../src/core/lisp.cc:2155
+;;; Found at ../../src/core/lisp.cc:2156
 (generate-direct-call-defun (core:magic-intern "core__invoke_internal_debugger") (&optional condition) "wrapped_core__invoke_internal_debugger" )
 ;;; Generating code for core::core__universal_error_handler
-;;; Found at ../../src/core/lisp.cc:2139
+;;; Found at ../../src/core/lisp.cc:2140
 (generate-direct-call-defun (core:magic-intern "core__universal_error_handler") (continue-string datum initializers) "wrapped_core__universal_error_handler" )
 ;;; Generating code for core::cl__intern
-;;; Found at ../../src/core/lisp.cc:2131
+;;; Found at ../../src/core/lisp.cc:2132
 (generate-direct-call-defun (core:magic-intern "cl__intern") (symbol-name &optional (package-desig *package*)) "wrapped_cl__intern" )
 ;;; Generating code for core::core__export_to_python
-;;; Found at ../../src/core/lisp.cc:2119
+;;; Found at ../../src/core/lisp.cc:2120
 (generate-direct-call-defun (core:magic-intern "core__export_to_python") (symbolsDesig) "wrapped_core__export_to_python" )
 ;;; Generating code for core::cl__export
-;;; Found at ../../src/core/lisp.cc:2107
+;;; Found at ../../src/core/lisp.cc:2108
 (generate-direct-call-defun (core:magic-intern "cl__export") (symDes &optional (packageDes *package*)) "wrapped_cl__export" )
 ;;; Generating code for core::core__debug_log_off
-;;; Found at ../../src/core/lisp.cc:2092
+;;; Found at ../../src/core/lisp.cc:2093
 (generate-direct-call-defun (core:magic-intern "core__debug_log_off") () "wrapped_core__debug_log_off" )
 ;;; Generating code for core::core__debug_log_on
-;;; Found at ../../src/core/lisp.cc:2074
+;;; Found at ../../src/core/lisp.cc:2075
 (generate-direct-call-defun (core:magic-intern "core__debug_log_on") () "wrapped_core__debug_log_on" )
 ;;; Generating code for core::core__is_top_level_script
-;;; Found at ../../src/core/lisp.cc:2055
+;;; Found at ../../src/core/lisp.cc:2056
 (generate-direct-call-defun (core:magic-intern "core__is_top_level_script") () "wrapped_core__is_top_level_script" )
 ;;; Generating code for core::core__set_current_working_directory
-;;; Found at ../../src/core/lisp.cc:2039
+;;; Found at ../../src/core/lisp.cc:2040
 (generate-direct-call-defun (core:magic-intern "core__set_current_working_directory") (dir) "wrapped_core__set_current_working_directory" )
 ;;; Generating code for core::core__database_dir
-;;; Found at ../../src/core/lisp.cc:2023
+;;; Found at ../../src/core/lisp.cc:2024
 (generate-direct-call-defun (core:magic-intern "core__database_dir") () "wrapped_core__database_dir" )
 ;;; Generating code for core::core__lisp_code_path
-;;; Found at ../../src/core/lisp.cc:2002
+;;; Found at ../../src/core/lisp.cc:2003
 (generate-direct-call-defun (core:magic-intern "core__lisp_code_path") (&optional rel-path) "wrapped_core__lisp_code_path" )
 ;;; Generating code for core::core__library_path
-;;; Found at ../../src/core/lisp.cc:1989
+;;; Found at ../../src/core/lisp.cc:1990
 (generate-direct-call-defun (core:magic-intern "core__library_path") (&optional rel-path) "wrapped_core__library_path" )
 ;;; Generating code for core::core__script_dir
-;;; Found at ../../src/core/lisp.cc:1981
+;;; Found at ../../src/core/lisp.cc:1982
 (generate-direct-call-defun (core:magic-intern "core__script_dir") () "wrapped_core__script_dir" )
 ;;; Generating code for core::core__source_line_column
-;;; Found at ../../src/core/lisp.cc:1956
+;;; Found at ../../src/core/lisp.cc:1957
 (generate-direct-call-defun (core:magic-intern "core__source_line_column") () "wrapped_core__source_line_column" )
 ;;; Generating code for core::core__source_file_name
-;;; Found at ../../src/core/lisp.cc:1942
+;;; Found at ../../src/core/lisp.cc:1943
 (generate-direct-call-defun (core:magic-intern "core__source_file_name") () "wrapped_core__source_file_name" )
 ;;; Generating code for core::cl__sort
-;;; Found at ../../src/core/lisp.cc:1917
+;;; Found at ../../src/core/lisp.cc:1918
 (generate-direct-call-defun (core:magic-intern "cl__sort") (sequence predicate) "wrapped_cl__sort" )
 ;;; Generating code for core::core__sorted
-;;; Found at ../../src/core/lisp.cc:1889
+;;; Found at ../../src/core/lisp.cc:1890
 (generate-direct-call-defun (core:magic-intern "core__sorted") (unsorted) "wrapped_core__sorted" )
 ;;; Generating code for core::cl__apropos
-;;; Found at ../../src/core/lisp.cc:1847
+;;; Found at ../../src/core/lisp.cc:1848
 (generate-direct-call-defun (core:magic-intern "cl__apropos") (string-desig &optional package-desig) "wrapped_cl__apropos" )
 ;;; Generating code for core::cl__macroexpand
-;;; Found at ../../src/core/lisp.cc:1766
+;;; Found at ../../src/core/lisp.cc:1767
 (generate-direct-call-defun (core:magic-intern "cl__macroexpand") (form &optional env) "wrapped_cl__macroexpand" )
 ;;; Generating code for core::cl__macroexpand_1
-;;; Found at ../../src/core/lisp.cc:1706
+;;; Found at ../../src/core/lisp.cc:1707
 (generate-direct-call-defun (core:magic-intern "cl__macroexpand_1") (form &optional env) "wrapped_cl__macroexpand_1" )
 ;;; Generating code for core::core__mpi_size
-;;; Found at ../../src/core/lisp.cc:1699
+;;; Found at ../../src/core/lisp.cc:1700
 (generate-direct-call-defun (core:magic-intern "core__mpi_size") () "wrapped_core__mpi_size" )
 ;;; Generating code for core::core__mpi_rank
-;;; Found at ../../src/core/lisp.cc:1684
+;;; Found at ../../src/core/lisp.cc:1685
 (generate-direct-call-defun (core:magic-intern "core__mpi_rank") () "wrapped_core__mpi_rank" )
 ;;; Generating code for core::core__mpi_enabled
-;;; Found at ../../src/core/lisp.cc:1670
+;;; Found at ../../src/core/lisp.cc:1671
 (generate-direct-call-defun (core:magic-intern "core__mpi_enabled") () "wrapped_core__mpi_enabled" )
 ;;; Generating code for core::core__select_package
-;;; Found at ../../src/core/lisp.cc:1654
+;;; Found at ../../src/core/lisp.cc:1655
 (generate-direct-call-defun (core:magic-intern "core__select_package") (package-designator) "wrapped_core__select_package" )
 ;;; Generating code for core::cl__find_package
-;;; Found at ../../src/core/lisp.cc:1644
+;;; Found at ../../src/core/lisp.cc:1645
 (generate-direct-call-defun (core:magic-intern "cl__find_package") (name-desig) "wrapped_cl__find_package" )
 ;;; Generating code for core::core__find_file_in_lisp_path
-;;; Found at ../../src/core/lisp.cc:1634
+;;; Found at ../../src/core/lisp.cc:1635
 (generate-direct-call-defun (core:magic-intern "core__find_file_in_lisp_path") (partialPath) "wrapped_core__find_file_in_lisp_path" )
 ;;; Generating code for core::core__setf_find_class
-;;; Found at ../../src/core/lisp.cc:1604
+;;; Found at ../../src/core/lisp.cc:1605
 (generate-direct-call-defun (core:magic-intern "core__setf_find_class") (new-value name) "wrapped_core__setf_find_class" )
 ;;; Generating code for core::cl__find_class
-;;; Found at ../../src/core/lisp.cc:1577
+;;; Found at ../../src/core/lisp.cc:1578
 (generate-direct-call-defun (core:magic-intern "cl__find_class") (symbol &optional (errorp t) environment) "wrapped_cl__find_class" )
 ;;; Generating code for core::core__getline
-;;; Found at ../../src/core/lisp.cc:1548
+;;; Found at ../../src/core/lisp.cc:1549
 (generate-direct-call-defun (core:magic-intern "core__getline") (&optional (prompt "")) "wrapped_core__getline" )
 ;;; Generating code for core::core__member1
-;;; Found at ../../src/core/lisp.cc:1531
+;;; Found at ../../src/core/lisp.cc:1532
 (generate-direct-call-defun (core:magic-intern "core__member1") (item list test test-not key) "wrapped_core__member1" )
 ;;; Generating code for core::core__member_test
-;;; Found at ../../src/core/lisp.cc:1522
+;;; Found at ../../src/core/lisp.cc:1523
 (generate-direct-call-defun (core:magic-intern "core__member_test") (item list &key key test test-not) "wrapped_core__member_test" )
 ;;; Generating code for core::cl__member
-;;; Found at ../../src/core/lisp.cc:1509
+;;; Found at ../../src/core/lisp.cc:1510
 (generate-direct-call-defun (core:magic-intern "cl__member") (item list &key key test test-not) "wrapped_cl__member" )
 ;;; Generating code for core::cl__assoc
-;;; Found at ../../src/core/lisp.cc:1500
+;;; Found at ../../src/core/lisp.cc:1501
 (generate-direct-call-defun (core:magic-intern "cl__assoc") (item alist &key key test test-not) "wrapped_cl__assoc" )
 ;;; Generating code for core::cl__acons
-;;; Found at ../../src/core/lisp.cc:1492
+;;; Found at ../../src/core/lisp.cc:1493
 (generate-direct-call-defun (core:magic-intern "cl__acons") (key datum alist) "wrapped_cl__acons" )
 ;;; Generating code for core::core__quit
-;;; Found at ../../src/core/lisp.cc:1485
+;;; Found at ../../src/core/lisp.cc:1486
 (generate-direct-call-defun (core:magic-intern "core__quit") (&optional (exit-value 0)) "wrapped_core__quit" )
 ;;; Generating code for core::core__exit
-;;; Found at ../../src/core/lisp.cc:1477
+;;; Found at ../../src/core/lisp.cc:1478
 (generate-direct-call-defun (core:magic-intern "core__exit") (&optional (exit-value 0)) "wrapped_core__exit" )
 ;;; Generating code for core::core__setup_stack_monitor
-;;; Found at ../../src/core/lisp.cc:1463
+;;; Found at ../../src/core/lisp.cc:1464
 (generate-direct-call-defun (core:magic-intern "core__setup_stack_monitor") (&key warn-size sample-size) "wrapped_core__setup_stack_monitor" )
 ;;; Generating code for core::core__stack_limit
-;;; Found at ../../src/core/lisp.cc:1456
+;;; Found at ../../src/core/lisp.cc:1457
 (generate-direct-call-defun (core:magic-intern "core__stack_limit") () "wrapped_core__stack_limit" )
 ;;; Generating code for core::core__stack_monitor
-;;; Found at ../../src/core/lisp.cc:1433
+;;; Found at ../../src/core/lisp.cc:1434
 (generate-direct-call-defun (core:magic-intern "core__stack_monitor") () "wrapped_core__stack_monitor" )
 ;;; Generating code for core::core__stack_used
-;;; Found at ../../src/core/lisp.cc:1399
+;;; Found at ../../src/core/lisp.cc:1400
 (generate-direct-call-defun (core:magic-intern "core__stack_used") () "wrapped_core__stack_used" )
 ;;; Generating code for core::core__low_level_repl
-;;; Found at ../../src/core/lisp.cc:1385
+;;; Found at ../../src/core/lisp.cc:1386
 (generate-direct-call-defun (core:magic-intern "core__low_level_repl") () "wrapped_core__low_level_repl" )
 ;;; Generating code for core::core__list_of_all_special_operators
-;;; Found at ../../src/core/lisp.cc:827
+;;; Found at ../../src/core/lisp.cc:828
 (generate-direct-call-defun (core:magic-intern "core__list_of_all_special_operators") () "wrapped_core__list_of_all_special_operators" )
 ;;; Generating code for core::cl__boole
 ;;; Found at ../../src/core/bits.cc:695

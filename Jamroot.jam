@@ -88,10 +88,10 @@ project clasp : requirements
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
 
 ### LTO stuff
-#        <cxxflags>"-flto"
-#        <cflags>"-flto"
-#        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release/lib"
-#        <linkflags>"-Wl,-object_path_lto,clasp.lto.o"
+        <cxxflags>"-flto"
+        <cflags>"-flto"
+        <linkflags>"-lto_library /Users/meister/Development/externals-clasp/build/release/lib/libLTO.dylib"
+        <linkflags>"-Wl,-object_path_lto,clasp.lto.o"
 
           <target-os>linux:<cxxflags>"-fPIC"
         <cxxflags>"-Wno-unused-local-typedef"
