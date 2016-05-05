@@ -63,7 +63,8 @@ export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
                                  $(LLVM_CONFIG))
 else
 # XXX: confirm the necessity of llvm-config* pathsearch!
-export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config),\
+export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config-3.8),\
+                           $(call pathsearch, llvm-config),\
                            $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
 endif
@@ -82,16 +83,16 @@ export LLVM_VERSION_X100 := $(shell echo $(LLVM_VERSION) | sed 's/[.]//g' )
 #$(info llvm-version is $(LLVM_VERSION))
 #$(info llvm-major-minor-version is $(LLVM_MAJOR_MINOR_VERSION))
 export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
-			$(wildcard $(LLVM_BIN_DIR)/clang),\
 			$(wildcard $(LLVM_BIN_DIR)/clang-$(LLVM_MAJOR_MINOR_VERSION)),\
-			$(call pathsearch, clang),\
+			$(wildcard $(LLVM_BIN_DIR)/clang),\
 			$(call pathsearch, clang-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang),\
 			$(error Could not find clang - it needs to be installed and in your path.))
 export CLASP_CLANGXX_PATH := $(or $(CLASP_CLANGXX_PATH),\
-			$(wildcard $(LLVM_BIN_DIR)/clang++),\
 			$(wildcard $(LLVM_BIN_DIR)/clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
-			$(call pathsearch, clang++),\
+			$(wildcard $(LLVM_BIN_DIR)/clang++),\
 			$(call pathsearch, clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang++),\
 			$(error Could not find clang - it needs to be installed and in your path.))
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
