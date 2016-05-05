@@ -20,5 +20,5 @@
                                                     lambda-list nil 'function))))
                 `(bformat t "Could not generate wrapper for %s - the symbol is not available\n" ',lisp-name))
       (progn
-        `(bformat t "Foo Not exposing %s to debug crash in evalmacros\n" ',lisp-name)))))
+        `(bformat t "Not exposing %s to debug crash in evalmacros\n" ',lisp-name)))))
 
