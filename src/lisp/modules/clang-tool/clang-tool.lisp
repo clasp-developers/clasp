@@ -1035,7 +1035,7 @@ correspond to the environment names superclasses that are also part of the clang
 
 
 
-
+#+(or)
 (defun compile-matcher-arguments* (args diagnostics)
   (let ((arg-vec (make-array (length args))))
     (do* ((i 0 (1+ i))
@@ -1050,6 +1050,7 @@ correspond to the environment names superclasses that are also part of the clang
               (t (error "Illegal matcher argument type ~a" arg)))))))
 
 
+#+(or)
 (defun compile-matcher* (sexp diagnostics)
   (cond
     ((eq (car sexp) :bind)
@@ -1088,16 +1089,9 @@ correspond to the environment names superclasses that are also part of the clang
 
 (defvar *use-dynamic-ast-matcher-library* t)
 (defun compile-matcher-safe (sexp)
-  (if *use-dynamic-ast-matcher-library*
-      (let ((matcher-cform (cform-matcher sexp)))
-        (format t "Converted matcher to: ~a~%" matcher-cform)
-        (ast-tooling:parse-dynamic-matcher matcher-cform))
-      (let* ((diag (ast-tooling:new-diagnostics))
-             (dyn-matcher (compile-matcher-impl sexp diag))
-             (single-matcher (ast-tooling:get-single-matcher dyn-matcher)))
-        (if (null single-matcher)
-            (error "Error while constructing matcher - diagnostics:~% ~a" (to-string-full diag))
-            single-matcher))))
+  (let ((matcher-cform (cform-matcher sexp)))
+    (format t "Converted matcher to: ~a~%" matcher-cform)
+    (ast-tooling:parse-dynamic-matcher matcher-cform)))
   
 
 (defun compile-matcher (sexp)

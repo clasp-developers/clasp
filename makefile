@@ -77,6 +77,7 @@ export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 # Not always the same as LLVM_BIN_DIR!
 
+
 export LLVM_VERSION := $(shell $(LLVM_CONFIG) --version)
 export LLVM_MAJOR_MINOR_VERSION := $(shell echo $(LLVM_VERSION) | sed 's/^\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)/\1.\2/')
 export LLVM_VERSION_X100 := $(shell echo $(LLVM_VERSION) | sed 's/[.]//g' )
@@ -109,6 +110,11 @@ export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-confi
 
 export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
+
+export CLASP_LIB_EXTENSION ?= so
+export CLASP_LIB_EXTENSION := $(or $(and $(filter $(TARGET_OS), Linux ), so), \
+		                    $(and $(filter $(TARGET_OS), Darwin ), dylib), \
+		                    $(error Invalid TARGET_OS: $(TARGET_OS)))
 
 export CLASP_DEBUG_CXXFLAGS += -I$(shell $(LLVM_CONFIG_DEBUG) --includedir)
 export CLASP_DEBUG_LINKFLAGS += -L$(CLASP_DEBUG_LLVM_LIB_DIR)
