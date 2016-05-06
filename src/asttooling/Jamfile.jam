@@ -19,8 +19,8 @@ project internals/asttooling : requirements
 	;
 
 sources = 
-        Registry.cc
-        Diagnostics.cc
+#        Registry.cc
+#        Diagnostics.cc
         astVisitor.cc
 	astExpose.cc
 	clangTooling.cc

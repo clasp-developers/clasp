@@ -73,7 +73,8 @@ template <>
 struct to_object<llvm::StringRef> {
   static core::T_sp convert(const llvm::StringRef &sr) { return core::Str_O::create(sr.data(), sr.size()); }
 };
-
+ 
+#if 0
 template <>
 struct from_object<llvm::DIBuilder::DebugEmissionKind> {
   typedef llvm::DIBuilder::DebugEmissionKind DeclareType;
@@ -91,7 +92,8 @@ struct from_object<llvm::DIBuilder::DebugEmissionKind> {
     SIMPLE_ERROR(BF("You must pass :full-debug or :line-tables-only, only those are valid DebugEmissionKind"));
   }
 };
-
+#endif
+ 
 template <>
 struct from_object<llvm::ArrayRef<std::string>> {
   typedef std::vector<std::string> DeclareType;

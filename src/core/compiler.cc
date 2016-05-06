@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -1105,6 +1106,16 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   T_mv result = eval::funcall(func);
   return result;
 }
+
+ CL_DEFUN T_mv core__declared_global_inline_p(T_sp name)
+ {
+   return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
+ }
+
+  CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name)
+ {
+   return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
+ }
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);

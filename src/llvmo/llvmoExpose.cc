@@ -106,8 +106,12 @@ CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
 
 
 CL_DEFUN LLVMContext_sp LLVMContext_O::get_global_context() {
+  static llvm::LLVMContext* static_llvm_context = NULL;
   GC_ALLOCATE(LLVMContext_O, context);
-  context->_ptr = &(llvm::getGlobalContext());
+  if ( static_llvm_context == NULL ) {
+    static_llvm_context = new llvm::LLVMContext();
+  }
+  context->_ptr = static_llvm_context;
   return context;
 };
 }
@@ -2315,9 +2319,9 @@ CL_LISPIFY_NAME(CreateGEPArray);
 namespace llvmo {
 
   CL_LISPIFY_NAME(addAttr);
-  CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::addAttr);
+  CL_EXTERN_DEFMETHOD(Argument_O, (void(llvm::Argument::*)(llvm::AttributeSet))&llvm::Argument::addAttr);
   CL_LISPIFY_NAME(removeAttr);
-  CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::removeAttr);
+CL_EXTERN_DEFMETHOD(Argument_O, (void(llvm::Argument::*)(llvm::AttributeSet))&llvm::Argument::removeAttr);
   CL_LISPIFY_NAME(hasStructRetAttr);
   CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::hasStructRetAttr);
   CL_LISPIFY_NAME(hasNoAliasAttr);
@@ -2991,13 +2995,13 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   SYMBOL_EXPORT_SC_(LlvmoPkg, AquireRelease);
   SYMBOL_EXPORT_SC_(LlvmoPkg, SequentiallyConsistent);
   CL_BEGIN_ENUM(llvm::AtomicOrdering,_sym_STARatomic_orderingSTAR, "llvm::AtomicOrdering");
-  CL_VALUE_ENUM(_sym_NotAtomic, llvm::NotAtomic);
-  CL_VALUE_ENUM(_sym_Unordered, llvm::Unordered);
-  CL_VALUE_ENUM(_sym_Monotonic, llvm::Monotonic);
-  CL_VALUE_ENUM(_sym_Acquire, llvm::Acquire);
-  CL_VALUE_ENUM(_sym_Release, llvm::Release);
+CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
+  CL_VALUE_ENUM(_sym_Unordered, llvm::AtomicOrdering::Unordered);
+  CL_VALUE_ENUM(_sym_Monotonic, llvm::AtomicOrdering::Monotonic);
+  CL_VALUE_ENUM(_sym_Acquire, llvm::AtomicOrdering::Acquire);
+  CL_VALUE_ENUM(_sym_Release, llvm::AtomicOrdering::Release);
       //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
-  CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::SequentiallyConsistent);;
+  CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
   
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARsynchronization_scopeSTAR);

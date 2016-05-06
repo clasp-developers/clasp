@@ -531,11 +531,11 @@ void initialize_clangTooling() {
     //            .def("getSingleMatcher",&clang::ast_matchers::dynamic::VariantMatcher::getSingleMatcher,policies<pureOutValue<1> >())
      ,
      def("getSingleMatcher", &ast_tooling__getSingleMatcher),
-     class_<Diagnostics>("Diagnostics", no_default_constructor)
-     .def("toStringFull", &Diagnostics::toStringFull)
-     .def_constructor("newDiagnostics", constructor<>()),
-     def("constructMatcher", &Registry::constructMatcher),
-     def("constructBoundMatcher", &Registry::constructBoundMatcher),
+//     class_<Diagnostics>("Diagnostics", no_default_constructor)
+//     .def("toStringFull", &Diagnostics::toStringFull)
+//     .def_constructor("newDiagnostics", constructor<>()),
+//     def("constructMatcher", &Registry::constructMatcher),
+//     def("constructBoundMatcher", &Registry::constructBoundMatcher),
      class_<clang::ast_matchers::MatchFinder>("MatchFinder", no_default_constructor)
      .def_constructor("newMatchFinder", constructor<>())
      .def("addDynamicMatcher", &clang::ast_matchers::MatchFinder::addDynamicMatcher) // TODO: Add a nurse/patient relationship for argument and object

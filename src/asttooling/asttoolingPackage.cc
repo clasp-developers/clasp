@@ -77,7 +77,7 @@ void AsttoolingExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpo
     //	    initialize_tools();
     initialize_clangTooling();
     initialize_astVisitor();
-    initialize_Registry();
+//    initialize_Registry();
   };
       break;
   case candoGlobals: {
