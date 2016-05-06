@@ -282,7 +282,7 @@ public:
 
   enum_ &value(Symbol_sp const &sym, X value) {
     _G();
-    lisp_extendSymbolToEnumConverter(this->_Converter, sym, sym, value);
+    lisp_extendSymbolToEnumConverter(this->_Converter, sym, sym, static_cast<int>(value));
     return *this;
   }
   enum_ &value(Symbol_sp const &name, Symbol_sp const &archiveName, X value) {

@@ -31,7 +31,7 @@
 (defun bitcode-to-obj-file (input-filename output-filename &key reloc-model)
   "Generate a .o file from a bitcode file"
   (or reloc-model (error "You must provide reloc-model"))
-  (format t "Generating object file  ~a  -->  ~a  reloc-model: ~a~%" input-filename output-filename reloc-model)
+  (format t "Generating object file  ~a~%    -->  ~a  reloc-model: ~a~%" input-filename output-filename reloc-model)
   (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename input-filename)) cmp:*llvm-context*)))
     (with-open-file (fout output-filename :direction :output)
       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))

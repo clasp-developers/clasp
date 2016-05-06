@@ -13,50 +13,11 @@
 
 (in-package :sys)
 
-(eval-when (:compile-toplevel :execute)
-  (setq core:*debug-fset* t)
-  (bformat t "Turning ON *debug-fset*\n"))
-
-(eval-when (:compile-toplevel)
-  (setq *print-pretty* nil)
-  (format t "(macroexpand '(defmacro unless ...)) -> ~a~%"
-
-          (macroexpand '(defmacro unless (pred &rest body)
-                         "Syntax: (unless test {form}*)
-If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
-last FORM.  If not, simply returns NIL."
-                         `(IF (NOT ,pred) (PROGN ,@body))))
-
-          ))
-
 (defmacro unless (pred &rest body)
   "Syntax: (unless test {form}*)
 If TEST evaluates to NIL, then evaluates FORMs and returns all values of the
 last FORM.  If not, simply returns NIL."
   `(IF (NOT ,pred) (PROGN ,@body)))
-
-(eval-when (:compile-toplevel)
-  (setq *print-pretty* nil)
-  (format t "(macroexpand '(defmacro defmacro ...)) -> ~a~%"
-          (macroexpand '(defmacro defmacro (&whole whole name vl &body body &aux doc-string)
-                         ;; Documentation in help.lsp
-                         (unless (symbolp name)
-                           (error "Macro name ~s is not a symbol." name))
-                         (multiple-value-bind (function pprint doc-string)
-                             (sys::expand-defmacro name vl body)
-                           (setq function `(function ,function))
-                           (when *dump-defun-definitions*
-                             (print function)
-                             (setq function `(si::bc-disassemble ,function)))
-                           `(eval-when (:compile-toplevel :load-toplevel :execute)
-                              ,(ext:register-with-pde whole `(si::fset ',name ,function
-                                                                       t ; macro
-                                                                       ,pprint ; ecl pprint
-                                                                       ',vl ; lambda-list lambda-list-p
-                                                                       ))
-                              ,@(si::expand-set-documentation name 'function doc-string)
-                              ',name)))))
-  (format t "before (macro-function 'defmacro) --> ~a~%" (macro-function 'defmacro) ))
 
 (defmacro defmacro (&whole whole name vl &body body &aux doc-string)
   ;; Documentation in help.lsp
@@ -76,10 +37,6 @@ last FORM.  If not, simply returns NIL."
                                                 ))
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
-
-(eval-when (:compile-toplevel)
-  (format t "(macro-function 'defmacro) --> ~a~%" (macro-function 'defmacro)))
-
 
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses
@@ -263,13 +220,7 @@ terminated by a non-local exit."
   `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
 )
 
-(eval-when (:compile-toplevel :execute)
-  (bformat t "(macroexpand '(defmacro lambda (&rest body) `(function (lambda ,@body)))) --> %s\n" (macroexpand '(defmacro lambda (&rest body) `(function (lambda ,@body))))))
-
 (defmacro lambda (&rest body) `(function (lambda ,@body)))
-
-(eval-when (:compile-toplevel :execute)
-  (bformat t "!!!!!!!!!!!!!!!!!!!!!!  The macro-function for lambda is: %s\n" (macro-function 'lambda)))
 
 #+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
        (multiple-value-bind (decls body doc)
@@ -530,6 +481,3 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (import 'ext:truly-the)
 (export 'truly-the)
 
-(eval-when (:compile-toplevel :execute)
-  (setq core:*debug-fset* nil)
-  (bformat t "Turning OFF *debug-fset*\n"))

@@ -1618,7 +1618,7 @@ public:
 
   void addModule(Module_sp module);
 
-  Function_sp FindFunctionNamed(core::Str_sp name);
+  Function_sp find_function_named(core::Str_sp name);
 
   void addNamedModule(const string &name, Module_sp module);
   bool hasNamedModule(const string &name);

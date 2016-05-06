@@ -82,6 +82,7 @@ THE SOFTWARE.
 #include <clasp/core/lightProfiler.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/symbolTable.h>
@@ -105,8 +106,12 @@ CL_DEFUN bool llvm_sys__llvm_value_p(core::T_sp o) {
 
 
 CL_DEFUN LLVMContext_sp LLVMContext_O::get_global_context() {
+  static llvm::LLVMContext* static_llvm_context = NULL;
   GC_ALLOCATE(LLVMContext_O, context);
-  context->_ptr = &(llvm::getGlobalContext());
+  if ( static_llvm_context == NULL ) {
+    static_llvm_context = new llvm::LLVMContext();
+  }
+  context->_ptr = static_llvm_context;
   return context;
 };
 }
@@ -872,6 +877,8 @@ namespace llvmo {
   CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getTargetTriple);
   CL_LISPIFY_NAME(setDataLayout);
   CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(const llvm::DataLayout& )) & llvm::Module::setDataLayout);;
+  CL_LISPIFY_NAME(setDataLayout.string);
+  CL_EXTERN_DEFMETHOD(Module_O, (void (llvm::Module::*)(llvm::StringRef )) & llvm::Module::setDataLayout);;
   CL_EXTERN_DEFMETHOD(Module_O,&llvm::Module::setTargetTriple);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, verifyModule);
@@ -1052,8 +1059,8 @@ CL_DEFMETHOD void ExecutionEngine_O::addModule(Module_sp module) {
   ee->addModule(std::move(mod));
 }
 
-CL_LISPIFY_NAME("FindFunctionNamed");
-CL_DEFMETHOD Function_sp ExecutionEngine_O::FindFunctionNamed(core::Str_sp name) {
+CL_LISPIFY_NAME("find_function_named");
+CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::Str_sp name) {
   return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
 }
 
@@ -2312,9 +2319,9 @@ CL_LISPIFY_NAME(CreateGEPArray);
 namespace llvmo {
 
   CL_LISPIFY_NAME(addAttr);
-  CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::addAttr);
+  CL_EXTERN_DEFMETHOD(Argument_O, (void(llvm::Argument::*)(llvm::AttributeSet))&llvm::Argument::addAttr);
   CL_LISPIFY_NAME(removeAttr);
-  CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::removeAttr);
+CL_EXTERN_DEFMETHOD(Argument_O, (void(llvm::Argument::*)(llvm::AttributeSet))&llvm::Argument::removeAttr);
   CL_LISPIFY_NAME(hasStructRetAttr);
   CL_EXTERN_DEFMETHOD(Argument_O, &llvm::Argument::hasStructRetAttr);
   CL_LISPIFY_NAME(hasNoAliasAttr);
@@ -2728,6 +2735,31 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   return functoid;
 }
 
+
+
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::Str_sp globalRunTimeValueName, core::T_sp fileName) {
+  // Stuff to support MCJIT
+  llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+  finalizeEngineAndTime(engine);
+  core::InitFnPtr* main_functions_ptr = reinterpret_cast<core::InitFnPtr*>(engine->getGlobalValueAddress(GLOBAL_BOOT_FUNCTIONS_NAME));
+  void* epilogue_ptr = reinterpret_cast<void*>(engine->getGlobalValueAddress(GLOBAL_EPILOGUE_NAME));
+  if (!main_functions_ptr) {
+    SIMPLE_ERROR(BF("Could not get a pointer to the array of run-all functions: %s") % _rep_(fileName));
+  }
+  size_t hasEpilogue = (epilogue_ptr!=NULL) ? 1 : 0;
+  core::T_mv result;
+  invokeMainFunctions(&result,main_functions_ptr,hasEpilogue);
+#if 0
+  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
+  core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
+  core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
+  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
+  //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
+  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
+  return functoid;
+#endif
+}
+
 CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   auto closure = func.as<core::CompiledClosure_O>();
@@ -2797,11 +2829,23 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   return Values(targeto, _Nil<core::T_O>());
 }
 
+/*! Return (values target nil) if successful or (values nil error-message) if not */
+CL_LISPIFY_NAME(TargetRegistryLookupTarget.string);
+CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple) {
+  string message;
+  llvm::Target *target = const_cast<llvm::Target *>(llvm::TargetRegistry::lookupTarget(Triple,message));
+  if (target == NULL) {
+    return Values(_Nil<core::T_O>(), core::Str_O::create(message));
+  }
+  Target_sp targeto = core::RP_Create_wrapped<Target_O, llvm::Target *>(target);
+  return Values(targeto, _Nil<core::T_O>());
+}
 
 
 
 
-  SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
+
+    SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, AvailableExternallyLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceAnyLinkage);
@@ -2951,13 +2995,13 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
   SYMBOL_EXPORT_SC_(LlvmoPkg, AquireRelease);
   SYMBOL_EXPORT_SC_(LlvmoPkg, SequentiallyConsistent);
   CL_BEGIN_ENUM(llvm::AtomicOrdering,_sym_STARatomic_orderingSTAR, "llvm::AtomicOrdering");
-  CL_VALUE_ENUM(_sym_NotAtomic, llvm::NotAtomic);
-  CL_VALUE_ENUM(_sym_Unordered, llvm::Unordered);
-  CL_VALUE_ENUM(_sym_Monotonic, llvm::Monotonic);
-  CL_VALUE_ENUM(_sym_Acquire, llvm::Acquire);
-  CL_VALUE_ENUM(_sym_Release, llvm::Release);
+CL_VALUE_ENUM(_sym_NotAtomic, llvm::AtomicOrdering::NotAtomic);
+  CL_VALUE_ENUM(_sym_Unordered, llvm::AtomicOrdering::Unordered);
+  CL_VALUE_ENUM(_sym_Monotonic, llvm::AtomicOrdering::Monotonic);
+  CL_VALUE_ENUM(_sym_Acquire, llvm::AtomicOrdering::Acquire);
+  CL_VALUE_ENUM(_sym_Release, llvm::AtomicOrdering::Release);
       //	.value(_sym_AquireRelease,llvm::AtomicOrdering::AquireRelease)
-  CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::SequentiallyConsistent);;
+  CL_VALUE_ENUM(_sym_SequentiallyConsistent, llvm::AtomicOrdering::SequentiallyConsistent);;
   CL_END_ENUM(_sym_STARatomic_orderingSTAR);
   
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARsynchronization_scopeSTAR);
@@ -3131,14 +3175,14 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Trip
 
 
 
-void initialize_llvmo_expose() {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmPrinter();
-  llvm::InitializeNativeTargetAsmParser();
-  _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-  _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
-  _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
-  llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
-}
+  void initialize_llvmo_expose() {
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+    _sym_STARmostRecentLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+    _sym_STARaccumulatedLlvmFinalizationTimeSTAR->defparameter(core::DoubleFloat_O::create(0.0));
+    _sym_STARnumberOfLlvmFinalizationsSTAR->defparameter(core::make_fixnum(0));
+    llvm::initializeScalarOpts(*llvm::PassRegistry::getPassRegistry());
+  }
 
 }; // llvmo

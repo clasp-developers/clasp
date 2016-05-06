@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/unixfsys.h>
+#include <clasp/core/hashTableEqual.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/cleavirPrimopsPackage.h>
 #include <clasp/core/lambdaListHandler.h>
@@ -249,11 +250,7 @@ LOAD:
   /* Look up the initialization function. */
   string stem = cl__string_downcase(gc::As<Str_sp>(path->_Name))->get();
   size_t dsp = 0;
-  if ((dsp = stem.find("_dbg")) != string::npos)
-    stem = stem.substr(0, dsp);
-  else if ((dsp = stem.find("_opt")) != string::npos)
-    stem = stem.substr(0, dsp);
-  else if ((dsp = stem.find("_d")) != string::npos)
+  if ((dsp = stem.find("_d")) != string::npos)
     stem = stem.substr(0, dsp);
   else if ((dsp = stem.find("_o")) != string::npos)
     stem = stem.substr(0, dsp);
@@ -274,13 +271,15 @@ LOAD:
     //    return (Values(_Nil<T_O>(), Str_O::create(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
-  string mainName = CLASP_MAIN_FUNCTION_NAME;
-  InitFnPtr mainFunctionPointer = (InitFnPtr)dlsym(handle, mainName.c_str());
-  if (mainFunctionPointer == NULL) {
-    SIMPLE_ERROR(BF("Could not find initialization function %s") % mainName);
+  InitFnPtr* mainFunctionsPointer = (InitFnPtr*)dlsym(handle, GLOBAL_BOOT_FUNCTIONS_NAME);
+  if (mainFunctionsPointer == NULL) {
+    SIMPLE_ERROR(BF("Could not find the array of main functions: %s") % GLOBAL_BOOT_FUNCTIONS_NAME);
   }
   //	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
-  (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
+  void* epilogueP = dlsym(handle,GLOBAL_EPILOGUE_NAME);
+  size_t hasEpilogue = (epilogueP != NULL) ? 1 : 0;
+  T_mv result;
+  invokeMainFunctions(&result,mainFunctionsPointer,hasEpilogue);
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 
@@ -1107,6 +1106,16 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
   T_mv result = eval::funcall(func);
   return result;
 }
+
+ CL_DEFUN T_mv core__declared_global_inline_p(T_sp name)
+ {
+   return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
+ }
+
+  CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name)
+ {
+   return gc::As<HashTableEqual_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
+ }
 
  SYMBOL_EXPORT_SC_(CompPkg, STARimplicit_compile_hookSTAR);
  SYMBOL_EXPORT_SC_(CompPkg, implicit_compile_hook_default);

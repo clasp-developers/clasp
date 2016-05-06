@@ -30,6 +30,7 @@ typedef bool _Bool;
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/LinkAllPasses.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Support/raw_ostream.h>
@@ -158,9 +159,9 @@ typedef bool _Bool;
 #include <clasp/asttooling/clangTooling.h>
 #include <clasp/asttooling/astVisitor.h>
 #include <clasp/asttooling/example.h>
-#include <clasp/asttooling/Registry.h>
-#include <clasp/asttooling/Diagnostics.h>
-#include <clasp/asttooling/Marshallers.h>
+//#include <clasp/asttooling/Registry.h>
+//#include <clasp/asttooling/Diagnostics.h>
+//#include <clasp/asttooling/Marshallers.h>
 
 #define GC_INTERFACE_INCLUDE
 #include <project_headers.h>

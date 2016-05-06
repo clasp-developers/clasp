@@ -318,24 +318,21 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;;; A temporary definition of defun - the real one is in evalmacros
 (si:fset 'defun
-	   #'(lambda (def env)
-	       (let ((name (second def))	;cadr
-		     (lambda-list (third def))	; caddr
-		     (lambda-body (cdddr def))) ; cdddr
-		 (multiple-value-call
-		     (function (lambda (&optional (decl) (body) (doc) &rest rest)
-		       (declare (ignore rest))
-		       (if decl (setq decl (list (cons 'declare decl))))
-		       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
-			 ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-			 (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
-		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
-
-		 ))
-	   t)
+         #'(lambda (def env)
+             (let ((name (second def))          ;cadr
+                   (lambda-list (third def))	; caddr
+                   (lambda-body (cdddr def)))   ; cdddr
+               (multiple-value-call
+                   (function (lambda (&optional (decl) (body) (doc) &rest rest)
+                     (declare (ignore rest))
+                     (if decl (setq decl (list (cons 'declare decl))))
+                     (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+                       ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+                       (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
+                 (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
+         t)
 
 (export '(defun))
-
 
 ;;; Define these here so that Cleavir can do inlining
 (defvar *defun-inline-hook* nil)
@@ -347,9 +344,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; Discard documentation until helpfile.lsp is loaded
 (defun set-documentation (o d s) nil)
-
-(defvar *functions-to-inline* (make-hash-table :test #'equal))
-(defvar *functions-to-notinline* (make-hash-table :test #'equal))
 
 (defun proclaim (decl)
   "Args: (decl-spec)
@@ -367,12 +361,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        (remhash name *functions-to-inline*)))
     (*proclaim-hook*
      (funcall *proclaim-hook* decl))))
-
-(defun declared-global-inline-p (name)
-  (gethash name *functions-to-inline*))
-
-(defun declared-global-notinline-p (name)
-  (gethash name *functions-to-notinline*))
 
 (defun global-inline-status (name)
   "Return 'cl:inline 'cl:notinline or nil"

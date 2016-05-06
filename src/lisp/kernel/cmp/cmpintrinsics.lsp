@@ -373,18 +373,13 @@ are linked very last in a list of modules and it terminates the global-boot-func
     (llvm-sys:make-global-variable module
                                    +i32+ ; type
                                    t     ; is constant
-                                   'llvm-sys:external-linkage
+                                   'llvm-sys:weak-any-linkage
                                    (jit-constant-i32 #xdeadbeef)
-                                   llvm-sys:+global-epilogue-name+))
-  (llvm-sys:make-global-variable module
-                                 +i32+  ; type
-                                 t      ; is constant
-                                 'llvm-sys:internal-linkage
-                                 (jit-constant-i32 1)
-                                 llvm-sys:+global-boot-functions-name-size+))
+                                   llvm-sys:+global-epilogue-name+)))
 
+#+(or)
 (defun reset-global-boot-functions-name-size (module)
-  (remove-main-function-if-exists module)
+  #+(or)(remove-main-function-if-exists module)
   (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
          (ptype (llvm-sys:get-type funcs))
          (atype (llvm-sys:get-sequential-element-type ptype))
@@ -399,12 +394,13 @@ are linked very last in a list of modules and it terminates the global-boot-func
                                    llvm-sys:+global-boot-functions-name-size+)))
 
 
-(defun remove-main-function-if-exists (module)
+#+(or)(defun remove-main-function-if-exists (module)
   (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
     (if fn
       (llvm-sys:erase-from-parent fn))))
 
 
+#+(or)
 (defun add-main-function (module)
   (let ((*the-module* module))
     (remove-main-function-if-exists module)
@@ -616,9 +612,9 @@ are linked very last in a list of modules and it terminates the global-boot-func
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
-  (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
-  (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+))
+  (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +size_t+))
+;;;  (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+)) 
 
   (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
 

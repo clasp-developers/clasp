@@ -8,6 +8,7 @@
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
+#+(or)
 (defun global-function-inline-ast (name)
   (gethash name *function-inline-asts*))
 

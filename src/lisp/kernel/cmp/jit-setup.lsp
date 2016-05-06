@@ -42,19 +42,36 @@ using features defined in corePackage.cc"
   (cond
     ((and (member :target-os-darwin *features*)
           (member :address-model-64 *features*))
-     "x86_64-apple-macosx10.7.0")
+     (values "x86_64-apple-macosx10.7.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
     ((and (member :target-os-linux *features*)
           (member :address-model-64 *features*))
-     "x86_64-pc-linux-gnu")
+     (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
     (t (error "Could not identify target triple for features ~a" *features*))))
+
+(defun generate-data-layout ()
+  (let* ((triple (generate-target-triple))
+         (target (llvm-sys:target-registry-lookup-target.string triple))
+         (target-options (llvm-sys:make-target-options))
+         (target-machine (llvm-sys:create-target-machine
+                          target
+                          triple
+                          ""
+                          ""
+                          target-options
+                          'llvm-sys:reloc-model-default
+                          'llvm-sys:code-model-default
+                          'llvm-sys:code-gen-opt-default)))
+    (llvm-sys:create-data-layout target-machine)))
 
 (defvar *default-target-triple* (generate-target-triple)
   "The default target-triple for this machine")
 
+(defvar *default-data-layout* (generate-data-layout))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
     (llvm-sys:set-target-triple m *default-target-triple*)
+    (llvm-sys:set-data-layout m *default-data-layout*)
     m))
 
 (defun create-llvm-module-for-compile-file (module-name)
@@ -244,7 +261,6 @@ No DIBuilder is defined for the default module")
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((stringp lname)
      (cond
-       ((string= lname llvm-sys:+clasp-main-function-name+) lname) ; CANDO_MAIN
        ((string= lname "IMPLICIT-REPL") lname) ; this one is ok
        ((string= lname "TOP-LEVEL") lname) ; this one is ok
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
@@ -273,36 +289,19 @@ No DIBuilder is defined for the default module")
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
 
-(si:fset
- 'load-bitcode
- #'(lambda (filename &optional verbose print external_format)
-     "Load a bitcode file, link it and execute it"
-     (let ((*package* *package*)
-	   (time-load-start (clock-gettime-nanoseconds)))
-       ;;       (bformat t "Loading module from file: %s\n" filename)
-       (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
-	      (engine-builder (llvm-sys:make-engine-builder module))
-	      ;; After make-engine-builder MODULE becomes invalid!!!!!
-	      (target-options (llvm-sys:make-target-options)))
-	 (llvm-sys:set-target-options engine-builder target-options)
+(defun load-bitcode (filename &optional verbose print external_format)
+  "Load a bitcode file, link it and execute it"
+  (let ((*package* *package*)
+        (time-load-start (clock-gettime-nanoseconds)))
+    ;;       (bformat t "Loading module from file: %s\n" filename)
+    (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
+           (engine-builder (llvm-sys:make-engine-builder module))
+           ;; After make-engine-builder MODULE becomes invalid!!!!!
+           (target-options (llvm-sys:make-target-options)))
+      (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-	 (let* ((execution-engine (llvm-sys:create engine-builder))
-		(stem (string-downcase (pathname-name filename)))
-		(main-fn-name llvm-sys:+clasp-main-function-name+)
-		(time-jit-start (clock-gettime-nanoseconds))
-		(main-llvm-function (llvm-sys:find-function-named execution-engine llvm-sys:+clasp-main-function-name+)))
-	   (let ((main-fn (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-			   execution-engine 
-			   (intern llvm-sys:+clasp-main-function-name+)	      ; main fn name as symbol
-			   main-llvm-function ; llvm-fn
-			   nil		      ; environment
-			   *load-time-value-holder-name*
-			   (namestring (truename filename)) ; file name
-			   0 
-			   0 
-			   nil)))
-	     (funcall main-fn)
-	     ))))
-     t)
- nil)
+      (let* ((execution-engine (llvm-sys:create engine-builder)))
+        (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
+                                                                              *load-time-value-holder-name*
+                                                                              (namestring (truename filename)))))))
 (export 'load-bitcode)

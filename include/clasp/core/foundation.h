@@ -70,7 +70,8 @@ class type_info;
 
 #include <map>
 
-#define CLASP_MAIN_FUNCTION_NAME "CLASP_MAIN"
+#define GLOBAL_BOOT_FUNCTIONS_NAME "global-run-all-array"
+#define GLOBAL_EPILOGUE_NAME "global-epilogue"
 
 #define VARARGS
 
