@@ -68,8 +68,8 @@ THE SOFTWARE.
 #include <clasp/asttooling/translators.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/asttooling/Diagnostics.h>
-#include <clasp/asttooling/Registry.h>
+//#include <clasp/asttooling/Diagnostics.h>
+//#include <clasp/asttooling/Registry.h>
 #include <clasp/asttooling/clangTooling.h>
 #include <clasp/core/translators.h>
 
@@ -877,8 +877,8 @@ void initialize_clangTooling() {
     /* Expose the Dynamic Matcher library */
      ,
      class_<clang::ast_matchers::dynamic::DynTypedMatcher>("DynTypedMatcher", no_default_constructor),
-     class_<ParserValue>("ParserValue", no_default_constructor)
-     .def_constructor("newParserValue", constructor<core::Cons_sp, const VariantValue &>()),
+//     class_<ParserValue>("ParserValue", no_default_constructor)
+//     .def_constructor("newParserValue", constructor<core::Cons_sp, const VariantValue &>()),
      class_<clang::ast_matchers::dynamic::VariantValue>("VariantValue", no_default_constructor)
      .def_constructor("newVariantValueUnsigned", constructor<unsigned>())
      .def_constructor("newVariantValueString", constructor<std::string>())

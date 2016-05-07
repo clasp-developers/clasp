@@ -44,8 +44,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/translators.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/asttooling/Diagnostics.h>
-#include <clasp/asttooling/Registry.h>
 #include <clasp/asttooling/clangTooling.h>
 #include <clasp/asttooling/clangCompilePkg.h>
 #include <clasp/core/translators.h>

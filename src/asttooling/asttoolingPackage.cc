@@ -37,7 +37,6 @@ THE SOFTWARE.
 #include <clasp/asttooling/tools.h>
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
-#include <clasp/asttooling/Registry.h>
 
 namespace asttooling {
 #if 0
