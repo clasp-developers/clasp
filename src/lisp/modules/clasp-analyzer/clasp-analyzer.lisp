@@ -713,6 +713,9 @@ to expose to C++.
                            :base base
                            :offset-type x))))
 
+(defmethod linearize-class-layout-impl ((x lvalue-reference-ctype) base analysis)
+  nil)
+
 (defmethod linearize-class-layout-impl ((x enum-ctype) base analysis)
   nil)
 (defmethod linearize-class-layout-impl ((x builtin-ctype) base analysis)
