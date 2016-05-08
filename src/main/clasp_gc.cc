@@ -5,12 +5,7 @@
     class DerivableMatchCallback;
     class DerivableFrontendActionFactory;
     class AsttoolingExposer_O;
-    class Message;
     class AstVisitor_O;
-    class ErrorContent;
-    namespace RegMap {
-        class SymbolMatcherDescriptorPair_O;
-    };
  };
  namespace cffi {
     class Pointer_O;
@@ -567,34 +562,30 @@ KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ = 271,
 KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = 272,
 KIND_GCSTRING_gctools__GCString_moveable_char_ = 273,
 KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ = 274,
-KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_ = 275,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 276,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 277,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ = 278,
-KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_ = 279,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ = 280,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ = 281,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = 282,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ = 283,
-KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = 284,
-KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = 285,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ = 286,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = 287,
-KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 288,
-KIND_LISPALLOC_asttooling__DerivableMatchCallback = 289,
-KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_ = 290,
-KIND_LISPALLOC_asttooling__DerivableASTFrontendAction = 291,
-KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_ = 292,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = 293,
-KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction = 294,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 295,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ = 296,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ = 297,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = 298,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ = 299,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ = 300,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = 301,
-  KIND_max = 301
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 275,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 276,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ = 277,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ = 278,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ = 279,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = 280,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ = 281,
+KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = 282,
+KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = 283,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ = 284,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = 285,
+KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 286,
+KIND_LISPALLOC_asttooling__DerivableMatchCallback = 287,
+KIND_LISPALLOC_asttooling__DerivableASTFrontendAction = 288,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = 289,
+KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction = 290,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 291,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ = 292,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ = 293,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = 294,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ = 295,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ = 296,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = 297,
+  KIND_max = 297
 }
 #endif // defined(GC_ENUM)
 #if defined(GC_DYNAMIC_CAST)
@@ -2872,10 +2863,6 @@ template <> class gctools::GCKind<llvmo::Module_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Module_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_ ;
-};
 template <> class gctools::GCKind<core::SmallMultimap_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SmallMultimap_O ;
@@ -2884,13 +2871,13 @@ template <> class gctools::GCKind<core::LogicalPathname_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__LogicalPathname_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
-};
 template <> class gctools::GCKind<clbind::ClassRegistry_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
+};
+template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ ;
 };
 template <> class gctools::GCKind<core::Pointer_O> {
 public:
@@ -3088,13 +3075,13 @@ template <> class gctools::GCKind<core::Path_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Path_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<core::SymbolStorage>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
-};
 template <> class gctools::GCKind<core::NamedFunction_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__NamedFunction_O ;
+};
+template <> class gctools::GCKind<gctools::GCVector_moveable<core::SymbolStorage>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ ;
 };
 template <> class gctools::GCKind<llvmo::Function_O> {
 public:
@@ -3184,12 +3171,6 @@ template <> class gctools::GCKind<core::MacroletEnvironment_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__MacroletEnvironment_O ;
 };
-#if 0
-template <> class gctools::GCKind<gctools::GCVector_moveable<asttooling::ContextFrame>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_ ;
-};
-#endif
 template <> class gctools::GCKind<llvmo::DILexicalBlockBase_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DILexicalBlockBase_O ;
@@ -3686,10 +3667,6 @@ template <> class gctools::GCKind<core::StringStream_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringStream_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<asttooling::ErrorContent>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_ ;
-};
 template <> class gctools::GCKind<llvmo::DIBuilder_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__DIBuilder_O ;
@@ -3701,10 +3678,6 @@ public:
 template <> class gctools::GCKind<core::Array_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Array_O ;
-};
-template <> class gctools::GCKind<gctools::GCVector_moveable<asttooling::Message>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_ ;
 };
 template <> class gctools::GCKind<llvmo::ConstantDataSequential_O> {
 public:
@@ -3818,13 +3791,13 @@ template <> class gctools::GCKind<llvmo::LandingPadInst_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__LandingPadInst_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
-};
 template <> class gctools::GCKind<llvmo::IRBuilderBase_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__IRBuilderBase_O ;
+};
+template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>> {
+public:
+  static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ ;
 };
 template <> class gctools::GCKind<core::SymbolMacroletEnvironment_O> {
 public:
@@ -5051,11 +5024,6 @@ public:
 {  variable_capacity, sizeof(core::RequiredArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), NULL },
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTarget), "_ArgTarget" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::RequiredArgument),_ArgTargetFrameIndex), "_ArgTargetFrameIndex" }, // public: (T) fixable: NIL good-name: T
-//{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_, sizeof(gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>), 0, "gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>" },
-//{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>),_Data), "_Data" },
-//{  variable_capacity, sizeof(asttooling::RegMap::SymbolMatcherDescriptorPair_O), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>),_Capacity), NULL },
-// {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(asttooling::RegMap::SymbolMatcherDescriptorPair_O),Name), "Name" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-// {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<asttooling::MatcherDescriptor_O>), offsetof(SAFE_TYPE_MACRO(asttooling::RegMap::SymbolMatcherDescriptorPair_O),matcher), "matcher" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::SourceFileInfo_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>),_Capacity), NULL },
@@ -5071,10 +5039,6 @@ public:
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Symbol), "_Symbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Export), "_Export" }, // public: (T) fixable: NIL good-name: T
  {    variable_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::SymbolStorage),_Shadow), "_Shadow" }, // public: (T) fixable: NIL good-name: T
-//{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_, sizeof(gctools::GCVector_moveable<asttooling::ContextFrame>), 0, "gctools::GCVector_moveable<asttooling::ContextFrame>" },
-//{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ContextFrame>),_Data), "_Data" },
-//{  variable_capacity, sizeof(asttooling::ContextFrame), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ContextFrame>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ContextFrame>),_Capacity), NULL },
-// {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), offsetof(SAFE_TYPE_MACRO(asttooling::ContextFrame),Range), "Range" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_, sizeof(gctools::GCVector_moveable<core::T_O *>), 0, "gctools::GCVector_moveable<core::T_O *>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::T_O*), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
@@ -5125,11 +5089,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_lambda_list), "_lambda_list" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Slots._Vector._Contents), "_Slots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableMatchCallback),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_, sizeof(gctools::GCVector_moveable<asttooling::ErrorContent>), 0, "gctools::GCVector_moveable<asttooling::ErrorContent>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ErrorContent>),_Data), "_Data" },
-{  variable_capacity, sizeof(asttooling::ErrorContent), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ErrorContent>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::ErrorContent>),_Capacity), NULL },
- {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<asttooling::ContextFrame>>), offsetof(SAFE_TYPE_MACRO(asttooling::ErrorContent),ContextStack._Vector._Contents), "ContextStack._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<asttooling::Message>>), offsetof(SAFE_TYPE_MACRO(asttooling::ErrorContent),Messages._Vector._Contents), "Messages._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_asttooling__DerivableASTFrontendAction, sizeof(asttooling::DerivableASTFrontendAction), 0, "asttooling::DerivableASTFrontendAction" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_isgf), "_isgf" }, // public: (T) fixable: NIL good-name: T
@@ -5137,10 +5096,6 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Slots._Vector._Contents), "_Slots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),CurrentInput.IsSystem), "CurrentInput.IsSystem" }, // public: (NIL NIL) fixable: NIL good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_, sizeof(gctools::GCVector_moveable<asttooling::Message>), 0, "gctools::GCVector_moveable<asttooling::Message>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::Message>),_Data), "_Data" },
-{  variable_capacity, sizeof(asttooling::Message), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::Message>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<asttooling::Message>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Cons_O>), offsetof(SAFE_TYPE_MACRO(asttooling::Message),Range), "Range" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), NULL },
@@ -6796,9 +6751,6 @@ obj_finalize_KIND_GCSTRING_gctools__GCString_moveable_char_:
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
-obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_:
-{
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
@@ -6808,9 +6760,6 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_p
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
-obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
-{
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<asttooling::ContextFrame>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
@@ -6847,18 +6796,12 @@ obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
     obj_gc_safe->~DerivableMatchCallback();
     return;
 }
-obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
-{
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<asttooling::ErrorContent>"));}
 obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
     obj_gc_safe->~DerivableASTFrontendAction();
     return;
 }
-obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
-{
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<asttooling::Message>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
@@ -7165,33 +7108,29 @@ static void* OBJ_FINALIZE_table[] = {
   /* 272 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
   /* 273 */ &&obj_finalize_KIND_GCSTRING_gctools__GCString_moveable_char_,
   /* 274 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 275 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_,
-  /* 276 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 277 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 278 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 279 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_,
-  /* 280 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
-  /* 281 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 282 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 283 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
-  /* 284 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 285 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 286 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
-  /* 287 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 288 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
-  /* 289 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
-  /* 290 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_,
-  /* 291 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
-  /* 292 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_,
-  /* 293 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 294 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
-  /* 295 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
-  /* 296 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 297 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
-  /* 298 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 299 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 300 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
-  /* 301 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 275 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 276 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 277 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 278 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 279 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 280 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 281 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 282 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 283 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 284 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 285 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 286 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
+  /* 287 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
+  /* 288 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
+  /* 289 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 290 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
+  /* 291 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 292 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 293 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
+  /* 294 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 295 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 296 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 297 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
    NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
@@ -8799,9 +8738,6 @@ obj_deallocate_unmanaged_instance_KIND_GCSTRING_gctools__GCString_moveable_char_
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
-obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_:
-{
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<asttooling::RegMap::SymbolMatcherDescriptorPair_O>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SourceFileInfo_O>>"));}
@@ -8811,9 +8747,6 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
-obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_:
-{
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<asttooling::ContextFrame>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
@@ -8850,18 +8783,12 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallb
     GC<asttooling::DerivableMatchCallback>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_:
-{
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<asttooling::ErrorContent>"));}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
     GC<asttooling::DerivableASTFrontendAction>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
-obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_:
-{
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<asttooling::Message>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>"));}
@@ -9168,33 +9095,29 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 272 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
   /* 273 */ &&obj_deallocate_unmanaged_instance_KIND_GCSTRING_gctools__GCString_moveable_char_,
   /* 274 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 275 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__RegMap__SymbolMatcherDescriptorPair_O_,
-  /* 276 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 277 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 278 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 279 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ContextFrame_,
-  /* 280 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
-  /* 281 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 282 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 283 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
-  /* 284 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 285 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 286 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
-  /* 287 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 288 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
-  /* 289 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
-  /* 290 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__ErrorContent_,
-  /* 291 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
-  /* 292 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_asttooling__Message_,
-  /* 293 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 294 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
-  /* 295 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
-  /* 296 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 297 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
-  /* 298 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 299 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 300 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
-  /* 301 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 275 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 276 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 277 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 278 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 279 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 280 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 281 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 282 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 283 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 284 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 285 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 286 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
+  /* 287 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
+  /* 288 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
+  /* 289 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 290 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
+  /* 291 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 292 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 293 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
+  /* 294 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 295 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 296 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 297 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)
