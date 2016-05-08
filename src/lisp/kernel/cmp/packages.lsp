@@ -103,7 +103,7 @@
           jit-constant-unique-string-ptr
           jit-function-name
           jit-make-global-string-ptr
-          link-system-lto
+          llvm-link
           load-bitcode
           parse-function-arguments
           set-associated-funcs

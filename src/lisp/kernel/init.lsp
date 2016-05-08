@@ -69,9 +69,7 @@
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
-(export '(link-system-lto))
-
-
+(export '(llvm-link))
 (use-package :core)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -969,12 +967,13 @@ Return files."
 (defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
   #+dbg-print(bformat t "DBG-PRINT About to link-system\n")
   (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname (entry-filename x) :bc)) (select-source-files end :first-file start :system system))))
-    (cmp:link-system-lto (build-pathname +image-pathname+ :fasl)
-                         :lisp-bitcode-files bitcode-files
-                         :prologue-form prologue-form
-                         :epilogue-form epilogue-form)))
-(export '(link-system)) ;; core
-
+    (cmp:llvm-link (build-pathname +image-pathname+ :fasl)
+                   :lisp-bitcode-files bitcode-files
+                   :prologue-form prologue-form
+                   :epilogue-form epilogue-form
+                   :link-time-optimization t)))
+(export '(link-system))
+        
 (export '(compile-min))
 (defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
   (if (out-of-date-bitcodes :min-start :cmp)
@@ -1184,7 +1183,7 @@ Return files."
 ;  (core:system (bformat nil "(cd %s; make)" (namestring (translate-logical-pathname "kernel;asdf;"))))
   (compile-file "kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "modules;asdf;asdf.fasl"
 										      :target-backend (default-target-backend)))
-  #+(or)(cmp::link-system-lto "kernel;asdf;build;asdf.fasl"
+  #+(or)(cmp:llvm-link "kernel;asdf;build;asdf.fasl"
 			      :lisp-bitcode-files (list #P"kernel/asdf/build/asdf.bc")))
 
 

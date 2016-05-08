@@ -1,5 +1,6 @@
+opt -strip-debug clasp.bc -o clasp.stripped.bc
 "clang++" \
-    clasp.bc -flto -Wl,-lto_library,/Users/meister/Development/externals-clasp/build/release/lib/libLTO.dylib,-save-temps \
+    clasp.stripped.bc -flto -Wl,-lto_library,/Users/meister/Development/externals-clasp/build/release/lib/libLTO.dylib,-save-temps \
     -Wl,-mllvm,-disable-llvm-verifier \
 -o "clasp-clang-lto" \
 "-L/usr/local/Cellar/gmp/6.0.0a/lib" \
