@@ -1227,6 +1227,8 @@ class DataLayout_O : public core::General_O {
  protected:
   llvm::DataLayout _DataLayout;
 public:
+  CL_LISPIFY_NAME("getStringRepresentation");
+  CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout.getStringRepresentation(); };
   size_t getTypeAllocSize(llvm::Type* ty);
   const llvm::DataLayout& dataLayout() { return this->_DataLayout; };
  DataLayout_O(const llvm::DataLayout& orig) : _DataLayout(orig) {};
