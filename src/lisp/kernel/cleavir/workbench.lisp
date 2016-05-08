@@ -1244,7 +1244,7 @@ core:*pi*
 
 (defun link-clasp (start end &key (target-backend "CLEAVIR-BOEHM"))
   (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend)))
-    (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
+    (cmp:llvm-link (core::target-backend-pathname core::+image-pathname+ 
 							:target-backend target-backend)
 			 :lisp-bitcode-files bitcode-files
 			 :prologue-form '(progn

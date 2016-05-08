@@ -161,10 +161,9 @@ irc-i32-*current-source-pos-info*-column
 *cleavir-compile-file-hook*
 *implicit-compile-hook*
 compile-in-env
-link-system-lto
+llvm-link
 *compile-print*
 *compile-print*
-link-system-lto
 jit-constant-i32
 jit-constant-i64
 jit-constant-size_t
@@ -249,7 +248,6 @@ create-run-time-execution-engine
 *run-time-literal-holder*
 set-associated-funcs
 *all-functions-for-one-compile*
-link-system-lto
 *low-level-trace*
 *low-level-trace*
 *low-level-trace-print*

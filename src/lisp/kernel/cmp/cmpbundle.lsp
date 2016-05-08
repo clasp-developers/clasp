@@ -165,6 +165,7 @@
                                               prologue-module
                                               epilogue-module
                                               debug-ir
+                                              link-time-optimization
                              &aux conditions)
   "Link a bunch of modules together, return the linked module"
   (with-compiler-env (conditions)
@@ -173,7 +174,7 @@
            (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
            (bcnum 0))
       (with-module ( :module module
-                             :optimize t
+                             :optimize link-time-optimization
                              :source-namestring (namestring output-pathname))
         (with-debug-info-generator (:module module :pathname output-pathname)
           (let* ((linker (llvm-sys:make-linker *the-module*)))
@@ -217,20 +218,15 @@
                     (llvm-sys:pass-manager-run mpm *the-module*))
             *the-module*))))))
 
-#||
-(load-system :start :cmp :interp t)
-(compile-file "tiny1.lsp")
-(compile-file "tiny2.lsp")
-(cmp:link-system-lto #P"tiny.bundle" :lisp-bitcode-files (list #P"tiny1.bc" #P"tiny2.bc"))
-||#
 
-(defun link-system-lto (output-pathname
-                        &key (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname))
-                          lisp-bitcode-files
-                          prologue-form
-                          epilogue-form
-                          debug-ir
-                          (target-backend (default-target-backend)))
+(defun llvm-link (output-pathname
+                  &key (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname))
+                    lisp-bitcode-files
+                    prologue-form
+                    epilogue-form
+                    debug-ir
+                    link-time-optimization
+                    (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (output-pathname (pathname output-pathname))
          (part-pathnames lisp-bitcode-files)
@@ -249,6 +245,7 @@
                                          :output-pathname output-pathname
                                          :prologue-module prologue-module
                                          :epilogue-module epilogue-module
+                                         :link-time-optimization link-time-optimization
                                          :debug-ir debug-ir)))
       (ensure-directories-exist bundle-bitcode-pathname)
       (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
@@ -256,7 +253,7 @@
         (execute-link output-pathname (list object-pathname)))
       output-pathname)))
 
-(export '(link-system-lto))
+(export '(llvm-link))
 
 
 (defun builder (kind destination &rest keywords)

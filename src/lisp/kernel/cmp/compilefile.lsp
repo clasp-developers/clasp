@@ -462,7 +462,9 @@ epilogue module - one that terminates a series of linked modules. "
 	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (ensure-directories-exist temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (cmp:link-system-lto output-file :lisp-bitcode-files (list temp-bitcode-file))))
+	     (cmp:llvm-link output-file
+                            :lisp-bitcode-files (list temp-bitcode-file)
+                            :link-time-optimization t)))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
 	(dolist (c conditions)
