@@ -76,11 +76,14 @@
      return translate::to_object<$(generate-maybe-namespace-type namespace return-type)>::convert(ret).as_return_type() ;
      l#)))
 
-(defun generate-wrapped-function (wrapped-name namespace function-name return-type types)
+(defun generate-wrapped-function (wrapped-name namespace function-name return-type types &key extern)
   (let* ((nargs (length types))
-         (arg-indexes (loop for x below nargs collect x)))
+         (arg-indexes (loop for x below nargs collect x))
+         (extern-attribute (if extern "extern " "")))
+    (when extern
+        (setf wrapped-name (format nil "extern_~a" wrapped-name)))
     #l
-    LCC_RETURN $wrapped-name ($(format nil "~{core::T_O* in~a~^,~}" arg-indexes)) {
+    $extern-attribute LCC_RETURN $wrapped-name ($(format nil "~{core::T_O* in~a~^,~}" arg-indexes)) {
     $(with-output-to-string (sout)
        (loop for x in arg-indexes
           for type in types

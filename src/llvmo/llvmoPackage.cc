@@ -201,27 +201,26 @@ CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Mod
 }
 
 void dump_funcs(core::Function_sp compiledFunction) {
-  CompiledClosure_sp cb = compiledFunction.asOrNull<CompiledClosure_O>();
-  if (!(cb)) {
-    SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
-  }
-  core::T_sp funcs = cb->associatedFunctions();
-  string outstr;
-  llvm::raw_string_ostream sout(outstr);
-  if (cl__consp(funcs)) {
-    core::List_sp cfuncs = funcs;
-    for (auto cur : cfuncs) {
-      core::T_sp func = oCar(cur);
-      if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-        f->wrappedPtr()->print(sout);
-      } else {
-        printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
+  core::T_sp funcs = compiledFunction->associatedFunctions();
+  if (funcs.notnilp()) {
+    string outstr;
+    llvm::raw_string_ostream sout(outstr);
+    if (cl__consp(funcs)) {
+      core::List_sp cfuncs = funcs;
+      for (auto cur : cfuncs) {
+        core::T_sp func = oCar(cur);
+        if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
+          f->wrappedPtr()->print(sout);
+        } else {
+          printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
+        }
       }
+      core::clasp_write_string(outstr);
+      return;
     }
-    core::clasp_write_string(outstr);
-    return;
+  } else {
+    STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
-  STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
 }
 
 CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {

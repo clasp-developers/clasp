@@ -391,10 +391,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   { // Trap symbols as they are interned
     stringstream sdebug;
     gctools::get_immediate_info(); // discard result, just testing
-    bool debugging = gctools::debugging_configuration(sdebug);
-    if ( debugging ) {
-      printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
-    }
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment\n", __FILE__, __LINE__ );
 #endif
@@ -1223,6 +1219,13 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   _sym_STARprintVersionOnStartupSTAR->defparameter(_lisp->_boolean(options._Version));
   SYMBOL_EXPORT_SC_(CorePkg, STARsilentStartupSTAR);
   _sym_STARsilentStartupSTAR->defparameter(_lisp->_boolean(options._SilentStartup));
+  if (!options._SilentStartup) {
+    stringstream sdebug;
+    bool debugging = gctools::debugging_configuration(sdebug);
+    if ( debugging ) {
+      printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
+    }
+  }
 
   //	this->_FunctionName = execName;
   this->_RCFileName = "sys:" KERNEL_NAME ";init.lsp";
@@ -1709,7 +1712,7 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   if (form.nilp()) {
     return form;
   } else if (form.consp()) {
-    Cons_sp cform(reinterpret_cast<gctools::Tagged>(form.unsafe_cons()));
+    Cons_sp cform(reinterpret_cast<gctools::Tagged>(form.raw_()));
     T_sp head = cons_car(cform);
     if (cl__symbolp(head)) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);

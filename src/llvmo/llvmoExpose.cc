@@ -845,7 +845,6 @@ CL_PKG_NAME(LlvmoPkg,"make-Module");
 CL_LAMBDA(module-name context);
 CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
   GC_ALLOCATE(Module_O, self);
-  ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
   self->_ptr = new llvm::Module(module_name, *(context->wrappedPtr()));
   return self;
 };
@@ -1078,7 +1077,7 @@ CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::Str_sp nam
 namespace llvmo {
 CL_LISPIFY_NAME("DataLayoutCopy");
 CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
-  GC_ALLOCATE_VARIADIC(DataLayout_O, cp, this->_DataLayout);
+  GC_ALLOCATE_VARIADIC(DataLayout_O, cp, *(this->_DataLayout));
   return cp;
 };
 
@@ -1087,7 +1086,7 @@ CL_DEFMETHOD DataLayout_sp DataLayout_O::copy() const {
 CL_LISPIFY_NAME(DataLayout-getTypeAllocSize);
 CL_DEFMETHOD size_t DataLayout_O::getTypeAllocSize(llvm::Type* ty)
 {
-  return this->_DataLayout.getTypeAllocSize(ty);
+  return this->_DataLayout->getTypeAllocSize(ty);
 }
   
 
@@ -1972,7 +1971,6 @@ namespace llvmo {
 CL_LISPIFY_NAME(make-irbuilder);
 CL_DEFUN IRBuilder_sp IRBuilder_O::make(LLVMContext_sp context) {
   GC_ALLOCATE(IRBuilder_O, self);
-  ASSERT(&(llvm::getGlobalContext()) == context->wrappedPtr());
   self->set_wrapped(new llvm::IRBuilder<>(*(context->wrappedPtr())));
   return self;
 };

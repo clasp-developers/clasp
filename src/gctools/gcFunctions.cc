@@ -682,7 +682,6 @@ bool debugging_configuration(stringstream& ss) {
 #endif
   ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
 
-
   return debugging;
 }
 

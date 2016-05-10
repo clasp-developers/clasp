@@ -165,8 +165,8 @@ Convert colons to underscores"
 (defgeneric direct-call-function (c-code cl-code func))
 
 (defmethod direct-call-function (c-code cl-code (func t))
-  (format c-code "// Do nothing yet for function ~a~%" (function-name% func))
-  (format cl-code ";;; Do nothing yet for function ~a~%" (function-name% func)))
+  (format c-code "// Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func))
+  (format cl-code ";;; Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func)))
 
 (defmethod direct-call-function (c-code cl-code (func expose-internal-function))
   (multiple-value-bind (return-type arg-types)
@@ -185,7 +185,7 @@ Convert colons to underscores"
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
         (if (search "&va-rest" (lambda-list% func))
-            (format cl-code "(bformat t \"I can't compile lambda lists with &va-rest yet - not exposing %s\\n\" ~s)~%" wrapped-name)
+            (format cl-code "(if (not core:*silent-startup*) (bformat t \"I can't compile lambda lists with &va-rest yet - not exposing %s\\n\" ~s))~%" wrapped-name)
             (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name ))))))
                                
 (defun generate-code-for-direct-call-functions (functions)

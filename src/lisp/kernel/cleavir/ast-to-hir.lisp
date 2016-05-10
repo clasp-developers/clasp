@@ -85,7 +85,7 @@
        (ecase (length successors)
 	 (1
 	  (if (typep results 'cleavir-ir:values-location)
-	      (make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+                (make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :inputs temps
                              :outputs (list results)

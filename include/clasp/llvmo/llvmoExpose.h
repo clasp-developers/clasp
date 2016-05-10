@@ -1225,16 +1225,18 @@ So I'm changing DataLayout_O so that it wraps a complete llvm::DataLayout object
 class DataLayout_O : public core::General_O {
   LISP_CLASS(llvmo, LlvmoPkg, DataLayout_O, "DataLayout", core::General_O);
  protected:
-  llvm::DataLayout _DataLayout;
+  llvm::DataLayout* _DataLayout;
 public:
   CL_LISPIFY_NAME("getStringRepresentation");
-  CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout.getStringRepresentation(); };
+  CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
   size_t getTypeAllocSize(llvm::Type* ty);
-  const llvm::DataLayout& dataLayout() { return this->_DataLayout; };
- DataLayout_O(const llvm::DataLayout& orig) : _DataLayout(orig) {};
+  const llvm::DataLayout& dataLayout() { return *(this->_DataLayout); };
+ DataLayout_O(const llvm::DataLayout& orig)  {
+   this->_DataLayout = new llvm::DataLayout(orig);
+  };
   /*! Delete the default constructor because llvm::DataLayout doesn't have one */
   DataLayout_O() = delete;
-  ~DataLayout_O() {}
+  ~DataLayout_O() {delete this->_DataLayout;}
   DataLayout_sp copy() const;
 
 }; // DataLayout_O

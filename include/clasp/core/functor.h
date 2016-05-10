@@ -125,7 +125,7 @@ namespace core {
     virtual LambdaListHandler_sp lambdaListHandler() const = 0;
     virtual T_sp lambda_list() const = 0;
     CL_DEFMETHOD virtual void setAssociatedFunctions(List_sp funcs) = 0;
-    CL_DEFMETHOD T_sp associatedFunctions() const {SUBIMP(); };
+    CL_DEFMETHOD T_sp associatedFunctions() const {return _Nil<core::T_O>();};
     virtual string __repr__() const;
   };
 };

@@ -88,7 +88,7 @@
 ;;;
 ;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
 
-(defclass intrinsic-call-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+(defclass intrinsic-call-ast (cleavir-ast:ast)
   ((%function-name :initarg :function-name  :accessor function-name)
    (%argument-asts :initarg :argument-asts :reader argument-asts)))
 
