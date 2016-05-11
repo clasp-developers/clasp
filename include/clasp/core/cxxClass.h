@@ -69,7 +69,6 @@ public:
   virtual ~CxxClass_O(){};
 };
 };
-TRANSLATE(core::CxxClass_O);
 template <>
 struct gctools::GCInfo<core::CxxClass_O> {
   static bool constexpr NeedsInitialization = true;

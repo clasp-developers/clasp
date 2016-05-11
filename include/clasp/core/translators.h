@@ -70,6 +70,14 @@ struct from_object<uint, std::true_type> {
   from_object(core::T_sp o) : _v(clasp_to_uint(gc::As<core::Integer_sp>(o))){};
 };
 
+ template <>
+   struct from_object<core::T_O*, std::true_type> {
+   typedef core::T_O* DeclareType;
+  DeclareType _v;
+ from_object(core::T_sp o) : _v(o.raw_()) {};
+};
+
+
 template <>
 struct from_object<int, std::true_type> {
   typedef int DeclareType;

@@ -42,12 +42,12 @@ $for isConst [[
         {   
           INVOCATION_HISTORY_FRAME();
           $if numArgs>0 [[
-            STACK_FRAME(buff,frame,$numArgs);
+            MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
             core::StackFrameDynamicScopeManager scope(frame);
             lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
           ]]
-          gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame.arg(0)));
-          $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame.arg($Args_));
+          gctools::smart_ptr<OT> ot(gc::As<gctools::smart_ptr<OT>>(frame->arg(0)));
+          $for Args_ [[translate::from_object<ARG$Args_> a$Args_(frame->arg($Args_));
           ]]
           $if ret==RetVoid [[]] $elif ret==RetSV [[ RT retval = ]] $else [[ gctools::multiple_values<RT> retval = ]] ((*ot.untag_object()).*mptr)($for Args_ ,[[a$Args_._v]]);
           $if ret==RetVoid [[

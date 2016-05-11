@@ -200,9 +200,6 @@ T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi = _Nil<T_O>())
 T_mv core__source_file_info(T_sp sourceFile, T_sp truename = _Nil<T_O>(), size_t offset = 0, bool useLineno = true);
 
 }; // core namespace
-TRANSLATE(core::SourceFileInfo_O);
-TRANSLATE(core::SourcePosInfo_O);
-TRANSLATE(core::SourceManager_O);
 
 extern "C" {
 void dumpSourceInfo(core::T_sp exp);

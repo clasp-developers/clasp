@@ -42,20 +42,43 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
+
+SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
+SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
+
+void handleArgumentHandlingExceptions(Closure_sp closure) {
+  Function_sp func = closure;
+  try {
+    throw;
+  } catch (TooManyArgumentsError &error) {
+    lisp_error(core::_sym_tooManyArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
+  } catch (TooFewArgumentsError &error) {
+    lisp_error(core::_sym_tooFewArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
+  } catch (UnrecognizedKeywordArgumentError &error) {
+    lisp_error(core::_sym_unrecognizedKeywordArgumentError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_unrecognizedKeyword, error.argument));
+  }
+}
+
+
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
-  ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
-    if (numReq <= 3 && numReq == lcc_nargs) {
+    if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
       switch (numReq) {
       case 3:
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
+        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 2:
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 1:
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-      case 0:
-        break;
+        return;
       }
       return;
     }
@@ -70,7 +93,7 @@ void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandle
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
-  //	TopLevelIHF stackFrame(thread->invocationHistoryStack(),form);
+  //	TopLevelIHF stackFrame(my_thread->invocationHistoryStack(),form);
   return eval::evaluate(form, env);
 }
 
@@ -1176,4 +1199,4 @@ LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _Le
 
 
 }; /* core */
-   
+

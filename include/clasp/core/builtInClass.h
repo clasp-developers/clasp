@@ -69,7 +69,6 @@ public:
   virtual ~BuiltInClass_O(){};
 };
 };
-TRANSLATE(core::BuiltInClass_O);
 template <>
 struct gctools::GCInfo<core::BuiltInClass_O> {
   static bool constexpr NeedsInitialization = true;

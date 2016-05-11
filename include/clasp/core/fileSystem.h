@@ -260,11 +260,6 @@ public:
 //    extern bool delete_file(Path_sp dest);
 };
 
-TRANSLATE(core::Path_O);
-TRANSLATE(core::DirectoryIterator_O);
-TRANSLATE(core::RecursiveDirectoryIterator_O);
-TRANSLATE(core::DirectoryEntry_O);
-TRANSLATE(core::FileStatus_O);
 
 namespace core {
 Pathname_sp homedirPathname(T_sp head); // See ecl_homedir_pathname

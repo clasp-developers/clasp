@@ -91,7 +91,11 @@
 (defun execute-link (in-bundle-file in-all-names)
   ;; options are a list of strings like (list "-v")
   (let ((options nil)
-        (all-names (mapcar (lambda (n) (ensure-string n)) (if (listp in-all-names) in-all-names (list in-all-names))))
+        (all-names (mapcar (lambda (n)
+                             (ensure-string n))
+                           (if (listp in-all-names)
+                               in-all-names
+                               (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
     (cond
       ((member :target-os-darwin *features*)
@@ -161,81 +165,79 @@
                                               prologue-module
                                               epilogue-module
                                               debug-ir
+                                              link-time-optimization
                              &aux conditions)
   "Link a bunch of modules together, return the linked module"
   (with-compiler-env (conditions)
-    (multiple-value-bind (module function-pass-manager)
-        (create-llvm-module-for-compile-file (pathname-name output-pathname))
-      (let* ((*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
-	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
-	     (bcnum 0))
-	(with-module ( :module module
-                               :optimize t
-                               :source-namestring (namestring output-pathname))
-          (with-debug-info-generator (:module module :pathname output-pathname)
-            (let* ((linker (llvm-sys:make-linker *the-module*)))
-              ;; Don't enforce .bc extension for additional-bitcode-pathnames
-              (if prologue-module
-                  (progn
-                    (bformat t "Linking prologue-form\n")
-                    (remove-main-function-if-exists prologue-module)
-                    (llvm-sys:link-in-module linker prologue-module)))
-              ;; This is where I used to link the additional-bitcode-pathnames
-              (dolist (part-pn part-pathnames)
-                (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
-                  (bformat t "Linking %s\n" bc-file)
-                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                    (multiple-value-bind (failure error-msg)
-                        (llvm-sys:link-in-module linker part-module)
-                      (when failure
-                        (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
-              (if epilogue-module
-                  (progn
-                    (bformat t "Linking epilogue-form\n")
-                    (remove-main-function-if-exists epilogue-module)
-                    (llvm-sys:link-in-module linker epilogue-module)))
-              (reset-global-boot-functions-name-size *the-module*)
-              (add-main-function *the-module*) ;; Here add the main function
-              ;; The following links in additional-bitcode-pathnames
-              (dolist (part-pn additional-bitcode-pathnames)
-                (let* ((bc-file part-pn))
-                  (bformat t "Linking %s\n" bc-file)
-                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
-                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
-                    (multiple-value-bind (failure error-msg)
-                        (llvm-sys:link-in-module linker part-module)
-                      (when failure
-                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
-                      ))))
-              (when *debug-generate-prepass-llvm-ir*
-                (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc"))))
-              #+(or)(let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
-                      (format t "Running link time optimization module pass manager~%")
-                      (llvm-sys:pass-manager-run mpm *the-module*))
-              *the-module*)))))))
+    (let* ((module (create-llvm-module-for-compile-file (pathname-name output-pathname)))
+           (*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
+           (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+           (bcnum 0))
+      (with-module ( :module module
+                             :optimize link-time-optimization
+                             :source-namestring (namestring output-pathname))
+        (with-debug-info-generator (:module module :pathname output-pathname)
+          (let* ((linker (llvm-sys:make-linker *the-module*)))
+            ;; Don't enforce .bc extension for additional-bitcode-pathnames
+            (if prologue-module
+                (progn
+                  (bformat t "Linking prologue-form\n")
+                  #+(or)(remove-main-function-if-exists prologue-module)
+                  (llvm-sys:link-in-module linker prologue-module)))
+            ;; This is where I used to link the additional-bitcode-pathnames
+            (dolist (part-pn part-pathnames)
+              (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
+                (bformat t "Linking %s\n" bc-file)
+                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                  #+(or)(remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  (multiple-value-bind (failure error-msg)
+                      (llvm-sys:link-in-module linker part-module)
+                    (when failure
+                      (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+            (if epilogue-module
+                (progn
+                  (bformat t "Linking epilogue-form\n")
+                  #+(or)(remove-main-function-if-exists epilogue-module)
+                  (llvm-sys:link-in-module linker epilogue-module)))
+            #+(or)(reset-global-boot-functions-name-size *the-module*)
+            #+(or)(add-main-function *the-module*)
+            ;; The following links in additional-bitcode-pathnames
+            (dolist (part-pn additional-bitcode-pathnames)
+              (let* ((bc-file part-pn))
+                (bformat t "Linking %s\n" (truename bc-file))
+                (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                  #+(or)(remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                  (multiple-value-bind (failure error-msg)
+                      (llvm-sys:link-in-module linker part-module)
+                    (when failure
+                      (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))))))
+            (when *debug-generate-prepass-llvm-ir*
+              (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname "image_test_prepass.bc"))))
+            #+(or)(let* ((mpm (create-module-pass-manager-for-lto :output-pathname output-pathname :debug-ir debug-ir)))
+                    (format t "Running link time optimization module pass manager~%")
+                    (llvm-sys:pass-manager-run mpm *the-module*))
+            *the-module*))))))
 
-#||
-(load-system :start :cmp :interp t)
-(compile-file "tiny1.lsp")
-(compile-file "tiny2.lsp")
-(cmp:link-system-lto #P"tiny.bundle" :lisp-bitcode-files (list #P"tiny1.bc" #P"tiny2.bc"))
-||#
 
-(defun link-system-lto (output-pathname
-                        &key (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname))
-                          lisp-bitcode-files
-                          prologue-form
-                          epilogue-form
-                          debug-ir
-                          (target-backend (default-target-backend)))
+(defun llvm-link (output-pathname
+                  &key (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname))
+                    lisp-bitcode-files
+                    prologue-form
+                    epilogue-form
+                    debug-ir
+                    link-time-optimization
+                    (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (output-pathname (pathname output-pathname))
          (part-pathnames lisp-bitcode-files)
          ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (cfp-output-file-default output-pathname :linked-bitcode)))
     (let* ((prologue-module (if prologue-form (compile-form-into-module prologue-form 'prologue-form)))
-           (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form 'epilogue-form)))
+           ;; An epilogue form is added whether one is specified or not
+           ;; This will add a NULL terminator to the main function list whether there is one or not
+           (epilogue-module (if epilogue-form
+                                (compile-form-into-module epilogue-form 'epilogue-form :epilogue-module-p t)
+                                (compile-form-into-module `(progn) 'epilogue-form :epilogue-module-p t)))
            (module (link-bitcode-modules part-pathnames
                                          :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                            (list intrinsics-bitcode-path)
@@ -243,6 +245,7 @@
                                          :output-pathname output-pathname
                                          :prologue-module prologue-module
                                          :epilogue-module epilogue-module
+                                         :link-time-optimization link-time-optimization
                                          :debug-ir debug-ir)))
       (ensure-directories-exist bundle-bitcode-pathname)
       (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename bundle-bitcode-pathname))
@@ -250,7 +253,7 @@
         (execute-link output-pathname (list object-pathname)))
       output-pathname)))
 
-(export '(link-system-lto))
+(export '(llvm-link))
 
 
 (defun builder (kind destination &rest keywords)

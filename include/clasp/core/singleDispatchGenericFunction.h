@@ -142,7 +142,6 @@ namespace core {
   /*! Return the Cons of methods attached to this SingleDispatchGenericFunction */
   }; // SingleDispatchGenericFunction class
 }; // core namespace
-TRANSLATE(core::SingleDispatchGenericFunction_O);
 #endif
 
 #if 0
@@ -154,6 +153,7 @@ public:
   DISABLE_NEW();
   virtual const char *describe() const { return "SingleDispatchGenericFunctoid"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
     IMPLEMENT_MEF(BF("Handle single dispatch"));
 #if 0            
 	    *lcc_resultP = this->_sdgf->INVOKE(lcc_nargs, nargs,args);

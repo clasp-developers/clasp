@@ -48,47 +48,43 @@
 ;;;	what happens with the content of MAKE-METHOD.
 ;;;
 #+compare(print "combin.lsp 50")
+(defvar *avoid-compiling* nil)
 (defun effective-method-function (form &optional top-level &aux first)
-  (cond ((functionp form)
-	 form)
-	((method-p form)
-	 (method-function form))
-	((atom form)
-	 (error "Malformed effective method form:~%~A" form))
-	((eq (setf first (first form)) 'MAKE-METHOD)
-         (coerce `(lambda (.method-args. .next-methods.)
-                    (declare (core:lambda-name effective-method-function.make-method))
-                    (flet ((call-next-method (&rest args)
-                             (if (not .next-methods.)
-                                 (error "No next method")
-#|meister changed the next APPLY into the one that follows it
-so that explicitly passed method args become
-  the .method-args. in the next method called.
-I did this in three functions (1) effective-method-function (2) make-method-lambda and (3) add-call-next-method-closure |#
-                                 #+(or)(apply (car .next-methods.)
-                                              .method-args.
-                                              (cdr .next-methods.)
-                                              (or args .method-args.))
-                                 (apply (car .next-methods.)
-                                        (or args .method-args) ; meister changed from .method-args.
-                                        (cdr .next-methods.)
-                                        (or args .method-args.))))
-                           (next-method-p ()
-                             (and .next-methods. t)))
-                      ,(second form)))
-                 'function))
-        ((eq first 'CALL-METHOD)
-         (combine-method-functions
-          (effective-method-function (second form))
-          (mapcar #'effective-method-function (third form))))
-        (top-level
-         (coerce `(lambda (.method-args. .next-methods. #|no-next-methods|#)
-                    (declare (ignorable .next-methods.)
-                             (core:lambda-name effective-method-function.top-level))
-                    ,form)
-                 'function))
-        (t
-         (error "Malformed effective method form:~%~A" form))))
+  (flet ((maybe-compile (form)
+           (if *avoid-compiling*
+               (coerce form 'function)
+               (let ((*avoid-compiling* t))
+                 (compile nil form)))))
+    (cond ((functionp form)
+           form)
+          ((method-p form)
+           (method-function form))
+          ((atom form)
+           (error "Malformed effective method form:~%~A" form))
+          ((eq (setf first (first form)) 'MAKE-METHOD)
+           (maybe-compile `(lambda (.method-args. .next-methods.)
+                             (declare (core:lambda-name effective-method-function.make-method))
+                             (flet ((call-next-method (&rest args)
+                                      (if (not .next-methods.)
+                                          (error "No next method")
+                                          (apply (car .next-methods.)
+                                                 (or args .method-args)
+                                                 (cdr .next-methods.)
+                                                 (or args .method-args.))))
+                                    (next-method-p ()
+                                      (and .next-methods. t)))
+                               ,(second form)))))
+          ((eq first 'CALL-METHOD)
+           (combine-method-functions
+            (effective-method-function (second form))
+            (mapcar #'effective-method-function (third form))))
+          (top-level
+           (maybe-compile `(lambda (.method-args. .next-methods. #|no-next-methods|#)
+                             (declare (ignorable .next-methods.)
+                                      (core:lambda-name effective-method-function.top-level))
+                             ,form)))
+          (t
+           (error "Malformed effective method form:~%~A" form)))))
 
 ;;;
 ;;; This function is a combinator of effective methods. It creates a
@@ -386,7 +382,7 @@ I did this in three functions (1) effective-method-function (2) make-method-lamb
   (let ((form (compute-effective-method gf method-combination applicable-methods)))
     (let ((aux form) f)
       (if (and (listp aux)
-		 (eq (pop aux) 'apply)
+		 (eq (pop aux) 'funcall)
 		 (functionp (setf f (pop aux)))
 		 (eq (pop aux) '.method-args.)
 		 (eq (pop aux) '.next-methods.))

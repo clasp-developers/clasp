@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
@@ -134,7 +133,7 @@ CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
-CL_LAMBDA(osize &key initial_element);
+CL_LAMBDA(osize &key initial-element);
 CL_DECLARE();
 CL_DOCSTRING("make_list");
 CL_DEFUN List_sp cl__make_list(Integer_sp osize, T_sp initial_element) {

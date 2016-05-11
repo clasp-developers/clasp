@@ -106,5 +106,4 @@ public:
 };
 };
 
-TRANSLATE(mpip::Mpi_O);
 #endif //]

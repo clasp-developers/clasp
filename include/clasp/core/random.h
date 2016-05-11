@@ -69,6 +69,5 @@ public: // Functions here
 }; // RandomState class
 
 }; // core namespace
-TRANSLATE(core::RandomState_O);
 
 #endif /* _random_H_ */

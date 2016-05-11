@@ -86,6 +86,7 @@
           irc-load
           irc-low-level-trace
           irc-phi
+          irc-personality-function
           irc-phi-add-incoming
           irc-preserve-exception-info
           irc-renv
@@ -102,7 +103,7 @@
           jit-constant-unique-string-ptr
           jit-function-name
           jit-make-global-string-ptr
-          link-system-lto
+          llvm-link
           load-bitcode
           parse-function-arguments
           set-associated-funcs

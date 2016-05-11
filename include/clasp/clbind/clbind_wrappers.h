@@ -138,6 +138,7 @@ public:
   static gctools::smart_ptr<WrapperType> create(OT *naked, class_id classId) {
     GC_ALLOCATE_VARIADIC(WrapperType, obj, naked, classId);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<OT>();
+    ASSERT(!classSymbol.unboundp());
     obj->setInstanceClassUsingSymbol(classSymbol);
     return obj;
   }
@@ -500,11 +501,11 @@ struct from_object<std::unique_ptr<T>> {
       return;
     } else if ( o.generalp() ) {
       core::General_O* gp = (core::General_O*)&(*o);
-      clbind::Derivable<T> *dp = dynamic_cast<clbind::Derivable<T> *>(gp);
-      this->_v = std::unique_ptr<T>(dp->pointerToAlienWithin());
+      T* v_alien = reinterpret_cast<T*>(gp->pointerToAlienWithin());
+      ASSERT(v_alien);
+      this->_v = std::unique_ptr<T>(v_alien);
       return;
     }
-
     printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nWhat follows may or may not be useful for diagnosing the problem.\nYou may need to write a from_object translator for the destination type\n",
            __FILE__, __LINE__, _rep_(o).c_str());
     //            clbind::Derivable<T>* dtptr = dynamic_cast<clbind::Derivable<T>*>(o.px_ref());
@@ -522,26 +523,18 @@ struct from_object<std::unique_ptr<T>> {
   }
 };
 
-template <typename T>
-struct from_object<T *> {
+#if 0
+ template <typename T>
+   struct from_object<clbind::Derivable<T>*> {
   typedef T *DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
-    if (o.nilp()) {
-      this->_v = static_cast<T *>(NULL);
-      return;
-    } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
-      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>();
-      return;
-    } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
-      this->_v = static_cast<T *>(pp->ptr());
-      return;
-    } else if (o.generalp()) {
+    int*** i = clbind::Derivable<T>();
+    if (o.generalp()) {
       clbind::Derivable<T> *dp = dynamic_cast<clbind::Derivable<T> *>(o.unsafe_general());
       this->_v = dp->pointerToAlienWithin();
       return;
     }
-
     printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
            __FILE__, __LINE__, _rep_(o).c_str());
     printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
@@ -555,6 +548,34 @@ struct from_object<T *> {
     } else {
       printf("%s:%d Not a General object\n", __FILE__, __LINE__ );
     }
+  }
+};
+#endif
+
+template <typename T>
+struct from_object<T *> {
+  typedef T *DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+//    int*** i = T(); 
+    if (o.nilp()) {
+      this->_v = static_cast<T *>(NULL);
+      return;
+    } else if (core::WrappedPointer_sp wp = o.asOrNull<core::WrappedPointer_O>()) {
+      this->_v = /*gc::As<core::WrappedPointer_sp>(o)*/ wp->cast<T>();
+      return;
+    } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
+      this->_v = static_cast<T *>(pp->ptr());
+      return;
+    } else if (o.generalp()) {
+      T* v_alien = reinterpret_cast<T*>(o.unsafe_general()->pointerToAlienWithin());
+      ASSERT(v_alien);
+      this->_v = v_alien;
+      return;
+    }
+    printf("%s:%d  A problem was encountered while trying to convert the Common Lisp value: %s  into  a C++ object that can be passed to a C++ function/method\nYou need to write a from_object translator for the destination type\n",
+           __FILE__, __LINE__, _rep_(o).c_str());
+    printf("%s:%d In from_object<T*>(core::T_sp o)\n", __FILE__, __LINE__);
   }
 };
 
@@ -572,6 +593,8 @@ struct from_object<const T *&> {
     } else if (core::Pointer_sp pp = o.asOrNull<core::Pointer_O>()) {
       this->_v = static_cast<T *>(pp->ptr());
       return;
+    } else if ( core::General_sp gp = o.asOrNull<core::General_O>() ) {
+      // What do I do here?
     }
     SIMPLE_ERROR(BF("Could not convert %s of RTTI type %s to %s") % _rep_(o) % typeid(o).name() % typeid(T *&).name());
   }

@@ -31,6 +31,7 @@ THE SOFTWARE.
 #endif
 
 #include <errno.h>
+#include <dlfcn.h>
 #include <sys/wait.h>
 #include <stdlib.h>
 #pragma GCC diagnostic push
@@ -90,7 +91,6 @@ THE SOFTWARE.
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/numberToString.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispReader.h>
@@ -113,7 +113,6 @@ THE SOFTWARE.
 #include <clasp/core/reader.h>
 //#i n c l u d e "genericFunction.h"
 #include <clasp/core/singleDispatchGenericFunction.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/sort.h>
@@ -137,7 +136,7 @@ THE SOFTWARE.
 #include <clasp/core/stacks.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/readtable.h>
-//#i n c l u d e "clos.h"
+#include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/python_wrappers.h>
 
@@ -153,7 +152,9 @@ extern void create_source_main_host();
 
 namespace core {
 
+#if 0
 __thread ThreadInfo *threadLocalInfoPtr;
+#endif
 
 const int Lisp_O::MaxFunctionArguments = 64; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 const int Lisp_O::MaxClosSlots = 3;          //<! See ecl/src/c/main.d:164 ecl_make_cache(3,4096)
@@ -390,10 +391,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   { // Trap symbols as they are interned
     stringstream sdebug;
     gctools::get_immediate_info(); // discard result, just testing
-    bool debugging = gctools::debugging_configuration(sdebug);
-    if ( debugging ) {
-      printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
-    }
 #ifdef DEBUG_PROGRESS
     printf("%s:%d startupLispEnvironment\n", __FILE__, __LINE__ );
 #endif
@@ -1177,6 +1174,12 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
   features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
 #endif
+#if (LLVM_VERSION_X100>=380)
+  features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
+#endif
+#if (LLVM_VERSION_X100>=390)
+  #error "Remove old LLVM code and add a feature for LLVM39"
+#endif
 #ifdef VARARGS
   features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
 #endif
@@ -1206,6 +1209,9 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("USE-AMC-POOL"), features);
 #endif
 #endif
+#ifdef USE_EXPENSIVE_BACKTRACE
+  features = Cons_O::create(_lisp->internKeyword("USE-EXPENSIVE-BACKTRACE"), features);
+#endif
 
   cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
 
@@ -1213,6 +1219,13 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   _sym_STARprintVersionOnStartupSTAR->defparameter(_lisp->_boolean(options._Version));
   SYMBOL_EXPORT_SC_(CorePkg, STARsilentStartupSTAR);
   _sym_STARsilentStartupSTAR->defparameter(_lisp->_boolean(options._SilentStartup));
+  if (!options._SilentStartup) {
+    stringstream sdebug;
+    bool debugging = gctools::debugging_configuration(sdebug);
+    if ( debugging ) {
+      printf("%s:%d Debugging flags are set - configuration:\n%s\n", __FILE__, __LINE__, sdebug.str().c_str());
+    }
+  }
 
   //	this->_FunctionName = execName;
   this->_RCFileName = "sys:" KERNEL_NAME ";init.lsp";
@@ -1380,7 +1393,7 @@ CL_DEFUN void core__low_level_repl() {
 void Lisp_O::readEvalPrintInteractive() {
   _OF();
   Cons_sp expression;
-  //	TopLevelIHF topFrame(thread->invocationHistoryStack(),_Nil<T_O>());
+  //	TopLevelIHF topFrame(my_thread->invocationHistoryStack(),_Nil<T_O>());
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
 }
 
@@ -1629,7 +1642,7 @@ CL_DEFUN T_mv core__find_file_in_lisp_path(Str_sp partialPath) {
   return (Values(fullPath));
 }
 
-CL_LAMBDA(name_desig);
+CL_LAMBDA(name-desig);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: find-package");
 CL_DEFUN T_sp cl__find_package(T_sp name_desig) {
@@ -1698,8 +1711,9 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
   T_sp expansionFunction = _Nil<T_O>();
   if (form.nilp()) {
     return form;
-  } else if (Cons_sp cform = form.asOrNull<Cons_O>()) {
-    T_sp head = oCar(cform);
+  } else if (form.consp()) {
+    Cons_sp cform(reinterpret_cast<gctools::Tagged>(form.raw_()));
+    T_sp head = cons_car(cform);
     if (cl__symbolp(head)) {
       Symbol_sp headSymbol = gc::As<Symbol_sp>(head);
       if (env.nilp()) {
@@ -1754,6 +1768,7 @@ CL_LAMBDA(form &optional env);
 CL_DECLARE();
 CL_DOCSTRING("macroexpand");
 CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
+  ASSERT(env.generalp());
   bool sawAMacro = false;
   bool expandedMacro = false;
   uint macroExpansionCount = 0;
@@ -1830,7 +1845,7 @@ void searchForApropos(List_sp packages, const string &raw_substring, bool print_
   __END_DOC
 */
 
-CL_LAMBDA(string_desig &optional package_desig);
+CL_LAMBDA(string-desig &optional package-desig);
 CL_DECLARE();
 CL_DOCSTRING("apropos");
 CL_DEFUN T_sp cl__apropos(Str_sp string_desig, T_sp package_desig) {
@@ -1930,8 +1945,8 @@ CL_DECLARE();
 CL_DOCSTRING("Return the current sourceFileName");
 CL_DEFUN T_mv core__source_file_name() {
   Cons_sp ppcons;
-  InvocationHistoryFrame *frame = thread->invocationHistoryStack().top();
-  Closure_sp closure = frame->closure;
+  InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStack;
+  Function_sp closure = frame->function();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
   string sourcePath = gc::As<SourceFileInfo_sp>(core__source_file_info(make_fixnum(sourceFileInfoHandle)))->namestring();
   Path_sp path = Path_O::create(sourcePath);
@@ -1943,8 +1958,8 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("sourceLineColumn");
 CL_DEFUN T_mv core__source_line_column() {
-  InvocationHistoryFrame *frame = thread->invocationHistoryStack().top();
-  Closure_sp closure = frame->closure;
+  InvocationHistoryFrame *frame = my_thread->_InvocationHistoryStack;
+  Function_sp closure = frame->function();
   return Values(make_fixnum(closure->lineNumber()), make_fixnum(closure->column()));
 }
 
@@ -2114,7 +2129,7 @@ CL_DEFUN void core__export_to_python(T_sp symbolsDesig) {
   }
 }
 
-CL_LAMBDA(symbol_name &optional (package-desig *package*));
+CL_LAMBDA(symbol-name &optional (package-desig *package*));
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: intern");
 CL_DEFUN T_mv cl__intern(Str_sp symbol_name, T_sp package_desig) {
@@ -2590,13 +2605,6 @@ Symbol_sp Lisp_O::internWithDefaultPackageName(string const &defaultPackageName,
 
 Symbol_sp Lisp_O::internKeyword(const string &name) {
   string realName = name;
-  if (name[0] == ':') {
-    realName = name.substr(1, 99999);
-  }
-  size_t colonPos = realName.find_first_of(":");
-  if (colonPos != string::npos) {
-    SIMPLE_ERROR(BF("You cannot intern[%s] as a keyword - it has package designating ':' characters in it at pos[%d]") % realName % colonPos);
-  }
   boost::to_upper(realName);
   Str_sp str_real_name = Str_O::create(realName);
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
@@ -2621,7 +2629,7 @@ InvocationHistoryStack &Lisp_O::invocationHistoryStack() {
 
 void Lisp_O::dump_backtrace(int numcol) {
   _OF();
-  string bt = thread->invocationHistoryStack().asString();
+  string bt = backtrace_as_string();
   _lisp->print(BF("%s") % bt);
 }
 
@@ -2679,42 +2687,10 @@ void Lisp_O::dump_backtrace(int numcol) {
     }
 #endif
 
-#if 0
-    string Lisp_O::backTraceAsString(int numcol) const
-    {
-	stringstream strace;
-	Cons_sp btReversed = this->getBackTrace();
-	List_sp bt = btReversed->reverse();
-	strace << "Cando-backtrace number of entries: " << cl__length(bt) <<std::endl;
-	while ( bt.notnilp() )
-	{
-	    T_sp code = bt->ocar();
-	    stringstream sline;
-	    if ( code->consP() )
-	    {
-		List_sp entry = code;
-		if ( entry->hasParsePos() )
-		{
-		    sline << core__source_file_info(entry)->permanentFileName() << ":" << af_lineno(entry) << " " << entry->__repr__();
-		} else
-		{
-		    sline << "no-function: " << entry->__repr__();
-		}
-	    } else
-	    {
-		sline << "no-function: " << code->__repr__();
-	    }
-	    strace << sline.str().substr(0,numcol) << std::endl;
-	    bt = bt->cdr();
-	}
-	strace << "----- backtrace done ------" << std::endl;
-	return strace.str();
-    }
-#endif
 
 void Lisp_O::run() {
 #ifdef DEBUG_PROGRESS
-    printf("%s:%d run\n", __FILE__, __LINE__ );
+  printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif
 
   // If the user adds "-f debug-startup" to the command line
@@ -2728,8 +2704,14 @@ void Lisp_O::run() {
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
     }
   }
-  //	printf("%s:%d core:*debug-startup* is: %s\n", __FILE__, __LINE__, _rep_(core::_sym_STARdebugStartupSTAR->symbolValue()).c_str());
-  if (!this->_IgnoreInitImage) {
+  // Check if the Common Lisp compiled code is linked into this executable
+  InitFnPtr* mainFunctionsPointer = (InitFnPtr*)dlsym(RTLD_DEFAULT,GLOBAL_BOOT_FUNCTIONS_NAME);
+  if (mainFunctionsPointer) {
+    void* epilogueP = dlsym(RTLD_DEFAULT,GLOBAL_EPILOGUE_NAME);
+    size_t hasEpilogue = (epilogueP != NULL) ? 1 : 0;
+    T_mv result;
+    invokeMainFunctions(&result,mainFunctionsPointer,hasEpilogue);
+  } else if (!this->_IgnoreInitImage) {
     Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
     DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
     T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
@@ -2751,18 +2733,15 @@ void Lisp_O::run() {
       }
     }
   } else {
-    {
-      _BLOCK_TRACE("Interactive REPL");
+    _BLOCK_TRACE("Interactive REPL");
       //
       // Implement a Read-Eval-Print-Loop
       //
-      this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
-      this->print(BF("Low level repl\n"));
-      while (1) {
-        this->readEvalPrintInteractive();
-      }
+    this->print(BF("Clasp (copyright Christian E. Schafmeister 2014)\n"));
+    this->print(BF("Low level repl\n"));
+    while (1) {
+      this->readEvalPrintInteractive();
     }
-    LOG(BF("Leaving lisp run"));
   }
 };
 

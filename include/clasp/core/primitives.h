@@ -198,20 +198,22 @@ namespace core {
 FORWARD(InvocationHistoryFrameIterator);
 class InvocationHistoryFrameIterator_O : public General_O {
   LISP_CLASS(core, CorePkg, InvocationHistoryFrameIterator_O, "InvocationHistoryFrameIterator",General_O);
-
 private: // instance variables here
   InvocationHistoryFrame *_Frame;
-
+  int _Index;
 public:
-  InvocationHistoryFrameIterator_O() : _Frame(NULL){};
-  virtual ~InvocationHistoryFrameIterator_O(){};
-
-public: // Functions here
+  static InvocationHistoryFrameIterator_sp create(InvocationHistoryFrame* frame, int index) {
+    GC_ALLOCATE_VARIADIC(InvocationHistoryFrameIterator_O,it,frame,index);
+    return it;
+  }
   static InvocationHistoryFrameIterator_sp make(Fixnum first, T_sp test = _Nil<T_O>());
-
+public:
+ InvocationHistoryFrameIterator_O(InvocationHistoryFrame* frame, int index) : _Frame(frame), _Index(index){};
+  virtual ~InvocationHistoryFrameIterator_O(){};
 public:
   InvocationHistoryFrameIterator_sp prev(T_sp test);
-  void setFrame(InvocationHistoryFrame *cur) { this->_Frame = cur; };
+//  void setFrame_(InvocationHistoryFrame *cur) { this->_Frame = cur; };
+  void move_to_previous_frame() { this->_Frame = this->_Frame->previous(); this->_Index--;};
   InvocationHistoryFrame *frame() { return this->_Frame; };
   int index();
   T_sp functionName();
@@ -219,16 +221,13 @@ public:
   Vector_sp arguments();
   T_sp environment();
   InvocationHistoryFrameIterator_sp copy() {
-    InvocationHistoryFrameIterator_sp cp = InvocationHistoryFrameIterator_O::create();
-    cp->_Frame = this->_Frame;
-    return cp;
+    return InvocationHistoryFrameIterator_O::create(this->_Frame,this->_Index);
   };
   /*! Return true if this points to a real InvocationHistoryFrame */
 CL_LISPIFY_NAME("frameIteratorIsValid");
 CL_DEFMETHOD   bool isValid() { return this->_Frame != NULL; };
 }; /* core */
 };
-TRANSLATE(core::InvocationHistoryFrameIterator_O);
 
 namespace core {
 InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_top();

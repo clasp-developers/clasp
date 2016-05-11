@@ -42,61 +42,73 @@ using features defined in corePackage.cc"
   (cond
     ((and (member :target-os-darwin *features*)
           (member :address-model-64 *features*))
-     "x86_64-apple-macosx10.7.0")
+     (values "x86_64-apple-macosx10.7.0" "e-m:o-i64:64-f80:128-n8:16:32:64-S128"))
     ((and (member :target-os-linux *features*)
           (member :address-model-64 *features*))
-     "x86_64-pc-linux-gnu")
+     (values "x86_64-pc-linux-gnu"       "e-m:e-i64:64-f80:128-n8:16:32:64-S128"))
     (t (error "Could not identify target triple for features ~a" *features*))))
+
+(defun generate-data-layout ()
+  (let* ((triple (generate-target-triple))
+         (target (llvm-sys:target-registry-lookup-target.string triple))
+         (target-options (llvm-sys:make-target-options))
+         (target-machine (llvm-sys:create-target-machine
+                          target
+                          triple
+                          ""
+                          ""
+                          target-options
+                          'llvm-sys:reloc-model-default
+                          'llvm-sys:code-model-default
+                          'llvm-sys:code-gen-opt-default)))
+    (llvm-sys:create-data-layout target-machine)))
 
 (defvar *default-target-triple* (generate-target-triple)
   "The default target-triple for this machine")
 
+(defvar *default-data-layout* (generate-data-layout))
 
 (defun llvm-create-module (name)
   (let ((m (llvm-sys:make-module (string name) *llvm-context*)))
     (llvm-sys:set-target-triple m *default-target-triple*)
+    (llvm-sys:set-data-layout m *default-data-layout*)
     m))
 
 (defun create-llvm-module-for-compile-file (module-name)
   "Return a new module"
-  (let ((module (llvm-create-module module-name))
-	fpm)
+  (let ((module (llvm-create-module module-name)))
     ;; Define the primitives for the module
     (define-primitives-in-module module)
-    (if *use-function-pass-manager-for-compile-file*
-	(setq fpm (create-function-pass-manager-for-compile-file module)))
-    (values module fpm)))
+    module))
 
 
 
-(defvar *use-function-pass-manager-for-compile-file* t)
+#+(or)(defvar *use-function-pass-manager-for-compile-file* t)
+#+(or)
 (defun create-function-pass-manager-for-compile-file (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module))
-        ;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
-        )
-;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass) ;; (llvm-sys:data-layout-copy *data-layout*))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
+  (let ((fpm (llvm-sys:make-function-pass-manager module)))
+    (warn "Look at what passes the Kaleidoscope demo is making")
+    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
-;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
+    ;;    (if *debug-ir* (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-debug-irpass "createDebugIR.log")))
     (llvm-sys:do-initialization fpm)
     fpm))
 
 
+#+(or)
 (defun create-function-pass-manager-for-compile (module)
-  (let ((fpm (llvm-sys:make-function-pass-manager module))
-;;        (data-layout-pass (llvm-sys:make-data-layout-pass *data-layout*))
-        )
-;;    (llvm-sys:function-pass-manager-add fpm data-layout-pass)
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
+  (let ((fpm (llvm-sys:make-function-pass-manager module)))
+    (warn "Look at what passes the Kaleidoscope demo is making")
+    ;;    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-basic-alias-analysis-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-instruction-combining-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-promote-memory-to-register-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-reassociate-pass))
     (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-gvnpass nil))
-    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1))
+    (llvm-sys:function-pass-manager-add fpm (llvm-sys:create-cfgsimplification-pass -1 #'(lambda (f) t)))
     (llvm-sys:do-initialization fpm)
     fpm))
 
@@ -118,9 +130,6 @@ Return the module and the global variable that represents the load-time-value-ho
 (defun create-run-time-execution-engine (module)
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:setf-no-frame-pointer-elim target-options t)
-    (llvm-sys:setf-jitemit-debug-info target-options t)
-    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
     (llvm-sys:set-target-options engine-builder target-options)
     (llvm-sys:create engine-builder)))
 
@@ -172,8 +181,10 @@ No DIBuilder is defined for the default module")
 								       'llvm-sys:internal-linkage
 								       constant-data-array
 								       "constant-array"))
-	 (gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr global-var-for-constant-array
-								    (list (jit-constant-i32 0) (jit-constant-i32 0)))))
+	 (gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+               nil
+               global-var-for-constant-array
+               (list (jit-constant-i32 0) (jit-constant-i32 0)))))
     gep))
 
 
@@ -219,7 +230,10 @@ No DIBuilder is defined for the default module")
   (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
   (let ((unique-string-global-variable (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* str (bformat nil ":::global-str-%s" str))))
 ;;    (llvm-sys:create-in-bounds-gep *irbuilder* unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)) label )
-    (llvm-sys:constant-expr-get-in-bounds-get-element-ptr unique-string-global-variable (list (jit-constant-i32 0) (jit-constant-i32 0)))
+    (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+     nil
+     unique-string-global-variable
+     (list (jit-constant-i32 0) (jit-constant-i32 0)))
     )
 )
 
@@ -247,7 +261,6 @@ No DIBuilder is defined for the default module")
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((stringp lname)
      (cond
-       ((string= lname llvm-sys:+clasp-main-function-name+) lname) ; CANDO_MAIN
        ((string= lname "IMPLICIT-REPL") lname) ; this one is ok
        ((string= lname "TOP-LEVEL") lname) ; this one is ok
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
@@ -276,39 +289,19 @@ No DIBuilder is defined for the default module")
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
 
-(si:fset
- 'load-bitcode
- #'(lambda (filename &optional verbose print external_format)
-     "Load a bitcode file, link it and execute it"
-     (let ((*package* *package*)
-	   (time-load-start (clock-gettime-nanoseconds)))
-       ;;       (bformat t "Loading module from file: %s\n" filename)
-       (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
-	      (engine-builder (llvm-sys:make-engine-builder module))
-	      ;; After make-engine-builder MODULE becomes invalid!!!!!
-	      (target-options (llvm-sys:make-target-options)))
-	 (llvm-sys:setf-no-frame-pointer-elim target-options t)
-	 (llvm-sys:setf-jitemit-debug-info target-options t)
-	 (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
-	 (llvm-sys:set-target-options engine-builder target-options)
+(defun load-bitcode (filename &optional verbose print external_format)
+  "Load a bitcode file, link it and execute it"
+  (let ((*package* *package*)
+        (time-load-start (clock-gettime-nanoseconds)))
+    ;;       (bformat t "Loading module from file: %s\n" filename)
+    (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
+           (engine-builder (llvm-sys:make-engine-builder module))
+           ;; After make-engine-builder MODULE becomes invalid!!!!!
+           (target-options (llvm-sys:make-target-options)))
+      (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-	 (let* ((execution-engine (llvm-sys:create engine-builder))
-		(stem (string-downcase (pathname-name filename)))
-		(main-fn-name llvm-sys:+clasp-main-function-name+)
-		(time-jit-start (clock-gettime-nanoseconds))
-		(main-llvm-function (llvm-sys:find-function-named execution-engine llvm-sys:+clasp-main-function-name+)))
-	   (let ((main-fn (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-			   execution-engine 
-			   (intern llvm-sys:+clasp-main-function-name+)	      ; main fn name as symbol
-			   main-llvm-function ; llvm-fn
-			   nil		      ; environment
-			   *load-time-value-holder-name*
-			   (namestring (truename filename)) ; file name
-			   0 
-			   0 
-			   nil)))
-	     (funcall main-fn)
-	     ))))
-     t)
- nil)
+      (let* ((execution-engine (llvm-sys:create engine-builder)))
+        (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
+                                                                              *load-time-value-holder-name*
+                                                                              (namestring (truename filename)))))))
 (export 'load-bitcode)

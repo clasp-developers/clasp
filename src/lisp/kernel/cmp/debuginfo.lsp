@@ -244,8 +244,10 @@
     (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
     (multiple-value-bind (source-dir source-file filepos line-number column)
         (walk-form-for-source-info form)
-      (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
-      (values source-dir source-file line-number column))))
+      (warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
+      #+(or)(llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
+      #+(or)(values source-dir source-file line-number column)
+      (values))))
 
 (defun dbg-set-current-source-pos-for-irbuilder (form irbuilder)
   (with-irbuilder (irbuilder)
@@ -266,7 +268,9 @@
       (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
     #+(or)(let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
 	    (llvm-sys:set-current-debug-location *irbuilder* debugloc))
-    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)))
+      (warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
+      #+(or)(llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
+    ))
 
 (defvar *current-file-metadata-node* nil
   "Store the metadata node for the current source file info")

@@ -413,7 +413,7 @@
     (loop (unless *handler-clusters* (return))
           (let ((cluster (pop *handler-clusters*)))
 	    (dolist (handler cluster)
-<	      (when (typep condition (car handler))
+	      (when (typep condition (car handler))
 		(funcall (cdr handler) condition)
 		))))
     nil))
@@ -455,7 +455,8 @@
 If FORMAT-STRING is non-NIL, it is used as the format string to be output to
 *ERROR-OUTPUT* before entering the break loop.  ARGs are arguments to the
 format string."
-  (let ((*debugger-hook* nil))
+  (let ((*debugger-hook* nil)
+        (core:*stack-top-hint* (1- (core:ihs-top))))
     (with-simple-restart (continue "Return from BREAK.")
       (invoke-debugger
        (make-condition 'SIMPLE-CONDITION
@@ -851,6 +852,8 @@ memory limits before executing the program again."))
 			for value in values
 			collect (assert-prompt place-name value)))))))
 
+(defvar *stack-top-hint* nil)
+
 ;;; ----------------------------------------------------------------------
 ;;; ECL's interface to the toplevel and debugger
 
@@ -870,7 +873,8 @@ bstrings."
   (declare (inline apply) ;; So as not to get bogus frames in debugger
 ;;	   #-ecl-min (c::policy-debug-ihs-frame)
 	   )
-  (let ((condition (coerce-to-condition datum args 'simple-error 'error)))
+  (let ((condition (coerce-to-condition datum args 'simple-error 'error))
+        (*stack-top-hint* (1- (ihs-top))))
     (cond
       ((eq t continue-string)
        ; from CEerror; mostly allocation errors
@@ -895,9 +899,8 @@ bstrings."
 	       (if used-restart continue-string rv)))
 	   (if used-restart t rv))))
       (t
-       (progn
-	 (signal condition)
-	 (invoke-debugger condition))))))
+       (signal condition)
+       (invoke-debugger condition)))))
 
 (defun sys::tpl-continue-command (&rest any)
   (apply #'invoke-restart 'continue any))

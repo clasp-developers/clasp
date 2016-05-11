@@ -4,6 +4,7 @@
 project internals/main : requirements
 	<define>EXPAT
         <cxxflags>-std=c++11
+        <include>.
 	<toolset>darwin:<define>READLINE
 	<toolset>darwin:<define>darwin
 	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
@@ -64,8 +65,11 @@ stripped-bitcode intrinsics_bitcode : /internals/llvmo//intrinsics.cc
 	:
 	<cxxflags>"-flto -emit-llvm" ;
 
+linked-bitcode linked_clasp : $(sources) ;
+
 explicit intrinsics_bitcode ;
 
+#explicit linked_clasp ;
 
 
 import package ;

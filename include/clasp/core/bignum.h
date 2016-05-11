@@ -78,6 +78,7 @@ public:
   NumberType number_type_() const { return number_Bignum; };
 
   mpz_class &ref() { return this->_value; };
+  mpz_class &mpz_ref() { return this->_value; };
 
   string __repr__() const;
 
@@ -148,7 +149,6 @@ public:
 }; // Bignum class
 
 }; // core namespace
-TRANSLATE(core::Bignum_O);
 
 namespace translate {
 template <>

@@ -59,10 +59,9 @@ namespace core {
     virtual ~ExternalObject_O(){};
   };
 
-  template <class OT, class WT>
-    gctools::smart_ptr<OT> RP_Create_wrapped(WT ptr) {
-    _G();
-    GC_ALLOCATE(OT, wrapper);
+  template <class Type, class WrapperType>
+    gctools::smart_ptr<Type> RP_Create_wrapped(WrapperType ptr) {
+    GC_ALLOCATE(Type, wrapper);
     wrapper->set_wrapped(ptr);
     return wrapper;
   }
@@ -91,7 +90,6 @@ namespace core {
   /* end */
 
 #endif // SCRAPING
-TRANSLATE(core::ExternalObject_O);
 
 namespace core {
 
@@ -133,7 +131,6 @@ public:
 };
 };
 
-TRANSLATE(core::ForeignData_O);
 
 template <>
 struct gctools::GCInfo<core::ForeignData_O> {

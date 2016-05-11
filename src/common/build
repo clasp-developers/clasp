@@ -8,14 +8,16 @@
 # Run the new SBCL scraper
 # currently it needs the files generated above by the python grovelers
 #
+export BUILD_DIR=$CLASP_HOME/build/clasp/Contents/Resources/cxx
 install -d bin
-$BJAM $* -n -a >bin/all-commands.txt
-$BJAM $* -n >bin/commands.txt
-echo Running $CLASP_SBCL  --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANGXX_PATH `pwd`/ bin/all-commands.txt bin/commands.txt
-$CLASP_SBCL --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANGXX_PATH `pwd`/ bin/all-commands.txt bin/commands.txt
+$BJAM --build-dir=$BUILD_DIR $* -n -a >$BUILD_DIR/all-commands.txt
+$BJAM --build-dir=$BUILD_DIR $* -n >$BUILD_DIR/commands.txt
+export SBCL_OPTIONS="--lose-on-corruption --dynamic-space-size 4096 --disable-debugger --load $CLASP_HOME/src/scraper/scraper.lisp -- $CLASP_CLANGXX_PATH `pwd`/ $BUILD_DIR/all-commands.txt $BUILD_DIR/commands.txt"
+echo Running $CLASP_SBCL $SBCL_OPTIONS
+$CLASP_SBCL $SBCL_OPTIONS
 
 #
 # run bjam to build app
 #
 echo $BJAM $*
-$BJAM $*
+$BJAM --build-dir=$CLASP_HOME/build/clasp/Contents/Resources/cxx $*

@@ -207,13 +207,7 @@ struct to_object<gc::Nilable<gctools::smart_ptr<T>>> {
     return os;                                                               \
   }
 
-#if 0 // I switched to using template programming to define automatic to_object and from_object translators
-#define TRANSLATE(classo)          \
-  __FROM_OBJECT_CONVERTER(classo); \
-  __TO_OBJECT_CONVERTER(classo);
-#else
 #define TRANSLATE(classo)
-#endif
 
 //    STREAMIO(classo);
 

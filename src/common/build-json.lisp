@@ -1,17 +1,19 @@
 (defpackage :build-json
   (:use :cl)
-  (:export #:build-db ))
+  (:export #:build-db
+           #:dump-source-files))
 
 (in-package :build-json)
 
-(defparameter *compile-regex* (core:make-regex (format nil "^.*~a.*[[:space:]]-c[[:space:]].*$" "clang")))
+(defun compilation-line-p (line)
+  (and (search "clang" line) (search " -c " line)))
 
 (defun read-entire-file (filename)
   (let (cmds)
     (with-open-file (fin (pathname filename))
       (loop for line = (read-line fin nil :eof)
          until (eq line :eof)
-         do (when (core:regex-matches *compile-regex* line)
+         do (when (compilation-line-p line)
               (push line cmds))))
     cmds))
 
@@ -29,13 +31,10 @@ if there were an empty string between them."
      collect (subseq string i j)
      while j))
 
-(defun build-db (bjam-cmds database-name)
+(defun build-db (bjam-cmds output)
   (let ((lines (read-entire-file bjam-cmds))
-        (db-pn (make-pathname :host "APP-RESOURCES"
-                              :directory '(:absolute "build-databases")
-                              :name database-name
-                              :type "json")))
-    (with-open-file (fout db-pn :direction :output)
+        (db-pn (pathname output)))
+    (with-open-file (fout db-pn :direction :output :if-exists :supersede)
       (format fout "[~%")
       (loop for (line . rest ) on lines
          for compile-command = (replace-substr line " -c " " -c -v ")
@@ -47,11 +46,19 @@ if there were an empty string between them."
          for abs-path = (truename (make-pathname :name nil :type nil :defaults (merge-pathnames (pathname directory) bjam-cmds)))
          do (progn
               (format fout "  {~%")
-              (format fout "  \"directory\" : ~a,~%" (namestring abs-path))
+              (format fout "  ~s : ~s,~%" "directory" (namestring abs-path))
               (format fout "  \"command\" : ~s,~%" compile-command)
               (format fout "  \"file\" : ~s~%" source-file-name)
               (format fout "  }~a~%" (if rest "," ""))))
       (format fout "]~%"))
     (format t "Wrote out ~d compilation commands to ~a~%" (length lines) (truename db-pn))))
-           
 
+
+
+(defun dump-source-files (bjam-cmds output)
+  (let* ((lines (read-entire-file bjam-cmds)))
+    (with-open-file (fout output :direction :output :if-exists :supersede)
+      (dolist (line lines)
+        (let* ((split (split-by-one-char line #\space))
+               (source (car (last split))))
+          (format fout "~a~%" (subseq source 1 (- (length source) 1))))))))

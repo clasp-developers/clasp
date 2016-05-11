@@ -63,11 +63,13 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exitCode = 0;
   try {
+#if 0
     // Set the ThreadInfo for the current master thread
     //
     core::ThreadInfo mainThreadInfo;
     core::lisp_setThreadLocalInfoPtr(&mainThreadInfo);
-
+#endif
+    
 #if 1
 
     gctools::GcToolsExposer_O GcToolsPkg(_lisp);

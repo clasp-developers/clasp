@@ -63,7 +63,8 @@ export LLVM_CONFIG_DEBUG := $(or $(LLVM_CONFIG_DEBUG),\
                                  $(LLVM_CONFIG))
 else
 # XXX: confirm the necessity of llvm-config* pathsearch!
-export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config),\
+export LLVM_CONFIG ?= $(or $(call pathsearch, llvm-config-3.8),\
+                           $(call pathsearch, llvm-config),\
                            $(call pathsearch, llvm-config*),\
                            $(error Could not find llvm-config.))
 endif
@@ -76,21 +77,23 @@ export LLVM_CONFIG_DEBUG ?= $(LLVM_CONFIG)
 export LLVM_BIN_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --bindir)
 # Not always the same as LLVM_BIN_DIR!
 
+
 export LLVM_VERSION := $(shell $(LLVM_CONFIG) --version)
 export LLVM_MAJOR_MINOR_VERSION := $(shell echo $(LLVM_VERSION) | sed 's/^\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)/\1.\2/')
+export LLVM_VERSION_X100 := $(shell echo $(LLVM_VERSION) | sed 's/[.]//g' )
 #$(info llvm-version is $(LLVM_VERSION))
 #$(info llvm-major-minor-version is $(LLVM_MAJOR_MINOR_VERSION))
 export CLASP_CLANG_PATH := $(or $(CLASP_CLANG_PATH),\
-			$(wildcard $(LLVM_BIN_DIR)/clang),\
 			$(wildcard $(LLVM_BIN_DIR)/clang-$(LLVM_MAJOR_MINOR_VERSION)),\
-			$(call pathsearch, clang),\
+			$(wildcard $(LLVM_BIN_DIR)/clang),\
 			$(call pathsearch, clang-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang),\
 			$(error Could not find clang - it needs to be installed and in your path.))
 export CLASP_CLANGXX_PATH := $(or $(CLASP_CLANGXX_PATH),\
-			$(wildcard $(LLVM_BIN_DIR)/clang++),\
 			$(wildcard $(LLVM_BIN_DIR)/clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
-			$(call pathsearch, clang++),\
+			$(wildcard $(LLVM_BIN_DIR)/clang++),\
 			$(call pathsearch, clang++-$(LLVM_MAJOR_MINOR_VERSION)),\
+			$(call pathsearch, clang++),\
 			$(error Could not find clang - it needs to be installed and in your path.))
 
 export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
@@ -107,6 +110,11 @@ export BJAM ?= $(BOOST_BUILD_INSTALL)/bin/bjam --ignore-site-config --user-confi
 
 export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
+
+export CLASP_LIB_EXTENSION ?= so
+export CLASP_LIB_EXTENSION := $(or $(and $(filter $(TARGET_OS), Linux ), so), \
+		                    $(and $(filter $(TARGET_OS), Darwin ), dylib), \
+		                    $(error Invalid TARGET_OS: $(TARGET_OS)))
 
 export CLASP_DEBUG_CXXFLAGS += -I$(shell $(LLVM_CONFIG_DEBUG) --includedir)
 export CLASP_DEBUG_LINKFLAGS += -L$(CLASP_DEBUG_LLVM_LIB_DIR)
@@ -246,21 +254,16 @@ boot:
 	make -C src/main min-boehmdc
 	make -C src/main bclasp-boehmdc-bitcode
 	make -C src/main bclasp-boehmdc-fasl
-	make -C src/main bclasp-boehmdc-addons
+#	make -C src/main bclasp-boehmdc-addons
+
+boot-cclasp:
+	make boot
 	make -C src/main cclasp-boehmdc-bitcode
 	make -C src/main cclasp-boehmdc-fasl
-	make -C src/main cclasp-boehmdc-addons
+	make -C src/main bclasp-boehmdc-addons
 
 boot-mps-interface:
-	make submodules
-	make asdf
-	make boost_build
-	make boehm
-	make -C src/main boehmdc-release-cxx
-	make executable-symlinks
-	make -C src/main min-boehmdc
-	make -C src/main bclasp-boehmdc-bitcode
-	make -C src/main bclasp-boehmdc-fasl
+	make boot
 	make -C src/main mps-interface-boot
 #	make -C src/main bclasp-boehmdc
 #	make -C src/main bclasp-boehmdc-addons
@@ -270,12 +273,12 @@ clasp-libraries:
 
 executable-symlinks:
 	install -d $(BINDIR)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehm/release/bin/clasp; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehmdc/release/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehm/debug/bin/clasp ; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/boehmdc/debug/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d ; fi)
-	(cd build/clasp/$(EXECUTABLE_DIR); if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d ; fi)
+	if test -e ../Contents/execs/boehm/release/bin/clasp; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o ; fi
+	if test -e ../Contents/execs/boehmdc/release/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o ; fi
+	if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o ; fi
+	if test -e ../Contents/execs/boehm/debug/bin/clasp ; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d ; fi
+	if test -e ../Contents/execs/boehmdc/debug/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d ; fi
+	if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d ; fi
 
 libatomic-setup:
 	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
@@ -411,7 +414,7 @@ cloc-files:
 clean:
 	git submodule sync
 	make boehm-clean
-	-(cd include/clasp/main/generated; rm *)
+	(cd include/clasp/main/generated; rm *.h)
 	(cd src/main; rm -rf bin bundle)
 	(cd src/core; rm -rf bin bundle)
 	(cd src/gctools; rm -rf bin bundle)

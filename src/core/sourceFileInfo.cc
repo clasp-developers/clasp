@@ -127,7 +127,8 @@ size_t clasp_sourcePosInfo_filepos(SourcePosInfo_sp info) {
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
 CL_DOCSTRING("sourcePosInfoFilepos");
-CL_DEFUN Integer_sp core__source_pos_info_filepos(SourcePosInfo_sp info) {
+CL_DEFUN Integer_sp core__source_pos_info_filepos(T_sp info) {
+  if (info.nilp() ) return make_fixnum(0);
   return Integer_O::create((gc::Fixnum)clasp_sourcePosInfo_filepos(info));
 }
 
@@ -138,7 +139,8 @@ uint clasp_sourcePosInfo_lineno(SourcePosInfo_sp info) {
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
 CL_DOCSTRING("sourcePosInfoLineno");
-CL_DEFUN Fixnum_sp core__source_pos_info_lineno(SourcePosInfo_sp info) {
+CL_DEFUN Fixnum_sp core__source_pos_info_lineno(T_sp info) {
+  if (info.nilp() ) return make_fixnum(0);
   return make_fixnum(clasp_sourcePosInfo_lineno(info));
 }
 
@@ -149,7 +151,8 @@ uint clasp_sourcePosInfo_column(SourcePosInfo_sp info) {
 CL_LAMBDA(source-pos-info);
 CL_DECLARE();
 CL_DOCSTRING("sourcePosInfoColumn");
-CL_DEFUN Fixnum_sp core__source_pos_info_column(SourcePosInfo_sp info) {
+CL_DEFUN Fixnum_sp core__source_pos_info_column(T_sp info) {
+  if (info.nilp() ) return make_fixnum(0);
   return make_fixnum(clasp_sourcePosInfo_column(info));
 }
 };

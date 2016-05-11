@@ -153,6 +153,7 @@
 	   (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-block (cmp:irc-basic-block-create "body")))
+      (llvm-sys:set-personality-fn fn (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
       (push fn cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*
@@ -383,6 +384,13 @@
 	  (cmp:irc-br final-block)))
       (cmp:irc-begin-block final-block))))
 
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:intrinsic-call-instruction) return-value inputs outputs (abi abi-x86-64))
+  (cmp:irc-low-level-trace :flow)
+  (let ((call (clasp-cleavir:unsafe-intrinsic-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
+    (cc-dbg-when *debug-log*
+		 (format *debug-log* "    translate-simple-instruction intrinsic-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
@@ -395,6 +403,7 @@
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
+
 
 
 (defmethod translate-simple-instruction
@@ -887,9 +896,7 @@
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	;; After make-engine-builder MODULE becomes invalid!!!!!
 	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:setf-no-frame-pointer-elim target-options t)
-    (llvm-sys:setf-jitemit-debug-info target-options t)
-    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+;;    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
     (let*((execution-engine (llvm-sys:create engine-builder))
@@ -994,10 +1001,11 @@ nil)
                       a))
                (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
                (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-          ;;(warn "Turn on CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-          (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
+          ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+          ;; Beach says remove-useless-instructions is a bad idea right now - removing
+          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
+          ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
+          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
           (cc-dbg-when *debug-log*
                        (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
                                                           :type "dot" 
@@ -1050,10 +1058,11 @@ nil)
                    (hir (progn
                           (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                           (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
-              ;;(warn "Turn on run CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-              (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
+              ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+              ;; Beach says remove-useless-instructions is a bad idea right now - removing
+              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
+              ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
+              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)

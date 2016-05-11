@@ -71,7 +71,6 @@ public: // Functions here
 
 }; // LoadTimeValues class
 };
-TRANSLATE(core::LoadTimeValues_O);
 template <>
 struct gctools::GCInfo<core::LoadTimeValues_O> {
   static bool constexpr NeedsInitialization = false;

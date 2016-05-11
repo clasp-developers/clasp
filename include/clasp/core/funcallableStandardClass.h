@@ -115,5 +115,4 @@ public:
 };
 #endif
 };
-TRANSLATE(core::FuncallableStandardClass_O);
 #endif //]

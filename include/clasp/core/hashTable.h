@@ -36,6 +36,7 @@ THE SOFTWARE.
 namespace core {
 T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
 
+ 
 
 FORWARD(HashTable);
 class HashTable_O : public General_O {
@@ -63,9 +64,9 @@ protected: // instance variables here
   VectorObjects_sp _HashTable;
   uint _HashTableCount;
 #ifdef USE_MPS
-  mps_ld_s _LocationDependencyTracker;
+  mps_ld_s _LocationDependency;
 #else
-  void* _LocationDependencyTracker; // Need to have a field here to match MPS  
+  gctools::BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here to match MPS  
 #endif
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
@@ -162,6 +163,5 @@ CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThr
 
 }; /* core */
 
-TRANSLATE(core::HashTable_O);
 
 #endif /* _core_HashTable_H */

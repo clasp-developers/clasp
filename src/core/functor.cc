@@ -26,7 +26,6 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
@@ -58,6 +57,20 @@ CL_DEFUN Integer_sp core__interpreted_closure_calls() {
   return Integer_O::create((Fixnum)global_interpreted_closure_calls);
 }
 
+
+string Function_O::__repr__() const {
+  T_sp name = this->name();
+  stringstream ss;
+  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << " " << _rep_(name);
+  ss << " :ftype " << _rep_(this->getKind());
+  ss << " lambda-list: " << _rep_(this->lambda_list());
+  if ( this->functionAddress() != NULL ) {
+    ss << " :fptr " << reinterpret_cast<void*>(this->functionAddress());
+  }
+  ss << ">";
+  return ss.str();
+}
 
 string Closure_O::nameAsString() const {
   if (this->_name.nilp()) {
@@ -129,6 +142,56 @@ CL_DEFUN size_t core__closure_with_slots_size(size_t number_of_slots)
   return result;
 }
 
+CL_DEFUN size_t core__closure_length(Closure_sp tclosure)
+{
+  if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
+    return closure->_Slots._Capacity;
+  } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
+    T_sp env = closure->closedEnvironment();
+    if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
+      env = ve->getActivationFrame();
+    }
+    if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
+      return tvf->length();
+    }
+  }
+  return 0;
+}
+
+CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
+{
+  if ( ClosureWithSlots_sp closure = tclosure.asOrNull<ClosureWithSlots_O>() ) {
+    if ( index >= closure->_Slots._Capacity ) {
+      SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % closure->_Slots._Capacity );
+    }
+    return closure->_Slots[index];
+  } else if ( ClosureWithFrame_sp closure = tclosure.asOrNull<ClosureWithFrame_O>() ) {
+    T_sp env = closure->closedEnvironment();
+    if ( ValueEnvironment_sp ve = env.asOrNull<ValueEnvironment_O>() ) {
+      env = ve->getActivationFrame();
+    }
+    if ( ValueFrame_sp tvf = env.asOrNull<ValueFrame_O>() ) {
+      if ( index >= tvf->length() ) {
+        SIMPLE_ERROR(BF("Out of bounds closure reference - there are only %d slots") % tvf->length() );
+      }
+      return (*tvf)[index];
+    }
+  }
+  SIMPLE_ERROR(BF("Out of bounds closure reference - there are no slots"));
+}
+
+CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
+  size_t nslots = core__closure_length(closure);
+  printf("Closure has %d slots\n", nslots);
+  for ( int i=0; i<nslots; ++i ) {
+    printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
+  }
+  SourcePosInfo_sp spi = closure->sourcePosInfo();
+  T_mv tsfi = core__source_file_info(spi);
+  if ( SourceFileInfo_sp sfi = tsfi.asOrNull<SourceFileInfo_O>() ) {
+    printf("Closure source: %s:%d\n", sfi->namestring().c_str(), spi->lineno() );
+  }
+}
 
 T_sp BuiltinClosure_O::lambda_list() const {
   return this->_lambdaListHandler->lambdaList();
@@ -155,12 +218,15 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 }
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   ++global_interpreted_closure_calls;
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
 //  printf("%s:%d ValueEnvironment_O:createForLambdaListHandler llh: %s\n", __FILE__, __LINE__, _rep_(this->_lambdaListHandler).c_str());
 //  newValueEnvironment->dump();
   ValueEnvironmentDynamicScopeManager scope(newValueEnvironment);
-  InvocationHistoryFrame _frame(this->asSmartPtr(), lcc_arglist);
+#ifdef USE_EXPENSIVE_BACKTRACE
+  InvocationHistoryFrame _frame(lcc_arglist);
+#endif
   lambdaListHandler_createBindings(this->asSmartPtr(), this->_lambdaListHandler, scope, LCC_PASS_ARGS);
 //  printf("%s:%d     after lambdaListHandler_createbindings\n", __FILE__, __LINE__);
 //  newValueEnvironment->dump();
@@ -168,12 +234,6 @@ LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
   VectorObjects_sp debuggingInfo = _lambdaListHandler->namesOfLexicalVariablesForDebugging();
   newActivationFrame->attachDebuggingInfo(debuggingInfo);
   //        InvocationHistoryFrame _frame(this,newActivationFrame);
-  _frame.setActivationFrame(newActivationFrame);
-#if 0
-  if (_sym_STARdebugInterpretedClosureSTAR->symbolValue().notnilp()) {
-    printf("%s:%d Entering InterpretedClosure   source file = %s  lineno=%d\n", __FILE__, __LINE__, _frame.sourcePathName().c_str(), _frame.lineno());
-  }
-#endif
   return eval::sp_progn(this->_code, newValueEnvironment).as_return_type();
 };
 
@@ -192,6 +252,7 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
 #ifdef _DEBUG_BUILD
@@ -205,3 +266,4 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
 
 
 };
+

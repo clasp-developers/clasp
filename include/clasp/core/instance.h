@@ -170,6 +170,7 @@ public: // Functions here
   void __write__(T_sp sout) const; // Look in write_ugly.cc
 
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
     LCC_MAKE_VA_LIST_SP(gfargs);
@@ -186,7 +187,6 @@ struct gctools::GCInfo<core::Instance_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::Instance_O);
 
 
 namespace gctools {

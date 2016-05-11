@@ -49,5 +49,4 @@ public:
 
 }; // namespace core
 
-TRANSLATE(core::SexpSaveArchive_O);
 #endif //]

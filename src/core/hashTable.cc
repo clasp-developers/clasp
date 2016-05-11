@@ -79,7 +79,7 @@ struct HashTableLocker {
 
 
 
-CL_LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash_threshold 1.0) weakness debug);
+CL_LAMBDA(&key (test (function eql)) (size 16) (rehash-size 1.5) (rehash-threshold 1.0) weakness debug);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness, T_sp debug) {
@@ -127,7 +127,7 @@ HashTable_sp HashTable_O::create(T_sp test) {
   return ht;
 }
 
-CL_LAMBDA(function_desig hash_table);
+CL_LAMBDA(function-desig hash-table);
 CL_DECLARE();
 CL_DOCSTRING("see CLHS");
 CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
@@ -154,7 +154,7 @@ CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
   return (Values(_Nil<T_O>()));
 }
 
-CL_LAMBDA(hash_table);
+CL_LAMBDA(hash-table);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS");
 CL_DEFUN T_mv cl__clrhash(HashTable_sp hash_table) {
@@ -476,7 +476,7 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
     sz = 4;
   this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
 #ifdef USE_MPS
-  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena);
+  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena);
 #endif
   return sz;
 }
@@ -519,7 +519,7 @@ List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
   return _Nil<T_O>();
 }
 
-CL_LAMBDA(key hash-table &optional default_value);
+CL_LAMBDA(key hash-table &optional default-value);
 CL_DECLARE();
 CL_DOCSTRING("gethash");
 CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
@@ -542,7 +542,7 @@ List_sp HashTable_O::tableRef(T_sp key) {
   // Location dependency test if key is stale
   if (key.objectp()) {
     void *blockAddr = &(*key);
-    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)), gctools::_global_arena, blockAddr)) {
+    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }
   }

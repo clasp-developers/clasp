@@ -962,11 +962,6 @@ jump to blocks within this tagbody."
 	(codegen-progn result code new-env)
 	))))
 
-
-
-
-
-
 #+(or)(defun codegen-unwind-protect (result rest env)
   (with-dbg-lexical-block (rest)
     (let* ((protected-form (car rest))
@@ -1130,6 +1125,38 @@ jump to blocks within this tagbody."
   )
 
 
+(defun codegen-intrinsic-call (result form evaluate-env)
+  "Evaluate each of the arguments into an alloca and invoke the function"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((intrinsic-name (car form))
+         (nargs (length (cdr form)))
+         args
+         (temp-result (irc-alloca-tsp)))
+    (dbg-set-invocation-history-stack-top-source-pos form)
+    ;; evaluate the arguments into the array
+    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+    (do* ((cur-exp (cdr form) (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp))
+          (i 0 (+ 1 i)))
+         ((endp cur-exp) nil)
+      (codegen temp-result exp evaluate-env)
+      (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+    (let ((func (llvm-sys:get-function cmp:*the-module* intrinsic-name)))
+      (unless func
+        (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+              (varargs nil))
+          (setq func (llvm-sys:function-create
+                      (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                      'llvm-sys::External-linkage
+                      intrinsic-name
+                      *the-module*)))
+        (let ((result-in-registers
+               (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "intrinsic")))
+          (irc-store-result result result-in-registers))))
+    (irc-low-level-trace :flow)))
+
+
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"
   (assert-result-isa-llvm-value result)
@@ -1190,10 +1217,11 @@ jump to blocks within this tagbody."
 (defun treat-as-special-operator-p (sym)
   #+clc(clc-env:treat-as-special-operator-p sym)
   #-clc(cond
-         ((eq sym 'cl:unwind-protect) nil) ;; handled with macro
-         ((eq sym 'cl:catch) nil)          ;; handled with macro
-         ((eq sym 'cl:throw) nil)          ;; handled with macro
-         ((eq sym 'core:debug-message) t)  ;; special operator
+         ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+         ((eq sym 'cl:catch) nil)           ;; handled with macro
+         ((eq sym 'cl:throw) nil)           ;; handled with macro
+         ((eq sym 'core:debug-message) t)   ;; special operator
+         ((eq sym 'core::intrinsic-call) t) ;; Call intrinsic functions
          (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
@@ -1283,8 +1311,8 @@ be wrapped with to make a closure"
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder 1)
       (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-pass))
       (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
-;;      (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
-      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm nil)
+;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
+      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
       (llvm-sys:do-initialization fpm)
       (let ((funcs (llvm-sys:module-get-function-list module)))
         (dolist (func funcs)

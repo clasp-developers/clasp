@@ -70,6 +70,7 @@ CL_DEFUN T_sp cl__elt(T_sp sequence, int index) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
+#if 0
 CL_LAMBDA(type size &key (initial-element nil iesp));
 CL_DECLARE();
 CL_DOCSTRING("make_sequence");
@@ -92,6 +93,7 @@ CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element,
 	return(Values(_Nil<T_O>()));
 #endif
 };
+#endif
 
 CL_LAMBDA(seq);
 CL_DECLARE();

@@ -89,5 +89,4 @@ CL_DEFMETHOD   virtual T_sp currentObject() {
   DEFAULT_CTOR_DTOR(Iterator_O);
 };
 };
-TRANSLATE(core::Iterator_O);
 #endif //]

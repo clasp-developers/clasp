@@ -81,7 +81,7 @@ gc::Fixnum HashTableEqual_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddK
   HashGenerator hg;
 #endif
 #ifdef USE_MPS
-  HashTable_O::sxhash_equal(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependencyTracker)) : NULL);
+  HashTable_O::sxhash_equal(hg, obj, willAddKey ? const_cast<mps_ld_t>(&(this->_LocationDependency)) : NULL);
 #else
   HashTable_O::sxhash_equal(hg, obj, NULL);
 #endif

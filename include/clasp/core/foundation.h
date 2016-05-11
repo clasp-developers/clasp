@@ -70,7 +70,8 @@ class type_info;
 
 #include <map>
 
-#define CLASP_MAIN_FUNCTION_NAME "CLASP_MAIN"
+#define GLOBAL_BOOT_FUNCTIONS_NAME "global-run-all-array"
+#define GLOBAL_EPILOGUE_NAME "global-epilogue"
 
 #define VARARGS
 
@@ -326,6 +327,7 @@ const handleType UniqueIdHandle = 1;
 #include <set>
 #include <ostream>
 #include <iostream>
+#include <sstream>
 #include <boost/format.hpp>
 
 using string = std::string;
@@ -346,14 +348,31 @@ using set = std::set<X>;
 template <typename X>
 using deque = std::deque<X>;
 
-#if defined(USE_REFCOUNT)
-namespace boost {
-template <class T>
-void intrusive_ptr_add_ref(T *p);
-template <class T>
-void intrusive_ptr_release(T *p);
-};
+
+
+#ifdef WIN32
+#include <limits>
+typedef __int64 LongLongInt;
+#define LongLongMax LLONG_MAX
+#define myMAXFLOAT FLT_MAX
+#define atoll(x) (_atoi64(x))
+#elif __PGI
+#include <math.h>
+#include <limits.h>
+typedef long long int LongLongInt;
+#define LongLongMax LONGLONG_MAX
+#define myMAXFLOAT HUGE
+#else
+#include <math.h>
+typedef long long int LongLongInt;
+#define LongLongMax LLONG_MAX
+#define myMAXFLOAT HUGE
 #endif
+
+#define LongLongMaxScale 4096 // was 256
+#define LongLongIntBoundary LongLongMax / LongLongMaxScale
+
+
 
 /* --------------------------------------------------
    --------------------------------------------------
@@ -379,7 +398,6 @@ void intrusive_ptr_release(T *p);
 namespace core {
 class T_O;
 typedef T_O FIXNUM;
-typedef T_O STACK_FRAME;
 class Cons_O;
 class General_O;
 class Pointer_O;
@@ -508,9 +526,7 @@ void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
 }
 
 namespace core {
-struct ThreadInfo;
 class MultipleValues;
-void lisp_setThreadLocalInfoPtr(ThreadInfo *address);
 MultipleValues &lisp_multipleValues();
 MultipleValues &lisp_callArgs();
 };
@@ -527,7 +543,9 @@ struct return_type {
   core::T_O *ret0;
   size_t nvals;
   return_type() : ret0(NULL), nvals(0){};
-  return_type(core::T_O *r0, size_t nv) : ret0(r0), nvals(nv){};
+  return_type(core::T_O *r0, size_t nv) : ret0(r0), nvals(nv) {};
+  template <typename T>
+  return_type(T* r0, size_t nv) : ret0(reinterpret_cast<core::T_O*>(r0)), nvals(nv) {};
 };
 };
 
@@ -546,6 +564,7 @@ typedef gctools::smart_ptr<T_O> T_sp;
 typedef T_sp SEQUENCE_sp;
 typedef T_sp LIST_sp;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
+typedef gctools::smart_ptr<Vector_O> Vector_sp;
 typedef gctools::smart_ptr<VectorObjects_O> VectorObjects_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;
@@ -1035,7 +1054,141 @@ core::T_sp lisp_registerSourcePosInfo(T_sp obj, SourcePosInfo_sp spi);
 
 };
 namespace core {
-  struct ThreadLocalState;
+  class DynamicBinding {
+  public:
+    Symbol_sp _Var;
+    T_sp _Val;
+  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
+  };
+
+/*! Exception stack information */
+
+  typedef enum { NullFrame,
+                 CatchFrame,
+                 BlockFrame,
+                 TagbodyFrame,
+                 LandingPadFrame } FrameKind;
+/*! Store the information for the exception 
+      For CatchThrow:   _Obj1
+    */
+  class ExceptionEntry {
+  public:
+  ExceptionEntry() : _FrameKind(NullFrame), _Key(_Nil<T_O>()){};
+  ExceptionEntry(FrameKind k, T_sp key) : _FrameKind(k), _Key(key){};
+    FrameKind _FrameKind;
+    T_sp _Key;
+  };
+
+
+};
+
+namespace core {
+
+#pragma GCC visibility push(default)
+  class DynamicBindingStack {
+  public:
+    gctools::Vec0<DynamicBinding> _Bindings;
+  public:
+    inline int top() const { return this->_Bindings.size() - 1; }
+    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
+    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
+    T_sp val(int i) const { return this->_Bindings[i]._Val; };
+    ATTR_WEAK void push(Symbol_sp var);
+    ATTR_WEAK void pop();
+    void reserve(int x) { this->_Bindings.reserve(x); };
+    int size() const { return this->_Bindings.size(); };
+  };
+#pragma GCC visibility pop
+};
+
+namespace core {
+
+class ExceptionStack {
+public:
+  gctools::Vec0<ExceptionEntry> _Stack;
+public:
+  ExceptionEntry &operator[](int i) { return this->_Stack[i]; };
+  size_t size() const { return this->_Stack.size(); };
+  string summary() {
+    std::stringstream ss;
+    ss << "ExceptionStackSummary: depth[" << this->size() << "] ";
+    for (int idx = this->size() - 1; idx >= 0; --idx) {
+      FrameKind fk = this->_Stack[idx]._FrameKind;
+      char frameChar;
+      switch (fk) {
+      case NullFrame:
+        frameChar = 'N';
+        break;
+      case CatchFrame:
+        frameChar = 'C';
+        break;
+      case BlockFrame:
+        frameChar = 'B';
+        break;
+      case TagbodyFrame:
+        frameChar = 'T';
+        break;
+      case LandingPadFrame:
+        frameChar = 'L';
+        break;
+      default:
+        frameChar = 'u';
+        break;
+      }
+      ss << frameChar << idx;
+      if (this->_Stack[idx]._Key.notnilp()) {
+        ss << "{@" << (void *)this->_Stack[idx]._Key.raw_() << "}";
+      }
+      ss << " ";
+    };
+    return ss.str();
+  };
+
+  inline size_t push(FrameKind kind, T_sp key) {
+    size_t frame = this->_Stack.size();
+    this->_Stack.emplace_back(kind, key);
+    return frame;
+  }
+  inline void pop() {
+    this->_Stack.pop_back();
+  };
+  /*! Return the index of the stack entry with the matching key.
+          If return -1 then the key wasn't found */
+  int findKey(FrameKind kind, T_sp key);
+  T_sp backKey() const { return this->_Stack.back()._Key; };
+  void unwind(size_t newTop) { this->_Stack.resize(newTop); };
+  Vector_sp backtrace();
+};
+};
+
+
+namespace core {
+  struct InvocationHistoryFrame;
+  
+  struct ThreadLocalState {
+    ThreadLocalState() {
+      this->_Bindings.reserve(1024);
+      this->_InvocationHistoryStack = NULL;
+    };
+    DynamicBindingStack _Bindings;
+    InvocationHistoryFrame* _InvocationHistoryStack;
+    ExceptionStack _ExceptionStack;
+    MultipleValues _MultipleValues;
+
+    inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
+    inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
+  };
+
+};
+
+/*! Should be thread_local on linux or __thread on OS X */
+#define THREAD_LOCAL
+
+/*! Declare this in the top namespace */
+extern THREAD_LOCAL core::ThreadLocalState *my_thread;
+
+
+namespace core {
   class InvocationHistoryStack;
   class InvocationHistoryFrame;
   InvocationHistoryStack* thread_local_invocation_history_stack();
@@ -1043,7 +1196,6 @@ namespace core {
   void thread_local_invocation_history_stack_push_frame(InvocationHistoryFrame* frame);
   int thread_local_invocation_bindings_size();
 };
-extern thread_local core::ThreadLocalState* thread;
 
 
 
@@ -1175,56 +1327,6 @@ typedef va_list clasp_va_list;
 #define clasp_va_start va_start
 List_sp clasp_grab_rest_args(va_list args, int nargs);
 #define clasp_va_end va_end
-};
-
-
-#if 1
-namespace core {
-  class DynamicBinding {
-  public:
-    Symbol_sp _Var;
-    T_sp _Val;
-  DynamicBinding(Symbol_sp sym, T_sp val) : _Var(sym), _Val(val){};
-  };
-
-#pragma GCC visibility push(default)
-  class DynamicBindingStack {
-  public:
-    gctools::Vec0<DynamicBinding> _Bindings;
-
-  public:
-    inline int top() const { return this->_Bindings.size() - 1; }
-
-    Symbol_sp topSymbol() const { return this->_Bindings.back()._Var; };
-
-    Symbol_sp var(int i) const { return this->_Bindings[i]._Var; };
-    T_sp val(int i) const { return this->_Bindings[i]._Val; };
-
-    ATTR_WEAK void push(Symbol_sp var);
-    ATTR_WEAK void pop();
-
-    void reserve(int x) { this->_Bindings.reserve(x); };
-
-    int size() const { return this->_Bindings.size(); };
-  };
-#pragma GCC visibility pop
-};
-#endif
-
-
-namespace core {
-  struct ThreadLocalState {
-    ThreadLocalState() {
-      this->_Bindings.reserve(1024);
-    };
-    DynamicBindingStack _Bindings;
-    InvocationHistoryStack _InvocationHistoryStack;
-    ExceptionStack _ExceptionStack;
-
-    inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
-    inline InvocationHistoryStack& invocationHistoryStack() { return this->_InvocationHistoryStack; };
-    inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
-  };
 };
 
 

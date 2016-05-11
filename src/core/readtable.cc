@@ -140,7 +140,7 @@ CL_DEFUN T_mv cl__get_dispatch_macro_character(Character_sp dispChar, Character_
   return (Values(readtable->get_dispatch_macro_character(dispChar, subChar)));
 };
 
-CL_LAMBDA(ch func_desig &optional non-terminating-p (readtable *readtable*));
+CL_LAMBDA(ch func-desig &optional non-terminating-p (readtable *readtable*));
 CL_DECLARE();
 CL_DOCSTRING("setMacroCharacter");
 CL_DEFUN T_mv cl__set_macro_character(Character_sp ch, T_sp func_desig, T_sp non_terminating_p, ReadTable_sp readtable) {
@@ -277,10 +277,12 @@ CL_DEFUN T_mv core__reader_skip_semicolon_comment(T_sp sin, Character_sp ch) {
   stringstream str;
   bool done = false;
   while (!done) {
-    Character_sp nc = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true()));
+    T_sp tc = cl__read_char(sin, _Nil<core::T_O>(), _sym_eof_value, _lisp->_true());
+    if ( tc == _sym_eof_value ) break;
+    ASSERT(tc.characterp());
+    Character_sp nc = gctools::reinterpret_cast_smart_ptr<Character_sp>(tc);
     char cc = clasp_as_char(nc);
-    if (cc == '\n')
-      break;
+    if (cc == '\n') break;
   }
   // Return one value in a MultipleValues object to indicate that something is being returned
   return (Values0<T_O>());
@@ -967,9 +969,11 @@ T_sp ReadTable_O::make_dispatch_macro_character(Character_sp ch, T_sp non_termin
 
 T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char,
                                                T_sp new_func_desig) {
+#if 0
   if (this->get_macro_character(disp_char) != _sym_dispatch_macro_character->symbolFunction()) {
     SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char));
   }
+#endif
   HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_char_upcase(sub_char);
@@ -995,9 +999,11 @@ T_sp ReadTable_O::set_dispatch_macro_character(Character_sp disp_char, Character
 
 T_sp ReadTable_O::get_dispatch_macro_character(Character_sp disp_char, Character_sp sub_char) {
   _OF();
+#if 0
   if (this->get_macro_character(disp_char) != _sym_dispatch_macro_character->symbolFunction()) {
-    SIMPLE_ERROR(BF("%c is not a dispatch character") % _rep_(disp_char));
+    SIMPLE_ERROR(BF("%c is not a dispatch character - there is a mismatch between this->get_macro_character(disp_char)-> %s and _sym_dispatch_macro_character->symbolFunction()->%s") % _rep_(disp_char) % _rep_(this->get_macro_character(disp_char)) % _rep_(_sym_dispatch_macro_character->symbolFunction()));
   }
+#endif
   HashTable_sp dispatch_table = this->_DispatchMacroCharacters->gethash(disp_char);
   ASSERTF(dispatch_table.notnilp(), BF("The dispatch table for the character[%s] is nil! - this shouldn't happen") % _rep_(disp_char));
   Character_sp upcase_sub_char = clasp_char_upcase(sub_char);

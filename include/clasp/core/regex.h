@@ -93,7 +93,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::Regex_O);
-TRANSLATE(core::RegexMatch_O);
 
 #endif /* _core_Regex_H */

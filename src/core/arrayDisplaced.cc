@@ -100,19 +100,16 @@ T_sp ArrayDisplaced_O::rowMajorAref(cl_index idx) const {
   return ((this->_Array->rowMajorAref(idx + this->_DisplacedIndexOffset)));
 };
 
-T_sp ArrayDisplaced_O::aref(List_sp indices) const {
-  _OF();
-  LOG(BF("indices[%s]") % _rep_(indices));
-  int index = this->index(indices);
+T_sp ArrayDisplaced_O::aref(VaList_sp indices) const {
+  int index = this->index_(indices);
   return ((this->rowMajorAref(index)));
 }
 
 T_sp ArrayDisplaced_O::setf_aref(List_sp indices_val) {
-  _OF();
-  List_sp val_cons;
-  LongLongInt index = this->index_val(indices_val, true, val_cons);
-  this->aset_unsafe(index, oCar(val_cons));
-  return ((oCar(val_cons)));
+  T_sp val;
+  LongLongInt index = this->index_val_(indices_val, true, val);
+  this->aset_unsafe(index, val );
+  return val;
 }
 
 T_sp ArrayDisplaced_O::shallowCopy() const {

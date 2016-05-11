@@ -48,7 +48,7 @@ public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(DebugLoc_O);
 
 public:
-  static DebugLoc_sp get(int lineno, int column, DebugInfo_sp debugInfo);
+  static DebugLoc_sp get(int lineno, int column, DINode_sp debugInfo);
 
 private: // instance variables here
   llvm::DebugLoc _DebugLoc;
@@ -63,6 +63,5 @@ CL_DEFMETHOD   uint getCol() const { return this->_DebugLoc.getCol(); };
 }; // DebugLoc class
 
 }; // llvmo namespace
-TRANSLATE(llvmo::DebugLoc_O);
 
 #endif /* _llvmo_debugLoc_H_ */

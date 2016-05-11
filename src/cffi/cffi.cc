@@ -348,7 +348,7 @@ CL_DEFMETHOD core::T_sp Pointer_O::PERCENTmem_ref(core::Symbol_sp atype, core::I
 
 CL_LISPIFY_NAME("CFFI-SYS:PERCENTsetf_mem_ref");
 CL_DEFMETHOD core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, core::Cons_sp rest) {
-  core::LongLongInt offset = 0;
+  LongLongInt offset = 0;
   core::T_sp value;
   if (rest->length() == 1) {
     value = oCar(rest);
@@ -362,7 +362,7 @@ CL_DEFMETHOD core::T_sp Pointer_O::PERCENTsetf_mem_ref(core::Symbol_sp atype, co
       *(char *)(ptr) = clasp_as_char(gc::As<core::Character_sp>(value));
       return value;
     } else if (cl__integerp(value)) {
-      core::LongLongInt lli = clasp_to_int(gc::As<core::Integer_sp>(value));
+      LongLongInt lli = clasp_to_int(gc::As<core::Integer_sp>(value));
       *(char *)(ptr) = lli;
       return value;
     }

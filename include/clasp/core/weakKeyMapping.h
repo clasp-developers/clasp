@@ -62,6 +62,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::WeakKeyMapping_O);
 
 #endif /* _core_WeakKeyMapping_H */

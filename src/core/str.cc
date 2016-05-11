@@ -198,10 +198,11 @@ T_sp Str_O::aset_unsafe(int index, T_sp val) {
   return val;
 }
 
-T_sp Str_O::aref(List_sp indices) const {
-  _OF();
-  ASSERTF(cl__length(indices) == 1, BF("Illegal index for string: %s") % _rep_(indices));
-  int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
+T_sp Str_O::aref(VaList_sp indices) const {
+  ASSERT(LCC_VA_LIST_NUMBER_OF_ARGUMENTS(indices) == 1);
+  core::T_sp arg0 = LCC_NEXT_ARG(indices,0);
+  ASSERT(arg0.fixnump());
+  size_t index = arg0.unsafe_fixnum();
   if (index < 0 || index >= this->size()) {
     SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
   }
@@ -209,7 +210,6 @@ T_sp Str_O::aref(List_sp indices) const {
 }
 
 T_sp Str_O::setf_aref(List_sp indices_val) {
-  _OF();
   ASSERTF(cl__length(indices_val) == 2, BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val));
   int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices_val)));
   return this->setf_elt(index, oCadr(indices_val));

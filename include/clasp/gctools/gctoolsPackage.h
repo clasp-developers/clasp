@@ -31,8 +31,6 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/gctools/gctoolsPackage.fwd.h>
 
-NAMESPACE_PACKAGE_ASSOCIATION(gctools, GcToolsPkg, "GCTOOLS")
-
 namespace gctools {
 
 extern bool _GlobalDebugAllocations;

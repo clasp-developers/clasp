@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/bignum.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/character.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/vectorObjectsWithFillPtr.h>
@@ -454,13 +453,6 @@ CL_DEFUN bool core__is_true(T_sp arg) {
   return arg.isTrue();
 };
 
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING("substitute");
-CL_DEFUN T_mv core__substitute() {
-  IMPLEMENT_MEF(BF("Implement substitute"));
-};
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("Return the UNBOUND value");
@@ -489,12 +481,9 @@ CL_DEFUN T_mv core__smart_pointer_details() {
 CL_LAMBDA(&va-rest args);
 CL_DECLARE();
 CL_DOCSTRING("values");
-CL_DEFUN T_mv cl__values(T_sp args) {
+CL_DEFUN T_mv cl__values(VaList_sp vargs) {
   // returns multiple values
-  if (!args.valistp()) {
-    SIMPLE_ERROR(BF("arg must be valist"));
-  }
-  VaList_sp vargs = gctools::As<VaList_sp>(args);
+  ASSERT(vargs.valistp());
   size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   if (nargs >= core::MultipleValues::MultipleValuesLimit) {
     SIMPLE_ERROR(BF("Too many arguments to values - only %d are supported and you tried to return %d values") % core::MultipleValues::MultipleValuesLimit % nargs );
@@ -732,6 +721,9 @@ CL_LAMBDA(&optional fmt-control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version");
 CL_DEFUN void core__break(T_sp fmt, List_sp args) {
+  int frame = core__ihs_top();
+  T_sp tframe = clasp_make_fixnum(frame);
+  DynamicScopeManager scope(_sym_STARstack_top_hintSTAR,tframe);
   if (fmt.notnilp()) {
     cl__format(_lisp->_true(), gc::As<Str_sp>(fmt), args);
   }
@@ -752,13 +744,6 @@ CL_DEFUN void core__gdb(T_sp msg) {
   core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("Return the number of times lambdaListHandler_createBindings");
-CL_DEFUN Integer_sp core__cxx_lambda_list_handler_create_bindings_calls() {
-  size_t calls = threadLocalInfoPtr->_lambda_list_handler_create_bindings_count;
-  return Integer_O::create((Fixnum)calls);
-};
 
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
@@ -813,7 +798,7 @@ CL_DEFUN T_mv cl__identity(T_sp arg) {
   return (Values(arg));
 };
 
-CL_LAMBDA(macro_function form macro_env);
+CL_LAMBDA(macro-function form macro-env);
 CL_DECLARE();
 CL_DOCSTRING("macroexpand_default Default value of *macroexpand-hook*");
 CL_DEFUN T_mv core__macroexpand_default(Function_sp macro_function, T_sp form, T_sp macro_env) {
@@ -859,6 +844,7 @@ CL_DEFUN Class_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
+SYMBOL_EXPORT_SC_(CorePkg,STARdebug_fsetSTAR);
 CL_LAMBDA(function-name fn &optional is-macro pretty-print (lambda-list nil lambda-list-p));
 CL_DECLARE();
 CL_DOCSTRING(R"doc(* Arguments
@@ -867,11 +853,20 @@ CL_DOCSTRING(R"doc(* Arguments
 - is-macro :: A boolean.
 - pretty-print : A boolean.
 - lambda-list : A lambda-list or nil.
+- lambda-list-p : T if lambda-list is passed
 * Description
 Bind a function to the function slot of a symbol
 - handles symbol function-name and (SETF XXXX) names. 
-IS-MACRO defines if the function is a macro or not. PRETTY-PRINT was inherited from ecl - I don't know what its for.  LAMBDA-LIST passes the lambda-list.)doc");
+IS-MACRO defines if the function is a macro or not. 
+PRETTY-PRINT was inherited from ecl - I don't know what its for.  
+LAMBDA-LIST passes the lambda-list.)doc");
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
+#ifdef DEBUG_DRAG
+  if (_sym_STARdebug_fsetSTAR->symbolValue().isTrue()) {
+    printf("%s:%d FSET called with\n   functionName: %s\n   function: %s\n   is_macro: %s\n   pretty_print: %s\n   lambda_list: %s\n   lambda_list_p: %s\n",
+           __FILE__, __LINE__, _rep_(functionName).c_str(), _rep_(functor).c_str(), _rep_(is_macro).c_str(), _rep_(pretty_print).c_str(), _rep_(lambda_list).c_str(), _rep_(lambda_list_p).c_str());
+  }
+#endif // DEBUG_DRAG
   if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
     if (is_macro.isTrue()) {
       functionObject->set_kind(kw::_sym_macro);
@@ -1156,7 +1151,7 @@ CL_DEFUN T_sp cl__notevery(T_sp predicate, List_sp sequences) {
 */
 SYMBOL_EXPORT_SC_(ClPkg, mapcar);
 
-CL_LAMBDA(func_desig &rest lists);
+CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS for mapcar");
 CL_DEFUN T_sp cl__mapcar(T_sp func_desig, List_sp lists) {
@@ -1207,7 +1202,7 @@ CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
   return oCar(lists);
 }
 
-CL_LAMBDA(func_desig &rest lists);
+CL_LAMBDA(func-desig &rest lists);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
@@ -1601,15 +1596,21 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
         return;
       --num;
     }
-    iterator->setFrame(iterator->frame()->previous());
+    iterator->move_to_previous_frame();
   } while (num >= 0);
+}
+
+int backtrace_length(InvocationHistoryFrame* frame) {
+  int length = 0;
+  while (frame = frame->previous() ) {++length;};
+  return length;
 }
 
 CL_LISPIFY_NAME(make-invocation-history-frame-iterator);
 CL_DEFUN InvocationHistoryFrameIterator_sp InvocationHistoryFrameIterator_O::make(Fixnum first, T_sp test) {
-  InvocationHistoryFrame *cur = thread->invocationHistoryStack().top();
-  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create();
-  iterator->setFrame(cur);
+  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  int length = backtrace_length(top);
+  InvocationHistoryFrameIterator_sp iterator = InvocationHistoryFrameIterator_O::create(top,length);
   nextInvocationHistoryFrameIteratorThatSatisfiesTest(first, iterator, test);
   return iterator;
 }
@@ -1625,7 +1626,7 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::functionName() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure;
+  Function_sp closure = this->_Frame->function();
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1637,25 +1638,22 @@ CL_DEFMETHOD T_sp InvocationHistoryFrameIterator_O::environment() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure;
-  if (!closure) {
-    SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
-  }
-  return closure->closedEnvironment();
+  T_sp closure = this->_Frame->function();
+  return closure;
 }
 
 int InvocationHistoryFrameIterator_O::index() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  return this->_Frame->index();
+  return this->_Index;
 }
 
 Function_sp InvocationHistoryFrameIterator_O::function() {
   if (!this->isValid()) {
     SIMPLE_ERROR(BF("Invalid InvocationHistoryFrameIterator"));
   }
-  Closure_sp closure = this->_Frame->closure;
+  Function_sp closure = this->_Frame->function();
   if (!closure) {
     SIMPLE_ERROR(BF("Could not access closure of InvocationHistoryFrame"));
   }
@@ -1676,13 +1674,14 @@ SYMBOL_SC_(CorePkg, makeInvocationHistoryFrameIterator);
 ;
 
 
+SYMBOL_EXPORT_SC_(CorePkg, STARbacktraceFrameSelectorHookSTAR);
+SYMBOL_EXPORT_SC_(KeywordPkg, next);
+SYMBOL_EXPORT_SC_(KeywordPkg, prev);
+
 CL_LAMBDA(idx direction);
 CL_DECLARE();
 CL_DOCSTRING("getInvocationHistoryFrameSearch - Return an InvocationHistoryFrame as an iterator. If idx == NIL return the top frame. If idx>=0 return the frame that satisfies *backtrace-frame-selector-hook* that has the index idx if direction==NIL, or if direction==:PREV return the frame previous to it (away from the top) or if direction==:NEXT the next frame (towards the top). *backtrace-frame-selector-hook* is a function that takes an invocation-history-frame-iterator and returns true if it should be in the backtrace. Test the result to make sure it is valid.");
 CL_DEFUN InvocationHistoryFrameIterator_sp core__get_invocation_history_frame_search(T_sp idx, Symbol_sp direction) {
-  SYMBOL_EXPORT_SC_(CorePkg, STARbacktraceFrameSelectorHookSTAR);
-  SYMBOL_EXPORT_SC_(KeywordPkg, next);
-  SYMBOL_EXPORT_SC_(KeywordPkg, prev);
   T_sp backtraceFrameSelectorHook = core::_sym_STARbacktraceFrameSelectorHookSTAR->symbolValue();
   InvocationHistoryFrameIterator_sp top = InvocationHistoryFrameIterator_O::make(0, backtraceFrameSelectorHook);
   if (idx.nilp())
@@ -1751,8 +1750,7 @@ CL_DECLARE();
 CL_DOCSTRING("ihsTop");
 CL_DEFUN int core__ihs_top() {
   InvocationHistoryFrameIterator_sp top = core__get_invocation_history_frame_top();
-  if (!top->isValid())
-    return 0;
+  if (!top->isValid()) return 0;
   return top->index();
 };
 
@@ -1801,9 +1799,12 @@ CL_DECLARE();
 CL_DOCSTRING("ihsEnv");
 CL_DEFUN T_sp core__ihs_env(int idx) {
   InvocationHistoryFrameIterator_sp cur = core__get_invocation_history_frame(idx);
+  return _Nil<T_O>();
+#if 0
   if (!cur->isValid())
     return _Nil<T_O>();
   return cur->environment();
+#endif
 };
 
 CL_LAMBDA(cur);
@@ -1853,35 +1854,35 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("bdsTop");
 CL_DEFUN int core__bds_top() {
-  return thread->bindings().top();
+  return my_thread->bindings().top();
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVar");
 CL_DEFUN Symbol_sp core__bds_var(int idx) {
-  return thread->bindings().var(idx);
+  return my_thread->bindings().var(idx);
 };
 
 CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("bdsVal");
 CL_DEFUN T_sp core__bds_val(int idx) {
-  return thread->bindings().val(idx);
+  return my_thread->bindings().val(idx);
 };
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStack");
 CL_DEFUN Vector_sp core__exception_stack() {
-  return thread->exceptionStack().backtrace();
+  return my_thread->exceptionStack().backtrace();
 }
 
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("exceptionStackDump");
 CL_DEFUN void core__exception_stack_dump() {
-  ExceptionStack &stack = thread->exceptionStack();
+  ExceptionStack &stack = my_thread->exceptionStack();
   printf("Exception stack size: %zu members\n", stack.size());
   for (int i(0); i < stack.size(); ++i) {
     string kind;
@@ -1908,7 +1909,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("dynamicBindingStackDump");
 CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
-  DynamicBindingStack &bd = thread->bindings();
+  DynamicBindingStack &bd = my_thread->bindings();
   for (int i(0), iEnd(bd.size()); i < iEnd; ++i) {
     out << "  dbstack[" << i << " --> " << _rep_(bd.var(i)) << std::endl;
   };
@@ -1927,12 +1928,67 @@ CL_DEFUN T_sp core__ihs_backtrace(T_sp outputDesignator, T_sp msg) {
   if (!msg.nilp()) {
     clasp_writeln_string(((BF("\n%s") % _rep_(msg)).str()), ss);
   }
-  clasp_writeln_string(((BF("%s") % thread->invocationHistoryStack().asString()).str()), ss);
+  clasp_writeln_string((BF("%s") % backtrace_as_string()).str(),ss);
   if (outputDesignator.nilp()) {
     return cl__get_output_stream_string(ss);
   }
   return _Nil<T_O>();
 };
+};
+
+namespace core {
+
+
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionLambdaList");
+CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
+  if (obj.nilp()) {
+    return Values(_Nil<T_O>(), _Nil<T_O>());
+  } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
+    if (!sym->fboundp()) {
+      return Values(_Nil<T_O>(), _Nil<T_O>());
+    }
+    Function_sp fn = sym->symbolFunction();
+    return Values(fn->lambda_list(), _lisp->_true());
+  } else if (NamedFunction_sp func = obj.asOrNull<NamedFunction_O>()) {
+    return Values(func->lambda_list(), _lisp->_true());
+  }
+  return Values(_Nil<T_O>(), _Nil<T_O>());
+}
+
+CL_LAMBDA(function);
+CL_DECLARE();
+CL_DOCSTRING("functionSourcePosInfo");
+CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
+  Closure_sp closure = coerce::closureDesignator(functionDesignator);
+  gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
+  return sourcePosInfo;
+}
+
+CL_LAMBDA(fn kind);
+CL_DECLARE();
+CL_DOCSTRING("set the kind of a function object (:function|:macro)");
+CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
+  if ( NamedFunction_sp func = fn.asOrNull<NamedFunction_O>() ) {
+    fn->set_kind(kind);
+    return;
+  }
+  if ( kind == kw::_sym_function ) return; // by default everything is a function
+  SIMPLE_ERROR(BF("You cannot set the kind: %s of a Function_O object") % _rep_(kind));
+};
+
+CL_LISPIFY_NAME("core:functionSourcePos");
+CL_DEFMETHOD T_mv Function_O::functionSourcePos() const {
+  T_sp spi = this->sourcePosInfo();
+  T_sp sfi = core__source_file_info(spi);
+  if (sfi.nilp() || spi.nilp()) {
+    return Values(sfi, make_fixnum(0), make_fixnum(0));
+  }
+  return Values(sfi, make_fixnum(gc::As<SourcePosInfo_sp>(spi)->filepos()), make_fixnum(gc::As<SourcePosInfo_sp>(spi)->lineno()));
+}
+
+
 };
 
 

@@ -15,4 +15,4 @@
 	url = https://github.com/clasp-developers/build
 [submodule "src/mps"]
 	path = src/mps
-	url = git@github.com:Ravenbrook/mps.git
+	url = https://github.com/Ravenbrook/mps.git

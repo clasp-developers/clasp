@@ -34,8 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 //#include "model.h"
-#include <clasp/core/executables.fwd.h>
-#include <clasp/core/lisp.h>
+//#include <clasp/core/lisp.h>
 
 #include <clasp/core/standardObject.h>
 #include <clasp/core/environment.h>
@@ -54,5 +53,4 @@ public:
   virtual ~Metaobject_O(){};
 };
 };
-TRANSLATE(core::Metaobject_O);
 #endif //]

@@ -74,7 +74,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
   virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]); };
   virtual T_sp elementType() const;
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   /*! Return the value at the indices */
   virtual T_sp setf_aref(List_sp indices_val);
 
@@ -193,11 +193,12 @@ struct gctools::GCInfo<core::Str_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::Str_O);
 
 namespace core {
 T_sp core__base_string_concatenate(T_sp vargs);
 
+ #if 0
+ // What the hell am I doing here - comment out and see what breaks
 inline T_sp base_string_concatenate(LCC_ARGS_ELLIPSIS) {
   VaList_S lcc_arglist_s;
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
@@ -205,7 +206,10 @@ inline T_sp base_string_concatenate(LCC_ARGS_ELLIPSIS) {
   VaList_sp valist_sp(&lcc_arglist_s);
   return core__base_string_concatenate(valist_sp);
 };
+#endif
 
+
+ 
 inline claspChar clasp_char(Str_sp s, Fixnum pos) { return s->schar(pos); };
 };
 

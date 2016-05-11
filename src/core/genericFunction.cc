@@ -208,15 +208,15 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
   va_list cargs;
   va_copy(cargs, (*vargs)._Args);
   int narg = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
-  T_sp spec_how_list = gf->GFUN_SPECIALIZERS();
   // cl_object *argtype = vector->vector.self.t; // ??
   gctools::Vec0<T_sp> &argtype = vektor;
   argtype[0] = gf;
   int spec_no = 1;
-  for (; spec_how_list.notnilp(); spec_how_list = oCdr(spec_how_list)) {
-    List_sp spec_how = oCar(spec_how_list);
-    T_sp spec_type = oCar(spec_how);
-    int spec_position = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(spec_how)));
+  for (T_sp spec_how_list = gf->GFUN_SPECIALIZERS(); spec_how_list.consp(); spec_how_list = cons_cdr(spec_how_list)) {
+    List_sp spec_how = cons_car(spec_how_list);
+    T_sp spec_type = cons_car(spec_how);
+    ASSERT(cons_cdr(spec_how).fixnump());
+    int spec_position = unbox_fixnum(cons_cdr(spec_how));
     if (spec_position >= narg) {
       SIMPLE_ERROR(BF("Insufficient arguments for %s - expected specializer argument at "
                       "position %d of specializer-type %s but only %d arguments were passed") %
@@ -228,16 +228,10 @@ gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vekto
     // https://gitlab.com/embeddable-common-lisp/ecl/commit/85165d989a563abdf0e31e14ece2e97b5d821187?view=parallel
     // I'm duplicating the fix here - there is also a change in lisp.cc
     T_sp spec_position_arg = T_sp((gc::Tagged)va_arg(cargs, T_O *));
-    List_sp eql_spec;
-    if (cl__listp(spec_type) &&
-        (eql_spec = gc::As<Cons_sp>(spec_type)->memberEql(spec_position_arg)).notnilp()) {
+    List_sp eql_spec = _Nil<core::T_O>();
+    if (spec_type.consp() && (eql_spec = spec_type.unsafe_cons()->memberEql(spec_position_arg)).notnilp()) {
 // For immediate types we need to make sure that EQL will be true
-#if 1
       argtype[spec_no++] = eql_spec;
-#else
-      argtype[spec_no++] = spec_position_arg;
-      argtype[spec_no++] = _lisp->_true();
-#endif
     } else {
       Class_sp mc = lisp_instance_class(spec_position_arg);
       argtype[spec_no++] = mc;
@@ -268,7 +262,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
   ASSERT(e != NULL);
   Function_sp func;
   if (e->_key.notnilp()) {
-    func = gc::As<Function_sp>(e->_value);
+    func = gc::reinterpret_cast_smart_ptr<Function_O>(e->_value);
   } else {
     /* The keys and the cache may change while we
 	     * compute the applicable methods. We must save
@@ -276,7 +270,7 @@ LCC_RETURN standard_dispatch(T_sp gf, VaList_sp arglist, Cache_sp cache) {
 	     * it was filled. */
     T_sp keys = VectorObjects_O::create(vektor);
     T_mv mv = compute_applicable_method(gf, arglist);
-    func = gc::As<Function_sp>(mv);
+    func = Function_sp((gc::Tagged)mv.raw_());
     if (mv.valueGet_(1).notnilp()) {
       if (e->_key.notnilp()) {
         try {

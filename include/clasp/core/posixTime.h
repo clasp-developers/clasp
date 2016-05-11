@@ -113,8 +113,6 @@ public:
   DEFAULT_CTOR_DTOR(PosixTimeDuration_O);
 };
 };
-TRANSLATE(core::PosixTime_O);
-TRANSLATE(core::PosixTimeDuration_O);
 
 namespace core {
 

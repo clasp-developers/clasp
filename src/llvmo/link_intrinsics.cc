@@ -197,30 +197,13 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
   va_start(lcc_arglist_s._Args, LCC_VA_START_ARG);
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   core::T_O *lcc_arglist = lcc_arglist_s.asTaggedPtr();
-  core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_func));
+#ifdef _DEBUG_BUILD
+  VaList_S saved_arglist_s(lcc_arglist_s);
+  core::T_O* debug_lcc_arglist = saved_arglist_s.asTaggedPtr();
+#endif
+  core::Function_O *func = reinterpret_cast<Function_O *>(gctools::untag_general(lcc_closure));
   return func->invoke_va_list(LCC_PASS_ARGS);
 }
-
-ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure_O *closure, core::T_sp *argsP) {
-  List_sp args(*argsP);
-  size_t nargs = core::cl__length(args);
-  STACK_FRAME(buff, fargs, nargs);
-  for (int i(nargs - 1); i >= 0; --i) {
-    fargs[i] = oCar(args).raw_();
-    args = oCdr(args);
-  }
-  LCC_CALL_WITH_ARGS_IN_FRAME(result, closure, fargs);
-  return result;
-}
-
-ALWAYS_INLINE void mv_FUNCALL_argsInReversedList(core::T_mv *resultP, core::Closure_O *closure, core::T_sp *argsP) {
-  (*resultP) = FUNCALL_argsInReversedList(closure, argsP);
-}
-
-ALWAYS_INLINE void sp_FUNCALL_argsInReversedList(core::T_sp *resultP, core::Closure_O *closure, core::T_sp *argsP) {
-  (*resultP) = FUNCALL_argsInReversedList(closure, argsP);
-}
-
 __attribute__((visibility("default"))) core::T_O *cc_gatherRestArguments(std::size_t nargs, VaList_S *vargs, std::size_t startRest, char *fnName) {
   VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
   va_list rargs;
@@ -508,7 +491,10 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             size_t lineno,
                             size_t column,
                             core::LoadTimeValues_O **ltvPP) {
+  ASSERT(ltvPP != NULL);
+#if 0
   ActivationFrame_sp frame = (*frameP);
+#endif
   core::Str_sp name = core::Str_O::create(cpname);
 #if 1
   FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
@@ -521,12 +507,12 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
   core::BuiltinClosure_sp tc(&tempClosure);
 #endif
+#if 0
   STACK_FRAME(buff, no_args, 0);
   VaList_S empty_valist(no_args);
   core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
-  core::InvocationHistoryFrame invFrame(tc, empty_valist_ptr, *frameP);
-  core::T_sp closedEnv = _Nil<T_O>();
-  ASSERT(ltvPP != NULL);
+  LCC_SPILL_CLOSURE_TO_VA_LIST(empty_valist);
+#endif
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -535,14 +521,19 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   }
 #endif
   // Evaluate the function
-  STACK_FRAME(zbuff, onearg, 1);
-  onearg[0] = *ltvPP; // Leave the tag on
+  MAKE_STACK_FRAME( onearg, tc.raw_(), 1);
+  (*onearg)[0] = *ltvPP; // Leave the tag on
   core::VaList_S onearg_valist_s(onearg);
+  LCC_SPILL_CLOSURE_TO_VA_LIST(onearg_valist_s,tc.raw_());
   core::T_O *lcc_arglist = onearg_valist_s.asTaggedPtr();
+#ifdef USE_EXPENSIVE_BACKTRACE
+  // Why do this?
+  core::InvocationHistoryFrame invFrame(lcc_arglist);
+#endif
 #if 0
   *resultP = fptr(LCC_PASS_ARGS1_VA_LIST(onearg[0])); // Was  (ltvP));
 #else
-  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST()); // Was  (ltvP));
+  *resultP = fptr(LCC_PASS_ARGS0_VA_LIST(tc.raw_())); 
 #endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
@@ -557,26 +548,54 @@ void invokeTopLevelFunction(core::T_mv *resultP,
   ASSERTNOTNULL(*resultP);
 };
 
-void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], int *numfunP) {
-  int numfun = *numfunP;
+/*! Invoke the main functions from the main function array.
+If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
+Otherwise there is just one. */
+void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], size_t isNullTerminatedArray ) {
   //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
-  for (int i = 0; i < numfun; ++i) {
+  T_mv res;
+  if (isNullTerminatedArray) {
+    int i=0;
+    while (fptr[i]) {
     //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-    *result = (fptr[i])(LCC_PASS_ARGS0_VA_LIST());
+      if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
+        stringstream ss;
+        ss << "Time to run module " << i;
+        simple_timer timer(ss.str());
+        res = (fptr[i])(LCC_PASS_MAIN());
+      } else {
+        res = (fptr[i])(LCC_PASS_MAIN());
+      }
+      ++i;
+    }
+  } else {
+    if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
+      stringstream ss;
+      ss << "Time to run module 0";
+      simple_timer timer(ss.str());
+      res = (fptr[0])(LCC_PASS_MAIN());
+    } else {
+      res = (fptr[0])(LCC_PASS_MAIN());
+    }
   }
+  *result = res;
 }
 
+#if 0
 void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
   if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
     stringstream ss;
     ss << "Time to run " << sourceName;
     simple_timer timer(ss.str());
-    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST());
+    core::T_mv result = fptr(LCC_PASS_MAIN());
     return;
   } else {
-    core::T_mv result = fptr(LCC_PASS_ARGS0_VA_LIST());
+    core::T_mv result = fptr(LCC_PASS_MAIN());
   }
 };
+#endif
+
+
 
 };
 
@@ -848,7 +867,7 @@ void singleStepCallback() {
 void throwCatchThrow(core::T_sp *tagP) {
   ASSERT(tagP != NULL);
   core::T_sp tag = *tagP;
-  int frame = thread->exceptionStack().findKey(CatchFrame, tag);
+  int frame = my_thread->exceptionStack().findKey(CatchFrame, tag);
   if (frame < 0) {
     CONTROL_ERROR();
   } else {
@@ -856,7 +875,7 @@ void throwCatchThrow(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, _rep_(*tagP).c_str(), frame);
-      printf("   %s\n", thread->exceptionStack().summary().c_str());
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
 #endif
     throw catchThrow;
@@ -867,14 +886,14 @@ void throwCatchThrow(core::T_sp *tagP) {
 void throwReturnFrom(core::Symbol_sp *blockSymbolP) {
   ASSERT(blockSymbolP != NULL);
   core::T_sp blockSymbol = *blockSymbolP;
-  int frame = thread->exceptionStack().findKey(BlockFrame, blockSymbol);
+  int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
   if (frame < 0) {
     CONTROL_ERROR();
   }
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::ReturnFrom returnFrom(frame);
@@ -890,7 +909,7 @@ core::T_mv proto_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) 
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw returnFrom;
@@ -916,11 +935,11 @@ extern "C" {
 
 size_t pushCatchFrame(core::T_sp *tagP) {
   ASSERT(tagP != NULL);
-  size_t result = thread->exceptionStack().push(CatchFrame, *tagP);
+  size_t result = my_thread->exceptionStack().push(CatchFrame, *tagP);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed CatchThrow frame[%zu]\n", result);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -929,11 +948,11 @@ size_t pushCatchFrame(core::T_sp *tagP) {
 size_t pushBlockFrame(core::Symbol_sp *tagP) {
   ASSERT(tagP != NULL);
   core::T_sp osym = *tagP;
-  size_t result = thread->exceptionStack().push(BlockFrame, osym);
+  size_t result = my_thread->exceptionStack().push(BlockFrame, osym);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Block frame[%zu]\n", result);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -942,11 +961,11 @@ size_t pushBlockFrame(core::Symbol_sp *tagP) {
 size_t pushTagbodyFrame(core::ActivationFrame_sp *afP) {
   ASSERT(afP != NULL);
   core::T_sp tagbodyId = (*afP);
-  size_t result = thread->exceptionStack().push(TagbodyFrame, tagbodyId);
+  size_t result = my_thread->exceptionStack().push(TagbodyFrame, tagbodyId);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Tagbody frame[%zu]\n", result);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -962,7 +981,7 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, un
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing CatchThrow frame[%d]\n", ctExceptionP->getFrame());
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw * ctExceptionP;
@@ -981,7 +1000,7 @@ void mv_ifCatchFrameMatchesStoreResultElseRethrow(core::T_mv *resultP, size_t ca
 
 extern "C" {
 void exceptionStackUnwind(size_t frame) {
-  thread->exceptionStack().unwind(frame);
+  my_thread->exceptionStack().unwind(frame);
 }
 
 void throwIllegalSwitchValue(size_t val, size_t max) {
@@ -993,7 +1012,7 @@ void throw_LexicalGo(int depth, int index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw lgo;
@@ -1001,7 +1020,7 @@ void throw_LexicalGo(int depth, int index) {
 
 void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
   T_sp tagbody = core::tagbody_frame_lookup(*afP,depth,index);
-  int frame = thread->exceptionStack().findKey(TagbodyFrame, tagbody);
+  int frame = my_thread->exceptionStack().findKey(TagbodyFrame, tagbody);
   if (frame < 0) {
     CONTROL_ERROR();
   }
@@ -1009,7 +1028,7 @@ void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw dgo;
@@ -1026,7 +1045,7 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 	goExceptionP->decrementDepth();
 #ifdef DEBUG_FLOW_CONTROL
 	printf("Re-throwing core::Go depth[%d] index[%d]\n", goExceptionP->depth(), goExceptionP->index());
-        printf("   %s\n", thread->exceptionStack().summary().c_str());
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
 #endif
 	throw *goExceptionP;
 #endif
@@ -1036,7 +1055,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::DynamicGo *goExceptionP = reinterpret_cast<core::DynamicGo *>(exceptionP);
@@ -1044,7 +1063,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d Matched DynamicGo  frame: %lu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
-      printf("   %s\n", thread->exceptionStack().summary().c_str());
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
 #endif
     return goExceptionP->index();
@@ -1052,7 +1071,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw * goExceptionP;
@@ -1346,14 +1365,14 @@ extern "C" {
 
 void pushDynamicBinding(core::Symbol_sp *symbolP) {
   core::Symbol_sp sym = *symbolP;
-  thread->bindings().push(sym);
+  my_thread->bindings().push(sym);
   //	printf("%s:%d - pushDynamicBinding symbol: %s  value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
 }
 
 void popDynamicBinding(core::Symbol_sp *symbolP) {
   core::Symbol_sp sym = *symbolP;
-  core::Symbol_sp top = thread->bindings().topSymbol();
-  if (sym != thread->bindings().topSymbol()) {
+  core::Symbol_sp top = my_thread->bindings().topSymbol();
+  if (sym != my_thread->bindings().topSymbol()) {
     stringstream ss;
     ss << __FILE__ << ":" << __LINE__;
     ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
@@ -1362,7 +1381,7 @@ void popDynamicBinding(core::Symbol_sp *symbolP) {
     core::core__dynamic_binding_stack_dump(ss);
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
-  thread->bindings().pop();
+  my_thread->bindings().pop();
   //	printf("%s:%d - popDynamicBinding symbol: %s  restored value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
 }
 };
@@ -1376,13 +1395,13 @@ void trace_setLineNumberColumnForIHSTop(char *sourceFileName, int *sourceFileInf
       printf("%s:%d trace_setLineNumberColumnForIHSTop has *sourceFileInfoHandleP@%p == 0 soureFileName: %s\n", __FILE__, __LINE__, sourceFileInfoHandleP, sourceFileName);
     }
   }
-  thread->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP, fileOffset, ln, col);
+  my_thread->invocationHistoryStack().setSourcePosForTop(*sourceFileInfoHandleP, fileOffset, ln, col);
 }
 #endif
 
 #if 0
 void trace_setActivationFrameForIHSTop(core::T_sp *afP) {
-  thread->invocationHistoryStack().setActivationFrameForTop(*afP);
+  my_thread->invocationHistoryStack().setActivationFrameForTop(*afP);
 }
 #endif
 
@@ -1452,38 +1471,45 @@ core::T_O *cc_enclose(core::T_O *lambdaName, fnLispCallingConvention llvm_func,
      This function looks exactly like the cc_invoke_multipleValueOneFormCall intrinsic but
     in cmpintrinsics.lsp it is set not to require a landing pad */
 //    void cc_call_multipleValueOneFormCall(core::T_mv* result, core::T_O* tfunc )
-LCC_RETURN cc_call_multipleValueOneFormCall(core::T_O *tfunc) {
+LCC_RETURN cc_call_multipleValueOneFormCall(core::Function_O *tfunc) {
+  ASSERTF(gctools::tagged_generalp(tfunc), BF("The argument %p does not have a general tag!") % (void*)tfunc);
   core::MultipleValues &mvThreadLocal = core::lisp_multipleValues();
   size_t lcc_nargs = mvThreadLocal.getSize();
-  STACK_FRAME(buff, mvargs, lcc_nargs);
+  MAKE_STACK_FRAME( mvargs, tfunc, lcc_nargs);
   for (size_t i(0); i < lcc_nargs; ++i) {
-    mvargs[i] = mvThreadLocal[i];
+    (*mvargs)[i] = mvThreadLocal[i];
   }
   VaList_S mvargs_valist_struct(mvargs);
   core::T_O *lcc_arglist = mvargs_valist_struct.asTaggedPtr();
+#ifdef _DEBUG_BUILD
+  VaList_S debug_valist_s(mvargs_valist_struct);
+  core::T_O* debug_lcc_arglist = debug_valist_s.asTaggedPtr();
+#endif
   core::Function_sp func((gctools::Tagged)tfunc);
+  LCC_SPILL_CLOSURE_TO_VA_LIST(mvargs_valist_struct,tfunc);
   ASSERT(func);
-  core::T_O *lcc_fixed_arg0 = mvargs[0];
-  core::T_O *lcc_fixed_arg1 = mvargs[1];
-  core::T_O *lcc_fixed_arg2 = mvargs[2];
+#if 0
+  core::T_O *lcc_fixed_arg0 = (*mvargs)[0];
+  core::T_O *lcc_fixed_arg1 = (*mvargs)[1];
+  core::T_O *lcc_fixed_arg2 = (*mvargs)[2];
+#endif
   /*! TODO: Move the logic into lispCallingConvention */
   LCC_RETURN retval(NULL, 0);
   switch (lcc_nargs) {
   default:
-    retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(lcc_arglist, lcc_nargs, mvargs[0], mvargs[1], mvargs[2]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS3_ARGLIST_GENERAL(func.raw_(),lcc_arglist, lcc_nargs, (*mvargs)[0], (*mvargs)[1], (*mvargs)[2]));
     break;
   case 2:
-    retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(mvargs[0], mvargs[1]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS2_ARGLIST(func.raw_(),(*mvargs)[0], (*mvargs)[1]));
     break;
   case 1:
-    retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(mvargs[0]));
+      retval = func->invoke_va_list(LCC_PASS_ARGS1_ARGLIST(func.raw_(),(*mvargs)[0]));
     break;
   case 0:
-    retval = func->invoke_va_list(LCC_PASS_ARGS0_ARGLIST());
+      retval = func->invoke_va_list(LCC_PASS_ARGS0_ARGLIST(func.raw_()));
     break;
   };
   return retval;
-  //return closure->invoke_va_list(LCC_PASS_ARGS3_ARGLIST(lcc_arglist,lcc_nargs,mvargs[0],mvargs[1],mvargs[2]);
 }
 
 #if 0
@@ -1558,7 +1584,7 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_unwind targetFrame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::Unwind unwind(targetFrame, index);
@@ -1582,11 +1608,11 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 #if 0
 void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 {
-  int frame = thread->exceptionStack().push(CatchFrame, LCC_TO_SMART_PTR(tag));
+  int frame = my_thread->exceptionStack().push(CatchFrame, LCC_TO_SMART_PTR(tag));
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag, frame);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   try {
@@ -1611,11 +1637,11 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
     printf("- - - - - Unwinding to thisFrame: %d\n", frame );
   }
 #endif
-  thread->exceptionStack().unwind(frame);
+  my_thread->exceptionStack().unwind(frame);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__ );
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
 }
@@ -1623,14 +1649,14 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 
 void cc_throw(T_O* tag, T_O* result_func)
 {
-  int frame = thread->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
+  int frame = my_thread->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
   if (frame < 0) {
     CONTROL_ERROR();
   }
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   T_mv result;
@@ -1653,10 +1679,10 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
-  int frame = thread->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
+  int frame = my_thread->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
   if (frame < 0) {
     CONTROL_ERROR();
   }
@@ -1664,7 +1690,7 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw catchThrow;
@@ -1690,11 +1716,11 @@ T_O *cc_pushLandingPadFrame() {
 #ifdef DEBUG_UNWIND
   ptr = core::Pointer_O::create((void *)&typeid(core::Unwind));
 #endif
-  size_t index = thread->exceptionStack().push(LandingPadFrame, ptr);
+  size_t index = my_thread->exceptionStack().push(LandingPadFrame, ptr);
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d pushLandingPadFrame pushed frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return gctools::tag_fixnum<core::T_O *>(index);
@@ -1706,10 +1732,10 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %lu\n", __FILE__, __LINE__, frameIndex);
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
-  thread->exceptionStack().unwind(frameIndex);
+  my_thread->exceptionStack().unwind(frameIndex);
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thisFrame) {
@@ -1723,7 +1749,7 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     if (unwindP->getFrame() > thisFrame) {
       printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
     }
-    printf("   %s\n", thread->exceptionStack().summary().c_str());
+    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   if (unwindP->getFrame() == thisFrame) {

@@ -52,7 +52,7 @@ public:
   typedef gctools::Vec0<T_sp> vector_type;
   typedef gctools::Vec0<T_sp>::iterator iterator;
 
-GCPROTECTED: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
+public: // instance variables here -- REMEMBER to update swap(...) if you add/remove variables
   T_sp _ElementType;
   bool _Adjustable;
   vector_type _Values;
@@ -103,7 +103,7 @@ public: // Functions here
   /*! Swap the contents of the VectorObjects */
   void swap(VectorObjects_sp vec);
 
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   virtual T_sp setf_aref(List_sp indices_val);
 
   virtual T_sp elt(int index) const;
@@ -124,7 +124,6 @@ public: // Functions here
 };
 
 }; /* core */
-TRANSLATE(core::VectorObjects_O);
 template <>
 struct gctools::GCInfo<core::VectorObjects_O> {
   static bool constexpr NeedsInitialization = false;

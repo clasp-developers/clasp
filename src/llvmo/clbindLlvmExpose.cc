@@ -27,7 +27,8 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <llvm/ADT/APInt.h>
 #include <llvm/ADT/APSInt.h>
-
+#include <llvm/IR/DataLayout.h>
+#include <clasp/core/lambdaListHandler.h>
 #include <clasp/clbind/clbind.h>
 
 #ifdef USE_MPS
@@ -51,6 +52,8 @@ void initialize_clbind_llvm_expose() {
     class_<llvm::APInt>("APInt", no_default_constructor)
         .def("toString", (std::string (llvm::APInt::*)(unsigned Radix, bool Signed) const) & llvm::APInt::toString),
     class_<llvm::APSInt, llvm::APInt>("APSInt", no_default_constructor)
+//    ,
+//    class_<llvm::DataLayout>("DataLayout",no_default_constructor)
   ];
 }
 }

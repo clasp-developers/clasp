@@ -61,7 +61,6 @@ public: // Functions here
 }; // CandoException class
 
 }; // core namespace
-TRANSLATE(core::CandoException_O);
 
 namespace core {
 

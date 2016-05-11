@@ -181,4 +181,14 @@ namespace gctools {
 int initializeMemoryManagement(MainFunctionType startup, int argc, char *argv[], void *dummy);
 };
 
+namespace gctools {
+  // Looks like an MPS mps_ld_s structure
+  // So that field_offset table for MPS can be used by boehm
+  // Instance variable must be called _LocationDependency
+ struct BogusBoehmLocationDependencyTracker {
+    unsigned long _epoch;
+    unsigned long _rs;
+  };
+
+};
 #endif // _clasp_boehmGarbageCollection_H

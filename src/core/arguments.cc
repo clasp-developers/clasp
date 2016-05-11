@@ -140,13 +140,13 @@ string AuxArgument::asString() const {
 
 #if 0 // moved to header
 DynamicScopeManager::DynamicScopeManager() {
-  int top = thread->bindings().top();
+  int top = my_thread->bindings().top();
   this->_beginTop = top;
   this->_endTop = top;
 }
 
 DynamicScopeManager::DynamicScopeManager(Symbol_sp sym, T_sp val) {
-  int top = thread->bindings().top();
+  int top = my_thread->bindings().top();
   this->_beginTop = top;
   this->_endTop = top;
   this->pushSpecialVariableAndSet(sym, val);
@@ -157,7 +157,7 @@ void DynamicScopeManager::dump() const {
   stringstream ss;
   ss << "DynamicScopeManager  _beginTop[" << this->_beginTop << "] _endTop[" << this->_endTop << "]" << std::endl;
   for (int i = this->_endTop - 1; i >= this->_beginTop; --i) {
-    ss << (BF("Dynamic[%d] var[%s] val-->%s") % i % _rep_(thread->bindings().var(i)) % _rep_(thread->bindings().val(i))).str() << std::endl;
+    ss << (BF("Dynamic[%d] var[%s] val-->%s") % i % _rep_(my_thread->bindings().var(i)) % _rep_(my_thread->bindings().val(i))).str() << std::endl;
   }
   printf("%s", ss.str().c_str());
 }
@@ -165,7 +165,7 @@ void DynamicScopeManager::dump() const {
 #if 0
 void DynamicScopeManager::pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
   thread->bindings().push(sym);
-  this->_endTop = thread->bindings().top();
+  this->_endTop = my_thread->bindings().top();
   //	SymbolSaveValue sv(sym,sym->symbolValueUnsafe());
   //	this->_SavedValues.push_back(sv);
   sym->setf_symbolValue(val);
@@ -187,7 +187,7 @@ T_sp DynamicScopeManager::lexenv() const {
 
 #if 0
 DynamicScopeManager::~DynamicScopeManager() {
-  DynamicBindingStack &bindings = thread->bindings();
+  DynamicBindingStack &bindings = my_thread->bindings();
   int numBindings = this->_endTop - this->_beginTop;
   for (int i = 0; i < numBindings; ++i) {
     bindings.pop();
@@ -211,15 +211,15 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
 
 void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val) {
   Symbol_sp type = gc::As<Symbol_sp>(oCar(classified));
-  if (type == ext::_sym_specialVar) {
-    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
-    this->DynamicScopeManager::pushSpecialVariableAndSet(sym, val);
-    return;
-  } else if (type == ext::_sym_lexicalVar) {
+  if (type == ext::_sym_lexicalVar) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(classified));
     int idx = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(classified)));
     ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym));
     this->_Environment->new_binding(sym, idx, val);
+    return;
+  } else if (type == ext::_sym_specialVar) {
+    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
+    this->DynamicScopeManager::pushSpecialVariableAndSet(sym, val);
     return;
   }
   SIMPLE_ERROR(BF("Illegal classified type: %s\n") % _rep_(classified));

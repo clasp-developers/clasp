@@ -77,7 +77,7 @@ public:
 
   void setElementType(T_sp et) { this->_ElementType = et; };
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
 
   /*! Return the value at the indices */
   virtual T_sp setf_aref(List_sp indices_val);
@@ -97,6 +97,5 @@ public:
 
 }; /* core */
 
-TRANSLATE(core::ArrayObjects_O);
 
 #endif /* _core_ArrayObjects_H */

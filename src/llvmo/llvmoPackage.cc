@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include <stdint.h>
 
+#include <llvm/Support/raw_ostream.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -46,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
@@ -101,7 +103,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
   list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
-  list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadInfo))), list);
+  list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
@@ -199,25 +201,26 @@ CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Mod
 }
 
 void dump_funcs(core::Function_sp compiledFunction) {
-  CompiledClosure_sp cb = compiledFunction.asOrNull<CompiledClosure_O>();
-  if (!(cb)) {
-    SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
-  }
-  core::T_sp funcs = cb->associatedFunctions;
-  if (cl__consp(funcs)) {
-    core::List_sp cfuncs = funcs;
-    for (auto cur : cfuncs) {
-      core::T_sp func = oCar(cur);
-      if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-        printf("%s:%d Dumping function\n", __FILE__, __LINE__ );
-        f->describe(cl::_sym_STARstandard_outputSTAR->symbolValue());
-      } else {
-        printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
+  core::T_sp funcs = compiledFunction->associatedFunctions();
+  if (funcs.notnilp()) {
+    string outstr;
+    llvm::raw_string_ostream sout(outstr);
+    if (cl__consp(funcs)) {
+      core::List_sp cfuncs = funcs;
+      for (auto cur : cfuncs) {
+        core::T_sp func = oCar(cur);
+        if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
+          f->wrappedPtr()->print(sout);
+        } else {
+          printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
+        }
       }
+      core::clasp_write_string(outstr);
+      return;
     }
-    return;
+  } else {
+    STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
-  STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
 }
 
 CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
@@ -227,8 +230,8 @@ CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
 CL_LAMBDA(fn &optional only);
 CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction.as<core::CompiledClosure_O>()) {
-    core::T_sp funcs = cl->associatedFunctions;
+  if (auto cl = compiledFunction.asOrNull<core::CompiledClosure_O>()) {
+    core::T_sp funcs = cl->associatedFunctions();
     if (cl__consp(funcs)) {
       core::List_sp cfuncs = funcs;
       for (auto cur : cfuncs) {
@@ -241,8 +244,9 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
           }
         }
       }
-      return;
     }
+  } else {
+    SIMPLE_ERROR(BF("The function is not a compiled function"));
   }
 }
 
@@ -287,13 +291,14 @@ void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose wh
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
 //    initialize_claspLinkPass();
-    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_ClaspMainFunctionName_PLUS_);
+//    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_ClaspMainFunctionName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsNameSize_PLUS_);
-    _sym__PLUS_ClaspMainFunctionName_PLUS_->defconstant(core::Str_O::create(CLASP_MAIN_FUNCTION_NAME));
-
+    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
+//    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsNameSize_PLUS_);
+//    _sym__PLUS_ClaspMainFunctionName_PLUS_->defconstant(core::Str_O::create(CLASP_MAIN_FUNCTION_NAME));
     _sym__PLUS_globalBootFunctionsName_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_NAME));
-    _sym__PLUS_globalBootFunctionsNameSize_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_SIZE_NAME));
+    _sym__PLUS_globalEpilogueName_PLUS_->defconstant(core::Str_O::create(GLOBAL_EPILOGUE_NAME));
+    //_sym__PLUS_globalBootFunctionsNameSize_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_SIZE_NAME));
 
     //	initializeLlvmConstants(_lisp);
   };

@@ -90,5 +90,4 @@ public:
 };
 #endif
 };
-TRANSLATE(core::StandardClass_O);
 #endif //]

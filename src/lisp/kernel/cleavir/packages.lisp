@@ -16,6 +16,7 @@
    #:invoke-multiple-value-call-instruction
    #:*debug-log*
    #:instruction-gid
+   #:unsafe-intrinsic-call
    #:datum-gid
    #:create-landing-pad
    #:translate-datum
@@ -44,6 +45,9 @@
    #:make-precalc-vector-function-ast
    #:named-function-ast
    #:debug-message-ast
+   #:intrinsic-call-ast
+   #:argument-asts
+   #:function-name
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -76,6 +80,9 @@
    #:jump-id
    #:make-named-enter-instruction
    #:debug-message-instruction
+   #:intrinsic-call-instruction
+   #:function-name
+   #:make-intrinsic-call-instruction
    #:make-precalc-symbol-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction

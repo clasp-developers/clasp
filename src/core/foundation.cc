@@ -85,22 +85,46 @@ THE SOFTWARE.
 #include <clasp/core/null.h>
 #include <clasp/core/wrappers.h>
 
-thread_local core::ThreadLocalState* thread = NULL;
+THREAD_LOCAL core::ThreadLocalState* my_thread;
 
 
 namespace reg {
 
-class_id allocate_class_id(type_id const &cls) {
-  typedef std::map<type_id, class_id> map_type;
-  static map_type registered;
-  static class_id id = 0;
+typedef std::map<type_id, class_id> map_type;
+map_type* global_registered_ids_ptr = NULL;
+class_id global_next_id = 0;
 
-  std::pair<map_type::iterator, bool> inserted = registered.insert(
-      std::make_pair(cls, id));
+void dump_class_ids() {
+  if ( global_registered_ids_ptr == NULL ) {
+    printf("The global_registered_ids_ptr is NULL\n");
+    return;
+  }
+  char buffer[1024];
+  for ( auto it : (*global_registered_ids_ptr) ) {
+    const char* fnName = it.first.name();
+    size_t length;
+    int status;
+    char *ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
+    if (status == 0) {
+      printf("  %s --> %d : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      delete ret;
+    } else {
+        // demangling failed. Output function name as a C function with
+        // no arguments.
+      printf("  %s --> %d : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+    }
+  }
+}
+
+class_id allocate_class_id(type_id const &cls) {
+  if ( global_registered_ids_ptr == NULL ) {
+    global_registered_ids_ptr = new map_type();
+  }
+  std::pair<map_type::iterator, bool> inserted = global_registered_ids_ptr->insert(std::make_pair(cls, global_next_id));
 
   if (inserted.second) {
     //            printf("%s:%d allocate_class_id for %40s %ld\n", __FILE__, __LINE__, cls.name(), id );
-    ++id;
+    ++global_next_id;
   }
 
   return inserted.first->second;
@@ -124,6 +148,15 @@ core::Symbol_sp lisp_classSymbolFromClassId(class_id cid) {
   return sym;
 }
 };
+
+namespace core {
+
+CL_DEFUN void core__dump_class_ids()
+{
+  reg::dump_class_ids();
+}
+};
+
 
 void lisp_errorIllegalDereference(void *v) {
   SIMPLE_ERROR(BF("Tried to dereference px=%p") % v);
@@ -373,6 +406,19 @@ void colon_split(const string& name, string& package_str, string& symbol_str)
   SIMPLE_ERROR(BF("Could not convert %s into package:symbol_name") % name);
 }
 
+CL_LAMBDA("name &optional (package \"\")");
+CL_DOCSTRING(R"doc(Intern the package:name or name/package combination)doc");
+CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
+{
+  std::string pkg_sym = magic_name(name,package);
+  std::string sym;
+  std::string pkg;
+  colon_split(pkg_sym,pkg,sym);
+  Package_sp p = _lisp->findPackage(pkg);
+  return p->intern(Str_O::create(sym));
+}
+
+
 /*!
 * Arguments
 - name :: A string.
@@ -420,29 +466,32 @@ std::string magic_name(const std::string& name,const std::string& package_name)
 }
 
 
-CL_LAMBDA(name);
+CL_LAMBDA("name &optional (package \"\")");
 CL_DECLARE();
 CL_DOCSTRING(R"doc(* Arguments
 - name :: A string.
+- package :: A string
 * Description
-Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, run them through lispify_symbol_name and then recombine them as pkg:name.)doc");
-CL_DEFUN Str_sp core__magic_name(const std::string& name) {
-  std::string pkg_sym = magic_name(name);
-  return Str_O::create(pkg_sym);
+Convert strings that have the form pkg:name or pkg__name into a package name string and a symbol name string, 
+run them through lispify_symbol_name and then recombine them as pkg:name.
+Then split them again (sorry) and return (values pkg:sym pkg sym).)doc");
+CL_DEFUN T_mv core__magic_name(const std::string& name, const std::string& package) {
+  std::string pkg_sym = magic_name(name,package);
+  std::string sym;
+  std::string pkg;
+  colon_split(pkg_sym,pkg,sym);
+  return Values(Str_O::create(pkg_sym),Str_O::create(pkg),Str_O::create(sym));
 };
 
-void lisp_setThreadLocalInfoPtr(ThreadInfo *address) {
-  threadLocalInfoPtr = address;
-}
 
 MultipleValues &lisp_multipleValues() {
   //	return &(_lisp->multipleValues());
-  return threadLocalInfoPtr->multipleValues;
+  return my_thread->_MultipleValues;
 }
 
 MultipleValues &lisp_callArgs() {
   //	return (_lisp->callArgs());
-  return threadLocalInfoPtr->multipleValues;
+  return my_thread->_MultipleValues;
 }
 
 void errorFormatted(boost::format fmt) {
@@ -482,7 +531,8 @@ Symbol_sp lisp_upcase_intern_export(string const &name, string const &packageNam
   return sym;
 }
 
-bool lispify_match(const char *&cur, const char *match) {
+typedef enum { ignore, upperCaseAlpha } NextCharTest;
+bool lispify_match(const char *&cur, const char *match, NextCharTest nextCharTest = ignore) {
   const char *ccur = cur;
   while (*match) {
     if (*ccur == '\0')
@@ -492,15 +542,70 @@ bool lispify_match(const char *&cur, const char *match) {
     ++ccur;
     ++match;
   }
-  cur = ccur;
-  return true;
+  if ( nextCharTest == ignore ) {
+    cur = ccur;
+    return true;
+  }
+  if ( nextCharTest == upperCaseAlpha ) {
+    if (*match && isalpha(*match) && isupper(*match)) {
+      cur = ccur;
+      return true;
+    }
+    return false;
+  }
+  SIMPLE_ERROR(BF("Unknown nextCharTest(%d)") % nextCharTest );
+}
+
+/*! This checks for names like CXXObject and will convert them to CXX-OBJECT.
+It looks for [A-Z]+[A-Z][a-z] - a run of more than 
+two upper case characters followed by a lower case
+alpha character. If it sees this it returns true and the first N-1 characters of the
+upper case sequence and it advances cur to the last upper case character */
+
+ bool lispify_more_than_two_upper_case_followed_by_lower_case(const char*&cur, stringstream& accumulate)
+{
+  const char *ccur = cur;
+  stringstream ss_acc;
+  while (*ccur) {
+    if (isalpha(*ccur)) {
+      if (isupper(*ccur)) {
+        if (!*(ccur+1)) return false;
+        if (isalpha(*(ccur+1))) {
+          if (isupper(*(ccur+1))) {
+            if (!*(ccur+2) ) return false;
+            if (isalpha(*(ccur+2))) {
+              if ( islower(*(ccur+2))) {
+                accumulate << ss_acc.str() << '-';
+                cur = ccur;
+                return true;
+              } else {
+                ss_acc << *ccur;
+                ++ccur;
+                continue;
+              }
+            } else return false;
+          } else return false;
+        } else return false;
+      } else return false;
+    } else return false;
+  }
 }
 
 string lispify_symbol_name(const string &s) {
+  bool new_rule_change = false;
   LOG(BF("lispify_symbol_name pass1 source[%s]") % s);
+  /*! Temporarily store the string in a buffer */
+#define LISPIFY_BUFFER_SIZE 1024
+  char buffer[LISPIFY_BUFFER_SIZE];
+  int name_length = s.size();
+  if ((name_length+2)>=LISPIFY_BUFFER_SIZE) {
+    printf("%s:%d The C++ string is too large to lispify - increase LISPIFY_BUFFER_SIZE to at least %d\n", (name_length+2));
+    abort();
+  }
+  memset(buffer,0,name_length+2);
+  strncpy(buffer,s.c_str(),name_length);
   stringstream stream_pass1;
-  const char *start_pass1 = s.c_str();
-  const char *cur = start_pass1;
+  const char *cur = buffer;
   while (*cur) {
     if (lispify_match(cur, "_SHARP_")) {
       stream_pass1 << "#";
@@ -574,6 +679,26 @@ string lispify_symbol_name(const string &s) {
       stream_pass1 << "&";
       continue;
     }
+#if 0
+    // Lispify all names like CXXRecordDecl to CXX-RECORD-DECL
+    // This specific rule is to make it easier to integrate ASTMatchers into Clasp
+    // Because the ASTMatcher cxxRecordDecl() --> CXX-RECORD-DECL
+    // and without this rule the AST Class CXXRecordDecl() --> CXXRECORD-DECL
+    //
+    if (lispify_match(cur, "CXX", upperCaseAlpha )) {
+      stream_pass1 << "CXX-";
+      new_rule_change = true;
+      continue;
+    }
+#endif
+#if 0
+    // This will mess up too many symbols
+    string matched;
+    if ( lispify_more_than_two_upper_case_followed_by_lower_case(cur,stream_pass1) ) {
+      printf("%s:%d A symbol changed according to the new rule ([A-Z]+)([A-Z][a-z]) -> \\1-\\2-\n", __FILE__, __LINE__ );
+      continue;
+    }
+#endif
     if (lispify_match(cur, "_")) {
       stream_pass1 << "-";
       continue;
@@ -598,6 +723,9 @@ string lispify_symbol_name(const string &s) {
     ++cur;
   }
   LOG(BF("lispify_symbol_name output[%s]") % stream_pass2.str());
+  if ( new_rule_change ) {
+    printf("%s:%d The symbol |%s| changed according to the new rule ([A-Z]+)([A-Z][a-z]) -> \\1-\\2-\n", __FILE__, __LINE__, stream_pass2.str().c_str() );
+  }
   return stream_pass2.str();
 }
 
@@ -1140,14 +1268,6 @@ void lisp_installGlobalInitializationCallback(InitializationCallback initGlobals
   _lisp->installGlobalInitializationCallback(initGlobals);
 }
 
-#if 0
-    T_sp lisp_hiddenBinderLookup(Lisp_sp lisp, Symbol_sp sym)
-    {
-	T_sp obj = lisp->hiddenBinder()->lookup(sym);
-	return obj;
-    }
-#endif
-
 int lisp_lookupEnumForSymbol(Symbol_sp predefSymId, T_sp symbol) {
   SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(predefSymId->symbolValue());
   return converter->enumIndexForSymbol(gc::As<Symbol_sp>(symbol));
@@ -1157,13 +1277,6 @@ Symbol_sp lisp_lookupSymbolForEnum(Symbol_sp predefSymId, int enumVal) {
   SymbolToEnumConverter_sp converter = gc::As<SymbolToEnumConverter_sp>(predefSymId->symbolValue());
   return converter->symbolForEnumIndex(enumVal);
 }
-
-#if 0
-    void lisp_hiddenBinderExtend(Lisp_sp lisp, Symbol_sp sym, T_sp obj)
-    {
-	lisp->hiddenBinder()->extend(sym,obj);
-    }
-#endif
 
 void lisp_extendSymbolToEnumConverter(SymbolToEnumConverter_sp conv, Symbol_sp const &name, Symbol_sp const &archiveName, int value) {
   conv->addSymbolEnumPair(name, archiveName, value);
@@ -1483,7 +1596,7 @@ void lisp_error_simple(const char *functionName, const char *fileName, int lineN
   if (!_sym_signalSimpleError->fboundp()) {
     printf("%s:%d %s\n", __FILE__, __LINE__, ss.str().c_str());
     dbg_hook(ss.str().c_str());
-    if (thread->invocationHistoryStack().top() == NULL) {
+    if (my_thread->_InvocationHistoryStack == NULL) {
       throw(core::HardError(__FILE__, __FUNCTION__, __LINE__, BF("System starting up - debugger not available yet:  %s") % ss.str()));
     }
     LispDebugger dbg;

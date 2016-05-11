@@ -64,14 +64,16 @@ LispDebugger::LispDebugger() : _CanContinue(true) {
 }
 
 void LispDebugger::printExpression() {
+  int index = core__ihs_current_frame();
   InvocationHistoryFrameIterator_sp frame = this->currentFrame();
   stringstream ss;
-  ss << frame->frame()->asString();
+  ss << frame->frame()->asString(index);
   _lisp->print(BF("%s\n") % ss.str());
 }
 
 InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
-  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(core__ihs_current_frame());
+  int index = core__ihs_current_frame();
+  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(index);
   if (frame->isValid())
     return frame;
   printf("%s:%d  Could not get frame - aborting\n", __FILE__, __LINE__ );
@@ -79,7 +81,7 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
 }
 
 T_sp LispDebugger::invoke() {
-  //	DebuggerIHF debuggerStack(thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
+  //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
     _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));
   }
@@ -218,7 +220,7 @@ T_sp LispDebugger::invoke() {
       string sexp = line.substr(2, 99999);
       //		ControlSingleStep singleStep(false);
       T_sp env = core__ihs_env(core__ihs_current_frame());
-      //		DebuggerIHF dbgFrame(thread->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
+      //		DebuggerIHF dbgFrame(my_thread->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
       try {
         DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
         _lisp->readEvalPrintString(sexp, env, true);
@@ -234,26 +236,40 @@ T_sp LispDebugger::invoke() {
   }
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("lowLevelBacktrace");
-CL_DEFUN void core__low_level_backtrace() {
-  InvocationHistoryStack &ihs = thread->invocationHistoryStack();
-  InvocationHistoryFrame *top = ihs.top();
+CL_DEFUN void core__test_backtrace() {
+  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
   if (top == NULL) {
     printf("Empty InvocationHistoryStack\n");
     return;
   }
-  printf("From bottom to top invocation-history-stack frames = %d\n", top->_Index + 1);
+  int index = 0;
+  for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
+    T_sp frame = cur->valist_sp();
+    printf("Frame[%d] = %p\n", index, frame.raw_());
+    ++index;
+  }
+  printf("----Done\n");
+}
+
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("lowLevelBacktrace");
+CL_DEFUN void core__low_level_backtrace() {
+  InvocationHistoryFrame *top = my_thread->_InvocationHistoryStack;
+  if (top == NULL) {
+    printf("Empty InvocationHistoryStack\n");
+    return;
+  }
+  int index = 0;
   for (InvocationHistoryFrame *cur = top; cur != NULL; cur = cur->_Previous) {
     string name = "-no-name-";
-    Closure_sp closure = cur->closure;
+    Function_sp closure = cur->function();
     if (!closure) {
       name = "-NO-CLOSURE-";
     } else {
-      if (closure->_name.notnilp()) {
+      if (closure->name().notnilp()) {
         try {
-          name = _rep_(closure->_name);
+          name = _rep_(closure->name());
         } catch (...) {
           name = "-BAD-NAME-";
         }
@@ -264,7 +280,8 @@ CL_DEFUN void core__low_level_backtrace() {
     if (sfi.notnilp()) {
       sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
     }
-    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", cur->_Index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
+    printf("_Index: %4d  Frame@%p(previous=%p)  closure@%p  closure->name[%40s]  line: %3d  file: %s\n", index, cur, cur->_Previous, closure.raw_(), name.c_str(), closure->lineNumber(), sourceName.c_str());
+    ++index;
   }
   printf("----Done\n");
 }
@@ -414,9 +431,15 @@ void dbg_lowLevelDescribe(T_sp obj) {
     // Create a copy of the VaList_S with a va_copy of the va_list
     VaList_S vlcopy_s(*vl);
     VaList_sp vlcopy(&vlcopy_s);
-    printf("VaList_sp\n");
-    for (size_t i(0); i < LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i) {
-      printf("entry %3d --> %s\n", i, _rep_(LCC_NEXT_ARG(vlcopy, i)).c_str());
+    printf("Calling dump_VaList_S_ptr\n");
+    bool atHead = dump_VaList_S_ptr(&vlcopy_s);
+    if (atHead) {
+      for (size_t i(0); i < LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i) {
+        T_sp v = LCC_NEXT_ARG(vlcopy,i);
+        printf("entry@%p %3d --> %s\n", v.raw_(), i, _rep_(v).c_str());
+      }
+    } else {
+      printf("The arglist is not safe to read - it is not atHead\n");
     }
   } else if (obj.fixnump()) {
     printf("fixnum_tag: %ld\n", obj.unsafe_fixnum());
@@ -428,6 +451,9 @@ void dbg_lowLevelDescribe(T_sp obj) {
     printf("other_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
     printf("More info:\n");
     printf("%s\n", _rep_(obj).c_str());
+    if ( Closure_sp closure = obj.asOrNull<Closure_O>() ) {
+      core__closure_slots_dump(closure);
+    }
   } else if (obj.consp()) {
     printf("cons_tag: %p  typeid: %s\n", &*obj, typeid(obj).name());
     printf("List:  \n");

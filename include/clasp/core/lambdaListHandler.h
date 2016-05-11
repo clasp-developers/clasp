@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/vectorObjects.fwd.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/arguments.h>
+#include <clasp/core/lambdaListHandler.fwd.h>
 #include <clasp/core/symbol.h>
 
 namespace core {
@@ -305,4 +306,3 @@ public:
 TRANSLATE(core::LambdaListHandler_O);
 
 #endif //]
-   

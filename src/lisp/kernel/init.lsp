@@ -69,9 +69,7 @@
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
-(export '(link-system-lto))
-
-
+(export '(llvm-link))
 (use-package :core)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -318,24 +316,21 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;;; A temporary definition of defun - the real one is in evalmacros
 (si:fset 'defun
-	   #'(lambda (def env)
-	       (let ((name (second def))	;cadr
-		     (lambda-list (third def))	; caddr
-		     (lambda-body (cdddr def))) ; cdddr
-		 (multiple-value-call
-		     (function (lambda (&optional (decl) (body) (doc) &rest rest)
-		       (declare (ignore rest))
-		       (if decl (setq decl (list (cons 'declare decl))))
-		       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
-			 ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-			 (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
-		   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#)) 
-
-		 ))
-	   t)
+         #'(lambda (def env)
+             (let ((name (second def))          ;cadr
+                   (lambda-list (third def))	; caddr
+                   (lambda-body (cdddr def)))   ; cdddr
+               (multiple-value-call
+                   (function (lambda (&optional (decl) (body) (doc) &rest rest)
+                     (declare (ignore rest))
+                     (if decl (setq decl (list (cons 'declare decl))))
+                     (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+                       ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+                       (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
+                 (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
+         t)
 
 (export '(defun))
-
 
 ;;; Define these here so that Cleavir can do inlining
 (defvar *defun-inline-hook* nil)
@@ -347,9 +342,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;; Discard documentation until helpfile.lsp is loaded
 (defun set-documentation (o d s) nil)
-
-(defvar *functions-to-inline* (make-hash-table :test #'equal))
-(defvar *functions-to-notinline* (make-hash-table :test #'equal))
 
 (defun proclaim (decl)
   "Args: (decl-spec)
@@ -367,12 +359,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
        (remhash name *functions-to-inline*)))
     (*proclaim-hook*
      (funcall *proclaim-hook* decl))))
-
-(defun declared-global-inline-p (name)
-  (gethash name *functions-to-inline*))
-
-(defun declared-global-notinline-p (name)
-  (gethash name *functions-to-notinline*))
 
 (defun global-inline-status (name)
   "Return 'cl:inline 'cl:notinline or nil"
@@ -505,22 +491,30 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (load (build-pathname #P"kernel/cmp/jit-setup"))
   (load (build-pathname #P"kernel/clsymbols")))
 
-(defvar *reversed-init-filenames* ())
+(defun entry-filename (filename-or-cons)
+  "If filename-or-cons is a list then the first entry is a filename"
+  (if (consp filename-or-cons)
+      (car filename-or-cons)
+      filename-or-cons))
 
-(si:fset 'interpreter-iload
-           #'(lambda (module)
-               (let* ((pathname (probe-file (build-pathname module :lisp)))
-		      (name (namestring pathname)))
-                 (if cmp:*implicit-compile-hook*
-                     (bformat t "Loading/compiling source: %s\n" (namestring name))
-                     (bformat t "Loading/interpreting source: %s\n" (namestring name)))
-		 (load pathname)))
-           nil)
+(defun entry-compile-file-options (entry)
+  (if (consp entry)
+      (cadr entry)
+      nil))
 
-(defun iload (fn &key load-bitcode )
+(defun interpreter-iload (entry)
+  (let* ((filename (entry-filename entry))
+         (pathname (probe-file (build-pathname filename :lisp)))
+         (name (namestring pathname)))
+    (if cmp:*implicit-compile-hook*
+        (bformat t "Loading/compiling source: %s\n" (namestring name))
+        (bformat t "Loading/interpreting source: %s\n" (namestring name)))
+    (load pathname)))
+
+(defun iload (entry &key load-bitcode )
   #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
-  (setq *reversed-init-filenames* (cons fn *reversed-init-filenames*))
-  (let* ((lsp-path (build-pathname fn))
+  (let* ((fn (entry-filename entry))
+         (lsp-path (build-pathname fn))
 	 (bc-path (build-pathname fn :bc)) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
@@ -552,8 +546,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 	      (load (probe-file lsp-path)))
 	    (bformat t "No interpreted or bitcode file for %s could be found\n" lsp-path)))))
 
-(defun delete-init-file (module &key (really-delete t) stage)
-  (let ((bitcode-path (build-pathname module :bc stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
+(defun delete-init-file (entry &key (really-delete t) stage)
+  (let* ((module (entry-filename entry))
+         (bitcode-path (build-pathname module :bc stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -596,8 +591,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (export '(default-target-backend target-backend-pathname))
 
-(defun bitcode-exists-and-up-to-date (filename)
-  (let* ((source-path (build-pathname filename))
+(defun bitcode-exists-and-up-to-date (entry)
+  (let* ((filename (entry-filename entry))
+         (source-path (build-pathname filename))
          (bitcode-path (build-pathname filename :bc))
          (found-bitcode (probe-file bitcode-path)))
     (if found-bitcode
@@ -617,7 +613,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun out-of-date-image (image source-files)
   (let* ((last-source (car (reverse source-files)))
-         (last-bitcode (build-pathname last-source :bc))
+         (last-bitcode (build-pathname (entry-filename last-source) :bc))
          (image-file image))
     (format t "last-bitcode: ~a~%" last-bitcode)
     (format t "image-file: ~a~%" image-file)
@@ -626,10 +622,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            (file-write-date image-file))
         t)))
 
-(defun compile-kernel-file (filename &key (reload nil) load-bitcode (force-recompile nil) counter total-files)
+(defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files)
   #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" filename)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
-  (let* ((source-path (build-pathname filename :lisp))
+  (let* ((filename (entry-filename entry))
+         (source-path (build-pathname filename :lisp))
 	 (bitcode-path (build-pathname filename :bc)) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
 	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
     (if (and load-bitcode (not force-recompile))
@@ -645,7 +642,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
               (bformat t "Compiling source %s\n   to %s - will reload: %s\n" source-path bitcode-path reload))
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
-            (compile-file (probe-file source-path) :output-file bitcode-path :print t :verbose t :output-type :bitcode :type :kernel)
+            (apply #'compile-file (probe-file source-path) :output-file bitcode-path
+                   :print t :verbose t :output-type :bitcode :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
@@ -653,86 +651,125 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-path))
 (export 'compile-kernel-file)
 
+(defun add-cleavir-build-files ()
+  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp)))
+         cleavir-files)
+    (unwind-protect
+         (progn
+           (setq cleavir-files (read fin)))
+      (close fin))
+    cleavir-files))
 
-(defvar *init-files*
-  '(
-    :init
-    #P"kernel/init"
-    :start
-    #P"kernel/cmp/jit-setup"
-    #P"kernel/clsymbols"
-    #P"kernel/lsp/packages"
-    #P"kernel/lsp/foundation"
-    #P"kernel/lsp/export"
-    #P"kernel/lsp/defmacro"
-    :defmacro
-    #P"kernel/lsp/helpfile"
-    #P"kernel/lsp/evalmacros"
-    #P"kernel/lsp/claspmacros"
-    #P"kernel/lsp/source-transformations"
-    :macros
+(defun add-direct-calls ()
+  (let* ((project (string-downcase (lisp-implementation-type)))
+         (project-generated-dir (bformat nil "sys:generated;%s;cl-wrappers.lisp" project)))
+    (if (probe-file (pathname project-generated-dir))
+        (list (pathname (bformat nil "generated/%s/cl-wrappers" project)))
+        nil)))
+
+(defun maybe-insert-epilogue-aclasp ()
+  "Insert epilogue if we are compiling aclasp"
+  (if (member :ecl-min *features*)
+      (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
+      nil))
+
+(defun maybe-insert-epilogue-bclasp ()
+  "Insert epilogue if we are compiling bclasp"
+  (if (member :bclasp *features*)
+      (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
+      nil))
+
+(defun maybe-insert-epilogue-cclasp ()
+  "Insert epilogue if we are compiling cclasp"
+  (if (member :cclasp *features*)
+      (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
+      nil))
+
+(defvar *build-files*
+  (list
+   :init
+   #P"kernel/lsp/prologue"
+   #P"kernel/lsp/direct-calls"
+   #'add-direct-calls
+   :min-start
+   #P"kernel/init"
+   :start
+   #P"kernel/cmp/jit-setup"
+   #P"kernel/clsymbols"
+   #P"kernel/lsp/packages"
+   #P"kernel/lsp/foundation"
+   #P"kernel/lsp/export"
+   #P"kernel/lsp/defmacro"
+   :defmacro
+   #P"kernel/lsp/helpfile"
+   #P"kernel/lsp/evalmacros"
+   #P"kernel/lsp/claspmacros"
+   #P"kernel/lsp/source-transformations"
+   :macros
    #P"kernel/lsp/testing"
-    #P"kernel/lsp/makearray"
-    #P"kernel/lsp/arraylib"
-    #P"kernel/lsp/setf"
-    #P"kernel/lsp/listlib"
-    #P"kernel/lsp/mislib"
-    #P"kernel/lsp/defstruct"
-    #P"kernel/lsp/predlib"
-    #P"kernel/lsp/seq"
-    #P"kernel/lsp/cmuutil"
-    #P"kernel/lsp/seqmacros"
-    #P"kernel/lsp/seqlib"
-    #P"kernel/lsp/iolib"
-;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
-    #P"kernel/lsp/logging"
-    #P"kernel/lsp/trace"
-    :pre-cmp
-    ;; Compiler code
-    #P"kernel/cmp/packages"
-    #P"kernel/cmp/cmpsetup"
-;;    #P"kernel/cmp/cmpenv-fun"
-;;    #P"kernel/cmp/cmpenv-proclaim"
-    #P"kernel/cmp/cmpglobals"
-    #P"kernel/cmp/cmptables"
-    #P"kernel/cmp/cmpvar"
-    #P"kernel/cmp/cmputil"
-    #P"kernel/cmp/cmpintrinsics"
-    #P"kernel/cmp/cmpir"
-    #P"kernel/cmp/cmpeh"
-    #P"kernel/cmp/debuginfo"
-;;    #P"kernel/cmp/arguments"
-    #P"kernel/cmp/lambdalistva"
-    #P"kernel/cmp/cmpvars"
-    #P"kernel/cmp/cmpquote"
-    #P"kernel/cmp/cmpobj"
-;;    #P"kernel/cmp/mincomp"
-    #P"kernel/cmp/compiler"
-    #P"kernel/cmp/compilefile"
-    #P"kernel/cmp/cmpbundle"
-    :pre-repl
-    #P"kernel/cmp/cmprepl"
-    :cmp
-    :min
-    :cmprepl
-    #P"kernel/cmp/cmpwalk"
-    :was-pre-cmp
-    #P"kernel/lsp/sharpmacros"
-    #P"kernel/lsp/assert"
-    #P"kernel/lsp/numlib"
-    #P"kernel/lsp/describe"
-    #P"kernel/lsp/module"
-    #P"kernel/lsp/loop2"
-    #P"kernel/lsp/shiftf-rotatef"
-    #P"kernel/lsp/assorted"
-    #P"kernel/lsp/packlib"
-;;    cmp/cmpinterpreted
-    #P"kernel/lsp/defpackage"
-    #P"kernel/lsp/format"
-    #|
-    arraylib
-    numlib
-    |#
+   #P"kernel/lsp/makearray"
+   #P"kernel/lsp/arraylib"
+   #P"kernel/lsp/setf"
+   #P"kernel/lsp/listlib"
+   #P"kernel/lsp/mislib"
+   #P"kernel/lsp/defstruct"
+   #P"kernel/lsp/predlib"
+   #P"kernel/lsp/seq"
+   #P"kernel/lsp/cmuutil"
+   #P"kernel/lsp/seqmacros"
+   #P"kernel/lsp/seqlib"
+   #P"kernel/lsp/iolib"
+   ;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
+   #P"kernel/lsp/logging"
+   #P"kernel/lsp/trace"
+   :pre-cmp
+   ;; Compiler code
+   #P"kernel/cmp/packages"
+   #P"kernel/cmp/cmpsetup"
+   ;;    #P"kernel/cmp/cmpenv-fun"
+   ;;    #P"kernel/cmp/cmpenv-proclaim"
+   #P"kernel/cmp/cmpglobals"
+   #P"kernel/cmp/cmptables"
+   #P"kernel/cmp/cmpvar"
+   #P"kernel/cmp/cmputil"
+   #P"kernel/cmp/cmpintrinsics"
+   #P"kernel/cmp/cmpir"
+   #P"kernel/cmp/cmpeh"
+   #P"kernel/cmp/debuginfo"
+   ;;    #P"kernel/cmp/arguments"
+   #P"kernel/cmp/lambdalistva"
+   #P"kernel/cmp/cmpvars"
+   #P"kernel/cmp/cmpquote"
+   #P"kernel/cmp/cmpobj"
+   ;;    #P"kernel/cmp/mincomp"
+   #P"kernel/cmp/compiler"
+   #P"kernel/cmp/compilefile"
+   #P"kernel/cmp/cmpbundle"
+   :pre-repl
+   #P"kernel/cmp/cmprepl"
+   :cmp-pre-epilogue
+   #'maybe-insert-epilogue-aclasp
+   :cmp
+   :min
+   :cmprepl
+   #P"kernel/cmp/cmpwalk"
+   :was-pre-cmp
+   #P"kernel/lsp/sharpmacros"
+   #P"kernel/lsp/assert"
+   #P"kernel/lsp/numlib"
+   #P"kernel/lsp/describe"
+   #P"kernel/lsp/module"
+   #P"kernel/lsp/loop2"
+   #P"kernel/lsp/shiftf-rotatef"
+   #P"kernel/lsp/assorted"
+   #P"kernel/lsp/packlib"
+   ;;    cmp/cmpinterpreted
+   #P"kernel/lsp/defpackage"
+   #P"kernel/lsp/format"
+   #|
+   arraylib
+   numlib
+   |#
     #P"kernel/clos/package"
     #P"kernel/clos/hierarchy"
     #P"kernel/clos/cpl"
@@ -767,24 +804,45 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/cmp/external-clang"
     :front
     #P"kernel/lsp/top"
+    #'maybe-insert-epilogue-bclasp
     :all
+    :bclasp
+    #'add-cleavir-build-files
+    #'maybe-insert-epilogue-cclasp
+    :cclasp
 ;;    lsp;pprint
     ))
-(defvar *system-files* *init-files*)
-(export '(*system-files* *init-files*))
 
-(defun add-cleavir-to-*system-files* ()
-  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp)))
-         cleavir-files)
-    (unwind-protect
-         (progn
-           (setq cleavir-files (read fin)))
-      (close fin))
-    (setq *system-files* (append *init-files*
-                                 (list :bclasp)
-                                 cleavir-files
-                                 (list :cclasp)))))
-(export 'add-cleavir-to-*system-files*)
+(defun expand-build-file-list (sources)
+  "Copy the list of symbols and pathnames into files
+and if S-exps are encountered, funcall them with
+no arguments and splice the resulting list into files.
+Return files."
+  (let* (files
+         (cur sources))
+    (tagbody
+     top
+       (if (null cur) (go done))
+       (let ((entry (car cur)))
+         (if (or (pathnamep entry) (keywordp entry))
+             (setq files (cons entry files))
+             (if (functionp entry)
+                 (let* ((ecur (funcall entry)))
+                   (tagbody
+                    inner-top
+                      (if (null ecur) (go inner-done))
+                      (setq files (cons (car ecur) files))
+                      (setq ecur (cdr ecur))
+                      (go inner-top)
+                    inner-done))
+                 (error "I don't know what to do with ~a" entry))))
+       (setq cur (cdr cur))
+       (go top)
+     done)
+    (nreverse files)))
+
+(defvar *system-files* (expand-build-file-list *build-files*))
+(export '(*system-files*))
 
 (defvar *asdf-files*
   '(:init
@@ -905,45 +963,34 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
      (if (member :interactive *features*)
          (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
-(defun default-epilogue-form ()
-  '(progn
-    (cl:in-package :cl-user)
-    (process-command-line-load-eval-sequence)
-    (let ((core:*use-interpreter-for-eval* nil))
-      (when (member :interactive *features*) (core:run-repl)))))
-
-(defconstant +minimal-epilogue-form+ '(progn
-                                       (process-command-line-load-eval-sequence)
-                                       (bformat t "Starting clasp-min low-level-repl\n")
-                                       (core::select-package :core)
-                                       (core::low-level-repl)))
-
 
 (defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
   #+dbg-print(bformat t "DBG-PRINT About to link-system\n")
-  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname x :bc)) (select-source-files end :first-file start :system system))))
-    (cmp:link-system-lto (build-pathname +image-pathname+ :fasl)
-                         :lisp-bitcode-files bitcode-files
-                         :prologue-form prologue-form
-                         :epilogue-form epilogue-form)))
-(export '(link-system)) ;; core
-
+  (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname (entry-filename x) :bc)) (select-source-files end :first-file start :system system))))
+    (cmp:llvm-link (build-pathname +image-pathname+ :fasl)
+                   :lisp-bitcode-files bitcode-files
+                   :prologue-form prologue-form
+                   :epilogue-form epilogue-form
+                   :link-time-optimization t)))
+(export '(link-system))
+        
 (export '(compile-min))
 (defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
-  (if (out-of-date-bitcodes :init :cmp)
+  (if (out-of-date-bitcodes :min-start :cmp)
       (progn
-        (load-system :start :cmp :system system)
+        (load-system :start :cmp-pre-epilogue :system system)
         (let* ((*target-backend* target-backend)
-               (files (out-of-date-bitcodes :init :cmp :system system)))
-          (compile-system files :reload t)))))
+               (files (out-of-date-bitcodes :min-start :cmp-pre-epilogue :system system)))
+          (compile-system files :reload t)
+          (compile-system (out-of-date-bitcodes :cmp-pre-epilogue :cmp :system system) :reload nil)))))
 
 (export 'link-min)
 (defun link-min (&key force)
   (min-features)
-  (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :init)))
+  (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :min-start)))
       (progn
-        (load-system :start :cmp)
-        (link-system :init :cmp (default-prologue-form) +minimal-epilogue-form+))))
+        (load-system :start :cmp-pre-epilogue)
+        (link-system :min-start :cmp nil nil))))
                    
 (defun recursive-remove-from-list (item list)
   (if list
@@ -981,6 +1028,13 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   (remove-stage-features)
   (setq *features* (list* :ecl-min *features*)))
 
+(export 'clean-compile-link-min)
+(defun clean-compile-link-min ()
+  (min-features)
+  (clean-system :init :no-prompt t)
+  (compile-min)
+  (link-min))
+
 (export 'bclasp-features)
 (defun bclasp-features()
   (remove-stage-features)
@@ -1000,6 +1054,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '(compile-bclasp))
 (defun compile-bclasp ()
   (bclasp-features)
+  (setq *system-files* (expand-build-file-list *build-files*))
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :all)
         (progn
@@ -1009,14 +1064,22 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export 'link-bclasp)
 (defun link-bclasp ()
   (bclasp-features)
+  (setq *system-files* (expand-build-file-list *build-files*))
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :all :first-file :init))
-        (link-system :init :all (default-prologue-form '(:clos)) (default-epilogue-form)))))
+        (link-system :init :all nil nil))))
+
+(export 'clean-compile-link-bclasp)
+(defun clean-compile-link-bclasp ()
+  (bclasp-features)
+  (clean-system :init :no-prompt t)
+  (compile-bclasp)
+  (link-bclasp))
 
 (export '(compile-cclasp))
 (defun compile-cclasp ()
   (cclasp-features)
-  (add-cleavir-to-*system-files*)
+  (setq *system-files* (expand-build-file-list *build-files*))
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :cclasp)
         (time
@@ -1024,30 +1087,31 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
            (load-system :bclasp :cclasp :interp t )
            (let ((files (out-of-date-bitcodes :init :cclasp)))
              (compile-system files)))))))
+(export '(recompile-cclasp))
+(defun recompile-cclasp ()
+  (cclasp-features)
+  (setq *system-files* (expand-build-file-list *build-files*))
+  (let ((*target-backend* (default-target-backend)))
+    (if (out-of-date-bitcodes :init :cclasp)
+        (time
+         (let ((files (out-of-date-bitcodes :init :cclasp)))
+           (compile-system files))))))
+
 (export 'link-cclasp)
 (defun link-cclasp (&key force)
   (cclasp-features)
-  (add-cleavir-to-*system-files*)
+  (setq *system-files* (expand-build-file-list *build-files*))
   (let ((*target-backend* (default-target-backend)))
     (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cclasp :first-file :init)))
         (progn
-          (link-system :init :cclasp
-                       '(progn
-                         (make-package "CLEAVIR-AST")
-                         (make-package "CLASP-CLEAVIR-AST")
-                         (make-package "CLASP-CLEAVIR")
-                         (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
-                         (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
-                         (if (member :interactive *features*) 
-                             (core:bformat t "Starting %s cclasp %s ... loading image... it takes a few seconds\n"
-                                           (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
-                       '(progn
-                         (cl:in-package :cl-user)
-                         (require 'system)
-                         (core:load-clasprc)
-                         (core:process-command-line-load-eval-sequence)
-                         (let ((core:*use-interpreter-for-eval* nil))
-                           (when (member :interactive *features*) (core:top-level)))))))))
+          (link-system :init :cclasp nil nil)))))
+
+(export 'clean-compile-link-cclasp)
+(defun clean-compile-link-cclasp ()
+  (cclasp-features)
+  (clean-system :init :no-prompt t)
+  (compile-cclasp)
+  (link-cclasp))
 
 (defun help-build ()
   (bformat t "Useful build commands:\n")
@@ -1119,7 +1183,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 ;  (core:system (bformat nil "(cd %s; make)" (namestring (translate-logical-pathname "kernel;asdf;"))))
   (compile-file "kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "modules;asdf;asdf.fasl"
 										      :target-backend (default-target-backend)))
-  #+(or)(cmp::link-system-lto "kernel;asdf;build;asdf.fasl"
+  #+(or)(cmp:llvm-link "kernel;asdf;build;asdf.fasl"
 			      :lisp-bitcode-files (list #P"kernel/asdf/build/asdf.bc")))
 
 

@@ -65,5 +65,4 @@ CL_DEFMETHOD   int size() const { return this->map.size(); };
 };
 };
 
-TRANSLATE(core::SmallMultimap_O);
 #endif

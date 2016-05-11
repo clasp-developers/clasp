@@ -12,7 +12,7 @@
 
 ;;;; clasp - changes approved May1 2013
 
-;;#-clasp
+#-clasp
 (defpackage "CLOS"
   (:use "CL" "EXT")
   (:import-from "SI" "UNBOUND" "GET-SYSPROP" "PUT-SYSPROP" "REM-SYSPROP"

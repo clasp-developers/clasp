@@ -112,6 +112,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::VectorObjects_O);
 
 #endif /* _core_VectorObjects_H */

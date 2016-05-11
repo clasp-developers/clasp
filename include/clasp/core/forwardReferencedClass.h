@@ -59,7 +59,6 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::ForwardReferencedClass_O);
 template <>
 struct gctools::GCInfo<core::ForwardReferencedClass_O> {
   static bool constexpr NeedsInitialization = true;

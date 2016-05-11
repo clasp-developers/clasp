@@ -44,6 +44,5 @@ public:
   virtual ~CxxObject_O(){};
 };
 };
-TRANSLATE(core::CxxObject_O);
 
 #endif

@@ -90,7 +90,7 @@ public: // Functions here
   /*! Swap the contents of the VectorDisplaced */
   void swap(VectorDisplaced_sp vec);
 
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   virtual T_sp setf_aref(List_sp indices_val);
 
   virtual T_sp elt(int index) const;
@@ -113,7 +113,6 @@ public: // Functions here
 };
 
 }; /* core */
-TRANSLATE(core::VectorDisplaced_O);
 template <>
 struct gctools::GCInfo<core::VectorDisplaced_O> {
   static bool constexpr NeedsInitialization = false;

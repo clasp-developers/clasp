@@ -69,7 +69,6 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::VectorObjectsWithFillPtr_O);
 
 template <>
 struct gctools::GCInfo<core::VectorObjectsWithFillPtr_O> {

@@ -155,6 +155,48 @@
       (generate-expose-function-signatures sout ns-grouped)
       (generate-expose-function-bindings sout ns-grouped))))
 
+(defun mangle-and-wrap-name (name)
+  "* Arguments
+- name :: A string
+* Description
+Convert colons to underscores"
+  (format nil "wrapped_~a" (substitute #\_ #\: name)))
+
+(defgeneric direct-call-function (c-code cl-code func))
+
+(defmethod direct-call-function (c-code cl-code (func t))
+  (format c-code "// Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func))
+  (format cl-code ";;; Do nothing yet for function ~a of type ~a~%" (function-name% func) (type-of func)))
+
+(defmethod direct-call-function (c-code cl-code (func expose-internal-function))
+  (multiple-value-bind (return-type arg-types)
+      (parse-types-from-signature (signature% func))
+    (let* ((wrapped-name (mangle-and-wrap-name (function-name% func)))
+           (one-func-code
+            (generate-wrapped-function wrapped-name
+                                       (namespace% func)
+                                       (function-name% func)
+                                       return-type arg-types)))
+      (format c-code "// Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format c-code "// Found at ~a:~a~%" (file% func) (line% func))
+      (format c-code "~a~%" one-func-code)
+      (format cl-code ";;; Generating code for ~a::~a~%" (namespace% func) (function-name% func))
+      (format cl-code ";;; Found at ~a:~a~%" (file% func) (line% func))
+      (let* ((raw-lisp-name (lisp-name% func))
+             (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
+        (if (search "&va-rest" (lambda-list% func))
+            (format cl-code "(if (not core:*silent-startup*) (bformat t \"I can't compile lambda lists with &va-rest yet - not exposing %s\\n\" ~s))~%" wrapped-name)
+            (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name ))))))
+                               
+(defun generate-code-for-direct-call-functions (functions)
+  (let ((c-code (make-string-output-stream))
+        (cl-code (make-string-output-stream)))
+    (format cl-code "(in-package :core)~%")
+    (mapc (lambda (func)
+            (direct-call-function c-code cl-code func))
+          functions)
+    (values (get-output-stream-string c-code) (get-output-stream-string cl-code))))
+
 (defun inherits-from* (x-name y-name inheritance)
   (let ((depth 0)
         ancestor
@@ -496,7 +538,7 @@
 (defun write-if-changed (code main-path app-relative)
   (let ((pn (make-pathname :name (pathname-name app-relative)
                            :type (pathname-type app-relative)
-                           :directory '(:relative "include" "generated")
+                           :directory (pathname-directory app-relative)
                            :defaults (pathname main-path))))
     (let ((data-in-file (when (probe-file pn)
                           (with-open-file (stream pn :direction :input)
@@ -520,4 +562,7 @@
     (write-if-changed symbol-info main-path (gethash :symbols_scraped_inc_h app-config))
     (write-if-changed enum-info main-path (gethash :enum_inc_h app-config))
     (write-if-changed initializers-info main-path (gethash :initializers_inc_h app-config))
-    #+(or)(generate-tags-file (merge-pathnames #P"TAGS" (translate-logical-pathname main-path)) tags)))
+    (multiple-value-bind (direct-call-c-code direct-call-cl-code)
+        (generate-code-for-direct-call-functions functions)
+      (write-if-changed direct-call-c-code main-path (gethash :c-wrappers app-config))
+      (write-if-changed direct-call-cl-code main-path (gethash :lisp-wrappers app-config)))))

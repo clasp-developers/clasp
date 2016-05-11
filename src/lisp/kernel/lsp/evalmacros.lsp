@@ -30,11 +30,13 @@ last FORM.  If not, simply returns NIL."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(si::fset ',name ,function t ,pprint ',vl))
+       ,(ext:register-with-pde whole `(si::fset ',name ,function
+                                                t  ; macro
+                                                ,pprint ; ecl pprint
+                                                ',vl ; lambda-list lambda-list-p
+                                                ))
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
-
-
 
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses
@@ -219,17 +221,13 @@ terminated by a non-local exit."
   `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
 )
 
-(defmacro lambda (&rest body)
-  `(function (lambda ,@body)))
+(defmacro lambda (&rest body) `(function (lambda ,@body)))
 
 #+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
        (multiple-value-bind (decls body doc)
 	   (si::process-declarations lambda-body t)
 	 `(lambda ,lambda-list (declare (core:lambda-block ,name) ,@decls) ,@doc
 		  (block ,(si::function-block-name name) ,@body))))
-
-
-
 ; assignment
 
 #-ecl-min
@@ -483,3 +481,4 @@ values of the last FORM.  If no FORM is given, returns NIL."
 (in-package :core)
 (import 'ext:truly-the)
 (export 'truly-the)
+

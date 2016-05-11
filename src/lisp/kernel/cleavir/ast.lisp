@@ -84,6 +84,28 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Class INTRINSIC-CALL-AST
+;;;
+;;; This AST is used to represent a call to an intrinsic function inserted into the generated code.
+
+(defclass intrinsic-call-ast (cleavir-ast:ast)
+  ((%function-name :initarg :function-name  :accessor function-name)
+   (%argument-asts :initarg :argument-asts :reader argument-asts)))
+
+(cleavir-io:define-save-info intrinsic-call-ast
+    (:function-name function-name)
+  (:argument-asts argument-asts))
+
+(defmethod cleavir-ast-graphviz::label ((ast intrinsic-call-ast))
+  (with-output-to-string (s)
+    (format s "intrinsic-call (~a)" (function-name ast))))
+
+(defmethod cleavir-ast:children ((ast intrinsic-call-ast))
+  (argument-asts ast))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Class PRECALC-VECTOR-FUNCTION-AST
 ;;;
 ;;; This AST is a subclass of FUNCTION-AST. It is used when an AST

@@ -141,7 +141,7 @@ CL_DEFUN core::Str_sp sockets_internal__ll_getNameServiceErrorMessage(int num) {
   return core::Str_O::create(strerror(num));
 };
 
-CL_LAMBDA(host-name host-ent setf_host_ent_name setf_host_ent_aliases setf_host_ent_address_type setf_host_ent_addresses);
+CL_LAMBDA(host-name host-ent setf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
 CL_DECLARE();
 CL_DOCSTRING("ll_getHostByName");
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,                 // #0
@@ -182,7 +182,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
   }
 }
 
-CL_LAMBDA(address host-ent stf_host_ent_name setf_host_ent_aliases setf_host_ent_address_type setf_host_ent_addresses);
+CL_LAMBDA(address host-ent stf-host-ent-name setf-host-ent-aliases setf-host-ent-address-type setf-host-ent-addresses);
 CL_DECLARE();
 CL_DOCSTRING("ll_getHostByAddress");
 CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp address,               //#0

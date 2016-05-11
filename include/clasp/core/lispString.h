@@ -77,7 +77,6 @@ public:  // Functions here
  
 }; /* core */
 
-TRANSLATE(core::String_O);
 
 namespace core {
 

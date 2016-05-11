@@ -67,9 +67,11 @@ CL_DEFMETHOD   virtual bool arrayHasFillPointerP() const { return false; };
   virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
 CL_LISPIFY_NAME("core:rowMajorAset");
 CL_DEFMETHOD   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
+ 
 CL_LISPIFY_NAME("cl:rowMajorAref");
 CL_DEFMETHOD   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
-  virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
+ 
+  virtual gc::Fixnum arrayRowMajorIndex(VaList_sp indices) const;
 
   //! Don't support adjustable arrays yet
   bool adjustable_array_p() const { return false; };
@@ -91,11 +93,19 @@ CL_DEFMETHOD   virtual gc::Fixnum rank() const { SUBIMP(); };
   /*! Return the offset into a one-dimensional vector for a multidimensional index
 	 If last_value_is_val == true then don't use the last value in the indices list
 	*/
-  cl_index index_val(List_sp indices, bool last_value_is_val, List_sp &val_cons) const;
+  cl_index index_val_(List_sp indices, bool last_value_is_val, T_sp &last_val) const;
+  cl_index index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const;
 
   /*! Return the offset into a one-dimensional vector for a multidimensional index
 	*/
-  gc::Fixnum index(List_sp indices) const;
+  inline gc::Fixnum index_(List_sp indices) const {
+    T_sp dummy;
+    return this->index_val_(indices,false,dummy);
+  };
+  inline gc::Fixnum index_(VaList_sp indices) const {
+    T_sp dummy;
+    return this->index_val_(indices,false,dummy);
+  };
 
   /*! Return the type returned by this array */
 CL_LISPIFY_NAME("cl:array-elementType");
@@ -122,7 +132,7 @@ CL_DEFMETHOD   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { 
   }
 
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
 
   /*! Setf the value at the indices - the val is at the end of the list of indices */
   virtual T_sp setf_aref(List_sp indices_val);
@@ -154,6 +164,5 @@ CL_DEFMETHOD   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp
 
 }; /* core */
 
-TRANSLATE(core::Array_O);
 
 #endif /* _core_Array_H */

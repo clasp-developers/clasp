@@ -35,7 +35,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/holder.h>
 #include <clasp/core/lispStream.fwd.h>
-#include <clasp/core/executables.fwd.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/numbers.h>
@@ -47,7 +46,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
@@ -198,14 +196,11 @@ class class_;
 
 class PushLispMode;
 
+ #if 0
 struct ThreadInfo {
   MultipleValues multipleValues;
-  size_t _lambda_list_handler_create_bindings_count;
-
-  ThreadInfo() : _lambda_list_handler_create_bindings_count(0){};
 };
-
-extern __thread ThreadInfo *threadLocalInfoPtr;
+#endif
 
 class Lisp_O {
   friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);

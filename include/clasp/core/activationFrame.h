@@ -55,7 +55,7 @@ class ActivationFrame_O : public Environment_O {
   T_sp _Parent;
 public:
   static string clasp_asString(T_sp af);
-  T_sp &parentFrameRef() { return this->_Parent; };
+  T_sp &parentFrameRef_() { return this->_Parent; };
   T_sp parentFrame() const { return this->_Parent; };
 public:
  ActivationFrame_O() : Base(), _Parent(_Nil<T_O>()){};
@@ -84,9 +84,22 @@ virtual T_sp currentVisibleEnvironment() const;
   virtual string summaryOfContents() const;
 
   inline void setParentFrame(T_O *parent) {
-    this->parentFrameRef().rawRef_() = parent;
+    this->parentFrameRef_().rawRef_() = parent;
+#ifdef DEBUG_ASSERTS
+    T_sp p((gctools::Tagged)parent);
+    if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
+      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
+    }
+#endif
   }
-  inline void setParentFrame(T_sp parent) { this->parentFrameRef() = parent; };
+  inline void setParentFrame(T_sp p) {
+    this->parentFrameRef_() = p;
+#ifdef DEBUG_ASSERTS
+    if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
+      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
+    }
+#endif
+  };
 private:
   virtual string asString() const;
 
@@ -125,7 +138,6 @@ struct gctools::GCInfo<core::ValueFrame_O> {
   //  static bool const InlineScan = true;
   //  static bool const Roo
 };
-TRANSLATE(core::ActivationFrame_O);
 
 namespace core {
 class ValueFrame_O : public ActivationFrame_O {

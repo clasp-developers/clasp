@@ -30,6 +30,7 @@ typedef bool _Bool;
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/IR/LLVMContext.h>
+#include <llvm/LinkAllPasses.h>
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/ReaderWriter.h>
 #include <llvm/Support/raw_ostream.h>
@@ -49,7 +50,7 @@ typedef bool _Bool;
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Verifier.h>
 #include "llvm/IR/AssemblyAnnotationWriter.h" // will be llvm/IR
@@ -89,7 +90,7 @@ typedef bool _Bool;
 #include <clasp/core/symbolTable.h>
 
 #include <clasp/gctools/gctoolsPackage.h>
-
+#include <clasp/gctools/gcStack.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/cxxClass.h>
@@ -163,9 +164,9 @@ typedef bool _Bool;
 #include <clasp/asttooling/clangTooling.h>
 #include <clasp/asttooling/astVisitor.h>
 #include <clasp/asttooling/example.h>
-#include <clasp/asttooling/Registry.h>
-#include <clasp/asttooling/Diagnostics.h>
-#include <clasp/asttooling/Marshallers.h>
+//#include <clasp/asttooling/Registry.h>
+//#include <clasp/asttooling/Diagnostics.h>
+//#include <clasp/asttooling/Marshallers.h>
 
 #define GC_INTERFACE_INCLUDE
 #include <project_headers.h>
@@ -307,9 +308,10 @@ const char *obj_kind_name(core::T_O *tagged_ptr) {
 }
 
 const char *obj_name(gctools::kind_t kind) {
-  if (kind == (gctools::kind_t)KIND_null || kind > (gctools::kind_t)KIND_max) {
+  if (kind == (gctools::kind_t)KIND_null) {
     return "UNDEFINED";
   }
+  if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
   size_t kind_index = (size_t)kind;
   ASSERT(kind_index<=global_kind_max);
 //  printf("%s:%d obj_name kind= %d  kind_index = %d\n", __FILE__, __LINE__, kind, kind_index);
@@ -384,6 +386,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   if (header->kindP()) {
     gctools::GCKindEnum kind = header->kind();
+    if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
     const Kind_layout& kind_layout = global_kind_layout[kind];
 #ifndef RUNNING_GC_BUILDER
     if ( kind_layout.layout_op == class_container_op ) {
@@ -453,6 +456,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       original_client = (mps_addr_t)client;
       if (header->kindP()) {
         kind = header->kind();
+        if ( kind > KIND_max ) kind = GCKind<core::Instance_O>::Kind;
         const Kind_layout& kind_layout = global_kind_layout[kind];
 #ifndef RUNNING_GC_BUILDER
         size = kind_layout.size;
@@ -750,15 +754,16 @@ void setup_bootstrap_packages(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
 template <class TheClass>
 void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const std::string& full_name )
 {
+  std::string orig_package_part, orig_symbol_part;
+  core::colon_split( full_name, orig_package_part, orig_symbol_part);
   std::string package_part, symbol_part;
-  core::colon_split( full_name, package_part, symbol_part);
-  package_part = core::lispify_symbol_name(package_part);
-  symbol_part = core::lispify_symbol_name(symbol_part);
+  package_part = core::lispify_symbol_name(orig_package_part);
+  symbol_part = core::lispify_symbol_name(orig_symbol_part);
 //  printf("%s:%d set_one_static_class_symbol --> %s:%s\n", __FILE__, __LINE__, package_part.c_str(), symbol_part.c_str() );
   core::SymbolStorage store;
   bool found =  symbols->lookupSymbol(package_part,symbol_part, store );
   if ( !found ) {
-    printf("%s:%d ERROR!!!! The static class symbol %s was not found!\n", __FILE__, __LINE__, full_name.c_str() );
+    printf("%s:%d ERROR!!!! The static class symbol %s was not found orig_symbol_part=|%s| symbol_part=|%s|!\n", __FILE__, __LINE__, full_name.c_str(), orig_symbol_part.c_str(), symbol_part.c_str() );
     abort();
   }
   TheClass::set_static_class_symbol(store._Symbol);
@@ -930,5 +935,10 @@ void initialize_clasp()
 //  initialize_source_info();
 };
 
+extern "C" {
 
+#ifndef SCRAPING
+#include <generated/c-wrappers.h>
+#endif
+};
 

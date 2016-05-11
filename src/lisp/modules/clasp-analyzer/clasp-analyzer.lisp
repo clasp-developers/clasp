@@ -713,6 +713,9 @@ to expose to C++.
                            :base base
                            :offset-type x))))
 
+(defmethod linearize-class-layout-impl ((x lvalue-reference-ctype) base analysis)
+  nil)
+
 (defmethod linearize-class-layout-impl ((x enum-ctype) base analysis)
   nil)
 (defmethod linearize-class-layout-impl ((x builtin-ctype) base analysis)
@@ -1137,18 +1140,18 @@ can be saved and reloaded within the project for later analysis"
 
 (defparameter *class-matcher*
   '(:bind :whole
-    (:record-decl
+    (:cxxrecord-decl
      ;; The class must be a definition
      (:is-definition))))
 (clang-tool:compile-matcher *class-matcher*)
 
 
 (defparameter *base-class-submatcher*
-  (clang-tool:compile-matcher '(:record-decl
+  (clang-tool:compile-matcher '(:cxxrecord-decl
                      (:is-derived-from
                       (:for-each
-                       (:record-decl
-                        (:bind :base-name (:record-decl))
+                       (:cxxrecord-decl
+                        (:bind :base-name (:cxxrecord-decl))
                         (:has-ancestor
                          (:namespace-decl
                           (:bind :base-ns (:namespace-decl))))
@@ -1157,32 +1160,34 @@ can be saved and reloaded within the project for later analysis"
     (error "Problem encountered compiling *base-class-submatcher*"))
 
 
-
+(defparameter *field-submatcher-sexp*
+  '(:cxxrecord-decl
+    (:for-each ;; -descendant
+     (:field-decl
+      (:bind :field (:field-decl))))))
 (defparameter *field-submatcher*
-  (clang-tool:compile-matcher '(:record-decl
-                     (:for-each ;; -descendant
-                      (:field-decl
-                       (:bind :field (:field-decl))
-                       )))))
+  (clang-tool:compile-matcher *field-submatcher-sexp*))
 
 (or *field-submatcher*
     (error "Problem encountered compiling *field-submatcher*"))
 
 
-(defparameter *metadata-submatcher*
-  (clang-tool:compile-matcher
-   '(:record-decl
+(defparameter *metadata-submatcher-sexp*
+   '(:cxxrecord-decl
      (:for-each ;; -descendant
-      (:record-decl
+      (:cxxrecord-decl
        (:matches-name "metadata_.*")
-       (:bind :metadata (:record-decl)))))))
+       (:bind :metadata (:cxxrecord-decl))))))
+(defparameter *metadata-submatcher*
+  (clang-tool:compile-matcher *metadata-submatcher-sexp*))
 
-
-(defparameter *method-submatcher*
-  (clang-tool:compile-matcher '(:record-decl
-                     (:for-each ;; -descendant
-                      (:method-decl
-                       (:bind :method (:method-decl)))))))
+(defparameter *method-submatcher-sexp*
+  '(:cxxrecord-decl
+    (:for-each ;; -descendant
+     (:cxxmethod-decl
+      (:bind :method (:cxxmethod-decl))))))
+(defparameter *method-submatcher* 
+  (clang-tool:compile-matcher *method-submatcher-sexp*))
 
 
 (defun setup-cclass-search (mtool)
@@ -1211,6 +1216,7 @@ can be saved and reloaded within the project for later analysis"
                  ;;
                  (clang-tool:sub-match-run
                   *field-submatcher*
+                  *field-submatcher-sexp*
                   (clang-tool:mtag-node match-info :whole)
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
@@ -1234,6 +1240,7 @@ can be saved and reloaded within the project for later analysis"
                  ;;
                  (clang-tool:sub-match-run
                   *method-submatcher*
+                  *method-submatcher-sexp*
                   (clang-tool:mtag-node match-info :whole)
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
@@ -1244,6 +1251,7 @@ can be saved and reloaded within the project for later analysis"
                       (push method-name method-names))))
                  (clang-tool:sub-match-run
                   *metadata-submatcher*
+                  *metadata-submatcher-sexp*
                   class-node
                   (clang-tool:ast-context match-info)
                   (lambda (minfo)
@@ -1276,7 +1284,7 @@ can be saved and reloaded within the project for later analysis"
                      (%%new-class-callback match-info class-node record-key template-specializer))))))
       (clang-tool:multitool-add-matcher mtool
                              :name :cclasses
-                             :matcher (clang-tool:compile-matcher *class-matcher*)
+                             :matcher-sexp *class-matcher*
                              :initializer (lambda () (setf results (make-hash-table :test #'equal)))
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%class-callback))))))
 
@@ -1292,7 +1300,7 @@ can be saved and reloaded within the project for later analysis"
 
 
 (defparameter *lispalloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "GCObjectAllocator"))
@@ -1326,7 +1334,7 @@ and the inheritance hierarchy that the garbage collector will need"
       ;; Initialize the class search
       (clang-tool:multitool-add-matcher mtool
                              :name :lispallocs
-                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*lispalloc-matcher*))
+                             :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%lispalloc-matcher-callback))))))
 
@@ -1342,7 +1350,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defparameter *classalloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "ClassAllocator"))
@@ -1375,7 +1383,7 @@ and the inheritance hierarchy that the garbage collector will need"
       ;; Initialize the class search
       (clang-tool:multitool-add-matcher mtool
                              :name :classallocs
-                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*classalloc-matcher*))
+                             :matcher-sexp `(:bind :whole ,*classalloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%classalloc-matcher-callback))))))
 
@@ -1392,7 +1400,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defparameter *rootclassalloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "RootClassAllocator"))
@@ -1425,7 +1433,7 @@ and the inheritance hierarchy that the garbage collector will need"
       ;; Initialize the class search
       (clang-tool:multitool-add-matcher mtool
                              :name :rootclassallocs
-                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*rootclassalloc-matcher*))
+                             :matcher-sexp `(:bind :whole ,*rootclassalloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%rootclassalloc-matcher-callback))))))
 
@@ -1437,11 +1445,11 @@ and the inheritance hierarchy that the garbage collector will need"
 ;;
 
 (defparameter *containeralloc-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:is-same-or-derived-from
-     (:record-decl
+     (:cxxrecord-decl
       (:has-name "GCContainer")))))
 
 (defun setup-containeralloc-search (mtool)
@@ -1467,7 +1475,7 @@ and the inheritance hierarchy that the garbage collector will need"
       ;; Initialize the class search
       (clang-tool:multitool-add-matcher mtool
                              :name :containerallocs
-                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*containeralloc-matcher*))
+                             :matcher-sexp `(:bind :whole ,*containeralloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%containeralloc-matcher-callback))))))
 
@@ -1528,7 +1536,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                                    :ctype classified-type)))))))))
       (clang-tool:multitool-add-matcher mtool
                              :name :global-variables
-                             :matcher (clang-tool:compile-matcher *global-variable-matcher*)
+                             :matcher-sexp *global-variable-matcher*
                              :initializer (lambda () (setf global-variables (make-hash-table :test #'equal)))
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%global-variable-callback)))))) 
 
@@ -1588,7 +1596,7 @@ and the inheritance hierarchy that the garbage collector will need"
                                                    :ctype classified-type))))))))))
       (clang-tool:multitool-add-matcher mtool
                              :name :variables
-                             :matcher (clang-tool:compile-matcher *variable-matcher*)
+                             :matcher-sexp *variable-matcher*
                              :initializer (lambda ()
                                             (setf static-local-variables (make-hash-table :test #'equal))
                                             (setf local-variables (make-hash-table :test #'equal)))
@@ -1607,7 +1615,7 @@ and the inheritance hierarchy that the garbage collector will need"
 
 
 (defparameter *gcinfo-matcher*
-  '(:record-decl
+  '(:cxxrecord-decl
     (:is-definition)
     (:is-template-instantiation)
     (:has-name "GCInfo"))
@@ -1640,7 +1648,7 @@ and the inheritance hierarchy that the garbage collector will need"
       ;; Initialize the class search
       (clang-tool:multitool-add-matcher mtool
                              :name :gcinfos
-                             :matcher (clang-tool:compile-matcher `(:bind :whole ,*gcinfo-matcher*))
+                             :matcher-sexp `(:bind :whole ,*gcinfo-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
                              :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%gcinfo-matcher-callback)))))) 
 
@@ -3140,7 +3148,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments.
 It converts relative -I../... arguments to absolute paths"
-  (lambda (args) 
+  (lambda (args filename) 
     (let ((result (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
                                (vector "-DUSE_MPS"
                                        "-DRUNNING_GC_BUILDER"))))
@@ -3255,7 +3263,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 
 (defun run-test ()
   (defparameter *test-matcher*
-    '(:record-decl
+    '(:cxxrecord-decl
       ;;        (:is-definition)
       ;;        (:is-template-instantiation)
       (:matches-name ".*GCInfo.*")))
@@ -3304,7 +3312,7 @@ Run searches in *tools* on the source files in the compilation database."
       (let ((project (clang-tool:multitool-results tools)))
         (save-data project (merge-pathnames #P"project.dat" (clang-tool:main-pathname compilation-tool-database)))))))
 
-(defun translate-include (args)
+(defun translate-include (args filename)
   "* Arguments
 - args :: A vector of strings (compilation arguments)
 * Description

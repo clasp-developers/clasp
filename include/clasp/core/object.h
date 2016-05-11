@@ -455,6 +455,9 @@ namespace core {
     virtual bool operator>=(T_sp obj) const { return !this->operator<(obj); };
 
     virtual void validate() const {};
+
+    //! This is to support Derivable<T> classes in clbind
+    virtual void* pointerToAlienWithin() { return NULL; };
   
   public: // Instance protocol
   //! Some Class objects will create instances of classes different from themselves
@@ -640,11 +643,9 @@ namespace core {
 
 #include <clasp/core/glue.h>
 
-TRANSLATE(core::Function_O);
 
 #include <clasp/core/conditions.h>
 
-TRANSLATE(core::T_O);
 
 /*! Used to indicate that methods should be inherited from sequence */
 #define INHERIT_SEQUENCE

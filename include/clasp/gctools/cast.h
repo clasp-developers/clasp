@@ -18,18 +18,18 @@ namespace cast {
     };
 };
 
-  namespace core {
-    class T_O;
-    class Sequence_V;
-    class List_V;
-    class WrappedPointer_O;
-    class Function_O;
-    class Creator_O;
-    class Iterator_O;
-  };
-  namespace clbind {
-    class ConstructorCreator_O;
-  };
+namespace core {
+  class T_O;
+  class Sequence_V;
+  class List_V;
+  class WrappedPointer_O;
+  class Function_O;
+  class Creator_O;
+  class Iterator_O;
+};
+namespace clbind {
+  class ConstructorCreator_O;
+};
 
 #ifdef USE_BOEHM
 //----------------------------------------------------------------------

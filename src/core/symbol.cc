@@ -123,7 +123,7 @@ CL_DEFUN Str_sp cl__symbol_name(Symbol_sp arg) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolValue");
-CL_DEFUN T_sp cl__symbol_value(const Symbol_sp arg) {
+CL_DEFUN T_sp cl__symbol_value(Symbol_sp arg) {
   if (!arg->boundP()) {
     SIMPLE_ERROR(BF("Symbol %s@%p is unbound") % _rep_(arg) % (void *)arg.raw_());
   }
@@ -133,7 +133,7 @@ CL_DEFUN T_sp cl__symbol_value(const Symbol_sp arg) {
 CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("symbolValueAddress");
-CL_DEFUN T_sp core__symbol_value_address(const Symbol_sp arg) {
+CL_DEFUN T_sp core__symbol_value_address(Symbol_sp arg) {
   return Pointer_O::create(&arg->symbolValueRef());
 };
 

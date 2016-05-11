@@ -68,7 +68,10 @@ Closure_sp closureDesignator(T_sp obj) {
 core::Path_sp pathDesignator(core::T_sp obj) {
   if (core__simple_string_p(obj)) {
     return Path_O::create(gc::As<Str_sp>(obj)->get());
-  } else if (gc::IsA<Path_sp>(obj)) {
+  } else if ( Pathname_sp pn = obj.asOrNull<Pathname_O>() ) {
+    Str_sp spn = cl__namestring(pn);
+    return Path_O::create(spn->get());
+  }else if (gc::IsA<Path_sp>(obj)) {
     return gc::As<Path_sp>(obj);
   }
   SIMPLE_ERROR(BF("Illegal path designator[%s]") % _rep_(obj));

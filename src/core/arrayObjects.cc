@@ -132,18 +132,17 @@ T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
   return ((this->_Values[idx]));
 };
 
-T_sp ArrayObjects_O::aref(List_sp indices) const {
+T_sp ArrayObjects_O::aref(VaList_sp indices) const {
   LOG(BF("indices[%s]") % _rep_(indices));
-  int index = this->index(indices);
+  Fixnum index = this->index_(indices);
   return ((this->_Values[index]));
 }
 
 T_sp ArrayObjects_O::setf_aref(List_sp indices_val) {
-  _OF();
-  List_sp val_cons;
-  LongLongInt index = this->index_val(indices_val, true, val_cons);
-  this->_Values[index] = oCar(val_cons);
-  return ((oCar(val_cons)));
+  T_sp val;
+  LongLongInt index = this->index_val_(indices_val, true, val);
+  this->_Values[index] = val;
+  return val;
 }
 
 T_sp ArrayObjects_O::shallowCopy() const {

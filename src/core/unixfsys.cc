@@ -893,8 +893,7 @@ string_match(const char *s, T_sp pattern) {
  * by following the symlinks.
  */
 static T_sp
-list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
-               int flags) {
+list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   T_sp out = _Nil<T_O>();
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
@@ -961,8 +960,16 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
       continue;
     if (!string_match(text, text_mask))
       continue;
-    component = Str_O::create(text);
+#if 1
+    stringstream concat;
+    Str_sp str_prefix = coerce::stringDesignator(prefix);
+    concat << str_prefix->c_str();
+    Str_sp str_component = coerce::stringDesignator(component);
+    concat << str_component->c_str();
+    component = Str_O::create(concat.str());
+#else
     component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
+#endif
     component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
       if (!cl__pathname_match_p(component, pathname_mask)) // should this not be inverted?

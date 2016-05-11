@@ -4,13 +4,12 @@ import bitcode ;
 
 
 CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
-
 LLVM_CONFIG = [ os.environ LLVM_CONFIG ] ;
-LLVM_VERSION = [ SHELL "($LLVM_CONFIG --version | tr -d '\n') || echo unknown-version" ] ;
+LLVM_VERSION = [ os.environ LLVM_VERSION_X100 ] ;
+CLASP_RELEASE_LLVM_LIB_DIR = [ os.environ LLVM_LIB_DIR ] ;
+CLASP_LIB_EXTENSION = [ os.environ CLASP_LIB_EXTENSION ] ;
 
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
-echo "LLVM_VERSION " $(LLVM_VERSION) ;
-
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ;
 
@@ -75,6 +74,7 @@ project clasp : requirements
         <include>"/usr/include"
         <include>"$(INCLUDE)"
         <linkflags>"-L/usr/lib"
+        <cxxflags>-ferror-limit=0
         <define>X86
 	<define>BUILDING_CLASP
 	<define>INHERITED_FROM_SRC
@@ -88,7 +88,14 @@ project clasp : requirements
         <define>LLVM_VERSION="\\\"$(LLVM_VERSION)\\\""
         <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
-        <target-os>linux:<cxxflags>"-fPIC"
+
+### LTO stuff
+#        <cxxflags>"-flto"
+#        <cflags>"-flto"
+#        <linkflags>"-Wl,-lto_library,$(CLASP_RELEASE_LLVM_LIB_DIR)/libLTO.$(CLASP_LIB_EXTENSION)"
+#        <linkflags>"-Wl,-object_path_lto,clasp.lto.o"
+
+          <target-os>linux:<cxxflags>"-fPIC"
         <cxxflags>"-Wno-unused-local-typedef"
         <target-os>darwin:<cxxflags>"-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk "
         <include>./
@@ -122,6 +129,10 @@ project clasp : requirements
 #
 
 
+### DEBUG_DRAG - if defined then debugging code is compiled in that slows down execution
+###      Once everything is working then all DEBUG_DRAG sections can be removed.
+         <define>DEBUG_DRAG
+         
 ### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
 #    <define>GC_MONITOR_ALLOCATIONS
     
@@ -148,8 +159,8 @@ project clasp : requirements
 
 ### USE_AMC_POOL  --- controls if certain objects (Closures) are allocated in a non-moving pool or AMC
      <define>USE_AMC_POOL
-
-
+### USE_INVOCATION_HISTORY_FRAME saves a frame for every function invocation for backtraces
+     <define>USE_EXPENSIVE_BACKTRACE
 #### DEBUG_SPLAT_FORWARD - splat the contents of forwarded objects
 #        <define>DEBUG_SPLAT_FORWARD
 #### DEBUG_GUARD  - Add memory guards to the header and tail of every object - uses lots more memory
@@ -164,7 +175,9 @@ project clasp : requirements
 
 #### DEBUG_FRAME_BOUNDS  - check limits of writing/reading activation frames
 #      <define>DEBUG_FRAME_BOUNDS
-      
+
+#### DEBUG_TRACE_INTERPRETED_CLOSURES
+       <define>DEBUG_TRACE_INTERPRETED_CLOSURES
 #### DEBUG_MPS_UNDERSCANNING  - When defined, does a garbage collection for every allocation
 #### DEBUG_MPS_UNDERSCANNING_INITIAL - (true|false)  - when DEBUG_MPS_UNDERSCANNING is defined you can
 ####                                                   control it using (gctools:enable-underscanning (t|nil))

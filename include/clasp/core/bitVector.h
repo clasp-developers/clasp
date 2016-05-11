@@ -162,7 +162,4 @@ public:
   virtual ~BitVectorWithFillPtr_O(){};
 };
 };
-TRANSLATE(core::BitVector_O);
-TRANSLATE(core::SimpleBitVector_O);
-TRANSLATE(core::BitVectorWithFillPtr_O);
 #endif

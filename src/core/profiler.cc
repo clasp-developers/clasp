@@ -27,7 +27,6 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 #include <clasp/core/foundation.h>
-#include <clasp/core/executables.fwd.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/lightProfiler.h>
 

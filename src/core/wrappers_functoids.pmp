@@ -43,12 +43,12 @@ $for template_ [[
         {
             INVOCATION_HISTORY_FRAME();
             $if numArgs>0 [[
-              STACK_FRAME(buff,fargs,$numArgs);
+              MAKE_STACK_FRAME(fargs,this->asSmartPtr().raw_(),$numArgs);
 	      core::StackFrameDynamicScopeManager scope(fargs);
               lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
             ]]
             $if numArgs>0 [[
-              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)fargs[$Args_]));
+              $for Args_ [[translate::from_object<ARG$Args_> a$Args_(core::T_sp((gc::Tagged)(*fargs)[$Args_]));
               ]]
             ]]
             $$ Do the call ------

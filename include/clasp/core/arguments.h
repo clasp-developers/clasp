@@ -132,21 +132,21 @@ public:
   virtual VaList_S &valist() { N_A_(); };
   virtual bool lexicalElementBoundP(const Argument &argument) { N_A_(); };
   inline void pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-    thread->bindings().push(sym);
-    this->_endTop = thread->bindings().top();
+    my_thread->bindings().push(sym);
+    this->_endTop = my_thread->bindings().top();
     sym->setf_symbolValue(val);
   }
   inline void bind(Symbol_sp sym, T_sp val) {
     this->pushSpecialVariableAndSet(sym,val);
   }
   inline explicit DynamicScopeManager() {
-    int top = thread->bindings().top();
+    int top = my_thread->bindings().top();
     this->_beginTop = top;
     this->_endTop = top;
   }
 
   inline explicit DynamicScopeManager(Symbol_sp sym, T_sp newVal) {
-    int top = thread->bindings().top();
+    int top = my_thread->bindings().top();
     this->_beginTop = top;
     this->_endTop = top;
     this->pushSpecialVariableAndSet(sym, newVal);
@@ -157,7 +157,7 @@ public:
   virtual T_sp lexenv() const;
 
   virtual ~DynamicScopeManager() {
-    DynamicBindingStack &bindings = thread->bindings();
+    DynamicBindingStack &bindings = my_thread->bindings();
     int numBindings = this->_endTop - this->_beginTop;
     for (int i = 0; i < numBindings; ++i) {
       bindings.pop();
@@ -197,13 +197,13 @@ public:
 
 class StackFrameDynamicScopeManager : public DynamicScopeManager {
 private:
-  gc::frame::Frame &frame;
+  gc::Frame &frame;
 
 public:
   VaList_S VaRest;
 
 public:
-  StackFrameDynamicScopeManager(gc::frame::Frame &f) : frame(f){};
+  StackFrameDynamicScopeManager(gc::Frame* fP) : frame(*fP){};
 
 public:
   virtual VaList_S &valist() { return this->VaRest; };

@@ -281,5 +281,4 @@ bool core__subclassp(T_sp low, T_sp high);
 bool af_ofClassP(T_sp object, T_sp _class);
 
 };
-TRANSLATE(core::Class_O);
 #endif

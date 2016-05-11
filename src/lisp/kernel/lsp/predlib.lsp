@@ -349,6 +349,7 @@ and is not adjustable."
       (READTABLE . READTABLEP)
       (REAL . REALP)
       (SIMPLE-ARRAY . SIMPLE-ARRAY-P)
+      (SIMPLE-BIT-VECTOR . SIMPLE-BIT-VECTOR-P)
       (SIMPLE-STRING . SIMPLE-STRING-P)
       (SIMPLE-VECTOR . SIMPLE-VECTOR-P)
       (STREAM . STREAMP)
@@ -456,6 +457,53 @@ and is not adjustable."
 		 (setq pat (cdr pat))))
 	      ((atom pat)
 	       (error "~S does not describe array dimensions." pat))))))
+
+(define-compiler-macro typep (&whole whole object type &optional environment)
+  (let ((type (and (consp type)
+                   (eq (car type) 'quote)
+                   (cdr type)
+                   (not (cddr type))
+                   (cadr type))))
+    (cond ((or environment
+               (not type))
+           whole)
+          ((eq type t)
+           `(progn
+              ,object
+              t))
+          ((null type)
+           `(progn
+              ,object
+              nil))
+          ((eq type 'sequence)
+           `(let ((object ,object))
+              (or (listp object) (vectorp object))))
+          ((eq type 'simple-base-string)
+           `(let ((object ,object))
+              (and (base-string-p object)
+                   (simple-string-p object))))
+          ((and (symbolp type)
+                (let ((predicate (cdr (assoc type +known-typep-predicates+))))
+                  (and predicate
+                       `(,predicate ,object)))))
+          ((and (proper-list-p type)
+                (eq (car type) 'member))
+           `(let ((object ,object))
+              (or ,@(mapcar
+                     (lambda (x)
+                       `(eq object ',x))
+                     (cdr type)))))
+          ((and (consp type)
+                (eq (car type) 'eql)
+                (cdr type)
+                (not (cddr type)))
+           `(eql ,object ',(cadr type)))
+          ((and (symbolp type)
+                (find-class type nil))
+           `(subclassp (class-of ,object)
+                       (find-class ',type nil)))
+          (t
+           whole))))
 
 (defun typep (object type &optional env &aux tp i c)
   "Args: (object type)

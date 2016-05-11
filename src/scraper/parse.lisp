@@ -153,3 +153,70 @@ into two lists (int int string) and (a b c) and return as two values"
     (if class
         (prepend-dispatch-variable lambda-list class)
         lambda-list)))
+
+
+(defun strip-non-type-keywords (maybe-type)
+  (flet ((strip-keyword (keyword line)
+           (let ((pos (search keyword line)))
+             (if pos
+                 (string-trim
+                  +white-space+
+                  (concatenate 'string
+                               (subseq line 0 pos)
+                               (subseq line (+ pos (length keyword)) nil)))
+                 line))))
+    (strip-keyword "inline" (strip-keyword "static" maybe-type))))
+
+
+(defun parse-types-from-signature (rsignature)
+  (declare (optimize debug))
+  (let* ((trimmed (string-trim +white-space+ rsignature))
+         (open-paren (position #\( trimmed))
+         (close-paren (position #\) trimmed))
+         (front (subseq trimmed 0 open-paren))
+         (args (string-trim +white-space+ (subseq trimmed (1+ open-paren) close-paren)))
+         (split-args (progn
+                       (if (not (or (string= args "void") (string= args "")))
+                           (mapcar (lambda (x) (string-trim +white-space+ x))
+                                   (split-by-one-char args #\,))
+                           nil)))
+         (arg-types (progn
+                      (if split-args
+                          (mapcar (lambda (x)
+                                    (let ((pos (position-if
+                                                (lambda (c)
+                                                  (member c (list* #\& #\* +white-space+)))
+                                                x :from-end t)))
+                                      (string-trim
+                                       +white-space+
+                                       (subseq x 0 (1+ pos)))))
+                                  split-args))))
+         (return-pos (position-if
+                      (lambda (c)
+                        (member c (list* #\& #\* +white-space+)))
+                      front :from-end t))
+         (maybe-return-type (string-trim
+                             +white-space+
+                             (subseq front 0 return-pos)))
+         (return-type (strip-non-type-keywords maybe-return-type)))
+    (values return-type arg-types)))
+
+
+(defun maybe-fix-magic-name (maybe-magic-name)
+  "* Arguments
+:: maybe-magic-name - A string
+* Description
+If the string contains core::magic_name then transform it into a
+CL call to (core:magic-name ...)"
+  (let ((magic-pos (search "core::magic_name" maybe-magic-name)))
+    (if magic-pos
+        (let* ((open-paren (position #\( maybe-magic-name))
+               (close-paren (position #\) maybe-magic-name))
+               (args (subseq maybe-magic-name (1+ open-paren) close-paren))
+               (comma-pos (position #\, args)))
+          (if comma-pos
+              (format nil "(core:magic-intern ~a ~a)" (subseq args 0 comma-pos) (subseq args (1+ comma-pos) nil))
+              (format nil "(core:magic-intern ~a)" args)))
+        (format nil "(core:magic-intern ~a)" maybe-magic-name))))
+
+          

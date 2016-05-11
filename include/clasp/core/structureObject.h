@@ -100,5 +100,4 @@ namespace core {
   bool core__structurep(T_sp arg);
   bool core__structure_subtypep(T_sp x, Symbol_sp y);
 };
-TRANSLATE(core::StructureObject_O);
 #endif //]

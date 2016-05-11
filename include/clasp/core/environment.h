@@ -236,7 +236,6 @@ public: // extend the environment with forms
   virtual ~Environment_O(){};
 };
 };
-TRANSLATE(core::Environment_O);
 
 namespace core {
 class LexicalEnvironment_O : public Environment_O {
@@ -286,7 +285,6 @@ struct gctools::GCInfo<core::LexicalEnvironment_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::LexicalEnvironment_O);
 
 namespace core {
 class RuntimeVisibleEnvironment_O : public LexicalEnvironment_O {
@@ -315,7 +313,6 @@ struct gctools::GCInfo<core::RuntimeVisibleEnvironment_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::RuntimeVisibleEnvironment_O);
 
 namespace core {
 class ValueEnvironment_O : public RuntimeVisibleEnvironment_O {
@@ -409,7 +406,6 @@ struct gctools::GCInfo<core::ValueEnvironment_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::ValueEnvironment_O);
 
 namespace core {
 SMART(FunctionValueEnvironment);
@@ -456,7 +452,6 @@ struct gctools::GCInfo<core::FunctionValueEnvironment_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::FunctionValueEnvironment_O);
 
 namespace core {
 
@@ -492,7 +487,6 @@ public:
   virtual ~CompileTimeEnvironment_O(){};
 };
 };
-TRANSLATE(core::CompileTimeEnvironment_O);
 
 namespace core {
 SMART(UnwindProtectEnvironment);
@@ -531,7 +525,6 @@ struct gctools::GCInfo<core::UnwindProtectEnvironment_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::UnwindProtectEnvironment_O);
 
 namespace core {
 SMART(BlockEnvironment);
@@ -575,7 +568,6 @@ struct gctools::GCInfo<core::BlockEnvironment_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::BlockEnvironment_O);
 
 namespace core {
 SMART(CatchEnvironment);
@@ -603,7 +595,6 @@ struct gctools::GCInfo<core::CatchEnvironment_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::CatchEnvironment_O);
 
 namespace core {
 
@@ -640,7 +631,6 @@ struct gctools::GCInfo<core::FunctionContainerEnvironment_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::FunctionContainerEnvironment_O);
 
 namespace core {
 
@@ -697,7 +687,6 @@ struct gctools::GCInfo<core::TagbodyEnvironment_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::TagbodyEnvironment_O);
 
 namespace core {
 
@@ -735,7 +724,6 @@ struct gctools::GCInfo<core::MacroletEnvironment_O> {
   static bool const NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::MacroletEnvironment_O);
 
 namespace core {
 
@@ -776,7 +764,6 @@ struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::SymbolMacroletEnvironment_O);
 
 namespace core {
 
@@ -817,7 +804,6 @@ struct gctools::GCInfo<core::StackValueEnvironment_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::StackValueEnvironment_O);
 
 namespace core {
 // A simple environment that maps symbols to objects to allow me to
@@ -846,7 +832,6 @@ public:
 };
 };
 
-TRANSLATE(core::GlueEnvironment_O);
 
 namespace core {
 T_sp core__environment_activation_frame(T_sp env);

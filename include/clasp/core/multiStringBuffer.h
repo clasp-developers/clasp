@@ -120,5 +120,4 @@ public:
   DEFAULT_CTOR_DTOR(MultiStringBuffer_O);
 };
 };
-TRANSLATE(core::MultiStringBuffer_O);
 #endif //]

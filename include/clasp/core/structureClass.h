@@ -75,5 +75,4 @@ struct gctools::GCInfo<core::StructureClass_O> {
 namespace core {
 
 };
-TRANSLATE(core::StructureClass_O);
 #endif //]

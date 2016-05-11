@@ -126,7 +126,7 @@ CL_DEFMETHOD   virtual void setAttributesUnsafe(List_sp plist) { SUBIMP(); };
 public: // bidirectional
   template <class T>
   void attribute(const string &name, gctools::smart_ptr<T> &val) {
-    Symbol_sp sym = _lisp->internKeyword(name);
+    Symbol_sp sym = lisp_internKeyword(name);
     this->attribute<T>(sym, val);
   }
 
@@ -189,7 +189,7 @@ public: // bidirectional
 
   template <class T>
   void attribute(string const &name, T &val) {
-    this->attribute(_lisp->intern(name), val);
+    this->attribute(lisp_intern(name), val);
   }
 
 #if 0
@@ -235,7 +235,7 @@ public: // bidirectional
 
   template <typename T>
   void attributeIfNotNil(string const &name, T &val) {
-    Symbol_sp kw = _lisp->internKeyword(name);
+    Symbol_sp kw = lisp_internKeyword(name);
     this->attributeIfNotNil(kw, val);
   };
 
@@ -258,7 +258,7 @@ public: // bidirectional
 
   template <typename T>
   void attributeIfNotDefault(string const &name, T &val, T const &defaultVal) {
-    Symbol_sp kw = _lisp->internKeyword(name);
+    Symbol_sp kw = lisp_internKeyword(name);
     this->attributeIfNotDefault(kw, val, defaultVal);
   };
 
@@ -277,7 +277,7 @@ public: // bidirectional
 
   template <typename SymbolEnumType>
   void attributeSymbolEnumHiddenConverter(string const &name, SymbolEnumType &val, Symbol_sp converterName) {
-    Symbol_sp kw = _lisp->internKeyword(name);
+    Symbol_sp kw = lisp_internKeyword(name);
     this->attributeSymbolEnumHiddenConverter(kw, val, converterName);
   }
 
@@ -302,7 +302,7 @@ public: // bidirectional
 
   template <typename SymbolEnumType>
   void attributeSymbolEnumHiddenConverterIfNotDefault(string const &name, SymbolEnumType &val, Symbol_sp converterName, SymbolEnumType defVal) {
-    Symbol_sp kw = _lisp->internKeyword(name);
+    Symbol_sp kw = lisp_internKeyword(name);
     this->attributeSymbolEnumHiddenConverterIfNotDefault(kw, val, converterName, defVal);
   }
 
@@ -333,7 +333,7 @@ public: // bidirectional
   template <class SimpleClass>
   void attributePOD(string const &name, string const &nodeName, SimpleClass &plainObject) {
     _G();
-    this->attributePOD(_lisp->internKeyword(name), _lisp->internKeyword(nodeName), plainObject);
+    this->attributePOD(lisp_internKeyword(name), lisp_internKeyword(nodeName), plainObject);
   }
 
   /*! Archive any POD class.  All it neds is a archive method
@@ -362,7 +362,7 @@ public: // bidirectional
   template <class SimpleClass>
   void attributePODIfDefined(string const &name, string const &nodeName, bool defined, SimpleClass &plainObject) {
     _G();
-    this->attributePODIfDefined(_lisp->internKeyword(name), _lisp->internKeyword(nodeName), defined, plainObject);
+    this->attributePODIfDefined(lisp_internKeyword(name), lisp_internKeyword(nodeName), defined, plainObject);
   }
 
   /*! Serialize an enumerated type
@@ -429,7 +429,7 @@ public: // bidirectional
   }
 
   inline void archiveObject(string const &name, T_sp object) {
-    this->attribute(_lisp->internKeyword(name), object);
+    this->attribute(lisp_internKeyword(name), object);
   }
 
   void vector(gctools::Vec0<T_sp> &vec) {

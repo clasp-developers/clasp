@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #define FAST_FIXNUM_ARITH
 //#include "clasp_gmpxx.h"
+#include <cstdint>
 #include <boost/format.hpp>
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
@@ -45,6 +46,17 @@ THE SOFTWARE.
 
 #include <clasp/core/wrappers.h>
 
+
+namespace core {
+CL_DEFUN core::Number_sp add_mod8(core::T_O* x, core::T_O* y)
+{
+  uint64_t z = (reinterpret_cast<uint64_t>(x)
+              + reinterpret_cast<uint64_t>(y))
+    & (0xFF<<gctools::tag_shift);
+  return core::Number_sp((gc::Tagged)reinterpret_cast<core::T_O*>(z));
+};
+};
+
 namespace core {
 
 SYMBOL_EXPORT_SC_(ClPkg, divisionByZero);
@@ -53,6 +65,7 @@ SYMBOL_EXPORT_SC_(ClPkg, floatingPointOverflow);
 SYMBOL_EXPORT_SC_(ClPkg, floatingPointUnderflow);
 SYMBOL_EXPORT_SC_(ClPkg, floatingPointInexact);
 SYMBOL_EXPORT_SC_(ClPkg, arithmeticError);
+
 
 void clasp_deliver_fpe(int status) {
   int bits = status & _lisp->trapFpeBits();
@@ -304,27 +317,38 @@ CL_DEFUN T_mv cl__lognor(Integer_sp a, Integer_sp b) {
   return (Values(Integer_O::create(r)));
 };
 
+CL_NAME("TWO-ARG-+-FIXNUM-FIXNUM");
+inline CL_DEFUN Number_sp two_arg__PLUS_FF(Fixnum fa, Fixnum fb)
+{
+  Fixnum fc = fa + fb;
+  if (fc >= gc::most_negative_fixnum
+      && fc <= gc::most_positive_fixnum) {
+    return make_fixnum(fc);
+  }
+    // Overflow case
+  mpz_class za(fa);
+  mpz_class zb(fb);
+  mpz_class zc = za + zb;
+  return Integer_O::create(zc);
+}
+
+CL_NAME("TWO-ARG-+-FIXNUM-BIGNUM");
+inline
+CL_DEFUN Number_sp two_arg__PLUS_FB(Fixnum fx, Bignum_sp by)
+{
+  mpz_class zx(fx);
+  mpz_class zz = zx + by->mpz_ref();
+  return Integer_O::create(zz);
+}
+
 CL_NAME("TWO-ARG-+");
 CL_DEFUN Number_sp contagen_add(Number_sp na, Number_sp nb) {
   MATH_DISPATCH_BEGIN(na, nb) {
-  case_Fixnum_v_Fixnum : {
-    Fixnum fa = unbox_fixnum(gc::As<Fixnum_sp>(na));
-    Fixnum fb = unbox_fixnum(gc::As<Fixnum_sp>(nb));
-    Fixnum fc = fa + fb;
-    if (fc >= gc::most_negative_fixnum && fc <= gc::most_positive_fixnum) {
-      return make_fixnum(fc);
-    }
-    // Overflow case
-    mpz_class za((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(na)));
-    mpz_class zb((Fixnum)unbox_fixnum(gc::As<Fixnum_sp>(nb)));
-    mpz_class zc = za + zb;
-    return Integer_O::create(zc);
-  }
-  case_Fixnum_v_Bignum : {
-    mpz_class za(unbox_fixnum(gc::As<Fixnum_sp>(na)));
-    mpz_class zc = za + gc::As<Bignum_sp>(nb)->ref();
-    return Integer_O::create(zc);
-  }
+  case_Fixnum_v_Fixnum :
+    return two_arg__PLUS_FF(na.unsafe_fixnum(),nb.unsafe_fixnum());
+  case_Fixnum_v_Bignum :
+    return two_arg__PLUS_FB(na.unsafe_fixnum(),
+                            gctools::reinterpret_cast_smart_ptr<Bignum_O>(nb));
   case_Fixnum_v_Ratio:
   case_Bignum_v_Ratio : {
     mpz_class za(clasp_to_mpz(na));
@@ -3457,6 +3481,7 @@ SYMBOL_EXPORT_SC_(ClPkg, log);
 SYMBOL_EXPORT_SC_(CorePkg, log1p);
 SYMBOL_EXPORT_SC_(ClPkg, expt);
 SYMBOL_EXPORT_SC_(ClPkg, exp);
+#if 0
 CL_LISPIFY_NAME(general-two-arg-_PLUS_);
 CL_EXTERN_DEFUN(&core::contagen_add);
 CL_LISPIFY_NAME(general-two-arg-_MINUS_);
@@ -3475,5 +3500,5 @@ CL_LISPIFY_NAME(general-two-arg-_GE_);
 CL_EXTERN_DEFUN(&core::two_arg__GE_);
 CL_LISPIFY_NAME(general-two-arg-_EQ_);
 CL_EXTERN_DEFUN(&core::two_arg__EQ_);
-
+#endif
 };

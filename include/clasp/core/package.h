@@ -195,5 +195,4 @@ public:
 };
 T_mv cl__find_symbol(Str_sp symbolName, T_sp packageDesig);
 };
-TRANSLATE(core::Package_O);
 #endif //]

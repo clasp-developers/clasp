@@ -348,7 +348,7 @@ void Instance_O::LISP_INVOKE() {
   IMPLEMENT_ME();
 #if 0
 	ASSERT(this->_Entry!=NULL);
-	LispCompiledFunctionIHF _frame(thread->invocationHistoryStack(),this->asSmartPtr());
+	LispCompiledFunctionIHF _frame(my_thread->invocationHistoryStack(),this->asSmartPtr());
 	return(( (this->_Entry)(*this,nargs,args)));
 #endif
 }

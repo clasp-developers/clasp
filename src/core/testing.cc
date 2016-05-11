@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/character.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/instance.h>

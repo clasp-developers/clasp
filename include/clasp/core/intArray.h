@@ -78,6 +78,5 @@ public:
 };
 };
 
-TRANSLATE(core::IntArray_O);
 
 #endif //]

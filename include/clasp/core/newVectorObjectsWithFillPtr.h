@@ -71,6 +71,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::VectorObjectsWithFillPtr_O);
 
 #endif /* _core_VectorObjectsWithFillPtr_H */

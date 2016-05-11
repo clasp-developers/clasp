@@ -2854,6 +2854,107 @@
 	    (t (args param)))))
       (apply (fdefinition symbol) stream (next-arg) colonp atsignp (args)))))
 
+
+;;;; Compile-time checking of format arguments and control string
+
+#-(or ecl clasp)
+(progn
+;;;
+;;; Return the min/max numbers of arguments required for a call to
+;;; FORMAT with control string FORMAT-STRING, null if we can't tell,
+;;; or a string with an error message if parsing the control string
+;;; causes a FORMAT-ERROR.
+;;;
+;;; This is called from FORMAT deftransforms.
+;;;
+  (defun min/max-format-arguments-count (string)
+    #-formatter
+    (declare (si::c-local))
+    (handler-case
+        (catch 'give-up
+          ;; For the side effect of validating the control string.
+          (%formatter string)
+          (%min/max-format-args (tokenize-control-string string)))
+      (format-error (e)
+        (format nil "~a" e))))
+
+  (defun %min/max-format-args (directives)
+    #-formatter
+    (declare (si::c-local))
+    (let ((min-req 0) (max-req 0))
+      (flet ((incf-both (&optional (n 1))
+               (incf min-req n)
+               (incf max-req n)))
+        (loop
+           (let ((dir (pop directives)))
+             (when (null dir)
+               (return (values min-req max-req)))
+             (when (format-directive-p dir)
+               (incf-both (count :arg (format-directive-params dir) :key #'cdr))
+               (let ((c (format-directive-character dir)))
+                 (cond ((find c "ABCDEFGORSWX$/")
+                        (incf-both))
+                       ((char= c #\P)
+                        (unless (format-directive-colonp dir)
+                          (incf-both)))
+                       ((or (find c "IT%&|_<>();") (char= c #\newline)))
+                       ((char= c #\[)
+                        (multiple-value-bind (min max remaining)
+                            (%min/max-conditional-args dir directives)
+                          (setq directives remaining)
+                          (incf min-req min)
+                          (incf max-req max)))
+                       ((char= c #\{)
+                        (multiple-value-bind (min max remaining)
+                            (%min/max-iteration-args dir directives)
+                          (setq directives remaining)
+                          (incf min-req min)
+                          (incf max-req max)))
+                       ((char= c #\?)
+                        (cond ((format-directive-atsignp dir)
+                               (incf min-req)
+                               (setq max-req most-positive-fixnum))
+                              (t (incf-both 2))))
+                       (t (throw 'give-up nil))))))))))
+
+;;;
+;;; ANSI: if arg is out of range, no clause is selected.  That means
+;;; the minimum number of args required for the interior of ~[~] is
+;;; always zero.
+;;;
+  (defun %min/max-conditional-args (conditional directives)
+    #-formatter
+    (declare (si::c-local))
+    (multiple-value-bind (sublists last-semi-with-colon-p remaining)
+        (parse-conditional-directive directives)
+      (declare (ignore last-semi-with-colon-p))
+      (let ((sub-max (loop for s in sublists maximize
+                          (nth-value 1 (%min/max-format-args s))))
+            (min-req 1)
+            max-req)
+        (cond ((format-directive-atsignp conditional)
+               (setq max-req (max 1 sub-max)))
+              ((loop for p in (format-directive-params conditional)
+                  thereis (or (integerp (cdr p))
+                              (memq (cdr p) '(:remaining :arg))))
+               (setq min-req 0)
+               (setq max-req sub-max))
+              (t
+               (setq max-req (1+ sub-max))))
+        (values min-req max-req remaining))))
+
+  (defun %min/max-iteration-args (iteration directives)
+    #-formatter
+    (declare (si::c-local))
+    (let* ((close (find-directive directives #\} nil))
+           (posn (position close directives))
+           (remaining (nthcdr (1+ posn) directives)))
+      (if (format-directive-atsignp iteration)
+          (values (if (zerop posn) 1 0) most-positive-fixnum remaining)
+          (let ((nreq (if (zerop posn) 2 1)))
+            (values nreq nreq remaining)))))
+  )
+
 (defun extract-user-function-name (string start end)
   (declare (si::c-local))
   (let ((slash (position #\/ string :start start :end (1- end)
@@ -2884,102 +2985,3 @@
                 (t name))
               package))))
 
-
-;;;; Compile-time checking of format arguments and control string
-
-#-(or ecl clasp)(progn
-;;;
-;;; Return the min/max numbers of arguments required for a call to
-;;; FORMAT with control string FORMAT-STRING, null if we can't tell,
-;;; or a string with an error message if parsing the control string
-;;; causes a FORMAT-ERROR.
-;;;
-;;; This is called from FORMAT deftransforms.
-;;;
-		  (defun min/max-format-arguments-count (string)
-		    #-formatter
-		    (declare (si::c-local))
-		    (handler-case
-			(catch 'give-up
-			  ;; For the side effect of validating the control string.
-			  (%formatter string)
-			  (%min/max-format-args (tokenize-control-string string)))
-		      (format-error (e)
-			(format nil "~a" e))))
-
-		  (defun %min/max-format-args (directives)
-		    #-formatter
-		    (declare (si::c-local))
-		    (let ((min-req 0) (max-req 0))
-		      (flet ((incf-both (&optional (n 1))
-			       (incf min-req n)
-			       (incf max-req n)))
-			(loop
-			   (let ((dir (pop directives)))
-			     (when (null dir)
-			       (return (values min-req max-req)))
-			     (when (format-directive-p dir)
-			       (incf-both (count :arg (format-directive-params dir) :key #'cdr))
-			       (let ((c (format-directive-character dir)))
-				 (cond ((find c "ABCDEFGORSWX$/")
-					(incf-both))
-				       ((char= c #\P)
-					(unless (format-directive-colonp dir)
-					  (incf-both)))
-				       ((or (find c "IT%&|_<>();") (char= c #\newline)))
-				       ((char= c #\[)
-					(multiple-value-bind (min max remaining)
-					    (%min/max-conditional-args dir directives)
-					  (setq directives remaining)
-					  (incf min-req min)
-					  (incf max-req max)))
-				       ((char= c #\{)
-					(multiple-value-bind (min max remaining)
-					    (%min/max-iteration-args dir directives)
-					  (setq directives remaining)
-					  (incf min-req min)
-					  (incf max-req max)))
-				       ((char= c #\?)
-					(cond ((format-directive-atsignp dir)
-					       (incf min-req)
-					       (setq max-req most-positive-fixnum))
-					      (t (incf-both 2))))
-				       (t (throw 'give-up nil))))))))))
-
-;;;
-;;; ANSI: if arg is out of range, no clause is selected.  That means
-;;; the minimum number of args required for the interior of ~[~] is
-;;; always zero.
-;;;
-		  (defun %min/max-conditional-args (conditional directives)
-		    #-formatter
-		    (declare (si::c-local))
-		    (multiple-value-bind (sublists last-semi-with-colon-p remaining)
-			(parse-conditional-directive directives)
-		      (declare (ignore last-semi-with-colon-p))
-		      (let ((sub-max (loop for s in sublists maximize
-					  (nth-value 1 (%min/max-format-args s))))
-			    (min-req 1)
-			    max-req)
-			(cond ((format-directive-atsignp conditional)
-			       (setq max-req (max 1 sub-max)))
-			      ((loop for p in (format-directive-params conditional)
-				  thereis (or (integerp (cdr p))
-					      (memq (cdr p) '(:remaining :arg))))
-			       (setq min-req 0)
-			       (setq max-req sub-max))
-			      (t
-			       (setq max-req (1+ sub-max))))
-			(values min-req max-req remaining))))
-
-		  (defun %min/max-iteration-args (iteration directives)
-		    #-formatter
-		    (declare (si::c-local))
-		    (let* ((close (find-directive directives #\} nil))
-			   (posn (position close directives))
-			   (remaining (nthcdr (1+ posn) directives)))
-		      (if (format-directive-atsignp iteration)
-			  (values (if (zerop posn) 1 0) most-positive-fixnum remaining)
-			  (let ((nreq (if (zerop posn) 2 1)))
-			    (values nreq nreq remaining)))))
-		  )

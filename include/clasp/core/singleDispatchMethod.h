@@ -45,7 +45,8 @@ namespace core {
   SingleDispatchMethodFunction_O(T_sp name, Function_sp body) : Base(name), _body(body) {};
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
       ASSERT_FIRST_ARG_IS_VALIST();
-      return apply_consume_valist(this->_body,LCC_ARG0_VALIST());
+      ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+      return apply_consume_valist_(this->_body,LCC_ARG0_VALIST());
     };
   };
 
@@ -115,7 +116,6 @@ struct gctools::GCInfo<core::SingleDispatchMethod_O> {
   static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-TRANSLATE(core::SingleDispatchMethod_O);
 
 namespace core {
 

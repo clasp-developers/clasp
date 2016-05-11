@@ -72,7 +72,6 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/externalObject.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/intArray.h>
 #include <clasp/core/primitives.h>
@@ -226,6 +225,10 @@ SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
+SYMBOL_EXPORT_SC_(ClPkg, substitute);
+
+SYMBOL_EXPORT_SC_(CorePkg, intrinsic_call);
+SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
 SYMBOL_EXPORT_SC_(CorePkg, debug_message);
@@ -235,12 +238,15 @@ SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARnotify_on_compileSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARtrace_startupSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARllvmVersionSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugInterpretedClosureSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugFlowControlSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebugStartupSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _BANG_unbound_BANG_);
 SYMBOL_EXPORT_SC_(CorePkg, bitArrayOp);
 SYMBOL_EXPORT_SC_(CorePkg, lambdaName);
+SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
 SYMBOL_SC_(CorePkg, printf);
 
 SYMBOL_EXPORT_SC_(CorePkg, asin);
@@ -248,6 +254,7 @@ SYMBOL_EXPORT_SC_(CorePkg, asinh);
 SYMBOL_EXPORT_SC_(CorePkg, acos);
 SYMBOL_EXPORT_SC_(CorePkg, acosh);
 SYMBOL_EXPORT_SC_(CorePkg, atanh);
+SYMBOL_EXPORT_SC_(CorePkg, bclasp_compile);
 
 SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
@@ -726,7 +733,7 @@ SYMBOL_EXPORT_SC_(CorePkg, instance);
 SYMBOL_SC_(CorePkg, all_keys);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, changed);
-
+SYMBOL_EXPORT_SC_(CorePkg,STARstack_top_hintSTAR);
 
 void testConses() {
   printf("%s:%d Testing Conses and iterators\n", __FILE__, __LINE__);
@@ -1116,6 +1123,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());
+  _sym_STARllvmVersionSTAR->defparameter(clasp_make_fixnum(atoi(LLVM_VERSION)));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
   List_sp hooks = _Nil<T_O>();
@@ -1140,6 +1148,12 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
   _sym_STARbacktraceFrameSelectorHookSTAR->defparameter(_Nil<T_O>());
+  _sym_STARfunctions_to_inlineSTAR->defparameter(HashTableEqual_O::create_default());
+  _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
+  std::list<string> nicknames;
+  std::list<string> use_packages;
+  _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
+  _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
 #if 0
   clasp_cleavir::_sym_STARsimple_environmentSTAR->defparameter(_Nil<T_O>());
   clasp_cleavir::_sym_STARcode_walkerSTAR->defparameter(_Nil<T_O>());

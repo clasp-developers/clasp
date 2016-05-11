@@ -130,14 +130,14 @@ expanded into
 	  storing-form)
 The doc-string DOC, if supplied, is saved as a SETF doc and can be retrieved
 by (DOCUMENTATION 'SYMBOL 'SETF)."
-  (let ((env (member '&environment args :test #'eq)))
-    (if env
-	(setq args (cons (second env)
-			 (nconc (ldiff args env) (cddr env))))
+  (let ((env-part (member '&environment args :test #'eq)))
+    (if env-part
+	(setq args (cons (second env-part)
+			 (nconc (ldiff args env-part) (cddr env-part))))
 	(progn
-	  (setq env (gensym "env-define-setf-expander"))
-	  (setq args (cons env args))
-	  (push `(declare (ignore ,env)) lambda-body)))
+	  (setq env-part (gensym "env-define-setf-expander"))
+	  (setq args (cons env-part args))
+	  (push `(declare (ignore ,env-part)) lambda-body)))
     (multiple-value-bind (decls body doc)
 	(si::process-declarations lambda-body t)
       #+ecl(when decls (setq decls (list (cons 'declare decls))))

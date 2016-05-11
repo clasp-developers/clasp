@@ -144,7 +144,6 @@ public:
   virtual void __writeReadable__(T_sp strm) const;
 };
 };
-TRANSLATE(core::Pathname_O);
 
 namespace core {
 SMART(LogicalPathname);
@@ -157,7 +156,6 @@ public:
   virtual ~LogicalPathname_O(){};
 };
 };
-TRANSLATE(core::LogicalPathname_O);
 
 namespace core {
 bool clasp_stringMatch(T_sp s, size_t j, size_t ls,

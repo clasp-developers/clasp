@@ -56,7 +56,6 @@ struct gctools::GCInfo<core::WeakHashTable_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::WeakHashTable_O);
 
 namespace core {
 
@@ -116,7 +115,6 @@ struct gctools::GCInfo<core::WeakKeyHashTable_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::WeakKeyHashTable_O);
 
 namespace core {
 WeakKeyHashTable_sp core__make_weak_key_hash_table(Fixnum_sp size);

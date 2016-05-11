@@ -300,6 +300,19 @@ void Environment_O::dump() {
   printf("%s:%d Dumping environment\n%s\n", __FILE__, __LINE__, sout.str().c_str());
 }
 
+CL_DEFUN void core__environment_dump(T_sp env)
+{
+  if (env.nilp()) {
+    printf("%s:%d environment is top-level\n", __FILE__, __LINE__ );
+    return;
+  }
+  if ( Environment_sp e = env.asOrNull<Environment_O>() ) {
+    e->dump();
+    return;
+  }
+  SIMPLE_ERROR(BF("The argument %s was not an environment") % _rep_(env));
+}
+  
 List_sp Environment_O::clasp_gather_metadata(T_sp env, Symbol_sp key) {
   if (env.nilp())
     return _Nil<T_O>();
@@ -774,6 +787,7 @@ T_sp LexicalEnvironment_O::setf_metadata(Symbol_sp key, T_sp val) {
 };
 
 void LexicalEnvironment_O::setupParent(T_sp environ) {
+  ASSERT(environ.nilp()||environ.asOrNull<Environment_O>());
   this->_ParentEnvironment = environ;
   this->Base::setupParent(environ);
 }
@@ -1019,7 +1033,7 @@ void ValueEnvironment_O::setupForLambdaListHandler(LambdaListHandler_sp llh, T_s
 string ValueEnvironment_O::summaryOfContents() const {
   int tab = unbox_fixnum(gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue()));
   stringstream ss;
-  ss << "ValueEnvironment_O" << std::endl;
+  ss << "ValueEnvironment_O @" << (void*)this << std::endl;
   ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_ActivationFrame);
   this->_SymbolIndex->mapHash([this, tab, &vframe, &ss](T_sp key, T_sp value) {
                 int ivalue = unbox_fixnum(gc::As<Fixnum_sp>(value));
@@ -1052,6 +1066,15 @@ bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj) {
     }
     return af_updateValue(clasp_currentVisibleEnvironment(parent), sym, obj);
   }
+#if 0 // def DEBUG_ASSERTS
+  if ( sym->symbolNameAsString()== "ENV") {
+    if ( !(obj.nilp() || obj.asOrNull<Environment_O>()) ) {
+      printf("%s:%d ValueEnvironment_O@%p::_updateValue to lexical ENV --> %s\n",
+             __FILE__, __LINE__, (void*)this, _rep_(obj).c_str() );
+      printf("%s:%d     The value isn't an environment - trap this\n", __FILE__, __LINE__ );
+    }
+  }
+#endif
   int ivalue = unbox_fixnum(gc::As<Fixnum_sp>(oCdr(it)));
   if (ivalue < 0) {
     //	    sym->setf_symbolValue(obj);
@@ -1063,12 +1086,19 @@ bool ValueEnvironment_O::_updateValue(Symbol_sp sym, T_sp obj) {
 }
 
 T_sp ValueEnvironment_O::new_binding(Symbol_sp sym, int idx, T_sp obj) {
-  if (idx < 0) {
-    IMPLEMENT_MEF(BF("new_binding for special symbol[%s]") % _rep_(sym));
-  }
+  ASSERT(idx>=0);
 #if 0
   if (this->_SymbolIndex->find(sym).notnilp()) {
     SIMPLE_ERROR(BF("The symbol[%s] is already in the environment") % _rep_(sym));
+  }
+#endif
+#if 0 // def DEBUG_ASSERTS
+  if ( sym->symbolNameAsString()== "ENV") {
+    if ( !(obj.nilp() || obj.asOrNull<Environment_O>()) ) {
+      printf("%s:%d ValueEnvironment_O@%p::new_binding lexical ENV --> %s\n",
+             __FILE__, __LINE__, (void*)this, _rep_(obj).c_str() );
+      printf("%s:%d     The value isn't an environment - trap this\n", __FILE__, __LINE__ );
+    }
   }
 #endif
   this->_SymbolIndex->hash_table_setf_gethash(sym, make_fixnum(idx));

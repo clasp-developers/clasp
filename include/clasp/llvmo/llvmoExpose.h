@@ -46,15 +46,11 @@ THE SOFTWARE.
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Analysis/Passes.h>
-#include <llvm/PassManager.h>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/IPO/PassManagerBuilder.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/Support/TargetSelect.h>
-#if 1 // LLVM3.6
-#include <llvm/Target/TargetLibraryInfo.h>
-#else // LLVM3.7
-//#include <llvm/Analysis/TargetLibraryInfo.h>
-#endif
+#include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/IR/IRBuilder.h>
@@ -114,7 +110,6 @@ public:
 
 }; // LLVMContext_O
 }; // llvmo
-TRANSLATE(llvmo::LLVMContext_O);
 
 namespace translate {
 template <>
@@ -162,7 +157,6 @@ public:
 
 }; // Linker_O
 }; // llvmo
-TRANSLATE(llvmo::Linker_O);
 
 namespace translate {
 template <>
@@ -207,7 +201,6 @@ public:
 
 }; // Pass_O
 }; // llvmo
-TRANSLATE(llvmo::Pass_O);
 /* from_object translators */
 
 namespace translate {
@@ -247,7 +240,6 @@ public:
   AttributeSet_O(llvm::AttributeSet v) : val(v){};
 }; // AttributeSet_O
 }; // llvmo
-TRANSLATE(llvmo::AttributeSet_O);
 /* from_object translators */
 
 /* to_object translators */
@@ -328,7 +320,6 @@ public:
 
 }; // Triple_O
 }; // llvmo
-TRANSLATE(llvmo::Triple_O);
 /* from_object translators */
 
 namespace translate {
@@ -407,7 +398,6 @@ public:
 
 }; // TargetOptions_O
 }; // llvmo
-TRANSLATE(llvmo::TargetOptions_O);
 /* from_object translators */
 
 namespace translate {
@@ -470,7 +460,6 @@ public:
 
 }; // Target_O
 }; // llvmo
-TRANSLATE(llvmo::Target_O);
 /* from_object translators */
 
 namespace translate {
@@ -533,7 +522,6 @@ public:
 
 }; // MCSubtargetInfo_O
 }; // llvmo
-TRANSLATE(llvmo::MCSubtargetInfo_O);
 /* from_object translators */
 
 namespace translate {
@@ -582,7 +570,6 @@ public:
 
 }; // TargetSubtargetInfo_O
 }; // llvmo
-TRANSLATE(llvmo::TargetSubtargetInfo_O);
 /* from_object translators */
 
 namespace translate {
@@ -714,7 +701,6 @@ public:
   }
 }; // TargetMachine_O
 }; // llvmo
-TRANSLATE(llvmo::TargetMachine_O);
 /* from_object translators */
 
 namespace translate {
@@ -763,7 +749,6 @@ public:
 
 }; // LLVMTargetMachine_O
 }; // llvmo
-TRANSLATE(llvmo::LLVMTargetMachine_O);
 /* from_object translators */
 
 namespace translate {
@@ -806,7 +791,6 @@ public:
 
 }; // FunctionPass_O
 }; // llvmo
-TRANSLATE(llvmo::FunctionPass_O);
 /* from_object translators */
 
 namespace translate {
@@ -849,7 +833,6 @@ public:
 
 }; // ModulePass_O
 }; // llvmo
-TRANSLATE(llvmo::ModulePass_O);
 
 namespace translate {
 template <>
@@ -892,7 +875,6 @@ public:
 
 }; // ImmutablePass_O
 }; // llvmo
-TRANSLATE(llvmo::ImmutablePass_O);
 /* from_object translators */
 
 namespace translate {
@@ -920,9 +902,9 @@ struct to_object<llvm::ImmutablePass *> {
 namespace llvmo {
 FORWARD(PassManagerBase);
 class PassManagerBase_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PassManagerBase, PassManagerBase_O, "PassManagerBase", core::ExternalObject_O);
-  typedef llvm::PassManagerBase ExternalType;
-  typedef llvm::PassManagerBase *PointerToExternalType;
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::PassManagerBase, PassManagerBase_O, "PassManagerBase", core::ExternalObject_O);
+  typedef llvm::legacy::PassManagerBase ExternalType;
+  typedef llvm::legacy::PassManagerBase *PointerToExternalType;
 
 protected:
   PointerToExternalType _ptr;
@@ -951,19 +933,18 @@ public:
 
 }; // PassManagerBase_O
 }; // llvmo
-TRANSLATE(llvmo::PassManagerBase_O);
 /* from_object translators */
 
 namespace translate {
 template <>
-struct from_object<llvm::PassManagerBase *, std::true_type> {
-  typedef llvm::PassManagerBase *DeclareType;
+  struct from_object<llvm::legacy::PassManagerBase *, std::true_type> {
+  typedef llvm::legacy::PassManagerBase *DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
 };
 template <>
-struct from_object<llvm::PassManagerBase &, std::true_type> {
-  typedef llvm::PassManagerBase &DeclareType;
+  struct from_object<llvm::legacy::PassManagerBase &, std::true_type> {
+  typedef llvm::legacy::PassManagerBase &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::PassManagerBase_sp>(object)->wrappedPtr()){};
 };
@@ -973,10 +954,10 @@ struct from_object<llvm::PassManagerBase &, std::true_type> {
 
 namespace translate {
 template <>
-struct to_object<llvm::PassManagerBase *> {
-  static core::T_sp convert(llvm::PassManagerBase *ptr) {
+  struct to_object<llvm::legacy::PassManagerBase *> {
+  static core::T_sp convert(llvm::legacy::PassManagerBase *ptr) {
     _G();
-    return ((core::RP_Create_wrapped<llvmo::PassManagerBase_O, llvm::PassManagerBase *>(ptr)));
+    return ((core::RP_Create_wrapped<llvmo::PassManagerBase_O, llvm::legacy::PassManagerBase *>(ptr)));
   }
 };
 };
@@ -1018,7 +999,6 @@ public:
   bool valid() const;
 }; // Value_O
 }; // llvmo
-TRANSLATE(llvmo::Value_O);
 /* from_object translators */
 
 namespace translate {
@@ -1103,7 +1083,6 @@ public:
   //	bool valid() const;
 }; // Metadata_O
 }; // llvmo
-TRANSLATE(llvmo::Metadata_O);
 /* from_object translators */
 
 namespace translate {
@@ -1171,7 +1150,6 @@ public:
 
 }; // User_O
 }; // llvmo
-TRANSLATE(llvmo::User_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1197,7 +1175,6 @@ public: // Functions here
 }; // Attribute class
 
 }; // llvmo namespace
-TRANSLATE(llvmo::Attribute_O);
 namespace translate {
 template <>
 struct from_object<llvm::Attribute::AttrKind, std::true_type> {
@@ -1240,70 +1217,98 @@ struct to_object<llvm::Attribute> {
 
 namespace llvmo {
 FORWARD(DataLayout);
-class DataLayout_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DataLayout, DataLayout_O, "DataLayout", core::ExternalObject_O);
-  typedef llvm::DataLayout ExternalType;
-  typedef llvm::DataLayout *PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
+ /*! DataLayout_O
+As of llvm3.7 the llvm::DataLayout seems to be passed around as a simple object
+and pointers to it are no longer required by functions or returned by functions.
+So I'm changing DataLayout_O so that it wraps a complete llvm::DataLayout object
+*/
+class DataLayout_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, DataLayout_O, "DataLayout", core::General_O);
+ protected:
+  llvm::DataLayout* _DataLayout;
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  DataLayout_O() : Base(){};
-  ~DataLayout_O() {}
-
+  CL_LISPIFY_NAME("getStringRepresentation");
+  CL_DEFMETHOD std::string getStringRepresentation() const { return this->_DataLayout->getStringRepresentation(); };
+  size_t getTypeAllocSize(llvm::Type* ty);
+  const llvm::DataLayout& dataLayout() { return *(this->_DataLayout); };
+ DataLayout_O(const llvm::DataLayout& orig)  {
+   this->_DataLayout = new llvm::DataLayout(orig);
+  };
+  /*! Delete the default constructor because llvm::DataLayout doesn't have one */
+  DataLayout_O() = delete;
+  ~DataLayout_O() {delete this->_DataLayout;}
   DataLayout_sp copy() const;
 
 }; // DataLayout_O
 }; // llvmo
-TRANSLATE(llvmo::DataLayout_O);
 /* from_object translators */
 
 namespace translate {
-template <>
-struct from_object<llvm::DataLayout *, std::true_type> {
-  typedef llvm::DataLayout *DeclareType;
-  DeclareType _v;
+  // Since llvm3.8 there don't appear to be functions that
+  // take or return llvm::DataLayout* pointers.  So I am commenting out
+  // their converters and I changed the DataLayout_O class to store a llvm::DataLayout
+  template <>
+    struct from_object<llvm::DataLayout const &, std::true_type> {
+    typedef llvm::DataLayout const &DeclareType;
+    DeclareType _v;
+  from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->dataLayout()) {};
+  };
+
+#if 0
+  template <>
+    struct from_object<llvm::DataLayout *, std::true_type> {
+    typedef llvm::DataLayout *DeclareType;
+    DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()){};
-};
-
-template <>
-struct from_object<const llvm::DataLayout *, std::true_type> {
-  typedef llvm::DataLayout *DeclareType;
-  DeclareType _v;
+  };
+#endif
+#if 0
+  template <>
+    struct from_object<const llvm::DataLayout *, std::true_type> {
+    typedef llvm::DataLayout *DeclareType;
+    DeclareType _v;
   from_object(T_P object) : _v(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr()){};
-};
+  };
+#endif
 
-template <>
-struct from_object<llvm::DataLayout const &, std::true_type> {
-  typedef llvm::DataLayout const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DataLayout_sp>(object)->wrappedPtr())){};
-};
+  // ----------   to_object converters
+  template <>
+    struct to_object<const llvm::DataLayout &> {
+    static core::T_sp convert(const llvm::DataLayout & ref) {
+      // Use the copy constructor to create a DataLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,ref);
+      return val;
+    }
+  };
 
-template <>
-struct to_object<const llvm::DataLayout *> {
-  static core::T_sp convert(const llvm::DataLayout *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(const_cast<llvm::DataLayout *>(ptr))));
-  }
-};
+  /*! This copies the DataLayout so it doesn't deal with pointers at all */
+  template <>
+    struct to_object<llvm::DataLayout const, translate::dont_adopt_pointer> {
+    static core::T_sp convert(llvm::DataLayout orig) {
+      // Use the copy constructor to create a DataLayout_O
+      GC_ALLOCATE_VARIADIC(llvmo::DataLayout_O,val,orig);
+      return val;
+    }
+  };
 
-template <>
-struct to_object<llvm::DataLayout *> {
-  static core::T_sp convert(llvm::DataLayout *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(ptr)));
-  }
+#if 0
+  template <>
+    struct to_object<const llvm::DataLayout *> {
+    static core::T_sp convert(const llvm::DataLayout *ptr) {
+      _G();
+      return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(const_cast<llvm::DataLayout *>(ptr))));
+    }
+  };
+#endif
+#if 0
+  template <>
+    struct to_object<llvm::DataLayout *> {
+    static core::T_sp convert(llvm::DataLayout *ptr) {
+      return ((core::RP_Create_wrapped<llvmo::DataLayout_O, llvm::DataLayout *>(ptr)));
+    }
+  };
+#endif
 };
-};
-    ;
 
 
 namespace llvmo {
@@ -1326,7 +1331,6 @@ public:
 
 }; // Constant_O
 }; // llvmo
-TRANSLATE(llvmo::Constant_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1396,7 +1400,6 @@ public:
   static Constant_sp get(ArrayType_sp type, core::List_sp values);
 }; // ConstantArray_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantArray_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1423,7 +1426,6 @@ public:
   static BlockAddress_sp get(Function_sp func, BasicBlock_sp bb);
 }; // BlockAddress_O
 }; // llvmo
-TRANSLATE(llvmo::BlockAddress_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1449,7 +1451,6 @@ public:
 public:
 }; // ConstantDataSequential_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantDataSequential_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1476,7 +1477,6 @@ public:
   static Constant_sp getUInt32(LLVMContext_sp context, core::T_sp values);
 }; // ConstantDataArray_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantDataArray_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1500,11 +1500,10 @@ public:
   virtual ~ConstantExpr_O(){};
 
 public:
-  static Constant_sp getInBoundsGetElementPtr(Constant_sp constant, core::List_sp idxList);
+  static Constant_sp getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList);
 
 }; // ConstantExpr_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantExpr_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1534,7 +1533,6 @@ public:
 
 }; // GlobalValue_O
 }; // llvmo
-TRANSLATE(llvmo::GlobalValue_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -1559,7 +1557,6 @@ public:
 
 }; // GlobalVariable_O
 }; // llvmo
-TRANSLATE(llvmo::GlobalVariable_O);
 /* from_object translators */
 
 namespace translate {
@@ -1625,7 +1622,7 @@ public:
 
   void addModule(Module_sp module);
 
-  Function_sp FindFunctionNamed(core::Str_sp name);
+  Function_sp find_function_named(core::Str_sp name);
 
   void addNamedModule(const string &name, Module_sp module);
   bool hasNamedModule(const string &name);
@@ -1668,7 +1665,11 @@ public:
     return this->_ptr;
   };
   PointerToExternalType wrappedPtr() const {
-    return this->_ptr;
+    if ( this->_ptr ) return this->_ptr;
+    SIMPLE_ERROR(BF("The Module has a NULL pointer"));
+  }
+  void reset_wrappedPtr() {
+    this->_ptr = NULL;
   }
 
 public:
@@ -1711,7 +1712,6 @@ public:
 
 }; // Module_O
 }; // llvmo
-TRANSLATE(llvmo::Module_O);
 /* from_object translators */
 
 namespace translate {
@@ -1741,7 +1741,6 @@ struct to_object<llvm::Module *> {
 };
     ;
 
-TRANSLATE(llvmo::ExecutionEngine_O);
 /* from_object translators */
 
 namespace translate {
@@ -1766,132 +1765,14 @@ struct to_object<llvm::ExecutionEngine *> {
 };
     ;
 
-namespace llvmo {
-FORWARD(DataLayoutPass);
-class DataLayoutPass_O : public ImmutablePass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::DataLayoutPass, DataLayoutPass_O, "DataLayoutPass", ImmutablePass_O);
-  typedef llvm::DataLayoutPass ExternalType;
-  typedef llvm::DataLayoutPass *PointerToExternalType;
 
-public:
-  static DataLayoutPass_sp make();
-
-public:
-  PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /*        if (this->_ptr != NULL ) delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-  DataLayoutPass_O() : Base(){};
-  ~DataLayoutPass_O() {}
-}; // DataLayoutPass_O
-}; // llvmo
-TRANSLATE(llvmo::DataLayoutPass_O);
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::DataLayoutPass *, std::true_type> {
-  typedef llvm::DataLayoutPass *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr()){};
-};
-template <>
-struct from_object<llvm::DataLayoutPass const &, std::true_type> {
-  typedef llvm::DataLayoutPass const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::DataLayoutPass_sp>(object)->wrappedPtr())){};
-};
-};
-    ;
-/* to_object translators */
-
-namespace translate {
-template <>
-struct to_object<llvm::DataLayoutPass *> {
-  static core::T_sp convert(llvm::DataLayoutPass *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayoutPass_O, llvm::DataLayoutPass *>(ptr)));
-  }
-};
-};
-    ;
-
-namespace translate {
-template <>
-struct to_object<const llvm::DataLayoutPass *> {
-  static core::T_sp convert(const llvm::DataLayoutPass *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::DataLayoutPass_O, llvm::DataLayoutPass *>(const_cast<llvm::DataLayoutPass *>(ptr))));
-  }
-};
-};
-    ;
-
-#if 1
-// LLVM3.6
-namespace llvmo {
-FORWARD(TargetLibraryInfo);
-class TargetLibraryInfo_O : public ImmutablePass_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfo, TargetLibraryInfo_O, "TargetLibraryInfo", ImmutablePass_O);
-  typedef llvm::TargetLibraryInfo ExternalType;
-  typedef llvm::TargetLibraryInfo *PointerToExternalType;
-
-public:
-  static TargetLibraryInfo_sp make(llvm::Triple *triple);
-
-public:
-  PointerToExternalType wrappedPtr() { return static_cast<PointerToExternalType>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    //	    if (this->_ptr != NULL ) delete this->_ptr;
-    this->_ptr = ptr;
-  }
-  TargetLibraryInfo_O() : Base(){};
-  ~TargetLibraryInfo_O() { /*if (this->_ptr) delete this->_ptr;*/
-  }
-}; // TargetLibraryInfo_O
-}; // llvmo
-TRANSLATE(llvmo::TargetLibraryInfo_O);
-/* from_object translators */
-
-namespace translate {
-template <>
-struct from_object<llvm::TargetLibraryInfo *, std::true_type> {
-  typedef llvm::TargetLibraryInfo *DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(gc::As<llvmo::TargetLibraryInfo_sp>(object)->wrappedPtr()){};
-};
-template <>
-struct from_object<llvm::TargetLibraryInfo const &, std::true_type> {
-  typedef llvm::TargetLibraryInfo const &DeclareType;
-  DeclareType _v;
-  from_object(T_P object) : _v(*(gc::As<llvmo::TargetLibraryInfo_sp>(object)->wrappedPtr())){};
-};
-template <>
-struct to_object<llvm::TargetLibraryInfo *> {
-  static core::T_sp convert(llvm::TargetLibraryInfo *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfo_O, llvm::TargetLibraryInfo *>(ptr)));
-  }
-};
-template <>
-struct to_object<const llvm::TargetLibraryInfo *> {
-  static core::T_sp convert(const llvm::TargetLibraryInfo *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::TargetLibraryInfo_O, llvm::TargetLibraryInfo *>(const_cast<llvm::TargetLibraryInfo *>(ptr))));
-  }
-};
-};
-    ;
-
-#else
 //
 // This is needed for llvm3.7     What did I do before this?????
 //
 namespace llvmo {
 FORWARD(TargetLibraryInfoWrapperPass);
-c l a s s TargetLibraryInfoWrapperPass_O : public ImmutablePass_O {
-  L I S P _EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfoWrapperPass, TargetLibraryInfoWrapperPass_O, "TargetLibraryInfoWrapperPass", ImmutablePass_O);
+class TargetLibraryInfoWrapperPass_O : public ImmutablePass_O {
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::TargetLibraryInfoWrapperPass, TargetLibraryInfoWrapperPass_O, "TargetLibraryInfoWrapperPass", ImmutablePass_O);
   typedef llvm::TargetLibraryInfoWrapperPass ExternalType;
   typedef llvm::TargetLibraryInfoWrapperPass *PointerToExternalType;
 
@@ -1909,7 +1790,6 @@ public:
   }
 }; // TargetLibraryInfoWrapperPass_O
 }; // llvmo
-TRANSLATE(llvmo::TargetLibraryInfoWrapperPass_O);
 /* from_object translators */
 
 namespace translate {
@@ -1942,7 +1822,6 @@ struct to_object<const llvm::TargetLibraryInfoWrapperPass *> {
 };
     ;
 
-#endif
 
 #if 0
 namespace llvmo
@@ -1966,7 +1845,6 @@ namespace llvmo
     ~TargetData_O() {}
   }; // TargetData_O
 }; // llvmo
-TRANSLATE(llvmo::TargetData_O);
 /* from_object translators */
 
 namespace translate
@@ -2016,9 +1894,9 @@ namespace translate
 namespace llvmo {
 FORWARD(FunctionPassManager);
 class FunctionPassManager_O : public PassManagerBase_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::FunctionPassManager, FunctionPassManager_O, "FUNCTION-PASS-MANAGER", PassManagerBase_O);
-  typedef llvm::FunctionPassManager ExternalType;
-  typedef llvm::FunctionPassManager *PointerToExternalType;
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::FunctionPassManager, FunctionPassManager_O, "FUNCTION-PASS-MANAGER", PassManagerBase_O);
+  typedef llvm::legacy::FunctionPassManager ExternalType;
+  typedef llvm::legacy::FunctionPassManager *PointerToExternalType;
 
 public:
   static FunctionPassManager_sp make(llvm::Module *module);
@@ -2038,19 +1916,18 @@ public:
 public:
 }; // FunctionPassManager_O
 }; // llvmo
-TRANSLATE(llvmo::FunctionPassManager_O);
 /* from_object translators */
 
 namespace translate {
 template <>
-struct from_object<llvm::FunctionPassManager *, std::true_type> {
-  typedef llvm::FunctionPassManager *DeclareType;
+  struct from_object<llvm::legacy::FunctionPassManager *, std::true_type> {
+  typedef llvm::legacy::FunctionPassManager *DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr(); };
 };
 template <>
-struct from_object<llvm::FunctionPassManager &, std::true_type> {
-  typedef llvm::FunctionPassManager &DeclareType;
+  struct from_object<llvm::legacy::FunctionPassManager &, std::true_type> {
+  typedef llvm::legacy::FunctionPassManager &DeclareType;
   DeclareType _v;
   from_object(T_P object) : _v(*gc::As<llvmo::FunctionPassManager_sp>(object)->wrappedPtr()){};
 };
@@ -2060,9 +1937,9 @@ struct from_object<llvm::FunctionPassManager &, std::true_type> {
 
 namespace translate {
 template <>
-struct to_object<llvm::FunctionPassManager *> {
-  static core::T_sp convert(llvm::FunctionPassManager *ptr) {
-    return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::FunctionPassManager *>(ptr)));
+  struct to_object<llvm::legacy::FunctionPassManager *> {
+  static core::T_sp convert(llvm::legacy::FunctionPassManager *ptr) {
+    return ((core::RP_Create_wrapped<llvmo::FunctionPassManager_O, llvm::legacy::FunctionPassManager *>(ptr)));
   }
 };
 };
@@ -2071,9 +1948,9 @@ struct to_object<llvm::FunctionPassManager *> {
 namespace llvmo {
 FORWARD(PassManager);
 class PassManager_O : public PassManagerBase_O {
-  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::PassManager, PassManager_O, "PASS-MANAGER", PassManagerBase_O);
-  typedef llvm::PassManager ExternalType;
-  typedef llvm::PassManager *PointerToExternalType;
+  LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::legacy::PassManager, PassManager_O, "PASS-MANAGER", PassManagerBase_O);
+  typedef llvm::legacy::PassManager ExternalType;
+  typedef llvm::legacy::PassManager *PointerToExternalType;
 
 public:
   static PassManager_sp make();
@@ -2093,13 +1970,12 @@ public:
 public:
 }; // PassManager_O
 }; // llvmo
-TRANSLATE(llvmo::PassManager_O);
 /* from_object translators */
 
 namespace translate {
 template <>
-struct from_object<llvm::PassManager *, std::true_type> {
-  typedef llvm::PassManager *DeclareType;
+  struct from_object<llvm::legacy::PassManager *, std::true_type> {
+  typedef llvm::legacy::PassManager *DeclareType;
   DeclareType _v;
   from_object(T_P object) { this->_v = gc::As<llvmo::PassManager_sp>(object)->wrappedPtr(); };
 };
@@ -2109,10 +1985,10 @@ struct from_object<llvm::PassManager *, std::true_type> {
 
 namespace translate {
 template <>
-struct to_object<llvm::PassManager *> {
-  static core::T_sp convert(llvm::PassManager *ptr) {
+  struct to_object<llvm::legacy::PassManager *> {
+  static core::T_sp convert(llvm::legacy::PassManager *ptr) {
     _G();
-    return ((core::RP_Create_wrapped<llvmo::PassManager_O, llvm::PassManager *>(ptr)));
+    return ((core::RP_Create_wrapped<llvmo::PassManager_O, llvm::legacy::PassManager *>(ptr)));
   }
 };
 };
@@ -2169,7 +2045,6 @@ CL_DEFMETHOD   string error_string() const { return this->_ErrorStr; };
 
 }; // EngineBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::EngineBuilder_O);
 /* from_object translators */
 
 namespace translate {
@@ -2236,12 +2111,11 @@ public:
 
 }; // PassManagerBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::PassManagerBuilder_O);
 /* from_object translators */
 
 namespace translate {
 template <>
-struct from_object<llvm::PassManagerBuilder *, std::true_type> {
+  struct from_object<llvm::PassManagerBuilder *, std::true_type> {
   typedef llvm::PassManagerBuilder *DeclareType;
   DeclareType _v;
   from_object(T_P object) {
@@ -2271,7 +2145,6 @@ public:
   ~APFloat_O(){};
 }; // APFloat_O
 }; // llvmo
-TRANSLATE(llvmo::APFloat_O);
 namespace translate {
 template <>
 struct from_object<const llvm::APFloat &, std::true_type> {
@@ -2319,7 +2192,6 @@ public:
   string __repr__() const;
 }; // APInt_O
 }; // llvmo
-TRANSLATE(llvmo::APInt_O);
 /* from_object translators */
 namespace translate {
 template <>
@@ -2384,12 +2256,11 @@ public:
   /*! Set the current debug location for generated code */
   void SetCurrentDebugLocation(DebugLoc_sp loc);
   /*! Set the current debug location by building a DebugLoc on the fly */
-  void SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope);
+  void SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope);
 CL_LISPIFY_NAME("CurrentDebugLocation");
 CL_DEFMETHOD   core::T_sp CurrentDebugLocation() { return _lisp->_boolean(this->_CurrentDebugLocationSet); };
 }; // IRBuilderBase_O
 }; // llvmo
-TRANSLATE(llvmo::IRBuilderBase_O);
 /* from_object translators */
 
 namespace translate {
@@ -2442,7 +2313,6 @@ public:
   string __repr__() const;
 }; // IRBuilder_O
 }; // llvmo
-TRANSLATE(llvmo::IRBuilder_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -2468,7 +2338,6 @@ public:
   bool terminatorInstP() const;
 }; // Instruction_O
 }; // llvmo
-TRANSLATE(llvmo::Instruction_O);
 namespace translate {
 template <>
 struct from_object<llvm::Instruction *, std::true_type> {
@@ -2512,7 +2381,6 @@ public:
 
 }; // StoreInst_O
 }; // llvmo
-TRANSLATE(llvmo::StoreInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2555,7 +2423,6 @@ public:
 
 }; // FenceInst_O
 }; // llvmo
-TRANSLATE(llvmo::FenceInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2598,7 +2465,6 @@ public:
 
 }; // AtomicCmpXchgInst_O
 }; // llvmo
-TRANSLATE(llvmo::AtomicCmpXchgInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2641,7 +2507,6 @@ public:
 
 }; // AtomicRMWInst_O
 }; // llvmo
-TRANSLATE(llvmo::AtomicRMWInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2684,7 +2549,6 @@ public:
 
 }; // PHINode_O
 }; // llvmo
-TRANSLATE(llvmo::PHINode_O);
 /* from_object translators */
 
 namespace translate {
@@ -2727,7 +2591,6 @@ public:
 
 }; // CallInst_O
 }; // llvmo
-TRANSLATE(llvmo::CallInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2770,7 +2633,6 @@ public:
 
 }; // LandingPadInst_O
 }; // llvmo
-TRANSLATE(llvmo::LandingPadInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2813,7 +2675,6 @@ public:
 
 }; // UnaryInstruction_O
 }; // llvmo
-TRANSLATE(llvmo::UnaryInstruction_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -2834,7 +2695,6 @@ public:
   ~AllocaInst_O() {}
 }; // AllocaInst_O
 }; // llvmo
-TRANSLATE(llvmo::AllocaInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2877,7 +2737,6 @@ public:
 
 }; // VAArgInst_O
 }; // llvmo
-TRANSLATE(llvmo::VAArgInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2920,7 +2779,6 @@ public:
 
 }; // LoadInst_O
 }; // llvmo
-TRANSLATE(llvmo::LoadInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -2963,7 +2821,6 @@ public:
 
 }; // TerminatorInst_O
 }; // llvmo
-TRANSLATE(llvmo::TerminatorInst_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -2985,7 +2842,6 @@ public:
 
 }; // BranchInst_O
 }; // llvmo
-TRANSLATE(llvmo::BranchInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3030,7 +2886,6 @@ public:
 
 }; // SwitchInst_O
 }; // llvmo
-TRANSLATE(llvmo::SwitchInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3073,7 +2928,6 @@ public:
 
 }; // IndirectBrInst_O
 }; // llvmo
-TRANSLATE(llvmo::IndirectBrInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3116,7 +2970,6 @@ public:
 
 }; // InvokeInst_O
 }; // llvmo
-TRANSLATE(llvmo::InvokeInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3159,7 +3012,6 @@ public:
 
 }; // ResumeInst_O
 }; // llvmo
-TRANSLATE(llvmo::ResumeInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3202,7 +3054,6 @@ public:
 
 }; // UnreachableInst_O
 }; // llvmo
-TRANSLATE(llvmo::UnreachableInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3245,7 +3096,6 @@ public:
 
 }; // ReturnInst_O
 }; // llvmo
-TRANSLATE(llvmo::ReturnInst_O);
 /* from_object translators */
 
 namespace translate {
@@ -3294,7 +3144,6 @@ public:
 
 }; // ConstantFP_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantFP_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3332,7 +3181,6 @@ public:
   string __repr__() const;
 }; // ConstantInt_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantInt_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3369,7 +3217,6 @@ public:
 public:
 }; // ConstantStruct_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantStruct_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3408,7 +3255,6 @@ public:
   string __repr__() const;
 }; // UndefValue_O
 }; // llvmo
-TRANSLATE(llvmo::UndefValue_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3446,7 +3292,6 @@ public:
   string __repr__() const;
 }; // ConstantPointerNull_O
 }; // llvmo
-TRANSLATE(llvmo::ConstantPointerNull_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3490,7 +3335,6 @@ public:
 
 }; // MDNode_O
 }; // llvmo
-TRANSLATE(llvmo::MDNode_O);
 /* from_object translators */
 
 namespace translate {
@@ -3536,7 +3380,6 @@ public:
 
 }; // MDString_O
 }; // llvmo
-TRANSLATE(llvmo::MDString_O);
 /* from_object translators */
 
 namespace translate {
@@ -3584,7 +3427,6 @@ public:
 
 }; // ValueAsMetadata_O
 }; // llvmo
-TRANSLATE(llvmo::ValueAsMetadata_O);
 /* from_object translators */
 
 namespace translate {
@@ -3639,7 +3481,6 @@ CL_DEFMETHOD   void addOperand(llvm::MDNode *m) { this->_ptr->addOperand(m); };
 
 }; // NamedMDNode_O
 }; // llvmo
-TRANSLATE(llvmo::NamedMDNode_O);
 /* from_object translators */
 
 namespace translate {
@@ -3699,7 +3540,6 @@ public:
 
 }; // Function_O
 }; // llvmo
-TRANSLATE(llvmo::Function_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3769,7 +3609,6 @@ public:
 
 }; // BasicBlock_O
 }; // llvmo
-TRANSLATE(llvmo::BasicBlock_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3815,7 +3654,6 @@ public:
 public:
 }; // Argument_O
 }; // llvmo
-TRANSLATE(llvmo::Argument_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3893,7 +3731,6 @@ public:
 
 }; // Type_O
 }; // llvmo
-TRANSLATE(llvmo::Type_O);
 /* from_object translators */
 
 namespace translate {
@@ -3903,6 +3740,10 @@ struct from_object<llvm::Type *, std::true_type> {
   DeclareType _v;
   from_object(T_P object) {
     _G();
+    if ( object.nilp() ) {
+      this->_v = NULL;
+      return;
+    }
     this->_v = (gc::As<llvmo::Type_sp>(object)->wrappedPtr());
   };
 };
@@ -3938,7 +3779,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // FunctionType_O
 }; // llvmo
-TRANSLATE(llvmo::FunctionType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -3982,7 +3822,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // IntegerType_O
 }; // llvmo
-TRANSLATE(llvmo::IntegerType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4026,7 +3865,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // CompositeType_O
 }; // llvmo
-TRANSLATE(llvmo::CompositeType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4075,7 +3913,6 @@ public:
   void setBody(core::T_sp elements, core::T_sp isPacked);
 }; // StructType_O
 }; // llvmo
-TRANSLATE(llvmo::StructType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4119,7 +3956,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // SequentialType_O
 }; // llvmo
-TRANSLATE(llvmo::SequentialType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4166,7 +4002,6 @@ public: // static methods
 
 }; // PointerType_O
 }; // llvmo
-TRANSLATE(llvmo::PointerType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4210,7 +4045,6 @@ public: // static methods
   static ArrayType_sp get(Type_sp elementType, uint64_t numElements);
 }; // ArrayType_O
 }; // llvmo
-TRANSLATE(llvmo::ArrayType_O);
 /* from_object translators */
 /* to_object translators */
 
@@ -4254,7 +4088,6 @@ public: // static methods
   static core::T_sp get(core::T_sp result_type, core::T_sp params, core::T_sp is_var_arg);
 }; // VectorType_O
 }; // llvmo
-TRANSLATE(llvmo::VectorType_O);
 /* from_object translators */
 /* to_object translators */
 

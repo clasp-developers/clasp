@@ -64,6 +64,5 @@ struct gctools::GCInfo<core::HashTableEqualp_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::HashTableEqualp_O);
 
 #endif /* _core_HashTableEqualp_H */

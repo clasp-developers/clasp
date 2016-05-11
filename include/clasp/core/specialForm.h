@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include <vector>
 #include <set>
 #include <clasp/core/foundation.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/object.h>
 
 namespace core {
@@ -81,5 +80,4 @@ public: // initialize
   virtual ~SpecialForm_O() {};
 };
 };
-TRANSLATE(core::SpecialForm_O);
 #endif //]
