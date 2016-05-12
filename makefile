@@ -415,15 +415,6 @@ clean:
 	git submodule sync
 	make boehm-clean
 	(cd include/clasp/main/generated; rm *.h)
-	(cd src/main; rm -rf bin bundle)
-	(cd src/core; rm -rf bin bundle)
-	(cd src/gctools; rm -rf bin bundle)
-	(cd src/llvmo; rm -rf bin bundle)
-	(cd src/asttooling; rm -rf bin bundle)
-	(cd src/cffi; rm -rf bin bundle)
-	(cd src/clbind; rm -rf bin bundle)
-	(cd src/sockets; rm -rf bin bundle)
-	(cd src/serveEvent; rm -rf bin bundle)
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
 	install -d $(CLASP_INTERNAL_BUILD_TARGET_DIR)
 	-(find $(CLASP_INTERNAL_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
