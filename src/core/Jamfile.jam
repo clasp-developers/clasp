@@ -27,7 +27,7 @@ project internals/core : requirements
 local sources =
 #      clc-generate-ast.cc
       clcenv.cc
-      clc.cc
+#      clc.cc
     environment.cc
 #    generate.cc
     activationFrame.cc

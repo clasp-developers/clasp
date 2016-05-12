@@ -373,7 +373,7 @@ namespace clcenv {
     virtual core::T_sp inline_() const { SUBIMP(); };
     Info_O() {};
     virtual ~Info_O() {};
-    virtual clc::Ast_sp convert_form(ARGS_form_env_rest);
+//    virtual clc::Ast_sp convert_form(ARGS_form_env_rest);
   };
 
   FORWARD(VariableInfo);
@@ -598,7 +598,7 @@ namespace clcenv {
     _Name(_Unbound<core::T_O>())
     {};
     virtual ~SpecialOperatorInfo_O() {};
-    clc::Ast_sp convert_form(ARGS_form_env_rest);
+//    clc::Ast_sp convert_form(ARGS_form_env_rest);
   };
 
   FORWARD(BlockInfo);

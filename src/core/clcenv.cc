@@ -4,7 +4,7 @@
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/predicates.h>
-#include <clasp/core/clc.h>
+//#include <clasp/core/clc.h>
 #include <clasp/core/clcenv.h>
 #include <clasp/core/wrappers.h>
 
@@ -622,15 +622,19 @@ CL_DEFUN core::T_sp global_environment(core::T_sp environment)
 }
 
 
+#ifdef PROVIDE_CONVERT_FORM
 clc::Ast_sp Info_O::convert_form(ARGS_form_env_rest)
 {
   IMPLEMENT_MEF(BF("Implement convert_form for %s with name %s") % lisp_classNameAsString(core::instance_class(this->asSmartPtr())) % _rep_(this->name()) );
 }
+#endif
 
+#ifdef PROVIDE_CONVERT_FORM
 clc::Ast_sp SpecialOperatorInfo_O::convert_form(ARGS_form_env_rest)
 {
   return clc::convert_special(oCar(form),PASS_form_env_rest);
 }
+#endif
 
 };
 
@@ -638,7 +642,7 @@ clc::Ast_sp SpecialOperatorInfo_O::convert_form(ARGS_form_env_rest)
 namespace clcenv {
 
 Entry_sp augment_environment_with_declaration(core::List_sp canonicalized_declaration_specifier,
-                                          Entry_sp environment )
+                                              Entry_sp environment )
 {
   core::T_sp head = oCar(canonicalized_declaration_specifier);
   core::List_sp rest = oCdr(canonicalized_declaration_specifier);
@@ -691,6 +695,20 @@ Entry_sp augment_environment_with_declarations(Entry_sp environment, core::List_
 }
 
 
+bool special_declaration_p(core::List_sp declarations, core::T_sp variable)
+{
+  for ( auto cur : declarations ) {
+    core::List_sp one = oCar(cur);
+    core::T_sp head = oCar(one);
+    if ( head == cl::_sym_special ) {
+      core::T_sp var = oCadr(one);
+      ASSERT(oCddr(one).nilp()); // assert that declarations are canonicalized
+      if ( var == variable ) return true;
+    }
+  }
+  return false;
+}
+
 core::T_mv variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env )
 {
   VariableInfo_sp existing_var_info = variable_info(env,variable);
@@ -703,6 +721,7 @@ core::T_mv variable_is_special_p(core::T_sp variable, core::List_sp declarations
   }
 }
 
+#if 0
 Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env )
 {
   Entry_sp new_env = env;
@@ -726,3 +745,7 @@ Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp de
   }
   return new_env;
 };
+#endif
+
+
+}
