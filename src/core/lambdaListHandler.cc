@@ -82,7 +82,7 @@ List_sp maybe_canonicalize_declaration(List_sp decl, List_sp canon)
 }
 
 /*! Canonicalize the following declarations
-  dynamic-extent  ignore     optimize  
+dynamic-extent  ignore     optimize  
 ftype           inline     special   
 ignorable       notinline  type      
 And my own special one:    core:_sym_lambda_name
@@ -93,12 +93,39 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
   for ( auto decl : decls ) {
     Cons_sp d = gc::As<Cons_sp>(oCar(decl));
     Symbol_sp head = gc::As<Symbol_sp>(oCar(d));
-    if ( head == cl::_sym_special ) {
+    if (head == cl::_sym_dynamic_extent
+        || head == cl::_sym_ignore
+        || head == cl::_sym_inline
+        || head == cl::_sym_special
+        || head == cl::_sym_ignorable
+        || head == cl::_sym_notinline) {
       canon = maybe_canonicalize_declaration(d,canon);
-    } else if ( head == cl::_sym_dynamic_extent ) {
-      canon = maybe_canonicalize_declaration(d,canon);
+    } else if ( head == cl::_sym_ftype ) {
+      T_sp more_than_one = oCdddr(d);
+      if (more_than_one.nilp()) {
+        canon = Cons_O::create(d,canon);
+      } else {
+        T_sp ftype = oCadr(d);
+        for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+        }
+      }
+    } else if ( head == cl::_sym_optimize ) {
+      IMPLEMENT_ME();
+    } else if ( head == core::_sym_lambdaName ) {
+      canon = Cons_O::create(d,canon);
+    } else if ( head == cl::_sym_type ) {
+      T_sp more_than_one = oCdddr(d);
+      if (more_than_one.nilp()) {
+        canon = Cons_O::create(d,canon);
+      } else {
+        T_sp ftype = oCadr(d);
+        for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+        }
+      }
     } else {
-      printf("%s:%d Handle canonicalizing decl --> %s\n", __FILE__, __LINE__, _rep_(decl).c_str());
+      SIMPLE_ERROR(BF("Handle canonicalization of decl --> %s") % _rep_(d));
     }
   }
   return canon;

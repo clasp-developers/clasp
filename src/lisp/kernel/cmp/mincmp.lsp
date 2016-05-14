@@ -24,6 +24,7 @@
              (body (cddr head)))
          (multiple-value-bind (declares code docstring specials)
              (process-declarations body t)
+           (let ((
            (format t "It's a lambda - what do I do?: ~a~%" head)
            (format t "     lambda-list: ~s~%" lambda-list)
            (format t "     body: ~s~%" body)
