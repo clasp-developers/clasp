@@ -108,7 +108,8 @@ project clasp : requirements
 	<target-os>darwin:<cxxflags>"-mmacosx-version-min=10.7"
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
-        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=0"
+        <cxxflags>"-Wabi-tag"
+        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=1"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<optimization>off
         <variant>release:<optimization>speed
