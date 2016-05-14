@@ -117,7 +117,30 @@ It's something to dispatch on */
     virtual ~SymbolMacro_O() {};
   };
 
-  FORWARD(Function);
+  /*! Add this to the environment to whenever a FUNCTION special operator
+is encountered */
+  FORWARD(Closure);
+  class Closure_O : public Entry_O {
+    LISP_CLASS(clcenv,ClcenvPkg,Closure_O,"Closure",Entry_O);
+  public:
+//    core::T_sp _Name;
+//    core::T_sp _Identity;
+  public:
+    /*METHODS*/
+  public:
+    explicit Closure_O()
+//      : _Name(_Unbound<core::T_O>())
+//      ,_Identity(_Unbound<core::T_O>())
+    {};
+    explicit Closure_O(core::T_sp env) //, core::T_sp name, core::T_sp identity) :
+      : Entry_O(env)
+//      , _Name(name)
+//      , _Identity(identity)
+    {};
+    virtual ~Closure_O() {};
+  };
+
+    FORWARD(Function);
   class Function_O : public Entry_O {
     LISP_CLASS(clcenv,ClcenvPkg,Function_O,"Function",Entry_O);
   public:
@@ -662,6 +685,12 @@ inline CL_DEFUN Entry_sp add_special_variable(core::T_sp env, core::T_sp symbol)
 inline CL_DEFUN Entry_sp add_local_symbol_macro(core::T_sp env, core::T_sp symbol, core::T_sp expansion )
 {
   GC_ALLOCATE_VARIADIC(SymbolMacro_O, entry, env, symbol, expansion );
+  return entry;
+}
+
+ inline CL_DEFUN Entry_sp add_closure(core::T_sp env)
+{
+  GC_ALLOCATE_VARIADIC(Closure_O, entry, env);
   return entry;
 }
 

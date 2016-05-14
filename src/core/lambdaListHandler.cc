@@ -61,6 +61,49 @@ void handleArgumentHandlingExceptions(Closure_sp closure) {
   }
 }
 
+/*! Canonicalize one declare.
+* Arguments
+- decl :: A list.
+- canon :: A list.
+* Description
+Prepend the canonicalized_declarations from decl to canon - return the result. */
+List_sp maybe_canonicalize_declaration(List_sp decl, List_sp canon)
+{
+  Symbol_sp sym = oCar(decl);
+  T_sp too_many = oCddr(decl);
+  if (too_many.notnilp()) {
+    for ( auto sp : static_cast<List_sp>(oCdr(decl)) ) {
+      canon = Cons_O::create(Cons_O::createList(sym,oCar(sp)),canon);
+    }
+  } else {
+    canon = Cons_O::create(decl,canon);
+  }
+  return canon;
+}
+
+/*! Canonicalize the following declarations
+  dynamic-extent  ignore     optimize  
+ftype           inline     special   
+ignorable       notinline  type      
+And my own special one:    core:_sym_lambda_name
+*/
+CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
+{
+  List_sp canon = _Nil<T_O>();
+  for ( auto decl : decls ) {
+    Cons_sp d = gc::As<Cons_sp>(oCar(decl));
+    Symbol_sp head = gc::As<Symbol_sp>(oCar(d));
+    if ( head == cl::_sym_special ) {
+      canon = maybe_canonicalize_declaration(d,canon);
+    } else if ( head == cl::_sym_dynamic_extent ) {
+      canon = maybe_canonicalize_declaration(d,canon);
+    } else {
+      printf("%s:%d Handle canonicalizing decl --> %s\n", __FILE__, __LINE__, _rep_(decl).c_str());
+    }
+  }
+  return canon;
+}
+    
 
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   if (llh->requiredLexicalArgumentsOnlyP()) {

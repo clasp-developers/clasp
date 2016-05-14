@@ -542,25 +542,42 @@ core::T_sp function_info(core::T_sp environment, core::T_sp form)
   }
 }
 
-
-CL_DEFUN core::T_sp block_info(core::T_sp environment, core::T_sp symbol)
+core::T_sp block_info_impl(core::T_sp environment, core::T_sp symbol, bool& crossesFunction)
 {
-  if ( Block_sp be = environment.asOrNull<Entry_O>() ) {
+  if ( Block_sp be = environment.asOrNull<Block_O>() ) {
     if ( core::cl__eq(symbol,be->_Name) ) {
       BlockInfo_sp info = BlockInfo_O::create();
       info->_Name = symbol;
       info->_Identity = be->_Identity;
       return info;
     } else {
-      return block_info(be->_Next,symbol);
+      return block_info_impl(be->_Next,symbol,crossesFunction);
     }
+  } else if ( Closure_sp fe = environment.asOrNull<Closure_O>()) {
+    crossesFunction = true;
+    return block_info_impl(fe->_Next,symbol,crossesFunction);
   } else if ( Entry_sp ee = environment.asOrNull<Entry_O>() ) {
-    return block_info(ee->_Next,symbol);
+    return block_info_impl(ee->_Next,symbol,crossesFunction);
   }
   return _Nil<core::T_O>();
 }
 
-CL_DEFUN core::T_sp tag_info(core::T_sp environment, core::T_sp symbol)
+/*! *Arguments
+- environment : Pass the environment in.
+- symbol : The symbol of the block to return from.
+* Description
+Returns two values, the block info given symbol and the whether or not
+the block needs a non-local exit to return to it.
+*/
+CL_DEFUN core::T_mv block_info(core::T_sp environment, core::T_sp symbol)
+{
+  bool crossesFunction = false;
+  core::T_sp info = block_info_impl(environment,symbol,crossesFunction);
+  return Values(info,_lisp->_boolean(crossesFunction));
+}
+
+
+CL_DEFUN core::T_sp tag_info_impl(core::T_sp environment, core::T_sp symbol, bool &nonlocal)
 {
   if ( Tag_sp te = environment.asOrNull<Entry_O>() ) {
     if ( core::cl__eq(symbol,te->_Name) ) {
@@ -569,12 +586,22 @@ CL_DEFUN core::T_sp tag_info(core::T_sp environment, core::T_sp symbol)
       info->_Identity = te->_Identity;
       return info;
     } else {
-      return tag_info(te->_Next,symbol);
+      return tag_info_impl(te->_Next,symbol,nonlocal);
     }
   } else if ( Entry_sp ee = environment.asOrNull<Entry_O>() ) {
-    return tag_info(ee->_Next,symbol);
+    return tag_info_impl(ee->_Next,symbol,nonlocal);
+  } else if ( Closure_sp ce = environment.asOrNull<Closure_O>() ) {
+    nonlocal = true;
+    return tag_info_impl(ee->_Next,symbol,nonlocal);
   }
   return _Nil<core::T_O>();
+}
+
+CL_DEFUN core::T_mv tag_info(core::T_sp environment, core::T_sp symbol)
+{
+  bool nonlocal = false;
+  core::T_sp info = tag_info_impl(environment,symbol,nonlocal);
+  return Values(info,_lisp->_boolean(nonlocal));
 }
 
 

@@ -97,6 +97,7 @@ THE SOFTWARE.
 #include <clasp/core/write_object.h>
 #include <clasp/core/write_ugly.h>
 #include <clasp/core/lispMath.h>
+#include <clasp/core/clcenv.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/print.h>
 #include <clasp/core/genericFunction.h>
@@ -1720,6 +1721,8 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
       } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
         expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, env);
+      } else if (clcenv::Entry_sp ce = env.asOrNull<clcenv::Entry_O>() ) {
+        expansionFunction = eval::funcall(cl::_sym_macroFunction, headSymbol, ce);
       } else {
         // It must be a Cleavir environment
         if (cleavirEnv::_sym_macroFunction->fboundp()) {
@@ -1739,6 +1742,11 @@ CL_DEFUN T_mv cl__macroexpand_1(T_sp form, T_sp env) {
       expansionFunction = core__lookup_symbol_macro(sform, env);
     } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
       expansionFunction = core__lookup_symbol_macro(sform, eenv);
+    } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>() ) {
+      clcenv::Info_sp info = clcenv::variable_info(cenv,sform);
+      if (clcenv::SymbolMacroInfo_sp smi = info.asOrNull<clcenv::SymbolMacroInfo_O>() ) {
+        expansionFunction = smi->_Expansion;
+      }
     } else {
       // It must be a Cleavir environment
       if (cleavirEnv::_sym_symbolMacroExpansion->fboundp()) {
