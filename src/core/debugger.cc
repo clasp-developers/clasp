@@ -286,7 +286,7 @@ CL_DEFUN void core__low_level_backtrace() {
   printf("----Done\n");
 }
 
-CL_LAMBDA(depth);
+CL_LAMBDA(&optional (depth 0));
 CL_DECLARE();
 CL_DOCSTRING("backtrace");
 CL_DEFUN void core__clib_backtrace(int depth) {
@@ -304,7 +304,7 @@ CL_DEFUN void core__clib_backtrace(int depth) {
     return;
   } else {
     for (int i = 0; i < nptrs; ++i) {
-      if (i >= depth)
+      if (depth && i >= depth)
         break;
       std::string front = std::string(strings[i], 57);
       char *fnName = &strings[i][59];

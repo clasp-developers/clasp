@@ -102,6 +102,26 @@ string Closure_O::nameAsString() const {
 
 namespace core {
 
+List_sp FunctionClosure_O::source_info() const {
+  return Cons_O::createList(clasp_make_fixnum(this->_sourceFileInfoHandle),
+                            clasp_make_fixnum(this->_filePos),
+                            clasp_make_fixnum(this->_lineno),
+                            clasp_make_fixnum(this->_column));
+};
+
+void FunctionClosure_O::set_source_info(List_sp source_info)
+{
+  T_sp sourceFileInfoHandle = oCar(source_info);
+  T_sp filePos = oCadr(source_info);
+  T_sp lineno = oCaddr(source_info);
+  T_sp column = oCadddr(source_info);
+  this->_sourceFileInfoHandle = sourceFileInfoHandle.fixnump() ? 0 : sourceFileInfoHandle.unsafe_fixnum();
+  this->_filePos = filePos.fixnump() ? 0 : filePos.unsafe_fixnum();
+  this->_lineno = lineno.fixnump() ? 0 : lineno.unsafe_fixnum();
+  this->_column = column.fixnump() ? 0 : column.unsafe_fixnum();
+}
+
+
 bool FunctionClosure_O::macroP() const {
   return this->kind == kw::_sym_macro;
 }

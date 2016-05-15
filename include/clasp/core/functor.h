@@ -187,6 +187,7 @@ public:
 
 
 namespace core {
+  /*! This is the class that stores source info */
   class FunctionClosure_O : public Closure_O {
     LISP_CLASS(core,CorePkg,FunctionClosure_O,"FunctionClosure",Closure_O);
   public:
@@ -208,6 +209,8 @@ namespace core {
       FunctionClosure_sp fc = gctools::GC<FunctionClosure_O>::allocate(name,function_kind,SOURCE_INFO_PASS);
       return fc;
     }
+    CL_DEFMETHOD List_sp source_info() const;
+    CL_DEFMETHOD void set_source_info(List_sp source_info);
     virtual size_t templatedSizeof() const { return sizeof(*this); };
     virtual const char *describe() const { return "FunctionClosure"; };
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() { SIMPLE_ERROR(BF("Subclass must implement")); };

@@ -77,9 +77,6 @@ void errorApplyLastArgumentNotList() {
   SIMPLE_ERROR(BF("Last argument of APPLY is not a list/frame/activation-frame"));
 }
 
-void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code);
-
-void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<Str_sp> &documentation, List_sp &code, List_sp &specials);
 
 };
 };
@@ -2379,12 +2376,11 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   SYMBOL_EXPORT_SC_(ClPkg, quote);
   SYMBOL_EXPORT_SC_(ClPkg, progn);
   SYMBOL_EXPORT_SC_(ClPkg, throw);
-  _lisp->defineSpecialOperator(ExtPkg, "special-var", &sp_specialVar);
-  _lisp->defineSpecialOperator(ExtPkg, "lexical-var", &sp_lexicalVar);
+  _lisp->defineSpecialOperator(ClPkg, "progn", &sp_progn);
   _lisp->defineSpecialOperator(ClPkg, "block", &sp_block);
   _lisp->defineSpecialOperator(ClPkg, "catch", &sp_catch);
   _lisp->defineSpecialOperator(ClPkg, "eval-when", &sp_eval_when);
-  _lisp->defineSpecialOperator(ExtPkg, "debug-message", &sp_debug_message);
+  _lisp->defineSpecialOperator(CorePkg, "debug-message", &sp_debug_message);
   _lisp->defineSpecialOperator(ClPkg, "flet", &sp_flet);
   _lisp->defineSpecialOperator(ClPkg, "function", &sp_function);
   _lisp->defineSpecialOperator(ClPkg, "the", &sp_the);
@@ -2399,7 +2395,6 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   _lisp->defineSpecialOperator(ClPkg, "macrolet", &sp_macrolet);
   _lisp->defineSpecialOperator(ClPkg, "multipleValueProg1", &sp_multipleValueProg1);
   _lisp->defineSpecialOperator(ClPkg, "multipleValueCall", &sp_multipleValueCall);
-  _lisp->defineSpecialOperator(ClPkg, "progn", &sp_progn);
   _lisp->defineSpecialOperator(ClPkg, "progv", &sp_progv);
   _lisp->defineSpecialOperator(ClPkg, "quote", &sp_quote);
   _lisp->defineSpecialOperator(ClPkg, "return-from", &sp_returnFrom);
@@ -2409,6 +2404,8 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   _lisp->defineSpecialOperator(ClPkg, "unwind-protect", &sp_unwindProtect);
   _lisp->defineSpecialOperator(ClPkg, "symbol-macrolet", &sp_symbolMacrolet);
   _lisp->defineSpecialOperator(ClPkg, "load-time-value", &sp_loadTimeValue);
+  _lisp->defineSpecialOperator(ExtPkg, "special-var", &sp_specialVar);
+  _lisp->defineSpecialOperator(ExtPkg, "lexical-var", &sp_lexicalVar);
   // missing special operator load-time-value
   // missing progv
 

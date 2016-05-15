@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/bignum.h>
+#include <clasp/core/sysprop.h>
 #include <clasp/core/character.h>
 #include <clasp/core/package.h>
 #include <clasp/core/readtable.h>
@@ -54,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/lispMath.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/clcenv.h>
 #include <clasp/core/null.h>
 //#include "debugger.h"
 #include <clasp/core/ql.h>
@@ -599,6 +601,41 @@ CL_DEFUN Pointer_mv core__c_function(Symbol_sp sym) {
 };
 #endif
 
+// ignore env
+CL_DEFUN T_sp core__compiler_macro_function(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,cl::_sym_compiler_macro);
+}
+
+// ignore env
+CL_LAMBDA(name &optional env);
+CL_DEFUN T_mv core__get_compiler_macro_function(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,cl::_sym_compiler_macro);
+}
+
+CL_LAMBDA(name function &optional env);
+CL_DEFUN void core__setf_compiler_macro_function(core::T_sp name, core::T_sp function, core::T_sp env)
+{
+  core__put_sysprop(name,cl::_sym_compiler_macro,function);
+}
+
+// ignore env
+CL_LAMBDA(name &optional env);
+CL_DEFUN T_sp core__get_global_inline_status(core::T_sp name, core::T_sp env)
+{
+  return core__get_sysprop(name,cl::_sym_inline);
+}
+
+CL_LAMBDA(name status &optional env);
+CL_DEFUN void core__setf_global_inline_status(core::T_sp name, bool status, core::T_sp env)
+{
+  core__put_sysprop(name,cl::_sym_inline,_lisp->_boolean(status));
+}
+
+
+
+
 CL_LAMBDA(symbol &optional env);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS: macroFunction");
@@ -608,6 +645,13 @@ CL_DEFUN T_sp cl__macro_function(Symbol_sp symbol, T_sp env) {
     func = af_interpreter_lookup_macro(symbol, env);
   } else if (Environment_sp eenv = env.asOrNull<Environment_O>()) {
     func = af_interpreter_lookup_macro(symbol, eenv);
+  } else if (clcenv::Entry_sp cenv = env.asOrNull<clcenv::Entry_O>()) {
+    clcenv::Info_sp info = clcenv::function_info(cenv,symbol);
+    if ( clcenv::LocalMacroInfo_sp lm = info.asOrNull<clcenv::LocalMacroInfo_O>() ) {
+      func = lm->_Expander;
+    } else if (clcenv::GlobalMacroInfo_sp gm = info.asOrNull<clcenv::GlobalMacroInfo_O>() ) {
+      func = gm->_Expander;
+    }
   } else {
     if (cleavirEnv::_sym_macroFunction->fboundp()) {
       func = eval::funcall(cleavirEnv::_sym_macroFunction, symbol, env);

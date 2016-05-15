@@ -44,8 +44,10 @@ typedef bool _Bool;
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/Transforms/Instrumentation.h>
+#include <llvm/Transforms/IPO.h>
 #include <llvm/IR/InlineAsm.h>
 #include <llvm/Support/FormattedStream.h>
+#include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -144,6 +146,9 @@ typedef bool _Bool;
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/weakHashTable.h>
 #include <clasp/gctools/gc_boot.h>
+
+//#include <clasp/core/clc.h>
+#include <clasp/core/clcenv.h>
 
 #include <clasp/clbind/clbind.h>
 

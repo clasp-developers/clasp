@@ -266,21 +266,21 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen-function (result rest env)
   "Return IR code for a function or closure"
   (let ((name-or-lambda (car rest)))
-  (assert-result-isa-llvm-value result)
-  (dbg-set-current-debug-location-here)
-  (cmp-log "About to codegen-function for: %s\n" name-or-lambda)
-  (cond
-    ((and name-or-lambda (symbolp name-or-lambda))
-     (codegen-function-symbol-lookup result name-or-lambda env))
-    ((and (consp name-or-lambda)
-	  (eq (car name-or-lambda) 'setf))
-     (codegen-function-setf-symbol-lookup result name-or-lambda env))
-    ((and (consp name-or-lambda)
-	  (or (eq (car name-or-lambda) 'lambda)
-	      (eq (car name-or-lambda) 'ext::lambda-block)))
-     (dbg-set-current-debug-location-here)
-     (codegen-closure result name-or-lambda env))
-    (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
+    (assert-result-isa-llvm-value result)
+    (dbg-set-current-debug-location-here)
+    (cmp-log "About to codegen-function for: %s\n" name-or-lambda)
+    (cond
+      ((and name-or-lambda (symbolp name-or-lambda))
+       (codegen-function-symbol-lookup result name-or-lambda env))
+      ((and (consp name-or-lambda)
+            (eq (car name-or-lambda) 'setf))
+       (codegen-function-setf-symbol-lookup result name-or-lambda env))
+      ((and (consp name-or-lambda)
+            (or (eq (car name-or-lambda) 'lambda)
+                (eq (car name-or-lambda) 'ext::lambda-block)))
+       (dbg-set-current-debug-location-here)
+       (codegen-closure result name-or-lambda env))
+      (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
 
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
@@ -1215,13 +1215,14 @@ jump to blocks within this tagbody."
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
-  (cond
-    ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
-    ((eq sym 'cl:catch) nil)  ;; handled with macro
-    ((eq sym 'cl:throw) nil)  ;; handled with macro
-    ((eq sym 'core:debug-message) t)   ;; special operator
-    ((eq sym 'core:intrinsic-call) t)  ;; Call intrinsic functions
-    (t (special-operator-p sym))))
+  #+clc(clc-env:treat-as-special-operator-p sym)
+  #-clc(cond
+         ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+         ((eq sym 'cl:catch) nil)           ;; handled with macro
+         ((eq sym 'cl:throw) nil)           ;; handled with macro
+         ((eq sym 'core:debug-message) t)   ;; special operator
+         ((eq sym 'core::intrinsic-call) t) ;; Call intrinsic functions
+         (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
 (defun codegen (result form env)

@@ -213,7 +213,7 @@ Convert colons to underscores"
            (return-from inherits-from* t))
        (incf depth)
        (when (> depth 20)
-         (error "inherits-from* depth ~a exceeds max" depth))
+         (error "inherits-from* depth ~a exceeds max with ~a and ~a" depth x-name y-name))
        (setf x-name ancestor))))
 
 (defun inherits-from (x y inheritance)

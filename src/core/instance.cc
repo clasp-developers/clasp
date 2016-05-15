@@ -208,8 +208,8 @@ string Instance_O::__repr__() const {
     ss << "<ADD SUPPORT FOR INSTANCE _CLASS=" << _rep_(this->_Class) << " >";
   }
   {
-    ss << " #slots[" << this->_Slots.size() << "]" << std::endl;
-#if 1
+    ss << " #slots[" << this->_Slots.size() << "]";
+#if 0
     for (int i(0); i < this->_Slots.size(); ++i) {
       T_sp obj = this->_Slots[i];
       ss << "        :slot" << i << " ";
@@ -237,8 +237,8 @@ string Instance_O::__repr__() const {
     }
 #endif
   }
-  ss << ")" << std::endl;
-  return ((ss.str()));
+  ss << ")" ;
+  return ss.str();
 }
 
 T_sp Instance_O::copyInstance() const {

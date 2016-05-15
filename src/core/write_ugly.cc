@@ -129,7 +129,11 @@ void Pathname_O::__write__(T_sp strm) const {
 #endif
 
 void Instance_O::__write__(T_sp stream) const {
-  eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
+  if ( cl::_sym_printObject->fboundp() ) {
+    eval::funcall(cl::_sym_printObject, this->const_sharedThis<Instance_O>(), stream);
+  }
+  std::string str = _rep_(this->asSmartPtr());
+  clasp_write_string(str,stream);
 }
 
 void StructureObject_O::__write__(T_sp stream) const {

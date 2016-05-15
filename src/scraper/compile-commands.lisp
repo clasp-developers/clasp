@@ -347,7 +347,8 @@ Then dump the tags into the sif-file."
          (tags (process-all-recognition-elements bufs))
          (sif-pathname (pathname (sif-name compile-command))))
     (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
-      (let ((*print-readably* t))
+      (let ((*print-readably* t)
+            (*print-pretty* nil))
         (prin1 tags fout)))))
 
 (defun read-sif-file (compile-command)

@@ -171,6 +171,7 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 
 SYMBOL_EXPORT_SC_(ClPkg, provide);
@@ -214,6 +215,8 @@ SYMBOL_EXPORT_SC_(ClPkg, atanh);
 SYMBOL_EXPORT_SC_(ClPkg, dynamic_extent);
 SYMBOL_EXPORT_SC_(ClPkg, ftype);
 SYMBOL_EXPORT_SC_(ClPkg, boole);
+SYMBOL_EXPORT_SC_(ClPkg, ignorable);
+SYMBOL_EXPORT_SC_(ClPkg, notinline );
 SYMBOL_EXPORT_SC_(ClPkg, callArgumentsLimit);
 SYMBOL_EXPORT_SC_(ClPkg, arrayDimensionLimit);
 SYMBOL_EXPORT_SC_(ClPkg, arrayTotalSizeLimit);
@@ -228,6 +231,7 @@ SYMBOL_EXPORT_SC_(CorePkg, intrinsic_call);
 SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);
+SYMBOL_EXPORT_SC_(CorePkg, debug_message);
 SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
@@ -349,6 +353,9 @@ SYMBOL_EXPORT_SC_(ClPkg, set);
 SYMBOL_EXPORT_SC_(ClPkg, restartName);
 SYMBOL_EXPORT_SC_(ClPkg, position);
 SYMBOL_EXPORT_SC_(ClPkg, compileFile);
+SYMBOL_EXPORT_SC_(ClPkg, compiler_macro);
+SYMBOL_EXPORT_SC_(ClPkg, inline);
+SYMBOL_EXPORT_SC_(ClPkg, compilation_speed);
 SYMBOL_EXPORT_SC_(ClPkg, first);
 SYMBOL_EXPORT_SC_(ClPkg, float);
 SYMBOL_EXPORT_SC_(ClPkg, logical_pathname);
@@ -1147,6 +1154,10 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
+#if 0
+  clasp_cleavir::_sym_STARsimple_environmentSTAR->defparameter(_Nil<T_O>());
+  clasp_cleavir::_sym_STARcode_walkerSTAR->defparameter(_Nil<T_O>());
+#endif
 #if 0
 
   _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());

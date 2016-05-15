@@ -82,6 +82,7 @@
   (push 'si::function-boundary *simple-environment*))
 
 (defun local-function-form-p (form)
+  #+clc(warn "Convert this to use predicate ext:local_function_p")
   (and (listp form) (member (first form) '(flet labels))))
 
 (defmethod cleavir-generate-ast:convert :around (form environment (system clasp-64bit))

@@ -61,6 +61,76 @@ void handleArgumentHandlingExceptions(Closure_sp closure) {
   }
 }
 
+/*! Canonicalize one declare.
+* Arguments
+- decl :: A list.
+- canon :: A list.
+* Description
+Prepend the canonicalized_declarations from decl to canon - return the result. */
+List_sp maybe_canonicalize_declaration(List_sp decl, List_sp canon)
+{
+  Symbol_sp sym = oCar(decl);
+  T_sp too_many = oCddr(decl);
+  if (too_many.notnilp()) {
+    for ( auto sp : static_cast<List_sp>(oCdr(decl)) ) {
+      canon = Cons_O::create(Cons_O::createList(sym,oCar(sp)),canon);
+    }
+  } else {
+    canon = Cons_O::create(decl,canon);
+  }
+  return canon;
+}
+
+/*! Canonicalize the following declarations
+dynamic-extent  ignore     optimize  
+ftype           inline     special   
+ignorable       notinline  type      
+And my own special one:    core:_sym_lambda_name
+*/
+CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
+{
+  List_sp canon = _Nil<T_O>();
+  for ( auto decl : decls ) {
+    Cons_sp d = gc::As<Cons_sp>(oCar(decl));
+    Symbol_sp head = gc::As<Symbol_sp>(oCar(d));
+    if (head == cl::_sym_dynamic_extent
+        || head == cl::_sym_ignore
+        || head == cl::_sym_inline
+        || head == cl::_sym_special
+        || head == cl::_sym_ignorable
+        || head == cl::_sym_notinline) {
+      canon = maybe_canonicalize_declaration(d,canon);
+    } else if ( head == cl::_sym_ftype ) {
+      T_sp more_than_one = oCdddr(d);
+      if (more_than_one.nilp()) {
+        canon = Cons_O::create(d,canon);
+      } else {
+        T_sp ftype = oCadr(d);
+        for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+        }
+      }
+    } else if ( head == cl::_sym_optimize ) {
+      IMPLEMENT_ME();
+    } else if ( head == core::_sym_lambdaName ) {
+      canon = Cons_O::create(d,canon);
+    } else if ( head == cl::_sym_type ) {
+      T_sp more_than_one = oCdddr(d);
+      if (more_than_one.nilp()) {
+        canon = Cons_O::create(d,canon);
+      } else {
+        T_sp ftype = oCadr(d);
+        for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+        }
+      }
+    } else {
+      SIMPLE_ERROR(BF("Handle canonicalization of decl --> %s") % _rep_(d));
+    }
+  }
+  return canon;
+}
+    
 
 void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
