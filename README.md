@@ -53,7 +53,7 @@ Simply install the appropriate packages with your package manager.
 * **llvm** 3.6
 * **clang** 3.6, including headers.
 * **boost**
-* **autoreconf** (dh-autoreconf on Ubuntu)
+* **autoreconf** (dh-autoreconf on Ubuntu and Arch (AUR))
 * **gmp** 6.0.0, compiled with --enable-cxx
 * **expat** 2.0.1
 * **zlib** 1.2.8
