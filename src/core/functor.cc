@@ -115,10 +115,10 @@ void FunctionClosure_O::set_source_info(List_sp source_info)
   T_sp filePos = oCadr(source_info);
   T_sp lineno = oCaddr(source_info);
   T_sp column = oCadddr(source_info);
-  this->_sourceFileInfoHandle = sourceFileInfoHandle.fixnump() ? 0 : sourceFileInfoHandle.unsafe_fixnum();
-  this->_filePos = filePos.fixnump() ? 0 : filePos.unsafe_fixnum();
-  this->_lineno = lineno.fixnump() ? 0 : lineno.unsafe_fixnum();
-  this->_column = column.fixnump() ? 0 : column.unsafe_fixnum();
+  this->_sourceFileInfoHandle = sourceFileInfoHandle.fixnump() ? sourceFileInfoHandle.unsafe_fixnum() : 0;
+  this->_filePos = filePos.fixnump() ? filePos.unsafe_fixnum() : 0;
+  this->_lineno = lineno.fixnump() ? lineno.unsafe_fixnum() : 0;
+  this->_column = column.fixnump() ? column.unsafe_fixnum() : 0;
 }
 
 
