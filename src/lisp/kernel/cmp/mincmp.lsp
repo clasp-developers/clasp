@@ -24,17 +24,20 @@
              (body (cddr head)))
          (multiple-value-bind (declares code docstring specials)
              (process-declarations body t)
-           (let ((
-           (format t "It's a lambda - what do I do?: ~a~%" head)
-           (format t "     lambda-list: ~s~%" lambda-list)
-           (format t "     body: ~s~%" body)
-           (format t "     declares: ~s~%" declares)
-           (format t "     docstring: ~s~%" docstring)
-           (format t "     specials: ~s~%" specials)
-           (format t "        code:~s~%" code)
-       
-         ;; stuff here
-         )))
+           (let* ((lambda-list-handler (make-lambda-list-handler lambda-list declares))
+                  (classified-symbols (classified-symbols lambda-list-handler)))
+             ;; Use the classified-symbols to augment the environment
+             ;; Then mincmp the code.
+             ;; But what about the initializers?  They need to be mincmp'd as well
+             (format t "It's a lambda - what do I do?: ~a~%" head)
+             (format t "     lambda-list: ~s~%" lambda-list)
+             (format t "     body: ~s~%" body)
+             (format t "     classified-symbols: ~s~%" classified-symbols)
+             (format t "     docstring: ~s~%" docstring)
+             (format t "     specials: ~s~%" specials)
+             (format t "        code:~s~%" code)
+             ;; stuff here
+             ))))
       (t (error "FUNCTION special operator doesn't support ~a" head)))))
        
 (defun separate-pairs (alternating-list)
@@ -138,7 +141,13 @@
 (test '(progn (if 1 2) 3 ) '(progn (if 1 2 nil) 3))
 (test '(function (setf foo)) #'(setf foo))
 (test '(block foo (return-from foo 1)) '(BLOCK FOO (RETURN-FROM-LOCAL FOO 1)))
-(mctl '(block foo (function (lambda (x) "doca" (declare (special x y)) (declare (special z)) (return-from foo 1)))))
+(mctl '(block foo (function (lambda (x y &optional (z 1)) "doca" (declare (special x))  (return-from foo 1)))))
+
+(defparameter *l* '(y x &optional (z nil zp)))
+(defparameter *a* (cleavir-code-utilities:parse-ordinary-lambda-list *l*))
+(defparameter *d* (cleavir-code-utilities:canonicalize-declaration-specifiers '((optimize debug speed) (special x y z) (ignore x) (integer x))))
+(defparameter *b* (cleavir-generate-ast::itemize-lambda-list *a*))
+(cleavir-generate-ast::itemize-declaration-specifiers *b* *d*)
 
 
 
@@ -146,3 +155,6 @@ cmp::*special-operator-dispatch*
                
       
   
+(defparameter *l* (make-lambda-list-handler '(&optional x)))
+(lambda-list-handler-lambda-list *l*)
+(apropos "lambda-list")
