@@ -119,6 +119,7 @@ bool core__single_float_p(T_sp obj);
 bool core__special_form_p(T_sp obj);
 bool core__standardObjectP(T_sp obj);
 bool llvmo__llvm_sys_value_p(T_sp obj);
+ bool core__proper_list_p(T_sp obj);
 }
 
 namespace ext {
