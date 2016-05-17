@@ -960,6 +960,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
       continue;
     if (!string_match(text, text_mask))
       continue;
+    component = Str_O::create(text);
 #if 1
     stringstream concat;
     Str_sp str_prefix = coerce::stringDesignator(prefix);
