@@ -110,7 +110,7 @@ struct VaList_S {
 DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_list+ in cmpintrinsics.lsp
 */
   mutable va_list _Args;
-  core::T_O *asTaggedPtr() {
+  inline core::T_O *asTaggedPtr() {
     return gctools::tag_valist<core::T_O *>(this);
   }
   VaList_S(gc::Frame* frame) {
@@ -131,11 +131,15 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
   VaList_S(){};
 
   
-  void set(VaList_S *other, size_t nargs_remaining) {
-    LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args, nargs_remaining);
+  void set_from_other_VaList_S_change_nargs(VaList_S *other, size_t nargs_remaining) {
+    LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(this->_Args, other->_Args, nargs_remaining);
   }
+  void set_from_other_VaList_S(VaList_S *other) {
+    LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args);
+  }
+
   virtual ~VaList_S(){}; // Make it polymorphic
-  inline size_t nargs() const { return LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(this->_Args); };
+  inline size_t nargs() const { return LCC_VA_LIST_NUMBER_OF_ARGUMENTS(this); };
 #if 0
   inline core::T_O *indexed_arg(size_t idx) const {
     core::T_O *res;

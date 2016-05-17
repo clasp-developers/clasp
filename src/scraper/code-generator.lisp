@@ -184,9 +184,10 @@ Convert colons to underscores"
       (format cl-code ";;; Found at ~a:~a~%" (file% func) (line% func))
       (let* ((raw-lisp-name (lisp-name% func))
              (maybe-fixed-magic-name (maybe-fix-magic-name raw-lisp-name)))
-        (if (search "&va-rest" (lambda-list% func))
-            (format cl-code "(if (not core:*silent-startup*) (bformat t \"I can't compile lambda lists with &va-rest yet - not exposing %s\\n\" ~s))~%" wrapped-name)
-            (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name ))))))
+        (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name )
+        #+(or)(if (search "&va-rest" (lambda-list% func))
+                  (format cl-code "(if (not core:*silent-startup*) (bformat t \"I can't compile lambda lists with &va-rest yet - not exposing %s\\n\" ~s))~%" wrapped-name)
+                  (format cl-code "(generate-direct-call-defun ~a (~a) ~s )~%" maybe-fixed-magic-name (lambda-list% func) wrapped-name ))))))
                                
 (defun generate-code-for-direct-call-functions (functions)
   (let ((c-code (make-string-output-stream))

@@ -105,24 +105,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   if (gctools::tagged_nilp(lastArgRaw)) {
     // Nil as last argument
     LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args, lenArgs - 1);
-#if 1
     return apply_consume_valist_(func,args);
-#else
-    core::T_O *arg0;
-    core::T_O *arg1;
-    core::T_O *arg2;
-    VaList_S &valist_s = *args;
-    LCC_VA_LIST_INDEXED_ARG(arg0, valist_s, 0);
-    LCC_VA_LIST_INDEXED_ARG(arg1, valist_s, 1);
-    LCC_VA_LIST_INDEXED_ARG(arg2, valist_s, 2);
-    gc::return_type res = (*func).invoke_va_list(NULL,
-                                               args.raw_(),
-                                               LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
-                                               arg0,  //LCC_VA_LIST_REGISTER_ARG0(args),
-                                               arg1,  //LCC_VA_LIST_REGISTER_ARG1(args),
-                                               arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
-    return res;
-#endif
   } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
     VaList_sp valast((gc::Tagged)lastArgRaw);
     VaList_S valast_copy(*valast);

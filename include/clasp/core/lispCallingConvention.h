@@ -171,9 +171,9 @@ THE SOFTWARE.
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 #endif
-#define LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
-#define LCC_raw_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
-#define LCC_raw_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
+#define private_LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
 #ifdef DEBUG_ASSERTS
 #define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args) {\
@@ -190,9 +190,9 @@ THE SOFTWARE.
 #define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O **)(((*_args)._Args)[0].reg_save_area)
 #define LCC_VA_LIST_OVERFLOW_ARG_AREA(_args) (core::T_O **)(((*_args)._Args)[0].overflow_arg_area)
 #define LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args) ((core::T_O***)LCC_VA_LIST_REGISTER_SAVE_AREA(_args))[LCC_OVERFLOW_SAVE_REGISTER]
-#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS((*_args)._Args)
-#define LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) LCC_raw_VA_LIST_SET_NUMBER_OF_ARGUMENTS((*_args)._Args, _n)
-#define LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) LCC_raw_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS((*_args)._Args)
+#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_NUMBER_OF_ARGUMENTS((*_args)._Args)
+#define LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) private_LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS((*_args)._Args, _n)
+#define LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS((*_args)._Args)
 #define LCC_VA_LIST_REGISTER_ARG0(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG0_REGISTER])
 #define LCC_VA_LIST_REGISTER_ARG1(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG1_REGISTER])
 #define LCC_VA_LIST_REGISTER_ARG2(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG2_REGISTER])
@@ -220,12 +220,13 @@ THE SOFTWARE.
 
 #define LCC_NEXT_ARG_RAW(arglist, arg_idx) va_arg((*arglist)._Args, core::T_O *)
 #define LCC_NEXT_ARG(arglist, arg_idx) core::T_sp((gc::Tagged)LCC_NEXT_ARG_RAW(arglist, arg_idx))
+#if 0
 #define LCC_SKIP_ARG(arglist)                           \
   {                                                     \
     va_arg((*arglist)._Args);                           \
     LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(arglist); \
   }
-
+#endif
 #else  // #if defined(X86) && defined(_ADDRESS_MODEL_64)
 
 #error "Add support for accessing LCC_INDEXED_ARG"
@@ -287,16 +288,17 @@ THE SOFTWARE.
 
 
 /*! Initialize a VaList_S struct from another VaList_S struct */
-#define LCC_SETUP_VA_LIST_FROM_VA_LIST(_dest_, _src_, _nargs_left_)                  \
+#define LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(_dest_, _src_, _nargs_left_)                  \
   {                                                                                  \
     (_dest_)[0].reg_save_area = (_src_)[0].reg_save_area;                            \
     (_dest_)[0].overflow_arg_area = (_src_)[0].overflow_arg_area;                    \
     /* This is where the number of arguments remaining should be stored*/            \
     ((uintptr_t *)((_dest_)[0].reg_save_area))[LCC_NARGS_REGISTER] = (_nargs_left_); \
     (_dest_)[0].gp_offset = (_src_)[0].gp_offset;                                    \
-    (_dest_)[0].fp_offset = 304;                                                     \
+    (_dest_)[0].fp_offset = (_src_)[0].fp_offset;                                    \
   }
 
+#define LCC_SETUP_VA_LIST_FROM_VA_LIST(_dest_,_src_) va_copy(_dest_,_src_)
 
 // Create a VaList_sp from lcc_arglist
 #define LCC_MAKE_VA_LIST_SP(valist_sp) VaList_sp valist_sp((gc::Tagged)lcc_arglist)
@@ -320,7 +322,7 @@ inline bool dump_VaList_S_ptr(VaList_S* args) {
   void* overflow_arg_area = (*args)._Args[0].overflow_arg_area;
   void* overflow_save = ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER];
   printf("   overflow_arg_area = %p (%s)\n", overflow_arg_area, (overflow_arg_area==overflow_save) ? "at OVERFLOW_SAVE" : "NOT at OVERFLOW_SAVE" );
-  printf("---Register save area@%p relative to start contents\n", (*args)._Args[0].reg_save_area);
+  printf("---Register save area@%p (NOTE: Often in other stack frame)\n", (*args)._Args[0].reg_save_area);
   printf("       CLOSURE_REGISTER@%p = %p\n", LCC_CLOSURE_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
   printf(" OVERFLOW_SAVE_REGISTER@%p = %p\n", LCC_OVERFLOW_SAVE_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] );
   printf("         NARGS_REGISTER@%p = %d\n", LCC_NARGS_REGISTER*8, ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER] );

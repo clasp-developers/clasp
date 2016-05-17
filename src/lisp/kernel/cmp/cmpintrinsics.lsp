@@ -85,10 +85,6 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
-;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
-(defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+ +i8*+ +i8*+) nil))
-(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
-(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
@@ -104,9 +100,12 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
 (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
+(defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
+(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
+(defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
           +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
-          +general-tag+))
+          +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
@@ -121,9 +120,20 @@ Set this to other IRBuilders to make code go where you want")
     ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
     ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
     (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-  
 
+;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
 
+(defun build-list-of-pointers (size type)
+  (multiple-value-bind (num-pointers remainder)
+      (floor size +void*-size+)
+    (unless (= remainder 0)
+      (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
+             type size +void*-size+))
+    (make-list num-pointers :initial-element +i8*+)))
+
+(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
+;;;(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
+(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
 (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
@@ -652,6 +662,7 @@ are linked very last in a list of modules and it terminates the global-boot-func
   (primitive module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
+  (primitive module "cc_gatherVaRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +VaList_S*+))
   (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
   (primitive-nounwind module "trace_exitFunctionScope" +void+ (list +i32+) )

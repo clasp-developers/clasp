@@ -96,7 +96,7 @@ CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
   return Str_O::create(sout.str());
 };
 
-
+/*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */
 CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   List_sp list = _Nil<T_O>();
   list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
@@ -118,6 +118,10 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_t))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-SIZE"), make_fixnum(sizeof(VaList_S))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name), code), list)
   LoadTimeValues_O tempLtv;
   ENTRY(list, LOAD - TIME - VALUES - OBJECTS - OFFSET, make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));

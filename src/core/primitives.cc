@@ -1449,6 +1449,8 @@ T_sp type_of(T_sp x) {
     return cl::_sym_cons;
   } else if (x.single_floatp()) {
     return cl::_sym_single_float;
+  } else if (x.valistp() ) {
+    return core::_sym_valist;
   } else if (x.characterp()) {
     if (cl__standard_char_p(gc::As<Character_sp>(x)))
       return cl::_sym_standard_char;
@@ -1923,6 +1925,21 @@ CL_DEFUN void core__dynamic_binding_stack_dump(std::ostream &out) {
   };
 }
 
+CL_DEFUN List_sp core__list_from_va_list(VaList_sp valist)
+{
+  ql::list l;
+  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(valist);
+  printf("%s:%d in %s  nargs=%d\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+  for ( size_t i=0; i<nargs; ++i ) {
+    T_O* one;
+    LCC_VA_LIST_INDEXED_ARG(one,valist,i);
+    l << T_sp(reinterpret_cast<gctools::Tagged>(one));
+  }
+  T_sp result = l.cons();
+  printf("%s:%d Returning: %s\n", __FILE__, __LINE__, _rep_(result).c_str()); 
+  return result;
+}
+  
 CL_LAMBDA(&optional (out t) msg);
 CL_DECLARE();
 CL_DOCSTRING("ihsBacktrace");

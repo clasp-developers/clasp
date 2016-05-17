@@ -1571,7 +1571,7 @@ void cc_ifNotKeywordException(core::T_O *obj, size_t argIdx, VaList_S *valist) {
   VaList_S *vargs = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)valist));
   T_sp vobj((gc::Tagged)obj);
   if (!cl__keywordp(vobj)) {
-    size_t numArgs = LCC_raw_VA_LIST_NUMBER_OF_ARGUMENTS(vargs->_Args);
+    size_t numArgs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
     SIMPLE_ERROR(BF("Expected keyword argument at argument %d of %d got %s") % argIdx % numArgs % _rep_(gctools::smart_ptr<core::T_O>((gc::Tagged)obj)));
   }
 }

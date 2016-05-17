@@ -1089,7 +1089,9 @@ CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
                  key_flag,
                  lkeys.cons(),
                  allow_other_keys,
-                 lauxs.cons()));
+                 lauxs.cons(),
+                 _lisp->_boolean(restarg.VaRest)
+                 ));
 };
 
 /*
@@ -1292,7 +1294,9 @@ CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
                  _lisp->_boolean(keyFlag),
                  keys.cons(),
                  this->_AllowOtherKeys,
-                 auxs.cons()));
+                 auxs.cons(),
+                 _lisp->_boolean(this->_RestArgument.VaRest)
+                 ));
 }
 
 bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {

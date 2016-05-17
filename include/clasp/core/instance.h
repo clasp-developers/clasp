@@ -174,7 +174,6 @@ public: // Functions here
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function
     LCC_MAKE_VA_LIST_SP(gfargs);
-  //  LCC_SKIP_ARG(gfargs);
   return (this->_entryPoint)(this->asSmartPtr(), gfargs);
 }
 

@@ -940,6 +940,11 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* +size_t+ (jit-constant-size_t 1) label)
     :init (lambda (a) (irc-store (jit-constant-size_t init-val) a))))
 
+(defun irc-alloca-VaList_S (env &key (irbuilder *irbuilder-function-alloca*) (label "VaList_S-"))
+  "Alloca space for an VaList_S"
+  (with-alloca-insert-point env irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* +VaList_S+ (jit-constant-size_t 1) label)
+    :init nil))
 
 (defun irc-alloca-i8* (env &key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"

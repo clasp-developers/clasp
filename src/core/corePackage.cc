@@ -617,6 +617,7 @@ SYMBOL_EXPORT_SC_(ClPkg, AMPallow_other_keys);
 SYMBOL_EXPORT_SC_(ClPkg, AMPaux);
 SYMBOL_EXPORT_SC_(ClPkg, AMPrest);
 SYMBOL_EXPORT_SC_(CorePkg, AMPva_rest);
+SYMBOL_EXPORT_SC_(CorePkg, valist );
 SYMBOL_EXPORT_SC_(ClPkg, AMPbody);
 SYMBOL_EXPORT_SC_(ClPkg, integer);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);

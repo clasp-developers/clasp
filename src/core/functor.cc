@@ -279,7 +279,6 @@ LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
   VaList_S saved_args(*reinterpret_cast<VaList_S *>(untag_valist(lcc_arglist)));
 #endif
   VaList_sp gfargs((gc::Tagged)lcc_arglist);
-  //  LCC_SKIP_ARG(gfargs);
   return (this->entryPoint)(this->instance, gfargs);
 }
 #endif

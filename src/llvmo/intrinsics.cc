@@ -343,6 +343,18 @@ ALWAYS_INLINE core::T_sp *valueFrameReference(core::ActivationFrame_sp *frameP, 
   return pos_gc_safe;
 }
 
+ALWAYS_INLINE core::T_O *cc_gatherVaRestArguments(std::size_t nargs, VaList_S *tagged_vargs, std::size_t startRest, VaList_S* untagged_vargs_rest) {
+  ASSERT(nargs >= startRest);
+  VaList_S* untagged_vargs = reinterpret_cast<VaList_S*>(gc::untag_valist(tagged_vargs));
+  untagged_vargs_rest->set_from_other_VaList_S(untagged_vargs);
+  T_O* result = untagged_vargs_rest->asTaggedPtr();
+  return result;
+//  T_sp varest((gctools::Tagged)vargs);
+//  printf("%s:%d in gatherVaRestArguments --> %s\n", __FILE__, __LINE__, _rep_(vargs).c_str());
+  //VaList_S *args = reinterpret_cast<VaList_S *>(gc::untag_valist((void *)vargs));
+  //return args->asTaggedPtr();
+}
+
 ALWAYS_INLINE core::T_O *cc_makeCell() {
   core::Cons_sp res = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
 #ifdef DEBUG_CC

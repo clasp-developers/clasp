@@ -32,6 +32,9 @@
   "A nil in a T*"
   (%literal nil))
 
+(defun alloca-VaList_S (&optional (label "VaList_S"))
+  (llvm-sys:create-alloca *entry-irbuilder* cmp:+VaList_S+ (%i32 1) label))
+
 (defun alloca-size_t (&optional (label "var"))
   (llvm-sys:create-alloca *entry-irbuilder* cmp:+size_t+ (%i32 1) label))
 

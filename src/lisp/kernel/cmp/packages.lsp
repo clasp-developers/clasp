@@ -127,6 +127,7 @@
           +cons-cdr-offset+
           +uintptr_t+
           +return_type+
+          +VaList_S+
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments
