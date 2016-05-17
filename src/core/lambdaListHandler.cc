@@ -61,6 +61,32 @@ void handleArgumentHandlingExceptions(Closure_sp closure) {
   }
 }
 
+
+/*! Return true if the form represents a type
+*/
+CL_DEFUN bool core__is_a_type(T_sp form)
+{
+  if ( form == _lisp->_true() ) return true;
+  if ( form.nilp() ) return true;
+  if ( form == cl::_sym_sequence ) return true;
+  if ( form == cl::_sym_simple_base_string ) return true;
+  if ( cl__symbolp(form) ) {
+    if ( core::_sym__PLUS_known_typep_predicates_PLUS_.notnilp() ) {
+      List_sp type_predicates = core::_sym__PLUS_known_typep_predicates_PLUS_->symbolValue();
+      if ( type_predicates.notnilp() ) {
+        T_sp predicate = oCdr(gc::As<Cons_sp>(type_predicates)->assoc(form,_Nil<core::T_O>(),cl::_sym_eq,_Nil<core::T_O>()));
+        if ( predicate.notnilp() ) { return true; };
+      }
+    }
+  }
+  if ( form.consp() && core__proper_list_p(form) && oCar(form) == cl::_sym_member ) { return true; };
+  if ( form.consp() && CONS_CAR(form) == cl::_sym_eql ) { return true; };
+  if ( cl__symbolp(form) ) {
+    if ( cl__find_class(form,false,_Nil<core::T_O>()).notnilp() ) return true;
+  }
+  return false;
+}
+  
 /*! Canonicalize one declare.
 * Arguments
 - decl :: A list.
@@ -77,6 +103,19 @@ List_sp maybe_canonicalize_declaration(List_sp decl, List_sp canon)
     }
   } else {
     canon = Cons_O::create(decl,canon);
+  }
+  return canon;
+}
+
+List_sp maybe_canonicalize_optimize_declaration( List_sp decl, List_sp canon )
+{
+  for ( auto cur : (List_sp)(oCdr(decl)) ) {
+    T_sp d = oCar(cur);
+    if ( cl__symbolp(d) ) {
+      canon = Cons_O::create(Cons_O::createList(cl::_sym_optimize,Cons_O::createList(d,core::clasp_make_fixnum(3))),canon);
+    } else {
+      canon = Cons_O::create(Cons_O::createList(cl::_sym_optimize,d),canon);
+    }
   }
   return canon;
 }
@@ -111,7 +150,7 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
         }
       }
     } else if ( head == cl::_sym_optimize ) {
-      IMPLEMENT_ME();
+      canon = maybe_canonicalize_optimize_declaration(d,canon);
     } else if ( head == core::_sym_lambdaName ) {
       canon = Cons_O::create(d,canon);
     } else if ( head == cl::_sym_type ) {
@@ -124,8 +163,26 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
           canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
         }
       }
+    } else if ( head == core::_sym_c_local ) {
+      // Ignore
+    } else if ( head == core::_sym_type_assertions ) {
+      // Ignore
+    } else if ( head == kw::_sym_read_only ) {
+      // Ignore
+    } else if ( head == ext::_sym_array_index ) {
+      // Ignore
+    } else if ( head == core::_sym_index ) {
+      // Ignore
+    } else if ( head == ext::_sym_check_arguments_type ) {
+      // Ignore
+    } else if ( head == ext::_sym_assume_no_errors ) {
+      // Ignore
+    } else if ( core__is_a_type(head) ) {
+      for ( auto fp : static_cast<List_sp>(oCdr(d)) ) {
+        canon = Cons_O::create(Cons_O::createList(cl::_sym_type,head,oCar(fp)),canon);
+      }
     } else {
-      SIMPLE_ERROR(BF("Handle canonicalization of decl --> %s") % _rep_(d));
+      canon = Cons_O::create(d,canon);
     }
   }
   return canon;
@@ -268,6 +325,28 @@ CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
     }
   }
   return ll.cons();
+}
+
+
+CL_LISPIFY_NAME("add-missing-sensors");
+CL_DOCSTRING(R"doc(Any optional or keyword parameters that are missing their sensors have them set to gensyms)doc");
+CL_DEFMETHOD void LambdaListHandler_O::add_missing_sensors() {
+  if (this->_OptionalArguments.size() > 0) {
+    for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
+         it != this->_OptionalArguments.end(); it++) {
+      if (it->_Sensor._ArgTarget.nilp()) {
+        it->_Sensor._ArgTarget = cl__gensym();
+      }
+    }
+  }
+  if (this->_KeyFlag.notnilp() || this->_KeywordArguments.size() > 0) {
+    for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
+         it != this->_KeywordArguments.end(); it++) {
+      if (it->_Sensor._ArgTarget.nilp()) {
+        it->_Sensor._ArgTarget = cl__gensym();
+      }
+    }
+  }
 }
 
 HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
@@ -1031,7 +1110,6 @@ LambdaListHandler_sp LambdaListHandler_O::createRecursive_(List_sp lambda_list, 
 }
 
 LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int> &skipFrameIndices) {
-  ql::list all_arguments_list;
   HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
   TargetClassifier classifier(specialSymbols, skipFrameIndices);
   LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive_(lambda_list, declares, context, classifier);

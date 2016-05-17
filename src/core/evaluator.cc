@@ -285,8 +285,8 @@ CL_DEFUN T_mv core__process_declarations(List_sp inputBody, T_sp expectDocString
   List_sp specials;
   eval::extract_declares_docstring_code_specials(inputBody, declares,
                                            b_expect_doc, docstring, code, specials);
-  T_sp tdeclares = declares;
-  return (Values(tdeclares, code, (T_sp)docstring, specials));
+  T_sp tdeclares = canonicalize_declarations(declares);
+  return Values(tdeclares, code, (T_sp)docstring, specials);
 };
 
 CL_LAMBDA(declare-list &optional default);

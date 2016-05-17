@@ -171,9 +171,18 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,c_local);
+SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
+SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
+SYMBOL_EXPORT_SC_(ExtPkg,array_index);
+SYMBOL_EXPORT_SC_(CorePkg,index);
+SYMBOL_EXPORT_SC_(KeywordPkg,read_only);
 SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
+SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
+SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 
+SYMBOL_EXPORT_SC_(ClPkg, simple_base_string);
 SYMBOL_EXPORT_SC_(ClPkg, provide);
 SYMBOL_EXPORT_SC_(ClPkg, condition);
 SYMBOL_EXPORT_SC_(ClPkg, seriousCondition);
@@ -1096,6 +1105,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARcircle_counterSTAR->defparameter(_Nil<T_O>());
   _sym_STARcircle_stackSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugReaderSTAR->defparameter(_Nil<T_O>());
+  _sym__PLUS_known_typep_predicates_PLUS_->defparameter(_Nil<T_O>());
   cl::_sym_STARloadPathnameSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARloadTruenameSTAR->defparameter(_Nil<T_O>());
   cl::_sym_callArgumentsLimit->defconstant(make_fixnum(CALL_ARGUMENTS_LIMIT));
