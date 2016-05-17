@@ -5,6 +5,8 @@
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
 
+(require :clasp-cleavir)
+
 (progn
   (progn ;; Set up everything for building cclasp from bclasp with auto-compile
     (format t "Loading ASDF system~%")
@@ -22,6 +24,12 @@
   (format t "Loading inline.lisp~%")
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y &optional z) (list x y z)))
+
+
+
+
 
 (eval '(defmethod foo () (zzzzz)))
 (eval '(defmethod m () (undefined)))

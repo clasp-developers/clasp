@@ -337,7 +337,10 @@
           ;; (x &optional y)
           ;; (x y &optional z)
           (t
-           (compile-general-lambda-list-code lambda-list-handler old-env args new-env))))
+           (compile-general-lambda-list-code lambda-list-handler
+                                             old-env
+                                             args
+                                             new-env))))
       ;; Now copy outputs into the targets and generate code for initializers if opt-p or key-p is not defined
       )))
 

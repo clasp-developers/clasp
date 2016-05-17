@@ -299,9 +299,18 @@ public:
   string __repr__() const;
   string partsAsString() const;
 
+  /*! For compatibility with Cleavir we need to do some lambda-list transformations.
+ cleavir_lambda_list_conversion does the following.
+(1) It adds missing sensors to &optional and &keyword parameters.
+(2) It returns the (values Cleavir-lambda-list initialization-code) */
+  T_mv cleavir_lambda_list_conversion();
+  void add_missing_sensors();
+
   LambdaListHandler_O();
   virtual ~LambdaListHandler_O(){};
 };
+
+ List_sp canonicalize_declarations(List_sp declares);
 };
 TRANSLATE(core::LambdaListHandler_O);
 

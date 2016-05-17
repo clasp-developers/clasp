@@ -67,7 +67,7 @@ List_sp cl__append(List_sp lists);
 
 //    Stream_mv af_open(T_sp filespec, Symbol_sp direction, T_sp element_type, T_sp if_exists, T_sp if_does_not_exist, T_sp external_format );
 
-Symbol_mv cl__gensym(T_sp x);
+ Symbol_mv cl__gensym(T_sp x = _Nil<T_O>());
 
 };
 
