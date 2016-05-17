@@ -131,4 +131,3 @@
     obj))
 
 
-#+compare(print "MLOG ******** Done with builtin.lsp *********")

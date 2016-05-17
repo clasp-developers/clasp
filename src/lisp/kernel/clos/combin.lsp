@@ -47,7 +47,6 @@
 ;;;  5) Ordinary forms are turned into lambda forms, much like
 ;;;	what happens with the content of MAKE-METHOD.
 ;;;
-#+compare(print "combin.lsp 50")
 (defvar *avoid-compiling* nil)
 (defun effective-method-function (form &optional top-level &aux first)
   (flet ((maybe-compile (form)
@@ -92,7 +91,6 @@
 ;;; of the remaining methods. The resulting closure (or effective method)
 ;;; is the equivalent of (CALL-METHOD method rest-methods)
 ;;;
-#+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
   #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
@@ -108,7 +106,6 @@
           ',(and rest-methods (mapcar #'effective-method-function rest-methods))
           .method-args.))
 
-#+compare(print "combin.lsp 121")
 (defun error-qualifier (m qualifier)
   (declare (si::c-local))
   (error "Standard method combination allows only one qualifier ~
@@ -116,7 +113,6 @@
           a method with ~S was found."
 	 m qualifier))
 
-#+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
   #'(lambda (.method-args. no-next-method &rest args)
@@ -132,7 +128,6 @@
           (apply (first primary) .method-args. (rest primary) .method-args.))))
 
 
-#+compare(print "combin.lsp 143")
 (defun standard-compute-effective-method (gf methods)
   (with-early-accessors (+standard-method-slots+)
     (let* ((before ())
@@ -190,7 +185,6 @@
 ;; and it outputs an anonymous function which is the effective method.
 ;;
 
-#+compare(print "combin.lsp 202")
 
 #+threads
 (defparameter *method-combinations-lock* (mp:make-lock :name 'find-method-combination))
@@ -207,7 +201,6 @@
                 (setf (gethash name *method-combinations*) function))
   name)
 
-#+compare(print "combin.lsp 236")
 (defun make-method-combination (name compiler options)
   (with-early-make-instance +method-combination-slots+
     (o (find-class 'method-combination)
@@ -216,14 +209,12 @@
        :options options)
     o))
 
-#+compare(print "combin.lsp 245")
 (defun find-method-combination (gf method-combination-type-name method-combination-options)
   (make-method-combination method-combination-type-name
 			   (search-method-combination method-combination-type-name)
 			   method-combination-options
 			   ))
 
-#+compare(print "combin.lsp 252")
 (defun define-simple-method-combination (name &key documentation
 					 identity-with-one-argument
 					 (operator name))
@@ -246,7 +237,6 @@
 	      main-effective-method)
 	     (t (second main-effective-method))))))
 
-#+compare(print "combin.lsp 275")
 (defun define-complex-method-combination (form)
   (declare (si::c-local))
   (flet ((syntax-error ()
@@ -327,19 +317,16 @@
                                                 ,@group-after
                                                 (effective-method-function (progn ,@body) t))))))))
 
-#+compare(print "combin.lsp 345")
 (defmacro define-method-combination (name &body body)
   (if (and body (listp (first body)))
       (define-complex-method-combination (list* name body))
       (apply #'define-simple-method-combination name body)))
 
-#+compare(print "combin.lsp 351")
 (defun method-combination-error (format-control &rest args)
   ;; FIXME! We should emit a more detailed error!
   (error "Method-combination error:~%~S"
 	 (apply #'format nil format-control args)))
 
-#+compare(print "combin.lsp 357")
 (defun invalid-method-error (method format-control &rest args)
   (error "Invalid method error for ~A~%~S"
 	 method
@@ -351,7 +338,6 @@
 ;;; COMPUTE-EFFECTIVE-METHOD
 ;;;
 
-#+compare(print "combin.lsp 367")
 ;; The following chokes in clasp because I don't have the method-combination class defined
 ;; during compilation of the full clasp source code.
 ;; I don't use compiler macros anyway so I'll feature this out
@@ -363,7 +349,6 @@
     (define-compiler-macro method-combination-options (o)
       `(si::instance-ref ,o ,(slot-definition-location (gethash 'options (slot-table class)))))))
 
-#+compare(print "combin.lsp 376")
 (defun std-compute-effective-method (gf method-combination applicable-methods)
   (declare (type method-combination method-combination)
 	   (type generic-function gf)
@@ -375,7 +360,6 @@
 	  (apply compiler gf applicable-methods options)
 	  (funcall compiler gf applicable-methods)))))
 
-#+compare(print "combin.lsp 388")
 (defun compute-effective-method-function (gf method-combination applicable-methods)
   ;; Cannot be inlined because it will be a method
   (declare (notinline compute-effective-method))
@@ -389,7 +373,6 @@
 	  f
 	  (effective-method-function form t)))))
 
-#+compare(print "combin.lsp 402")
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
 	    .method-args. .next-methods.))
@@ -397,7 +380,6 @@
 ;;
 ;; These method combinations are bytecompiled, for simplicity.
 ;;
-#+compare(print "MLOG About to install-method-combination")
 (install-method-combination 'standard 'standard-compute-effective-method)
 #+ecl(eval '(progn
              (define-method-combination progn :identity-with-one-argument t)
@@ -421,4 +403,3 @@
          (define-method-combination min :identity-with-one-argument t)
          (define-method-combination or :identity-with-one-argument t))
 
-#+compare( print "MLOG ****** Done with combin.lsp ******")

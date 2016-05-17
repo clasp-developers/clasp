@@ -22,10 +22,8 @@
 			  &key name (initform +initform-unsupplied+) initfunction
 			  (type 'T) (allocation :instance)
 			  initargs readers writers documentation location)
-  #+compare(print (list "MLOG make-simple-slotd name --> " name))
   (when (and (eq allocation :class)
 	     (functionp initfunction))
-    #+compare (print (list "MLOG when was true"))
     (setf initfunction (constantly (funcall initfunction))))
   (with-early-make-instance +slot-definition-slots+
     (slotd class
@@ -39,7 +37,6 @@
 	   :writers writers
 	   :documentation documentation
 	   :location location)
-    #+compare(print "MLOG Done slotd")
     slotd))
 
 (defun freeze-class-slot-initfunction (slotd)

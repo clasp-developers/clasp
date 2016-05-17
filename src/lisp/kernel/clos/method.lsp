@@ -39,7 +39,6 @@
 ;;;
 
 (defun generic-function-method-class (generic-function)
-  #+compare (print (list "MLOG generic-function-method-class" generic-function))
   (if *clos-booted*
       (slot-value generic-function 'method-class)
       (find-class 'standard-method)))
@@ -86,40 +85,29 @@
 	      (pop args)
 	      (error "Illegal defmethod form: missing lambda list")))
 	 (body args))
-    (gf-log "defmethod line 58")
     (multiple-value-bind (lambda-list required-parameters specializers)
 	(parse-specialized-lambda-list specialized-lambda-list)
-      (gf-log "defmethod line 61")
       (multiple-value-bind (lambda-form declarations documentation)
 	  (make-raw-lambda name lambda-list required-parameters specializers body env)
 	(let* ((generic-function (ensure-generic-function name))
 	       (method-class (progn
-			       #+compare(print (list "MLOG in defmethod - About to generic-function-method-class generic-function: " generic-function))
 			       (generic-function-method-class generic-function)))
 	       method)
-	  (gf-log "defmethod line 68")
 	  (when *clos-booted*
-	    (gf-log "defmethod line 70")
 	    (when (symbolp method-class)
 	      (setf method-class (find-class method-class nil)))
 	    (if method-class
 		(setf method (class-prototype method-class))
 		(error "Cannot determine the method class for generic functions of type ~A"
 		       (type-of generic-function))))
-	  (gf-log "defmethod line 78")
-          (gf-log "About to make-method-lambda generic-function: ~a method: ~a lambda-form: ~a" generic-function method lambda-form)
 	  (multiple-value-bind (fn-form options)
 	      (make-method-lambda generic-function method lambda-form env)
-            (gf-log "Left make-method-lambda fn-form: ~a options: ~a" fn-form options)
 	    (when documentation
 	      (setf options (list* :documentation documentation options)))
-	    (gf-log "defmethod line 84")
 	    (multiple-value-bind (wrapped-lambda wrapped-p)
 		(simplify-lambda name fn-form)
-	      (gf-log "defmethod line 87")
 	      (unless wrapped-p
 		(error "Unable to unwrap function"))
-	      (gf-log "defmethod line 90")
 	      (ext:register-with-pde
 	       whole
 	       `(prog1
@@ -446,7 +434,6 @@ have disappeared."
 	(loop for k in (rest keywords) by #'cddddr
 	   collect k))))
 
-#+compare(print "MLOG method.lsp 381  About to defun make-method")
 (defun make-method (method-class qualifiers specializers lambda-list fun options)
   (declare (ignore options))
   (with-early-make-instance
@@ -472,16 +459,12 @@ have disappeared."
   (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+ +standard-class-slots+)
     (let* ((name (slot-value gf 'name))
 	   (method-entry (assoc name *early-methods*)))
-      #+compare(when method-entry
-		 (print (list "MLOG add-method method already exists: " name)))
       (unless method-entry
 	(setq method-entry (list name))
-	#+compare(print (list "MLOG pushing *early-methods* -> " name ))
 	(push method-entry *early-methods*))
       (push method (cdr method-entry))
       (push method (generic-function-methods gf))
       (setf (method-generic-function method) gf)
-      #+compare (print "About to sl-boundp in add-method")
       (unless (si::sl-boundp (generic-function-lambda-list gf))
 	(setf (generic-function-lambda-list gf) (method-lambda-list method))
 	(setf (generic-function-argument-precedence-order gf)
@@ -542,7 +525,6 @@ have disappeared."
     `(let ((,temp ,instance-form))
        (symbol-macrolet ,accessors ,@body))))
 
-#+compare(print "MLOG About to setf (symbol-function 'slot-index)...")
 
 ;;; Force the compiler into optimizing use of gethash inside methods:
 (setf (symbol-function 'SLOT-INDEX) (symbol-function 'GETHASH))
@@ -550,4 +532,3 @@ have disappeared."
 
 
 
-#+compare(print "MLOG ******* Done with method.lsp ********")

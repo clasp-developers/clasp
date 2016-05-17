@@ -31,11 +31,6 @@
 
 
 
-#+compare (print "MLOG ********* Starting package.lsp **********")
-#+clasp
-(defmacro clos-log (fmt &rest args)
-  `(bformat t ,fmt ,@args))
-
 #+clasp
 (export '(WITH-SLOTS WITH-ACCESSORS UPDATE-INSTANCE-FOR-REDEFINED-CLASS
 	  UPDATE-INSTANCE-FOR-DIFFERENT-CLASS STANDARD-METHOD
@@ -157,10 +152,3 @@
 
 (export '*environment-contains-closure-hook*)
 
-#+(or)(defmacro gf-log (fmt &rest fmt-args)
-        `(progn
-           (format t "GF-LOG:  ")
-           (format t ,fmt ,@fmt-args)
-           (format t "~%")))
-
-(defmacro gf-log (fmt &rest fmt-args) nil)

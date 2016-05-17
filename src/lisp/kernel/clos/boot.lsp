@@ -92,10 +92,8 @@
     (let* ((table (make-hash-table :size (if slots 24 0)))
 	   (location-table (make-hash-table :size (if slots 24 0)))
 	   (slots (let ((ps (parse-slots slots)))
-		    #+compare(print "MLOG Done parse-slots")
-		    ps))
+                    ps))
 	   (direct-slots (progn
-			   #+compare(print (list "MLOG slots --> " slots))
 			   (loop for slotd in slots
 			    collect (apply #'make-simple-slotd
 				     (find-class 'standard-direct-slot-definition)
@@ -115,13 +113,8 @@
 	    (class-direct-slots class) direct-slots
 	    (class-size class) (length slots)
 	    (slot-table class) table)
-      #+compare(print (list "MLOG Adding slots location-table --> " location-table ))
       (setf (class-location-table class) location-table)
-      #+compare(print (list "MLOG Just added slots location-table --> " (class-location-table class)))
       )))
-
-(defmacro clos-boot-log (msg &rest args)
-  `(bformat t ,msg ,@args))
 
 
 ;; 1) Create the classes
@@ -165,13 +158,11 @@
     ;;
     ;; 2) Class T had its metaclass wrong. Fix it.
     ;;
-    #+compare    (print (list "MLOG STAGE 2 - BRCL skips this"))
     #-clasp
     (si:instance-class-set (find-class 't) (find-class 'built-in-class))
     ;;
     ;; 3) Finalize
     ;;
-    #+compare(print (list "MLOG STAGE 3"))
     ;;
     ;; 4) This is needed for further optimization
     ;;

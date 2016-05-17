@@ -98,14 +98,10 @@
   (cond ((or *clos-booted*
 	     (not (fboundp name))
 	     (si::instancep (fdefinition name)))
-	   #+compare (print "MLOG safe-add-method cond-(or) name: ")
-	   #+compare (princ name)
 	 (add-method (ensure-generic-function name) method))
 	(t
 	 (let* ((alt-name '#:foo)
 		(gf (ensure-generic-function alt-name)))
-	   #+compare (print "MLOG safe-add-method cond-t name: ")
-	   #+compare (princ alt-name)
 	   (add-method gf method)
 	   (setf (generic-function-name gf) name)
 	   (setf (fdefinition name) gf)

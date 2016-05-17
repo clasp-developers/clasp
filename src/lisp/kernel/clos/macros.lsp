@@ -24,7 +24,6 @@
   `(let* ((i ,instance)
           (s (si::instance-sig i)))
      (declare (:read-only i s))
-     #+compare(print "About to ensure-up-to-date-instance")
      (when (si:sl-boundp s)
        (unless (eq s (class-slots (si::instance-class i)))
          (update-instance i)))))

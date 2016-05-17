@@ -24,7 +24,6 @@
 ;;;
 
 (defmethod initialize-instance ((instance T) &rest initargs)
-  #+compare(print "MLOG standard.lsp initialize-instance 20")
   (apply #'shared-initialize instance 'T initargs))
 
 (defmethod reinitialize-instance ((instance T) &rest initargs)
@@ -60,86 +59,37 @@
   ;;
   (let* ((class (class-of instance)))
     ;; initialize-instance slots
-    #+compare(print (list "MLOG standard.lsp shared-initialize 55 class-->" #+clasp class))
     (dolist (slotd (class-slots class))
-      #+compare(print "")
-      #+compare(print (list "MLOG standard.lsp shared-initialize 57 "))
-      #+compare(print "")
       (let* ((slot-initargs (slot-definition-initargs slotd))
 	     (slot-name (slot-definition-name slotd)))
-	#+compare(print (list "MLOG standard.lsp shared-initialize 60 slot-initargs -->" #+clasp slot-initargs))
-	#+compare(print (list "MLOG standard.lsp shared-initialize 63 slot-name -->" #+clasp slot-name))
 	(or
 	 ;; Try to initialize the slot from one of the initargs.
 	 (do ((l initargs) initarg val)
 	     ((null l)
 	      (progn
-		#+compare(print "MLOG standard.lsp shared-initialize-leaving do with nil")
 		nil))
-	   #+compare(print (list "MLOG standard.lsp shared-initialize 65 l-->" #+clasp l))
 	   (setf initarg (pop l))
 	   (when (endp l)
 	     (simple-program-error "Wrong number of keyword arguments for SHARED-INITIALIZE, ~A"
 				   initargs))
-	   #+compare(print "MLOG standard.lsp shared-initialize 70 -->")
 	   (unless (symbolp initarg)
 	     (simple-program-error "Not a valid initarg: ~A" initarg))
-	   #+compare(print "MLOG standard.lsp shared-initialize 73 -->")
-	   #+compare(print "")
 	   (setf val (pop l))
-	   #+compare(print "MLOG standard.lsp shared-initialize 75 -->")
-	   #+compare(print "")
 	   (when (member initarg slot-initargs :test #'eq)
-	     #+compare(print "MLOG standard.lsp shared-initialize about to return")
-	     #+compare(print (list "MLOG standard.lsp shared-initialize initarg" #+clasp initarg))
-	     #+compare(print (list "MLOG standard.lsp shared-initialize slot-initargs" #+clasp slot-initargs))
 	     (setf (slot-value instance slot-name) val)
 	     (return t)))
-
-	 #+compare
-	 (progn
-	   ;; Try to initialize the slot from its initform.
-	   (print (list "MLOG standard.lsp shared-initialize line[90] slot-names -->" #+clasp slot-names ))
-	   (print (list "MLOG standard.lsp shared-initialize line[91] slot-name -->" #+clasp slot-name ))
-	   (print (list "MLOG standard.lsp shared-initialize line[92] instance"))
-	   (print (list "MLOG standard.lsp shared-initialize line[93] (slot-boundp instance slot-name) -->" #+clasp (slot-boundp instance slot-name)))
-	   (when (slot-boundp instance slot-name)
-	     (print (list "MLOG standard.lsp shared_initialize[98] (slot-value instance slot-name) -->" )  #+(or) (slot-value instance slot-name)))
-	   (print "")
-	   nil
-	   )
-	 #+compare
-	 (progn
-	   (print (list "MLOG standard.lsp shared-initialize line 105"))
-	   nil)
 
 	 (when (and slot-names
 		    (or (eq slot-names 'T)
 			(member slot-name slot-names))
 		    (not (slot-boundp instance slot-name)))
 	   (let ((initfun (slot-definition-initfunction slotd)))
-	     #+compare(print "MLOG standard.lsp shared-initialize 87 -->")
 	     (when initfun
-	       #+compare(print "MLOG standard.lsp shared-initialize 89 -->")
 	       (setf (slot-value instance slot-name) (funcall initfun)))))
 
-	 #+compare
-	 (progn
-	   (print (list "MLOG standard.lsp shared-initialize line 120"))
-	   nil)
-
-	 ) ; or
-	#+compare
-	(progn
-	  (print (list "MLOG standard.lsp shared-initialize line 126"))
-	   nil)
-
+	 )                              ; or
 	)
       )
-    #+compare
-    (progn
-      (print (list "MLOG standard.lsp shared-initialize line 132"))
-      nil)
     )
   instance)
 
@@ -176,14 +126,11 @@
 
 (defmethod make-instance ((class class) &rest initargs)
   ;; Without finalization we can not find initargs.
-  (gf-log "make-instance (class class)")
   (unless (class-finalized-p class)
-    (gf-log "About to finalize-inheritance")
     (finalize-inheritance class))
   ;; We add the default-initargs first, because one of these initargs might
   ;; be (:allow-other-keys t), which disables the checking of the arguments.
   ;; (Paul Dietz's ANSI test suite, test CLASS-24.4)
-  (gf-log "add-default-initargs")
   (setf initargs (add-default-initargs class initargs))
   (let ((keywords (if (slot-boundp class 'valid-initargs)
 		      (progn
@@ -191,7 +138,6 @@
 		      (progn
 			(precompute-valid-initarg-keywords class)))))
     (check-initargs class initargs nil (class-slots class) keywords))
-  (gf-log "apply allocate-instance")
   (let ((instance (apply #'allocate-instance class initargs)))
     (apply #'initialize-instance instance initargs)
     instance))
@@ -241,15 +187,12 @@
 (defmethod initialize-instance ((class class) &rest initargs &key direct-slots)
   (declare (ignore sealedp))
   ;; convert the slots from lists to direct slots
-  #+compare(print "MLOG standard.lsp initialize-instance 187")
   (apply #'call-next-method class
          :direct-slots
 	 (loop for s in direct-slots
 	    collect (canonical-slot-to-direct-slot class s))
          initargs)
-  #+compare(print "MLOG standard.lsp initialize-instance 193")
   (finalize-unless-forward class)
-  #+compare(print "MLOG standard.lsp initialize-instance 195")
   class)
 
 (defmethod shared-initialize ((class class) slot-names &rest initargs &key direct-superclasses)
@@ -371,9 +314,7 @@ because it contains a reference to the undefined class~%  ~A"
       (unless (or (null x) (eq x class))
 	(return-from finalize-inheritance
 	  (finalize-inheritance x))))
-    #+compare(print (list "finalize-inheritance setting cpl for class: " #+clasp class " cpl: " #+clasp cpl))
     (setf (class-precedence-list class) cpl)
-    #+compare(print (list "finalize-inheritance checking set cpl for class: " #+clasp class " cpl: " #+clasp (class-precedence-list class)))
     (let ((slots (compute-slots class)))
       (setf (class-slots class) slots
 	    (class-size class) (compute-instance-size slots)
@@ -767,4 +708,3 @@ because it contains a reference to the undefined class~%  ~A"
   obj)
 
 
-#+compare(print "MLOG ****** Done with standard.lsp *******")
