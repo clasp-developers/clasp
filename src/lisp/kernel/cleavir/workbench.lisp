@@ -25,7 +25,7 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(clasp-cleavir:cleavir-compile 'foo '(lambda (x y &optional z) (list x y z)))
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x &va-rest y) (apply #'list x y)))
 
 
 
