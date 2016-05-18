@@ -489,9 +489,9 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
     VaList_S valist_scopy(*vl);
     VaList_sp xa(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
     ql::list l;
-    int nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(xa);
+    int nargs = xa->remaining_nargs();
     for (int i(0); i < nargs; ++i) {
-      l << LCC_NEXT_ARG(xa,i);
+      l << xa->next_arg();
     }
     core::write_ugly_object(l.cons(),stream);
     clasp_write_string(">",stream);

@@ -209,6 +209,16 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
 }
 
+void ValueEnvironmentDynamicScopeManager::va_rest_binding(const Argument &argument) {
+  if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
+    SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
+  }
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  VaList_sp valist(&this->valist());
+  T_sp argTarget = argument._ArgTarget;
+  this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, valist);
+}
+
 void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val) {
   Symbol_sp type = gc::As<Symbol_sp>(oCar(classified));
   if (type == ext::_sym_lexicalVar) {
@@ -230,6 +240,12 @@ void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified) {
   Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
   this->_Environment->defineSpecialBinding(sym);
 }
+
+
+
+
+
+
 
 void ActivationFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp val) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {

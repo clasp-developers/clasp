@@ -178,8 +178,8 @@ T_sp VectorObjects_O::elt(int index) const {
 }
 
 T_sp VectorObjects_O::aref(VaList_sp indices) const {
-  ASSERT(LCC_VA_LIST_NUMBER_OF_ARGUMENTS(indices) == 1);
-  core::T_sp arg0 = LCC_NEXT_ARG(indices,0);
+  ASSERT(indices->remaining_nargs() == 1);
+  core::T_sp arg0 = indices->next_arg();
   ASSERT(arg0.fixnump());
   size_t index = arg0.unsafe_fixnum();
   return this->elt(index);

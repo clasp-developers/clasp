@@ -120,12 +120,12 @@ VectorObjects_sp InvocationHistoryFrame::arguments() const {
   VaList_sp orig_args = this->valist_sp();
   T_O** register_area = LCC_VA_LIST_REGISTER_SAVE_AREA(orig_args);
   T_O** overflow_area = LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(orig_args);
-  size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(orig_args);
+  size_t numberOfArguments = orig_args->total_nargs(); //    LCC_VA_LIST_NUMBER_OF_ARGUMENTS(orig_args);
   VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
   T_O* objRaw;
   for (size_t i(0); i < numberOfArguments; ++i) {
     //objRaw = this->valist_sp().indexed_arg(i);
-    LCC_ORIGINAL_VA_LIST_INDEXED_ARG(objRaw,orig_args,i);
+    objRaw = orig_args->absolute_indexed_arg(i);
     vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
   }
   return vargs;

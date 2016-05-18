@@ -46,7 +46,7 @@ namespace core {
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
       ASSERT_FIRST_ARG_IS_VALIST();
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
-      return apply_consume_valist_(this->_body,LCC_ARG0_VALIST());
+      return funcall_consume_valist_(this->_body,LCC_ARG0_VALIST());
     };
   };
 

@@ -434,8 +434,8 @@ void dbg_lowLevelDescribe(T_sp obj) {
     printf("Calling dump_VaList_S_ptr\n");
     bool atHead = dump_VaList_S_ptr(&vlcopy_s);
     if (atHead) {
-      for (size_t i(0); i < LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vlcopy); ++i) {
-        T_sp v = LCC_NEXT_ARG(vlcopy,i);
+      for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
+        T_sp v = vlcopy->next_arg();
         printf("entry@%p %3d --> %s\n", v.raw_(), i, _rep_(v).c_str());
       }
     } else {

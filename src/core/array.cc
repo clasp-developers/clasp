@@ -209,7 +209,7 @@ cl_index Array_O::index_val_(List_sp indices, bool last_value_is_val, T_sp &last
 }
 
 cl_index Array_O::index_val_(VaList_sp indices, bool last_value_is_val, T_sp &last_val) const {
-  int indices_passed = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(indices) - (last_value_is_val ? 1 : 0);
+  int indices_passed = indices->remaining_nargs() - (last_value_is_val ? 1 : 0);
 #ifdef DEBUG_ON
   ASSERTF(indices_passed == (int)this->rank(),
           BF("Wrong number of indices[%d] must match rank[%d]") % indices_passed % this->rank());
@@ -218,7 +218,7 @@ cl_index Array_O::index_val_(VaList_sp indices, bool last_value_is_val, T_sp &la
   cl_index idx = 0;
   cl_index idxEnd(indices_passed);
   for ( ; idx < idxEnd; ++idx) {
-    core::T_sp cur = LCC_NEXT_ARG(indices,idx);
+    core::T_sp cur = indices->next_arg();
     cl_index curDimension = this->arrayDimension(idx);
     cl_index oneIndex = clasp_to_int(gc::As<Rational_sp>(cur));
     if (oneIndex < 0 || oneIndex >= curDimension) {
@@ -227,7 +227,7 @@ cl_index Array_O::index_val_(VaList_sp indices, bool last_value_is_val, T_sp &la
     offset = offset * curDimension + oneIndex;
   }
   if (last_value_is_val) {
-    last_val = LCC_NEXT_ARG(indices,idx);
+    last_val = indices->next_arg();
   }
   return offset;
 }

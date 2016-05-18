@@ -168,12 +168,13 @@ public:
 class ValueEnvironmentDynamicScopeManager : public DynamicScopeManager {
 private:
   ValueEnvironment_sp _Environment;
-
+  VaList_S _VaRest;
 public:
   ValueEnvironmentDynamicScopeManager(ValueEnvironment_sp env) : _Environment(env){};
-
 public:
   /*! This is used for creating binds for lambda lists */
+  virtual VaList_S &valist() { return this->_VaRest; };
+  virtual void va_rest_binding(const Argument &argument);
   virtual void new_binding(const Argument &argument, T_sp val);
   void new_variable(List_sp classifiedVariable, T_sp val);
   void new_special(List_sp classifiedVariable);

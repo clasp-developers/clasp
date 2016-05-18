@@ -92,7 +92,7 @@ List_sp listOfObjects(VaList_sp vargs) {
   core::List_sp list = _Nil<core::T_O>();
   va_list cargs;
   va_copy(cargs, (*vargs)._Args);
-  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  size_t nargs = vargs->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   core::Cons_sp *cur = reinterpret_cast<core::Cons_sp *>(&list);
   for (int p = 0; p < nargs; ++p) {
     core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs, T_O *));
@@ -107,7 +107,7 @@ List_sp listOfClasses(VaList_sp vargs) {
   core::List_sp list = _Nil<core::T_O>();
   va_list cargs;
   va_copy(cargs, (*vargs)._Args);
-  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  size_t nargs = vargs->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   core::Cons_sp *cur = reinterpret_cast<core::Cons_sp *>(&list);
   for (int p = 0; p < nargs; ++p) {
     core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs, T_O *));
@@ -182,9 +182,9 @@ CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
     } else if (first.valistp()) {
       VaList_sp vafirst = gc::As<VaList_sp>(first);
       List_sp expanded = _Nil<T_O>();
-      size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vafirst);
+      size_t nargs = vafirst->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vafirst);
       for (int i(0), iEnd(nargs); i < iEnd; ++i) {
-        T_sp v(LCC_NEXT_ARG(vafirst, i));
+        T_sp v = vafirst->next_arg();
         expanded = Cons_O::create(v, expanded);
       }
       return cl__nreverse(expanded);
@@ -207,7 +207,7 @@ T_mv compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
 gctools::Vec0<T_sp> &fill_spec_vector(Instance_sp gf, gctools::Vec0<T_sp> &vektor, VaList_sp vargs) {
   va_list cargs;
   va_copy(cargs, (*vargs)._Args);
-  int narg = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  int narg = vargs->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
   // cl_object *argtype = vector->vector.self.t; // ??
   gctools::Vec0<T_sp> &argtype = vektor;
   argtype[0] = gf;

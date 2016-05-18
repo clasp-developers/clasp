@@ -121,10 +121,10 @@ CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
     SIMPLE_ERROR(BF("arg must be valist"));
   }
   VaList_sp vargs = gctools::As<VaList_sp>(args);
-  size_t nargs = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  size_t nargs = vargs->remaining_nargs();
   stringstream ss;
   for (size_t i(0); i < nargs; ++i) {
-    T_sp csp = LCC_NEXT_ARG(vargs, i);
+    T_sp csp = vargs->next_arg();
     Str_sp ssp = coerce::stringDesignator(csp);
     ss << ssp->c_str();
   }
@@ -199,8 +199,8 @@ T_sp Str_O::aset_unsafe(int index, T_sp val) {
 }
 
 T_sp Str_O::aref(VaList_sp indices) const {
-  ASSERT(LCC_VA_LIST_NUMBER_OF_ARGUMENTS(indices) == 1);
-  core::T_sp arg0 = LCC_NEXT_ARG(indices,0);
+  ASSERT(indices->remaining_nargs() == 1);
+  core::T_sp arg0 = indices->next_arg();
   ASSERT(arg0.fixnump());
   size_t index = arg0.unsafe_fixnum();
   if (index < 0 || index >= this->size()) {

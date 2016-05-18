@@ -130,24 +130,44 @@ DO NOT CHANGE THE ORDER OF THESE OBJECTS WITHOUT UPDATING THE DEFINITION OF +va_
 
   VaList_S(){};
 
-  
+#if 0  
   void set_from_other_VaList_S_change_nargs(VaList_S *other, size_t nargs_remaining) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(this->_Args, other->_Args, nargs_remaining);
   }
+#endif
   void set_from_other_VaList_S(VaList_S *other) {
     LCC_SETUP_VA_LIST_FROM_VA_LIST(this->_Args, other->_Args);
   }
 
   virtual ~VaList_S(){}; // Make it polymorphic
-  inline size_t nargs() const { return LCC_VA_LIST_NUMBER_OF_ARGUMENTS(this); };
-#if 0
-  inline core::T_O *indexed_arg(size_t idx) const {
+  inline size_t total_nargs() const {
+    size_t n = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(this);
+    return n;
+  }
+  inline size_t remaining_nargs() const {
+    size_t n;
+    LCC_VA_LIST_REMAINING_NUMBER_OF_ARGUMENTS(n,this);
+    return n;
+  }
+  inline size_t current_index() const {
+    size_t idx;
+    LCC_VA_LIST_CURRENT_INDEX(idx,this);
+    return idx;
+  }
+  inline core::T_O* next_arg_raw() {
+    return LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
+  }
+
+  inline core::T_sp next_arg() {
+    T_O* ptr = LCC_NEXT_ARG_RAW_AND_ADVANCE(this);
+    return T_sp(reinterpret_cast<gctools::Tagged>(ptr));
+  }
+
+  inline core::T_O *absolute_indexed_arg(size_t idx) const {
     core::T_O *res;
-    gctools::smart_ptr<VaList_S> valist_sp((gc::Tagged)this);
-    LCC_VA_LIST_INDEXED_ARG(res, valist_sp, idx);
+    LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(res, this, idx);
     return res;
   }
-#endif
 };
 };
 

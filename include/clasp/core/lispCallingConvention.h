@@ -142,6 +142,7 @@ THE SOFTWARE.
 #define LCC_OVERFLOW_SAVE_REGISTER LCC_REST_REGISTER
 #define LCC_NARGS_REGISTER 2
 #define LCC_ARG0_REGISTER 3
+#define LCC_ARGS_PASSED_IN_REGISTERS 3
 #define LCC_ARG1_REGISTER 4
 #define LCC_ARG2_REGISTER 5
 #define LCC_TOTAL_REGISTERS 6
@@ -163,17 +164,9 @@ THE SOFTWARE.
     (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
   }
 
-#if 0
-#define LCC_RESET_VA_LIST_TO_START(_valist_s_) {                                                                          \
-    /* Tricky part!!! write the OVERFLOW_SAVE_REGISTER back into the overflow_arg_area pointer */                                  \
-    /* so we can traverse the valist again */                                                \
-    *(core::T_O**)((_valist_s_)._Args->overflow_arg_area) = ((core::T_O* *)(_valist_s_)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER]; \
-    (_valist_s_)._Args->gp_offset = sizeof(core::T_O*) * (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS);                           \
-  }
-#endif
-#define private_LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
-#define private_LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
-#define private_LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) (size_t)(((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
+#define private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) (((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER]) = ((uintptr_t)_n)
+#define private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) (--((uintptr_t *)(_args[0].reg_save_area))[LCC_NARGS_REGISTER])
 
 #ifdef DEBUG_ASSERTS
 #define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args) {\
@@ -190,13 +183,25 @@ THE SOFTWARE.
 #define LCC_VA_LIST_REGISTER_SAVE_AREA(_args) (core::T_O **)(((*_args)._Args)[0].reg_save_area)
 #define LCC_VA_LIST_OVERFLOW_ARG_AREA(_args) (core::T_O **)(((*_args)._Args)[0].overflow_arg_area)
 #define LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args) ((core::T_O***)LCC_VA_LIST_REGISTER_SAVE_AREA(_args))[LCC_OVERFLOW_SAVE_REGISTER]
-#define LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_NUMBER_OF_ARGUMENTS((*_args)._Args)
-#define LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(_args, _n) private_LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS((*_args)._Args, _n)
-#define LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS((*_args)._Args)
+#define LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args)
+#define LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS(_args, _n) private_LCC_VA_LIST_SET_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args, _n)
+#define LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS(_args) private_LCC_VA_LIST_DECREMENT_TOTAL_NUMBER_OF_ARGUMENTS((*_args)._Args)
 #define LCC_VA_LIST_REGISTER_ARG0(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG0_REGISTER])
 #define LCC_VA_LIST_REGISTER_ARG1(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG1_REGISTER])
 #define LCC_VA_LIST_REGISTER_ARG2(_args) (((core::T_O **)(((*_args)._Args)[0].reg_save_area))[LCC_ARG2_REGISTER])
-#define LCC_VA_LIST_INDEXED_ARG(_res, _args, _idx)                    \
+
+#define LCC_VA_LIST_CURRENT_INDEX(_res, _args)                    \
+  _res = (((*_args)._Args[0].gp_offset/sizeof(void*))-LCC_ARG0_REGISTER); \
+  if ( _res > LCC_ARGS_PASSED_IN_REGISTERS ) { \
+    _res = LCC_VA_LIST_OVERFLOW_ARG_AREA(_args)-LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(_args); \
+  }
+
+#define LCC_VA_LIST_REMAINING_NUMBER_OF_ARGUMENTS(_res, _args) \
+  LCC_VA_LIST_CURRENT_INDEX(_res,_args); \
+  _res = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(_args) - (_res);
+
+
+#define LCC_VA_LIST_incorrect_INDEXED_ARG(_res, _args, _idx)                    \
   {                                                                   \
     int __x = (_idx) - ((48 - ((*_args)._Args[0].gp_offset)) / 8);     \
     if (__x < 0) {                                                    \
@@ -206,7 +211,7 @@ THE SOFTWARE.
     }                                                                 \
   }
 
-#define LCC_ORIGINAL_VA_LIST_INDEXED_ARG(_res, _args, _idx)                    \
+#define LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(_res, _args, _idx)                    \
   {                                                                   \
     int __x = (_idx) - (LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS); \
     if (__x < 0) {                                                    \
@@ -216,20 +221,15 @@ THE SOFTWARE.
     }                                                                 \
   }
 
+
+
+
+
+
 //    _res = ((core::T_O **)(*_args)._Args[0].overflow_arg_area)[__x]; \
 
-#define LCC_NEXT_ARG_RAW(arglist, arg_idx) va_arg((*arglist)._Args, core::T_O *)
-#define LCC_NEXT_ARG(arglist, arg_idx) core::T_sp((gc::Tagged)LCC_NEXT_ARG_RAW(arglist, arg_idx))
-#if 0
-#define LCC_SKIP_ARG(arglist)                           \
-  {                                                     \
-    va_arg((*arglist)._Args);                           \
-    LCC_VA_LIST_DECREMENT_NUMBER_OF_ARGUMENTS(arglist); \
-  }
-#endif
-#else  // #if defined(X86) && defined(_ADDRESS_MODEL_64)
-
-#error "Add support for accessing LCC_INDEXED_ARG"
+#define LCC_NEXT_ARG_RAW_AND_ADVANCE(arglist) va_arg((*arglist)._Args, core::T_O *)
+//#define LCC_NEXT_ARG_AND_ADVANCE(arglist) core::T_sp((gc::Tagged)LCC_NEXT_ARG_RAW(arglist))
 #endif // #if defined(X86) && defined(_ADDRESS_MODEL_64)
 
 
@@ -254,24 +254,6 @@ THE SOFTWARE.
     break;                                                              \
   };
 
-#if 0
-#define LCC_VA_LIST_TO_VECTOR_OBJECTS(_valist, _vec)                                                                        \
-  core::VectorObjects_sp _vec = core::VectorObjects_O::create(_Nil<core::T_O>(), LCC_VA_LIST_NUMBER_OF_ARGUMENTS(_valist)); \
-  switch (_vec->vector_length()) {                                                                                          \
-  default:                                                                                                                  \
-    for (int _zii = LCC_FIXED_ARGS, _zend(_vec->vector_length()); _zii < _zend; ++_zii) {                                   \
-      _vec->setf_elt(_zii, LCC_INDEXED_ARG(_valist, _zii));                                                                 \
-    }                                                                                                                       \
-  case 3:                                                                                                                   \
-      _vec->setf_elt(2,LCC_INDEXED_ARG(_valist,2)); \
-  case 2:                                                              \
-      _vec->setf_elt(1,LCC_INDEXED_ARG(_valist,1)); \
-  case 1:                                                              \
-      _vec->setf_elt(0,LCC_INDEXED_ARG(_valist,0)); \
-  case 0:                                                              \
-    break;                                                                                                                  \
-  }
-#endif
 
 #define LCC_DECLARE_VA_LIST()                           \
   VaList_S lcc_arglist_struct(lcc_nargs);               \
@@ -286,7 +268,7 @@ THE SOFTWARE.
     (_va_list_)[0].fp_offset = 304; \
   }
 
-
+#if 0
 /*! Initialize a VaList_S struct from another VaList_S struct */
 #define LCC_SETUP_VA_LIST_FROM_VA_LIST_CHANGE_NARGS(_dest_, _src_, _nargs_left_)                  \
   {                                                                                  \
@@ -297,6 +279,7 @@ THE SOFTWARE.
     (_dest_)[0].gp_offset = (_src_)[0].gp_offset;                                    \
     (_dest_)[0].fp_offset = (_src_)[0].fp_offset;                                    \
   }
+#endif
 
 #define LCC_SETUP_VA_LIST_FROM_VA_LIST(_dest_,_src_) va_copy(_dest_,_src_)
 
@@ -351,20 +334,25 @@ inline bool dump_VaList_S_ptr(VaList_S* args) {
 
 
 template <typename FuncType>
-inline gctools::return_type apply_consume_valist_(FuncType func, VaList_sp args) {
+inline gctools::return_type funcall_consume_valist_(FuncType func, VaList_sp args) {
   core::T_O *arg0;
   core::T_O *arg1;
   core::T_O *arg2;
-  LCC_VA_LIST_INDEXED_ARG(arg0, args, 0);
-  LCC_VA_LIST_INDEXED_ARG(arg1, args, 1);
-  LCC_VA_LIST_INDEXED_ARG(arg2, args, 2);
+  size_t current_arg_index;
+  LCC_VA_LIST_CURRENT_INDEX(current_arg_index,args);
+  LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg0, args, current_arg_index+0);
+  LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
+  LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg2, args, current_arg_index+2);
+  size_t nargs = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(args)-current_arg_index;
+  T_O* func_raw = func.raw_();
+  T_O* args_raw = args.raw_();
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(args.raw_());
-  gctools::return_type res = (*func).invoke_va_list(func.raw_(), // was NULL
-                                               args.raw_(),
-                                               LCC_VA_LIST_NUMBER_OF_ARGUMENTS(args),
-                                               arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
-                                               arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
-                                               arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
+  gctools::return_type res = (*func).invoke_va_list(func_raw, 
+                                                    args_raw,
+                                                    nargs,
+                                                    arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
+                                                    arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
+                                                    arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
   return res;
 }
 #endif // #ifdef LCC_PROTOTYPES

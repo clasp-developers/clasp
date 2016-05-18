@@ -95,60 +95,80 @@ CL_DECLARE();
 CL_DOCSTRING("apply");
 CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
   Function_sp func = coerce::functionDesignator(head);
-  int lenArgs = args->nargs();
-  if (lenArgs == 0) {
-    eval::errorApplyZeroArguments();
-  }
-  T_O* lastArgRaw;
-  LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
-  //T_sp last = T_sp((gc::Tagged)args->indexed_arg(lenArgs - 1));
+  int lenTotalArgs = args->total_nargs();
+  if (lenTotalArgs == 0) eval::errorApplyZeroArguments();
+  T_O* lastArgRaw = args->absolute_indexed_arg(lenTotalArgs-1); // LCC_VA_LIST_INDEXED_ARG(lastArgRaw,args,lenArgs-1);
+  int lenArgs = lenTotalArgs - args->current_index();
+//  printf("%s:%d  lenTotalArgs = %d lenArgs = %d\n", __FILE__, __LINE__, lenTotalArgs, lenArgs );
   if (gctools::tagged_nilp(lastArgRaw)) {
-    // Nil as last argument
-    LCC_VA_LIST_SET_NUMBER_OF_ARGUMENTS(args, lenArgs - 1);
-    return apply_consume_valist_(func,args);
-  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
-    VaList_sp valast((gc::Tagged)lastArgRaw);
-    VaList_S valast_copy(*valast);
-    VaList_sp valast_copy_sp(&valast_copy);
-    return apply_consume_valist_(func, valast_copy_sp);
-  } else if (gctools::tagged_valistp(lastArgRaw)) {
-    VaList_sp valast((gc::Tagged)lastArgRaw);
-    VaList_S valist_scopy(*valast);
-    VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
-    int lenFirst = lenArgs - 1;
-    int lenRest = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
-    int nargs = lenFirst + lenRest;
-    // Allocate a frame on the side stack that can take all arguments
-    MAKE_STACK_FRAME(frame, func.raw_(), nargs);
-    T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      (*frame)[i] = LCC_NEXT_ARG_RAW(args, i);
-    }
-    for (int i(lenFirst); i < nargs; ++i) {
-      (*frame)[i] = LCC_NEXT_ARG_RAW(lastArgs, i);
-    }
-    VaList_S valist_struct(frame);
-    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return apply_consume_valist_(func, valist);
-  } else if (gctools::tagged_consp(lastArgRaw)) {
-    // Cons as last argument
-    int lenFirst = lenArgs - 1;
-    Cons_sp last((gc::Tagged)lastArgRaw);
-    int lenRest = cl__length(last);
-    int nargs = lenFirst + lenRest;
+//    printf("%s:%d apply with nil last arg\n", __FILE__, __LINE__ );
+    // NIL as last argument
+    int nargs = args->remaining_nargs()-1;
+//    printf("%s:%d apply with multiple arguments and the last is nil nargs=%d\n", __FILE__, __LINE__, nargs );
     MAKE_STACK_FRAME( frame, func.raw_(), nargs);
     T_sp obj = args;
-    for (int i(0); i < lenFirst; ++i) {
-      (*frame)[i] = LCC_NEXT_ARG_RAW(args, i);
-    }
-    List_sp cargs = gc::As<Cons_sp>(last);
-    for (int i(lenFirst); i < nargs; ++i) {
-      (*frame)[i] = oCar(cargs).raw_();
-      cargs = oCdr(cargs);
+    size_t idx = 0;
+    for (int i(0); i < nargs; ++i) {
+      (*frame)[idx] = args->next_arg_raw();
+      ++idx;
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return apply_consume_valist_(func, valist);
+    return funcall_consume_valist_(func, valist);
+  } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
+//    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
+    VaList_sp valast((gc::Tagged)lastArgRaw);
+    VaList_S valast_copy(*valast);
+    VaList_sp valast_copy_sp(&valast_copy);
+    return funcall_consume_valist_(func, valast_copy_sp);
+  } else if (gctools::tagged_valistp(lastArgRaw)) {
+    // The last argument is a VaList - so we need to create a new frame
+    // to hold the contents of the two lists of arguments
+    VaList_sp valast((gc::Tagged)lastArgRaw);
+    VaList_S valist_scopy(*valast);
+    VaList_sp lastArgs(&valist_scopy); // = gc::smart_ptr<VaList_S>((gc::Tagged)last.raw_());
+    int lenFirst = args->remaining_nargs()-1;
+    int lenRest = lastArgs->remaining_nargs(); // LCC_VA_LIST_NUMBER_OF_ARGUMENTS(lastArgs);
+    int nargs = lenFirst + lenRest;
+//    printf("%s:%d apply with multiple arguments and the last is a valist: nargs=%d lenFirst=%d lenRest=%d\n", __FILE__, __LINE__, nargs, lenFirst, lenRest );
+    // Allocate a frame on the side stack that can take all arguments
+    MAKE_STACK_FRAME(frame, func.raw_(), nargs);
+    T_sp obj = args;
+    size_t idx = 0;
+    for (int i(0); i < lenFirst; ++i) {
+      (*frame)[idx] = args->next_arg_raw();
+      ++idx;
+    }
+    for (int i(0); i < lenRest; ++i) {
+      (*frame)[idx] = lastArgs->next_arg_raw();
+      ++idx;
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
+    return funcall_consume_valist_(func, valist);
+  } else if (gctools::tagged_consp(lastArgRaw)) {
+    // Cons as last argument
+    int lenFirst = args->remaining_nargs()-1;
+    Cons_sp last((gc::Tagged)lastArgRaw);
+    int lenRest = cl__length(last);
+    int nargs = lenFirst + lenRest;
+//    printf("%s:%d apply with multiple arguments and the last is a list nargs=%d lenFirst=%d lenRest=%d\n", __FILE__, __LINE__, nargs,lenFirst,lenRest );
+    MAKE_STACK_FRAME( frame, func.raw_(), nargs);
+    T_sp obj = args;
+    size_t idx = 0;
+    for (int i(0); i < lenFirst; ++i) {
+      (*frame)[idx] = args->next_arg_raw();
+      ++idx;
+    }
+    List_sp cargs = gc::As<Cons_sp>(last);
+    for (int i(0); i < lenRest; ++i) {
+      (*frame)[idx] = oCar(cargs).raw_();
+      cargs = oCdr(cargs);
+      ++idx;
+    }
+    VaList_S valist_struct(frame);
+    VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
+    return funcall_consume_valist_(func, valist);
   }
   eval::errorApplyLastArgumentNotList();
 }
@@ -180,7 +200,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   VaList_S debug_valist(*args);
   core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
 #endif
-  T_mv res = apply_consume_valist_(func, args);
+  T_mv res = funcall_consume_valist_(func, args);
   return res;
 }
 #else
@@ -1304,7 +1324,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   }
   VaList_S valist_struct(fargs);
   VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
-  return apply_consume_valist_(func, valist);
+  return funcall_consume_valist_(func, valist);
 }
 
 
@@ -2233,13 +2253,13 @@ T_mv evaluate(T_sp exp, T_sp environment) {
           printf("%s ", _rep_(T_sp((gc::Tagged)(*callArgs)[i])).c_str());
         }
         printf(" )\n");
-        result = apply_consume_valist_(headFunc, valist);
+        result = funcall_consume_valist_(headFunc, valist);
         printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
       } else {
-        result = apply_consume_valist_(headFunc, valist);
+        result = funcall_consume_valist_(headFunc, valist);
       }
     } else {
-      result = apply_consume_valist_(headFunc, valist);
+      result = funcall_consume_valist_(headFunc, valist);
     }
     goto DONE;
   }
