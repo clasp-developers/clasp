@@ -109,7 +109,7 @@ project clasp : requirements
 	<target-os>darwin:<cxxflags>"-stdlib=libc++"
 	<target-os>darwin:<linkflags>-stdlib=libc++
         <cxxflags>"-Wabi-tag"
-        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=1"
+#        <target-os>linux:<define>"_GLIBCXX_USE_CXX11_ABI=1"
 	<cxxflags>"-fvisibility=default"
         <variant>debug:<optimization>off
         <variant>release:<optimization>speed
