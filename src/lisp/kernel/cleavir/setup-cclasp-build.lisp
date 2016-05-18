@@ -32,5 +32,5 @@
                             ;; needs to be the default compiler before inlining is used to
                             ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
                             #P"sys:kernel/cleavir/auto-compile"
-                            #P"sys:kernel/cleavir/inline"))
+                            #P"sys:kernel/cleavir/inline")))
 (format t "Done~%")

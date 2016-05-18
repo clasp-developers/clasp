@@ -10,6 +10,8 @@
  #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/cons-related-asts"
  #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/standard-object-related-asts"
  #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/array-related-asts"
+ #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/optimize-related-asts"
+ #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/scope-related-asts"
  #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/graphviz-drawing"
  #P"kernel/contrib/sicl/Code/Cleavir/Abstract-syntax-tree/map-ast"
  #P"kernel/contrib/sicl/Code/Cleavir/AST-transformations/packages"
@@ -86,6 +88,7 @@
  #P"kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/compile-cons-related-asts"
  #P"kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/compile-standard-object-related-asts"
  #P"kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/compile-array-related-asts"
+ #P"kernel/contrib/sicl/Code/Cleavir/AST-to-HIR/compile-optimize-related-asts"
  #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/packages"
  #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/constant-load-time-value"
  #P"kernel/contrib/sicl/Code/Cleavir/HIR-transformations/traverse"
@@ -119,6 +122,7 @@
  #P"kernel/contrib/sicl/Code/Conditions/Additional/conditions"
  #P"kernel/contrib/sicl/Code/Conditions/Additional/condition-reporters-en"
  #P"kernel/cleavir/packages"
+ #P"kernel/cleavir/cleavir-fixups-and-hacks"
  #P"kernel/cleavir/system"
  #P"kernel/cleavir/ast"
  #P"kernel/cleavir/convert-form"
@@ -138,6 +142,5 @@
  #P"kernel/cleavir/translate"
  #P"kernel/cleavir/inline-prep"
  :PRE-INLINE
- #P"kernel/cleavir/auto-compile"
- #P"kernel/cleavir/inline"
- ) 
+ #P"SYS:KERNEL/CLEAVIR/AUTO-COMPILE"
+ #P"SYS:KERNEL/CLEAVIR/INLINE") 
