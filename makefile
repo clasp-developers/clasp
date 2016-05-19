@@ -176,7 +176,8 @@ define varprint
 endef
 
 all:
-	make mps-all
+#	make mps-all
+	make boehm-all
 
 boehm-all:
 	make print-config

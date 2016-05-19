@@ -651,7 +651,7 @@ Select a subset (or all) source file names from the compilation database and ret
    (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code)))
 
 (core:defvirtual ast-tooling:on-start-of-translation-unit ((self code-match-callback))
-  (format t "on-start-of-translation-unit for code-match-callback of: ~a~%" self)
+;  (format t "on-start-of-translation-unit for code-match-callback of: ~a~%" self)
   (when (slot-boundp self 'start-of-translation-unit-code)
     (assert (start-of-translation-unit-code self))
     (funcall (start-of-translation-unit-code self))))
