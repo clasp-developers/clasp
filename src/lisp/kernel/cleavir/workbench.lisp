@@ -18,6 +18,9 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+(defun zzz (x y z) (+ x y z))
+(fdefinition 'zzz)
+
 
 (progn
   (load "sys:kernel;cleavir;auto-compile.lisp")
@@ -25,6 +28,10 @@
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
+(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp")
+(load "sys:tests;ta.fasl")
+(baz 1 2)
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x &va-rest y) (apply #'list x y)))
 
 
