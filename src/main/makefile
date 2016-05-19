@@ -297,11 +297,11 @@ mps-interface-run-cclasp:
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"app-resources:build-databases;clasp_compile_commands.json\")))" \
 		-e "(quit)"
 
-mps-interface:
+redeye-prepare:
 	@echo Building mps-prep
 	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
 	make compile-commands
-	make mps-interface-run
+#	make mps-interface-run
 
 mps-interface-cclasp:
 	@echo Building mps-prep

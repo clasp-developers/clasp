@@ -268,18 +268,21 @@ to append a NULL function to the list of main functions."
     module))
 
 
+(defun cfp-output-extension (output-type)
+  (cond
+    ((eq output-type :bitcode) "bc")
+    ((eq output-type :linked-bitcode) "lbc")
+    ((eq output-type :object) "o")
+    ((eq output-type :fasl) "fasl")
+    ((eq output-type :executable) #-windows "" #+windows "exe")
+    (t (error "unsupported output-type ~a" output-type))))
 
 (defun cfp-output-file-default (input-file output-type &key target-backend)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
     (when target-backend
       (setq defaults (make-pathname :host target-backend :defaults defaults)))
-    (make-pathname :type (cond
-			   ((eq output-type :bitcode) "bc")
-			   ((eq output-type :linked-bitcode) "lbc")
-			   ((eq output-type :object) "o")
-			   ((eq output-type :fasl) "fasl")
-			   (t (error "unsupported output-type ~a" output-type)))
-		   :defaults defaults)))
+    (make-pathname :type (cfp-output-extension output-type)
+                   :defaults defaults)))
 
 
 ;;; Copied from sbcl sb!xc:compile-file-pathname
@@ -297,14 +300,9 @@ to append a NULL function to the list of main functions."
                                            &allow-other-keys)
   (when type (error "Clasp compile-file-pathname uses :output-type rather than :type"))
   (let* ((pn (if output-file-p
-		 (merge-pathnames output-file (cfp-output-file-default input-file output-type :target-backend target-backend))
+		 (merge-pathnames output-file (translate-logical-pathname (cfp-output-file-default input-file output-type :target-backend target-backend)))
 		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
-         (ext (cond
-		((eq output-type :bitcode) "bc")
-		((eq output-type :linked-bitcode) "lbc")
-		((eq output-type :object) "o")
-		((eq output-type :fasl) "fasl")
-		(t (error "unsupported output-type ~a" output-type)))))
+         (ext (cfp-output-extension output-type)))
     (make-pathname :type ext :defaults pn)))
 
 
