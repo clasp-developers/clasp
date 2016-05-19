@@ -3665,7 +3665,7 @@ template <> class gctools::GCKind<clbind::ClassRep_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRep_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
 };
@@ -3901,7 +3901,7 @@ template <> class gctools::GCKind<core::Closure_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Closure_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
 };
@@ -5537,7 +5537,7 @@ public:
 { class_kind, KIND_LISPALLOC_clbind__ClassRegistry_O, sizeof(clbind::ClassRegistry_O), 0, "clbind::ClassRegistry_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEql_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRegistry_O),m_classes), "m_classes" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__SmallMultimap_O, sizeof(core::SmallMultimap_O), 0, "core::SmallMultimap_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), "map._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), "map._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__Pathname_O, sizeof(core::Pathname_O), 0, "core::Pathname_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Host), "_Host" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Pathname_O),_Device), "_Device" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -5555,7 +5555,7 @@ public:
 { class_kind, KIND_LISPALLOC_core__PosixTime_O, sizeof(core::PosixTime_O), 0, "core::PosixTime_O" },
 // not-exposing {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::PosixTime_O),_Time.time_.time_count_.value_), "_Time.time_.time_count_.value_" }, // public: (NIL NIL NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__SmallMap_O, sizeof(core::SmallMap_O), 0, "core::SmallMap_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_ROOTCLASSALLOC_core__Lisp_O, sizeof(core::Lisp_O), 0, "core::Lisp_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._BufferStringPool), "_Roots._BufferStringPool" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Lisp_O),_Roots._TerminalIO), "_Roots._TerminalIO" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
@@ -5701,11 +5701,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::T_O*), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_, sizeof(gctools::GCVector_moveable<core::AuxArgument>), 0, "gctools::GCVector_moveable<core::AuxArgument>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::AuxArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::AuxArgument>),_Capacity), NULL },
@@ -5721,11 +5721,11 @@ public:
 {  variable_capacity, sizeof(core::SymbolClassPair), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolClassPair>),_Capacity), NULL },
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolClassPair),symbol), "symbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::SymbolClassPair),theClass), "theClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__, sizeof(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>), 0, "gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), offsetof(SAFE_TYPE_MACRO(gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>),_Capacity), NULL },
@@ -7637,7 +7637,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::AuxArgument>"));}
@@ -7649,7 +7649,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
@@ -9862,7 +9862,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::AuxArgument>"));}
@@ -9874,7 +9874,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolClassPair>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCArray_moveable<gctools::smart_ptr<core::T_O>>"));}
