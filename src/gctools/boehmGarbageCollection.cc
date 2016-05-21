@@ -39,7 +39,7 @@ int globalBoehmMarker = 0;
 
 void rawHeaderDescribe(uintptr_t *rawheaderP) {
   Header_s *headerP = reinterpret_cast<Header_s *>(rawheaderP);
-  printf("  0x%p : Kind: 0x%p\n", headerP, *headerP);
+  printf("  0x%p : Kind: 0x%zu\n", headerP, headerP->Kind);
 #ifdef BIG_BOEHM_HEADER
   printf("  0x%p :   ValidStamp: 0x%p\n", headerP+1, *(headerP + 1));
 #endif

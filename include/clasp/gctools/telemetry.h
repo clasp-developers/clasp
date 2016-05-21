@@ -336,6 +336,8 @@ Telemetry() : _Write(false), _File(NULL), _ThisRecordPos(0), _Mask(0) {
     } else if (header == data_header) {
       return false;
     }
+    printf("%s:%d What do I do here?\n", __FILE__, __LINE__ );
+    abort();
   }
 
   // Return false if no more record are available

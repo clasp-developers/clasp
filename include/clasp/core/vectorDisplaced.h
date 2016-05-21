@@ -65,7 +65,7 @@ public:
   T_sp elementType() const { return this->_ElementType; };
 
 public: // Functions here
-  virtual T_sp aset_unsafe(int j, T_sp val) { (*this->_Vector)[j + this->_DisplacedIndexOffset] = val; };
+  virtual T_sp aset_unsafe(int j, T_sp val) { (*this->_Vector)[j + this->_DisplacedIndexOffset] = val; return val;};
   virtual T_sp aref_unsafe(cl_index index) const { return (*this->_Vector)[index + this->_DisplacedIndexOffset]; };
 
   virtual std::vector<cl_index> dimensions() const {

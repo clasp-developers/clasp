@@ -542,7 +542,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
     core::Number_sp seconds = core::contagen_div(diff, gc::As<Number_sp>(cl::_sym_internalTimeUnitsPerSecond->symbolValue()));
     double dseconds = clasp_to_double(seconds);
     core::SourceFileInfo_sp sfi = core::core__source_file_info(core::make_fixnum(*sourceFileInfoHandleP));
-    printf("TOP-LEVEL-FUNCTION-TIME %lf %s %d\n", dseconds, sfi->namestring().c_str(), lineno);
+    printf("TOP-LEVEL-FUNCTION-TIME %lf %s %zu\n", dseconds, sfi->namestring().c_str(), lineno);
   }
 #endif
   ASSERTNOTNULL(*resultP);
@@ -794,7 +794,7 @@ void debugInspectT_mv(core::T_mv *objP) {
   printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%u\n", (*objP).raw_(), (*objP).number_of_values(), size);
   size = std::max(size, (size_t)(*objP).number_of_values());
   for (size_t i(0); i < size; ++i) {
-    printf("[%d]->%p ", i, mv.valueGet(i, size).raw_());
+    printf("[%zu]->%p ", i, mv.valueGet(i, size).raw_());
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
@@ -806,10 +806,10 @@ void debugInspectT_mv(core::T_mv *objP) {
 void debugInspect_return_type(gctools::return_type rt) {
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
-  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%d mvarray.size=%u\n", rt.ret0, rt.nvals, size);
+  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%u\n", rt.ret0, rt.nvals, size);
   size = std::max(size, rt.nvals);
   for (size_t i(0); i < size; ++i) {
-    printf("[%d]->%p ", i, mv.valueGet(i, size).raw_());
+    printf("[%zu]->%p ", i, mv.valueGet(i, size).raw_());
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);

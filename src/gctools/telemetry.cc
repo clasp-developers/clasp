@@ -1,5 +1,5 @@
-#include <clasp/gctools/telemetry.h>
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/telemetry.h>
 #include <clasp/core/str.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/wrappers.h>
@@ -251,6 +251,8 @@ void Telemetry::dump_entry_varargs(Handle label, size_t num, ... )
 std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[]) {
   std::string slabel = global_telemetry_search->_Labels[label];
   char buffer[1024];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
   switch (num_read) {
   case 0:
     sprintf(buffer, slabel.c_str());
@@ -277,8 +279,9 @@ std::string Telemetry::entry_as_string(Handle label, size_t num_read, Word data[
     sprintf(buffer, slabel.c_str(), data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
     break;
   default:
-    sprintf(buffer, "Add support for %d arguments", num_read);
+    sprintf(buffer, "Add support for %zu arguments", num_read);
   }
+#pragma clang diagnostic pop
   stringstream ss;
   ss << "[" << this->_Index << "] fp: " << std::hex << this->_ThisRecordPos << " : " << buffer;
   return ss.str();

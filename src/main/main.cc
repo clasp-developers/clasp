@@ -170,10 +170,10 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
   if (std::getenv("NOASLR")!=NULL) {
     srand(1);
     printf("%s:%d setting srand(1)\n", __FILE__, __LINE__ );
-    printf("%s:%d sizeof(EmptyClass) = %d\n", __FILE__, __LINE__, sizeof(EmptyClass)); 
-    printf("%s:%d sizeof(_RootDummyClass) = %d\n", __FILE__, __LINE__, sizeof(_RootDummyClass));
-    printf("%s:%d sizeof(T_O) = %d\n", __FILE__, __LINE__, sizeof(core::T_O));
-    printf("%s:%d sizeof(Cons_O) = %d\n", __FILE__, __LINE__, sizeof(core::Cons_O));
+    printf("%s:%d sizeof(EmptyClass) = %zu\n", __FILE__, __LINE__, sizeof(EmptyClass)); 
+    printf("%s:%d sizeof(_RootDummyClass) = %zu\n", __FILE__, __LINE__, sizeof(_RootDummyClass));
+    printf("%s:%d sizeof(T_O) = %lu\n", __FILE__, __LINE__, sizeof(core::T_O));
+    printf("%s:%d sizeof(Cons_O) = %lu\n", __FILE__, __LINE__, sizeof(core::Cons_O));
   }
   rlimit rl;
   rl.rlim_max = 16 * 1024 * 1024;

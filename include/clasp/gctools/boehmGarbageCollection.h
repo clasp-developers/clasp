@@ -113,7 +113,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 #endif
       };
 
-  private:
+  public:
     kind_t Kind;
 #ifdef BIG_BOEHM_HEADER
     uintptr_t ValidStamp;

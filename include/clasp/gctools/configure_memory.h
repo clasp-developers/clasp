@@ -1,6 +1,10 @@
 #ifndef configure_memory_H
 #define configure_memory_H
 
+#define TAGGED_POINTER 1
+
+
+
 /// USE_BOEHM_MEMORY_MARKER may be useful for debugging processes that cons memory
 /// I lets you write an integer (by using (gctools:gc-marker <int>) into the header
 /// of every object allocated while that marker is set.

@@ -299,7 +299,7 @@ namespace core {
   static gctools::smart_ptr<aClass> create() {                          \
       return gctools::GC<aClass>::allocate_with_default_constructor();  \
     };                                                                  \
-  virtual core::Class_sp __class() const {                              \
+  virtual core::Class_sp __class() const {                     \
     return aClass::static_class;                                        \
   }                                                                     \
   /* end LISP_CLASS */

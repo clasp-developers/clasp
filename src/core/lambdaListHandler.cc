@@ -657,6 +657,8 @@ string argument_mode_as_string(ArgumentMode mode) {
     return ".rest";
   case rest:
     return "rest";
+  case va_rest:
+    return "va-rest";
   case keyword:
     return "keyword";
   case aux:

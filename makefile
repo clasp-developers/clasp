@@ -197,12 +197,16 @@ boehm-all:
 #	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-fasl
 	make -C src/main cclasp-boehm-addons
+	echo Clasp is now built
+
+
+mps-from-boehm:
 	make -C src/main mps-release-cxx
+	make executable-symlinks
 	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
 	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
 	clasp_mps_o -f bclasp -e "(link-cclasp)" -e "(quit)"
 	make -C src/main link-cclasp-mps-addons
-	echo Clasp is now built
 
 
 mps-all:

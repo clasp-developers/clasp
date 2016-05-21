@@ -38,7 +38,7 @@ void build_kind_field_layout_tables()
     if ( codes[idx].cmd == layout_end ) break;
     ++num_codes;
     if ( codes[idx].cmd < 0 || codes[idx].cmd > layout_end ) {
-      printf("%s:%d the layout code table is damaged\n");
+      printf("%s:%d the layout code table is damaged\n", __FILE__, __LINE__ );
       abort();
     }
     if ( codes[idx].cmd == class_kind ||

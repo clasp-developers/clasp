@@ -106,12 +106,12 @@ void dump_class_ids() {
     int status;
     char *ret = abi::__cxa_demangle(fnName, NULL, &length, &status);
     if (status == 0) {
-      printf("  %s --> %d : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      printf("  %s --> %lu : %s\n", ret, it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
       delete ret;
     } else {
         // demangling failed. Output function name as a C function with
         // no arguments.
-      printf("  %s --> %d : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
+      printf("  %s --> %lu : %s\n", it.first.name(), it.second, _rep_(lisp_classSymbolFromClassId(it.second)).c_str() );
     }
   }
 }
@@ -589,6 +589,7 @@ upper case sequence and it advances cur to the last upper case character */
       } else return false;
     } else return false;
   }
+  return false;
 }
 
 string lispify_symbol_name(const string &s) {
@@ -599,7 +600,7 @@ string lispify_symbol_name(const string &s) {
   char buffer[LISPIFY_BUFFER_SIZE];
   int name_length = s.size();
   if ((name_length+2)>=LISPIFY_BUFFER_SIZE) {
-    printf("%s:%d The C++ string is too large to lispify - increase LISPIFY_BUFFER_SIZE to at least %d\n", (name_length+2));
+    printf("%s:%d The C++ string is too large to lispify - increase LISPIFY_BUFFER_SIZE to at least %d\n", __FILE__, __LINE__, (name_length+2));
     abort();
   }
   memset(buffer,0,name_length+2);

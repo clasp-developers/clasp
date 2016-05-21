@@ -325,8 +325,13 @@ size_t dumpResults(const std::string &name, const std::string &shortName, T *dat
   sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
             return (x.totalSize > y.totalSize);
   });
+  size_t idx = 0;
   for (auto it : values) {
     totalSize += it.print(shortName);
+    idx += 1;
+    if ( idx % 100 == 0 ) {
+      POLL_SIGNALS();
+    }
   }
   return totalSize;
 }
@@ -371,8 +376,14 @@ size_t dumpMPSResults(const std::string &name, const std::string &shortName, vec
   sort(values.begin(), values.end(), [](const value_type &x, const value_type &y) {
             return (x.totalMemory > y.totalMemory);
   });
+  size_t idx = 0;
   for (auto it : values) {
     totalSize += it.print(shortName);
+    idx += 1;
+    if ( idx % 100 == 0 ) {
+      POLL_SIGNALS();
+    }
+
   }
   return totalSize;
 }
@@ -516,7 +527,7 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 #if defined(USE_BOEHM) && defined(BOEHM_ONE_BIG_STACK)
   printf("Lisp-stack bottom %p cur %p limit %p\n", stack->_StackBottom, stack->_StackCur, stack->_StackLimit);
 #endif
-  printf("High water mark (max used) side-stack size: %u\n", totalMaxSize);
+  printf("High water mark (max used) side-stack size: %zu\n", totalMaxSize);
   return Values(_Nil<core::T_O>());
 };
 };

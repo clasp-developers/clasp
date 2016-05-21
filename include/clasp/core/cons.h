@@ -88,7 +88,7 @@ T_sp oNinth(T_sp o);
 T_sp oTenth(T_sp o);
 
 #define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Car)
-#define CONS_CAR(x) (gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr)
+#define CONS_CDR(x) (gctools::reinterpret_cast_smart_ptr<Cons_O>(x)->_Cdr)
 #define CAR(x) oCar(x)
 #define CDR(x) oCdr(x)
 #define CONSP(x) ((x).consp())

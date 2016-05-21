@@ -1424,7 +1424,7 @@ struct ExceptionSafeResetInvokedInternalDebugger {
 #define DOCS_af_stackSizeWarning "stackSizeWarning"
 void af_stackSizeWarning(size_t stackUsed) {
   if (!global_invokedInternalDebugger) {
-    printf("%s:%d Stack is getting full currently at %u bytes - warning at %u bytes\n",
+    printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes\n",
            __FILE__, __LINE__,
            stackUsed, _lisp->_StackWarnSize);
     ExceptionSafeResetInvokedInternalDebugger safe;

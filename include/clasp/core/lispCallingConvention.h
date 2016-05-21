@@ -299,19 +299,19 @@ extern "C" {
 inline bool dump_VaList_S_ptr(VaList_S* args) {
   printf("va_list dump\n");
   bool atHead = ((*args)._Args[0].gp_offset==0x18);
-  printf("           gp_offset = %p (%s)\n", (*args)._Args[0].gp_offset,  atHead ? "at head" : "NOT at head" );
-  printf("           fp_offset = %p\n", (*args)._Args[0].fp_offset );
-  printf("       reg_save_area = %p\n", (*args)._Args[0].reg_save_area );
+  printf("           gp_offset = %p (%s)\n", reinterpret_cast<void*>((*args)._Args[0].gp_offset),  atHead ? "at head" : "NOT at head" );
+  printf("           fp_offset = %p\n", reinterpret_cast<void*>((*args)._Args[0].fp_offset) );
+  printf("       reg_save_area = %p\n", reinterpret_cast<void*>((*args)._Args[0].reg_save_area) );
   void* overflow_arg_area = (*args)._Args[0].overflow_arg_area;
   void* overflow_save = ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER];
   printf("   overflow_arg_area = %p (%s)\n", overflow_arg_area, (overflow_arg_area==overflow_save) ? "at OVERFLOW_SAVE" : "NOT at OVERFLOW_SAVE" );
   printf("---Register save area@%p (NOTE: Often in other stack frame)\n", (*args)._Args[0].reg_save_area);
-  printf("       CLOSURE_REGISTER@%p = %p\n", LCC_CLOSURE_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
-  printf(" OVERFLOW_SAVE_REGISTER@%p = %p\n", LCC_OVERFLOW_SAVE_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] );
-  printf("         NARGS_REGISTER@%p = %d\n", LCC_NARGS_REGISTER*8, ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER] );
-  printf("          ARG0_REGISTER@%p = %p\n", LCC_ARG0_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
-  printf("          ARG1_REGISTER@%p = %p\n", LCC_ARG1_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
-  printf("          ARG2_REGISTER@%p = %p\n", LCC_ARG2_REGISTER*8, ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
+  printf("       CLOSURE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_CLOSURE_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_CLOSURE_REGISTER] );
+  printf(" OVERFLOW_SAVE_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_OVERFLOW_SAVE_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_OVERFLOW_SAVE_REGISTER] );
+  printf("         NARGS_REGISTER@%p = %zu\n", reinterpret_cast<void*>(LCC_NARGS_REGISTER*8),reinterpret_cast<size_t>(((core::T_O* *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER]) );
+  printf("          ARG0_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG0_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG0_REGISTER] );
+  printf("          ARG1_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG1_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG1_REGISTER] );
+  printf("          ARG2_REGISTER@%p = %p\n", reinterpret_cast<void*>(LCC_ARG2_REGISTER*8), ((core::T_O* *)(*args)._Args->reg_save_area)[LCC_ARG2_REGISTER] );
   int nargs = ((uintptr_t *)(*args)._Args->reg_save_area)[LCC_NARGS_REGISTER];
   nargs -= 3;
   if (nargs > 0 ) {

@@ -530,6 +530,8 @@ CL_DEFUN core::T_sp make_info_function(core::T_sp environment, Info_sp defining_
   } else if ( SpecialOperatorInfo_sp soi = defining_info.asOrNull<SpecialOperatorInfo_O>() ) {
     return soi;
   }
+//  SIMPLE_ERROR(BF("What do we do now?"));
+  return _Nil<core::T_O>();
 }
 
 core::T_sp function_info(core::T_sp environment, core::T_sp form)
@@ -540,6 +542,8 @@ core::T_sp function_info(core::T_sp environment, core::T_sp form)
   } else {
     return make_info_function(environment,defining_info);
   }
+//  SIMPLE_ERROR(BF("What do we do now?"));
+  return _Nil<core::T_O>();
 }
 
 core::T_sp block_info_impl(core::T_sp environment, core::T_sp symbol, bool& crossesFunction)
@@ -625,6 +629,7 @@ CL_DEFUN core::T_sp quality_value(core::T_sp environment, core::T_sp name)
   } else if ( Entry_sp ee = environment.asOrNull<Entry_O>() ) {
     return quality_value(ee->_Next,name);
   }
+  SIMPLE_ERROR(BF("What do we do if we get here?"));
 }
 
 CL_DEFUN core::T_sp optimize_info(core::T_sp environment)

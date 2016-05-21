@@ -493,6 +493,7 @@ CL_DECLARE();
 CL_DOCSTRING("deepCopy");
 CL_DEFUN T_sp core__deep_copy(T_sp obj) {
   if ( obj.generalp() ) return obj.unsafe_general()->deepCopy();
+  SIMPLE_ERROR(BF("Cannot do deep copy of obj"));
 }
 
 Class_sp instance_class(T_sp obj)
