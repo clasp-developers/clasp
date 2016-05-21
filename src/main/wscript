@@ -1,0 +1,9 @@
+def build(bld):
+    loc = bld.path.relpath()
+    def full_name(name):
+        return loc + '/' + name
+    for name in [ 'main' ]:
+        print( "name = ", full_name(name) )
+        bld.program(source=name+'.cc', target=full_name(name),use=[])
+
+        

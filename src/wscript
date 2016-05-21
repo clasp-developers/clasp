@@ -1,0 +1,3 @@
+
+def build(bld):
+    bld.recurse('gctools core cffi llvmo asttooling main')

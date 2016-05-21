@@ -203,9 +203,7 @@ boehm-all:
 mps-from-boehm:
 	make -C src/main mps-release-cxx
 	make executable-symlinks
-	clasp_mps_o -I -f ecl-min -e "(link-min)" -e "(quit)"
-	clasp_mps_o -f ecl-min -e "(link-bclasp)" -e "(quit)"
-	clasp_mps_o -f bclasp -e "(link-cclasp)" -e "(quit)"
+	clasp_mps_o -I -f ecl-min -e "(progn (link-min)(link-bclasp)(link-cclasp))" -e "(quit)"
 	make -C src/main link-cclasp-mps-addons
 
 

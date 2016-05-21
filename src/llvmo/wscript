@@ -1,0 +1,20 @@
+def build(bld):
+    loc = bld.path.relpath()
+    def full_name(name):
+        return loc + '/' + name
+
+    for name in [
+            'debugInfoExpose',
+            'debugLoc',
+            'llvmoDwarf',
+            'link_intrinsics',
+            'intrinsics',
+            'insertPoint',
+            'irtests',
+            'llvmoExpose',
+            'llvmoPackage',
+            'clbindLlvmExpose'
+    ]:
+        bld(features='cxx', source=name+'.cc', target=full_name(name))
+
+        

@@ -1,0 +1,21 @@
+def build(bld):
+    loc = bld.path.relpath()
+    def full_name(name):
+        return loc + '/' + name
+
+    for name in [
+            'adapter',
+            'class_rep',
+            'open',
+            'class_registry',
+            'link_compatibility',
+            'scope',
+            'inheritance',
+            'clbind',
+            'clbindPackage',
+            'class',
+            'derivable_class'
+    ]:
+        bld(features='cxx', source=name+'.cc', target=full_name(name))
+
+        

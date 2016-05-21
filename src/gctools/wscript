@@ -1,0 +1,22 @@
+def build(bld):
+    loc = bld.path.relpath()
+    def full_name(name):
+        return loc + '/' + name
+
+
+#    bld(features='c', source='gc_core.c', target=full_name('gc_core'))
+    for name in [
+            'gc_interface',
+            'gc_boot',
+            'gcFunctions',
+            'gctoolsPackage',
+            'globals',
+            'gcStack',
+            'telemetry',
+            'gcalloc',
+            'gcweak',
+            'memoryManagement']:
+        print( "name = ", full_name(name) )
+        bld(features='cxx', source=name+'.cc', target=full_name(name),use=[])
+
+        
