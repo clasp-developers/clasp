@@ -1,5 +1,5 @@
 top = '.'
-out = 'build'
+out = 'wbuild'
 APPNAME = 'clasp'
 VERSION = '0.0'
 
