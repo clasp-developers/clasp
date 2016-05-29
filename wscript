@@ -69,7 +69,8 @@ def build(bld):
 
 # Have all 'cxx' targets have 'include' in their include paths.
 from waflib import TaskGen
-@TaskGen.taskgen_method
 @TaskGen.feature('cxx')
-def add_include(self):
-    self.use = self.to_list(getattr(self, 'use', [])) + ['include']
+@TaskGen.after('process_source')
+def preprocess(self):
+    print("------------------------------------------------------------")
+    print("task: %s" % self.tasks)
