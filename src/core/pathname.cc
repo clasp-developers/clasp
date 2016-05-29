@@ -202,7 +202,7 @@ translate_list_case(List_sp list, T_sp fromcase, T_sp tocase) {
   /* If the argument is really a list, translate all strings in it and
 	 * return this new list, else assume it is a string and translate it.
 	 */
-  if (!cl__consp(list)) {
+  if (!(list).consp()) {
     return translate_component_case(list, fromcase, tocase);
   } else {
     list = cl__copy_list(list);
@@ -456,7 +456,7 @@ Pathname_sp Pathname_O::tilde_expand(Pathname_sp pathname) {
     return pathname;
   }
   directory = pathname->_Directory;
-  if (!cl__consp(directory) || cons_car(directory) != kw::_sym_relative || cons_car(directory).nilp()) {
+  if (!(directory).consp() || cons_car(directory) != kw::_sym_relative || cons_car(directory).nilp()) {
     return pathname;
   }
   head = oCadr(directory);
@@ -689,7 +689,7 @@ clasp_parseNamestring(T_sp s, size_t start, size_t end, size_t *ep,
   logical = true;
   device = kw::_sym_unspecific;
   path = parse_directories(s, WORD_LOGICAL, *ep, end, ep);
-  if (cl__consp(path)) {
+  if ((path).consp()) {
     if (cons_car(path) != kw::_sym_relative &&
         cons_car(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_absolute, path);
@@ -791,7 +791,7 @@ maybe_parse_host:
     device = _Nil<T_O>();
 done_device_and_host:
   path = parse_directories(s, 0, *ep, end, ep);
-  if (cl__consp(path)) {
+  if ((path).consp()) {
     if (cons_car(path) != kw::_sym_relative &&
         cons_car(path) != kw::_sym_absolute)
       path = Cons_O::create(kw::_sym_relative, path);
@@ -1850,7 +1850,7 @@ copy_list_wildcards(T_sp *wilds, T_sp to) {
         return kw::_sym_error;
       else {
         T_sp dirlist = CAR(list);
-        if (cl__consp(dirlist))
+        if ((dirlist).consp())
           l = Cons_O::append(CAR(list), l);
         else if (!(oCar(list).nilp()))
           return kw::_sym_error;
@@ -1864,7 +1864,7 @@ copy_list_wildcards(T_sp *wilds, T_sp to) {
     }
     to = CDR(to);
   }
-  if (cl__consp(l))
+  if ((l).consp())
     l = cl__nreverse(l);
   return l;
 }

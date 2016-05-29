@@ -19,7 +19,9 @@ extern "C" {
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/standardClass.h>
+#include <clasp/core/evaluator.h>
 #include <clasp/core/activationFrame.h>
+#include <clasp/core/hashTableEq.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
@@ -513,7 +515,11 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
   printf("Done walk of memory  %lu ClassKinds\n", static_ReachableClassKinds->size());
+#if USE_CXX_DYNAMIC_CAST
+  printf("%s live memory total size = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
+#else
   printf("%s invalidHeaderTotalSize = %12lu\n", smsg.c_str(), invalidHeaderTotalSize);
+#endif
   printf("%s memory usage (bytes):    %12lu\n", smsg.c_str(), totalSize);
   printf("%s GC_get_heap_size()       %12lu\n", smsg.c_str(), GC_get_heap_size());
   printf("%s GC_get_free_bytes()      %12lu\n", smsg.c_str(), GC_get_free_bytes());
@@ -532,12 +538,84 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
 };
 };
 
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+namespace gctools {
+
+void common_function_call_counter(core::General_O* obj, size_t size, void* hash_table_raw) {
+  core::HashTableEq_O* hash_table = reinterpret_cast<core::HashTableEq_O*>(hash_table_raw);
+  core::T_sp gen = obj->asSmartPtr();
+  if (core::Function_sp func = gen.asOrNull<core::Function_O>() ) {
+    hash_table->setf_gethash(gen,core::clasp_make_fixnum(func->_TimesCalled));
+  }
+}
+
+#ifdef USE_MPS
+void amc_apply_function_call_counter(mps_addr_t client, void* hash_table_raw, size_t s)
+{
+  common_function_call_counter(reinterpret_cast<core::General_O*>(client),s,hash_table_raw);
+}
+#endif
+#ifdef USE_BOEHM
+void boehm_callback_function_call_counter(void* header, size_t size, void* hash_table_raw)
+{
+  common_function_call_counter(BasePtrToMostDerivedPtr<core::General_O>(header),
+                               size, hash_table_raw);
+};
+#endif
+
+CL_LAMBDA(func);
+CL_DECLARE();
+CL_DOCSTRING("function-call-count-profiler - Evaluate a function, count every function call made during the evaluation.");
+CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
+  core::HashTable_sp func_counters_start = core::HashTableEq_O::create_default();
+  core::HashTable_sp func_counters_end = core::HashTableEq_O::create_default();
+#ifdef USE_MPS
+  mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
+#endif
+#ifdef USE_BOEHM
+  GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
+#endif
+  core::eval::funcall(func);
+#ifdef USE_MPS
+  mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
+#endif
+#ifdef USE_BOEHM
+  GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
+#endif
+  func_counters_start->mapHash([func_counters_end](core::T_sp f, core::T_sp start_value) {
+      core::T_sp end_value = func_counters_end->gethash(f);
+      ASSERT(start_value.fixnump() && end_value.fixnump());
+      Fixnum diff = end_value.unsafe_fixnum() - start_value.unsafe_fixnum();
+      func_counters_end->setf_gethash(f,core::clasp_make_fixnum(diff));
+    } );
+
+  core::List_sp results = _Nil<core::T_O>();
+  func_counters_end->mapHash([func_counters_end,&results](core::T_sp f, core::T_sp value) {
+      ASSERT(value.fixnump());
+      Fixnum diff = value.unsafe_fixnum();
+      if ( diff > 0 ) {
+        results = core::Cons_O::create(core::Cons_O::create(core::clasp_make_fixnum(diff),f),results);
+      }
+    });
+  printf("%s:%d There are %d results\n", __FILE__, __LINE__, core::cl__length(results));
+  results = core::cl__sort(results,cl::_sym__LT_,cl::_sym_car);
+  for ( auto cur : results ) {
+    core::T_sp one = oCar(cur);
+    core::T_sp count = oCar(one);
+    core::T_sp func = oCdr(one);
+    if ( count.unsafe_fixnum() > 0) {
+      core::write_bf_stream(BF("%d : %s\n") % count.unsafe_fixnum() % _rep_(func));
+    }
+  }
+};
+};
+#endif // DEBUG_FUNCTION_CALL_COUNTER
+
 extern "C" {
 void dbg_room() {
   cl__room(_Nil<core::T_O>(), core::make_fixnum(0), _Nil<core::T_O>());
 }
 }
-
 namespace gctools {
 
 #ifdef USE_MPS
@@ -692,6 +770,13 @@ bool debugging_configuration(stringstream& ss) {
   debugging = true;
 #endif
   ss << (BF("DEBUG_VALIDATE_GUARD = %s\n") % (debug_validate_guard ? "defined" : "undefined") ).str();
+
+  bool debug_function_call_counter = false;
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+  debug_function_call_counter = true;
+  debugging = true;
+#endif
+  ss << (BF("DEBUG_FUNCTION_CALL_COUNTER = %s\n") % (debug_function_call_counter ? "defined" : "undefined") ).str();
 
   return debugging;
 }

@@ -1908,25 +1908,34 @@ CL_DEFUN List_sp core__sorted(List_sp unsorted) {
   return asCons(sorted);
 }
 
+/*! I should probably get the key for each element first and then sort */
 class OrderBySortFunction {
 private:
-  Function_sp _SortFunction;
+  T_sp _SortFunction;
+  T_sp _KeyFunction;
   Cons_sp _args;
 
 public:
-  OrderBySortFunction(Function_sp proc) {
+  OrderBySortFunction(Function_sp proc, Function_sp key) {
     this->_SortFunction = proc;
+    this->_KeyFunction = key;
     this->_args = Cons_O::createList(_Nil<T_O>(), _Nil<T_O>());
   }
   bool operator()(T_sp x, T_sp y) {
-    return T_sp(eval::funcall(this->_SortFunction, x, y)).isTrue();
+    if ( this->_KeyFunction.nilp() ) {
+      return T_sp(eval::funcall(this->_SortFunction, x, y)).isTrue();
+    } else {
+      T_sp kx = eval::funcall(this->_KeyFunction,x);
+      T_sp ky = eval::funcall(this->_KeyFunction,y);
+      return T_sp(eval::funcall(this->_SortFunction, kx, ky)).isTrue();
+    }
   }
 };
 
-CL_LAMBDA(sequence predicate);
+CL_LAMBDA(sequence predicate &key key);
 CL_DECLARE();
 CL_DOCSTRING("Like CLHS: sort but does not support key");
-CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate) {
+CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   gctools::Vec0<T_sp> sorted;
   Function_sp sortProc = coerce::functionDesignator(predicate);
   LOG(BF("Unsorted data: %s") % _rep_(sequence));
@@ -1934,7 +1943,7 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate) {
     return _Nil<T_O>();
   fillVec0FromCons(sorted, sequence);
   LOG(BF("Sort function: %s") % _rep_(sortProc));
-  OrderBySortFunction orderer(sortProc);
+  OrderBySortFunction orderer(sortProc,key);
   sort::quickSort(sorted.begin(), sorted.end(), orderer);
   List_sp result = asCons(sorted);
   return result;

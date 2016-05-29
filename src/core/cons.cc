@@ -230,7 +230,7 @@ void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
     /* (APPEND '(1 . 2) 3) */
     TYPE_ERROR_PROPER_LIST(head);
   }
-  while (cl__consp(l)) {
+  while ((l).consp()) {
     Cons_sp cons = Cons_O::create(cons_car(l));
     *tailP = cons;
     tailP = &(cons->_Cdr);
@@ -246,7 +246,7 @@ void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &t
     /* (APPEND '(1 . 2) 3) */
     TYPE_ERROR_PROPER_LIST(head);
   }
-  while (cl__consp(l)) {
+  while ((l).consp()) {
     Cons_sp cons = Cons_O::create(cons_car(l));
     tail.setPointee(cons);
     tail.setPointer(&(cons->_Cdr)); // = &cons->_Cdr;
@@ -512,7 +512,7 @@ void Cons_O::archiveBase(ArchiveP node) {
     T_sp cur = this->asSmartPtr();
     // TODO: Fix this loop - it will go into an infinite loop
     for (; cur.notnilp(); cur = oCdr(cur)) {
-      if (cl__consp(cur)) {
+      if ((cur).consp()) {
         T_sp obj = oCar(cur);
         node->pushVector(obj); // A Cons - push the car
       } else {
@@ -737,18 +737,18 @@ List_sp Cons_O::last(int n) const {
   ASSERT(n >= 0);
   List_sp l = this->asSmartPtr();
   T_sp r = l;
-  for (r = l; n && cl__consp(r); --n, r = oCdr(r))
+  for (r = l; n && (r).consp(); --n, r = oCdr(r))
     ;
   if (r == l) {
     if (!cl__listp(r)) {
       SIMPLE_ERROR(BF("Type not list"));
     }
-    while (cl__consp(r)) {
+    while ((r).consp()) {
       r = oCdr(r);
     }
     return ((r));
   } else if (n == 0) {
-    while (cl__consp(r)) {
+    while ((r).consp()) {
       r = oCdr(r);
       l = oCdr(l);
     }
@@ -913,7 +913,7 @@ string Cons_O::__repr__() const {
   T_sp cdr = start;
   stringstream sout;
   if (oCar(start) == cl::_sym_quote) {
-    if (cl__consp(oCdr(start))) {
+    if ((oCdr(start)).consp()) {
       sout << "'" << _rep_(oCadr(start)) << " ";
     } else {
       sout << "QUOTE ." << _rep_(oCdr(start)) << " ";
@@ -922,7 +922,7 @@ string Cons_O::__repr__() const {
   }
   sout << "(";
   while (cdr.notnilp()) {
-    if (cl__consp(cdr)) {
+    if ((cdr).consp()) {
       Cons_sp p = gc::As<Cons_sp>(cdr);
       T_sp po = p->_Car;
       sout << _rep_(po) << " ";

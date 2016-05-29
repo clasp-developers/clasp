@@ -701,7 +701,7 @@ void dump_one_entry(HashTable_sp ht, size_t it, stringstream &ss, List_sp first)
     if (hi != it)
       ss << "!!!ERROR-wrong bucket!!! hi=" << hi;
     ss << "hashIndex(key)=" << ht->hashIndex(key) << " ";
-    if (cl__consp(key)) {
+    if ((key).consp()) {
       List_sp ckey = key;
       ss << "(cons " << oCar(ckey).raw_() << " . " << oCdr(ckey).raw_() << ")";
     } else {

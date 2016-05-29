@@ -13,10 +13,6 @@
    #:generate-code
    #:build-arguments-adjuster))
 
-;;; If we aren't using 
-;;; Load clang-tool after compile-file'ing it
-#-asdf
-(load (compile-file #P"sys:modules;clasp-analyzer;clasp-analyzer.lsp" :output-file (ensure-directories-exist (translate-logical-pathname (make-pathname :host "tmp" :defaults (compile-file-pathname #P"sys:modules;clasp-analyzer;clasp-analyzer.lsp"))))))
 (require :clang-tool)
 
 (in-package #:clasp-analyzer)

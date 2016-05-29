@@ -215,7 +215,7 @@ string Instance_O::__repr__() const {
       ss << "        :slot" << i << " ";
       if (obj) {
         stringstream sslot;
-        if (cl__consp(obj)) {
+        if ((obj).consp()) {
           sslot << "CONS...";
           ss << sslot.str() << std::endl;
         } else if (Instance_sp inst = obj.asOrNull<Instance_O>()) {

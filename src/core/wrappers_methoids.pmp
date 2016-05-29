@@ -40,6 +40,7 @@ $for isConst [[
         virtual size_t templatedSizeof() const { return sizeof(*this);};
         inline LCC_RETURN LISP_CALLING_CONVENTION()
         {   
+          INCREMENT_FUNCTION_CALL_COUNTER(this);
           INVOCATION_HISTORY_FRAME();
           $if numArgs>0 [[
             MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);

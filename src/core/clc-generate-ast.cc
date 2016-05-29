@@ -56,7 +56,7 @@ core::T_sp convert_constant(core::T_sp constant, core::T_sp environment)
 
 core::T_sp convert_cleavir(core::T_sp form, core::T_sp environment)
 {
-  if ( !core::cl__consp(form) && !core::cl__symbolp(form) ) {
+  if ( !(form).consp() && !core::cl__symbolp(form) ) {
     return convert_constant(form, environment );
   } else if ( core::cl__symbolp(form) && core::cl__constantp(form,_Nil<core::T_O>()) ) {
     return convert_constant(gc::As<core::Symbol_sp>(form)->symbolValue(), environment);

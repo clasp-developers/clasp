@@ -380,7 +380,7 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
 void make_str(stringstream &sout, List_sp cur_char, bool preserveCase = false) {
   while (cur_char.notnilp()) {
     T_sp obj = oCar(cur_char);
-    if (cl__consp(obj)) {
+    if ((obj).consp()) {
       make_str(sout, obj, preserveCase);
     } else if (cl__characterp(obj)) {
       if (preserveCase)
@@ -432,7 +432,7 @@ CL_DEFUN T_sp core__sharp_dot(T_sp sin, Character_sp ch, T_sp num) {
     }
     T_sp result = eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), object, _Nil<T_O>());
 #ifdef SOURCE_TRACKING
-    if (cl__consp(result)) {
+    if ((result).consp()) {
       lisp_registerSourcePosInfo(result, spi);
     }
 #endif

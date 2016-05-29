@@ -61,6 +61,7 @@ public:
   GetterMethoid(core::T_sp name, VariablePtrType p) : core::BuiltinClosure_O(name), _MemberPtr(p){};
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType &orig = (*objPtr).*(this->_MemberPtr);
@@ -84,6 +85,7 @@ public:
   GetterMethoid(core::T_sp name, VariablePtrType p) : BuiltinClosure_O(name), _MemberPtr(p){};
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType *ptr = (*objPtr).*(this->_MemberPtr);

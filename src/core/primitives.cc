@@ -107,7 +107,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lispImplementationType");
 CL_DEFUN T_sp cl__lisp_implementation_type() {
-  return Str_O::create("Clasp");
+  return Str_O::create(program_name());
 };
 
 CL_LAMBDA();
@@ -117,8 +117,10 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cleavir = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cclasp);
   if (cleavir.notnilp()) {
-    ss << "cclasp-";
+    ss << "c";
   }
+  ss << program_name();
+  ss << "-";
 #ifdef USE_MPS
   ss << "mps-";
 #endif
@@ -524,7 +526,7 @@ CL_DEFUN T_mv cl__values_list(List_sp list) {
 Symbol_sp functionBlockName(T_sp functionName) {
   if (cl__symbolp(functionName))
     return gc::As<Symbol_sp>(functionName);
-  if (cl__consp(functionName)) {
+  if ((functionName).consp()) {
     List_sp cfn = functionName;
     if (oCar(cfn) == cl::_sym_setf && cl__symbolp(oCadr(cfn)) & oCadr(cfn).notnilp()) {
       return gc::As<Symbol_sp>(oCadr(cfn));
@@ -575,7 +577,7 @@ CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
     if (cl__atom(element)) {
       firsts << element;
       seconds << _Nil<T_O>();
-    } else if (cl__consp(element)) {
+    } else if ((element).consp()) {
       List_sp pair = element;
       size_t pairlen = cl__length(pair);
       if (pairlen == 2 || pairlen == 1) {
@@ -787,7 +789,7 @@ CL_DEFUN bool cl__constantp(T_sp obj, T_sp env) {
   if (core__arrayp(obj))
     return true;
   // TODO add various kinds of array
-  if (cl__consp(obj) && oCar(obj) == cl::_sym_quote)
+  if ((obj).consp() && oCar(obj) == cl::_sym_quote)
     return true;
   if (obj.nilp())
     return true;
@@ -893,7 +895,7 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
     symbol->setf_symbolFunction(functor);
     return functor;
-  } else if (cl__consp(functionName)) {
+  } else if ((functionName).consp()) {
     SYMBOL_EXPORT_SC_(ClPkg, setf);
     List_sp cur = functionName;
     if (oCar(cur) == cl::_sym_setf) {
@@ -912,7 +914,7 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
   if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->symbolFunction();
-  } else if (cl__consp(functionName)) {
+  } else if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -934,7 +936,7 @@ CL_DEFUN bool cl__fboundp(T_sp functionName) {
   if (cl__symbolp(functionName)) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     return sym->fboundp();
-  } else if (cl__consp(functionName)) {
+  } else if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -953,7 +955,7 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
     Symbol_sp sym = gc::As<Symbol_sp>(functionName);
     sym->setf_symbolFunction(_Unbound<Function_O>());
     return (Values(sym));
-  } else if (cl__consp(functionName)) {
+  } else if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));

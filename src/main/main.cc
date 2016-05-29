@@ -59,6 +59,11 @@ THE SOFTWARE.
 #include <clasp/mpip/claspMpi.h>
 #endif
 
+std::string program_name()
+{
+  return "clasp";
+}
+
 int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize) {
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exitCode = 0;

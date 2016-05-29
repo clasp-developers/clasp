@@ -95,7 +95,7 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
     }
     return (Str_O::create(' ', dimension, initialContents));
   } else {
-    if (cl__consp(element_type)) {
+    if ((element_type).consp()) {
       // For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
       Cons_sp cet = gc::As<Cons_sp>(element_type);
       if (oCar(cet) == cl::_sym_UnsignedByte && initial_element.nilp()) {

@@ -61,13 +61,13 @@ exe clasp : main.cc $(sources)
 
 
 
-stripped-bitcode intrinsics_bitcode : /internals/llvmo//intrinsics.cc
+stripped-bitcode clasp-intrinsics : /internals/llvmo//intrinsics.cc
 	:
 	<cxxflags>"-flto -emit-llvm" ;
 
 linked-bitcode linked_clasp : $(sources) ;
 
-explicit intrinsics_bitcode ;
+explicit clasp-intrinsics ;
 
 #explicit linked_clasp ;
 
@@ -75,7 +75,7 @@ explicit intrinsics_bitcode ;
 import package ;
 
 package.install clasp_install :
-                : clasp intrinsics_bitcode
+                : clasp clasp-intrinsics
                 : /externals//boostAndExpatLibs
                 : 
                 ;

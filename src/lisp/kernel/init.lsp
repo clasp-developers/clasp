@@ -387,7 +387,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                    ((member :release-build *features*) "release")
                    ((member :debug-build *features*) "debug")
                    (t (error "Unknown build type")))))
-    (bformat nil "app-contents:execs;%s;%s;bin;intrinsics_bitcode.sbc" (build-configuration) variant)))
+    (bformat nil "app-contents:execs;%s;%s;bin;%s-intrinsics.sbc" (build-configuration) variant (lisp-implementation-type))))
 
 
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
@@ -1174,17 +1174,17 @@ Return files."
 ;;  Setup the build system for ASDF
 ;;
 ;;
-(defun setup-asdf () (load "kernel;asdf;build;asdf.lsp"))
-(export 'setup-asdf)
 
-(defun compile-asdf ()
-  ;; Run make on asdf wherever it is installed
-;  (core:system (bformat nil "(cd %s; make)" (namestring (translate-logical-pathname "kernel;asdf;"))))
-  (compile-file "kernel;asdf;build;asdf.lisp" :output-file (compile-file-pathname "modules;asdf;asdf.fasl"
-										      :target-backend (default-target-backend)))
-  #+(or)(cmp:llvm-link "kernel;asdf;build;asdf.fasl"
-			      :lisp-bitcode-files (list #P"kernel/asdf/build/asdf.bc")))
+(defun compile-addons ()
+  ;; Build serve-event and asdf
+  (core:compile-kernel-file #P"modules/serve-event/serve-event" :force-recompile t)
+  (core:compile-kernel-file #P"modules/asdf/build/asdf" :force-recompile t))
 
+(defun link-addons ()
+  (cmp:llvm-link (core:build-pathname #P"modules/serve-event/serve-event" :fasl)
+                 :lisp-bitcode-files (list (core:build-pathname #P"modules/serve-event/serve-event" :bc)))
+  (cmp:llvm-link (core:build-pathname #P"modules/asdf/asdf" :fasl)
+                 :lisp-bitcode-files (list (core:build-pathname #P"modules/asdf/build/asdf" :bc))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

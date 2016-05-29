@@ -356,7 +356,7 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
     ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
     for (auto cur : declareSpecifierList) {
       T_sp entry = oCar(cur);
-      if (cl__consp(entry) && oCar(entry) == cl::_sym_special) {
+      if ((entry).consp() && oCar(entry) == cl::_sym_special) {
         for (auto spcur : coerce_to_list(oCdr(entry))) {
           specials->insert(gc::As<Symbol_sp>(oCar(spcur)));
         }
@@ -395,7 +395,7 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
         saw_amp = true;
         break;
       }
-    } else if (cl__consp(arg)) {
+    } else if ((arg).consp()) {
       List_sp carg = arg;
       if (cl__length(carg) != 2) {
         SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
@@ -913,7 +913,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp sarg = _Nil<T_O>();
       T_sp defaultValue = _Nil<T_O>();
       T_sp supplied = _Nil<T_O>();
-      if (cl__consp(oarg)) {
+      if ((oarg).consp()) {
         List_sp carg = oarg;
         LOG(BF("Optional argument is a Cons: %s") % carg->__repr__());
         sarg = oCar(carg);
@@ -964,10 +964,10 @@ bool parse_lambda_list(List_sp original_lambda_list,
       if (cl__symbolp(oarg)) {
         localTarget = oarg;
         keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
-      } else if (cl__consp(oarg)) {
+      } else if ((oarg).consp()) {
         List_sp carg = oarg;
         T_sp head = oCar(carg);
-        if (cl__consp(head)) {
+        if ((head).consp()) {
           List_sp namePart = head;
           keySymbol = gc::As<Symbol_sp>(oCar(namePart)); // This is the keyword name
           if (!keySymbol->isKeywordSymbol()) {
@@ -1002,7 +1002,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case aux: {
       T_sp localSymbol = _Nil<T_O>();
       T_sp expression = _Nil<T_O>();
-      if (cl__consp(oarg)) {
+      if ((oarg).consp()) {
         List_sp carg = oarg;
         localSymbol = gc::As<Symbol_sp>(oCar(carg));
         //
@@ -1020,7 +1020,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
   NEXT:
     T_sp ocur = oCdr(cur);
-    if (ocur.nilp() || cl__consp(ocur)) {
+    if (ocur.nilp() || (ocur).consp()) {
       // Advance to next element of the list
       cur = ocur;
       continue;
@@ -1145,7 +1145,7 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
     classifier.classifyTarget(req);
   }
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-  ASSERTF(this->_ClassifiedSymbolList.nilp() || cl__consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+  ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }
@@ -1167,7 +1167,7 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   if (this->_CreatesBindings) {
     this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl__consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+    ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   } else {
     this->_ClassifiedSymbolList = _Nil<T_O>();
   }

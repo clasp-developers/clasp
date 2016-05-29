@@ -497,6 +497,9 @@ struct registered_class<T const>
 
 #define BF boost::format
 
+/*! This function is provided by the main.cc file */
+std::string program_name();
+
 namespace core {
 extern int global_signalTrap;
 extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!

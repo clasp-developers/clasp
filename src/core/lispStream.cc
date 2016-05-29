@@ -2868,7 +2868,7 @@ io_file_get_position(T_sp strm) {
     /* If there are unread octets, we return the position at which
              * these bytes begin! */
     T_sp l = StreamByteStack(strm);
-    while (cl__consp(l)) {
+    while ((l).consp()) {
       output = clasp_one_minus(output);
       l = oCdr(l);
     }
@@ -3067,7 +3067,7 @@ parse_external_format(T_sp stream, T_sp format, int flags) {
   if (format == kw::_sym_default) {
     format = ext::_sym_STARdefault_external_formatSTAR->symbolValue();
   }
-  if (cl__consp(format)) {
+  if ((format).consp()) {
     flags = parse_external_format(stream, oCdr(format), flags);
     format = oCar(format);
   }
@@ -3233,7 +3233,7 @@ set_stream_elt_type(T_sp stream, gctools::Fixnum byte_size, int flags,
     FileStreamEltType(stream) = cl::_sym_character;
     byte_size = 8;
     StreamFormat(stream) = StreamFormat(stream) _table;
-    if (cl__consp(StreamFormat(stream))) {
+    if ((StreamFormat(stream)).consp()) {
       stream->stream.encoder = user_multistate_encoder;
       StreamDecoder(stream) = user_multistate_decoder;
     } else {
@@ -3521,7 +3521,7 @@ io_stream_get_position(T_sp strm) {
     /* If there are unread octets, we return the position at which
              * these bytes begin! */
     T_sp l = StreamByteStack(strm);
-    while (cl__consp(l)) {
+    while ((l).consp()) {
       output = clasp_one_minus(output);
       l = oCdr(l);
     }
@@ -5026,7 +5026,7 @@ clasp_normalize_stream_element_type(T_sp element_type) {
   } else {
     FEerror("Not a valid stream element type: ~A", 1, element_type.raw_());
   }
-  if (cl__consp(element_type)) {
+  if ((element_type).consp()) {
     if (oCar(element_type) == cl::_sym_UnsignedByte)
       return clasp_toSize(oCadr(element_type));
     if (oCar(element_type) == cl::_sym_SignedByte)

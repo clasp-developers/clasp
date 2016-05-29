@@ -166,7 +166,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
       filename = _Nil<T_O>();
     } else {
       function = _Nil<T_O>();
-      if (cl__consp(hooks)) {
+      if ((hooks).consp()) {
         function = oCdr(gc::As<Cons_sp>(hooks)->assoc(pathname->_Type,
                                                       _Nil<T_O>(),
                                                       cl::_sym_string_EQ_,

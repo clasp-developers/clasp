@@ -133,6 +133,13 @@ project clasp : requirements
 ### DEBUG_DRAG - if defined then debugging code is compiled in that slows down execution
 ###      Once everything is working then all DEBUG_DRAG sections can be removed.
          <define>DEBUG_DRAG
+
+### DEBUG_FUNCTION_CALL_COUNTER - if defined then debugging code is compiled
+### that in that slows down execution
+###      Once everything is working then all DEBUG_DRAG sections can be removed.
+         <define>DEBUG_FUNCTION_CALL_COUNTER
+
+
          
 ### Print a message for every allocation - this can be turned on and off with (gctools:gc-monitor-allocations t/nil)
 #    <define>GC_MONITOR_ALLOCATIONS

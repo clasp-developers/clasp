@@ -57,6 +57,12 @@ CL_DEFUN Integer_sp core__interpreted_closure_calls() {
   return Integer_O::create((Fixnum)global_interpreted_closure_calls);
 }
 
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+CL_DEFUN size_t core__function_call_counter(Function_sp f)
+{
+  return f->_TimesCalled;
+}
+#endif
 
 string Function_O::__repr__() const {
   T_sp name = this->name();
@@ -222,6 +228,7 @@ void BuiltinClosure_O::setf_lambda_list(List_sp lambda_list) {
 }
 
 LCC_RETURN BuiltinClosure_O::LISP_CALLING_CONVENTION() {
+  INCREMENT_FUNCTION_CALL_COUNTER(this);
   IMPLEMENT_MEF(BF("Handle call to BuiltinClosure"));
 };
 
@@ -238,6 +245,7 @@ void InterpretedClosure_O::setf_lambda_list(List_sp lambda_list) {
 }
 
 LCC_RETURN InterpretedClosure_O::LISP_CALLING_CONVENTION() {
+  INCREMENT_FUNCTION_CALL_COUNTER(this);
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
   ++global_interpreted_closure_calls;
   ValueEnvironment_sp newValueEnvironment = ValueEnvironment_O::createForLambdaListHandler(this->_lambdaListHandler, this->_closedEnvironment);
@@ -272,6 +280,7 @@ void CompiledClosure_O::setf_lambda_list(core::List_sp lambda_list) {
 
 #if 0
 LCC_RETURN InstanceClosure_O::LISP_CALLING_CONVENTION() {
+  INCREMENT_FUNCTION_CALL_COUNTER(this);
   ASSERT_LCC_VA_LIST_CLOSURE_DEFINED();
 // Copy the arguments passed in registers into the multiple_values array and those
 // will be processed by the generic function

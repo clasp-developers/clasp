@@ -35,6 +35,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -144,6 +145,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -248,6 +250,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -348,6 +351,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -443,6 +447,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -534,6 +539,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -621,6 +627,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -704,6 +711,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -783,6 +791,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -858,6 +867,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -928,6 +938,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -994,6 +1005,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -1056,6 +1068,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -1114,6 +1127,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -1168,6 +1182,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -1218,6 +1233,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
@@ -1269,6 +1285,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -1377,6 +1394,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -1480,6 +1498,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -1579,6 +1598,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -1674,6 +1694,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -1765,6 +1786,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -1852,6 +1874,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -1935,6 +1958,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -2014,6 +2038,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -2088,6 +2113,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -2158,6 +2184,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -2224,6 +2251,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -2286,6 +2314,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -2344,6 +2373,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -2398,6 +2428,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -2448,6 +2479,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
@@ -2499,6 +2531,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -2610,6 +2643,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -2714,6 +2748,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -2814,6 +2849,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -2909,6 +2945,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -3000,6 +3037,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -3087,6 +3125,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -3170,6 +3209,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -3249,6 +3289,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -3324,6 +3365,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -3394,6 +3436,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -3460,6 +3503,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -3522,6 +3566,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -3580,6 +3625,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -3634,6 +3680,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -3684,6 +3731,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
@@ -3735,6 +3783,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
@@ -3845,6 +3894,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
@@ -3948,6 +3998,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
@@ -4047,6 +4098,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
@@ -4142,6 +4194,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
@@ -4233,6 +4286,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
@@ -4320,6 +4374,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
@@ -4403,6 +4458,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
@@ -4482,6 +4538,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
@@ -4556,6 +4613,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
@@ -4626,6 +4684,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
@@ -4692,6 +4751,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
@@ -4754,6 +4814,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
@@ -4812,6 +4873,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
@@ -4866,6 +4928,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
@@ -4916,6 +4979,7 @@ DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);

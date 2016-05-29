@@ -28,6 +28,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -109,6 +110,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -183,6 +185,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -251,6 +254,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -313,6 +317,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -369,6 +374,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -419,6 +425,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -463,6 +470,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -502,6 +510,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -581,6 +590,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -654,6 +664,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -721,6 +732,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -782,6 +794,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -837,6 +850,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -886,6 +900,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
@@ -929,6 +944,7 @@ DISABLE_NEW();
 
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);

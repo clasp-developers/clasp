@@ -57,7 +57,7 @@ public:
   Symbol_sp symbol() const;
   inline bool _lambdaListHandlerP() const { return core__lambda_list_handler_p(this->_ArgTarget); };
   LambdaListHandler_sp lambdaListHandler() const;
-  inline bool _lambdaListP() const { return cl__consp(this->_ArgTarget); };
+  inline bool _lambdaListP() const { return this->_ArgTarget.consp(); };
   List_sp lambda_list() const;
   inline bool targetIsLexical() const { return this->_ArgTargetFrameIndex != SPECIAL_TARGET; }
   virtual string asString() const;

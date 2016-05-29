@@ -61,6 +61,7 @@ public:
 public:
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     if (lcc_nargs != 1)
       core::wrongNumberOfArguments(lcc_nargs, 1);

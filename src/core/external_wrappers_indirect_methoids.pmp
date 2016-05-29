@@ -44,6 +44,7 @@ $for isConst [[
         virtual size_t templatedSizeof() const { return sizeof(*this); };
         inline LCC_RETURN LISP_CALLING_CONVENTION()
         {
+          INCREMENT_FUNCTION_CALL_COUNTER(this);
           INVOCATION_HISTORY_FRAME();
           //int countPureOutValues = CountPureOutValues<Pols>::value;
           //if ( lcc_nargs != $numArgs ) core::wrongNumberOfArguments(lcc_nargs,$numArgs);

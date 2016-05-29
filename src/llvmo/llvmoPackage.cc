@@ -209,7 +209,7 @@ void dump_funcs(core::Function_sp compiledFunction) {
   if (funcs.notnilp()) {
     string outstr;
     llvm::raw_string_ostream sout(outstr);
-    if (cl__consp(funcs)) {
+    if ((funcs).consp()) {
       core::List_sp cfuncs = funcs;
       for (auto cur : cfuncs) {
         core::T_sp func = oCar(cur);
@@ -236,7 +236,7 @@ CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
   if (auto cl = compiledFunction.asOrNull<core::CompiledClosure_O>()) {
     core::T_sp funcs = cl->associatedFunctions();
-    if (cl__consp(funcs)) {
+    if ((funcs).consp()) {
       core::List_sp cfuncs = funcs;
       for (auto cur : cfuncs) {
         core::T_sp func = oCar(cur);

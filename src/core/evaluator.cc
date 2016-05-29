@@ -320,9 +320,9 @@ CL_DEFUN T_sp core__extract_lambda_name(List_sp lambdaExpression, T_sp defaultVa
   if (name.notnilp())
     return name;
   // Next check if there is a (lambda (...) (block XXX ...))
-  if (cl__consp(form) && cl__length(form) == 1) {
+  if ((form).consp() && cl__length(form) == 1) {
     T_sp first = oCar(form);
-    if (cl__consp(first)) {
+    if ((first).consp()) {
       if (oCar(first) == cl::_sym_block) {
         T_sp second = oCadr(first);
         Symbol_sp name = gc::As<Symbol_sp>(oCadr(first));
@@ -562,7 +562,7 @@ T_mv interpreter_case(List_sp args, T_sp environment) {
   LOG(BF("Evaluated test_key = %s\n") % _rep_(test_key));
   for (auto cur : clauses) {
     T_sp oclause = oCar(cur);
-    if (cl__consp(oclause)) {
+    if ((oclause).consp()) {
       List_sp clause = oclause;
       T_sp keys = oCar(clause);
       List_sp forms = oCdr(clause);
@@ -918,7 +918,7 @@ T_mv sp_tagbody(List_sp args, T_sp env) {
   List_sp ip = args;
   while (ip.notnilp()) {
     T_sp tagOrForm = oCar(ip);
-    if (cl__consp(tagOrForm)) {
+    if ((tagOrForm).consp()) {
       try {
         eval::evaluate(tagOrForm, tagbodyEnv);
       } catch (LexicalGo &go) {
@@ -1338,7 +1338,7 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   LambdaListHandler_sp llh;
   if (lambda_list.nilp()) {
     llh = lisp_function_lambda_list_handler(_Nil<List_V>(), declares);
-  } else if (cl__consp(lambda_list)) {
+  } else if ((lambda_list).consp()) {
     llh = lisp_function_lambda_list_handler(lambda_list, declares);
     LOG(BF("Passed lambdaList: %s") % lambda_list->__repr__());
   } else if (core__lambda_list_handler_p(lambda_list)) {
@@ -2091,7 +2091,7 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
 }
 
 T_mv t1Evaluate(T_sp exp, T_sp environment) {
-  if (cl__consp(exp)) {
+  if ((exp).consp()) {
     T_sp head = oCar(exp);
     if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
       printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());

@@ -175,7 +175,7 @@ CL_LAMBDA(args);
 CL_DECLARE();
 CL_DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
 CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
-  if (cl__consp(args)) {
+  if ((args).consp()) {
     T_sp first = oCar(args);
     if (first.nilp()) {
       return args;

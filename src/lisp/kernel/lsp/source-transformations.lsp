@@ -2,7 +2,7 @@
 (in-package :core)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-;; proper-list-p code from Robert Strandh's Cleavir code
+  ;; proper-list-p code from Robert Strandh's Cleavir code
   (defun proper-list-p (object)
     (cond  ((null object) t)
            ((atom object) nil)
@@ -89,3 +89,4 @@
         `(row-major-aref ,array ,(car indeces))
         whole))
   )
+

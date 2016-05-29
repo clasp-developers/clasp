@@ -263,7 +263,7 @@ boot-cclasp:
 	make boot
 	make -C src/main cclasp-boehmdc-bitcode
 	make -C src/main cclasp-boehmdc-fasl
-	make -C src/main bclasp-boehmdc-addons
+	make -C src/main cclasp-boehmdc-addons
 
 boot-mps-interface:
 	make boot

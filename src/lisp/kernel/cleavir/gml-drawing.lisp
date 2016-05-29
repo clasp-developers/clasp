@@ -385,9 +385,9 @@
 
 (defmethod label ((instruction rplacd-instruction)) "rplacd")
 
-(defmethod label ((instruction slot-read-instruction)) "rplacd")
+(defmethod label ((instruction slot-read-instruction)) "slot-read")
 
-(defmethod label ((instruction slot-write-instruction)) "rplacd")
+(defmethod label ((instruction slot-write-instruction)) "slot-write")
 
 (defmethod label ((instruction t-aref-instruction)) "t aref")
 

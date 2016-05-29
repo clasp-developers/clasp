@@ -381,7 +381,7 @@ namespace ext {
 CL_NAME("EXT:LOCAL-FUNCTION-FORM-P");
 CL_DEFUN bool local_function_form_p(core::T_sp form)
 {
-  return (core::cl__consp(form) &&
+  return ((form).consp() &&
           (core::oCar(gc::As<core::Cons_sp>(form)) == cl::_sym_flet ||
            core::oCar(gc::As<core::Cons_sp>(form)) == cl::_sym_labels ));
 }

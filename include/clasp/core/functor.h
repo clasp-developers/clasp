@@ -64,11 +64,20 @@ struct gctools::GCInfo<core::CompiledFunction_O> {
   static GCInfo_policy constexpr Policy = normal;
 };
 
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+#define INCREMENT_FUNCTION_CALL_COUNTER(x) ++x->_TimesCalled
+#else
+#define INCREMENT_FUNCTION_CALL_COUNTER(x)
+#endif
 namespace core {
   /*! Function_O is a Funcallable object that adds no fields to anything that inherits from it
 */
   class Function_O : public General_O {
     LISP_ABSTRACT_CLASS(core,ClPkg,Function_O,"FUNCTION",General_O);
+  public:
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+    size_t _TimesCalled;
+#endif
   public:
     virtual const char *describe() const { return "Function - subclass must implement describe()"; };
     inline LCC_RETURN operator()(LCC_ARGS_ELLIPSIS) {
@@ -87,13 +96,18 @@ namespace core {
     }
 
     LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+      INCREMENT_FUNCTION_CALL_COUNTER(this);
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
       printf("Subclass of Functoid must implement 'activate'\n");
       abort();
     };
     virtual size_t templatedSizeof() const { return sizeof(*this); };
   public:
-    Function_O()  {};
+    Function_O()
+#ifdef DEBUG_FUNCTION_CALL_COUNTER
+      : _TimesCalled(0)
+#endif
+    {};
     virtual T_sp name() const = 0;
     virtual string nameAsString() const {SUBIMP();};
     virtual bool compiledP() const { return false; };
@@ -177,6 +191,7 @@ public:
 public:
   virtual const char *describe() const { return "Closure"; };
   LCC_VIRTUAL LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     printf("Subclass of Closure must implement 'activate'\n");
     abort();
@@ -318,6 +333,7 @@ namespace core {
     };
     inline LCC_RETURN LISP_CALLING_CONVENTION() {
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+      INCREMENT_FUNCTION_CALL_COUNTER(this);
 #ifdef USE_EXPENSIVE_BACKTRACE
       core::InvocationHistoryFrame _frame(lcc_arglist);
 #endif
@@ -426,6 +442,7 @@ public:
   DISABLE_NEW();
   inline LCC_RETURN LISP_CALLING_CONVENTION() {
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
 #ifdef USE_EXPENSIVE_BACKTRACE
     core::InvocationHistoryFrame _frame(lcc_arglist);
 #endif

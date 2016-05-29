@@ -123,6 +123,7 @@ public:
   size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
   virtual Symbol_sp getKind() const { return kw::_sym_macro; };
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
     ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());

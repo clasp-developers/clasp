@@ -613,8 +613,8 @@ void clasp_terpri(T_sp strm);
 void clasp_write_characters(const char *buf, int sz, T_sp strm);
  void clasp_write_string(const string &str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
  void clasp_writeln_string(const string &str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
-void writestr_stream(const char *str, T_sp strm);
- void write_bf_stream(const boost::format& fmt, T_sp strm);
+ void writestr_stream(const char *str, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
+ void write_bf_stream(const boost::format& fmt, T_sp strm = cl::_sym_STARstandard_outputSTAR->symbolValue());
  void clasp_write_addr(T_sp x, T_sp strm);
 claspCharacter clasp_write_char(claspCharacter c, T_sp strm);
 
