@@ -11,6 +11,8 @@
 
 (in-package :cscrape)
 
+
+(generate-sif-file #P"~/Development/clasp/wbuild/src/core/cons.i" #P"~/Development/clasp/wbuild/src/core/cons.sif")
 (progn
   (cscrape::do-scraping
     (list

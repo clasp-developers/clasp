@@ -115,7 +115,7 @@
     (format sout "#ifdef SOURCE_INFO~%")
     (dolist (helper (nreverse helpers))
       (format sout "  ~a();~%" helper))
-    (format sout "#endif SOURCE_INFO~%")))
+    (format sout "#endif // SOURCE_INFO~%")))
 
 (defun generate-code-for-source-info (functions classes)
   (with-output-to-string (sout)
@@ -536,11 +536,20 @@ Convert colons to underscores"
                initializers-by-namespace)
       (format sout "#endif // ALL_INITIALIZERS_CALL~%"))))
 
+(defun maybe-relative (dir)
+  (format t "Incoming dir: ~s~%" dir)
+  (cond
+    ((eq (car dir) :absolute) (list* :relative (cdr dir)))
+    ((eq (car dir) :relative) dir)
+    (t (error "How do I convert this to a relative directory path: ~a" dir))))
+
 (defun write-if-changed (code main-path app-relative)
-  (let ((pn (make-pathname :name (pathname-name app-relative)
-                           :type (pathname-type app-relative)
-                           :directory (pathname-directory app-relative)
-                           :defaults (pathname main-path))))
+  (let ((pn (merge-pathnames
+             (make-pathname :name (pathname-name app-relative)
+                            :type (pathname-type app-relative)
+                            :directory (maybe-relative (pathname-directory app-relative)))
+             (pathname main-path))))
+    (ensure-directories-exist pn)
     (let ((data-in-file (when (probe-file pn)
                           (with-open-file (stream pn :direction :input)
                             (let ((data (make-string (file-length stream))))

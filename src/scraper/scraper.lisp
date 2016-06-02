@@ -7,20 +7,20 @@
       sb-alien::*default-c-string-external-format* :utf-8)
 
 (let ((lt (or *compile-file-truename* *load-truename*)))
-  (format t "lt = ~a~%" lt)
   (setf *default-pathname-defaults* (make-pathname :name nil :type nil :defaults lt)))
 
 (load "packages.lisp")
 (in-package :cscrape)
-
+(defvar *generated-headers-path*)
+(defvar *use-multiprocessing-if-available* t)
 (defparameter *clang-path* nil)
 (defparameter *tags* nil)
 
 (load "foundation.lisp")
 (load "serialize.lisp")
 (load "parse.lisp")
-(load "compile-commands.lisp")
 (load "tags.lisp")
+(load "compile-commands.lisp")
 (load "conditions.lisp")
 (load "sourcepos.lisp")
 (load "interpret-tags.lisp")
@@ -44,7 +44,7 @@ Update all of the scraped info files that need updating."
 * Description
 Read all of the scraped info files and interpret their tags."
   (loop for cc in all-cc
-     for tags = (read-sif-file cc)
+     for tags = (read-sif-file (sif-name cc))
      nconc tags))
 
 (defparameter *classes* nil)
@@ -52,6 +52,26 @@ Read all of the scraped info files and interpret their tags."
 (defparameter *functions* nil)
 (defparameter *enums* nil)
 (defparameter *packages-to-create* nil)
+
+(defun process-all-sif-files (main-path sif-files)
+  (let ((tags (loop for sif-file in sif-files
+                 for sif-tags = (read-sif-file sif-file)
+                 nconc sif-tags))
+        (app-config (setup-application-config)))
+    (format t "Interpreting tags~%")
+    (setf *tags* tags)
+    (multiple-value-bind (packages-to-create functions symbols classes enums initializers)
+        (interpret-tags tags)
+      (setq *packages-to-create* packages-to-create)
+      (setq *symbols* symbols)
+      (setq *classes* classes)
+      (setq *functions* functions)
+      (setq *enums* enums)
+      (format t "Generating code~%")
+      (generate-code packages-to-create functions symbols classes enums initializers main-path app-config))
+    (format t "Done scraping code~%")))
+(export 'process-all-sif-files)
+
 (defun do-scraping (args &key (run-preprocessor t) regenerate-sifs)
   (declare (optimize (debug 3)))
   (format t "do-scraping args -> ~a~%" args)
@@ -76,25 +96,35 @@ Read all of the scraped info files and interpret their tags."
       ;; update of sif files is done in forked processes
       #+(or)(update-all-sif-files all-cc :regenerate-sifs regenerate-sifs)
       (format t "Reading sif files~%")
-      (let ((tags (read-all-tags-all-sif-files all-cc)))
-        (format t "Interpreting tags~%")
-        (setf *tags* tags)
-        (multiple-value-bind (packages-to-create functions symbols classes enums initializers)
-            (interpret-tags tags)
-          (setq *packages-to-create* packages-to-create)
-          (setq *symbols* symbols)
-          (setq *classes* classes)
-          (setq *functions* functions)
-          (setq *enums* enums)
-          (format t "Generating code~%")
-          (generate-code packages-to-create functions symbols classes enums initializers main-path app-config))
-        (format t "Done scraping code~%")))))
+      (process-all-sif-files main-path (mapcar (lambda (cc) (sif-name cc)) all-cc)))))
 
 
-#-testing-scraper
-(progn
+;;; Helper function to generate one sif file from one .i file
+(defun generate-one-sif (input output)
+  (generate-sif-file input output))
+
+(defun generate-headers-from-all-sifs ()
+  (let* ((minus-minus-pos (position "--" sb-ext:*posix-argv* :test #'string=))
+         (args (cdr (nthcdr minus-minus-pos sb-ext:*posix-argv*)))
+         (build-path (car args))
+         (main-path (cadr args))
+         (main-path (merge-pathnames (pathname main-path) (pathname build-path)))
+         (sif-files (cddr args))
+         (*default-pathname-defaults* (pathname build-path)))
+    (format t "build-path: ~a~%" build-path)
+    (format t "main-path: ~a~%" main-path)
+    (format t "*default-pathname-defaults*: ~a~%" *default-pathname-defaults*)
+    (format t "sif-files: ~a~%" sif-files)
+    (process-all-sif-files main-path sif-files)))
+    
+(export '(generate-one-sif generate-headers-from-all-sifs))
+
+(defun legacy-scraper ()
   (let ((args (cdr (member "--" sb-ext:*posix-argv* :test #'string=))))
     (format t "args: ~a~%" args)
     (format t "*default-pathname-defaults* --> ~a~%" *default-pathname-defaults*)
     (do-scraping args))
   (sb-ext:quit))
+
+(export '(legacy-scraper))
+

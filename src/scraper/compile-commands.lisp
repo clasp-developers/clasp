@@ -7,8 +7,8 @@
 
 (require :sb-posix)
 
-(defun fork-is-available ()
-  (when (find-package "SB-POSIX")
+(defun use-multiprocessing ()
+  (when (and *use-multiprocessing-if-available* (find-package "SB-POSIX"))
     (and (find-symbol "FORK" "SB-POSIX")
          (find-symbol "GETENV" "SB-POSIX")
          (find-symbol "WAIT" "SB-POSIX"))))
@@ -146,7 +146,7 @@ Split the list of ccs into a number of lists."
 
 
 (defun update-cpps (ccs)
-    (if (fork-is-available)
+    (if (use-multiprocessing)
         (parallel-update-cpps ccs)
         (serial-update-cpps ccs)))
 
@@ -169,14 +169,17 @@ Split the list of ccs into a number of lists."
       nil
       (elt (buffer bufs) pos))))
 
-(defun read-entire-cpp-file (cc)
-  (with-open-file (stream (pathname (cpp-name cc)))
+(defun read-entire-file (filename)
+  (with-open-file (stream (pathname filename))
     (let ((data (make-string (file-length stream))))
       (read-sequence data stream)
       (make-instance 'buffer-stream
                      :buffer data
-                     :buffer-pathname (pathname (input cc))
+                     :buffer-pathname (pathname filename #+(or)(input cc))
                      :buffer-stream (make-string-input-stream data)))))
+
+(defun read-entire-cpp-file (cc)
+  (read-entire-file (cpp-name cc)))
 
 (defun peek-for-element (bufs tag end)
   (let ((tag-pos (search tag (buffer bufs) :start2 (file-position (buffer-stream bufs)) :end2 end)))
@@ -337,25 +340,36 @@ Return T if the scraped-info-file for this compile-command doesn't exist or if i
     (or (not (probe-file sif-pathname))
         (< (file-write-date sif-pathname) (file-write-date cpp-pathname)))))
 
+(defun generate-sif-file (input output)
+  "* Arguments
+- input :: A pathname.
+- output :: A pathname.
+* Description
+Read the input .i file and extract the tags from it and write out a .sif file"
+  (let* ((bufs (read-entire-file input))
+         (tags (process-all-recognition-elements bufs))
+         (sif-pathname output))
+    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
+      (let ((*print-readably* t)
+            (*print-pretty* nil))
+        (prin1 tags fout)))))
+
+
 (defun update-sif-file (compile-command forki)
   "* Arguments
 - compile-command :: The compile-command.
 * Description
 Read the c-preprocessed file and scrape all of the tags.
 Then dump the tags into the sif-file."
-  (let* ((bufs (read-entire-cpp-file compile-command))
-         (tags (process-all-recognition-elements bufs))
-         (sif-pathname (pathname (sif-name compile-command))))
-    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
-      (let ((*print-readably* t)
-            (*print-pretty* nil))
-        (prin1 tags fout)))))
+  (let ((input (cpp-name compile-command))
+        (output (sif-name compile-command)))
+    (generate-sif-file input output)))
 
-(defun read-sif-file (compile-command)
+(defun read-sif-file (sif-file)
   "* Arguments
 - compile-command :: The compile-command.
 * Description
 Read a list of tags from the sif file."
-  (let* ((sif-pathname (pathname (sif-name compile-command))))
+  (let* ((sif-pathname (pathname sif-file)))
     (with-open-file (fin sif-pathname :direction :input)
       (read fin))))
