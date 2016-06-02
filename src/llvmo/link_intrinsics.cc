@@ -791,7 +791,7 @@ void debugInspectTPtr(core::T_O *tP) {
 void debugInspectT_mv(core::T_mv *objP) {
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
-  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%u\n", (*objP).raw_(), (*objP).number_of_values(), size);
+  printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
   size = std::max(size, (size_t)(*objP).number_of_values());
   for (size_t i(0); i < size; ++i) {
     printf("[%zu]->%p ", i, mv.valueGet(i, size).raw_());
@@ -806,7 +806,7 @@ void debugInspectT_mv(core::T_mv *objP) {
 void debugInspect_return_type(gctools::return_type rt) {
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
-  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%u\n", rt.ret0, rt.nvals, size);
+  printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%zu\n", rt.ret0, rt.nvals, size);
   size = std::max(size, rt.nvals);
   for (size_t i(0); i < size; ++i) {
     printf("[%zu]->%p ", i, mv.valueGet(i, size).raw_());

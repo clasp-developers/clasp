@@ -42,17 +42,6 @@ namespace cffi {
 void CffiExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   switch (what) {
   case candoClasses: {
-#if 0
-#define ALL_STAGES
-#define Use_CffiPkg
-#define INVOKE_REGISTER
-#define LOOKUP_SYMBOL(s, p) DEFAULT_LOOKUP_SYMBOL(s, p)
-#include <clasp/core/initClasses.h>
-#undef LOOKUP_SYMBOL
-#undef INVOKE_REGISTER
-#undef Use_CffiPkg
-#undef ALL_STAGES
-#endif
   } break;
   case candoFunctions: {
   };

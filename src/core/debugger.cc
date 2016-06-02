@@ -436,7 +436,7 @@ void dbg_lowLevelDescribe(T_sp obj) {
     if (atHead) {
       for (size_t i(0), iEnd(vlcopy->remaining_nargs()); i < iEnd; ++i) {
         T_sp v = vlcopy->next_arg();
-        printf("entry@%p %3d --> %s\n", v.raw_(), i, _rep_(v).c_str());
+        printf("entry@%p %3zu --> %s\n", v.raw_(), i, _rep_(v).c_str());
       }
     } else {
       printf("The arglist is not safe to read - it is not atHead\n");

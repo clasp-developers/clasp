@@ -171,6 +171,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     return funcall_consume_valist_(func, valist);
   }
   eval::errorApplyLastArgumentNotList();
+  UNREACHABLE();
 }
 
 

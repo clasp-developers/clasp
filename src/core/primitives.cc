@@ -134,7 +134,7 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
 CL_LAMBDA(pow);
 CL_DECLARE();
 CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__method_cache_resize(Fixnum_sp pow) {
+CL_DEFUN void core__method_cache_resize(Fixnum pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
@@ -145,7 +145,7 @@ CL_DEFUN void core__method_cache_resize(Fixnum_sp pow) {
 CL_LAMBDA(pow);
 CL_DECLARE();
 CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__slot_cache_resize(Fixnum_sp pow) {
+CL_DEFUN void core__slot_cache_resize(Fixnum pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
@@ -156,7 +156,7 @@ CL_DEFUN void core__slot_cache_resize(Fixnum_sp pow) {
 CL_LAMBDA(pow);
 CL_DECLARE();
 CL_DOCSTRING("cache_resize - Resize the cache to 2^pow");
-CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum_sp pow) {
+CL_DEFUN void core__single_dispatch_method_cache_resize(Fixnum pow) {
   if (pow < 2 || pow > 64) {
     SIMPLE_ERROR(BF("Cache power must be in the range of 2...64"));
   }
@@ -1614,7 +1614,7 @@ void nextInvocationHistoryFrameIteratorThatSatisfiesTest(Fixnum num, InvocationH
 
 int backtrace_length(InvocationHistoryFrame* frame) {
   int length = 0;
-  while (frame = frame->previous() ) {++length;};
+  while ( (frame = frame->previous()) ) {++length;};
   return length;
 }
 
@@ -1931,7 +1931,7 @@ CL_DEFUN List_sp core__list_from_va_list(VaList_sp valist)
 {
   ql::list l;
   size_t nargs = valist->remaining_nargs();
-  printf("%s:%d in %s  nargs=%d\n", __FILE__, __LINE__, __FUNCTION__, nargs);
+  printf("%s:%d in %s  nargs=%zu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
   for ( size_t i=0; i<nargs; ++i ) {
     T_sp one = valist->next_arg();
     l << one;

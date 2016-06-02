@@ -208,7 +208,7 @@ CL_DEFUN T_sp core__closure_ref(Closure_sp tclosure, size_t index)
 
 CL_DEFUN void core__closure_slots_dump(Closure_sp closure) {
   size_t nslots = core__closure_length(closure);
-  printf("Closure has %d slots\n", nslots);
+  printf("Closure has %zu slots\n", nslots);
   for ( int i=0; i<nslots; ++i ) {
     printf("    Slot[%d] --> %s\n", i, _rep_(core__closure_ref(closure,i)).c_str());
   }

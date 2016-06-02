@@ -100,7 +100,7 @@
     (cons (loop for i from 1
 	     for n in (if (atom names) (list names) names)
 	     for f = (simple-restart-function tag i)
-	     collect (cons name f))
+	     collect (cons n f))
 	  *handler-clusters*)))
 
 (defmacro restart-bind (bindings &body forms)

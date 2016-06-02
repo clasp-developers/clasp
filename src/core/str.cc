@@ -203,7 +203,7 @@ T_sp Str_O::aref(VaList_sp indices) const {
   core::T_sp arg0 = indices->next_arg();
   ASSERT(arg0.fixnump());
   size_t index = arg0.unsafe_fixnum();
-  if (index < 0 || index >= this->size()) {
+  if (index >= this->size()) {
     SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
   }
   return this->elt(index);
@@ -774,6 +774,7 @@ T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq) {
   for (int i(start); ileft != 0; ++i, --ileft) {
     this->_Contents[i] = sfrom->_Contents[ifrom];
   }
+  return new_subseq;
 }
 
 claspChar Str_O::schar(gc::Fixnum index) const {
