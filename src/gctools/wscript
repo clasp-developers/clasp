@@ -1,10 +1,4 @@
 def build(bld):
-    loc = bld.path.relpath()
-    def full_name(name):
-        return loc + '/' + name
-
-
-#    bld(features='c', source='gc_core.c', target=full_name('gc_core'))
     for name in [
             'gc_interface',
             'gc_boot',
@@ -16,7 +10,7 @@ def build(bld):
             'gcalloc',
             'gcweak',
             'memoryManagement']:
-        print( "name = ", full_name(name) )
-        bld(features='cxx', source=name+'.cc', target=full_name(name),use=[])
+        bld._source_files.append(bld.path.find_node(name+'.cc'))
+    bld._source_files.append(bld.path.find_node('mygc.c'))
 
         

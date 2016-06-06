@@ -1,15 +1,10 @@
 def build(bld):
-    loc = bld.path.relpath()
-    def full_name(name):
-        return loc + '/' + name
-
     for name in [
             'astVisitor',
             'astExpose',
             'clangTooling',
             'asttoolingPackage',
-            'clangCompiler'
-    ]:
-        bld(features='cxx', source=name+'.cc', target=full_name(name))
+            'clangCompiler' ]:
+        bld._source_files.append(bld.path.find_node(name+'.cc'))
 
         

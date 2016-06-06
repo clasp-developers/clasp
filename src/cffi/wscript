@@ -1,12 +1,7 @@
 def build(bld):
-    loc = bld.path.relpath()
-    def full_name(name):
-        return loc + '/' + name
-
     for name in [
 	    'cffi',
-	    'cffiPackage'
-    ]:
-        bld(features='cxx', source=name+'.cc', target=full_name(name))
+	    'cffiPackage']:
+        bld._source_files.append(bld.path.find_node(name+'.cc'))
 
         

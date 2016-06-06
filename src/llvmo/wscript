@@ -1,8 +1,4 @@
 def build(bld):
-    loc = bld.path.relpath()
-    def full_name(name):
-        return loc + '/' + name
-
     for name in [
             'debugInfoExpose',
             'debugLoc',
@@ -13,8 +9,7 @@ def build(bld):
             'irtests',
             'llvmoExpose',
             'llvmoPackage',
-            'clbindLlvmExpose'
-    ]:
-        bld(features='cxx', source=name+'.cc', target=full_name(name))
+            'clbindLlvmExpose']:
+        bld._source_files.append(bld.path.find_node(name+'.cc'))
 
         

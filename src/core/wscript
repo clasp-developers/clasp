@@ -1,8 +1,4 @@
 def build(bld):
-    loc = bld.path.relpath()
-    def full_name(name):
-        return loc + '/' + name
-
     for name in [
             'clcenv',
             'environment',
@@ -65,7 +61,6 @@ def build(bld):
             'profiler',
             'lispDefinitions',
             'bundle',
-            'object',
             'profile',
             'specializer',
             'write_ugly',
@@ -140,8 +135,5 @@ def build(bld):
             'fileSystem',
             'intArray',
             'bitVector',
-            'posixTime'
-    ]:
-        bld(features='cxx', source=name+'.cc', target=full_name(name))
-
-        
+            'posixTime']:
+        bld._source_files.append(bld.path.find_node(name+'.cc'))
