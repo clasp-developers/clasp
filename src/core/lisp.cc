@@ -537,63 +537,8 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     // The regular pathname translations -------------------------------------------------------------
     {
       Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-bitcode;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-bitcode"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehmdc;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-boehmdc"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-boehm;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-boehm"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;min-mps;**;*.*"))));
-      core__pathname_translations(Str_O::create("min-mps"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-bitcode;**;*.*"))));
-      core__pathname_translations(Str_O::create("full-bitcode"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-bitcode;**;*.*"))));
-      core__pathname_translations(Str_O::create("cclasp-bitcode"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehmdc;**;*.*"))));
-      core__pathname_translations(Str_O::create("full-boehmdc"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehmdc;**;*.*"))));
-      core__pathname_translations(Str_O::create("cclasp-boehmdc"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-boehm;**;*.*"))));
-      core__pathname_translations(Str_O::create("full-boehm"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-boehm;**;*.*"))));
-      core__pathname_translations(Str_O::create("cclasp-boehm"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;full-mps;**;*.*"))));
-      core__pathname_translations(Str_O::create("full-mps"), _lisp->_true(), p);
-    }
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;system;cclasp-mps;**;*.*"))));
-      core__pathname_translations(Str_O::create("cclasp-mps"), _lisp->_true(), p);
+                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;**;*.*"))));
+      core__pathname_translations(Str_O::create("build"), _lisp->_true(), p);
     }
     // -------------------------------------------------------------
     /* Call the function defined in main.cc that creates the source-main: host */

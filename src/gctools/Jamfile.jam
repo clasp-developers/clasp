@@ -29,9 +29,9 @@ project internals/gctools : requirements
 
 lib lib_boehm : : <search>$(APPRES-LIB-COMMON-LIB) <name>gc  ;
 
-obj mymps.o : mymps.c : <gc>mps <cflags>"-std=c89" ;
-alias gclib : mymps.o : <gc>mps ;
-alias gclib : mymps.o : <gc>mps-prep ;  # Was mymps.c
+obj mygc.o : mygc.c : <gc>mps <cflags>"-std=c89" ;
+alias gclib : mygc.o : <gc>mps ;
+alias gclib : mygc.o : <gc>mps-prep ;  # Was mygc.c
 
 
 obj gc_boot.o : gc_boot.cc : <cxxflags>-std=c++11 ;

@@ -5,7 +5,7 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
-;;(setq *features* (cons :dbg-print *features*))
+#+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
 (export '(*echo-repl-tpl-read* 
           run-repl 
@@ -376,11 +376,12 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '*alien-declarations*)
 
 (defun build-configuration ()
-  (cond
-    ((member :use-mps *features*) "mps")
-    ((member :use-boehmdc *features*) "boehmdc")
-    ((member :use-boehm *features*) "boehm")
-    (t (error "Unknown clasp configuration"))))
+  (let ((gc (cond
+              ((member :use-mps *features*) "mps")
+              ((member :use-boehmdc *features*) "boehmdc")
+              ((member :use-boehm *features*) "boehm")
+              (t (error "Unknown clasp configuration")))))
+    (bformat nil "%s-%s" (lisp-implementation-type) gc)))
 
 (defun build-intrinsics-bitcode-pathname ()
   (let ((variant (cond
@@ -395,19 +396,17 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun default-target-stage ()
   (if (member :ecl-min *features*)
-      "min"
+      "a"
       (if (member :cclasp *features*)
-          "cclasp"
-          "full")))
+          "c"
+          "b")))
 
-(defun build-hostname (type &optional stage)
+(defun build-target-dir (type &optional stage)
   (let* ((stage (if stage 
                     stage
                     (default-target-stage)))
-         (type-modified-host-suffix (cond
-                                      ((eq type :bc) "bitcode")
-                                      (t (build-configuration))))
-         (bitcode-host (bformat nil "%s-%s" stage type-modified-host-suffix)))
+         (type-modified-host-suffix (build-configuration))
+         (bitcode-host (bformat nil "%s%s" stage type-modified-host-suffix)))
     bitcode-host))
 
 (defun maybe-relative-pathname-to-sys (x &optional (sys-pn (translate-logical-pathname "SYS:")))
@@ -427,20 +426,24 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
   (let ((module (maybe-relative-pathname-to-sys partial-pathname))
-        (target-host (build-hostname type stage))
+        (target-host "build")
+        (target-dir (build-target-dir type stage))
         (sys-root (translate-logical-pathname "SYS:"))
         pn)
     #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
     #+dbg-print(bformat t "DBG-PRINT   target-host: %s\n" target-host)
-    (cond
-      ((eq type :lisp)
-       (cond
-         ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) sys-root)))
-         ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) sys-root)))
-         (t (error "Could not find source file with lsp or lisp extension for ~s" module))))
-      (t
-       (merge-pathnames (merge-pathnames module (make-pathname :type (string-downcase (string type))))
-                        (translate-logical-pathname (make-pathname :host target-host)) )))))
+    #+dbg-print(bformat t "DBG-PRINT   target-dir: %s\n" target-dir)
+    (let ((result (cond
+                    ((eq type :lisp)
+                     (cond
+                       ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) sys-root)))
+                       ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) sys-root)))
+                       (t (error "Could not find source file with lsp or lisp extension for ~s" module))))
+                    (t
+                     (merge-pathnames (merge-pathnames module (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
+                                      (translate-logical-pathname (make-pathname :host target-host)) ))))) 
+      #+dbg-print(bformat t "DBG-PRINT   result: %s\n" result)
+     result)))
 (export '(build-pathname build-host))
   
 (defun get-pathname-with-type (module &optional (type "lsp"))
@@ -515,25 +518,15 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
   #+dbg-print(bformat t "DBG-PRINT iload fn: %s\n" fn)
   (let* ((fn (entry-filename entry))
          (lsp-path (build-pathname fn))
-	 (bc-path (build-pathname fn :bc)) ;; target-backend-pathname (get-pathname-with-type fn "bc") ))
+	 (bc-path (build-pathname fn :bc))
 	 (load-bc (if (not (probe-file lsp-path))
 		      t
 		      (if (not (probe-file bc-path))
-			  (progn
-			    ;;			(bformat t "Bitcode file %s doesn't exist\n" (path-file-name bc-path))
-			    nil)
+                          nil
 			  (if load-bitcode
-			      (progn
-				;;			    (bformat t "Bitcode file %s exists - force loading\n" (path-file-name bc-path))
-				t)
+			      t
 			      (let ((bc-newer (> (file-write-date bc-path) (file-write-date lsp-path))))
-				(if bc-newer
-				    (progn
-				      ;;				  (bformat t "Bitcode recent - loading %s\n" (path-file-name bc-path))
-				      t)
-				    (progn
-				      ;;				  (bformat t "Bitcode file %s is older than lsp file - loading lsp file\n" (path-file-name bc-path))
-				      nil))))))))
+				bc-newer))))))
     (if load-bc
 	(progn
 	  (bformat t "Loading bitcode file: %s\n" bc-path)
@@ -548,7 +541,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
-         (bitcode-path (build-pathname module :bc stage))) ;; (target-backend-pathname (get-pathname-with-type module "bc"))))
+         (bitcode-path (build-pathname module :bc stage))) 
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -1061,11 +1054,12 @@ Return files."
           (let ((files (out-of-date-bitcodes :init :all)))
             (compile-system files))))))
 (export 'link-bclasp)
-(defun link-bclasp ()
+(defun link-bclasp (&key force)
   (bclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :all :first-file :init))
+    (if (or force
+            (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :all :first-file :init)))
         (link-system :init :all nil nil))))
 
 (export 'clean-compile-link-bclasp)
@@ -1104,6 +1098,12 @@ Return files."
     (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cclasp :first-file :init)))
         (progn
           (link-system :init :cclasp nil nil)))))
+
+(export 'link-all)
+(defun link-all (&key force)
+  (link-min :force force)
+  (link-bclasp :force force)
+  (link-cclasp :force force))
 
 (export 'clean-compile-link-cclasp)
 (defun clean-compile-link-cclasp ()
