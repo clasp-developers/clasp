@@ -79,7 +79,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 #else
   typedef
 #define GC_ENUM
-#include "clasp_gc.cc"
+#include CLASP_GC_CC
     GCKindEnum;
 #undef GC_ENUM
 #endif // #else USE_CXX_DYNAMIC_CAST
@@ -148,30 +148,6 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 
 
 
-
-#if 0
-namespace gctools {
-
-inline void *ClientPtrToBasePtr(void *mostDerived) {
-  size_t headerSize = AlignUp(sizeof(Header_s));
-  void *ptr = reinterpret_cast<char *>(mostDerived) - headerSize;
-  return ptr;
-}
-
- inline Header_s* header_pointer(void* client_pointer)
- {
-   Header_s* header = reinterpret_cast<Header_s*>(ClientPtrToBasePtr(client_pointer));
-   return header;
- }
-
-template <typename T>
-inline T *BasePtrToMostDerivedPtr(void *base) {
-  size_t headerSize = AlignUp(sizeof(Header_s));
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + headerSize);
-  return ptr;
-}
-};
-#endif
 
 namespace gctools {
 /*! Initialize the memory pool system and call the startup function which

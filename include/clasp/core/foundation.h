@@ -38,7 +38,8 @@ THE SOFTWARE.
 //#define USE_BOEHM_MEMORY_MARKER
 #endif
 #ifndef APPLICATION_CONFIG
-#define APPLICATION_CONFIG <clasp/main/application.config>
+//#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
+#define APPLICATION_CONFIG <application.config>
 #endif
 /*! Configure the application Clasp or Cando currently */
 #include APPLICATION_CONFIG

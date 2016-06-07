@@ -24,8 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _clasp_memoryManagement_H
-#define _clasp_memoryManagement_H
+#pragma once
+//#ifndef _clasp_memoryManagement_H
+//#define _clasp_memoryManagement_H
 
 // Define compile-time flags that effect structure sizes
 //
@@ -111,8 +112,7 @@ struct GCAllocationPoint;
 /*!
   Template struct:   DynamicCast
 
-  Specialized in clasp_gc.cc
-
+  Specialized inCLASP_GC_CC
 */
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/pointer_tagging.h>
@@ -128,6 +128,7 @@ word of every object in memory managed by the GC */
 #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
+
 #ifdef USE_MPS
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
@@ -269,7 +270,6 @@ namespace gctools {
 #else
                                             // We don't want a default Kind when compiling the boehm version of the code
                                             // to force compiler errors when the Kind for an object hasn't been declared
-// using clasp_gc.cc
 #endif // USE_CXX_DYNAMIC_CAST
 #endif
     };
@@ -356,4 +356,4 @@ void header_describe(gctools::Header_s* headerP);
 };
 
 
-#endif // _clasp_memoryManagement_H
+//#endif // _clasp_memoryManagement_H

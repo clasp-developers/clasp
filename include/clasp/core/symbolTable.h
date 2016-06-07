@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #ifndef SCRAPING
 #define EXTERN_ALL_SYMBOLS
-#include <generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #undef EXTERN_ALL_SYMBOLS
 #endif
 #endif /* _core_symbolTable_H */

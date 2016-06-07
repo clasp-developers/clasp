@@ -850,7 +850,7 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     // expose the CorePkg constants here
     //----------- symbols are created in lisp.cc::startupLispEnvironment ----------
     //#define SYMBOLS_CREATE
-    //#i n c l u d e "symbols_scraped_inc.h"
+    //#i n c l u d e SYMBOLS_SCRAPED_INC_H
     //-----------------------------------------------------------------------------
   }
 
@@ -968,7 +968,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
 #define CorePkg_EXPORT
 #define DO_SYMBOL( ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
 #ifndef SCRAPING
-#include <generated/symbols_scraped_inc.h>
+#include SYMBOLS_SCRAPED_INC_H
 #endif
 #undef DO_SYMBOL
 #undef CorePkg_EXPORT
