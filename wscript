@@ -256,8 +256,19 @@ def build(bld):
 #    bld.program(source=all_files(),target="clasp")
         bld.env = bld.all_envs[bld.variant]
         variant = eval(bld.variant+"()")
-        bld.program(source=bld._source_files,target="clasp")
-        bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.install()))
+        print("bld.__dict__.keys() = %s" % bld.__dict__.keys())
+        bld.program(source=bld._source_files,target=variant.install_name) # [variant.install_name,variant.install_name+'.lto.o'])
+        exec_node = bld.path.search_node(variant.install_name)
+        print("exec_node = %s" % exec_node )
+        bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.install_name), variant.install_name)
+#        bld.install_as('${PREFIX}/%s/%s.lto.o' % (os.getenv("EXECUTABLE_DIR"),variant.install_name), variant.install_name+'.lto.o')
+
+#        exec_node = bld.path.find_node(variant.install_name)
+#        print("variant_dir() = %s" % bld.variant_dir)
+#        debug_info = bld.variant_dir+"/"+variant.install_name+'.lto.o'
+#        debug_info_node = bld.path.find_node(variant.install_name+'.lto.o')
+#        print("debug_info_node = %s" % debug_info_node )
+#        bld.install_as('${PREFIX}/%s/%s.lto.o' % (os.getenv("EXECUTABLE_DIR"),variant.install_name), debug_info)
 
 from waflib import TaskGen
 from waflib import Task
@@ -336,7 +347,7 @@ def preprocess_task_generator(self):
     for x in generated_headers:
         nodes.append(self.path.make_node(x))
     self.create_task('generated_headers',all_sif_files,nodes)
-    self.create_task('link_bitcode',all_o_files,'clasp.lbc')
+#    self.create_task('link_bitcode',all_o_files,'clasp.lbc')
 
 
 def init(ctx):

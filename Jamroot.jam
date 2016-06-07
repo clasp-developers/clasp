@@ -27,8 +27,8 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 path-constant TOP : . ;
 path-constant INCLUDE : $(TOP)/include ;
-path-constant CLASP-MAIN : $(TOP)/src/main/include ;
-path-constant CANDO-MAIN : $(TOP)/projects/cando/src/main/include ;
+path-constant CLASP-MAIN : $(TOP)/include/clasp/main ;
+path-constant CANDO-MAIN : $(TOP)/projects/cando/include/cando/main ;
 
 feature.feature program : clasp cando clasp-clbind cando-clbind
                 : symmetric composite propagated link-incompatible ;
