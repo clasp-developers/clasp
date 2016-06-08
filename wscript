@@ -354,7 +354,7 @@ def preprocess_task_generator(self):
         nodes.append(self.path.make_node(x))
     self.create_task('generated_headers',all_sif_files,nodes)
     print("self.path = %s" % self.path.abspath())
-    library_node = self.path.make_node('clasp.lbc')
+    library_node = self.path.find_or_declare('clasp.lbc')
     print("library_node = %s" % library_node.abspath())
     self.create_task('link_bitcode',all_o_files,library_node)
 
