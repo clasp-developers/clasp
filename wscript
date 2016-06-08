@@ -309,10 +309,12 @@ class generated_headers(Task.Task):
 class link_bitcode(Task.Task):
     ext_out = ['.lbc']
     def run(self):
+        print("link_bitcode self.variant_path = %s" % self.variant_path)
         cmd = StringIO.StringIO()
-        cmd.write('link-llvm ')
+        cmd.write('llvm-link ')
         for f in self.inputs:
             cmd.write(' %s' % f.abspath())
+        print("link_bitcode self.outputs[0].abspath() --> %s" % self.outputs[0].abspath())
         cmd.write(' -o %s' % self.outputs[0])
         return self.exec_command(cmd.getvalue())
 
@@ -330,12 +332,16 @@ def preprocess_task_generator(self):
             for node in task.inputs:
                 i_node = node.change_ext('.i')
                 sif_node = node.change_ext('.sif')
-                o_node = node.change_ext('.o')
                 self.create_task('preprocess',node,[i_node])
                 self.source.append(i_node)
                 self.create_task('sif',i_node,[sif_node])
                 all_sif_files.append(sif_node)
-                all_o_files.append(o_node)
+            for node in task.outputs:
+                all_o_files.append(node)
+        if ( task.__class__.__name__ == 'c' ):
+            for node in task.outputs:
+                all_o_files.append(node)
+                
     generated_headers = [ 'src/main/include/generated/c-wrappers.h',
                           'src/main/include/generated/enum_inc.h',
                           'src/main/include/generated/initClassesAndMethods_inc.h',
@@ -347,7 +353,10 @@ def preprocess_task_generator(self):
     for x in generated_headers:
         nodes.append(self.path.make_node(x))
     self.create_task('generated_headers',all_sif_files,nodes)
-#    self.create_task('link_bitcode',all_o_files,'clasp.lbc')
+    print("self.path = %s" % self.path.abspath())
+    library_node = self.path.make_node('clasp.lbc')
+    print("library_node = %s" % library_node.abspath())
+    self.create_task('link_bitcode',all_o_files,library_node)
 
 
 def init(ctx):

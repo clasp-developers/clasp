@@ -618,20 +618,32 @@ void dbg_room() {
 }
 namespace gctools {
 
-#ifdef USE_MPS
-CL_DEFUN void gctools__mpsTelemetryFlush() {
-  mps_telemetry_flush();
-};
-
-CL_DEFUN void gctools__mpsTelemetrySet(core::Fixnum_sp flags) {
-  mps_telemetry_set(unbox_fixnum(flags));
-};
-
-CL_DEFUN void gctools__mpsTelemetryReset(core::Fixnum_sp flags) {
-  mps_telemetry_reset(unbox_fixnum(flags));
-};
-
+CL_DEFUN void gctools__telemetryFlush() {
+#ifdef USE_BOEHM
+  IMPLEMENT_ME();
 #endif
+#ifdef USE_MPS
+  mps_telemetry_flush();
+#endif
+};
+
+CL_DEFUN void gctools__telemetrySet(core::Fixnum_sp flags) {
+#ifdef USE_BOEHM
+  IMPLEMENT_ME();
+#endif
+#ifdef USE_MPS
+  mps_telemetry_set(unbox_fixnum(flags));
+#endif
+};
+
+CL_DEFUN void gctools__telemetryReset(core::Fixnum_sp flags) {
+#ifdef USE_BOEHM
+  IMPLEMENT_ME();
+#endif
+#ifdef USE_MPS
+  mps_telemetry_reset(unbox_fixnum(flags));
+#endif
+};
 
 CL_DEFUN core::T_sp gctools__stack_depth() {
   int z = 0;
