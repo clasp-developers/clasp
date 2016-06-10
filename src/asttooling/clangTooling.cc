@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/DeclFriend.h>
 #include <clang/AST/DeclOpenMP.h>
@@ -52,7 +53,6 @@ THE SOFTWARE.
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/Dynamic/Diagnostics.h>
 #include <clang/ASTMatchers/Dynamic/Parser.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/evaluator.h>

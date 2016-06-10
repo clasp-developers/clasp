@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LEVEL_FULL
+#include <clasp/core/foundation.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +37,6 @@ THE SOFTWARE.
 
 #include <stdlib.h>
 #include <limits.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/sourceFileInfo.h>

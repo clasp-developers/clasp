@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
+
 #include <clang/AST/Comment.h>
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/DeclFriend.h>
@@ -41,7 +43,6 @@ THE SOFTWARE.
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Frontend/FrontendActions.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/str.h>
 #include <clasp/core/lispStream.h>

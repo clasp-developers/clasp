@@ -183,13 +183,14 @@ boehm-all:
 	make print-config
 	make submodules
 	make asdf
-	make boost_build
-	make boehm
+#	make boost_build
+#	make boehm
 	install -d build/clasp/Contents/Resources
 #	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
-	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
-	make executable-symlinks
+#	(cd src/main; $(BUILD) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/boehm/$(VARIANT) gc=boehm $(VARIANT) clasp_install )
+	./waf --prefix=build/clasp configure build_clasp_boehm_o install_clasp_boehm_o
+#	make executable-symlinks
 	make -C src/main min-boehm
 	make -C src/main bclasp-boehm-bitcode
 	make -C src/main bclasp-boehm-fasl
@@ -417,7 +418,7 @@ cloc-files:
 clean:
 	git submodule sync
 	make boehm-clean
-	(cd include/clasp/main/generated; rm *.h)
+	./waf distclean
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
 	install -d $(CLASP_INTERNAL_BUILD_TARGET_DIR)
 	-(find $(CLASP_INTERNAL_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)

@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 typedef bool _Bool;
+#include <clasp/core/foundation.h>
 #include <type_traits>
 //#include <llvm/Support/system_error.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
@@ -91,7 +92,6 @@ typedef bool _Bool;
 
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/gctools/gcStack.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/cxxClass.h>
 #include <clasp/core/random.h>

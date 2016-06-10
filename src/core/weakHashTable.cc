@@ -32,20 +32,15 @@ THE SOFTWARE.
 
 #define WEAK_LOG(x) printf("%s:%d %s\n", __FILE__, __LINE__, (x).str().c_str())
 
+
 namespace core {
-
-
-
-
-
-
-
-
-
 void WeakKeyHashTable_O::initialize() {
   this->_HashTable.initialize();
 }
+};
 
+
+namespace core {
 void WeakKeyHashTable_O::describe(T_sp stream) {
   KeyBucketsType &keys = *this->_HashTable._Keys;
   ValueBucketsType &values = *this->_HashTable._Values;
@@ -83,46 +78,14 @@ void WeakKeyHashTable_O::describe(T_sp stream) {
     clasp_write_string(ss.str(), stream);
   }
 }
-
 CL_LISPIFY_NAME("weakHashTableSize");
 CL_DEFMETHOD int WeakKeyHashTable_O::tableSize() const {
   return this->_HashTable.tableSize();
 }
 
-bool WeakKeyHashTable_O::fullp() {
-  return this->_HashTable.fullp();
-}
-
-#if 0
-    /*! Return the key/value as three values
-      (values key value invalid-key)
-      invalid-key is one of nil, :unused :deleted :splatted 
-      depending if the key is valid, unused, deleted or a weak link was splatted */
-    T_mv WeakKeyHashTable_O::get(int idx)
-    {
-        T_sp key = (*this->_HashTable.Keys)[idx].backcast();
-        T_sp val = (*this->_HashTable.Values)[idx].backcast();
-        if ( val.sameAsKeyP() ) {
-            val = key;
-        }
-        if ( key.objectp() ) {
-            return Values(key,val,_Nil<T_O>());
-        }
-        T_sp keyInfo(_Nil<T_O>());
-        if ( !key ) {
-            keyInfo = kw::_sym_splatted;
-        } else if ( key.unboundp()) {
-            keyInfo = kw::_sym_unbound;
-        } else if ( key.deletedp()) {
-            keyInfo = kw::_sym_deleted;
-        }
-        return Values(_Nil<T_O>(), val, keyInfo );
-    }
-#endif
 SYMBOL_EXPORT_SC_(KeywordPkg, splatted);
 SYMBOL_EXPORT_SC_(KeywordPkg, unbound);
 SYMBOL_EXPORT_SC_(KeywordPkg, deleted);
-
 
 /* %%MPS: If we fail to find 'key' in the table, and if mps_ld_isstale
  * returns true, then some of the keys in the table might have been
@@ -137,7 +100,6 @@ T_mv WeakKeyHashTable_O::gethash(T_sp key, T_sp defaultValue) {
 void WeakKeyHashTable_O::setf_gethash(T_sp key, T_sp value) {
   this->_HashTable.set(key, value);
 }
-
 void WeakKeyHashTable_O::maphash(std::function<void(T_sp, T_sp)> const &fn) {
   this->_HashTable.maphash(fn);
 }
@@ -149,6 +111,7 @@ void WeakKeyHashTable_O::remhash(T_sp tkey) {
 void WeakKeyHashTable_O::clrhash() {
   this->_HashTable.clrhash();
 }
+
 
 CL_LAMBDA(&optional (size 16));
 CL_DECLARE();
@@ -180,6 +143,7 @@ CL_DEFUN void core__weak_remhash(WeakKeyHashTable_sp ht, T_sp key) {
   ht->remhash(key);
 };
 
+
 CL_LAMBDA(ht);
 CL_DECLARE();
 CL_DOCSTRING("weakClrhash");
@@ -196,7 +160,6 @@ CL_DEFUN void core__weak_splat(WeakKeyHashTable_sp ht, Fixnum_sp idx) {
   TESTING();         // Test the NULL value
   (*ht->_HashTable._Keys).set(unbox_fixnum(idx), WeakKeyHashTable_O::value_type(splatted));
 };
-
 CL_LAMBDA(ht &optional sz);
 CL_DECLARE();
 CL_DOCSTRING("weakRehash");
@@ -212,7 +175,12 @@ CL_DEFUN void core__weak_rehash(WeakKeyHashTable_sp ht, T_sp sz) {
   size_t dummyPos;
   ht->_HashTable.rehash(newLength, dummyKey, dummyPos);
 };
-
-
-
 };
+
+#if 0
+namespace core {
+bool WeakKeyHashTable_O::fullp() {
+  return this->_HashTable.fullp();
+}
+};
+#endif

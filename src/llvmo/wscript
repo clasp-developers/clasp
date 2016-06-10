@@ -1,4 +1,5 @@
 def build(bld):
+    bld._intrinsics = bld.path.find_node('intrinsics.cc')
     for name in [
             'debugInfoExpose',
             'debugLoc',

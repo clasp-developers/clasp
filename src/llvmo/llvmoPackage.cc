@@ -25,10 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
 #include <stdint.h>
 
 #include <llvm/Support/raw_ostream.h>
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/builtInClass.h>

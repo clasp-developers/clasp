@@ -41,6 +41,9 @@ THE SOFTWARE.
 //#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
 #define APPLICATION_CONFIG <application.config>
 #endif
+
+// Load the waf config file
+#include <config.h>
 /*! Configure the application Clasp or Cando currently */
 #include APPLICATION_CONFIG
 
@@ -1291,8 +1294,6 @@ core::Symbol_sp lisp_classSymbol() {
   return sym;
 }
 };
-
-#define EXECUTABLE_NAME "clasp"
 #define KERNEL_NAME "kernel"
 
 #include <boost/filesystem.hpp>

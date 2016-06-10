@@ -510,7 +510,9 @@ CL_DEFUN core::T_mv cl__room(core::T_sp x, core::Fixnum_sp marker, core::T_sp tm
   globalSearchMarker = core::unbox_fixnum(marker);
   static_ReachableClassKinds = new (ReachableClassMap);
   invalidHeaderTotalSize = 0;
+  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_reachable_object, NULL);
+  #endif
   printf("Walked LispKinds\n");
   size_t totalSize(0);
   totalSize += dumpResults("Reachable ClassKinds", "class", static_ReachableClassKinds);
@@ -573,14 +575,18 @@ CL_DEFUN void gctools__function_call_count_profiler(core::T_sp func) {
   mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_start, 0);
 #endif
 #ifdef USE_BOEHM
+  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_start);
+  #endif
 #endif
   core::eval::funcall(func);
 #ifdef USE_MPS
   mps_amc_apply(_global_amc_pool, amc_apply_function_call_counter, &*func_counters_end, 0);
 #endif
 #ifdef USE_BOEHM
+  #ifdef BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
   GC_enumerate_reachable_objects_inner(boehm_callback_function_call_counter, &*func_counters_end);
+  #endif
 #endif
   func_counters_start->mapHash([func_counters_end](core::T_sp f, core::T_sp start_value) {
       core::T_sp end_value = func_counters_end->gethash(f);

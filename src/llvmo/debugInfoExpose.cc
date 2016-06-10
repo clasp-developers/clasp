@@ -27,6 +27,7 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
+#include <clasp/core/foundation.h>
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Bitcode/ReaderWriter.h>

@@ -539,8 +539,9 @@ SYMBOL_EXPORT_SC_(ClPkg, fileError);
 SYMBOL_EXPORT_SC_(ClPkg, satisfies);
 SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
 
-SYMBOL_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
-SYMBOL_SC_(CorePkg, _PLUS_executableName_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_executable_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourceFileInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
@@ -600,7 +601,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, execute);
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_evalSTAR);
 SYMBOL_SC_(CorePkg, STARdocumentation_poolSTAR);
-SYMBOL_SC_(CorePkg, STARexecutable_nameSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, define_modify_macro);
 SYMBOL_EXPORT_SC_(ClPkg, destructuring_bind);
 SYMBOL_EXPORT_SC_(ClPkg, deftype);
@@ -1002,7 +1002,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARprint_source_code_consSTAR->exportYourself()->defparameter(_lisp->_false());
   _sym_STARbackquote_levelSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARmodulesSTAR->defparameter(_Nil<T_O>());
-  _sym_STARexecutable_nameSTAR->defparameter(Str_O::create(_lisp->_FunctionName));
+//  _sym_STARexecutable_nameSTAR->defparameter(Str_O::create(_lisp->_FunctionName));
   cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
   _sym_STARenvironmentPrintingTabSTAR->defparameter(make_fixnum(0));
   _sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(make_fixnum(6));
@@ -1085,7 +1085,9 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
 
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
-  _sym__PLUS_executableName_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
+  _sym__PLUS_variant_name_PLUS_->defconstant(Str_O::create(VARIANT_NAME));
+  printf("%s:%d Setting the executable_name: %s\n", __FILE__, __LINE__, EXECUTABLE_NAME );
+  _sym__PLUS_executable_name_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
