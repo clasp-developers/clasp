@@ -261,6 +261,8 @@ No DIBuilder is defined for the default module")
     ((pathnamep lname) (bformat nil "MAIN-%s" (string-upcase (pathname-name lname))))
     ((stringp lname)
      (cond
+       ((string= lname core:+run-all-function-name+) lname) ; this one is ok
+       ((string= lname core:+clasp-ctor-function-name+) lname) ; this one is ok
        ((string= lname "IMPLICIT-REPL") lname) ; this one is ok
        ((string= lname "TOP-LEVEL") lname) ; this one is ok
        ((string= lname "UNNAMED-LAMBDA") lname) ; this one is ok
@@ -303,5 +305,6 @@ No DIBuilder is defined for the default module")
       (let* ((execution-engine (llvm-sys:create engine-builder)))
         (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
                                                                               *load-time-value-holder-name*
-                                                                              (namestring (truename filename)))))))
+                                                                              (namestring (truename filename)))
+        t))))
 (export 'load-bitcode)

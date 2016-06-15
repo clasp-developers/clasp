@@ -55,6 +55,9 @@ THE SOFTWARE.
 #define NOINLINE __attribute__((noinline))
 #define MAYBE_INLINE __attribute__((noinline))
 
+#define RUN_ALL_FUNCTION_NAME "RUN-ALL"
+#define CLASP_CTOR_FUNCTION_NAME "CLASP-CTOR"
+
 namespace std {
 class type_info;
 };
@@ -73,9 +76,6 @@ class type_info;
 #define DLL_PUBLIC __attribute__((visibility("default")))
 
 #include <map>
-
-#define GLOBAL_BOOT_FUNCTIONS_NAME "global-run-all-array"
-#define GLOBAL_EPILOGUE_NAME "global-epilogue"
 
 #define VARARGS
 

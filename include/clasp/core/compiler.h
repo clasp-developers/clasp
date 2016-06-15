@@ -41,4 +41,10 @@ T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 
 void initialize_compiler_primitives(Lisp_sp lisp);
 };
+
+namespace core {
+  void register_startup_function(fnLispCallingConvention fptr);
+  size_t startup_functions_are_waiting();
+  void startup_functions_invoke();
+};
 #endif /* _compiler_H_ */

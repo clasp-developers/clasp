@@ -45,7 +45,9 @@ Set this to other IRBuilders to make code go where you want")
   "Maintains an IRBuilder for function alloca instructions")
 (defvar *irbuilder-function-body* nil
   "Maintains an IRBuilder for function body IR code")
-
+(defvar *compilation-unit-module-index* 0
+  "Incremented for each module build within a compilation-unit.
+   It's used to get the proper order for ctor initialization.")
 
 
 
@@ -74,6 +76,19 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
 (defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
 
+
+
+(defvar +fn-ctor+
+  (llvm-sys:function-type-get +void+ nil)
+  "A ctor void ()* function prototype")
+(defvar +fn-ctor-argument-names+ nil)
+(defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
+  "A pointer to the ctor function prototype")
+
+
+(defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
+(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
+  "An array of pointers to the global-ctors-struct")
 
 (defvar +size_t+
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
@@ -357,35 +372,49 @@ Boehm and MPS use a single pointer"
                                  "source-file-info-handle"))
 
 
-(defun make-boot-function-global-variable (module func-ptr &key epilogue-module-p)
+(defun add-global-ctor-function (module main-function)
+  (let ((*the-module* module))
+    (let ((fn (with-new-function
+                  (ctor-func func-env result
+                             :function-name core:+clasp-ctor-function-name+
+                             :parent-env nil
+                             :linkage 'llvm-sys:internal-linkage
+                             :function-type +fn-ctor+
+                             :return-void t
+                             :argument-names +fn-ctor-argument-names+ )
+                (let* ((bc-bf (llvm-sys:create-bit-cast *irbuilder* main-function +fn-prototype*+ "fnptr-pointer")))
+                  (irc-intrinsic "cc_register_startup_function" bc-bf)))))
+      fn)))
+
+(defun make-boot-function-global-variable (module func-ptr)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
-- epilogue-module-p :: T or NIL
 * Description
-Add the global variable llvm-sys::+global-boot-functions-name+ to the Module (linkage appending)
-and initialize it with an array consisting of one function pointer or, iff epilogue-module-p is T
-then one function pointer and a NULL pointer.   The latter case is only for modules that
-are linked very last in a list of modules and it terminates the global-boot-functions array."
-  (llvm-sys:make-global-variable module
-                                 (if epilogue-module-p
-                                     +fn-prototype*[2]+
-                                     +fn-prototype*[1]+) ; type
-                                 t                  ; is constant
-                                 'llvm-sys:appending-linkage
-                                 (if epilogue-module-p
-                                     (llvm-sys:constant-array-get +fn-prototype*[2]+
-                                                                  (list func-ptr
-                                                                        (llvm-sys:constant-pointer-null-get +fn-prototype*+)))
-                                     (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr)))
-                                 llvm-sys:+global-boot-functions-name+)
-  (when epilogue-module-p
+Add the global variable llvm.global_ctors to the Module (linkage appending)
+and initialize it with an array consisting of one function pointer.
+Create "
+  (let* (#+(or)(boot-function-global (llvm-sys:make-global-variable module
+                                                              +fn-prototype*[1]+ ; type
+                                                              t ; is constant
+                                                              'llvm-sys:internal-linkage
+                                                              (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr))
+                                                              "global-boot-functions"))
+         (global-ctor (add-global-ctor-function module func-ptr)))
+    (incf *compilation-unit-module-index*)
     (llvm-sys:make-global-variable module
-                                   +i32+ ; type
-                                   t     ; is constant
-                                   'llvm-sys:weak-any-linkage
-                                   (jit-constant-i32 #xdeadbeef)
-                                   llvm-sys:+global-epilogue-name+)))
+                                   +global-ctors-struct[1]+
+                                   nil
+                                   'llvm-sys:appending-linkage
+                                   (llvm-sys:constant-array-get
+                                    +global-ctors-struct[1]+
+                                    (list
+                                     (llvm-sys:constant-struct-get +global-ctors-struct+
+                                                                   (list
+                                                                    (jit-constant-i32 *compilation-unit-module-index*)
+                                                                    global-ctor
+                                                                    (llvm-sys:constant-pointer-null-get +i8*+)))))
+                                   "llvm.global_ctors")))
 
 #+(or)
 (defun reset-global-boot-functions-name-size (module)
@@ -410,23 +439,6 @@ are linked very last in a list of modules and it terminates the global-boot-func
       (llvm-sys:erase-from-parent fn))))
 
 
-#+(or)
-(defun add-main-function (module)
-  (let ((*the-module* module))
-    (remove-main-function-if-exists module)
-    (let ((fn (with-new-function
-                  (main-func func-env result
-                             :function-name llvm-sys:+clasp-main-function-name+
-                             :parent-env nil
-                             :linkage 'llvm-sys:external-linkage
-                             :function-type +fn-prototype+
-                             :argument-names +fn-prototype-argument-names+)
-                (let* ((boot-functions (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name+ t))
-                       (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
-                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-prototype**+ "fnptr-pointer"))
-                       )
-                  (irc-intrinsic "invokeMainFunctions" result bc-bf boot-functions-size)))))
-      fn)))
 
 ;;
 ;; Ensure that the LLVM model of
@@ -623,8 +635,7 @@ are linked very last in a list of modules and it terminates the global-boot-func
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
-  (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +size_t+))
-;;;  (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+)) 
+  (primitive module "cc_register_startup_function" +void+ (list +fn-prototype*+))
 
   (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
 
@@ -664,16 +675,6 @@ are linked very last in a list of modules and it terminates the global-boot-func
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
   (primitive module "cc_gatherVaRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +VaList_S*+))
   (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
-
-  (primitive-nounwind module "trace_exitFunctionScope" +void+ (list +i32+) )
-  (primitive-nounwind module "trace_exitBlockScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitLetScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitLetSTARScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitFletScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitLabelsScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitCallScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitCatchScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitUnwindProtectScope" +void+ (list +i32+ ) )
 
   (primitive-nounwind module "pushCatchFrame" +size_t+ (list +tsp*+))
   (primitive-nounwind module "pushBlockFrame" +size_t+ (list +symsp*+))

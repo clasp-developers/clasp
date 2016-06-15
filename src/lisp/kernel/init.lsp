@@ -383,12 +383,13 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
               (t (error "Unknown clasp configuration")))))
     (bformat nil "%s-%s" (lisp-implementation-type) gc)))
 
-(defun build-intrinsics-bitcode-pathname ()
-  (let ((variant (cond
-                   ((member :release-build *features*) "release")
-                   ((member :debug-build *features*) "debug")
-                   (t (error "Unknown build type")))))
-    (bformat nil "app-contents:execs;%s;%s;bin;%s-intrinsics.sbc" (build-configuration) variant (lisp-implementation-type))))
+(defun build-intrinsics-bitcode-pathname (link-type)
+  (cond
+    ((eq link-type :fasl)
+     (translate-logical-pathname (bformat nil "app-contents:bitcode;%s-intrinsics.lbc" +bitcode-name+)))
+    ((eq link-type :executable)
+     (translate-logical-pathname (bformat nil "app-contents:bitcode;%s.lbc" +bitcode-name+)))
+    (t (error "Provide a bitcode file for the link-type ~a" link-type))))
 
 
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
@@ -439,11 +440,16 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                        ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) sys-root)))
                        ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) sys-root)))
                        (t (error "Could not find source file with lsp or lisp extension for ~s" module))))
+                    ((eq type :executable)
+                     (let* ((stage-char (default-target-stage))cond
+                            (filename (bformat nil "%s%s" stage-char +bitcode-name+))
+                            (exec-pathname (merge-pathnames (make-pathname :name filename :type nil :defaults module) (translate-logical-pathname "app-executable:") )))
+                       exec-pathname))
                     (t
                      (merge-pathnames (merge-pathnames module (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
                                       (translate-logical-pathname (make-pathname :host target-host)) ))))) 
       #+dbg-print(bformat t "DBG-PRINT   result: %s\n" result)
-     result)))
+      result)))
 (export '(build-pathname build-host))
   
 (defun get-pathname-with-type (module &optional (type "lsp"))
@@ -910,17 +916,18 @@ Return files."
 
 (defun compile-system (files &key reload (system *system-files*))
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
-  (let* ((cur files)
-         (counter 1)
-         (total (length files)))
-    (tagbody
-     top
-       (if (endp cur) (go done))
-       (compile-kernel-file (car cur) :reload reload :counter counter :total-files total )
-       (setq cur (cdr cur))
-       (setq counter (+ 1 counter))
-       (go top)
-     done)))
+  (with-compilation-unit ()
+    (let* ((cur files)
+           (counter 1)
+           (total (length files)))
+      (tagbody
+       top
+         (if (endp cur) (go done))
+         (compile-kernel-file (car cur) :reload reload :counter counter :total-files total )
+         (setq cur (cdr cur))
+         (setq counter (+ 1 counter))
+         (go top)
+       done))))
 (export 'compile-system)
 
 
@@ -956,14 +963,13 @@ Return files."
          (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
 
-(defun link-system (start end prologue-form epilogue-form &key (system *system-files*))
+(defun link-system (start end &key (system *system-files*))
   #+dbg-print(bformat t "DBG-PRINT About to link-system\n")
   (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname (entry-filename x) :bc)) (select-source-files end :first-file start :system system))))
-    (cmp:llvm-link (build-pathname +image-pathname+ :fasl)
+    (cmp:llvm-link (build-pathname +image-pathname+ :executable)
                    :lisp-bitcode-files bitcode-files
-                   :prologue-form prologue-form
-                   :epilogue-form epilogue-form
-                   :link-time-optimization t)))
+                   :link-time-optimization t
+                   :link-type :executable)))
 (export '(link-system))
         
 (export '(compile-min))
@@ -973,8 +979,9 @@ Return files."
         (load-system :start :cmp-pre-epilogue :system system)
         (let* ((*target-backend* target-backend)
                (files (out-of-date-bitcodes :min-start :cmp-pre-epilogue :system system)))
-          (compile-system files :reload t)
-          (compile-system (out-of-date-bitcodes :cmp-pre-epilogue :cmp :system system) :reload nil)))))
+          (with-compilation-unit ()
+            (compile-system files :reload t)
+            (compile-system (out-of-date-bitcodes :cmp-pre-epilogue :cmp :system system) :reload nil))))))
 
 (export 'link-min)
 (defun link-min (&key force)
@@ -982,7 +989,7 @@ Return files."
   (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :min-start)))
       (progn
         (load-system :start :cmp-pre-epilogue)
-        (link-system :min-start :cmp nil nil))))
+        (link-system :min-start :cmp))))
                    
 (defun recursive-remove-from-list (item list)
   (if list
@@ -1060,7 +1067,7 @@ Return files."
   (let ((*target-backend* (default-target-backend)))
     (if (or force
             (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :all :first-file :init)))
-        (link-system :init :all nil nil))))
+        (link-system :init :all))))
 
 (export 'clean-compile-link-bclasp)
 (defun clean-compile-link-bclasp ()
@@ -1097,7 +1104,7 @@ Return files."
   (let ((*target-backend* (default-target-backend)))
     (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cclasp :first-file :init)))
         (progn
-          (link-system :init :cclasp nil nil)))))
+          (link-system :init :cclasp)))))
 
 (export 'link-all)
 (defun link-all (&key force)

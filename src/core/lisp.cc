@@ -519,13 +519,31 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
                                         );
     core__pathname_translations(Str_O::create("tmp"), _lisp->_true(), ptsTmp);
 
-    // setup the APP-CONTENTS logical-pathname-translations
-    Cons_sp appc = Cons_O::createList(
-                                      Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
+            // setup the APP-EXECUTABLE logical-pathname-translations
+    {
+      Cons_sp appc = Cons_O::createList(
+                                        Cons_O::createList(Str_O::create("app-executable:**;*.*"), bundle->getExecutablePathname())
         /* , more here */
-                                      );
-    core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
+                                        );
+      core__pathname_translations(Str_O::create("app-executable"), _lisp->_true(), appc);
+    }
 
+        // setup the APP-CONTENTS logical-pathname-translations
+    {
+      Cons_sp appc = Cons_O::createList(
+                                        Cons_O::createList(Str_O::create("app-root:**;*.*"), bundle->getRootPathname())
+        /* , more here */
+                                        );
+      core__pathname_translations(Str_O::create("app-root"), _lisp->_true(), appc);
+    }
+    // setup the APP-CONTENTS logical-pathname-translations
+    {
+      Cons_sp appc = Cons_O::createList(
+                                        Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
+        /* , more here */
+                                        );
+      core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
+    }
     // setup the APP-RESOURCES logical-pathname-translations
     Cons_sp app = Cons_O::createList(
                                      Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
@@ -2666,13 +2684,8 @@ void Lisp_O::run() {
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
     }
   }
-  // Check if the Common Lisp compiled code is linked into this executable
-  InitFnPtr* mainFunctionsPointer = (InitFnPtr*)dlsym(RTLD_DEFAULT,GLOBAL_BOOT_FUNCTIONS_NAME);
-  if (mainFunctionsPointer) {
-    void* epilogueP = dlsym(RTLD_DEFAULT,GLOBAL_EPILOGUE_NAME);
-    size_t hasEpilogue = (epilogueP != NULL) ? 1 : 0;
-    T_mv result;
-    invokeMainFunctions(&result,mainFunctionsPointer,hasEpilogue);
+  if (startup_functions_are_waiting() ) {
+    startup_functions_invoke();
   } else if (!this->_IgnoreInitImage) {
     Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
     DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());

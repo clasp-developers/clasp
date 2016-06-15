@@ -747,7 +747,8 @@ marshaling of compiled quoted data"
         (result (gensym "result")))
     `(multiple-value-bind (,ltv-init-fn ,fn-env-gs ,cleanup-block-gs
 					,irbuilder-alloca ,irbuilder-body ,result )
-	 (irc-function-create 'run-all nil nil
+	 (irc-function-create core:+run-all-function-name+
+                              nil nil
 			      :function-type +fn-prototype+
 			      :argument-names +fn-prototype-argument-names+)
        (let ((*load-time-value-initialization-function* ,ltv-init-fn)

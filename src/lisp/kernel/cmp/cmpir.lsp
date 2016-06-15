@@ -647,6 +647,8 @@
 			      ;; pretty subtle bugs with exception handling (I think) when I did that.
 			      ;; I currently use llvm-sys:internal-linkage or llvm-sys:external-linkage
 			      (linkage ''llvm-sys:internal-linkage)
+                              ;; If the generated function returns void then indicate with this keyword
+                              return-void
 			      )
 			     &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
@@ -671,12 +673,8 @@
                              :function-type ,function-type
                              :form ,function-form )
            (with-dbg-lexical-block (,function-form)
-;;             (format t "cmpir.lsp 670   Setting current-source-pos~%")
              (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-alloca)
-;;             (format t "cmpir.lsp 673   Done setting alloca current-source-pos~%")
              (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-body)
-;;             (format t "cmpir.lsp 676   Done setting body current-source-pos~%")
-;;             (format t "cmpir.lsp 678   Done setting current-source-pos~%")
              (with-irbuilder (*irbuilder-function-body*)
 	       (or *the-module* (error "with-new-function *the-module* is NIL"))
 	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
@@ -687,8 +685,11 @@
 		   ,@body)
                  (cmp-log "with-landing-pad around irc-function-cleanup-and-return\n")
 		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
-		   (irc-function-cleanup-and-return ,fn-env ,result))
+		   (irc-function-cleanup-and-return ,fn-env ,result :return-void ,return-void))
 		 ,fn))))))))
+
+
+
 
 (defun irc-function-create (lisp-function-name body env
 			    &key (function-type +fn-prototype+ function-type-p)
@@ -743,7 +744,7 @@ and then the irbuilder-alloca, irbuilder-body."
       (setf-metadata func-env :ehselector.slot ehselector.slot)
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
 
-(defun irc-function-cleanup-and-return (env result)
+(defun irc-function-cleanup-and-return (env result &key return-void)
   (when env
     (let ((return-block (irc-basic-block-create "return-block")))
       (irc-br return-block)
@@ -767,11 +768,11 @@ and then the irbuilder-alloca, irbuilder-body."
 	  (irc-begin-block return-block)
 	  (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
 #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
-	  (llvm-sys:create-ret *irbuilder* (irc-load result)))
+	  (if return-void
+              (llvm-sys:create-ret-void *irbuilder*)
+              (llvm-sys:create-ret *irbuilder* (irc-load result))))
 	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
-	(irc-verify-function *current-function*)
-        ))))
-
+	(irc-verify-function *current-function*))))) 
 
 (defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
   "Generate the code to cleanup the environment"

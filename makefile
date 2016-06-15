@@ -183,8 +183,8 @@ boehm-all:
 	make print-config
 	make submodules
 	make asdf
-#	make boost_build
-#	make boehm
+	make boost_build
+	make boehm
 	install -d build/clasp/Contents/Resources
 #	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )

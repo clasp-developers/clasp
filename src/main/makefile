@@ -7,11 +7,13 @@ project-directories = ../gctools ../core ../clbind ../cffi ../asttooling ../llvm
 
 
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
-  CLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp
+  CLASP_BOEHMDC = clasp-boehmdc-o
   BCLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp -f bclasp
-  BCLASP_BOEHM = $(CLASP_APP_EXECS)/boehm/release/bin/clasp -f bclasp
+  ICLASP_BOEHM = iclasp-boehm-o
+  ACLASP_BOEHM = aclasp-boehm-o
+  BCLASP_BOEHM = bclasp-boehm-o
   CCLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp
-  CCLASP_BOEHM = $(CLASP_APP_EXECS)/boehm/release/bin/clasp
+  CCLASP_BOEHM = cclasp-boehm-o
   ACLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -I -f ecl-min
   BCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -f bclasp
   CCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
@@ -154,7 +156,7 @@ cclasp-boehm-clean:
 	$(BCLASP_BOEHM) -I -f ecl-min -e "(cclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
 
 min-boehm:
-	$(BCLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+	$(ICLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
 min-mps:
 	$(CLASP_MPS) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"

@@ -74,6 +74,7 @@ THE SOFTWARE.
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bignum.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/str.h>
 #include <clasp/core/vectorObjectsWithFillPtr.h>
@@ -2566,6 +2567,8 @@ CL_EXTERN_DEFUN(&llvm::Type::getFloatTy);
 }; // llvmo
 
 namespace llvmo {
+// I can't get the following to work yet
+//CL_EXTERN_DEFMETHOD(FunctionType_O, &llvm::FunctionType::getReturnType);
 
 
 CL_LAMBDA(result &optional params is-var-arg);
@@ -2723,7 +2726,7 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   ASSERTF(fn.notnilp(), BF("The Function must never be nil"));
   void *p = engine->getPointerToFunction(fn->wrappedPtr());
   if (!p) {
-    SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % _rep_(functionName));
+    SIMPLE_ERROR(BF("Could not get a pointer to the function finalizeEngineAndRegisterWithGcAndGetCompiledFunction: %s") % _rep_(functionName));
   }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
   core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
@@ -2734,29 +2737,28 @@ CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction
   return functoid;
 }
 
+struct CtorStruct {
+  int priority;
+  void (*ctor)();
+  char* obj;
+};
 
 
 CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::Str_sp globalRunTimeValueName, core::T_sp fileName) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
-  core::InitFnPtr* main_functions_ptr = reinterpret_cast<core::InitFnPtr*>(engine->getGlobalValueAddress(GLOBAL_BOOT_FUNCTIONS_NAME));
-  void* epilogue_ptr = reinterpret_cast<void*>(engine->getGlobalValueAddress(GLOBAL_EPILOGUE_NAME));
-  if (!main_functions_ptr) {
-    SIMPLE_ERROR(BF("Could not get a pointer to the array of run-all functions: %s") % _rep_(fileName));
+  void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
+//  printf("%s:%d clasp_ctor --> %p\n", __FILE__, __LINE__, clasp_ctor );
+  if ( clasp_ctor == NULL ) {
+    SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
   }
-  size_t hasEpilogue = (epilogue_ptr!=NULL) ? 1 : 0;
-  core::T_mv result;
-  invokeMainFunctions(&result,main_functions_ptr,hasEpilogue);
-#if 0
-  core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
-  core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
-  core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet_(1)));
-  //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
-  gctools::smart_ptr<core::CompiledClosure_O> functoid = gctools::GC<core::CompiledClosure_O>::allocate(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
-  return functoid;
-#endif
+  (clasp_ctor)();
+  if ( core::startup_functions_are_waiting() ) {
+    core::startup_functions_invoke();
+  } else {
+    SIMPLE_ERROR(BF("There were no startup functions to invoke\n"));
+  }
 }
 
 CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
@@ -2768,54 +2770,6 @@ CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func
   closure->fptr = lisp_funcPtr;
 }
 
-#if 0
-  core::T_mv finalizeEngineAndRegisterWithGcAndRunFunction(ExecutionEngine_sp oengine
-                                                           , const string& mainFuncName
-                                                           , core::Str_sp fileName
-                                                           , size_t filePos
-                                                           , int linenumber
-                                                           , core::Str_sp globalLoadTimeValueName
-                                                           , core::Cons_sp args )
-  {
-	//	vector<llvm::GenericValue> argValues;
-    ASSERTF(oengine->wrappedPtr()!=NULL,BF("You asked to runFunction but the pointer to the function is NULL"));
-    llvm::ExecutionEngine* engine = oengine->wrappedPtr();
-    finalizeEngineAndTime(engine);
-        /* Run the function */
-//	printf( "%s:%d - Calling startup function in: %s - Figure out what to do here - I need to start using the unix backtrace and dwarf debugging information rather than setting up my own backtrace info in the IHF", __FILE__, __LINE__, fileName->c_str() );
-#ifdef USE_MPS
-    IMPLEMENT_MEF(BF("globaLoadTimeValueName will be nil - do something about it"));
-    void* globalPtr = reinterpret_cast<void*>(engine->getGlobalValueAddress(globalLoadTimeValueName->get()));
-//        printf("%s:%d  engine->getGlobalValueAddress(%s) = %p\n", __FILE__, __LINE__, globalLoadTimeValueName->get().c_str(), globalPtr );
-    ASSERT(globalPtr!=NULL);
-    registerLoadTimeValuesRoot(reinterpret_cast<core::LoadTimeValues_O**>(globalPtr));
-#endif
-
-	/* Make sure a pointer for the function is available */
-    llvm::Function* fn = engine->FindFunctionNamed(mainFuncName.c_str());
-    if ( !fn ) {SIMPLE_ERROR(BF("Could not get a pointer to the function: %s") % mainFuncName );}
-    auto fnPtr = (void (*)(LCC_RETURN,LCC_CLOSED_ENVIRONMENT,LCC_ARGS)) engine->getPointerToFunction(fn);
-	//engine->runFunction(fn,argValues);
-    core::T_mv result;
-    int numArgs = cl__length(args);
-    switch (numArgs) {
-    case 0:
-        fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS0());
-        break;
-    case 1:
-        fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS1(oCar(args).px));
-        break;
-    case 2:
-        fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS2(oCar(args).px,oCadr(args).px));
-        break;
-    default:
-        SIMPLE_ERROR(BF("Add support for %d arguments to finalizeEngineAndRegisterWithGcAndRunFunction") % numArgs);
-        break;
-    }
-    return result;
-  }
-
-#endif
 
 /*! Return (values target nil) if successful or (values nil error-message) if not */
 CL_DEFUN core::T_mv TargetRegistryLookupTarget(const std::string &ArchName, Triple_sp triple) {

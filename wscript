@@ -25,12 +25,14 @@ def configure_clasp(cfg,variant):
     include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.__class__.__name__)
     print("Including from %s" % include_path )
     cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
-    cfg.define("EXECUTABLE_NAME",variant.install_name)
+    cfg.define("EXECUTABLE_NAME",variant.executable_name)
+    cfg.define("BITCODE_NAME",variant.bitcode_name)
     cfg.define("VARIANT_NAME",variant.variant_name)
     
 class clasp_boehm_o(variant):
     variant_name = 'clasp-boehm'
-    install_name = '%s-o' % variant_name
+    bitcode_name = '%s-o' % variant_name
+    executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_boehm_o", env=env_copy.derive())
         configure_clasp(cfg,self)
@@ -38,29 +40,33 @@ class clasp_boehm_o(variant):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         cfg.write_config_header('clasp_boehm_o/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 class clasp_boehm_d(variant):
     variant_name = 'clasp-boehm'
-    install_name = '%s-d' % variant_name
+    bitcode_name = '%s-d' % variant_name
+    executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_boehm_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_BOEHM",1)
         cfg.define("_DEBUG_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         cfg.write_config_header('clasp_boehm_d/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 class clasp_boehmdc_o(variant):
     variant_name = 'clasp-boehmdc'
-    install_name = '%s-o' % variant_name
+    bitcode_name = '%s-o' % variant_name
+    executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_boehmdc_o", env=env_copy.derive())
         configure_clasp(cfg,self)
@@ -69,30 +75,34 @@ class clasp_boehmdc_o(variant):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3' ])
         cfg.env.append_value('CFLAGS', [ '-O3' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         cfg.write_config_header('clasp_boehmdc_o/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 class clasp_boehmdc_d(variant):
     variant_name = 'clasp-boehmdc'
-    install_name = '%s-d' % variant_name
+    bitcode_name = '%s-d' % variant_name
+    executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_boehmdc_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_BOEHM",1)
         cfg.define("USE_CXX_DYNAMIC_CAST",1)
         cfg.define("_DEBUG_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         cfg.write_config_header('clasp_boehmdc_d/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 class clasp_mpsprep_o(variant):
     variant_name = 'clasp-mpsprep'
-    install_name = '%s-o' % variant_name
+    bitcode_name = '%s-o' % variant_name
+    executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_mpsprep_o", env=env_copy.derive())
         configure_clasp(cfg,self)
@@ -101,28 +111,32 @@ class clasp_mpsprep_o(variant):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3' ])
         cfg.env.append_value('CFLAGS', [ '-O3' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.write_config_header('clasp_mpsprep_o/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
         
 class clasp_mpsprep_d(variant):
     variant_name = 'clasp-mpsprep'
-    install_name = '%s-d' % variant_name
+    bitcode_name = '%s-d' % variant_name
+    executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_mpsprep_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_MPS",1)
         cfg.define("RUNNING_GC_BUILDER",1)
         cfg.define("_DEBUG_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         cfg.write_config_header('clasp_mpsprep_d/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 class clasp_mps_o(variant):
     variant_name = 'clasp-mps'
-    install_name = '%s-o' % variant_name
+    bitcode_name = '%s-o' % variant_name
+    executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_mps_o", env=env_copy.derive())
         configure_clasp(cfg,self)
@@ -130,23 +144,26 @@ class clasp_mps_o(variant):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3' ])
         cfg.env.append_value('CFLAGS', [ '-O3' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.write_config_header('clasp_mps_o/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 class clasp_mps_d(variant):
     variant_name = 'clasp-mps'
-    install_name = '%s-d' % variant_name
+    bitcode_name = '%s-d' % variant_name
+    executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
         cfg.setenv("clasp_mps_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_MPS",1)
         cfg.define("_DEBUG_BUILD",1)
-        cfg.env.append_value('CXXFLAGS', [ '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-g' ])
+        cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
+        cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         cfg.write_config_header('clasp_mps_d/config.h', remove=True)
     def install(self):
-        return self.install_name
+        return self.executable_name
 
 def options(opt):
     opt.load('compiler_cxx')
@@ -209,20 +226,17 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
     cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,clasp.lto.o')
-    cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s/libLTO.%s" % (os.getenv("CLASP_RELEASE_LLVM_LIB_DIR"), os.getenv("CLASP_LIB_EXTENSION")))
+    lto_library = "%s/libLTO.%s" % (os.getenv("CLASP_RELEASE_LLVM_LIB_DIR"), os.getenv("CLASP_LIB_EXTENSION"))
+    cfg.define("LTO_LIBRARY",lto_library)
+    cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s" % lto_library)
     cfg.env.append_value('LINKFLAGS', ['-flto'])
     cfg.env.append_value('LINKFLAGS', ['-L/usr/lib'])
-    cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
     cfg.env.append_value('LINKFLAGS', ['-lc++'])
     cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
-    cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
-    cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
-    cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
-    cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
-    cfg.env.append_value('LINKFLAGS', ['-lc++'])
-    cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
+    cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
+#    cfg.env.append_value('LINKFLAGS', ['-Wl,-exported_symbols_list,%s/src/llvmo/intrinsic-api.txt' % os.getenv("CLASP_HOME")] )
     cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('LINKFLAGS', ['-L../../build/clasp/Contents/Resources/lib/common/lib'])
     cfg.env.append_value('LINKFLAGS', ['-lclangAnalysis'])
@@ -261,7 +275,7 @@ def configure(cfg):
     env_copy = cfg.env.derive()
     for v in VARIANTS:
         vi = eval(v+"()")
-        print("Setting up install_name: %s" % vi.install_name)
+        print("Setting up executable_name: %s" % vi.executable_name)
         vi.configure(cfg,env_copy)
 
 
@@ -285,19 +299,10 @@ def build(bld):
         lto_debug_info = bld.path.find_or_declare('clasp.lto.o')
         intrinsics_info = bld.path.find_or_declare('clasp-intrinsics.lbc')
         bld.program(source=bld._source_files,target=[clasp_executable,lto_debug_info])
-        exec_node = bld.path.search_node(variant.install_name)
-        print("exec_node = %s" % exec_node )
-        bld.install_as('${PREFIX}/%s/a%s' % (os.getenv("EXECUTABLE_DIR"),variant.install_name), 'clasp',chmod=Utils.O755)
-        bld.install_as('${PREFIX}/%s/a%s.lto.o' % (os.getenv("EXECUTABLE_DIR"),variant.install_name), 'clasp.lto.o')
-        bld.install_as('${PREFIX}/Contents/bitcode/%s.lbc' % variant.install_name, 'clasp-all-cxx.lbc')
-        bld.install_as('${PREFIX}/Contents/bitcode/%s-intrinsics.lbc' % variant.install_name, 'clasp-intrinsics.lbc')
-
-#        exec_node = bld.path.find_node(variant.install_name)
-#        print("variant_dir() = %s" % bld.variant_dir)
-#        debug_info = bld.variant_dir+"/"+variant.install_name+'.lto.o'
-#        debug_info_node = bld.path.find_node(variant.install_name+'.lto.o')
-#        print("debug_info_node = %s" % debug_info_node )
-#        bld.install_as('${PREFIX}/%s/%s.lto.o' % (os.getenv("EXECUTABLE_DIR"),variant.install_name), debug_info)
+        bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), 'clasp',chmod=Utils.O755)
+#        bld.install_as('${PREFIX}/%s/%s.lto.o' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), 'clasp.lto.o')
+        bld.install_as('${PREFIX}/Contents/bitcode/%s.lbc' % variant.bitcode_name, 'clasp-all-cxx.lbc')
+        bld.install_as('${PREFIX}/Contents/bitcode/%s-intrinsics.lbc' % variant.bitcode_name, 'clasp-intrinsics.lbc')
 
 from waflib import TaskGen
 from waflib import Task

@@ -541,7 +541,11 @@ SYMBOL_EXPORT_SC_(ClPkg, array_has_fill_pointer_p);
 
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_bitcode_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_executable_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_lto_library_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourceFileInfoSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
@@ -1002,7 +1006,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARprint_source_code_consSTAR->exportYourself()->defparameter(_lisp->_false());
   _sym_STARbackquote_levelSTAR->defparameter(make_fixnum(0));
   cl::_sym_STARmodulesSTAR->defparameter(_Nil<T_O>());
-//  _sym_STARexecutable_nameSTAR->defparameter(Str_O::create(_lisp->_FunctionName));
   cl::_sym_STARread_evalSTAR->defparameter(_lisp->_true());
   _sym_STARenvironmentPrintingTabSTAR->defparameter(make_fixnum(0));
   _sym_STARenvironmentPrintingTabIncrementSTAR->defparameter(make_fixnum(6));
@@ -1083,11 +1086,13 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(_sym_macroexpand_default);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(_Nil<T_O>());
-
   _sym__PLUS_activationFrameNil_PLUS_->defconstant(_Nil<T_O>());
   _sym__PLUS_variant_name_PLUS_->defconstant(Str_O::create(VARIANT_NAME));
-  printf("%s:%d Setting the executable_name: %s\n", __FILE__, __LINE__, EXECUTABLE_NAME );
+  _sym__PLUS_bitcode_name_PLUS_->defconstant(Str_O::create(BITCODE_NAME));
   _sym__PLUS_executable_name_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
+  _sym__PLUS_run_all_function_name_PLUS_->defconstant(Str_O::create(RUN_ALL_FUNCTION_NAME));
+  _sym__PLUS_clasp_ctor_function_name_PLUS_->defconstant(Str_O::create(CLASP_CTOR_FUNCTION_NAME));
+  _sym__PLUS_lto_library_PLUS_->defconstant(Str_O::create(LTO_LIBRARY));
   SYMBOL_SC_(CorePkg, cArgumentsLimit);
   _sym_cArgumentsLimit->defconstant(make_fixnum(Lisp_O::MaxFunctionArguments));
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());

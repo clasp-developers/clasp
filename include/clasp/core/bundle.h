@@ -49,6 +49,7 @@ class Bundle {
 private:
   bool _Initialized;
   boost_filesystem::path _RootDir;
+  boost_filesystem::path _ExecutableDir;
   boost_filesystem::path _AppDir;
   boost_filesystem::path _ResourcesDir;
   boost_filesystem::path _DatabasesDir;
@@ -80,6 +81,7 @@ public:
   boost_filesystem::path getStartupWorkingDir();
 
   Pathname_sp getRootPathname();
+  Pathname_sp getExecutablePathname();
   Pathname_sp getSysPathname();
   Pathname_sp getIncludePathname();
   Pathname_sp getSourcePathname();

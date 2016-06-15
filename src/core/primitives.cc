@@ -362,7 +362,9 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
   size_t idx = 0;
   for (auto cur : call_and_arguments) {
     Str_sp sarg = gc::As<Str_sp>(oCar(cur));
-    char *arg = (char *)malloc(sarg->size() + 1);
+    size_t sarg_size = sarg->size();
+//    printf("%s:%d sarg = %s sarg->size() = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size());
+    char *arg = (char *)malloc(sarg_size + 1);
     std::strcpy(arg, sarg->c_str());
     execvp_args[idx++] = arg;
   }

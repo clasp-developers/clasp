@@ -28,8 +28,13 @@ THE SOFTWARE.
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
 #define DEBUG_LEVEL_FULL
+#include <clasp/core/foundation.h>
+#include <clasp/core/object.h>
+#include <clasp/core/cons.h>
+#include <clasp/core/cxxObject.h>
+#include <clasp/core/record.h>
+#include <clasp/core/lisp.h>
 #include <dlfcn.h>
-#include <clasp/core/common.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lightProfiler.h>
@@ -55,6 +60,40 @@ THE SOFTWARE.
 #ifdef _TARGET_OS_DARWIN
 #import <mach-o/dyld.h>
 #endif
+
+
+namespace core {
+std::vector<fnLispCallingConvention> global_startup_functions;
+
+void register_startup_function(fnLispCallingConvention fptr)
+{
+//  printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
+  global_startup_functions.push_back(fptr);
+};
+
+/*! Return the number of startup_functions that are waiting to be run*/
+size_t startup_functions_are_waiting()
+{
+//  printf("%s:%d startup_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_startup_functions.size() );
+  return global_startup_functions.size();
+};
+
+/*! Invoke the startup functions and clear the array of startup functions */
+void startup_functions_invoke()
+{
+//  printf("%s:%d In startup_functions_invoke\n", __FILE__, __LINE__ );
+  for ( auto fn : global_startup_functions ) {
+//    printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
+    T_mv result = (fn)(LCC_PASS_MAIN());
+  }
+  global_startup_functions.clear();
+//  printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
+}
+
+
+};
+
+
 
 extern "C" {
 gctools::return_type wrapped_test(core::T_O* arg0, core::T_O* arg1, core::T_O* arg2 )
@@ -173,45 +212,19 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("startupImagePathname - returns one of min-boehm, full-boehm, min-mps, full-mps, cclasp-boehm, cclasp-mps based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
+CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
-  Cons_sp features = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue());
-  List_sp min = features->memberEq(kw::_sym_ecl_min);
-  List_sp mps = features->memberEq(kw::_sym_use_mps);
-  List_sp boehmdc = features->memberEq(kw::_sym_use_boehmdc);
-  List_sp bclasp = features->memberEq(kw::_sym_bclasp);
-  string strStage = "min";
-  if (min.nilp()) {
-    if (bclasp.notnilp()) {
-      strStage = "full";
-    } else {
-      strStage = "cclasp";
-    }
-  }
-  // Now check if the executable name contains bclasp or cclasp
-  // if it does then these will change the value of strStage
-  string executable = _lisp->_Argv[0];
-  if (executable.find("bclasp") != string::npos) {
-    strStage = "full";
-  } else if (executable.find("cclasp") != string::npos) {
-    strStage = "cclasp";
-  }
-  string strGc;
-  if (boehmdc.notnilp()) {
-    strGc = "boehmdc";
-  } else if (mps.notnilp()) {
-    strGc = "mps";
-  } else {
-    strGc = "boehm";
-  }
   stringstream ss;
-  ss << strStage << "-" << strGc;
-  ss << ":image.fasl";
+  ss << "build:";
+  ss << VARIANT_NAME;
+  ss << "/image.fasl";
   Str_sp spath = Str_O::create(ss.str());
   Pathname_sp pn = cl__pathname(spath);
   return pn;
 };
 
+
+  
 CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("loadBundle");
@@ -271,15 +284,13 @@ LOAD:
     //    return (Values(_Nil<T_O>(), Str_O::create(error)));
   }
   _lisp->openDynamicLibraryHandles()[name] = handle;
-  InitFnPtr* mainFunctionsPointer = (InitFnPtr*)dlsym(handle, GLOBAL_BOOT_FUNCTIONS_NAME);
-  if (mainFunctionsPointer == NULL) {
-    SIMPLE_ERROR(BF("Could not find the array of main functions: %s") % GLOBAL_BOOT_FUNCTIONS_NAME);
+  if (startup_functions_are_waiting()) {
+    startup_functions_invoke();
+  } else {
+    SIMPLE_ERROR(BF("There were no global ctors - there have to be global ctors for load-bundle"));
   }
-  //	printf("%s:%d Found initialization function %s at address %p\n", __FILE__, __LINE__, mainName.c_str(), mainFunctionPointer);
-  void* epilogueP = dlsym(handle,GLOBAL_EPILOGUE_NAME);
-  size_t hasEpilogue = (epilogueP != NULL) ? 1 : 0;
   T_mv result;
-  invokeMainFunctions(&result,mainFunctionsPointer,hasEpilogue);
+  cc_invoke_startup_functions();
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 };
 

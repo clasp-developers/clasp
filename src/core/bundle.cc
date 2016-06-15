@@ -87,10 +87,16 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   }
   string argv0 = string(rp);
 #endif
+//  printf("%s:%d Bundle::initialize raw_argv0: %s\n", __FILE__, __LINE__, raw_argv0.c_str());
+//  printf("%s:%d Bundle::initialize argv0: %s\n", __FILE__, __LINE__, argv0.c_str());
   string cwd = this->_StartupWorkingDir.string();
   bf::path appDir = this->findAppDir(argv0, cwd, envVar);
   // First crawl up the directory tree and look for the cando root
   bf::path curPath = appDir;
+  // Climb up one level
+  this->_ExecutableDir = curPath;
+  curPath = curPath.branch_path();
+#if 0
   while (curPath.has_relative_path()) {
     // The following line used to contain curPath.leaf().find("cando") but that
     // is weird because .leaf()[-now depreciated-] returned a path and not a string!!!!!
@@ -100,6 +106,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     }
     curPath = curPath.branch_path();
   }
+#endif
   if (!curPath.has_relative_path()) {
     THROW_HARD_ERROR(BF("Could not find the root directory of the cando application bundle.\n"
                         " It must contain the word \"clasp\".\n"));
@@ -262,6 +269,21 @@ bf::path Bundle::getScriptsDir() {
 
 bf::path Bundle::getLispDir() {
   return this->_LispDir;
+}
+Pathname_sp Bundle::getRootPathname() {
+  stringstream ss;
+  ss << this->_RootDir.string();
+  ss << DIR_SEPARATOR;
+  ss << "**/*.*";
+  return cl__pathname(Str_O::create(ss.str()));
+}
+
+Pathname_sp Bundle::getExecutablePathname() {
+  stringstream ss;
+  ss << this->_ExecutableDir.string();
+  ss << DIR_SEPARATOR;
+  ss << "**/*.*";
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getSysPathname() {

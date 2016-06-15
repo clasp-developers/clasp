@@ -50,6 +50,7 @@ extern "C" {
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/stacks.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
@@ -551,38 +552,13 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 /*! Invoke the main functions from the main function array.
 If isNullTerminatedArray is 1 then there is a NULL terminated array of functions to call.
 Otherwise there is just one. */
-void invokeMainFunctions(T_mv *result, fnLispCallingConvention fptr[], size_t isNullTerminatedArray ) {
-  //        printf("%s:%d invokeMainFunctions(%d) fptr[] = %p\n", __FILE__, __LINE__, numfun, fptr);
-  T_mv res;
-  if (isNullTerminatedArray) {
-    int i=0;
-    while (fptr[i]) {
-    //printf("%s:%d invoking fptr[%d] @%p\n", __FILE__, __LINE__, i, (void*)fptr[i]);
-      if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
-        stringstream ss;
-        ss << "Time to run module " << i;
-        simple_timer timer(ss.str());
-        res = (fptr[i])(LCC_PASS_MAIN());
-      } else {
-        res = (fptr[i])(LCC_PASS_MAIN());
-      }
-      ++i;
-    }
-  } else {
-    if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
-      stringstream ss;
-      ss << "Time to run module 0";
-      simple_timer timer(ss.str());
-      res = (fptr[0])(LCC_PASS_MAIN());
-    } else {
-      res = (fptr[0])(LCC_PASS_MAIN());
-    }
-  }
-  *result = res;
+void cc_register_startup_function(fnLispCallingConvention fptr) {
+  register_startup_function(fptr);
 }
 
+void cc_invoke_startup_functions() {
+  startup_functions_invoke();
 #if 0
-void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
   if (core::_sym_STARtrace_startupSTAR->symbolValue().isTrue()) {
     stringstream ss;
     ss << "Time to run " << sourceName;
@@ -592,8 +568,8 @@ void invokeMainFunction(char *sourceName, fnLispCallingConvention fptr) {
   } else {
     core::T_mv result = fptr(LCC_PASS_MAIN());
   }
-};
 #endif
+};
 
 
 

@@ -34,7 +34,7 @@ void cc_funwind_protect(core::T_mv *result, core::T_O *protected_fn, core::T_O *
 void cc_catch(core::T_mv *result, core::T_O *tag, core::T_O *func);
 void cc_throw(core::T_O *tag, core::T_O *resultP);
 
-void invokeMainFunctions(core::T_mv *result, core::fnLispCallingConvention fptr[], size_t isNullTerminatedArray );
+void cc_invoke_startup_functions();
 };
 
 namespace llvmo {

@@ -61,6 +61,7 @@
 	((null *active-protection*)
 	 (let* ((*active-protection* t)
 		(*pending-actions* nil)
+                (*compilation-unit-module-index* 0)
                 (*all-functions-for-one-compile* nil))
 	   (unwind-protect (do-compilation-unit closure)
              (dolist (action *pending-actions*)
@@ -237,6 +238,7 @@
       (funcall compile-file-hook form)
       (t1expr form)))
 
+#+(or)
 (defun compile-form-into-module (form name &key epilogue-module-p)
   "* Arguments
 - form :: A form.
@@ -260,9 +262,9 @@ to append a NULL function to the list of main functions."
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-top-level form)
-            (make-boot-function-global-variable *the-module* ltv-init-fn :epilogue-module-p epilogue-module-p)
+            (make-boot-function-global-variable *the-module* ltv-init-fn)
             #+(or)(let ((main-fn (compile-main-function name ltv-init-fn )))
-                    (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
+                    (make-boot-function-global-variable *the-module* main-fn)
                     #+(or)(add-main-function *the-module*)))
           )))
     module))
@@ -386,9 +388,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 			     (let ((core:*current-source-pos-info* 
 				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
 			       (compile-file-t1expr form compile-file-hook))))))
-                  (make-boot-function-global-variable *the-module* ltv-init-fn :epilogue-module-p epilogue-module-p)
+                  (make-boot-function-global-variable *the-module* ltv-init-fn)
 		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
-                          (make-boot-function-global-variable *the-module* main-fn :epilogue-module-p epilogue-module-p)
+                          (make-boot-function-global-variable *the-module* main-fn)
                           #+(or)(add-main-function *the-module*))))
 	      (cmp-log "About to verify the module\n")
 	      (cmp-log-dump *the-module*)
