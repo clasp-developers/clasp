@@ -3360,7 +3360,7 @@ T_sp clasp_make_file_stream_from_fd(T_sp fname, int fd, enum StreamMode smm,
     StreamOps(stream) = duplicate_dispatch_table(io_file_ops);
     break;
   default:
-    FEerror("make_stream: wrong mode", 0);
+      FEerror("make_stream: wrong mode in clasp_make_file_stream_from_fd smm = ~d", 1, clasp_make_fixnum(smm).raw_());
   }
   StreamMode(stream) = smm;
   StreamClosed(stream) = 0;
@@ -4162,7 +4162,7 @@ T_sp clasp_make_stream_from_fd(T_sp fname, int fd, enum StreamMode smm,
 #endif
   default:
     mode = OPEN_R; // dummy
-    FEerror("make_stream: wrong mode", 0);
+    FEerror("make_stream: wrong mode in clasp_make_stream_from_fd smm = ~d", 1, clasp_make_fixnum(smm).raw_());
   }
 #if defined(ECL_WSOCK)
   if (smm == clasp_smm_input_wsock || smm == clasp_smm_output_wsock || smm == clasp_smm_io_wsock || smm == clasp_smm_io_wcon)

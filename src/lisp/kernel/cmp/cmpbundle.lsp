@@ -86,16 +86,11 @@
 
 (in-package :ext)
 
-
 (defun run-ld (args &key output-file-name)
   (cmp:safe-system `("ld" ,@args :output-file-name output-file-name)))
 
-(defun run-clang (args &key (clang core:*clang-bin*) output-file-name)
-  (unless (and clang (probe-file clang))
-    (error "You must ensure that core:*clang-bin* points to a valid clang"))
-  (cmp:safe-system `(,(namestring clang) ,@args) :output-file-name output-file-name))
+(export 'run-ld)
 
-(export '(run-ld run-clang))
 (in-package :cmp)
 
 (defun execute-link-fasl (in-bundle-file in-all-names &key (link-type :executable))
@@ -139,29 +134,35 @@
                                in-bitcode-names
                                (list in-bitcode-names))))
         (exec-file (ensure-string output-file-name)))
-    (cond
-      ((member :target-os-darwin *features*)
-       (ext:run-clang `(,@options
-                    ,@all-names
-                    "-v"
-                    "-flto"
-                    ,(bformat nil "-Wl,-lto_library,%s" +lto-library+)
-                    ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                    "-o"
-                    ,exec-file)
-                  :output-file-name exec-file))
-      ((member :target-os-linux *features*)
-       ;; Linux needs to use clang to link
-       (ext:run-clang `(,@options
-                    ,@all-names
-                    "-v"
-                    "-flto"
-                    ,(bformat nil "-Wl,-lto_library,%s" +lto-library+)
-                    ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
-                    "-o"
-                    ,exec-file)
-                  :output-file-name exec-file))
-      (t (error "Add support for this operating system to cmp:generate-link-command")))
+    (multiple-value-bind (link-flags link-lib-path library-extension)
+        (core:link-flags)
+      (cond
+        ((member :target-os-darwin *features*)
+         (ext:run-clang `(,@options
+                          ,@all-names
+                          #+(or)"-v"
+                          "-flto"
+                          "-Wl,-export_dynamic"
+                          ,@link-flags
+                          ,(bformat nil "-Wl,-lto_library,%s/libLTO.%s" link-lib-path library-extension)
+                          ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
+                          "-o"
+                          ,exec-file)
+                        :output-file-name exec-file))
+        ((member :target-os-linux *features*)
+         ;; Linux needs to use clang to link
+         (ext:run-clang `(,@options
+                          ,@all-names
+                          "-v"
+                          "-flto"
+                          "-Wl,-export_dynamic"
+                          ,@link-flags
+                          ,(bformat nil "-Wl,-lto_library,%s/libLTO.%s" link-lib-path library-extension)
+                          ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
+                          "-o"
+                          ,exec-file)
+                        :output-file-name exec-file))
+        (t (error "Add support for this operating system to cmp:generate-link-command"))))
     (truename output-file-name)))
 
 ;;;

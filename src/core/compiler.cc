@@ -63,30 +63,50 @@ THE SOFTWARE.
 
 
 namespace core {
-std::vector<fnLispCallingConvention> global_startup_functions;
+
+#define STARTUP_FUNCTION_CAPACITY_INIT 128
+#define STARTUP_FUNCTION_CAPACITY_MULTIPLIER 2
+size_t global_startup_capacity = 0;
+size_t global_startup_count = 0;
+fnLispCallingConvention* global_startup_functions = NULL;
 
 void register_startup_function(fnLispCallingConvention fptr)
 {
 //  printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
-  global_startup_functions.push_back(fptr);
+  if ( global_startup_functions == NULL ) {
+    global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
+    global_startup_count = 0;
+    global_startup_functions = (fnLispCallingConvention*)malloc(global_startup_capacity*sizeof(fnLispCallingConvention));
+  } else {
+    if ( global_startup_count == global_startup_capacity ) {
+      global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
+      global_startup_functions = (fnLispCallingConvention*)realloc(global_startup_functions,global_startup_capacity);
+    }
+  }
+  global_startup_functions[global_startup_count] = fptr;
+  global_startup_count++;
 };
 
 /*! Return the number of startup_functions that are waiting to be run*/
 size_t startup_functions_are_waiting()
 {
-//  printf("%s:%d startup_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_startup_functions.size() );
-  return global_startup_functions.size();
+//  printf("%s:%d startup_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_startup_count );
+  return global_startup_count;
 };
 
 /*! Invoke the startup functions and clear the array of startup functions */
 void startup_functions_invoke()
 {
 //  printf("%s:%d In startup_functions_invoke\n", __FILE__, __LINE__ );
-  for ( auto fn : global_startup_functions ) {
+  for ( size_t i = 0; i<global_startup_count; ++i ) {
+    fnLispCallingConvention fn = global_startup_functions[i];
 //    printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
     T_mv result = (fn)(LCC_PASS_MAIN());
   }
-  global_startup_functions.clear();
+  global_startup_count = 0;
+  global_startup_capacity = 0;
+  free(global_startup_functions);
+  global_startup_functions = NULL;
 //  printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
 }
 

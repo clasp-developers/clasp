@@ -6,16 +6,17 @@
   (subseq (ext:llvm-version) 0 (position #\. (ext:llvm-version) :from-end t)))
 
 ;; don't include this if you already have a splitting function (you probably do)
+#+(or)
 (defun split (string split-char)
   (loop with out = (make-string-output-stream)
-        with parts = ()
-        for char across string
-        do (if (char= char split-char)
-               (let ((part (get-output-stream-string out)))
-                 (when (string/= "" part)
-                   (push part parts)))
-               (write-char char out))
-        finally (return (nreverse parts))))
+     with parts = ()
+     for char across string
+     do (if (char= char split-char)
+            (let ((part (get-output-stream-string out)))
+              (when (string/= "" part)
+                (push part parts)))
+            (write-char char out))
+     finally (return (nreverse parts))))
 
 (defun ensure-directory-namestring (namestring)
   (if (char= (char namestring (1- (length namestring)))
@@ -27,7 +28,7 @@
   (mapcar
    (lambda (namestring)
      (pathname (ensure-directory-namestring namestring)))
-   (split var #\:)))
+   (core:split var ":")))
 
 (defvar *clang-names* (list
                        (format NIL "clang-~a" (llvm-short-version))
@@ -46,13 +47,15 @@
 
 (defparameter core:*clang-bin* (discover-clang))
 
+#+cclasp
 (define-condition clang-not-found-error (error)
   ((tried-path :initarg :path :initform NIL :accessor tried-path))
   (:report (lambda (c s) (format s "Could not find clang~@[ on path ~s~]."
                                  (tried-path c)))))
 
-(defun run-clang (args &key (clang core:*clang-bin*))
+(defun run-clang (args &key (clang core:*clang-bin*) output-file-name)
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
+  #+cclasp
   (labels ((read-path ()
              (list (pathname (read *query-io*))))
            (clang-usable-p ()
@@ -73,4 +76,6 @@
                  (setf *clang-bin* value clang value)
                  NIL))))
     (loop until (clang-usable-p)))
-  (cmp:safe-system (list* (namestring clang) args)))
+  (cmp:safe-system (list* (namestring clang) args) :output-file-name output-file-name))
+
+(export 'run-clang)

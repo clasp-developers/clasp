@@ -195,6 +195,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 
 
+
 (defvar +ecl-syntax-progv-list+
   (list
    '(
@@ -467,7 +468,42 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (t (error "bad module name: ~s" module))))
 
 
+(defun default-link-flags ()
+  "Return the link flags and the library dir where libLTO.<library-extension> can be found and the library extension"
+  (let (err error-msg stream)
+    (multiple-value-setq (err error-msg stream)
+      (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))
+    (let* ((ldflags (split-at-white-space (read-line stream)))
+           (clasp-lib-dir (bformat nil "-L%s" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
+           (libdir (read-line stream))
+           (libdir-flag (list (bformat nil "-L%s" libdir)))
+           (libs (split-at-white-space (read-line stream)))
+           (clasp-build-libraries (split-at-white-space *clasp-build-libraries*))
+           (extra-flags (list "-lcurses"
+                              "-lexpat"
+                              "-lgmp"
+                              "-lgmpxx"
+                              "-lm"
+                              "-lc++"
+                              "-Wl,-stack_size,0x1000000"
+                              "-flto"
+                              "-fvisibility=default"
+                              "-stdlib=libc++"
+                              ))
+           (link-flags (append ldflags (list clasp-lib-dir) libdir-flag libs clasp-build-libraries extra-flags)))
+      (close stream)
+      (if (member :use-boehm *features*)
+          (setq link-flags (cons "-lgc" link-flags)))
+      (let ((library-extension (if (member :target-os-darwin *features*)
+                                   "dylib"
+                                   "so")))
+        (values link-flags libdir library-extension)))))
 
+(defun link-flags ()
+  (default-link-flags))
+(export 'link-flags)
+
+  
 (si:fset 'and
 	   #'(lambda (whole env)
 	       (let ((forms (cdr whole)))
@@ -742,6 +778,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
    ;;    #P"kernel/cmp/mincomp"
    #P"kernel/cmp/compiler"
    #P"kernel/cmp/compilefile"
+   #P"kernel/cmp/external-clang"
    #P"kernel/cmp/cmpbundle"
    :pre-repl
    #P"kernel/cmp/cmprepl"
@@ -797,9 +834,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     #P"kernel/clos/inspect"
     :clos
     #P"kernel/lsp/ffi"
-    #P"modules/sockets/sockets.lisp"
+    #P"modules/sockets/sockets"
     ;;    asdf/build/asdf
-    #P"kernel/cmp/external-clang"
     :front
     #P"kernel/lsp/top"
     #'maybe-insert-epilogue-bclasp

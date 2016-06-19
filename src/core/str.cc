@@ -270,29 +270,28 @@ CL_DEFMETHOD Symbol_sp Str_O::asKeywordSymbol() const {
 CL_LISPIFY_NAME("core:splitAtWhiteSpace");
 CL_DEFMETHOD List_sp Str_O::splitAtWhiteSpace() {
   vector<string> parts = core::split(this->get(), " \n\t");
-  Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  Cons_sp cur = first;
+  T_sp first = _Nil<T_O>();
+  T_sp* cur = &first;
   for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
-    Cons_sp one = Cons_O::create(Str_O::create(*it), _Nil<T_O>());
-    cur->setCdr(one);
-    cur = one;
+    Cons_sp cons = Cons_O::create(Str_O::create(*it), _Nil<T_O>());
+    *cur = cons;
+    cur = &(cons->_Cdr);
   }
-  return oCdr(first);
+  return first;
 }
+
 
 CL_LISPIFY_NAME("core:split");
 CL_DEFMETHOD List_sp Str_O::split(const string &chars) {
-  TESTING();
   vector<string> parts = core::split(this->get(), chars);
-  List_sp result(_Nil<T_O>());
-  for (vector<string>::reverse_iterator it = parts.rend(); it != parts.rbegin(); ++it) {
-    Str_sp sone = translate::to_object<const string &>::convert(*it);
-    result = Cons_O::create(sone, result);
+  T_sp first = _Nil<T_O>();
+  T_sp* cur = &first;
+  for (vector<string>::iterator it = parts.begin(); it != parts.end(); it++) {
+    Cons_sp cons = Cons_O::create(Str_O::create(*it), _Nil<T_O>());
+    *cur = cons;
+    cur = &(cons->_Cdr);
   }
-  return result;
-#if 0
-	return Cons_O::createFromRangeObjectify< vector<string>::iterator, string >(parts.begin(),parts.end());
-#endif
+  return first;
 }
 
 #if 0

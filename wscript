@@ -1,6 +1,6 @@
 import os
 import StringIO
-
+from waflib.extras import clang_compilation_database
 from waflib import Utils
 
 top = '.'
@@ -19,8 +19,9 @@ VARIANTS = [ 'clasp_boehm_o',
              'clasp_mps_d' ]
 
 class variant():
-    pass
-
+    def common_setup(self,cfg):
+        cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,clasp.lto.o')
+        
 def configure_clasp(cfg,variant):
     include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.__class__.__name__)
     print("Including from %s" % include_path )
@@ -42,6 +43,7 @@ class clasp_boehm_o(variant):
         cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_boehm_o/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -59,6 +61,7 @@ class clasp_boehm_d(variant):
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_boehm_d/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -77,6 +80,7 @@ class clasp_boehmdc_o(variant):
         cfg.env.append_value('CFLAGS', [ '-O3' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_boehmdc_o/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -95,6 +99,7 @@ class clasp_boehmdc_d(variant):
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_boehmdc_d/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -112,6 +117,7 @@ class clasp_mpsprep_o(variant):
         cfg.env.append_value('CXXFLAGS', [ '-O3' ])
         cfg.env.append_value('CFLAGS', [ '-O3' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_mpsprep_o/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -129,6 +135,7 @@ class clasp_mpsprep_d(variant):
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_mpsprep_d/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -145,6 +152,7 @@ class clasp_mps_o(variant):
         cfg.env.append_value('CXXFLAGS', [ '-O3' ])
         cfg.env.append_value('CFLAGS', [ '-O3' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_mps_o/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -161,6 +169,7 @@ class clasp_mps_d(variant):
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
+        self.common_setup(cfg)
         cfg.write_config_header('clasp_mps_d/config.h', remove=True)
     def install(self):
         return self.executable_name
@@ -225,9 +234,7 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
-    cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,clasp.lto.o')
     lto_library = "%s/libLTO.%s" % (os.getenv("CLASP_RELEASE_LLVM_LIB_DIR"), os.getenv("CLASP_LIB_EXTENSION"))
-    cfg.define("LTO_LIBRARY",lto_library)
     cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s" % lto_library)
     cfg.env.append_value('LINKFLAGS', ['-flto'])
     cfg.env.append_value('LINKFLAGS', ['-L/usr/lib'])
@@ -239,39 +246,43 @@ def configure(cfg):
 #    cfg.env.append_value('LINKFLAGS', ['-Wl,-exported_symbols_list,%s/src/llvmo/intrinsic-api.txt' % os.getenv("CLASP_HOME")] )
     cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('LINKFLAGS', ['-L../../build/clasp/Contents/Resources/lib/common/lib'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangAnalysis'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangARCMigrate'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangAST'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangASTMatchers'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangBasic'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangCodeGen'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangDriver'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangDynamicASTMatchers'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangEdit'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangFormat'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangFrontend'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangFrontendTool'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangIndex'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangLex'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangParse'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangRewrite'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangRewriteFrontend'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangSema'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangSerialization'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangStaticAnalyzerCheckers'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangStaticAnalyzerCore'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangStaticAnalyzerFrontend'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangTooling'])
-    cfg.env.append_value('LINKFLAGS', ['-lclangToolingCore'])
-    cfg.env.append_value('LINKFLAGS', ['-lboost_filesystem'])
-    cfg.env.append_value('LINKFLAGS', ['-lboost_regex'])
-    cfg.env.append_value('LINKFLAGS', ['-lboost_date_time'])
-    cfg.env.append_value('LINKFLAGS', ['-lboost_program_options'])
-    cfg.env.append_value('LINKFLAGS', ['-lboost_system'])
-    cfg.env.append_value('LINKFLAGS', ['-lboost_iostreams'])
-    cfg.env.append_value('LINKFLAGS', ['-lz'])
-    cfg.env.append_value('LINKFLAGS', ['-lncurses'])
-    cfg.env.append_value('LINKFLAGS', ['-lreadline'])
+    clasp_build_libraries = [
+            '-lclangAnalysis',
+            '-lclangARCMigrate',
+            '-lclangAST',
+            '-lclangASTMatchers',
+            '-lclangBasic',
+            '-lclangCodeGen',
+            '-lclangDriver',
+            '-lclangDynamicASTMatchers',
+            '-lclangEdit',
+            '-lclangFormat',
+            '-lclangFrontend',
+            '-lclangFrontendTool',
+            '-lclangIndex',
+            '-lclangLex',
+            '-lclangParse',
+            '-lclangRewrite',
+            '-lclangRewriteFrontend',
+            '-lclangSema',
+            '-lclangSerialization',
+            '-lclangStaticAnalyzerCheckers',
+            '-lclangStaticAnalyzerCore',
+            '-lclangStaticAnalyzerFrontend',
+            '-lclangTooling',
+            '-lclangToolingCore',
+            '-lboost_filesystem',
+            '-lboost_regex',
+            '-lboost_date_time',
+            '-lboost_program_options',
+            '-lboost_system',
+            '-lboost_iostreams',
+            '-lz',
+            '-lncurses',
+            '-lreadline' ]
+    sep = " "
+    cfg.define("CLASP_BUILD_LIBRARIES", sep.join(clasp_build_libraries))
+    cfg.env.append_value('LINKFLAGS', clasp_build_libraries)
     env_copy = cfg.env.derive()
     for v in VARIANTS:
         vi = eval(v+"()")

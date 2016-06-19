@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+#include <unistd.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -352,10 +354,11 @@ CL_DEFUN T_mv ext__system(Str_sp cmd) {
   }
 }
 
-CL_LAMBDA(call-and-arguments);
+CL_LAMBDA(call-and-arguments &optional return-stream);
 CL_DECLARE();
-CL_DOCSTRING("vfork_execvp");
-CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
+CL_DOCSTRING("vfork_execvp - set optional return-stream if you want the output stream of the child");
+CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) {
+  bool bReturnStream = return_stream.isTrue();
   if (call_and_arguments.nilp())
     return Values0<T_O>();
   std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
@@ -363,16 +366,31 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
   for (auto cur : call_and_arguments) {
     Str_sp sarg = gc::As<Str_sp>(oCar(cur));
     size_t sarg_size = sarg->size();
-//    printf("%s:%d sarg = %s sarg->size() = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size());
+    printf("%s:%d sarg = %s sarg->size() = %ld  strlen(sarg->c_str()) = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size(), strlen(sarg->c_str()));
     char *arg = (char *)malloc(sarg_size + 1);
-    std::strcpy(arg, sarg->c_str());
+    std::strncpy(arg, sarg->c_str(),sarg_size);
+    arg[sarg_size] = '\0';
     execvp_args[idx++] = arg;
   }
   execvp_args[idx] = NULL;
+  int filedes[2];
+  if (bReturnStream) {
+    if (pipe(filedes) == -1 ) {
+      perror("pipe");
+      abort();
+    }
+  }
   pid_t child_PID = vfork();
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
+      if ( bReturnStream ) {
+        while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(filedes[1]);
+        close(filedes[0]);
+        int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+        fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      }
       execvp(execvp_args[0], (char *const *)execvp_args.data());
       printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
       for (int i = 0; execvp_args[i] != NULL; ++i) {
@@ -391,16 +409,98 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments) {
         if (wait_ret != child_PID) {
           printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
         }
-        return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID));
+        if ( bReturnStream ) {
+          int flags = fcntl(filedes[0],F_GETFL,0);
+          fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
+          T_sp stream = clasp_make_file_stream_from_fd(Str_O::create("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+          return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+        }
+        return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
       }
       // error
-      return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)));
+      return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)),_Nil<T_O>());
     }
   } else {
     // Clean up args
     for (int i(0); i < execvp_args.size() - 1; ++i)
       free((void *)execvp_args[i]);
-    return Values(clasp_make_fixnum(-1), Str_O::create(std::strerror(errno)));
+    return Values(clasp_make_fixnum(-1), Str_O::create(std::strerror(errno)),_Nil<T_O>());
+  }
+}
+
+
+
+CL_LAMBDA(call-and-arguments &optional return-stream);
+CL_DECLARE();
+CL_DOCSTRING("fork_execvp - set optional return-stream if you want the output stream of the child");
+CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
+  bool bReturnStream = return_stream.isTrue();
+  if (call_and_arguments.nilp())
+    return Values0<T_O>();
+  std::vector<char const *> execvp_args(cl__length(call_and_arguments) + 1);
+  size_t idx = 0;
+  for (auto cur : call_and_arguments) {
+    Str_sp sarg = gc::As<Str_sp>(oCar(cur));
+    size_t sarg_size = sarg->size();
+//    printf("%s:%d sarg = %s sarg->size() = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size());
+    char *arg = (char *)malloc(sarg_size + 1);
+    std::strncpy(arg, sarg->c_str(),sarg_size);
+    arg[sarg_size] = '\0';
+      execvp_args[idx++] = arg;
+  }
+  execvp_args[idx] = NULL;
+  int filedes[2];
+  if (bReturnStream) {
+    if (pipe(filedes) == -1 ) {
+      perror("pipe");
+      abort();
+    }
+  }
+  pid_t child_PID = fork();
+  if (child_PID >= 0) {
+    if (child_PID == 0) {
+      // Child
+      if ( bReturnStream ) {
+        while ((dup2(filedes[1],STDOUT_FILENO) == -1) && (errno == EINTR)) {}
+        close(filedes[1]);
+        close(filedes[0]);
+        int flags = fcntl(STDOUT_FILENO,F_GETFL,0);
+        fcntl(STDOUT_FILENO,F_SETFL,flags|FD_CLOEXEC);
+      }
+      execvp(execvp_args[0], (char *const *)execvp_args.data());
+      printf("%s:%d execvp returned with errno=%d   strerror(errno) = %s\n", __FILE__, __LINE__, errno, strerror(errno));
+      for (int i = 0; execvp_args[i] != NULL; ++i) {
+        printf("    arg#%d  %s\n", i, execvp_args[i]);
+      }
+      printf("  cannot continue... exiting... sorry...\n");
+      _exit(0); // Should never reach
+    } else {
+      // Parent
+      int status;
+      pid_t wait_ret = wait(&status);
+      // Clean up args
+      for (int i(0); i < execvp_args.size() - 1; ++i)
+        free((void *)execvp_args[i]);
+      if (wait_ret >= 0) {
+        if (wait_ret != child_PID) {
+          printf("%s:%d wait return PID(%d) that did not match child(%d)\n", __FILE__, __LINE__, wait_ret, child_PID);
+        }
+        if ( bReturnStream ) {
+          int flags = fcntl(filedes[0],F_GETFL,0);
+          fcntl(filedes[0],F_SETFL,flags|O_NONBLOCK);
+          T_sp stream = clasp_make_file_stream_from_fd(Str_O::create("execvp"), filedes[0], clasp_smm_input_file, 8, CLASP_STREAM_DEFAULT_FORMAT, _Nil<T_O>());
+          return Values(_Nil<T_O>(), clasp_make_fixnum(child_PID),stream);
+        }
+        return Values(_Nil<T_O>(),clasp_make_fixnum(child_PID),_Nil<T_O>());
+      }
+      // error
+      return Values(clasp_make_fixnum(errno), Str_O::create(std::strerror(errno)),_Nil<T_O>());
+    }
+  } else {
+    // Clean up args
+    for (int i(0); i < execvp_args.size() - 1; ++i)
+      free((void *)execvp_args[i]);
+    return Values(clasp_make_fixnum(-1), Str_O::create(std::strerror(errno)),_Nil<T_O>());
   }
 }
 
