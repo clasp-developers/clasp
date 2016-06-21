@@ -459,16 +459,16 @@ def preprocess_task_generator(self):
         if ( task.__class__.__name__ == 'c' ):
             for node in task.outputs:
                 all_o_files.append(node)
-    generated_headers = [ 'src/main/include/generated/c-wrappers.h',
-                          'src/main/include/generated/enum_inc.h',
-                          'src/main/include/generated/initClassesAndMethods_inc.h',
-                          'src/main/include/generated/initFunctions_inc.h',
-                          'src/main/include/generated/initializers_inc.h',
-                          'src/main/include/generated/sourceInfo_inc.h',
-                          'src/main/include/generated/symbols_scraped_inc.h' ]
+    generated_headers = [ 'src/include/clasp/main/generated/c-wrappers.h',
+                          'src/include/clasp/main/generated/enum_inc.h',
+                          'src/include/clasp/main/generated/initClassesAndMethods_inc.h',
+                          'src/include/clasp/main/generated/initFunctions_inc.h',
+                          'src/include/clasp/main/generated/initializers_inc.h',
+                          'src/include/clasp/main/generated/sourceInfo_inc.h',
+                          'src/include/clasp/main/generated/symbols_scraped_inc.h' ]
     nodes = []
     for x in generated_headers:
-        nodes.append(self.path.make_node(x))
+        nodes.append(self.path.find_or_declare(x))
     self.create_task('generated_headers',all_sif_files,nodes)
     variant = self.bld.variant_obj
     library_node = self.path.find_or_declare('%s-all.lbc' % variant.bitcode_name )

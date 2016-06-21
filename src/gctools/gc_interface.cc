@@ -937,7 +937,7 @@ void initialize_clasp()
 extern "C" {
 
 #ifndef SCRAPING
-#include <generated/c-wrappers.h>
+#include C_WRAPPERS
 #endif
 };
 

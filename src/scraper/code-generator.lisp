@@ -537,7 +537,6 @@ Convert colons to underscores"
       (format sout "#endif // ALL_INITIALIZERS_CALL~%"))))
 
 (defun maybe-relative (dir)
-  (format t "Incoming dir: ~s~%" dir)
   (cond
     ((eq (car dir) :absolute) (list* :relative (cdr dir)))
     ((eq (car dir) :relative) dir)
