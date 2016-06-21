@@ -60,7 +60,6 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/asttooling/astVisitor.h>
-#include <clasp/cffi/cffi.h>
 #include <clasp/clbind/class_registry.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/array.h>

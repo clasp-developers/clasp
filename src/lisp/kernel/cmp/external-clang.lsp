@@ -47,7 +47,8 @@
 
 (defparameter core:*clang-bin* (discover-clang))
 
-#+cclasp
+ ;; This would only work after kernel/clos/conditions
+#+(or)
 (define-condition clang-not-found-error (error)
   ((tried-path :initarg :path :initform NIL :accessor tried-path))
   (:report (lambda (c s) (format s "Could not find clang~@[ on path ~s~]."
@@ -55,7 +56,10 @@
 
 (defun run-clang (args &key (clang core:*clang-bin*) output-file-name)
   "Run the discovered clang compiler on the arguments. This replaces a simpler version of run-clang."
-  #+cclasp
+  (unless (probe-file clang)
+    (error "Could not find clang at ~a" clang))
+  ;; This would only work after kernel/clos/conditions
+  #+(or)
   (labels ((read-path ()
              (list (pathname (read *query-io*))))
            (clang-usable-p ()

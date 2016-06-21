@@ -152,8 +152,6 @@ typedef bool _Bool;
 
 #include <clasp/clbind/clbind.h>
 
-#include <clasp/cffi/cffi.h>
-
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugLoc.h>

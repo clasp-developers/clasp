@@ -72,7 +72,7 @@ fnLispCallingConvention* global_startup_functions = NULL;
 
 void register_startup_function(fnLispCallingConvention fptr)
 {
-  printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
+//  printf("%s:%d In register_startup_function --> %p\n", __FILE__, __LINE__, fptr);
   if ( global_startup_functions == NULL ) {
     global_startup_capacity = STARTUP_FUNCTION_CAPACITY_INIT;
     global_startup_count = 0;
@@ -80,7 +80,7 @@ void register_startup_function(fnLispCallingConvention fptr)
   } else {
     if ( global_startup_count == global_startup_capacity ) {
       global_startup_capacity = global_startup_capacity*STARTUP_FUNCTION_CAPACITY_MULTIPLIER;
-      global_startup_functions = (fnLispCallingConvention*)realloc(global_startup_functions,global_startup_capacity);
+      global_startup_functions = (fnLispCallingConvention*)realloc(global_startup_functions,global_startup_capacity*sizeof(fnLispCallingConvention));
     }
   }
   global_startup_functions[global_startup_count] = fptr;
@@ -90,7 +90,7 @@ void register_startup_function(fnLispCallingConvention fptr)
 /*! Return the number of startup_functions that are waiting to be run*/
 size_t startup_functions_are_waiting()
 {
-  printf("%s:%d startup_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_startup_count );
+//  printf("%s:%d startup_functions_are_waiting returning %lu\n", __FILE__, __LINE__, global_startup_count );
   return global_startup_count;
 };
 
@@ -98,17 +98,24 @@ size_t startup_functions_are_waiting()
 void startup_functions_invoke()
 {
   if (global_startup_count>0) {
-    printf("%s:%d In startup_functions_invoke\n", __FILE__, __LINE__ );
+#if 0
+    printf("%s:%d In startup_functions_invoke - there are %lu startup functions\n", __FILE__, __LINE__, global_startup_count );
     for ( size_t i = 0; i<global_startup_count; ++i ) {
       fnLispCallingConvention fn = global_startup_functions[i];
-      printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
+      printf("%s:%d     Startup fn[%lu]@%p\n", __FILE__, __LINE__, i, fn );
+    }
+    printf("%s:%d Starting to call the startup functions\n", __FILE__, __LINE__ );
+#endif
+    for ( size_t i = 0; i<global_startup_count; ++i ) {
+      fnLispCallingConvention fn = global_startup_functions[i];
+//      printf("%s:%d     About to invoke fn@%p\n", __FILE__, __LINE__, fn );
       T_mv result = (fn)(LCC_PASS_MAIN());
     }
     global_startup_count = 0;
     global_startup_capacity = 0;
     free(global_startup_functions);
     global_startup_functions = NULL;
-    printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
+//    printf("%s:%d Done with startup_functions_invoke()\n", __FILE__, __LINE__ );
   }
 }
 

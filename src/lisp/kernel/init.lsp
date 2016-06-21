@@ -511,7 +511,7 @@ a relative path from there."
                               ))
            (link-flags (append ldflags #+(or)(list clasp-lib-dir) libdir-flag libs clasp-build-libraries extra-flags)))
       (close stream)
-      (if (member :use-boehm *features*)
+      (if (or (member :use-boehm *features*) (member :use-boehmdc *features*))
           (setq link-flags (cons "-lgc" link-flags)))
       (let ((library-extension (if (member :target-os-darwin *features*)
                                    "dylib"

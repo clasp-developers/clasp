@@ -45,7 +45,6 @@ THE SOFTWARE.
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/commandLineOptions.h>
-#include <clasp/cffi/cffiPackage.h>
 #include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -80,7 +79,7 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     gctools::GcToolsExposer_O GcToolsPkg(_lisp);
     clbind::ClbindExposer_O ClbindPkg(_lisp);
     llvmo::LlvmoExposer_O llvmopkg(_lisp);
-    cffi::CffiExposer_O cffipkg(_lisp);
+//    cffi::CffiExposer_O cffipkg(_lisp);
     sockets::SocketsExposer_O SocketsPkg(_lisp);
     serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
     asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
@@ -88,7 +87,7 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     _lisp->installPackage(&GcToolsPkg);
     _lisp->installPackage(&ClbindPkg);
     _lisp->installPackage(&llvmopkg);
-    _lisp->installPackage(&cffipkg);
+//    _lisp->installPackage(&cffipkg);
     _lisp->installPackage(&SocketsPkg);
     _lisp->installPackage(&ServeEventPkg);
     _lisp->installPackage(&AsttoolingPkg);
@@ -104,9 +103,11 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     llvmo::LlvmoExposer llvmopkg(_lisp);
     _lisp->installPackage(&llvmopkg);
 
+#if 0
     cffi::CffiExposer cffipkg(_lisp);
     _lisp->installPackage(&cffipkg);
-
+#endif
+    
     sockets::SocketsExposer SocketsPkg(_lisp);
     _lisp->installPackage(&SocketsPkg);
 
