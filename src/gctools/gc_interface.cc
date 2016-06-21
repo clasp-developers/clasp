@@ -229,19 +229,20 @@ NOINLINE void expose_function(const std::string& pkg_sym,
   std::string pkgName;
   std::string symbolName;
   core::colon_split(pkg_sym,pkgName,symbolName);
+//  printf("%s:%d  expose_function   pkgName=%s  symbolName=%s\n", __FILE__, __LINE__, pkgName.c_str(), symbolName.c_str() );
   core::wrap_function(pkgName,symbolName,fp,lambdaList);
 }
 
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_SIGNATURES
-  #include <generated/initFunctions_inc.h>
+  #include INIT_FUNCTIONS_INC_H
   #undef EXPOSE_FUNCTION_SIGNATURES
 #endif
 
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_BINDINGS_HELPERS
   #undef EXPOSE_FUNCTION_BINDINGS
-  #include <generated/initFunctions_inc.h>
+  #include INIT_FUNCTIONS_INC_H
   #undef EXPOSE_FUNCTION_BINDINGS_HELPERS
 #endif
 
@@ -250,7 +251,7 @@ void initialize_functions()
 //  printf("%s:%d About to initialize_functions\n", __FILE__, __LINE__ );
 #ifndef SCRAPING
   #define EXPOSE_FUNCTION_BINDINGS
-  #include <generated/initFunctions_inc.h>
+  #include INIT_FUNCTIONS_INC_H
   #undef EXPOSE_FUNCTION_BINDINGS
 #endif
 };
@@ -773,7 +774,7 @@ void set_static_class_symbols(core::BootStrapCoreSymbolMap* bootStrapSymbolMap)
 {
 #define SET_CLASS_SYMBOLS
 #ifndef SCRAPING
-#include <generated/initClassesAndMethods_inc.h>
+#include INIT_CLASSES_INC_H
 #endif
 #undef SET_CLASS_SYMBOLS
 }
@@ -849,13 +850,13 @@ void calculate_class_precedence_lists()
 
 #define EXPOSE_STATIC_CLASS_VARIABLES
 #ifndef SCRAPING
-  #include <generated/initClassesAndMethods_inc.h>
+  #include INIT_CLASSES_INC_H
 #endif
 #undef EXPOSE_STATIC_CLASS_VARIABLES
 
 #define EXPOSE_METHODS
 #ifndef SCRAPING
-  #include <generated/initClassesAndMethods_inc.h>
+  #include INIT_CLASSES_INC_H
 #endif
 #undef EXPOSE_METHODS
 
@@ -873,7 +874,7 @@ void initialize_classes_and_methods()
 {
 #define EXPOSE_CLASSES_AND_METHODS
 #ifndef SCRAPING
-  #include <generated/initClassesAndMethods_inc.h>
+  #include INIT_CLASSES_INC_H
 #endif
 #undef EXPOSE_CLASSES_AND_METHODS
 }
@@ -901,7 +902,7 @@ void initialize_clasp()
   MPS_LOG("initialize_clasp ALLOCATE_ALL_CLASSES");
   #define ALLOCATE_ALL_CLASSES
   #ifndef SCRAPING
-    #include <generated/initClassesAndMethods_inc.h>
+    #include INIT_CLASSES_INC_H
   #endif
   #undef ALLOCATE_ALL_CLASSES
   
@@ -912,14 +913,14 @@ void initialize_clasp()
   // Define base classes
   #define SET_BASES_ALL_CLASSES
   #ifndef SCRAPING
-    #include <generated/initClassesAndMethods_inc.h>
+    #include INIT_CLASSES_INC_H
   #endif
   #undef SET_BASES_ALL_CLASSES
 
     // Define base classes
   #define CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
   #ifndef SCRAPING
-    #include <generated/initClassesAndMethods_inc.h>
+    #include INIT_CLASSES_INC_H
   #endif
   #undef CALCULATE_CLASS_PRECEDENCE_ALL_CLASSES
 

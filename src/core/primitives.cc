@@ -366,7 +366,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
   for (auto cur : call_and_arguments) {
     Str_sp sarg = gc::As<Str_sp>(oCar(cur));
     size_t sarg_size = sarg->size();
-    printf("%s:%d sarg = %s sarg->size() = %ld  strlen(sarg->c_str()) = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size(), strlen(sarg->c_str()));
+//    printf("%s:%d sarg = %s sarg->size() = %ld  strlen(sarg->c_str()) = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size(), strlen(sarg->c_str()));
     char *arg = (char *)malloc(sarg_size + 1);
     std::strncpy(arg, sarg->c_str(),sarg_size);
     arg[sarg_size] = '\0';

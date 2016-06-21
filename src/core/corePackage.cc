@@ -716,7 +716,7 @@ SYMBOL_SC_(CorePkg, foreach);
 SYMBOL_SC_(CorePkg, STARPATHSTAR);
 SYMBOL_SC_(CorePkg, STARargsSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARpackageSTAR);
-SYMBOL_SC_(CorePkg, STARcurrent_working_directorySTAR);
+//SYMBOL_SC_(CorePkg, STARcurrent_working_directorySTAR);
 SYMBOL_EXPORT_SC_(ClPkg, STARmodulesSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, progn);
 SYMBOL_SC_(CorePkg, backquote);

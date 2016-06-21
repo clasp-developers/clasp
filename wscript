@@ -19,11 +19,12 @@ VARIANTS = [ 'clasp_boehm_o',
              'clasp_mps_d' ]
 
 class variant():
+    stage = 0
     def common_setup(self,cfg):
-        cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,clasp.lto.o')
+        cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name)
         
 def configure_clasp(cfg,variant):
-    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.__class__.__name__)
+    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir) #__class__.__name__)
     print("Including from %s" % include_path )
     cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
     cfg.define("EXECUTABLE_NAME",variant.executable_name)
@@ -31,11 +32,12 @@ def configure_clasp(cfg,variant):
     cfg.define("VARIANT_NAME",variant.variant_name)
     
 class clasp_boehm_o(variant):
+    variant_dir = 'clasp_boehm_o'
     variant_name = 'clasp-boehm'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_boehm_o", env=env_copy.derive())
+        cfg.setenv(self.variant_dir, env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_BOEHM",1)
         cfg.define("_RELEASE_BUILD",1)
@@ -44,11 +46,24 @@ class clasp_boehm_o(variant):
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_boehm_o/config.h', remove=True)
+        cfg.write_config_header('%s/config.h'%self.variant_dir, remove=True)
     def install(self):
         return self.executable_name
 
+class iclasp_boehm_o(clasp_boehm_o):
+    stage = 0
+
+class aclasp_boehm_o(clasp_boehm_o):
+    stage = 1
+
+class bclasp_boehm_o(clasp_boehm_o):
+    stage = 2
+
+class cclasp_boehm_o(clasp_boehm_o):
+    stage = 3
+
 class clasp_boehm_d(variant):
+    variant_dir = 'clasp_boehm_d'
     variant_name = 'clasp-boehm'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
@@ -67,6 +82,7 @@ class clasp_boehm_d(variant):
         return self.executable_name
 
 class clasp_boehmdc_o(variant):
+    variant_dir = 'clasp_boehmdc_o'
     variant_name = 'clasp-boehmdc'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
@@ -85,7 +101,22 @@ class clasp_boehmdc_o(variant):
     def install(self):
         return self.executable_name
 
+
+class iclasp_boehmdc_o(clasp_boehmdc_o):
+    stage = 0
+
+class aclasp_boehmdc_o(clasp_boehmdc_o):
+    stage = 1
+
+class bclasp_boehmdc_o(clasp_boehmdc_o):
+    stage = 2
+
+class cclasp_boehmdc_o(clasp_boehmdc_o):
+    stage = 3
+
+
 class clasp_boehmdc_d(variant):
+    variant_dir = 'clasp_boehmdc_d'
     variant_name = 'clasp-boehmdc'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
@@ -105,6 +136,7 @@ class clasp_boehmdc_d(variant):
         return self.executable_name
 
 class clasp_mpsprep_o(variant):
+    variant_dir = 'clasp_mpsprep_o'
     variant_name = 'clasp-mpsprep'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
@@ -123,6 +155,7 @@ class clasp_mpsprep_o(variant):
         return self.executable_name
         
 class clasp_mpsprep_d(variant):
+    variant_dir = 'clasp_mpsprep_d'
     variant_name = 'clasp-mpsprep'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
@@ -141,6 +174,7 @@ class clasp_mpsprep_d(variant):
         return self.executable_name
 
 class clasp_mps_o(variant):
+    variant_dir = 'clasp_mps_o'
     variant_name = 'clasp-mps'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
@@ -157,7 +191,21 @@ class clasp_mps_o(variant):
     def install(self):
         return self.executable_name
 
+class iclasp_mps_o(clasp_mps_o):
+    stage = 0
+
+class aclasp_mps_o(clasp_mps_o):
+    stage = 1
+
+class bclasp_mps_o(clasp_mps_o):
+    stage = 2
+
+class cclasp_mps_o(clasp_mps_o):
+    stage = 3
+
+
 class clasp_mps_d(variant):
+    variant_dir = 'clasp_mps_d'
     variant_name = 'clasp-mps'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
@@ -173,6 +221,16 @@ class clasp_mps_d(variant):
         cfg.write_config_header('clasp_mps_d/config.h', remove=True)
     def install(self):
         return self.executable_name
+
+import subprocess
+
+def lisp_source_files(exe,stage):
+    print("About to execute: %s" % exe)
+    proc = subprocess.Popen([exe, "-I", "-f", "ecl-min", "-e", "(source-files-%s)"%stage, "-e", "(quit)"], stdout=subprocess.PIPE, shell=True)
+    (out, err) = proc.communicate()
+    print( "source-files-%s: %s" % (stage,out))
+    return out
+
 
 def options(opt):
     opt.load('compiler_cxx')
@@ -302,18 +360,33 @@ def build(bld):
         bld._source_files = []
         bld.recurse('src')
         bld.recurse('src/main')
+
 #        print("recursed source_files = %s" % bld._source_files)
 #    bld.program(source=all_files(),target="clasp")
-        bld.env = bld.all_envs[bld.variant]
         variant = eval(bld.variant+"()")
-        clasp_executable = bld.path.find_or_declare('clasp')
-        lto_debug_info = bld.path.find_or_declare('clasp.lto.o')
-        intrinsics_info = bld.path.find_or_declare('clasp-intrinsics.lbc')
+        bld.env = bld.all_envs[bld.variant]
+        bld.variant_obj = variant
+        clasp_executable = bld.path.find_or_declare(variant.executable_name)
+        lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name)
+        intrinsics_info = bld.path.find_or_declare('%s-intrinsics.lbc'%variant.bitcode_name)
+        print("Building with variant = %s" % variant)
         bld.program(source=bld._source_files,target=[clasp_executable,lto_debug_info])
-        bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), 'clasp',chmod=Utils.O755)
-#        bld.install_as('${PREFIX}/%s/%s.lto.o' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), 'clasp.lto.o')
-        bld.install_as('${PREFIX}/Contents/bitcode/%s.lbc' % variant.bitcode_name, 'clasp-all-cxx.lbc')
-        bld.install_as('${PREFIX}/Contents/bitcode/%s-intrinsics.lbc' % variant.bitcode_name, 'clasp-intrinsics.lbc')
+        bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), variant.executable_name, chmod=Utils.O755)
+        files = lisp_source_files("iclasp-boehm-o","aclasp")
+        print("aclasp source files: %s" % files)
+        if (variant.stage>=0):
+            bld.add_group()
+            aclasp_lisp_sources = ''
+            bld(rule='i%s -I -f ecl-min -e "(compile-aclasp)" -e "(link-aclasp)"' % variant.bitcode_name,target="a%s"%variant.bitcode_name)
+            bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-all.lbc' % variant.bitcode_name, '%s-all.lbc'%variant.bitcode_name)
+            bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-intrinsics.lbc' % variant.bitcode_name, '%s-intrinsics.lbc'%variant.bitcode_name)
+        if (variant.stage>=1):
+            bld.add_group()
+            bld(rule='a%s -e "(compile-link-bclasp)"' % variant.bitcode_name,target="b%s"%variant.bitcode_name)
+        if (variant.stage>=2):
+            bld.add_group()
+            bld(rule='b%s -e "(compile-link-cclasp)"' % variant.bitcode_name,target="c%s"%variant.bitcode_name)
+        # install
 
 from waflib import TaskGen
 from waflib import Task
@@ -357,7 +430,6 @@ class link_bitcode(Task.Task):
         cmd.write('llvm-link ')
         for f in self.inputs:
             cmd.write(' %s' % f.abspath())
-        print("link_bitcode self.outputs[0].abspath() --> %s" % self.outputs[0].abspath())
         cmd.write(' -o %s' % self.outputs[0])
         return self.exec_command(cmd.getvalue())
 
@@ -398,8 +470,9 @@ def preprocess_task_generator(self):
     for x in generated_headers:
         nodes.append(self.path.make_node(x))
     self.create_task('generated_headers',all_sif_files,nodes)
-    library_node = self.path.find_or_declare('clasp-all-cxx.lbc')
-    intrinsics_library_node = self.path.find_or_declare('clasp-intrinsics.lbc')
+    variant = self.bld.variant_obj
+    library_node = self.path.find_or_declare('%s-all.lbc' % variant.bitcode_name )
+    intrinsics_library_node = self.path.find_or_declare('%s-intrinsics.lbc' % variant.bitcode_name )
     print("library_node = %s" % library_node.abspath())
     self.create_task('link_bitcode',all_o_files,library_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_library_node)

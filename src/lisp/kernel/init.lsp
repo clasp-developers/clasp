@@ -387,9 +387,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-intrinsics-bitcode-pathname (link-type)
   (cond
     ((eq link-type :fasl)
-     (translate-logical-pathname (bformat nil "app-contents:bitcode;%s-intrinsics.lbc" +bitcode-name+)))
+     (translate-logical-pathname (bformat nil "cxx-bitcode:%s-intrinsics.lbc" +bitcode-name+)))
     ((eq link-type :executable)
-     (translate-logical-pathname (bformat nil "app-contents:bitcode;%s.lbc" +bitcode-name+)))
+     (translate-logical-pathname (bformat nil "cxx-bitcode:%s-all.lbc" +bitcode-name+)))
     (t (error "Provide a bitcode file for the link-type ~a" link-type))))
 
 
@@ -411,46 +411,65 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
          (bitcode-host (bformat nil "%s%s" stage type-modified-host-suffix)))
     bitcode-host))
 
-(defun maybe-relative-pathname-to-sys (x &optional (sys-pn (translate-logical-pathname "SYS:")))
-  (flet ((relative-pathname-p (pathname)
-           (eq :relative (pathname-directory pathname))))
-    (if (relative-pathname-p x)
-        (make-pathname :directory (pathname-directory x)
-                       :name (pathname-name x)
-                       :type (pathname-type x))
-        (let ((dir-x (pathname-directory x)))
-          (if (eq (car dir-x) :absolute)
-              (make-pathname :directory
-                             (cons :relative
-                                   (strip-root (cdr dir-x) (cdr (pathname-directory sys-pn))))
-                             :defaults x)
-              x)))))
+
+(defun strip-root (l)
+  "Search for the string 'kernel', 'module', or 'generated' and return the rest of the list that starts with that"
+  (or (member "kernel" l :test #'string=)
+      (member "module" l :test #'string=)
+      (member "generated" l :test #'string=)
+      (error "Could not find \"kernel\", \"module\", or \"generated\" in ~a" l)))
+
+(defun ensure-relative-pathname (input)
+  "If the input pathname is absolute then search for kernel, module, or generated and return
+a relative path from there."
+  #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s\n" input sys-pn)
+  (let ((result
+         (cond
+           ((eq :relative (car (pathname-directory input)))
+            (make-pathname :directory (pathname-directory input)
+                           :name (pathname-name input)))
+           ((eq :absolute (car (pathname-directory input)))
+            (make-pathname :directory (cons :relative (strip-root (cdr (pathname-directory input))))
+                           :name (pathname-name input))
+            (t (error "ensure-relative-pathname could not handle ~a" input))))))
+    #+(or)(bformat t "ensure-relative-pathname result = %s\n" result)
+    result))
+
 
 (defun build-pathname (partial-pathname &optional (type :lisp) stage)
-  (let ((module (maybe-relative-pathname-to-sys partial-pathname))
-        (target-host "build")
-        (target-dir (build-target-dir type stage))
-        (sys-root (translate-logical-pathname "SYS:"))
-        pn)
-    #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
-    #+dbg-print(bformat t "DBG-PRINT   target-host: %s\n" target-host)
-    #+dbg-print(bformat t "DBG-PRINT   target-dir: %s\n" target-dir)
-    (let ((result (cond
-                    ((eq type :lisp)
-                     (cond
-                       ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) sys-root)))
-                       ((probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) sys-root)))
-                       (t (error "Could not find source file with lsp or lisp extension for ~s" module))))
-                    ((eq type :executable)
-                     (let* ((stage-char (default-target-stage))cond
-                            (filename (bformat nil "%s%s" stage-char +bitcode-name+))
-                            (exec-pathname (merge-pathnames (make-pathname :name filename :type nil :defaults module) (translate-logical-pathname "app-executable:") )))
-                       exec-pathname))
-                    (t
-                     (merge-pathnames (merge-pathnames module (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
-                                      (translate-logical-pathname (make-pathname :host target-host)) ))))) 
-      #+dbg-print(bformat t "DBG-PRINT   result: %s\n" result)
-      result)))
+  (flet ((find-lisp-source (module root)
+           (or
+            (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lsp")) root))
+            (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
+            (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
+    (let ((module (ensure-relative-pathname partial-pathname))
+          (target-host "lisp-build")
+          (target-dir (build-target-dir type stage))
+          pn)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname  target-host: %s\n" target-host)
+      #+dbg-print(bformat t "DBG-PRINT build-pathname  target-dir: %s\n" target-dir)
+      (let ((result (cond
+                      ((eq type :lisp)
+                       (cond
+                         ((string= "generated" (second (pathname-directory module)))
+                          ;; Strip the "generated" part of the directory
+                          (find-lisp-source (make-pathname
+                                             :directory (cons :relative (cddr (pathname-directory module)))
+                                             :name (pathname-name module))
+                                            (translate-logical-pathname "LISP-GENERATED:")))
+                         (t
+                          (find-lisp-source module (translate-logical-pathname "LISP-SOURCE:")))))
+                      ((eq type :executable)
+                       (let* ((stage-char (default-target-stage))cond
+                              (filename (bformat nil "%s%s" stage-char +bitcode-name+))
+                              (exec-pathname (merge-pathnames (make-pathname :name filename :type nil :defaults module) (translate-logical-pathname "app-executable:") )))
+                         exec-pathname))
+                      (t
+                       (merge-pathnames (merge-pathnames module (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
+                                        (translate-logical-pathname (make-pathname :host target-host)) ))))) 
+        #+dbg-print(bformat t "DBG-PRINT build-pathname   result: %s\n" result)
+        result))))
 (export '(build-pathname build-host))
   
 (defun get-pathname-with-type (module &optional (type "lsp"))
@@ -474,7 +493,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     (multiple-value-setq (err error-msg stream)
       (ext:vfork-execvp (list "llvm-config" "--ldflags" "--libdir" "--libs") t))
     (let* ((ldflags (split-at-white-space (read-line stream)))
-           (clasp-lib-dir (bformat nil "-L%s" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
+           #+(or)(clasp-lib-dir (bformat nil "-L%s" (namestring (translate-logical-pathname "app-resources:lib;common;lib;"))))
            (libdir (read-line stream))
            (libdir-flag (list (bformat nil "-L%s" libdir)))
            (libs (split-at-white-space (read-line stream)))
@@ -490,7 +509,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
                               "-fvisibility=default"
                               "-stdlib=libc++"
                               ))
-           (link-flags (append ldflags (list clasp-lib-dir) libdir-flag libs clasp-build-libraries extra-flags)))
+           (link-flags (append ldflags #+(or)(list clasp-lib-dir) libdir-flag libs clasp-build-libraries extra-flags)))
       (close stream)
       (if (member :use-boehm *features*)
           (setq link-flags (cons "-lgc" link-flags)))
@@ -599,32 +618,23 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
          (garbage-collector (build-configuration))
          (target-backend (bformat nil "%s-%s" stage garbage-collector)))
     target-backend))
+(export 'default-target-backend)
 
 (defvar *target-backend* (default-target-backend))
 (export '*target-backend*)
 
-(defun strip-root (l orig-sys)
-  (let ((cur l)
-        (root orig-sys))
-    (tagbody
-     top
-       (if (and (car cur) (eql (car cur) (car root)))
-           (progn
-             (setq cur (cdr cur))
-             (setq root (cdr root))
-             (go top))))
-    (if root
-        (error "Roots don't match - could not strip all of root ~s from ~s" orig-sys l))
-    cur))
 
 
 
-(defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
-  ;;  (if target-backend nil (error "target-backend is nil"))
-  (let ((relative (maybe-relative-pathname-to-sys pathname)))
-    (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-backend)))))
+#+(or)
+(progn
+  (defun target-backend-pathname (pathname &key (target-backend *target-backend*) &allow-other-keys)
+    ;;  (if target-backend nil (error "target-backend is nil"))
+    (let ((relative (ensure-relative-pathname-to-sys pathname)))
+      (merge-pathnames relative (translate-logical-pathname (make-pathname :host target-backend)))))
+  (export 'target-backend-pathname)))
 
-(export '(default-target-backend target-backend-pathname))
+
 
 (defun bitcode-exists-and-up-to-date (entry)
   (let* ((filename (entry-filename entry))
@@ -646,6 +656,18 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
           sources)
     (nreverse out-of-dates)))
 
+(defun source-file-names (start end)
+  (let ((sout (make-string-output-stream))
+        (cur (select-source-files end :first-file :start))
+        pn)
+    (tagbody
+     top
+       (setq pn (car cur))
+       (setq cur (cdr cur))
+       (bformat sout "%s " (namestring (build-pathname pn :lisp)))
+       (if cur (go top)))
+    (get-output-stream-string sout)))
+  
 (defun out-of-date-image (image source-files)
   (let* ((last-source (car (reverse source-files)))
          (last-bitcode (build-pathname (entry-filename last-source) :bc))
@@ -658,11 +680,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
         t)))
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files)
-  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" filename)
+  #+dbg-print(bformat t "DBG-PRINT compile-kernel-file: %s\n" entry)
 ;;  (if *target-backend* nil (error "*target-backend* is undefined"))
   (let* ((filename (entry-filename entry))
          (source-path (build-pathname filename :lisp))
-	 (bitcode-path (build-pathname filename :bc)) ;; (target-backend-pathname (get-pathname-with-type filename "bc")))
+	 (bitcode-path (build-pathname filename :bc))
 	 (load-bitcode (and (bitcode-exists-and-up-to-date filename) load-bitcode)))
     (if (and load-bitcode (not force-recompile))
 	(progn
@@ -695,13 +717,6 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
       (close fin))
     cleavir-files))
 
-(defun add-direct-calls ()
-  (let* ((project (string-downcase (lisp-implementation-type)))
-         (project-generated-dir (bformat nil "sys:generated;%s;cl-wrappers.lisp" project)))
-    (if (probe-file (pathname project-generated-dir))
-        (list (pathname (bformat nil "generated/%s/cl-wrappers" project)))
-        nil)))
-
 (defun maybe-insert-epilogue-aclasp ()
   "Insert epilogue if we are compiling aclasp"
   (if (member :ecl-min *features*)
@@ -725,7 +740,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
    :init
    #P"kernel/lsp/prologue"
    #P"kernel/lsp/direct-calls"
-   #'add-direct-calls
+   #P"generated/cl-wrappers"
    :min-start
    #P"kernel/init"
    :start
@@ -1008,8 +1023,10 @@ Return files."
                    :link-type :executable)))
 (export '(link-system))
         
-(export '(compile-min))
-(defun compile-min (&key (target-backend (default-target-backend)) (system *system-files*))
+(export '(compile-aclasp sources-aclasp))
+(defun source-files-aclasp ()
+  (bformat t "%s\n" (source-file-names :min-start :cmp-pre-epilogue)))
+(defun compile-aclasp (&key (target-backend (default-target-backend)) (system *system-files*))
   (if (out-of-date-bitcodes :min-start :cmp)
       (progn
         (load-system :start :cmp-pre-epilogue :system system)
@@ -1019,8 +1036,8 @@ Return files."
             (compile-system files :reload t)
             (compile-system (out-of-date-bitcodes :cmp-pre-epilogue :cmp :system system) :reload nil))))))
 
-(export 'link-min)
-(defun link-min (&key force)
+(export 'link-aclasp)
+(defun link-aclasp (&key force)
   (min-features)
   (if (or force (out-of-date-image (build-pathname +image-pathname+ :fasl) (select-source-files :cmp :first-file :min-start)))
       (progn
@@ -1063,12 +1080,12 @@ Return files."
   (remove-stage-features)
   (setq *features* (list* :ecl-min *features*)))
 
-(export 'clean-compile-link-min)
-(defun clean-compile-link-min ()
+(export 'clean-compile-link-aclasp)
+(defun clean-compile-link-aclasp ()
   (min-features)
   (clean-system :init :no-prompt t)
-  (compile-min)
-  (link-min))
+  (compile-aclasp)
+  (link-aclasp))
 
 (export 'bclasp-features)
 (defun bclasp-features()
@@ -1086,7 +1103,9 @@ Return files."
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )))
 
-(export '(compile-bclasp))
+(export '(compile-bclasp source-files-bclasp))
+(defun source-files-bclasp ()
+  (bformat t "%s\n" (source-file-names :init :all)))
 (defun compile-bclasp ()
   (bclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
@@ -1112,7 +1131,9 @@ Return files."
   (compile-bclasp)
   (link-bclasp))
 
-(export '(compile-cclasp))
+(export '(compile-cclasp source-files-cclasp))
+(defun source-files-cclasp ()
+  (bformat t "%s\n" (source-file-names :init :cclasp)))
 (defun compile-cclasp ()
   (cclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
@@ -1144,7 +1165,7 @@ Return files."
 
 (export 'link-all)
 (defun link-all (&key force)
-  (link-min :force force)
+  (link-aclasp :force force)
   (link-bclasp :force force)
   (link-cclasp :force force))
 

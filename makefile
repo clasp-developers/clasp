@@ -183,8 +183,8 @@ boehm-all:
 	make print-config
 	make submodules
 	make asdf
-	make boost_build
-	make boehm
+#	make boost_build
+#	make boehm
 	install -d build/clasp/Contents/Resources
 #	@if test ! -e build/clasp/Contents/Resources/clasp; then (cd build/clasp/Contents/Resources; ln -s ../../../../ clasp) ; fi
 	(cd src/lisp; $(BJAM) -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm bundle )
@@ -251,8 +251,8 @@ mps-build:
 boot:
 	make submodules
 	make asdf
-	make boost_build
-	make boehm
+#	make boost_build
+#	make boehm
 	make -C src/main boehmdc-release-cxx
 	make executable-symlinks
 	make -C src/main min-boehmdc
@@ -417,7 +417,7 @@ cloc-files:
 
 clean:
 	git submodule sync
-	make boehm-clean
+#	make boehm-clean
 	./waf distclean
 ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
 	install -d $(CLASP_INTERNAL_BUILD_TARGET_DIR)

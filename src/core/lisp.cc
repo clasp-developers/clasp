@@ -501,63 +501,10 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
   {
     // Run some tests to make sure that lisp calling convention is ok.
     run_quick_tests();
-    // setup the SYS logical-pathname-translations
-    {
-      Cons_sp pts =
-        Cons_O::createList(
-                           Cons_O::createList(Str_O::create("sys:**;*.*"),
-                                              bundle->getSysPathname())
-        /* ,  more here */
-                           );
-      core__pathname_translations(Str_O::create("sys"), _lisp->_true(), pts);
-    }
-    // setup the TMP logical-pathname-translations
-    Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),
-                                          cl__pathname(Str_O::create("/tmp/**/*.*")));
-    Cons_sp ptsTmp = Cons_O::createList(entryTmp
-                                        /* ,  more here */
-                                        );
-    core__pathname_translations(Str_O::create("tmp"), _lisp->_true(), ptsTmp);
 
-            // setup the APP-EXECUTABLE logical-pathname-translations
-    {
-      Cons_sp appc = Cons_O::createList(
-                                        Cons_O::createList(Str_O::create("app-executable:**;*.*"), bundle->getExecutablePathname())
-        /* , more here */
-                                        );
-      core__pathname_translations(Str_O::create("app-executable"), _lisp->_true(), appc);
-    }
-
-        // setup the APP-CONTENTS logical-pathname-translations
-    {
-      Cons_sp appc = Cons_O::createList(
-                                        Cons_O::createList(Str_O::create("app-root:**;*.*"), bundle->getRootPathname())
-        /* , more here */
-                                        );
-      core__pathname_translations(Str_O::create("app-root"), _lisp->_true(), appc);
-    }
-    // setup the APP-CONTENTS logical-pathname-translations
-    {
-      Cons_sp appc = Cons_O::createList(
-                                        Cons_O::createList(Str_O::create("app-contents:**;*.*"), bundle->getAppContentsPathname())
-        /* , more here */
-                                        );
-      core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
-    }
-    // setup the APP-RESOURCES logical-pathname-translations
-    Cons_sp app = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("app-resources:**;*.*"), bundle->getAppContentsResourcesPathname())
-        /* , more here */
-                                     );
-    core__pathname_translations(Str_O::create("app-resources"), _lisp->_true(), app);
-
-    // setup the build;system pathnames
-    // The regular pathname translations -------------------------------------------------------------
-    {
-      Cons_sp p = Cons_O::createList(
-                                     Cons_O::createList(Str_O::create("**;*.*"), cl__pathname(Str_O::create("APP-RESOURCES:lisp;build;**;*.*"))));
-      core__pathname_translations(Str_O::create("build"), _lisp->_true(), p);
-    }
+    // Setup the pathname translation
+    this->_Bundle->setup_pathname_translations();
+      
     // -------------------------------------------------------------
     /* Call the function defined in main.cc that creates the source-main: host */
 #ifndef PROGRAM_CLBIND
@@ -573,9 +520,11 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       (*ic)(_lisp);
     }
   }
+#if 0
   Path_sp startupWorkingDir = Path_O::create(bundle->getStartupWorkingDir());
   this->defconstant(_sym_STARcurrent_working_directorySTAR, _Nil<Path_O>());
   this->setCurrentWorkingDirectory(startupWorkingDir);
+#endif
   this->switchToClassNameHashTable();
   {
     _BLOCK_TRACE("Setup system values");
@@ -642,14 +591,6 @@ StrWithFillPtr_sp Lisp_O::get_buffer_string() {
 */
 void Lisp_O::put_buffer_string(StrWithFillPtr_sp str) {
   this->_Roots._BufferStringPool = Cons_O::create(str, this->_Roots._BufferStringPool);
-}
-
-void Lisp_O::setCurrentWorkingDirectory(Path_sp dir) {
-  _sym_STARcurrent_working_directorySTAR->setf_symbolValueReadOnlyOverRide(dir);
-}
-
-Path_sp Lisp_O::getCurrentWorkingDirectory() {
-  return gc::As<Path_sp>(_sym_STARcurrent_working_directorySTAR->symbolValue());
 }
 
 ReadTable_sp Lisp_O::getCurrentReadTable() {
@@ -1966,39 +1907,7 @@ CL_DEFUN T_mv core__source_line_column() {
   __END_DOC
 */
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("script_dir");
-CL_DEFUN Path_mv core__script_dir() {
-  Path_sp dir = Path_O::create(_lisp->bundle().getLispDir());
-  return (Values(dir));
-}
 
-CL_LAMBDA(&optional rel-path);
-CL_DECLARE();
-CL_DOCSTRING("Returns the absolute path to the library directory - if rel-path is not nil then it prepends the library directory path to rel-path and returns that");
-CL_DEFUN Path_mv core__library_path(T_sp relPathDesignator) {
-  if (relPathDesignator.notnilp()) {
-    Path_sp relPath = coerce::pathDesignator(relPathDesignator);
-    boost_filesystem::path lp = _lisp->bundle().getLibDir();
-    lp /= relPath->getPath();
-    return (Values(Path_O::create(lp)));
-  }
-  return (Values(Path_O::create(_lisp->bundle().getLibDir())));
-}
-
-CL_LAMBDA(&optional rel-path);
-CL_DECLARE();
-CL_DOCSTRING("Returns the absolute path to the lisp code directory - if rel-path is not nil then it prepends the directory path to rel-path and returns that");
-CL_DEFUN Path_mv core__lisp_code_path(T_sp relPathDesignator) {
-  if (relPathDesignator.notnilp()) {
-    Path_sp relPath = coerce::pathDesignator(relPathDesignator);
-    boost_filesystem::path lp = _lisp->bundle().getLibDir();
-    lp /= relPath->getPath();
-    return (Values(Path_O::create(lp)));
-  }
-  return (Values(Path_O::create(_lisp->bundle().getLibDir())));
-}
 
 /*
   __BEGIN_DOC(candoScript.general.databaseDir,databaseDir)
@@ -2008,14 +1917,6 @@ CL_DEFUN Path_mv core__lisp_code_path(T_sp relPathDesignator) {
   __END_DOC
 */
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("database_dir");
-CL_DEFUN Path_mv core__database_dir() {
-  Path_sp dir = Path_O::create(_lisp->bundle().getDatabasesDir());
-  return (Values(dir));
-}
-
 /*
   __BEGIN_DOC(candoScript.general.changeWorkingDirectory,changeWorkingDirectory)
   \scriptCmdRet{changeWorkingDirectory}{}{Text::}
@@ -2023,15 +1924,6 @@ CL_DEFUN Path_mv core__database_dir() {
   Change the current working directory.
   __END_DOC
 */
-
-CL_LAMBDA(dir);
-CL_DECLARE();
-CL_DOCSTRING("setCurrentWorkingDirectory");
-CL_DEFUN T_mv core__set_current_working_directory(Str_sp dir) {
-  Path_sp cwd = Path_O::create(dir->get());
-  _lisp->setCurrentWorkingDirectory(cwd);
-  return (Values(dir));
-}
 
 /*
   __BEGIN_DOC(candoScript.general.isTopLevelScript)
@@ -2691,15 +2583,17 @@ void Lisp_O::run() {
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
     }
   }
-  if (startup_functions_are_waiting() ) {
-    startup_functions_invoke();
-  } else if (!this->_IgnoreInitImage) {
-    Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
-    DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
-    T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
-    if (result.nilp()) {
-      T_sp err = result.second();
-      printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+  if (!this->_IgnoreInitImage) {
+    if ( startup_functions_are_waiting() ) {
+      startup_functions_invoke();
+    } else {
+      Pathname_sp initPathname = gc::As<Pathname_sp>(_sym_STARcommandLineImageSTAR->symbolValue());
+      DynamicScopeManager scope(_sym_STARuseInterpreterForEvalSTAR, _lisp->_true());
+      T_mv result = eval::funcall(cl::_sym_load, initPathname); // core__load_bundle(initPathname);
+      if (result.nilp()) {
+        T_sp err = result.second();
+        printf("Could not load bundle %s error: %s\n", _rep_(initPathname).c_str(), _rep_(err).c_str());
+      }
     }
   } else if (!this->_IgnoreInitLsp) {
     // Assume that if there is no program then

@@ -56,7 +56,7 @@
     (dolist (c (cdr list-of-args))
       (bformat sout " %s" c))))
 
-(defvar *echo-system* t)
+(defvar *echo-system* nil)
 (defun safe-system (cmd-list &key output-file-name)
   (if *echo-system*
       (bformat t "safe-system: %s\n" cmd-list))
