@@ -217,6 +217,9 @@ boost_filesystem::path Bundle::findAppDir(const string &argv0, const string &cwd
 }
 
 void Bundle::findContentSubDirectories(boost_filesystem::path contentDir) {
+  if ( !bf::exists(contentDir) ) {
+    bf::create_directories(contentDir);
+  }
   string appDirName;
 #ifdef _TARGET_OS_DARWIN
   appDirName = "macos";

@@ -303,7 +303,6 @@ def configure(cfg):
     cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
 #    cfg.env.append_value('LINKFLAGS', ['-Wl,-exported_symbols_list,%s/src/llvmo/intrinsic-api.txt' % os.getenv("CLASP_HOME")] )
     cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
-    cfg.env.append_value('LINKFLAGS', ['-L../../build/clasp/Contents/Resources/lib/common/lib'])
     clasp_build_libraries = [
             '-lclangAnalysis',
             '-lclangARCMigrate',
@@ -372,20 +371,21 @@ def build(bld):
         print("Building with variant = %s" % variant)
         bld.program(source=bld._source_files,target=[clasp_executable,lto_debug_info])
         bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), variant.executable_name, chmod=Utils.O755)
-        files = lisp_source_files("iclasp-boehm-o","aclasp")
-        print("aclasp source files: %s" % files)
-        if (variant.stage>=0):
-            bld.add_group()
-            aclasp_lisp_sources = ''
-            bld(rule='i%s -I -f ecl-min -e "(compile-aclasp)" -e "(link-aclasp)"' % variant.bitcode_name,target="a%s"%variant.bitcode_name)
-            bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-all.lbc' % variant.bitcode_name, '%s-all.lbc'%variant.bitcode_name)
-            bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-intrinsics.lbc' % variant.bitcode_name, '%s-intrinsics.lbc'%variant.bitcode_name)
-        if (variant.stage>=1):
-            bld.add_group()
-            bld(rule='a%s -e "(compile-link-bclasp)"' % variant.bitcode_name,target="b%s"%variant.bitcode_name)
-        if (variant.stage>=2):
-            bld.add_group()
-            bld(rule='b%s -e "(compile-link-cclasp)"' % variant.bitcode_name,target="c%s"%variant.bitcode_name)
+        
+#        files = lisp_source_files(clasp_executable.abspath(),"aclasp")
+#        print("aclasp source files: %s" % files)
+#        if (variant.stage>=0):
+        #     bld.add_group()
+        #     aclasp_lisp_sources = ''
+        #     bld(rule='i%s -I -f ecl-min -e "(compile-aclasp)" -e "(link-aclasp)"' % variant.bitcode_name,target="a%s"%variant.bitcode_name)
+        #     bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-all.lbc' % variant.bitcode_name, '%s-all.lbc'%variant.bitcode_name)
+        #     bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-intrinsics.lbc' % variant.bitcode_name, '%s-intrinsics.lbc'%variant.bitcode_name)
+        # if (variant.stage>=1):
+        #     bld.add_group()
+        #     bld(rule='a%s -e "(compile-link-bclasp)"' % variant.bitcode_name,target="b%s"%variant.bitcode_name)
+        # if (variant.stage>=2):
+        #     bld.add_group()
+        #     bld(rule='b%s -e "(compile-link-cclasp)"' % variant.bitcode_name,target="c%s"%variant.bitcode_name)
         # install
 
 from waflib import TaskGen
