@@ -264,7 +264,8 @@ CL_LAMBDA(idx);
 CL_DECLARE();
 CL_DOCSTRING("argv");
 CL_DEFUN Str_sp core__argv(int idx) {
-  return Str_O::create(_lisp->_Argv[idx]);
+  if ( idx < _lisp->_Argc ) return Str_O::create(_lisp->_Argv[idx]);
+  return Str_O::create("");
 };
 
 CL_LAMBDA(sym value);
