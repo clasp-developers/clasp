@@ -9,14 +9,14 @@ APPNAME = 'clasp'
 VERSION = '0.0'
 
 
-VARIANTS = [ 'clasp_boehm_o',
-             'clasp_boehm_d',
-             'clasp_boehmdc_o',
-             'clasp_boehmdc_d',
-             'clasp_mpsprep_o',
-             'clasp_mpsprep_d',
-             'clasp_mps_o',
-             'clasp_mps_d' ]
+VARIANTS = [ 'boehm_o',
+             'boehm_d',
+             'boehmdc_o',
+             'boehmdc_d',
+             'mpsprep_o',
+             'mpsprep_d',
+             'mps_o',
+             'mps_d' ]
 
 class variant():
     stage = 0
@@ -31,9 +31,9 @@ def configure_clasp(cfg,variant):
     cfg.define("BITCODE_NAME",variant.bitcode_name)
     cfg.define("VARIANT_NAME",variant.variant_name)
     
-class clasp_boehm_o(variant):
-    variant_dir = 'clasp_boehm_o'
-    variant_name = 'clasp-boehm'
+class boehm_o(variant):
+    variant_dir = 'boehm_o'
+    variant_name = 'boehm'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
@@ -50,25 +50,13 @@ class clasp_boehm_o(variant):
     def install(self):
         return self.executable_name
 
-class iclasp_boehm_o(clasp_boehm_o):
-    stage = 0
-
-class aclasp_boehm_o(clasp_boehm_o):
-    stage = 1
-
-class bclasp_boehm_o(clasp_boehm_o):
-    stage = 2
-
-class cclasp_boehm_o(clasp_boehm_o):
-    stage = 3
-
-class clasp_boehm_d(variant):
-    variant_dir = 'clasp_boehm_d'
-    variant_name = 'clasp-boehm'
+class boehm_d(variant):
+    variant_dir = 'boehm_d'
+    variant_name = 'boehm'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_boehm_d", env=env_copy.derive())
+        cfg.setenv("boehm_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_BOEHM",1)
         cfg.define("_DEBUG_BUILD",1)
@@ -77,17 +65,17 @@ class clasp_boehm_d(variant):
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_boehm_d/config.h', remove=True)
+        cfg.write_config_header('boehm_d/config.h', remove=True)
     def install(self):
         return self.executable_name
 
-class clasp_boehmdc_o(variant):
-    variant_dir = 'clasp_boehmdc_o'
-    variant_name = 'clasp-boehmdc'
+class boehmdc_o(variant):
+    variant_dir = 'boehmdc_o'
+    variant_name = 'boehmdc'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_boehmdc_o", env=env_copy.derive())
+        cfg.setenv("boehmdc_o", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_BOEHM",1)
         cfg.define("USE_CXX_DYNAMIC_CAST",1)
@@ -97,31 +85,17 @@ class clasp_boehmdc_o(variant):
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_boehmdc_o/config.h', remove=True)
+        cfg.write_config_header('boehmdc_o/config.h', remove=True)
     def install(self):
         return self.executable_name
 
-
-class iclasp_boehmdc_o(clasp_boehmdc_o):
-    stage = 0
-
-class aclasp_boehmdc_o(clasp_boehmdc_o):
-    stage = 1
-
-class bclasp_boehmdc_o(clasp_boehmdc_o):
-    stage = 2
-
-class cclasp_boehmdc_o(clasp_boehmdc_o):
-    stage = 3
-
-
-class clasp_boehmdc_d(variant):
-    variant_dir = 'clasp_boehmdc_d'
-    variant_name = 'clasp-boehmdc'
+class boehmdc_d(variant):
+    variant_dir = 'boehmdc_d'
+    variant_name = 'boehmdc'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_boehmdc_d", env=env_copy.derive())
+        cfg.setenv("boehmdc_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_BOEHM",1)
         cfg.define("USE_CXX_DYNAMIC_CAST",1)
@@ -131,17 +105,17 @@ class clasp_boehmdc_d(variant):
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_boehmdc_d/config.h', remove=True)
+        cfg.write_config_header('boehmdc_d/config.h', remove=True)
     def install(self):
         return self.executable_name
 
-class clasp_mpsprep_o(variant):
-    variant_dir = 'clasp_mpsprep_o'
-    variant_name = 'clasp-mpsprep'
+class mpsprep_o(variant):
+    variant_dir = 'mpsprep_o'
+    variant_name = 'mpsprep'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_mpsprep_o", env=env_copy.derive())
+        cfg.setenv("mpsprep_o", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_MPS",1)
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -150,17 +124,17 @@ class clasp_mpsprep_o(variant):
         cfg.env.append_value('CFLAGS', [ '-O3' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_mpsprep_o/config.h', remove=True)
+        cfg.write_config_header('mpsprep_o/config.h', remove=True)
     def install(self):
         return self.executable_name
         
-class clasp_mpsprep_d(variant):
-    variant_dir = 'clasp_mpsprep_d'
-    variant_name = 'clasp-mpsprep'
+class mpsprep_d(variant):
+    variant_dir = 'mpsprep_d'
+    variant_name = 'mpsprep'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_mpsprep_d", env=env_copy.derive())
+        cfg.setenv("mpsprep_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_MPS",1)
         cfg.define("RUNNING_GC_BUILDER",1)
@@ -169,17 +143,17 @@ class clasp_mpsprep_d(variant):
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_mpsprep_d/config.h', remove=True)
+        cfg.write_config_header('mpsprep_d/config.h', remove=True)
     def install(self):
         return self.executable_name
 
-class clasp_mps_o(variant):
-    variant_dir = 'clasp_mps_o'
-    variant_name = 'clasp-mps'
+class mps_o(variant):
+    variant_dir = 'mps_o'
+    variant_name = 'mps'
     bitcode_name = '%s-o' % variant_name
     executable_name = 'i%s-o' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_mps_o", env=env_copy.derive())
+        cfg.setenv("mps_o", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_MPS",1)
         cfg.define("_RELEASE_BUILD",1)
@@ -187,30 +161,18 @@ class clasp_mps_o(variant):
         cfg.env.append_value('CFLAGS', [ '-O3' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_mps_o/config.h', remove=True)
+        cfg.write_config_header('mps_o/config.h', remove=True)
     def install(self):
         return self.executable_name
 
-class iclasp_mps_o(clasp_mps_o):
-    stage = 0
 
-class aclasp_mps_o(clasp_mps_o):
-    stage = 1
-
-class bclasp_mps_o(clasp_mps_o):
-    stage = 2
-
-class cclasp_mps_o(clasp_mps_o):
-    stage = 3
-
-
-class clasp_mps_d(variant):
-    variant_dir = 'clasp_mps_d'
-    variant_name = 'clasp-mps'
+class mps_d(variant):
+    variant_dir = 'mps_d'
+    variant_name = 'mps'
     bitcode_name = '%s-d' % variant_name
     executable_name = 'i%s-d' % variant_name
     def configure(self,cfg,env_copy):
-        cfg.setenv("clasp_mps_d", env=env_copy.derive())
+        cfg.setenv("mps_d", env=env_copy.derive())
         configure_clasp(cfg,self)
         cfg.define("USE_MPS",1)
         cfg.define("_DEBUG_BUILD",1)
@@ -218,7 +180,7 @@ class clasp_mps_d(variant):
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
         self.common_setup(cfg)
-        cfg.write_config_header('clasp_mps_d/config.h', remove=True)
+        cfg.write_config_header('mps_d/config.h', remove=True)
     def install(self):
         return self.executable_name
 

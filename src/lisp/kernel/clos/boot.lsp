@@ -137,6 +137,7 @@
 ;;; We have to figure out how ECL avoids this.
 ;;;
 (let* ((class-hierarchy '#.+class-hierarchy+))
+  ;; The loop is expensive and slows down startup
   (let ((all-classes (loop for c in class-hierarchy
 			for class = (progn
 				      (apply #'make-empty-standard-class c))
