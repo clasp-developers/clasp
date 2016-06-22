@@ -253,10 +253,10 @@ boot:
 	make asdf
 #	make boost_build
 #	make boehm
-	./waf configure build_clasp_boehmdc_o
-	wbuild/clasp_boehmdc_o/iboehmdc-o -I -f ecl-min -e "(clean-compile-link-aclasp)" -e "(quit)"
-	wbuild/clasp_boehmdc_o/aboehmdc-o -e "(clean-compile-link-bclasp)" -e "(quit)"
-	wbuild/clasp_boehmdc_o/bboehmdc-o -e "(clean-compile-link-cclasp)" -e "(quit)"
+	./waf configure build_boehmdc_o
+	wbuild/boehmdc_o/iboehmdc-o -I -f ecl-min -e "(clean-compile-link-aclasp)" -e "(quit)"
+	wbuild/boehmdc_o/aboehmdc-o -e "(clean-compile-link-bclasp)" -e "(quit)"
+	wbuild/boehmdc_o/bboehmdc-o -e "(clean-compile-link-cclasp)" -e "(quit)"
 #	make -C src/main bclasp-boehmdc-addons
 
 boot-cclasp:
