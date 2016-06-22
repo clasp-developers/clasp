@@ -1,0 +1,22 @@
+import os
+
+def subdirectories():
+    dir = os.listdir("./plugins")
+    print("subdirectories dir = %s" % dir)
+    subdirs = ''
+    for x in dir:
+        if os.path.isdir("./plugins/%s"%x):
+            subdirs = subdirs + ("%s " % x)
+    print("plugins subdirs = %s" % subdirs)
+    if (subdirs == ''):
+        return subdirs
+    else:
+        return subdirs[:-1]
+
+
+def configure(cfg):
+    cfg.recurse(subdirectories())
+
+def build(bld):
+    bld.recurse(subdirectories())
+

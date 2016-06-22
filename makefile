@@ -379,6 +379,7 @@ asdf:
 # stuff in the clasp build target directory.  This saves us the trouble of
 # constantly having to copy the lisp sources to the target directory.
 export DEV_CLASP_LISP_SOURCE_DIR := $(shell pwd)/src/lisp
+export CLASP_LISP_SOURCE_DIR ?= $(DEV_CLASP_LISP_SOURCE_DIR)
 
 devemacs:
 	@echo This shell sets up environment variables like BJAM

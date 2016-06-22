@@ -300,6 +300,7 @@ def configure(cfg):
             '-lncurses',
             '-lreadline' ]
     sep = " "
+    cfg.recurse('plugins')
     cfg.define("CLASP_BUILD_LIBRARIES", sep.join(clasp_build_libraries))
     cfg.env.append_value('LINKFLAGS', clasp_build_libraries)
     env_copy = cfg.env.derive()
@@ -314,25 +315,21 @@ def build(bld):
     if not bld.variant:
         bld.fatal('Call waf with build_variant')
     print("In build(bld)")
-    if ( '_source_files' in bld.__dict__ ):
-        # Don't build anything, just recurse into 'src'
-        bld.recurse('src')
-    else:
-        bld._source_files = []
-        bld.recurse('src')
-        bld.recurse('src/main')
-
-#        print("recursed source_files = %s" % bld._source_files)
+    bld._source_files = []
+    bld.recurse('src')
+    bld.recurse('plugins')
+    bld.recurse('src/main')
+    print("recursed source_files = %s" % bld._source_files)
 #    bld.program(source=all_files(),target="clasp")
-        variant = eval(bld.variant+"()")
-        bld.env = bld.all_envs[bld.variant]
-        bld.variant_obj = variant
-        clasp_executable = bld.path.find_or_declare(variant.executable_name)
-        lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name)
-        intrinsics_info = bld.path.find_or_declare('%s-intrinsics.lbc'%variant.bitcode_name)
-        print("Building with variant = %s" % variant)
-        bld.program(source=bld._source_files,target=[clasp_executable,lto_debug_info])
-        bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), variant.executable_name, chmod=Utils.O755)
+    variant = eval(bld.variant+"()")
+    bld.env = bld.all_envs[bld.variant]
+    bld.variant_obj = variant
+    clasp_executable = bld.path.find_or_declare(variant.executable_name)
+    lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name)
+    intrinsics_info = bld.path.find_or_declare('%s-intrinsics.lbc'%variant.bitcode_name)
+    print("Building with variant = %s" % variant)
+    bld.program(source=bld._source_files,target=[clasp_executable,lto_debug_info])
+    bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), variant.executable_name, chmod=Utils.O755)
         
 #        files = lisp_source_files(clasp_executable.abspath(),"aclasp")
 #        print("aclasp source files: %s" % files)
