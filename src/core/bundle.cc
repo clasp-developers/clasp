@@ -27,6 +27,8 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 #include <clasp/core/foundation.h>
 
+
+#define DEBUG_BUNDLE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -134,6 +136,8 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     this->_Directories->_ContentsDir = contents;
     this->findContentSubDirectories(this->_Directories->_ContentsDir);
     this->fillInMissingPaths();
+    // While building generated is within the executable directory
+    this->_Directories->_LispGeneratedDir = this->_Directories->_ExecutableDir / "generated";
   } else {
 #ifdef DEBUG_BUNDLE
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );

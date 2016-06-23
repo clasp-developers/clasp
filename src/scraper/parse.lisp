@@ -99,7 +99,7 @@ if there were an empty string between them."
      collect (string-trim '(#\space #\return #\tab) (subseq string i j))
      while j))
 
-(defconstant +white-space+ '(#\space #\return #\tab))
+(defvar +white-space+ '(#\space #\return #\tab))
 
 (defun split-type-name (type-name)
   "* Arguments

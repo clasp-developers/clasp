@@ -149,7 +149,7 @@ CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
         break;
       default: {
         stringstream serr;
-        serr << "Add support to BFORMAT to translate FORMAT control <tilde>" << *cur;
+        serr << "Add support to BFORMAT to translate FORMAT control <tilde>" << *cur << " format control: " << ts ;
         SIMPLE_ERROR(BF("%s") % (serr.str()));
       } break;
       }

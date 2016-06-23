@@ -2568,6 +2568,9 @@ void Lisp_O::dump_backtrace(int numcol) {
 
 
 void Lisp_O::run() {
+  if ( initializer_functions_are_waiting() ) {
+    initializer_functions_invoke();
+  }
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif

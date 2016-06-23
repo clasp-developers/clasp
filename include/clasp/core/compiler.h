@@ -43,6 +43,22 @@ void initialize_compiler_primitives(Lisp_sp lisp);
 };
 
 namespace core {
+  typedef void (*InitializerFunction)();
+
+      
+
+  void register_initializer_function(InitializerFunction fptr);
+  size_t initializer_functions_are_waiting();
+  void initializer_functions_invoke();
+
+  /*! Register an void foo() function to be run once Clasp has initialized all of its core
+functionality but before any Common Lisp startup functions are invoked. */
+  struct Initializer {
+    inline Initializer(InitializerFunction fn) {
+      register_initializer_function(fn);
+    }
+  };
+
   void register_startup_function(fnLispCallingConvention fptr);
   size_t startup_functions_are_waiting();
   void startup_functions_invoke();

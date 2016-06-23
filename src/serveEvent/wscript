@@ -2,6 +2,6 @@ def build(bld):
     for name in [
             'serveEvent',
             'serveEventPackage']:
-        bld._source_files.append(bld.path.find_node(name+'.cc'))
+        bld.clasp_source_files.append(bld.path.find_node(name+'.cc'))
 
         

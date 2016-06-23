@@ -4,14 +4,13 @@
 (defparameter *end-tag* "END_TAG_bfc54f90bafadf5")
 
 
-#|
 (defun fill-config (config line)
   (let* ((trimmed (string-trim " " line))
          (var-start (position #\space trimmed))
          (data-start (position #\< trimmed :start var-start))
          (var (string-trim " " (subseq trimmed var-start data-start)))
          (data (string-trim " <>" (subseq trimmed data-start))))
-    (setf (gethash var config) data)))
+    (setf (gethash (intern var :keyword) config) data)))
 
 (defun read-application-config (filename)
   (let ((config (make-hash-table :test #'equal)))
@@ -22,22 +21,16 @@
          do (cond
               ((string= (subseq tl 0 7) "#define")
                (fill-config config tl))
-              ((string= (subseq tl 0 6) "#ifdef")
-               (setq keyword (subseq tl (1+ (position-if (lambda (c) (or (char= #\space c) (char= #\tab))) tl)))))
-              ((string= (subseq tl 0 8) "#include")
-               (setq keyword (subseq tl (1+ (position-if (lambda (c) (or (char= #\space c) (char= #\tab))) tl)))))
-               
-              ((string= 
-                ((string= (subseq l 0 6) "#endif")
-                 #| Nothing |#)
-                ((= (length (string-trim (list #\space #\tab))) 0)
-                 #| Nothing |#)
-                (error "Illegal application.config line: ~a" l))))
+              (t (error "Illegal application.config line: ~a" l)))))
     config))
 
-    |#
-
-(defun setup-application-config ()
+(defun setup-application-config (filename)
+  (let ((config (read-application-config filename)))
+    (maphash (lambda (k v) (format t "key: ~s  value: ~s~%" k v))
+             config)
+    (finish-output)
+    config)
+  #+(or)
   (let ((config (make-hash-table :test #'eq)))
     (setf (gethash :init_functions_inc_h config) #P"include/clasp/main/generated/initFunctions_inc.h")
     (setf (gethash :init_classes_and_methods_inc_h config) #P"include/clasp/main/generated/initClassesAndMethods_inc.h")
@@ -45,6 +38,6 @@
     (setf (gethash :symbols_scraped_inc_h config) #P"include/clasp/main/generated/symbols_scraped_inc.h")
     (setf (gethash :enum_inc_h config) #P"include/clasp/main/generated/enum_inc.h")
     (setf (gethash :initializers_inc_h config) #P"include/clasp/main/generated/initializers_inc.h")
-    (setf (gethash :lisp-wrappers config) #P"generated/cl-wrappers.lisp")
-    (setf (gethash :c-wrappers config) #P"include/clasp/main/generated/c-wrappers.h")
+    (setf (gethash :lisp_wrappers config) #P"generated/cl-wrappers.lisp")
+    (setf (gethash :c_wrappers config) #P"include/clasp/main/generated/c-wrappers.h")
     config))

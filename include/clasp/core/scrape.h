@@ -48,6 +48,7 @@
 #define CL_TYPE(...)
 #define CL_EXTERN_DEFMETHOD(type,pointer)
 #define CL_EXTERN_DEFUN(pointer)
+#define CL_INITIALIZER
 #define SYMBOL_SC_(pkg,name)
 #define SYMBOL_EXPORT_SC_(pkg,name)
 #define SYMBOL_SHADOW_EXPORT_SC_(pkg,name)

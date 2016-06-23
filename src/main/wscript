@@ -1,3 +1,3 @@
 def build(bld):
-    bld._source_files.append(bld.path.find_node('main.cc'))
+    bld.clasp_source_files.append(bld.path.find_node('main.cc'))
         

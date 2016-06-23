@@ -10,7 +10,7 @@ def build(bld):
             'gcalloc',
             'gcweak',
             'memoryManagement']:
-        bld._source_files.append(bld.path.find_node(name+'.cc'))
-    bld._source_files.append(bld.path.find_node('mygc.c'))
+        bld.clasp_source_files.append(bld.path.find_node(name+'.cc'))
+    bld.clasp_source_files.append(bld.path.find_node('mygc.c'))
 
         

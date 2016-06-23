@@ -11,6 +11,6 @@ def build(bld):
             'llvmoExpose',
             'llvmoPackage',
             'clbindLlvmExpose']:
-        bld._source_files.append(bld.path.find_node(name+'.cc'))
+        bld.clasp_source_files.append(bld.path.find_node(name+'.cc'))
 
         
