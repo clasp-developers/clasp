@@ -41,7 +41,9 @@ using namespace core;
 #pragma GCC visibility push(default)
 #define ExtPkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #undef DO_SYMBOL
 #undef ExtPkg_SYMBOLS
 #pragma GCC visibility pop
@@ -57,7 +59,7 @@ SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"
 T_sp af_maybeQuote(T_sp form) {
   _G();
-  if (cl_atom(form)) {
+  if (cl__atom(form)) {
     if (form.nilp())
       goto DONTQUOTEIT; // nil
     if (form == _lisp->_true())

@@ -39,15 +39,15 @@ namespace core {
 
 EXPOSE_CLASS(core, VectorDisplaced_O);
 
-#define ARGS_core_make_vector_displaced "(dim element-type displaced-to displaced-offset)"
-#define DECL_core_make_vector_displaced ""
-#define DOCS_core_make_vector_displaced ""
-VectorDisplaced_sp core_make_vector_displaced(T_sp dim, T_sp elementType, T_sp displacedTo, size_t displacedOffset) {
+LAMBDA(dim element-type displaced-to displaced-offset);
+DECLARE();
+DOCSTRING("");
+CL_DEFUN VectorDisplaced_sp core__make_vector_displaced(T_sp dim, T_sp elementType, T_sp displacedTo, size_t displacedOffset) {
   GC_ALLOCATE(VectorDisplaced_O, vo);
   vo->_ElementType = elementType;
   vo->_Size = clasp_to_fixnum(dim);
-  if ( vo->_Size >= displacedOffset+cl_length(displacedTo)) {
-    vo->_Size = cl_length(displacedTo)-displacedOffset;
+  if ( vo->_Size >= displacedOffset+cl__length(displacedTo)) {
+    vo->_Size = cl__length(displacedTo)-displacedOffset;
   }
   vo->_DisplacedIndexOffset = displacedOffset;
   vo->_Vector = gc::As<Vector_sp>(displacedTo);
@@ -57,7 +57,6 @@ VectorDisplaced_sp core_make_vector_displaced(T_sp dim, T_sp elementType, T_sp d
 void VectorDisplaced_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<VectorDisplaced_O>();
 
-  CoreDefun(make_vector_displaced);
 }
 
 void VectorDisplaced_O::exposePython(::core::Lisp_sp lisp) {
@@ -82,12 +81,12 @@ string VectorDisplaced_O::__repr__() const {
 void VectorDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
   _G();
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
-  (*this)[idx + this->_DisplacedIndexOffset] = value;
+  this->_Vector->setf_elt(idx,value);
 }
 
 T_sp VectorDisplaced_O::rowMajorAref(cl_index idx) const {
   ASSERTF(idx < this->length(), BF("Index %d is out of range (<%d)") % idx % this->length());
-  return this->operator[](idx);
+  return this->elt(idx);
 }
 
 T_sp VectorDisplaced_O::elt(int index) const {
@@ -95,24 +94,23 @@ T_sp VectorDisplaced_O::elt(int index) const {
   if (index >= this->length()) {
     SIMPLE_ERROR(BF("Index too large %d must be less than %d") % index % this->length());
   }
-  return (*this)[index];
+  return this->_Vector->elt(index+this->_DisplacedIndexOffset);
 }
 
 T_sp VectorDisplaced_O::aref(List_sp indices) const {
   _G();
-  ASSERTF(cl_length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
+  ASSERTF(cl__length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
   return this->elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices))));
 }
 
 T_sp VectorDisplaced_O::setf_elt(int index, T_sp obj) {
-  _G();
-  (*this)[index] = obj;
+  this->_Vector->setf_elt(index+this->_DisplacedIndexOffset,obj);
   return obj;
 }
 
 T_sp VectorDisplaced_O::setf_aref(List_sp indices_val) {
   _G();
-  ASSERTF(cl_length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
+  ASSERTF(cl__length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
   return this->setf_elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices_val))), oCadr(indices_val));
 }
 

@@ -19,15 +19,13 @@ project internals/asttooling : requirements
 	;
 
 sources = 
-        testAST.cc
-        testCode.cc
         Registry.cc
         Diagnostics.cc
         astVisitor.cc
-#	tools.cc
 	astExpose.cc
 	clangTooling.cc
 	asttoolingPackage.cc
+        clangCompiler.cc
         ;
 
 

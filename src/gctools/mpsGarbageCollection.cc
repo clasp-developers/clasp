@@ -386,7 +386,7 @@ int processMpsMessages(void) {
   int mFinalize(0);
   int mGcStart(0);
   int mGc(0);
-  core::Number_sp startTime = gc::As<core::Number_sp>(core::cl_getInternalRunTime());
+  core::Number_sp startTime = gc::As<core::Number_sp>(core::cl__get_internal_run_time());
   mps_message_type_t type;
   while (mps_message_queue_type(&type, gctools::_global_arena)) {
     mps_message_t message;
@@ -422,7 +422,7 @@ int processMpsMessages(void) {
   }
 #if 0
 //        printf("%s:%d Leaving processMpsMessages\n",__FILE__,__LINE__);
-        core::Number_sp endTime = core::cl_getInternalRunTime().as<core::Number_O>();
+        core::Number_sp endTime = core::cl__get_internal_run_time().as<core::Number_O>();
         core::Number_sp deltaTime = core::contagen_mul(core::contagen_sub(endTime,startTime),core::make_fixnum(1000));
         core::Number_sp deltaSeconds = core::contagen_div(deltaTime,cl::_sym_internalTimeUnitsPerSecond->symbolValue().as<core::Number_O>());
         printf("%s:%d [processMpsMessages %s millisecs for  %d finalization/ %d gc-start/ %d gc messages]\n", __FILE__, __LINE__, _rep_(deltaSeconds).c_str(), mFinalize, mGcStart, mGc );

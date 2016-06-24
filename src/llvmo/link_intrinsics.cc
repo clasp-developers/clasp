@@ -207,7 +207,7 @@ ALWAYS_INLINE LCC_RETURN FUNCALL(LCC_ARGS_FUNCALL_ELLIPSIS) {
 
 ALWAYS_INLINE LCC_RETURN FUNCALL_argsInReversedList(core::Closure *closure, core::T_sp *argsP) {
   List_sp args(*argsP);
-  size_t nargs = core::cl_length(args);
+  size_t nargs = core::cl__length(args);
   STACK_FRAME(buff, fargs, nargs);
   for (int i(nargs - 1); i >= 0; --i) {
     fargs[i] = oCar(args).raw_();
@@ -464,7 +464,7 @@ void makePathname(core::T_sp *fnP, const char *cstr) {
   ASSERT(fnP != NULL);
 
   core::Str_sp str = core::Str_O::create(cstr);
-  core::Pathname_sp ns = core::cl_pathname(str);
+  core::Pathname_sp ns = core::cl__pathname(str);
   (*fnP) = ns;
 }
 
@@ -544,7 +544,7 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    startTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
+    startTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
   }
 #endif
   // Evaluate the function
@@ -559,11 +559,11 @@ void invokeTopLevelFunction(core::T_mv *resultP,
 #endif
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   if (core::_sym_STARdebugStartupSTAR->symbolValue().notnilp()) {
-    core::Number_sp endTime = gc::As<core::Number_sp>(core::cl_getInternalRealTime());
+    core::Number_sp endTime = gc::As<core::Number_sp>(core::cl__get_internal_real_time());
     core::Number_sp diff = core::contagen_sub(endTime, startTime);
     core::Number_sp seconds = core::contagen_div(diff, gc::As<Number_sp>(cl::_sym_internalTimeUnitsPerSecond->symbolValue()));
     double dseconds = clasp_to_double(seconds);
-    core::SourceFileInfo_sp sfi = core::core_sourceFileInfo(core::make_fixnum(*sourceFileInfoHandleP));
+    core::SourceFileInfo_sp sfi = core::core__source_file_info(core::make_fixnum(*sourceFileInfoHandleP));
     printf("TOP-LEVEL-FUNCTION-TIME %lf %s %d\n", dseconds, sfi->namestring().c_str(), lineno);
   }
 #endif
@@ -1023,7 +1023,7 @@ void debugSymbolPointer(core::Symbol_sp *ptr) {
 
 void debugSymbolValue(core::Symbol_sp sym) {
   _G();
-  printf("+++++ debugSymbolValue: %s\n", _rep_(core::af_symbolValue(sym)).c_str());
+  printf("+++++ debugSymbolValue: %s\n", _rep_(core::cl__symbol_value(sym)).c_str());
 }
 
 void debugPrintObject(const char *msg, core::T_sp *objP) {
@@ -1294,7 +1294,7 @@ void assignSourceFileInfoHandle(const char *moduleName, const char *sourceDebugP
   //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
   core::Str_sp mname = core::Str_O::create(moduleName);
   core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
-  SourceFileInfo_mv sfi_mv = core::core_sourceFileInfo(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet(1)));
 #if 0
 	if ( sfindex == 0 ) {
@@ -1309,7 +1309,7 @@ void assignSourceFileInfoHandle(const char *moduleName, const char *sourceDebugP
 void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
   int sfindex = *sourceFileInfoHandleP;
   core::Fixnum_sp fn = core::make_fixnum(sfindex);
-  SourceFileInfo_sp sfi = core::core_sourceFileInfo(fn);
+  SourceFileInfo_sp sfi = core::core__source_file_info(fn);
   printf("%s:%d debugSourceFileInfoHandle[%d] --> %s\n", __FILE__, __LINE__, sfindex, _rep_(sfi).c_str());
 }
 };
@@ -1370,7 +1370,7 @@ extern "C" {
 
 void ltv_findBuiltInClass(core::T_sp *resultP, core::T_sp *symbolP) {
   ASSERT(resultP != NULL);
-  *resultP = core::cl_findClass(*symbolP, true, _Nil<core::T_O>());
+  *resultP = core::cl__find_class(*symbolP, true, _Nil<core::T_O>());
   ASSERTNOTNULL(*resultP);
 }
 
@@ -1578,7 +1578,7 @@ void popDynamicBinding(core::Symbol_sp *symbolP) {
     ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
     ss << "  mismatch with top of dynamic binding stack: " << _rep_(top) << std::endl;
     ss << "  dumping stack: " << std::endl;
-    core_dynamicBindingStackDump(ss);
+    core::core__dynamic_binding_stack_dump(ss);
     SIMPLE_ERROR(BF("Mismatch in popDynamicBinding:\n%s") % ss.str());
   }
   _lisp->bindings().pop();

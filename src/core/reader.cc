@@ -71,7 +71,7 @@ void Reader_O::initialize() {
 }
 
 string Reader_O::fileName() {
-  return gc::As<SourceFileInfo_sp>(core_sourceFileInfo(this->_Input))->fileName();
+  return gc::As<SourceFileInfo_sp>(core__source_file_info(this->_Input))->fileName();
 }
 
 SYMBOL_EXPORT_SC_(ClPkg, STARread_suppressSTAR);
@@ -253,7 +253,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       goto RETURN;
     }
     case singleQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
 #if 0
       size_t filepos = clasp_input_filePos(this->_Input);
       uint lineno = clasp_input_lineno(this->_Input);
@@ -279,7 +279,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       goto RETURN;
     }
     case sharpQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -344,7 +344,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
     }
 
     case backQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -369,7 +369,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
     //
 
     case doubleBackQuote: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
       T_sp templateObject = this->primitive_read(true, _Nil<T_O>(), true);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       (void)quotedObject;
@@ -382,7 +382,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       goto RETURN;
     }
     case comma: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -393,7 +393,7 @@ T_sp Reader_O::primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP) {
       goto RETURN;
     }
     case commaAt: {
-      SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+      SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
       T_sp quotedObject = this->primitive_read(true, _Nil<T_O>(), true);
       if (this->suppressRead()) {
         result = _Nil<T_O>();
@@ -552,7 +552,7 @@ string Reader_O::readDoubleQuoteString() {
 
 string Reader_O::posAsString() {
   stringstream ss;
-  ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << gc::As<SourceFileInfo_sp>(core_sourceFileInfo(this->_Input))->fileName();
+  ss << clasp_input_lineno(this->_Input) << ":" << clasp_input_column(this->_Input) << " " << gc::As<SourceFileInfo_sp>(core__source_file_info(this->_Input))->fileName();
   return ss.str();
 }
 
@@ -637,7 +637,7 @@ List_sp Reader_O::readDelimitedList(char endChar, bool recursiveP) {
   Cons_sp cur = first;
   while (1) {
     this->skipWhiteSpace();
-    SourcePosInfo_sp spi = core_inputStreamSourcePosInfo(this->_Input);
+    SourcePosInfo_sp spi = core__input_stream_source_pos_info(this->_Input);
     char c = this->peekChar();
     if (c == endChar) {
       this->nextChar();

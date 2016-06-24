@@ -37,10 +37,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-#define ARGS_cl_fillPointer "(vec)"
-#define DECL_cl_fillPointer ""
-#define DOCS_cl_fillPointer "Return the fill-pointer"
-int cl_fillPointer(Vector_sp vec) {
+LAMBDA(vec);
+DECLARE();
+DOCSTRING("Return the fill-pointer");
+CL_DEFUN int cl__fill_pointer(Vector_sp vec) {
   return vec->fillPointer();
 }
 
@@ -66,7 +66,6 @@ VectorObjectsWithFillPtr_O::VectorObjectsWithFillPtr_O() : Base(){};
 void VectorObjectsWithFillPtr_O::exposeCando(::core::Lisp_sp lisp) {
   ::core::class_<VectorObjectsWithFillPtr_O>()
       .def("setf_fillPointer", &VectorObjectsWithFillPtr_O::setf_fillPointer);
-  ClDefun(fillPointer);
 }
 
 void VectorObjectsWithFillPtr_O::exposePython(::core::Lisp_sp lisp) {

@@ -48,10 +48,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_functionLambdaList "(function)"
-#define DECL_core_functionLambdaList ""
-#define DOCS_core_functionLambdaList "functionLambdaList"
-T_mv core_functionLambdaList(T_sp obj) {
+LAMBDA(function);
+DECLARE();
+DOCSTRING("functionLambdaList");
+CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
   if (obj.nilp()) {
     return Values(_Nil<T_O>(), _Nil<T_O>());
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
@@ -66,22 +66,20 @@ T_mv core_functionLambdaList(T_sp obj) {
   return Values(_Nil<T_O>(), _Nil<T_O>());
 }
 
-#define ARGS_core_functionSourcePosInfo "(function)"
-#define DECL_core_functionSourcePosInfo ""
-#define DOCS_core_functionSourcePosInfo "functionSourcePosInfo"
-gc::Nilable<SourcePosInfo_sp> core_functionSourcePosInfo(T_sp functionDesignator) {
+LAMBDA(function);
+DECLARE();
+DOCSTRING("functionSourcePosInfo");
+CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
   Function_sp func = coerce::functionDesignator(functionDesignator);
   gctools::tagged_pointer<Closure> closure = func->closure;
   gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
   return sourcePosInfo;
 }
 
-#define ARGS_core_setKind "(fn kind)"
-#define DECL_core_setKind ""
-#define DOCS_core_setKind "setKind"
-#define FILE_core_setKind __FILE__
-#define LINE_core_setKind __LINE__
-void core_setKind(Function_sp fn, Symbol_sp kind) {
+LAMBDA(fn kind);
+DECLARE();
+DOCSTRING("set the kind of a function object (:function|:macro)");
+CL_DEFUN void core__set_kind(Function_sp fn, Symbol_sp kind) {
   fn->closure->setKind(kind);
 };
 
@@ -105,7 +103,7 @@ int FunctionClosure::column() const {
 }
 
 T_sp FunctionClosure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column) {
-  SourceFileInfo_mv sfi = core_sourceFileInfo(sourceFile);
+  SourceFileInfo_mv sfi = core__source_file_info(sourceFile);
   this->_sourceFileInfoHandle = gc::As<Fixnum_sp>(sfi.valueGet(1)).unsafe_fixnum();
   this->_filePos = filePos;
   this->_lineno = lineno;
@@ -208,7 +206,7 @@ T_sp Function_O::functionName() const {
 T_mv Function_O::functionSourcePos() const {
   ASSERTF(this->closure, BF("The Function closure is NULL"));
   T_sp spi = this->closure->sourcePosInfo();
-  T_sp sfi = core_sourceFileInfo(spi);
+  T_sp sfi = core__source_file_info(spi);
   if (sfi.nilp() || spi.nilp()) {
     return Values(sfi, make_fixnum(0), make_fixnum(0));
   }
@@ -235,10 +233,10 @@ void handleArgumentHandlingExceptions(gctools::tagged_pointer<Closure> closure) 
   }
 }
 
-#define ARGS_cl_functionLambdaExpression "(fn)"
-#define DECL_cl_functionLambdaExpression ""
-#define DOCS_cl_functionLambdaExpression "functionLambdaExpression"
-T_mv cl_functionLambdaExpression(Function_sp fn) {
+LAMBDA(fn);
+DECLARE();
+DOCSTRING("functionLambdaExpression");
+CL_DEFUN T_mv cl__function_lambda_expression(Function_sp fn) {
   _G();
   List_sp code = _Nil<List_V>();
   if (gctools::tagged_pointer<InterpretedClosure> ic = fn->closure.asOrNull<InterpretedClosure>()) {
@@ -250,10 +248,10 @@ T_mv cl_functionLambdaExpression(Function_sp fn) {
   return Values(tcode, _lisp->_boolean(closedp), name);
 };
 
-#define ARGS_core_functionSourceCode "(fn)"
-#define DECL_core_functionSourceCode ""
-#define DOCS_core_functionSourceCode "functionSourceCode"
-T_sp core_functionSourceCode(Function_sp fn) {
+LAMBDA(fn);
+DECLARE();
+DOCSTRING("functionSourceCode");
+CL_DEFUN T_sp core__function_source_code(Function_sp fn) {
   gctools::tagged_pointer<Closure> closure = fn->closure;
   if (auto ic = closure.as<InterpretedClosure>()) {
     return ic->code();
@@ -274,11 +272,6 @@ void Function_O::exposeCando(Lisp_sp lisp) {
       .def("core:function_docstring", &Function_O::docstring)
       .def("core:cleavir_ast", &Function_O::cleavir_ast)
       .def("core:setf_cleavir_ast", &Function_O::setf_cleavir_ast);
-  ClDefun(functionLambdaExpression);
-  CoreDefun(functionSourcePosInfo);
-  CoreDefun(setKind);
-  CoreDefun(functionLambdaList);
-  CoreDefun(functionSourceCode);
 }
 
 void Function_O::exposePython(Lisp_sp lisp) {

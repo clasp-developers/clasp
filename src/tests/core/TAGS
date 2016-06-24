@@ -1,348 +1,0 @@
-
-array0.lsp,23
-(defparameter *a* 1,0
-
-auxtest.lsp,47
-(defmethod aux-compute-applicable-methods 1,0
-
-backtrace0.lsp,44
-(defun c 2,1
-(defun b 5,29
-(defun a 8,50
-
-block_let0.lsp,92
-(defmacro lewp-log 3,2
-(defun estimate-code-size-1 7,73
-(defun estimate-code-size 10,138
-
-compile0.lsp,33
-(defvar *inner-compile-var* 2,1
-
-complex2.lsp,37
-(defun inner 2,1
-(defun outer 6,37
-
-conditions0.lsp,139
-(define-condition restartable-gethash-error 1,0
-(defun read-new-value 9,290
-(defun restartable-gethash 13,397
-(defun list-hash 35,1169
-
-debug0.lsp,44
-(defun x 2,1
-(defun y 4,31
-(defun z 6,49
-
-debug1.lsp,46
-(defun z 2,1
-(defun y 7,65
-(defun x 12,120
-
-defmacro0.lsp,25
-(defmacro testmacro 1,0
-
-defun0.lsp,22
-(defun testdefun 1,0
-
-defun2.lsp,14
-(defun a 1,0
-
-destructure0.lsp,424
-(defmacro unless 3,23
-(defmacro defmacro 9,246
-(defmacro defvar 24,818
-(defmacro defparameter 44,1678
-(defmacro defconstant 61,2411
-(defparameter *defun-inline-hook* 79,3156
-(defmacro defun 81,3196
-(defmacro define-compiler-macro 101,4063
-(defun compiler-macro-function 115,4601
-(defmacro loop 129,5179
-(defmacro lambda 138,5424
-(defmacro lambda-block 141,5486
-(defmacro psetq 151,5804
-(defmacro cond 179,6295
-
-do_cond1.lsp,23
-(defmacro do-cond 2,1
-
-dwarf0.lsp,16
-(defun foo 1,0
-
-dwarf1.lsp,16
-(defun foo 2,9
-
-dynamic0.lsp,17
-(defvar *a* 1,0
-
-evalWithEnv0.lsp,15
-(defun ev 2,1
-
-generic0.lsp,93
-(defgeneric ptype 2,1
-(defmethod ptype 3,24
-(defmethod ptype 4,74
-(defmethod ptype 5,120
-
-labels0.lsp,17
-(defun test 1,0
-
-lambdaList-a.lsp,31
-(defun a 1,0
-(defun foo 4,37
-
-lambdaList0.lsp,70
-(defvar cmp:*low-level-trace* 1,0
-(defvar cmp:*debug-compiler* 2,33
-
-loopClosure0.lsp,85
-(defun make-closure 3,2
-(defparameter *closures* 7,53
-(defparameter *values* 9,84
-
-ltv1.lsp,75
-(defvar *foo-arrays* 1,0
-(defun foo1-ref 2,59
-(defun set-foo1-ref 3,132
-
-ltv3.lsp,38
-(defstruct xxx 2,1
-(defvar *a* 4,24
-
-multipleValueBind0.lsp,23
-(defun return-one 1,0
-
-mvb0.lsp,16
-(defun a 5,191
-
-nested-compile0.lsp,33
-(defvar *inner-compile-var* 2,1
-
-progv_test.lsp,34
-(defvar cmp:*debug-compiler* 1,0
-
-quote2.lsp,53
-(defmacro setf-gethash 2,1
-(defparameter *ht*7,135
-
-setf.lsp,2773
-(defun check-stores-number 18,644
-(defun do-setf-method-expansion 23,830
-(defun setf-method-wrapper 47,1527
-(defun do-defsetf 53,1715
-(defun do-define-setf-method 59,1983
-(defmacro defsetf 68,2238
-(defmacro define-setf-expander 100,3486
-(defun get-setf-expansion 138,4905
-(defsetf car 167,5990
-(defsetf cdr 169,6040
-(defsetf caar 170,6089
-(defsetf cdar 171,6145
-(defsetf cadr 172,6201
-(defsetf cddr 173,6257
-(defsetf caaar 174,6313
-(defsetf cdaar 175,6371
-(defsetf cadar 176,6429
-(defsetf cddar 177,6487
-(defsetf caadr 178,6545
-(defsetf cdadr 179,6603
-(defsetf caddr 180,6661
-(defsetf cdddr 181,6719
-(defsetf caaaar 182,6777
-(defsetf cdaaar 183,6837
-(defsetf cadaar 184,6897
-(defsetf cddaar 185,6957
-(defsetf caadar 186,7017
-(defsetf cdadar 187,7077
-(defsetf caddar 188,7137
-(defsetf cdddar 189,7197
-(defsetf caaadr 190,7257
-(defsetf cdaadr 191,7317
-(defsetf cadadr 192,7377
-(defsetf cddadr 193,7437
-(defsetf caaddr 194,7497
-(defsetf cdaddr 195,7557
-(defsetf cadddr 196,7617
-(defsetf cddddr 197,7677
-(defsetf first 198,7737
-(defsetf second 199,7788
-(defsetf third 200,7846
-(defsetf fourth 201,7904
-(defsetf fifth 202,7964
-(defsetf sixth 203,8024
-(defsetf seventh 204,8086
-(defsetf eighth 205,8150
-(defsetf ninth 206,8213
-(defsetf tenth 207,8275
-(defsetf rest 208,8337
-(defsetf svref 209,8387
-(defsetf elt 210,8415
-(defsetf symbol-value 211,8437
-(defsetf symbol-function 212,8464
-(defsetf fdefinition 213,8499
-(defsetf macro-function 214,8530
-(defsetf aref 215,8620
-(defsetf row-major-aref 216,8655
-(defsetf get 217,8699
-(defsetf get-sysprop 219,8803
-(defsetf nth 220,8837
-(defsetf char 221,8900
-(defsetf schar 222,8928
-(defsetf bit 223,8958
-(defsetf sbit 224,8981
-(defsetf fill-pointer 225,9005
-(defsetf symbol-plist 226,9049
-(defsetf gethash 227,9093
-(defsetf documentation 229,9203
-(defsetf instance-ref 231,9257
-(defsetf compiler-macro-function 232,9293
-(defsetf readtable-case 234,9406
-(defsetf stream-external-format 235,9454
-(define-setf-expander getf 237,9520
-(defsetf subseq 250,10171
-(define-setf-expander THE 255,10323
-(define-setf-expander apply 263,10630
-(define-setf-expander apply 276,11209
-(define-setf-expander ldb 297,12297
-(define-setf-expander mask-field 310,12755
-(defun trivial-setf-form 323,13255
-(defun try-simpler-expansion 337,13685
-(defun setf-expand-1 367,14769
-(defun setf-expand 383,15345
-(defmacro setf 392,15612
-(defmacro psetf 422,16881
-(defmacro shiftf 453,17899
-(defmacro rotatef 484,19057
-(defmacro define-modify-macro 513,20157
-(defmacro define-modify-macro 585,23190
-(defmacro remf 616,24262
-(define-modify-macro incf 631,24899
-(define-modify-macro decf 635,25056
-(defmacro push 639,25213
-(defmacro pushnew 659,26067
-(defmacro pop 684,27170
-
-special0.lsp,33
-(defun foo 2,1
-(defun bar 6,97
-
-special1.lsp,34
-(defun foo 2,1
-(defun bar 7,113
-
-special2.lsp,57
-(defvar *secret* 2,1
-(defun foo 4,24
-(defun bar 8,103
-
-special4.lsp,57
-(defvar *secret* 2,1
-(defun foo 3,23
-(defun bar 7,119
-
-testcmp.lsp,14
-(defun a 2,1
-
-tests.lsp,50
-(defmacro test 5,43
-(defmacro test-equal 19,339
-
-values1.lsp,29
-(defun x 1,0
-(defun y 2,28
-
-values0.lsp,0
-
-unwind-protect1.lsp,0
-
-unwind-protect0.lsp,0
-
-truly-the1.lsp,0
-
-truly-the0.lsp,0
-
-testloop.lsp,0
-
-test0.lsp,0
-
-tagbody2.lsp,0
-
-tagbody1.lsp,0
-
-tagbody0.lsp,0
-
-tagbody.lsp,0
-
-symbolMacrolet0.lsp,0
-
-restart0.lsp,0
-
-repl0.lsp,0
-
-quote4.lsp,0
-
-quote1.lsp,0
-
-quote0.lsp,0
-
-progv1.lsp,0
-
-progv0.lsp,0
-
-progn0.lsp,0
-
-multipleValues0.lsp,0
-
-macrolet0.lsp,0
-
-ltv2.lsp,0
-
-ltv0.lsp,0
-
-longjmp0.lsp,0
-
-let1.lsp,0
-
-let0.lsp,0
-
-handlercase0.lsp,0
-
-fset0.lsp,0
-
-flet0.lsp,0
-
-eval-when0.lsp,0
-
-e.lsp,0
-
-dwarf3.lsp,0
-
-dwarf2a.lsp,0
-
-dwarf2.lsp,0
-
-do_cond.lsp,0
-
-destructure.lsp,0
-
-defun1.lsp,0
-
-constant0.lsp,0
-
-complex1.lsp,0
-
-complex0.lsp,0
-
-catch-throw.lsp,0
-
-case0.lsp,0
-
-block_let_catch0.lsp,0
-
-block3.lsp,0
-
-block0.lsp,0
-
-block.lsp,0
-
-backquote0.lsp,0

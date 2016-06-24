@@ -151,10 +151,10 @@ Linker_sp Linker_O::make(Module_sp module) {
   return self;
 };
 
-#define ARGS_af_linkInModule "(linker module)"
-#define DECL_af_linkInModule ""
-#define DOCS_af_linkInModule "linkInModule"
-core::T_mv af_linkInModule(Linker_sp linker, Module_sp module) {
+#define ARGS_llvm_sys__link_in_module "(linker module)"
+#define DECL_llvm_sys__link_in_module ""
+#define DOCS_llvm_sys__link_in_module "link_in_module"
+core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module) {
   _G();
   std::string errorMsg = "llvm::Linker::linkInModule reported an error";
   bool res = linker->wrappedPtr()->linkInModule(module->wrappedPtr());
@@ -168,7 +168,7 @@ void Linker_O::exposeCando(core::Lisp_sp lisp) {
   core::externalClass_<Linker_O>()
       .def("getModule", &llvm::Linker::getModule);
   Defun_maker(LlvmoPkg, Linker);
-  Defun(linkInModule);
+  Llvmo_temp_Defun(link_in_module);
 };
 
 void Linker_O::exposePython(core::Lisp_sp lisp) {
@@ -1123,10 +1123,10 @@ Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp context) {
   return self;
 };
 
-#define ARGS_af_module_get_function_list "(module)"
-#define DECL_af_module_get_function_list ""
-#define DOCS_af_module_get_function_list "module_get_function_list"
-core::List_sp af_module_get_function_list(Module_sp module) {
+#define ARGS_llvm_sys__module_get_function_list "(module)"
+#define DECL_llvm_sys__module_get_function_list ""
+#define DOCS_llvm_sys__module_get_function_list "module_get_function_list"
+core::List_sp llvm_sys__module_get_function_list(Module_sp module) {
   ql::list fl(_lisp);
   for (llvm::Function &f : *module->wrappedPtr()) {
     Function_sp wrapped_func = gc::As<Function_sp>(translate::to_object<const llvm::Function &>::convert(f));
@@ -1166,7 +1166,7 @@ void Module_O::exposeCando(core::Lisp_sp lisp) {
   Defun(verifyModule);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, module_get_function_list);
-  Defun(module_get_function_list);
+  Llvmo_temp_Defun(module_get_function_list);
 
   SYMBOL_EXPORT_SC_(LlvmoPkg, STARmoduleModFlagBehaviorSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, moduleFlagError);
@@ -3490,7 +3490,7 @@ core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(Executio
   }
   core::CompiledClosure_fptr_type lisp_funcPtr = (core::CompiledClosure_fptr_type)(p);
   core::Cons_sp associatedFunctions = core::Cons_O::create(fn, _Nil<core::T_O>());
-  core::SourceFileInfo_mv sfi = core_sourceFileInfo(fileName);
+  core::SourceFileInfo_mv sfi = core__source_file_info(fileName);
   int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi.valueGet(1)));
   //	printf("%s:%d  Allocating CompiledClosure with name: %s\n", __FILE__, __LINE__, _rep_(sym).c_str() );
   gctools::tagged_pointer<CompiledClosure> functoid = gctools::ClassAllocator<CompiledClosure>::allocateClass(functionName, kw::_sym_function, lisp_funcPtr, fn, activationFrameEnvironment, associatedFunctions, lambdaList, sfindex, filePos, linenumber, 0);
@@ -3537,7 +3537,7 @@ void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {
     auto fnPtr = (void (*)(LCC_RETURN,LCC_CLOSED_ENVIRONMENT,LCC_ARGS)) engine->getPointerToFunction(fn);
 	//engine->runFunction(fn,argValues);
     core::T_mv result;
-    int numArgs = cl_length(args);
+    int numArgs = cl__length(args);
     switch (numArgs) {
     case 0:
         fnPtr(&result,_Nil<core::T_O>().px,LCC_PASS_ARGS0());

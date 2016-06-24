@@ -1,7 +1,0 @@
-const string ClPackage = "l";
-const string UserPackage = "u";
-const string KeywordPackage = "k";	// symbols start with ':'
-const string AmpPackage = "a";		// symbols start with '&'
-const string MbbPackage = "m";
-const string WxPackage = "wx";
-const string MpiPackage = "mpi";

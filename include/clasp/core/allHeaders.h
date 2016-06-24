@@ -221,7 +221,9 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/symbolVector.fwd.h>
 #include <core/symbolVector.h>
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #include <clasp/core/sysprop.h>
 #include <core/tagged_intrusive_ptr.h>
 #include <clasp/core/tnc.h>

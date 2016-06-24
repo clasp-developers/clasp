@@ -75,10 +75,11 @@ void LispDebugger::printExpression() {
 }
 
 InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
-  InvocationHistoryFrameIterator_sp frame = core_getInvocationHistoryFrame(af_ihsCurrentFrame());
+  InvocationHistoryFrameIterator_sp frame = core__get_invocation_history_frame(core__ihs_current_frame());
   if (frame->isValid())
     return frame;
-  THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
+  printf("%s:%d  Could not get frame - aborting\n", __FILE__, __LINE__ );
+  abort(); //THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
 }
 
 T_sp LispDebugger::invoke() {
@@ -95,7 +96,7 @@ T_sp LispDebugger::invoke() {
     stringstream sprompt;
     sprompt << "Frame-" << this->currentFrame()->index() << "-";
     sprompt << "Dbg";
-    if (af_ihsEnv(af_ihsCurrentFrame()).notnilp()) {
+    if (core__ihs_env(core__ihs_current_frame()).notnilp()) {
       sprompt << "(+ENV)";
     }
     sprompt << "[" << _lisp->debuggerLevel() << "]>";
@@ -142,11 +143,11 @@ T_sp LispDebugger::invoke() {
         int frameIdx = atoi(sexp.c_str());
         if (frameIdx < 0)
           frameIdx = 0;
-        if (frameIdx > af_ihsTop()) {
-          frameIdx = af_ihsTop();
+        if (frameIdx > core__ihs_top()) {
+          frameIdx = core__ihs_top();
         }
         _lisp->print(BF("Switching to frame: %d") % frameIdx);
-        af_setIhsCurrentFrame(frameIdx);
+        core__set_ihs_current_frame(frameIdx);
         this->printExpression();
       } else {
         _lisp->print(BF("You must provide a frame number\n"));
@@ -162,13 +163,13 @@ T_sp LispDebugger::invoke() {
       this->printExpression();
       break;
     case 'D': {
-      Function_sp func = af_ihsFun(af_ihsCurrentFrame());
+      Function_sp func = core__ihs_fun(core__ihs_current_frame());
       _lisp->print(BF("Current function: %s\n") % _rep_(func));
       eval::funcall(cl::_sym_disassemble, func);
       break;
     }
     case 'b': {
-      af_ihsBacktrace(_lisp->_true(), _Nil<T_O>());
+      core__ihs_backtrace(_lisp->_true(), _Nil<T_O>());
       break;
     }
     case 'x': {
@@ -177,7 +178,7 @@ T_sp LispDebugger::invoke() {
     }
     case 'v': {
       this->printExpression();
-      T_sp env = af_ihsEnv(af_ihsCurrentFrame());
+      T_sp env = core__ihs_env(core__ihs_current_frame());
       _lisp->print(BF("activationFrame->%p    .nilp()->%d  .nilp()->%d") % env.raw_() % env.nilp() % env.nilp());
       if (env.notnilp()) {
         _lisp->print(BF("%s") % gc::As<Environment_sp>(env)->environmentStackAsString());
@@ -195,10 +196,8 @@ T_sp LispDebugger::invoke() {
           return _Nil<T_O>();
         }
         string sexp = line.substr(3, 99999);
-        //		    ControlSingleStep singleStep(false);
         T_mv result;
-        T_sp env = af_ihsEnv(af_ihsCurrentFrame());
-        //		    DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
+        T_sp env = core__ihs_env(core__ihs_current_frame());
         result = _lisp->readEvalPrintString(sexp, env, true);
         if (!result) {
           result = Values(_Nil<T_O>());
@@ -212,9 +211,7 @@ T_sp LispDebugger::invoke() {
     };
     case 'e': {
       string sexp = line.substr(0, 99999);
-      //		ControlSingleStep singleStep(false);
-      T_sp env = af_ihsEnv(af_ihsCurrentFrame());
-      //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
+      T_sp env = core__ihs_env(core__ihs_current_frame());
       try {
         _lisp->readEvalPrintString(sexp, env, true);
       } catch (DebuggerSaysAbortToRepl &err) {
@@ -225,7 +222,7 @@ T_sp LispDebugger::invoke() {
     case 'i': {
       string sexp = line.substr(2, 99999);
       //		ControlSingleStep singleStep(false);
-      T_sp env = af_ihsEnv(af_ihsCurrentFrame());
+      T_sp env = core__ihs_env(core__ihs_current_frame());
       //		DebuggerIHF dbgFrame(_lisp->invocationHistoryStack(),Environment_O::clasp_getActivationFrame(env));
       try {
         DynamicScopeManager scope(comp::_sym_STARimplicit_compile_hookSTAR, comp::_sym_implicit_compile_hook_default->symbolFunction());
@@ -242,10 +239,10 @@ T_sp LispDebugger::invoke() {
   }
 }
 
-#define ARGS_core_lowLevelBacktrace "()"
-#define DECL_core_lowLevelBacktrace ""
-#define DOCS_core_lowLevelBacktrace "lowLevelBacktrace"
-void core_lowLevelBacktrace() {
+LAMBDA();
+DECLARE();
+DOCSTRING("lowLevelBacktrace");
+CL_DEFUN void core__low_level_backtrace() {
   InvocationHistoryStack &ihs = _lisp->invocationHistoryStack();
   InvocationHistoryFrame *top = ihs.top();
   if (top == NULL) {
@@ -267,7 +264,7 @@ void core_lowLevelBacktrace() {
         }
       }
     }
-    /*Nilable?*/ T_sp sfi = core_sourceFileInfo(make_fixnum(closure->sourceFileInfoHandle()));
+    /*Nilable?*/ T_sp sfi = core__source_file_info(make_fixnum(closure->sourceFileInfoHandle()));
     string sourceName = "cannot-determine";
     if (sfi.notnilp()) {
       sourceName = gc::As<SourceFileInfo_sp>(sfi)->fileName();
@@ -277,14 +274,14 @@ void core_lowLevelBacktrace() {
   printf("----Done\n");
 }
 
-#define ARGS_core_clibBacktrace "(depth)"
-#define DECL_core_clibBacktrace ""
-#define DOCS_core_clibBacktrace "backtrace"
-void core_clibBacktrace(int depth) {
+LAMBDA(depth);
+DECLARE();
+DOCSTRING("backtrace");
+CL_DEFUN void core__clib_backtrace(int depth) {
   _G();
 // Play with Unix backtrace(3)
 #define BACKTRACE_SIZE 1024
-  printf("Entered core_clibBacktrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
+  printf("Entered core__clib_backtrace - symbol: %s\n", _rep_(INTERN_(core, theClibBacktraceFunctionSymbol)).c_str());
   void *buffer[BACKTRACE_SIZE];
   char *funcname = (char *)malloc(1024);
   size_t funcnamesize = 1024;
@@ -327,25 +324,24 @@ void core_clibBacktrace(int depth) {
     free(funcname);
 };
 
-#define ARGS_af_framePointers "()"
-#define DECL_af_framePointers ""
-#define DOCS_af_framePointers "framePointers"
-void af_framePointers() {
+LAMBDA();
+DECLARE();
+DOCSTRING("framePointers");
+CL_DEFUN void core__frame_pointers() {
   void *fp = __builtin_frame_address(0); // Constant integer only
   if (fp != NULL)
     printf("Frame pointer --> %p\n", fp);
 };
 };
 
-extern "C" {
-
 namespace core {
+
 #define ARGS_af_gotoIhsTop "()"
 #define DECL_af_gotoIhsTop ""
 #define DOCS_af_gotoIhsTop "gotoIhsTop"
 void af_gotoIhsTop() {
   _G();
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsTop()));
+  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_top()));
 };
 
 #define ARGS_af_gotoIhsPrev "()"
@@ -353,8 +349,8 @@ void af_gotoIhsTop() {
 #define DOCS_af_gotoIhsPrev "gotoIhsPrev"
 void af_gotoIhsPrev() {
   _G();
-  int ihsCur = af_ihsCurrentFrame();
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsPrev(ihsCur)));
+  int ihsCur = core__ihs_current_frame();
+  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_prev(ihsCur)));
 };
 
 #define ARGS_af_gotoIhsNext "()"
@@ -362,8 +358,8 @@ void af_gotoIhsPrev() {
 #define DOCS_af_gotoIhsNext "gotoIhsNext"
 void af_gotoIhsNext() {
   _G();
-  int ihsCur = af_ihsCurrentFrame();
-  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(af_ihsNext(ihsCur)));
+  int ihsCur = core__ihs_current_frame();
+  _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(core__ihs_next(ihsCur)));
 };
 
 #define ARGS_af_gotoIhsFrame "(frame-index)"
@@ -373,8 +369,8 @@ void af_gotoIhsFrame(int frame_index) {
   _G();
   if (frame_index < 0)
     frame_index = 0;
-  if (frame_index >= af_ihsTop())
-    frame_index = af_ihsTop() - 1;
+  if (frame_index >= core__ihs_top())
+    frame_index = core__ihs_top() - 1;
   int ihsCur = frame_index;
   _sym_STARihsCurrentSTAR->setf_symbolValue(make_fixnum(ihsCur));
 };
@@ -384,25 +380,25 @@ void af_gotoIhsFrame(int frame_index) {
 #define DOCS_af_printCurrentIhsFrame "printCurrentIhsFrame"
 void af_printCurrentIhsFrame() {
   _G();
-  int ihsCur = af_ihsCurrentFrame();
-  Function_sp fun = af_ihsFun(ihsCur);
+  int ihsCur = core__ihs_current_frame();
+  Function_sp fun = core__ihs_fun(ihsCur);
   printf("Frame[%d] %s\n", ihsCur, _rep_(fun).c_str());
 };
 
-#define ARGS_af_printCurrentIhsFrameEnvironment "()"
-#define DECL_af_printCurrentIhsFrameEnvironment ""
-#define DOCS_af_printCurrentIhsFrameEnvironment "printCurrentIhsFrameEnvironment"
-void af_printCurrentIhsFrameEnvironment() {
-  T_sp args = af_ihsArguments(af_ihsCurrentFrame());
+LAMBDA();
+DECLARE();
+DOCSTRING("printCurrentIhsFrameEnvironment");
+CL_DEFUN void core__print_current_ihs_frame_environment() {
+  T_sp args = core__ihs_arguments(core__ihs_current_frame());
   if (args.notnilp()) {
     VectorObjects_sp vargs = gc::As<VectorObjects_sp>(args);
-    for (int i = 0; i < cl_length(vargs); ++i) {
+    for (int i = 0; i < cl__length(vargs); ++i) {
       _lisp->print(BF("arg%s --> %s") % i % _rep_(vargs->elt(i)));
     }
   } else {
     _lisp->print(BF("Args not available"));
   }
-  T_sp env = af_ihsEnv(af_ihsCurrentFrame());
+  T_sp env = core__ihs_env(core__ihs_current_frame());
   if (env.notnilp()) {
     printf("%s\n", gc::As<Environment_sp>(env)->environmentStackAsString().c_str());
   } else {
@@ -417,8 +413,8 @@ void af_evalPrint(const string &expr) {
   _G();
   printf("If this locks up then there was an error in the evaluation\n");
   printf("Figure out how to make debugger.cc>>af_evalPrint always return\n");
-  int ihsCur = af_ihsCurrentFrame();
-  T_sp env = af_ihsEnv(ihsCur);
+  int ihsCur = core__ihs_current_frame();
+  T_sp env = core__ihs_env(ihsCur);
   _lisp->readEvalPrintString(expr, env, true);
 };
 
@@ -537,7 +533,6 @@ void dbg_printTPtr(uintptr_t raw, bool print_pretty) {
   write_ugly_object(obj, sout);
   clasp_force_output(sout);
 }
-};
 
 /*! Sets the flag that controlC has been pressed so that when
       the process continues it will drop into the debugging repl */
@@ -550,10 +545,6 @@ void dbg_controlC() {
 namespace core {
 
 void initialize_debugging() {
-  CoreDefun(clibBacktrace);
-  CoreDefun(lowLevelBacktrace);
-  Defun(framePointers);
   SYMBOL_EXPORT_SC_(CorePkg, printCurrentIhsFrameEnvironment);
-  Defun(printCurrentIhsFrameEnvironment);
 }
 };

@@ -1,6 +1,6 @@
 
 
-project internals : requirements
+project internals/src : requirements
 	: usage-requirements
 ;
 
@@ -15,5 +15,4 @@ alias mi : /internals/core//meta
       	   /internals/mpip//mi
 	   /internals/serveEvent//mi
 	   ;
-
 

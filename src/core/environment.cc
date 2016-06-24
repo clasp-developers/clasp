@@ -49,18 +49,18 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_classifyReturnFromSymbol "(env sym)"
-#define DECL_core_classifyReturnFromSymbol ""
-#define DOCS_core_classifyReturnFromSymbol "classifyReturnFromSymbol"
-T_mv core_classifyReturnFromSymbol(T_sp env, Symbol_sp sym) {
+LAMBDA(env sym);
+DECLARE();
+DOCSTRING("classifyReturnFromSymbol");
+CL_DEFUN T_mv core__classify_return_from_symbol(T_sp env, Symbol_sp sym) {
   bool interFunction = false;
   return Environment_O::clasp_recognizesBlockSymbol(env, sym, interFunction);
 }
 
-#define ARGS_core_environmentLength "(frame)"
-#define DECL_core_environmentLength ""
-#define DOCS_core_environmentLength "environmentLength - number of entries in this environment"
-int core_environmentLength(T_sp frame) {
+LAMBDA(frame);
+DECLARE();
+DOCSTRING("environmentLength - number of entries in this environment");
+CL_DEFUN int core__environment_length(T_sp frame) {
   if (frame.nilp())
     return 0;
   else if (ActivationFrame_sp af = frame.asOrNull<ActivationFrame_O>()) {
@@ -69,10 +69,10 @@ int core_environmentLength(T_sp frame) {
   SIMPLE_ERROR(BF("Trying to get environment-length of something not an activation-frame"));
 }
 
-#define ARGS_core_environmentDebugNames "(frame)"
-#define DECL_core_environmentDebugNames ""
-#define DOCS_core_environmentDebugNames "environmentDebugNames - number of entries in this environment"
-T_sp core_environmentDebugNames(T_sp frame) {
+LAMBDA(frame);
+DECLARE();
+DOCSTRING("environmentDebugNames - number of entries in this environment");
+CL_DEFUN T_sp core__environment_debug_names(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
@@ -84,10 +84,10 @@ T_sp core_environmentDebugNames(T_sp frame) {
   SIMPLE_ERROR(BF("Trying to get environment-debug-names of something not an activation-frame: %s") % _rep_(frame));
 }
 
-#define ARGS_core_environmentDebugValues "(frame)"
-#define DECL_core_environmentDebugValues ""
-#define DOCS_core_environmentDebugValues "environmentDebugValues - number of entries in this environment"
-T_sp core_environmentDebugValues(T_sp frame) {
+LAMBDA(frame);
+DECLARE();
+DOCSTRING("environmentDebugValues - number of entries in this environment");
+CL_DEFUN T_sp core__environment_debug_values(T_sp frame) {
   if (frame.nilp())
     return _Nil<T_O>();
   else if (ValueFrame_sp vf = frame.asOrNull<ValueFrame_O>()) {
@@ -108,10 +108,10 @@ T_sp core_environmentDebugValues(T_sp frame) {
   SIMPLE_ERROR(BF("Trying to get environment-debug-values of something not an activation-frame: %s") % _rep_(frame));
 }
 
-#define ARGS_core_lexicalFunction "(name env)"
-#define DECL_core_lexicalFunction ""
-#define DOCS_core_lexicalFunction "lexicalFunction - If found return (values T fn depth index) otherwise nil"
-T_mv core_lexicalFunction(T_sp name, T_sp env) {
+LAMBDA(name env);
+DECLARE();
+DOCSTRING("lexicalFunction - If found return (values T fn depth index) otherwise nil");
+CL_DEFUN T_mv core__lexical_function(T_sp name, T_sp env) {
   _G();
   int depth = 0;
   int index = 0;
@@ -122,10 +122,10 @@ T_mv core_lexicalFunction(T_sp name, T_sp env) {
   return Values(_Nil<T_O>());
 };
 
-#define ARGS_core_lexicalMacroFunction "(name env)"
-#define DECL_core_lexicalMacroFunction ""
-#define DOCS_core_lexicalMacroFunction "lexicalMacroFunction - If found return (values T fn depth index) otherwise nil"
-T_mv core_lexicalMacroFunction(T_sp name, T_sp env) {
+LAMBDA(name env);
+DECLARE();
+DOCSTRING("lexicalMacroFunction - If found return (values T fn depth index) otherwise nil");
+CL_DEFUN T_mv core__lexical_macro_function(T_sp name, T_sp env) {
   _G();
   int depth = 0;
   int index = 0;
@@ -157,46 +157,39 @@ bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val) {
 #endif
 };
 
-#define ARGS_af_countFunctionContainerEnvironments "(arg)"
-#define DECL_af_countFunctionContainerEnvironments ""
-#define DOCS_af_countFunctionContainerEnvironments "countFunctionContainerEnvironments"
-T_mv af_countFunctionContainerEnvironments() {
-  _G();
-  IMPLEMENT_MEF(BF("Implement countFunctionContainerEnvironments"));
-};
 
-#define ARGS_af_environmentActivationFrame "(env)"
-#define DECL_af_environmentActivationFrame ""
-#define DOCS_af_environmentActivationFrame "environmentActivationFrame"
-T_sp af_environmentActivationFrame(T_sp env) {
+LAMBDA(env);
+DECLARE();
+DOCSTRING("environmentActivationFrame");
+CL_DEFUN T_sp core__environment_activation_frame(T_sp env) {
   _G();
   if (env.nilp())
     return env;
   return gc::As<Environment_sp>(env)->getActivationFrame();
 };
 
-#define ARGS_af_environmentList "(env)"
-#define DECL_af_environmentList ""
-#define DOCS_af_environmentList "Return a list of environment parents"
-T_sp af_environmentList(T_sp env) {
+LAMBDA(env);
+DECLARE();
+DOCSTRING("Return a list of environment parents");
+CL_DEFUN T_sp core__environment_list(T_sp env) {
   _G();
   List_sp result = _Nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
     result = Cons_O::create(ecur, result);
   }
-  return (cl_nreverse(result));
+  return (cl__nreverse(result));
 };
 
-#define ARGS_af_environmentTypeList "(env)"
-#define DECL_af_environmentTypeList ""
-#define DOCS_af_environmentTypeList "Return a list of environment parents"
-T_sp af_environmentTypeList(T_sp env) {
+LAMBDA(env);
+DECLARE();
+DOCSTRING("Return a list of environment parents");
+CL_DEFUN T_sp core__environment_type_list(T_sp env) {
   _G();
   List_sp result = _Nil<T_O>();
   for (T_sp ecur = env; ecur.notnilp(); ecur = gc::As<Environment_sp>(ecur)->getParentEnvironment()) {
     result = Cons_O::create(lisp_static_class(ecur), result);
   }
-  return cl_nreverse(result);
+  return cl__nreverse(result);
 };
 
 int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
@@ -208,10 +201,10 @@ int Environment_O::clasp_countFunctionContainerEnvironments(T_sp env) {
   NOT_ENVIRONMENT_ERROR(env);
 };
 
-#define ARGS_af_runtimeEnvironment "(env)"
-#define DECL_af_runtimeEnvironment ""
-#define DOCS_af_runtimeEnvironment "Return the RuntimeEnvironment or nil"
-T_sp af_runtimeEnvironment(T_sp tenv) {
+LAMBDA(env);
+DECLARE();
+DOCSTRING("Return the RuntimeEnvironment or nil");
+CL_DEFUN T_sp core__runtime_environment(T_sp tenv) {
   _G();
   if (tenv.nilp())
     return _Nil<T_O>();
@@ -221,10 +214,10 @@ T_sp af_runtimeEnvironment(T_sp tenv) {
   SIMPLE_ERROR(BF("No runtime environment available for %s") % _rep_(tenv));
 };
 
-#define ARGS_af_environmentId "(env)"
-#define DECL_af_environmentId ""
-#define DOCS_af_environmentId "environmentId"
-int af_environmentId(T_sp tenv) {
+LAMBDA(env);
+DECLARE();
+DOCSTRING("environmentId");
+CL_DEFUN int core__environment_id(T_sp tenv) {
   _G();
   if (tenv.nilp()) {
     return 0;
@@ -290,25 +283,15 @@ void Environment_O::exposeCando(Lisp_sp lisp) {
       .def("functionContainerEnvironmentP", &Environment_O::functionContainerEnvironmentP)
       .def("getBlockSymbolFrame", &Environment_O::getBlockSymbolFrame)
       .def("classifyTag", &Environment_O::classifyTag)
-      .def("countFunctionContainerEnvironments", &Environment_O::countFunctionContainerEnvironments);
-  CoreDefun(environmentLength);
-  CoreDefun(environmentDebugNames);
-  CoreDefun(environmentDebugValues);
+      .def("countFunctionContainerEnvironments", &Environment_O::countFunctionContainerEnvironments)
+    ;
   SYMBOL_SC_(CorePkg, environmentActivationFrame);
-  Defun(environmentActivationFrame);
-  CoreDefun(classifyReturnFromSymbol);
   SYMBOL_SC_(CorePkg, currentVisibleEnvironment);
   af_def(CorePkg, "currentVisibleEnvironment", &Environment_O::clasp_currentVisibleEnvironment);
   SYMBOL_SC_(CorePkg, runtimeEnvironment);
-  Defun(runtimeEnvironment);
   SYMBOL_SC_(CorePkg, environmentList);
-  Defun(environmentList);
   SYMBOL_SC_(CorePkg, environmentTypeList);
-  Defun(environmentTypeList);
   SYMBOL_SC_(CorePkg, environmentId);
-  Defun(environmentId);
-  CoreDefun(lexicalFunction);
-  CoreDefun(lexicalMacroFunction);
 }
 
 void Environment_O::exposePython(Lisp_sp lisp) {
@@ -480,7 +463,7 @@ Function_sp Environment_O::_lookupFunction(int depth, int index) const {
 
 string Environment_O::__repr__() const {
   stringstream ss;
-  ss << "#<" << lisp_classNameAsString(af_classOf(this->asSmartPtr())) << ">";
+  ss << "#<" << lisp_classNameAsString(cl__class_of(this->asSmartPtr())) << ">";
 #if 0
 	int tab = gc::As<Fixnum_sp>(_sym_STARenvironmentPrintingTabSTAR->symbolValue())->get();
 	{
@@ -1154,7 +1137,7 @@ string ValueEnvironment_O::summaryOfContents() const {
                 if ( ivalue == SPECIAL_TARGET )
                 {
                     ss << "SPECIAL-VAR";
-                } else if ( ivalue >= cl_length(this->_ActivationFrame) )
+                } else if ( ivalue >= cl__length(this->_ActivationFrame) )
                 {
                     ss << "ActivationFrame->index["<<ivalue<<"]->OUT-OF-RANGE";
                 } else if ( this->_ActivationFrame->boundp_entry(ivalue) )

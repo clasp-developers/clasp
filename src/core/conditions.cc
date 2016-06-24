@@ -104,35 +104,35 @@ void Condition::setConditionObject(T_sp co) {
   this->_ConditionObject = co;
 }
 
-#define DOCS_af_makeCondition "make-condition while brcl is booting - replace this once "
-#define ARGS_af_makeCondition "(type &rest slot-initializations)"
-#define DECL_af_makeCondition ""
-T_sp af_makeCondition(T_sp type, List_sp slot_initializations) {
+LAMBDA(type &rest slot-initializations);
+DECLARE();
+DOCSTRING("make-condition while brcl is booting - replace this once ");
+CL_DEFUN T_sp cl__make_condition(T_sp type, List_sp slot_initializations) {
   _G();
   GC_ALLOCATE(CandoException_O, condition);
   Cons_sp all = Cons_O::createList(type, slot_initializations);
-  Str_sp msg = gc::As<Str_sp>(af_bformat(_Nil<T_O>(), "%s %s", all));
+  Str_sp msg = gc::As<Str_sp>(core__bformat(_Nil<T_O>(), "%s %s", all));
   condition->setMessage(msg->get());
   return condition;
 };
 
-#define ARGS_af_conditionMessage "(c)"
-#define DECL_af_conditionMessage ""
-#define DOCS_af_conditionMessage "conditionMessage"
-string af_conditionMessage(T_sp condition) {
+LAMBDA(c);
+DECLARE();
+DOCSTRING("conditionMessage");
+CL_DEFUN string core__condition_message(T_sp condition) {
   if (CandoException_sp ce = condition.asOrNull<CandoException_O>()) {
     return ce->message();
   }
   T_sp sout = clasp_make_string_output_stream();
   eval::funcall(cl::_sym_printObject, condition, sout);
-  return gc::As<Str_sp>(cl_get_output_stream_string(sout))->get();
+  return gc::As<Str_sp>(cl__get_output_stream_string(sout))->get();
 }
 
 #if 0
-#define ARGS_af_setThrowPosition "(cond file function line)"
-#define DECL_af_setThrowPosition ""
-#define DOCS_af_setThrowPosition "setThrowPosition"
-    void af_setThrowPosition(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
+LAMBDA(cond file function line);
+DECLARE();
+DOCSTRING("setThrowPosition");
+CL_DEFUN     void core__set_throw_position(T_sp cond, Str_sp file, Str_sp function, Fixnum_sp line)
     {_G();
 	if ( CandoException_sp ce = cond.asOrNull<CandoException_O>() )
 	{
@@ -148,12 +148,9 @@ string af_conditionMessage(T_sp condition) {
 
 void initialize_conditions() {
   SYMBOL_EXPORT_SC_(ClPkg, makeCondition);
-  Defun(makeCondition);
 
   SYMBOL_SC_(CorePkg, conditionMessage);
-  Defun(conditionMessage);
 
   //	SYMBOL_SC_(CorePkg,setThrowPosition);
-  //	Defun(setThrowPosition);
 };
 };

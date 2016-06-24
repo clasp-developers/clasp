@@ -130,7 +130,7 @@ public:
     RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {
-      Vector_sp vec_value = core_make_vector(cl::_sym_T_O, value.size());
+      Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->operator[](idx++) = it;
@@ -149,8 +149,8 @@ public:
       RECORD_LOG(BF("loading find: %s") % _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(oCdr(apair));
       RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
-      value.resize(cl_length(vec_value));
-      for (size_t i(0), iEnd(cl_length(vec_value)); i < iEnd; ++i) {
+      value.resize(cl__length(vec_value));
+      for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = (*vec_value)[i];
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
         value[i] = val;

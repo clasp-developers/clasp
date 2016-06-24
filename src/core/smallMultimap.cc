@@ -42,10 +42,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_makeSmallMultimap "()"
-#define DECL_core_makeSmallMultimap ""
-#define DOCS_core_makeSmallMultimap "makeSmallMultimap"
-SmallMultimap_sp core_makeSmallMultimap() {
+LAMBDA();
+DECLARE();
+DOCSTRING("makeSmallMultimap");
+CL_DEFUN SmallMultimap_sp core__make_small_multimap() {
   _G();
   GC_ALLOCATE(SmallMultimap_O, sm);
   return sm;
@@ -75,7 +75,6 @@ void SmallMultimap_O::exposeCando(Lisp_sp lisp) {
       .def("small_multimap_describe_range", &SmallMultimap_O::describeRange)
       .def("small_multimap_insert", &SmallMultimap_O::insert)
       .def("small_multimap_size", &SmallMultimap_O::size);
-  CoreDefun(makeSmallMultimap);
 }
 
 void SmallMultimap_O::exposePython(Lisp_sp lisp) {

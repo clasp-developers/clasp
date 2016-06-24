@@ -111,7 +111,7 @@ List_sp listOfClasses(VaList_sp vargs) {
   core::Cons_sp *cur = reinterpret_cast<core::Cons_sp *>(&list);
   for (int p = 0; p < nargs; ++p) {
     core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs, T_O *));
-    core::Class_sp cobj = af_classOf(obj);
+    core::Class_sp cobj = cl__class_of(obj);
     *cur = core::Cons_O::create(cobj, _Nil<core::T_O>());
     cur = reinterpret_cast<core::Cons_sp *>(&(*cur)->_Cdr);
   }
@@ -171,10 +171,10 @@ T_mv restricted_compute_applicable_method(Instance_sp gf, VaList_sp vargs) {
   return (Values(methods, _lisp->_true()));
 }
 
-#define ARGS_core_maybeExpandGenericFunctionArguments "(args)"
-#define DECL_core_maybeExpandGenericFunctionArguments ""
-#define DOCS_core_maybeExpandGenericFunctionArguments "maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame"
-T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
+LAMBDA(args);
+DECLARE();
+DOCSTRING("maybeExpandGenericFunctionArguments: expands first argument into a list if it is a Frame or an ActivationFrame");
+CL_DEFUN T_sp core__maybe_expand_generic_function_arguments(T_sp args) {
   if (cl_consp(args)) {
     T_sp first = oCar(args);
     if (first.nilp()) {
@@ -187,7 +187,7 @@ T_sp core_maybeExpandGenericFunctionArguments(T_sp args) {
         T_sp v(LCC_NEXT_ARG(vafirst, i));
         expanded = Cons_O::create(v, expanded);
       }
-      return cl_nreverse(expanded);
+      return cl__nreverse(expanded);
     } else {
       SIMPLE_ERROR(BF("Handle %s") % _rep_(first));
     }
@@ -336,10 +336,10 @@ LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
   IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
 }
 
-#define ARGS_af_clearGfunHash "(what)"
-#define DECL_af_clearGfunHash ""
-#define DOCS_af_clearGfunHash "See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries."
-void af_clearGfunHash(T_sp what) {
+LAMBDA(what);
+DECLARE();
+DOCSTRING("See ecl/src/c/gfun.d:si_clear_gfun_hash. This function clears the generic function call hashes selectively. If what=T then clear the hash completely.  If what=generic_function then clear only these entries.");
+CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   _G();
   ASSERT(_lisp->methodCachePtr());
   ASSERT(_lisp->slotCachePtr());
@@ -349,7 +349,5 @@ void af_clearGfunHash(T_sp what) {
 
 void initialize_genericFunction() {
   SYMBOL_SC_(ClosPkg, clearGfunHash);
-  Defun(clearGfunHash);
-  CoreDefun(maybeExpandGenericFunctionArguments);
 }
 };

@@ -138,7 +138,7 @@ public:
 
 public:
   // Copy Ctor
-  GCString<T, Allocator>(const GCString<T, Allocator> &that) // : GCContainer(GCInfo<value_type>::Kind)
+  GCString<T, Allocator>(const GCString<T, Allocator> &that) 
   {
     if (that._Contents != NULL) {
       allocator_type alloc;

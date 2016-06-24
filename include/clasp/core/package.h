@@ -193,7 +193,7 @@ public:
 
   virtual bool mapKeyValue(T_sp key, T_sp value);
 };
-T_mv cl_findSymbol(const string &symbolName, T_sp packageDesig);
+T_mv cl__find_symbol(const string &symbolName, T_sp packageDesig);
 };
 TRANSLATE(core::Package_O);
 #endif //]

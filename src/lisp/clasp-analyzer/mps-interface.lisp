@@ -1112,8 +1112,6 @@ and the inheritance hierarchy that the garbage collector will need"
                      (ecase var-kind
                        (:global nil) ;; not recognized here - see setup-global-variable-search
                        (:static-local
-                        (if (string= key "_staticObj@/Users/meister/Development/cando/clasp/src/asttooling/testAST.cc:16:13")
-                            (break "Caught static var"))
                         (setf (gethash key hash-table)
                               (make-static-local-variable :location location
                                                           :name varname
@@ -1400,6 +1398,7 @@ so that they don't have to be constantly recalculated"
   scan          ;; Function - generates scanner for species
   skip          ;; Function - generates obj_skip code for species
   finalize      ;; Function - generates obj_finalize code for species
+  deallocator   ;; Function - generates obj_deallocate_unmanaged_instance code for species
   dump          ;; Function - fills a stringstream with a dump of the species
   index
   )
@@ -1643,6 +1642,21 @@ so that they don't have to be constantly recalculated"
     (format fout "    return;~%"))))
 
 
+(defun deallocator-for-lispallocs (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum))
+         (ns-cn key)
+         (cn (strip-all-namespaces-from-name ns-cn)))
+    (with-destination (fout dest enum)
+    (gclog "build-mps-deallocator-for-one-family -> inheritance key[~a]  value[~a]~%" key value)
+    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+    (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
+    (format fout "    return;~%"))))
+
+
 
 (defun scanner-for-templated-lispallocs (dest enum anal)
   (assert (templated-enum-p enum))
@@ -1694,6 +1708,18 @@ so that they don't have to be constantly recalculated"
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
+    )))
+
+(defun deallocator-for-templated-lispallocs (dest enum anal)
+  (assert (templated-enum-p enum))
+  (let* ((key (enum-key enum))
+         (enum-name (enum-name enum))
+         (ns-cn key)
+         (cn (strip-all-namespaces-from-name ns-cn)))
+    (with-destination (fout dest enum)
+    (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
+;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
+    (format fout "    GCObjectAllocator<~A>::deallocate_unmanaged_instance(~A);~%" key +ptr-name+)
     )))
 
 
@@ -1810,6 +1836,24 @@ so that they don't have to be constantly recalculated"
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize containers ~a\"));" (record-ctype-key decl))))
     )))
 
+(defun deallocator-for-gccontainer (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (with-destination (fout dest enum)
+;;    (format fout "// processing ~a~%" alloc)
+    (if (cxxrecord-ctype-p decl)
+        (progn
+          (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate ~a\"));~%" (record-ctype-key decl)))
+        (let* ((parms (class-template-specialization-ctype-arguments decl))
+               (parm0 (car parms))
+               (parm0-ctype (gc-template-argument-ctype parm0)))
+;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+          (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate containers ~a\"));" (record-ctype-key decl))))
+    )))
+
 
 
 
@@ -1883,6 +1927,24 @@ so that they don't have to be constantly recalculated"
           (format fout "    THROW_HARD_ERROR(BF(\"Should never finalize gcstrings ~a\"));" (record-ctype-key decl))))
     )))
 
+(defun deallocator-for-gcstring (dest enum anal)
+  (check-type enum simple-enum)
+  (let* ((alloc (simple-enum-alloc enum))
+         (decl (containeralloc-ctype alloc))
+         (key (alloc-key alloc))
+         (enum-name (enum-name enum)))
+    (with-destination (fout dest enum)
+;;    (format fout "// processing ~a~%" alloc)
+    (if (cxxrecord-ctype-p decl)
+        (progn
+          (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate ~a\"));~%" (record-ctype-key decl)))
+        (let* ((parms (class-template-specialization-ctype-arguments decl))
+               (parm0 (car parms))
+               (parm0-ctype (gc-template-argument-ctype parm0)))
+;;          (format fout "// parm0-ctype = ~a~%" parm0-ctype)
+          (format fout "    THROW_HARD_ERROR(BF(\"Should never deallocate gcstrings ~a\"));" (record-ctype-key decl))))
+    )))
+
 
 (defun string-left-matches (str sub)
   (eql (search str sub) 0))
@@ -1897,6 +1959,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
+                                       :deallocator 'deallocator-for-lispallocs
                                        ))
     (add-species manager (make-species :name :lispalloc
                                        :discriminator (lambda (x) (and (lispalloc-p x)
@@ -1906,6 +1969,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
+                                       :deallocator 'deallocator-for-lispallocs
                                        ))
     (add-species manager (make-species :name :templated-lispalloc
                                        :discriminator (lambda (x) (and (lispalloc-p x) (alloc-template-specializer-p x *analysis*)))
@@ -1913,6 +1977,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-templated-lispallocs
                                        :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
+                                       :deallocator 'deallocator-for-templated-lispallocs
                                        ))
     (add-species manager (make-species :name :GCVECTOR
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCVector" (alloc-key x))))
@@ -1920,6 +1985,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-gccontainer
                                        :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
+                                       :deallocator 'deallocator-for-gccontainer
                                        ))
     (add-species manager (make-species :name :GCARRAY
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCArray" (alloc-key x))))
@@ -1927,6 +1993,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-gccontainer
                                        :dump 'dumper-for-gccontainer
                                        :finalize 'finalizer-for-gccontainer
+                                       :deallocator 'deallocator-for-gccontainer
                                        ))
     (add-species manager (make-species :name :GCSTRING
                                        :discriminator (lambda (x) (and (containeralloc-p x) (search "gctools::GCString" (alloc-key x))))
@@ -1934,6 +2001,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-gcstring
                                        :dump 'dumper-for-gcstring
                                        :finalize 'finalizer-for-gcstring
+                                       :deallocator 'deallocator-for-gcstring
                                        ))
     (add-species manager (make-species :name :classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (not (alloc-template-specializer-p x *analysis*))))
@@ -1941,6 +2009,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
+                                       :deallocator 'deallocator-for-lispallocs
                                        ))
     (add-species manager (make-species :name :rootclassalloc
                                        :discriminator (lambda (x) (rootclassalloc-p x))
@@ -1948,6 +2017,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-lispallocs
                                        :dump 'dumper-for-lispallocs
                                        :finalize 'finalizer-for-lispallocs
+                                       :deallocator 'deallocator-for-lispallocs
                                        ))
     (add-species manager (make-species :name :templated-classalloc
                                        :discriminator (lambda (x) (and (classalloc-p x) (alloc-template-specializer-p x *analysis*)))
@@ -1955,6 +2025,7 @@ so that they don't have to be constantly recalculated"
                                        :skip 'skipper-for-templated-lispallocs
                                        :dump 'dumper-for-templated-lispallocs
                                        :finalize 'finalizer-for-templated-lispallocs
+                                       :deallocator 'deallocator-for-templated-lispallocs
                                        ))
     manager))
 
@@ -2580,6 +2651,14 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 				  :generator (lambda (dest anal)
 					       (dolist (enum (analysis-sorted-enums anal))
 						 (funcall (species-finalize (enum-species enum)) dest enum anal))))
+		    (do-generator stream analysis
+				  :table-name "OBJ_DEALLOCATOR"
+				  :function-declaration "void ~a(mps_addr_t client)"
+				  :function-prefix "obj_deallocate_unmanaged_instance"
+				  :function-table-type "void (*OBJ_DEALLOCATOR_table[])(mps_addr_t client)"
+				  :generator (lambda (dest anal)
+					       (dolist (enum (analysis-sorted-enums anal))
+						 (funcall (species-deallocator (enum-species enum)) dest enum anal))))
                     (format stream "#if defined(GC_GLOBALS)~%")
                     (generate-code-for-global-non-symbol-variables stream analysis)
                     (format stream "#endif // defined(GC_GLOBALS)~%")

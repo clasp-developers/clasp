@@ -112,7 +112,7 @@ Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
   (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
 	 (fn (with-new-function (fn fn-env result
-				    :function-name (bformat nil "%s" name)
+				    :function-name name
 				    :parent-env env-around-lambda
 				    :function-form code)
 	       (cmp-log "Starting new function name: %s\n" name)
@@ -1041,7 +1041,7 @@ jump to blocks within this tagbody."
 	 (read-only-p (cadr rest)))
     (if *generate-compile-file-load-time-values*
 	(multiple-value-bind (index fn)
-	    (compile-ltv-thunk "load-time-value-func" form nil)
+	    (compile-ltv-thunk 'load-time-value-func form nil)
 	  ;; Invoke the repl function here
           (multiple-value-bind (source-dir source-file file-pos lineno column)
               (walk-form-for-source-info form)
@@ -1232,7 +1232,6 @@ jump to blocks within this tagbody."
 (defun compile-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (or (stringp name) (error "Name must be a string"))
   (let ((fn (with-new-function (fn
                                 fn-env
                                 result

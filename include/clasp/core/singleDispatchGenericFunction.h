@@ -142,7 +142,7 @@ public:
   }
 };
 
-T_sp af_ensureSingleDispatchGenericFunction(Symbol_sp gfname, LambdaListHandler_sp llhandler);
+T_sp core__ensure_single_dispatch_generic_function(Symbol_sp gfname, LambdaListHandler_sp llhandler);
 };
 
 #endif /* _SINGLEDISPATCHGENERICFUNCTION_H_ */

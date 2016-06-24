@@ -36,6 +36,7 @@ constexpr Handle label_stack_push_prepare = 19;
 constexpr Handle label_stack_push = 20;
 constexpr Handle label_stack_allocate = 21;
 constexpr Handle label_stack_pop = 22;
+constexpr Handle label_obj_deallocate_unmanaged_instance = 23;
 
 struct Telemetry {
   typedef size_t Header;

@@ -99,6 +99,7 @@ typedef bool _Bool;
 #include <clasp/core/funcallableStandardClass.h>
 #include <clasp/core/structureClass.h>
 //#include "core/symbolVector.h"
+#include <clasp/core/designators.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
@@ -158,7 +159,6 @@ typedef bool _Bool;
 #include <clasp/asttooling/Registry.h>
 #include <clasp/asttooling/Diagnostics.h>
 #include <clasp/asttooling/Marshallers.h>
-#include <clasp/asttooling/testAST.h>
 
 #define GC_INTERFACE_INCLUDE
 #include PROJECT_HEADERS_INCLUDE
@@ -169,6 +169,76 @@ typedef bool _Bool;
 #include <clasp/gctools/gc_interface.h>
 #undef NAMESPACE_gctools
 #undef NAMESPACE_core
+
+
+/* ----------------------------------------------------------------------
+ *
+ *  Expose functions
+ *
+ */
+
+template <typename RT, typename...ARGS>
+void expose_function(const std::string& rawPkgName,
+                     const std::string& symbolName,
+                     bool exported,
+                     RT (*fp)(ARGS...),
+                     const std::string& lambdaList)
+{
+  std::string pkgName = core::lispify_symbol_name(rawPkgName);
+  core::wrap_function(pkgName,symbolName,fp,lambdaList);
+}
+
+#ifndef SCRAPING
+  #define EXPOSE_FUNCTION_SIGNATURES
+  #include INIT_FUNCTIONS_INC_H
+  #undef EXPOSE_FUNCTION_SIGNATURES
+#endif
+
+void initialize_functions()
+{
+#ifndef SCRAPING
+  #define EXPOSE_FUNCTION_BINDINGS
+  #include INIT_FUNCTIONS_INC_H
+  #undef EXPOSE_FUNCTION_BINDINGS
+#endif
+};
+
+
+struct SourceInfo {
+  const char* _PackageName;
+  const char* _SymbolName;
+  const char* _File;
+  size_t _FilePos;
+  size_t _LineNumber;
+  const char* _Documentation;
+};
+
+SourceInfo global_source_info[] = {
+#ifndef SCRAPING
+#define SOURCE_INFO
+#include SOURCE_INFO_INC_H
+#undef SOURCE_INFO
+#endif
+    {NULL,NULL,NULL,0,0,NULL}
+};
+
+void initialize_source_info(core::T_sp documentation) {
+  core::HashTableEql_sp ht = gc::As<core::HashTableEql_sp>(documentation);
+  for ( int i=0; i<(sizeof(global_source_info)/sizeof(SourceInfo)-1); ++i ) {
+    std::string lispified = core::lispify_symbol_name(global_source_info[i]._SymbolName);
+    std::string packageName = core::lispify_symbol_name(global_source_info[i]._PackageName);
+    core::Symbol_sp sym = core::lisp_intern(lispified,packageName);
+    core::Function_sp func = core::coerce::functionDesignator(sym);
+    core::Str_sp sourceFile = core::Str_O::create(global_source_info[i]._File);
+    func->closure->setSourcePosInfo(sourceFile, global_source_info[i]._FilePos,
+                                    global_source_info[i]._LineNumber, 0);
+    core::Str_sp docs = core::Str_O::create(global_source_info[i]._Documentation);
+    ht->setf_gethash(sym,docs);
+  }
+};
+
+
+
 
 extern "C" {
 using namespace gctools;
@@ -213,6 +283,34 @@ char *obj_name(gctools::GCKindEnum kind) {
 #endif
   return "NONE";
 }
+
+/*! I'm using a format_header so MPS gives me the object-pointer */
+#define GC_DEALLOCATOR_METHOD
+void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
+  void* client = &*obj;
+  printf("%s:%d About to obj_deallocate_unmanaged_instance %s\n", __FILE__, __LINE__, _rep_(obj).c_str() );
+  // The client must have a valid header
+#ifndef RUNNING_GC_BUILDER
+#define GC_OBJ_DEALLOCATOR_TABLE
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DEALLOCATOR_TABLE
+#endif
+
+  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
+  ASSERTF(header->kindP(), BF("obj_deallocate_unmanaged_instance called without a valid object"));
+  gctools::GCKindEnum kind = (GCKindEnum)(header->kind());
+  GC_TELEMETRY1(telemetry::label_obj_deallocate_unmanaged_instance, (uintptr_t)client);
+#ifndef RUNNING_GC_BUILDER
+  goto *(OBJ_DEALLOCATOR_table[kind]);
+#define GC_OBJ_DEALLOCATOR
+#include STATIC_ANALYZER_PRODUCT
+#undef GC_OBJ_DEALLOCATOR
+#else
+// do nothing
+#endif
+};
+#undef GC_DEALLOCATOR_METHOD
+
 };
 
 extern "C" {
@@ -417,6 +515,8 @@ void obj_finalize(mps_addr_t client) {
 };
 #undef GC_FINALIZE_METHOD
 
+
+
 vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
 
 void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
@@ -493,7 +593,9 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #define SocketsPkg sockets
 
 #define DO_SYMBOL(sym, id, pkg, name, exprt) SMART_PTR_FIX(pkg::sym)
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 
 #undef AstToolingPkg
 #undef CffiPkg
@@ -543,7 +645,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 //
 // We don't want the static analyzer gc-builder.lsp to see the generated scanners
 //
-#ifndef RUNNING_GC_BUILDER
+#ifndef RUNNING_GC_gBUILDER
 #define HOUSEKEEPING_SCANNERS
 #include STATIC_ANALYZER_PRODUCT
 #undef HOUSEKEEPING_SCANNERS

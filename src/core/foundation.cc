@@ -220,7 +220,7 @@ void assertion_failed(char const *expr, char const *function, char const *file, 
 extern "C" {
 
 void closure_dump(core::Closure *closureP) {
-  core::T_sp sourceFileInfo = core_sourceFileInfo(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
+  core::T_sp sourceFileInfo = core__source_file_info(core::clasp_make_fixnum(closureP->sourceFileInfoHandle()), _Nil<core::T_O>(), 0, false);
   std::string namestring = gc::As<core::SourceFileInfo_sp>(sourceFileInfo)->namestring();
   printf("%s:%d  Closure %s  file: %s lineno: %d\n", __FILE__, __LINE__, _rep_(closureP->name).c_str(), namestring.c_str(), closureP->lineNumber());
 }
@@ -242,7 +242,7 @@ void dbg_hook(const char *error) {
   fflush(stdout);
   //	asm("int $3");
 
-  //	af_invokeInternalDebugger(_Nil<core::T_O>());
+  //	core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 namespace core {
@@ -274,6 +274,11 @@ T_sp Closure::cleavir_ast() const {
   SIMPLE_ERROR(BF("Subclass of Closure must support cleavir_ast"));
 }
 
+T_sp Closure::setSourcePosInfo(T_sp sourceFile, size_t filePos, int lineno, int column)
+{
+  SIMPLE_ERROR(BF("Subclass of Closure must support this method"));
+}
+
 void Closure::setf_cleavir_ast(T_sp ast) {
   SIMPLE_ERROR(BF("Subclass of Closure must support setf_cleavir_ast"));
 }
@@ -282,7 +287,7 @@ void Closure::setf_cleavir_ast(T_sp ast) {
 namespace core {
 
 // _global_debuggerOnSIGABRT
-// false == SIGABRT invokes debugger, true == terminate (used in core_exit)
+// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
 bool _global_debuggerOnSIGABRT = true;
 
 int _global_signalTrap = 0;
@@ -299,13 +304,13 @@ void lisp_pollSignals() {
       } catch (...) {
         throw;
       }
-      //    af_invokeInternalDebugger(_Nil<core::T_O>());
+      //    core__invoke_internal_debugger(_Nil<core::T_O>());
       printf("Resuming after Ctrl+C\n");
     } else if (signo == SIGCHLD) {
       //            printf("A child terminated\n");
     } else if (signo == SIGABRT) {
       printf("ABORT was called!!!!!!!!!!!!\n");
-      af_invokeInternalDebugger(_Nil<core::T_O>());
+      core__invoke_internal_debugger(_Nil<core::T_O>());
       //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
     }
   }
@@ -407,10 +412,10 @@ bool lisp_search(T_sp seq, T_sp obj, int &index) {
     }
 #endif
 
-#define ARGS_af_lispifyName "(name)"
-#define DECL_af_lispifyName ""
-#define DOCS_af_lispifyName "lispifyName"
-Str_sp af_lispifyName(Str_sp name) {
+LAMBDA(name);
+DECLARE();
+DOCSTRING("lispifyName");
+CL_DEFUN Str_sp core__lispify_name(Str_sp name) {
   _G();
   ASSERT(name.notnilp());
   string lispified = lispify_symbol_name(name->get());
@@ -434,17 +439,17 @@ MultipleValues &lisp_callArgs() {
 void errorFormatted(boost::format fmt) {
   TRY_BOOST_FORMAT_STRING(fmt, fmt_str);
   dbg_hook(fmt_str.c_str());
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 void errorFormatted(const string &msg) {
   dbg_hook(msg.c_str());
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 void errorFormatted(const char *msg) {
   dbg_hook(msg);
-  af_invokeInternalDebugger(_Nil<core::T_O>());
+  core__invoke_internal_debugger(_Nil<core::T_O>());
 }
 
 string lisp_currentPackageName() {
@@ -496,7 +501,6 @@ bool lispify_match(const char *&cur, const char *match) {
 }
 
 string lispify_symbol_name(const string &s) {
-  _G();
   LOG(BF("lispify_symbol_name pass1 source[%s]") % s);
   stringstream stream_pass1;
   const char *start_pass1 = s.c_str();
@@ -702,7 +706,7 @@ string _rep_(T_sp obj) {
 #if defined(USE_WRITE_OBJECT)
   T_sp sout = clasp_make_string_output_stream();
   write_object(obj, sout);
-  return cl_get_output_stream_string(sout).as<Str_O>()->get();
+  return cl__get_output_stream_string(sout).as<Str_O>()->get();
 #else
   if (obj.fixnump()) {
     stringstream ss;
@@ -873,7 +877,7 @@ List_sp lisp_parse_arguments(const string &packageName, const string &args) {
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   Str_sp ss = Str_O::create(args);
-  Stream_sp str = cl_make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   T_sp osscons = reader->primitive_read(true, _Nil<T_O>(), false);
   List_sp sscons = osscons;
@@ -887,7 +891,7 @@ List_sp lisp_parse_declares(const string &packageName, const string &declarestri
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName, true));
   ChangePackage changePackage(pkg);
   Str_sp ss = Str_O::create(declarestring);
-  Stream_sp str = cl_make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
+  Stream_sp str = cl__make_string_input_stream(ss, make_fixnum(0), _Nil<T_O>());
   Reader_sp reader = Reader_O::create(str);
   List_sp sscons = reader->primitive_read(true, _Nil<T_O>(), false);
   return sscons;
@@ -964,13 +968,13 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     sym->exportYourself();
   LOG(BF("Interned method in class[%s]@%p with symbol[%s] arguments[%s] - autoexport[%d]") % receiver_class->instanceClassName() % (receiver_class.get()) % sym->fullName() % arguments % autoExport);
   Str_sp docStr = Str_O::create(docstring);
-  T_sp gfn = af_ensureSingleDispatchGenericFunction(sym, llhandler); // Ensure the single dispatch generic function exists
+  T_sp gfn = core__ensure_single_dispatch_generic_function(sym, llhandler); // Ensure the single dispatch generic function exists
   (void)gfn;                                                         // silence compiler warning
   LOG(BF("Attaching single_dispatch_method symbol[%s] receiver_class[%s]  methoid@%p") % _rep_(sym) % _rep_(receiver_class) % ((void *)(methoid)));
   methoid->finishSetup(llhandler, kw::_sym_function);
   Function_sp fn = Function_O::make(methoid);
   ASSERT(llhandler || llhandler.notnilp())
-  af_ensureSingleDispatchMethod(sym, receiver_class, llhandler, ldeclares, docStr, fn);
+  core__ensure_single_dispatch_method(sym, receiver_class, llhandler, ldeclares, docStr, fn);
 }
 
 void lisp_throwIfBuiltInClassesNotInitialized() {
@@ -991,6 +995,7 @@ Class_sp lisp_classFromClassSymbol(Symbol_sp classSymbol) {
       exported or not respectively.   If there is no package prefix then use the defaultPackageName */
 Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, bool exportSymbol) {
   string lispName = lispify_symbol_name(name);
+  string packageName = lispify_symbol_name(defaultPackageName);
 #if 0
 	// Trap the definition of specific functions here
 	// sometimes I accidentally define things more than once and
@@ -1001,7 +1006,7 @@ Symbol_sp lispify_intern(const string &name, const string &defaultPackageName, b
 	    printf("%s:%d defining %s - break here to trap\n", __FILE__,__LINE__, lispName.c_str() );
 	}
 #endif
-  Symbol_sp sym = _lisp->internWithDefaultPackageName(defaultPackageName, lispName);
+  Symbol_sp sym = _lisp->internWithDefaultPackageName(packageName, lispName);
   if (exportSymbol) {
     sym->exportYourself();
   }
@@ -1466,7 +1471,7 @@ T_sp lisp_createFixnum(int fn) {
 
 SourcePosInfo_sp lisp_createSourcePosInfo(const string &fileName, size_t filePos, int lineno) {
   Str_sp fn = Str_O::create(fileName);
-  SourceFileInfo_mv sfi_mv = core_sourceFileInfo(fn);
+  SourceFileInfo_mv sfi_mv = core__source_file_info(fn);
   SourceFileInfo_sp sfi = sfi_mv;
   Fixnum_sp handle = gc::As<Fixnum_sp>(sfi_mv.valueGet(1));
   int sfindex = unbox_fixnum(handle);
@@ -1783,6 +1788,5 @@ void InitPython_Foundation() {
 
 void initialize_foundation() {
 
-  Defun(lispifyName);
 };
 };

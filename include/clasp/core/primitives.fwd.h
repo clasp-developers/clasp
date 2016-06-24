@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 namespace core {
 
-T_sp af_makeCondition(T_sp datum, List_sp initializers);
+T_sp cl__make_condition(T_sp datum, List_sp initializers);
 void af_error(T_sp datum, List_sp args);
 };
 #endif // _core_primitives_fwd_H

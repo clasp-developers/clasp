@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/translators.h>
 #include <clasp/asttooling/translators.h>
 #include <clasp/asttooling/symbolTable.h>
+#include <clasp/asttooling/asttoolingPackage.h>
 
 //
 // This needs to be before clbind is included
@@ -370,8 +371,6 @@ TYPE(Atomic, Type);
 
 using namespace clbind;
 using namespace clang;
-
-SYMBOL_EXPORT_SC_(ClangAstPkg, type);
 
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl>);
 INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl const>);

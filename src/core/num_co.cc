@@ -90,10 +90,10 @@ number_remainder(Number_sp x, Number_sp y, Number_sp q) {
 /* Coerce X to single-float if one arg,
    otherwise coerce to same float type as second arg */
 
-#define ARGS_cl_float "(x &optional y)"
-#define DECL_cl_float ""
-#define DOCS_cl_float "float"
-Float_sp cl_float(Real_sp x, T_sp y) {
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("float");
+CL_DEFUN Float_sp cl__float(Real_sp x, T_sp y) {
   _G();
   NumberType ty, tx;
   if (y.notnilp()) {
@@ -134,10 +134,10 @@ Float_sp cl_float(Real_sp x, T_sp y) {
   return gc::As<Float_sp>(x);
 }
 
-#define ARGS_cl_numerator "(x)"
-#define DECL_cl_numerator ""
-#define DOCS_cl_numerator "numerator"
-Number_sp cl_numerator(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("numerator");
+CL_DEFUN Number_sp cl__numerator(Number_sp x) {
   _G();
   switch (clasp_t_of(x)) {
   case number_Ratio:
@@ -152,10 +152,10 @@ Number_sp cl_numerator(Number_sp x) {
   return x;
 }
 
-#define ARGS_cl_denominator "(x)"
-#define DECL_cl_denominator ""
-#define DOCS_cl_denominator "denominator"
-Number_sp cl_denominator(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("denominator");
+CL_DEFUN Number_sp cl__denominator(Number_sp x) {
   _G();
   switch (clasp_t_of(x)) {
   case number_Ratio:
@@ -408,10 +408,10 @@ Real_mv clasp_floor2(Real_sp x, Real_sp y) {
   return Values(v0, v1);
 }
 
-#define ARGS_cl_floor "(x &optional y)"
-#define DECL_cl_floor ""
-#define DOCS_cl_floor "floor"
-Real_mv cl_floor(Real_sp x, T_sp y) {
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("floor");
+CL_DEFUN Real_mv cl__floor(Real_sp x, T_sp y) {
   _G();
   if (y.nilp())
     return clasp_floor1(x);
@@ -650,10 +650,10 @@ Real_mv clasp_ceiling2(Real_sp x, Real_sp y) {
   clasp_return2(the_env, v0, v1);
 }
 
-#define ARGS_cl_ceiling "(x &optional y)"
-#define DECL_cl_ceiling ""
-#define DOCS_cl_ceiling "ceiling"
-Real_mv cl_ceiling(Real_sp x, T_sp y) {
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("ceiling");
+CL_DEFUN Real_mv cl__ceiling(Real_sp x, T_sp y) {
   _G();
   if (y.nilp())
     return clasp_ceiling1(x);
@@ -713,10 +713,10 @@ Real_mv clasp_truncate2(Real_sp x, Real_sp y) {
     return clasp_floor2(x, y);
 }
 
-#define ARGS_cl_truncate "(x &optional y)"
-#define DECL_cl_truncate ""
-#define DOCS_cl_truncate "truncate"
-Real_mv cl_truncate(Real_sp x, T_sp y) {
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("truncate");
+CL_DEFUN Real_mv cl__truncate(Real_sp x, T_sp y) {
   _G();
   if (y.nilp())
     return clasp_truncate1(x);
@@ -838,10 +838,10 @@ Real_mv clasp_round2(Real_sp x, Real_sp y) {
   clasp_return2(the_env, v0, v1);
 }
 
-#define ARGS_cl_round "(x &optional y)"
-#define DECL_cl_round ""
-#define DOCS_cl_round "round"
-Number_mv cl_round(Real_sp x, T_sp y) {
+LAMBDA(x &optional y);
+DECLARE();
+DOCSTRING("round");
+CL_DEFUN Number_mv cl__round(Real_sp x, T_sp y) {
   _G();
   if (y.nilp())
     return clasp_round1(x);
@@ -849,28 +849,28 @@ Number_mv cl_round(Real_sp x, T_sp y) {
     return clasp_round2(x, gc::As<Real_sp>(y));
 }
 
-#define ARGS_cl_mod "(x y)"
-#define DECL_cl_mod ""
-#define DOCS_cl_mod "mod"
-Real_sp cl_mod(Real_sp x, Real_sp y) {
+LAMBDA(x y);
+DECLARE();
+DOCSTRING("mod");
+CL_DEFUN Real_sp cl__mod(Real_sp x, Real_sp y) {
   /* INV: #'floor always outputs two values */
-  Real_mv mv_v = cl_floor(x, y);
+  Real_mv mv_v = cl__floor(x, y);
   return gc::As<Real_sp>(mv_v.valueGet(1));
 }
 
-#define ARGS_cl_rem "(x y)"
-#define DECL_cl_rem ""
-#define DOCS_cl_rem "rem"
-Real_sp cl_rem(Real_sp x, Real_sp y) {
+LAMBDA(x y);
+DECLARE();
+DOCSTRING("rem");
+CL_DEFUN Real_sp cl__rem(Real_sp x, Real_sp y) {
   _G();
-  Real_mv mv_v = cl_truncate(x, y);
+  Real_mv mv_v = cl__truncate(x, y);
   return gc::As<Real_sp>(mv_v.valueGet(1));
 }
 
-#define ARGS_cl_decodeFloat "(x)"
-#define DECL_cl_decodeFloat ""
-#define DOCS_cl_decodeFloat "decodeFloat"
-Number_mv cl_decodeFloat(Float_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("decodeFloat");
+CL_DEFUN Number_mv cl__decode_float(Float_sp x) {
   _G();
   int e = 0, s = 0;
   NumberType tx = clasp_t_of(x);
@@ -920,10 +920,10 @@ Number_mv cl_decodeFloat(Float_sp x) {
   return Values(x, clasp_make_fixnum(e), clasp_make_single_float(s));
 }
 
-#define ARGS_cl_scaleFloat "(x y)"
-#define DECL_cl_scaleFloat ""
-#define DOCS_cl_scaleFloat "scaleFloat"
-Number_sp cl_scaleFloat(Number_sp x, Number_sp y) {
+LAMBDA(x y);
+DECLARE();
+DOCSTRING("scaleFloat");
+CL_DEFUN Number_sp cl__scale_float(Number_sp x, Number_sp y) {
   _G();
   Fixnum k;
   if (CLASP_FIXNUMP(y)) {
@@ -949,7 +949,7 @@ Number_sp cl_scaleFloat(Number_sp x, Number_sp y) {
   return x;
 }
 
-Integer_sp cl_float_radix(Float_sp x) {
+Integer_sp cl__float_radix(Float_sp x) {
   return clasp_make_fixnum(FLT_RADIX);
 }
 
@@ -969,14 +969,14 @@ int clasp_signbit(Number_sp x) {
   SIMPLE_ERROR(BF("Illegal argument for clasp_signbit: %s") % _rep_(x));
 }
 
-#define ARGS_cl_floatSign "(x &optional (y x yp))"
-#define DECL_cl_floatSign ""
-#define DOCS_cl_floatSign "floatSign"
-Float_sp cl_floatSign(Float_sp x, Float_sp y, T_sp yp) {
+LAMBDA(x &optional (y x yp));
+DECLARE();
+DOCSTRING("floatSign");
+CL_DEFUN Float_sp cl__float_sign(Float_sp x, Float_sp y, T_sp yp) {
   _G();
   int negativep;
   if (yp.nilp()) {
-    y = cl_float(clasp_make_fixnum(1), x);
+    y = cl__float(clasp_make_fixnum(1), x);
   }
   negativep = clasp_signbit(x);
   switch (clasp_t_of(y)) {
@@ -1006,10 +1006,10 @@ Float_sp cl_floatSign(Float_sp x, Float_sp y, T_sp yp) {
   return y;
 }
 
-#define ARGS_cl_floatDigits "(x)"
-#define DECL_cl_floatDigits ""
-#define DOCS_cl_floatDigits "floatDigits"
-Integer_sp cl_floatDigits(Float_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("floatDigits");
+CL_DEFUN Integer_sp cl__float_digits(Float_sp x) {
   _G();
   Integer_sp ix(_Nil<Integer_O>());
   switch (clasp_t_of(x)) {
@@ -1030,10 +1030,10 @@ Integer_sp cl_floatDigits(Float_sp x) {
   return ix;
 }
 
-#define ARGS_cl_floatPrecision "(Float_sp x)"
-#define DECL_cl_floatPrecision ""
-#define DOCS_cl_floatPrecision "floatPrecision"
-Integer_sp cl_floatPrecision(Float_sp x) {
+LAMBDA(Float_sp x);
+DECLARE();
+DOCSTRING("floatPrecision");
+CL_DEFUN Integer_sp cl__float_precision(Float_sp x) {
   _G();
   int precision = 0;
   switch (clasp_t_of(x)) {
@@ -1090,10 +1090,10 @@ Integer_sp cl_floatPrecision(Float_sp x) {
   return clasp_make_fixnum(precision);
 }
 
-#define ARGS_cl_integer_decode_float "(x)"
-#define DECL_cl_integer_decode_float ""
-#define DOCS_cl_integer_decode_float "integer_decode_float"
-Real_mv cl_integer_decode_float(Float_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("integer_decode_float");
+CL_DEFUN Real_mv cl__integer_decode_float(Float_sp x) {
   _G();
   int e = 0, s = 1;
   Real_sp rx(_Nil<Real_O>());
@@ -1155,18 +1155,18 @@ Real_mv cl_integer_decode_float(Float_sp x) {
   return Values(rx, clasp_make_fixnum(e), clasp_make_fixnum(s));
 }
 
-#define ARGS_cl_complex "(r &optional (i 0))"
-#define DECL_cl_complex ""
-#define DOCS_cl_complex "complex"
-Complex_sp cl_complex(Real_sp r, Real_sp i) {
+LAMBDA(r &optional (i 0));
+DECLARE();
+DOCSTRING("complex");
+CL_DEFUN Complex_sp cl__complex(Real_sp r, Real_sp i) {
   _G();
   return Complex_O::create(r, i);
 }
 
-#define ARGS_cl_realpart "(x)"
-#define DECL_cl_realpart ""
-#define DOCS_cl_realpart "realpart"
-Real_sp cl_realpart(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("realpart");
+CL_DEFUN Real_sp cl__realpart(Number_sp x) {
   _G();
   switch (clasp_t_of(x)) {
   case number_Fixnum:
@@ -1188,10 +1188,10 @@ Real_sp cl_realpart(Number_sp x) {
   return gc::As<Real_sp>(x);
 }
 
-#define ARGS_cl_imagpart "(x)"
-#define DECL_cl_imagpart ""
-#define DOCS_cl_imagpart "imagpart"
-Real_sp cl_imagpart(Number_sp x) {
+LAMBDA(x);
+DECLARE();
+DOCSTRING("imagpart");
+CL_DEFUN Real_sp cl__imagpart(Number_sp x) {
   _G();
   switch (clasp_t_of(x)) {
   case number_Fixnum:
@@ -1230,40 +1230,22 @@ Real_sp cl_imagpart(Number_sp x) {
 
 void initialize_num_co() {
   SYMBOL_EXPORT_SC_(ClPkg, float);
-  ClDefun(float);
   SYMBOL_EXPORT_SC_(ClPkg, numerator);
-  ClDefun(numerator);
   SYMBOL_EXPORT_SC_(ClPkg, denominator);
-  ClDefun(denominator);
   SYMBOL_EXPORT_SC_(ClPkg, floor);
-  ClDefun(floor);
   SYMBOL_EXPORT_SC_(ClPkg, ceiling);
-  ClDefun(ceiling);
   SYMBOL_EXPORT_SC_(ClPkg, truncate);
-  ClDefun(truncate);
   SYMBOL_EXPORT_SC_(ClPkg, round);
-  ClDefun(round);
   SYMBOL_EXPORT_SC_(ClPkg, mod);
-  ClDefun(mod);
   SYMBOL_EXPORT_SC_(ClPkg, rem);
-  ClDefun(rem);
   SYMBOL_EXPORT_SC_(ClPkg, decodeFloat);
-  ClDefun(decodeFloat);
   SYMBOL_EXPORT_SC_(ClPkg, scaleFloat);
-  ClDefun(scaleFloat);
   SYMBOL_EXPORT_SC_(ClPkg, floatSign);
-  ClDefun(floatSign);
   SYMBOL_EXPORT_SC_(ClPkg, floatDigits);
-  ClDefun(floatDigits);
   SYMBOL_EXPORT_SC_(ClPkg, floatPrecision);
-  ClDefun(floatPrecision);
   SYMBOL_EXPORT_SC_(ClPkg, integer_decode_float);
-  ClDefun(integer_decode_float);
   SYMBOL_EXPORT_SC_(ClPkg, complex);
-  ClDefun(complex);
   SYMBOL_EXPORT_SC_(ClPkg, realpart);
-  ClDefun(realpart);
   SYMBOL_EXPORT_SC_(ClPkg, imagpart);
-  ClDefun(imagpart);
 };
 };

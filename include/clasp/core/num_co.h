@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 namespace core {
 
-Real_mv cl_integer_decode_float(Float_sp x);
+Real_mv cl__integer_decode_float(Float_sp x);
 
 int clasp_signbit(Number_sp x);
 

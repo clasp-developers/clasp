@@ -213,3 +213,10 @@ mps-interface:
 	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
 	make compile-commands
 	make mps-interface-run
+
+
+scrape:
+	echo $(shell $(LLVM_CONFIG) --bindir)/clang
+	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
+	bjam toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
+	sbcl --load "../scraper/scraper.lisp" -- $(shell $(LLVM_CONFIG) --bindir)/clang $(CLASP_HOME)/include/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt

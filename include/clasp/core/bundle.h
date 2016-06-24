@@ -54,6 +54,8 @@ private:
   boost_filesystem::path _DatabasesDir;
   boost_filesystem::path _ScriptsDir;
   boost_filesystem::path _LispDir;
+  boost_filesystem::path _SourceDir;
+  boost_filesystem::path _IncludeDir;
   boost_filesystem::path _LibDir;
   boost_filesystem::path _StartupWorkingDir;
 
@@ -79,6 +81,8 @@ public:
 
   Pathname_sp getRootPathname();
   Pathname_sp getSysPathname();
+  Pathname_sp getIncludePathname();
+  Pathname_sp getSourcePathname();
   Pathname_sp getAppContentsPathname();
   Pathname_sp getAppContentsResourcesPathname();
 

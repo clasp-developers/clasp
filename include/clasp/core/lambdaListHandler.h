@@ -288,8 +288,7 @@ template <>
 struct gctools::GCInfo<core::LambdaListHandler_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]

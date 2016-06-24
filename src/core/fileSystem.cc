@@ -123,13 +123,10 @@ void safeRename(Path_sp src, Path_sp dest) {
   rename_file(src, dest);
 }
 
-#define LOCK_af_ensure_directories_exist 1
-#define ARGS_af_ensure_directories_exist "(pathspec)"
-#define DECL_af_ensure_directories_exist ""
-#define DOCS_af_ensure_directories_exist \
-  "Look for <path> and return it."       \
-  "If it doesn't exist create every missing directory along the path."
-T_mv af_ensure_directories_exist(T_sp pathspec) {
+LAMBDA(pathspec);
+DECLARE();
+DOCSTRING("Look for <path> and return it. If it doesn't exist create every missing directory along the path.");
+CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   _G();
   Path_sp path_to_create = coerce::pathDesignator(pathspec);
   bf::path parent = path_to_create->getPath().parent_path();
@@ -702,7 +699,7 @@ Pathname_sp getcwd(bool change_d_p_d) {
   size_t i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->schar(i - 1)))
     namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
-  Pathname_sp pathname = af_parseNamestring(namestring);
+  Pathname_sp pathname = cl__parse_namestring(namestring);
   if (change_d_p_d) {
     cl::_sym_STARdefaultPathnameDefaultsSTAR->setf_symbolValue(pathname);
   }
@@ -752,6 +749,6 @@ Pathname_sp homedirPathname(T_sp tuser) {
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->schar(i - 1)))
     namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
-  return af_parseNamestring(namestring);
+  return cl__parse_namestring(namestring);
 }
 };

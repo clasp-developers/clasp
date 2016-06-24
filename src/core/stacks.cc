@@ -58,7 +58,7 @@ Vector_sp ExceptionStack::backtrace() {
     return _Nil<Vector_O>();
   }
   printf("%s:%d ExceptionStack::backtrace stack size = %lu\n", __FILE__, __LINE__, this->_Stack.size());
-  Vector_sp result = core_make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
+  Vector_sp result = core__make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
   for (int i(0), iEnd(this->_Stack.size()); i < iEnd; ++i) {
     Symbol_sp kind;
     SYMBOL_EXPORT_SC_(KeywordPkg, catchFrame);
@@ -132,20 +132,20 @@ VectorObjects_sp InvocationHistoryFrame::arguments() const {
 string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   VectorObjects_sp vargs = this->arguments();
   T_sp sout = clasp_make_string_output_stream();
-  int nargs = cl_length(vargs);
+  int nargs = cl__length(vargs);
   for (int i(0); i < nargs; ++i) {
     T_sp obj = vargs->elt(i);
     if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
       clasp_write_string("#<", sout);
-      write_ugly_object(af_classOf(obj), sout);
+      write_ugly_object(cl__class_of(obj), sout);
       clasp_write_string("> ", sout);
     } else {
       write_ugly_object(obj, sout);
       clasp_write_char(' ', sout);
     }
   }
-  Str_sp strres = gc::As<Str_sp>(cl_get_output_stream_string(sout));
-  if (cl_length(strres) > maxWidth) {
+  Str_sp strres = gc::As<Str_sp>(cl__get_output_stream_string(sout));
+  if (cl__length(strres) > maxWidth) {
     return strres->get().substr(0, maxWidth) + "...";
   }
   return strres->get();
@@ -160,7 +160,7 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-  SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(sourceFileInfoHandle));
+  SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(sourceFileInfoHandle));
   string sourceFileName = sfi->fileName();
   stringstream ss;
   string closureType = "/?";
@@ -207,7 +207,7 @@ string InvocationHistoryStack::asString() const {
   ss << std::endl;
   vector<InvocationHistoryFrame *> frames = _lisp->invocationHistoryStack().asVectorFrames();
   ss << "--------STACK TRACE--------" << std::endl;
-  int ihsCur = af_ihsCurrentFrame();
+  int ihsCur = core__ihs_current_frame();
   for (int i = 0; i < frames.size(); ++i) {
     InvocationHistoryFrame *cur = frames[i];
     if (i == ihsCur) {
@@ -225,7 +225,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARwatchDynamicBindingStackSTAR);
 void DynamicBindingStack::push(Symbol_sp var) {
 #if 0 // debugging
   if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-    List_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+    List_sp assoc = cl__assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
     if ( assoc.notnilp() ) {
       T_sp funcDesig = oCdr(assoc);
       if ( funcDesig.notnilp() ) {
@@ -251,7 +251,7 @@ void DynamicBindingStack::pop() {
   DynamicBinding &bind = this->_Bindings.back();
 #if 0 // debugging
   if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    List_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+    List_sp assoc = cl__assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
     if ( assoc.notnilp() ) {
       T_sp funcDesig = oCdr(assoc);
       if ( funcDesig.notnilp() ) {
@@ -336,6 +336,5 @@ GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 namespace core {
 
 void initialize_stacks() {
-  //	CoreDefun(dynamicBindingStackDump);
 }
 };

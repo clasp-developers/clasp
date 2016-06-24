@@ -137,7 +137,7 @@ void StructureObject_O::__write__(T_sp stream) const {
     SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
   SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
   SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
-  T_sp print_function = af_get_sysprop(this->_Type, _sym_structure_print_function);
+  T_sp print_function = core__get_sysprop(this->_Type, _sym_structure_print_function);
   if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
     clasp_write_string("#S", stream);
     /* structure_to_list conses slot names and values into
@@ -154,17 +154,17 @@ void StructureObject_O::__write__(T_sp stream) const {
 void Integer_O::__write__(T_sp stream) const {
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
   int print_base = clasp_print_base();
-  core_integerToString(buffer, this->const_sharedThis<Integer_O>(),
+  core__integer_to_string(buffer, this->const_sharedThis<Integer_O>(),
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl_write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
 #if 0 // working
 
     void
-    _ecl_write_fixnum(gctools::Fixnum i, T_sp stream)
+    _ecl__write_fixnum(gctools::Fixnum i, T_sp stream)
     {
         T_sp s = si_get_buffer_string();
         si_integer_to_string(s, ecl_make_fixnum(i), ecl_make_fixnum(10), ECL_NIL, ECL_NIL);
@@ -178,11 +178,11 @@ void Integer_O::__write__(T_sp stream) const {
     write_ratio(T_sp r, T_sp stream)
     {
         T_sp s = si_get_buffer_string();
-        int print_base = ecl_print_base();
+        int print_base = ecl__print_base();
         si_integer_to_string(s, r->ratio.num, ecl_make_fixnum(print_base),
                              ecl_symbol_value(@'*print-radix*'),
                              ECL_NIL /* decimal syntax */);
-        ecl_string_push_extend(s, '/');
+        ecl__string_push_extend(s, '/');
         si_integer_to_string(s, r->ratio.den,
                              ecl_make_fixnum(print_base),
                              ECL_NIL, ECL_NIL);
@@ -195,9 +195,9 @@ void Integer_O::__write__(T_sp stream) const {
     {
         writestr_stream("#C(", stream);
         si_write_ugly_object(x->complex.real, stream);
-        ecl_write_char(' ', stream);
+        ecl__write_char(' ', stream);
         si_write_ugly_object(x->complex.imag, stream);
-        ecl_write_char(')', stream);
+        ecl__write_char(')', stream);
     }
 
 
@@ -205,15 +205,15 @@ void Integer_O::__write__(T_sp stream) const {
     write_character(T_sp x, T_sp stream)
     {
         int i = ECL_CHAR_CODE(x);
-	if (!ecl_print_escape() && !ecl_print_readably()) {
-	    ecl_write_char(i, stream);
+	if (!ecl__print_escape() && !ecl__print_readably()) {
+	    ecl__write_char(i, stream);
 	} else {
 	    writestr_stream("#\\", stream);
 	    if (i < 32 || i >= 127) {
-		T_sp name = cl_char_name(ECL_CODE_CHAR(i));
+		T_sp name = cl__char_name(ECL_CODE_CHAR(i));
 		writestr_stream((char*)name->base_string.self, stream);
 	    } else {
-		ecl_write_char(i, stream);
+		ecl__write_char(i, stream);
 	    }
 	}
     }
@@ -221,7 +221,7 @@ void Integer_O::__write__(T_sp stream) const {
     static void
     write_package(T_sp x, T_sp stream)
     {
-        if (ecl_print_readably()) FEprint_not_readable(x);
+        if (ecl__print_readably()) FEprint_not_readable(x);
         writestr_stream("#<", stream);
         si_write_ugly_object(x->pack.name, stream);
         writestr_stream(" package>", stream);
@@ -230,7 +230,7 @@ void Integer_O::__write__(T_sp stream) const {
     static void
     write_hashtable(T_sp x, T_sp stream)
     {
-	if (ecl_print_readably() && !Null(ecl_symbol_value(@'*read-eval*'))) {
+	if (ecl__print_readably() && !Null(ecl_symbol_value(@'*read-eval*'))) {
 	    T_sp make =
 		cl_list(9, @'make-hash-table',
 			@':size', cl_hash_table_size(x),
@@ -243,18 +243,18 @@ void Integer_O::__write__(T_sp stream) const {
 	    writestr_stream("#.", stream);
 	    si_write_ugly_object(init, stream);
 	} else {
-	    _ecl_write_unreadable(x, "hash-table", ECL_NIL, stream);
+	    _ecl__write_unreadable(x, "hash-table", ECL_NIL, stream);
 	}
     }
 
     static void
     write_random(T_sp x, T_sp stream)
     {
-        if (ecl_print_readably()) {
+        if (ecl__print_readably()) {
 	    writestr_stream("#$", stream);
-	    _ecl_write_vector(x->random.value, stream);
+	    _ecl__write_vector(x->random.value, stream);
         } else {
-	    _ecl_write_unreadable(x->random.value, "random-state", ECL_NIL, stream);
+	    _ecl__write_unreadable(x->random.value, "random-state", ECL_NIL, stream);
         }
     }
 
@@ -265,7 +265,7 @@ void Integer_O::__write__(T_sp stream) const {
         T_sp tag;
         union cl_lispunion str;
 #ifdef ECL_UNICODE
-        ecl_character buffer[10];
+        ecl__character buffer[10];
 #else
         ecl_base_char buffer[10];
 #endif
@@ -338,9 +338,9 @@ void Integer_O::__write__(T_sp stream) const {
 	    break;
         case ecl_smm_string_input: {
 	    T_sp text = x->stream.object0;
-	    cl_index ndx, l = ecl_length(text);
+	    cl_index ndx, l = ecl__length(text);
 	    for (ndx = 0; (ndx < 8) && (ndx < l); ndx++) {
-		buffer[ndx] = ecl_char(text, ndx);
+		buffer[ndx] = ecl__char(text, ndx);
 	    }
 	    if (l > ndx) {
 		buffer[ndx-1] = '.';
@@ -374,18 +374,18 @@ void Integer_O::__write__(T_sp stream) const {
 	    tag = ECL_NIL;
 	    break;
         default:
-	    ecl_internal_error("illegal stream mode");
+	    ecl__internal_error("illegal stream mode");
         }
         if (!x->stream.closed)
 	    prefix = prefix + 7;
-        _ecl_write_unreadable(x, prefix, tag, stream);
+        _ecl__write_unreadable(x, prefix, tag, stream);
     }
 
 #ifdef CLOS
     static void
     write_instance(T_sp x, T_sp stream)
     {
-        _ecl_funcall3(@'print-object', x, stream);
+        _ecl__funcall3(@'print-object', x, stream);
     }
 #endif
     static void
@@ -396,7 +396,7 @@ void Integer_O::__write__(T_sp stream) const {
 	    FEerror("Found a corrupt structure with an invalid type name~%"
 		    "  ~S", x->str.name);
         print_function = si_get_sysprop(x->str.name, @'si::structure-print-function');
-        if (Null(print_function) || !ecl_print_structure()) {
+        if (Null(print_function) || !ecl__print_structure()) {
 	    writestr_stream("#S", stream);
 	    /* structure_to_list conses slot names and values into
 	     * a list to be printed.  print shouldn't allocate
@@ -405,7 +405,7 @@ void Integer_O::__write__(T_sp stream) const {
 	    x = structure_to_list(x);
 	    si_write_object(x, stream);
         } else {
-	    _ecl_funcall4(print_function, x, stream, ecl_make_fixnum(0));
+	    _ecl__funcall4(print_function, x, stream, ecl_make_fixnum(0));
         }
     }
 //#endif /* !CLOS */
@@ -415,20 +415,20 @@ void Integer_O::__write__(T_sp stream) const {
 void
 _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-  core_integerToString(buffer,
+  core__integer_to_string(buffer,
                        clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
-  cl_write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
 void write_fixnum(T_sp strm, T_sp i) {
   Fixnum_sp fn = gc::As<Fixnum_sp>(i);
   StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
   int print_base = clasp_print_base();
-  core_integerToString(buffer, fn,
+  core__integer_to_string(buffer, fn,
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl_write_sequence(buffer, strm, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer, strm, make_fixnum(0), _Nil<T_O>());
 }
 
 void write_single_float(T_sp strm, SingleFloat_sp i) {
@@ -441,7 +441,7 @@ void
 write_float(T_sp f, T_sp stream) {
   StrWithFillPtr_sp s = _lisp->get_buffer_string();
   s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
-  cl_write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
   _lisp->put_buffer_string(s);
 }
 
@@ -453,7 +453,7 @@ void write_character(T_sp strm, T_sp chr) {
   } else {
     clasp_write_string("#\\", strm);
     if (i < 32 || i >= 127) {
-      Str_sp name = cl_char_name(clasp_make_character(i));
+      Str_sp name = cl__char_name(clasp_make_character(i));
       clasp_write_string(name->get(), strm);
     } else {
       clasp_write_char(i, strm);
@@ -482,16 +482,15 @@ T_sp write_ugly_object(T_sp x, T_sp stream) {
   return x;
 }
 
-#define ARGS_af_writeUglyObject "(obj &optional strm)"
-#define DECL_af_writeUglyObject ""
-#define DOCS_af_writeUglyObject "writeUglyObject"
-T_sp af_writeUglyObject(T_sp obj, T_sp ostrm) {
+LAMBDA(obj &optional strm);
+DECLARE();
+DOCSTRING("writeUglyObject");
+CL_DEFUN T_sp core__write_ugly_object(T_sp obj, T_sp ostrm) {
   _G();
   T_sp strm = coerce::outputStreamDesignator(ostrm);
   return write_ugly_object(obj, strm);
 };
 
 void initialize_write_ugly_object() {
-  Defun(writeUglyObject);
 }
 };

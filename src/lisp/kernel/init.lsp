@@ -33,6 +33,10 @@
 (setq core::*boot-verbose* nil)
 (setq cl:*print-circle* nil)
 
+(sys:*make-special 'core::*clang-bin*)
+(setq core::*clang-bin* (ext:getenv "CLASP_CLANG_PATH"))
+(export 'core::*clang-bin*)
+
 ;;(setq *features* (cons :ecl-min *features*))
 (setq *features* (cons :clasp *features*))
 ;;(setq *features* (cons :clos *features*))
@@ -300,14 +304,6 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
    nil                                   ;;  si::*sharp-eq-context*
    nil                                   ;;  si::*circle-counter*
    ))
-
-
-
-
-
-
-
-
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cl))
@@ -776,7 +772,8 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     :clos
     #P"kernel/lsp/ffi"
     #P"modules/sockets/sockets.lisp"
-;;    asdf/build/asdf
+    ;;    asdf/build/asdf
+    #P"kernel/cmp/external-clang"
     :front
     #P"kernel/lsp/top"
     :all

@@ -532,7 +532,7 @@ class	ClassGroup:
 #ifdef USE_MPS
     %(OCLASS)s::static_Kind = gctools::GCKind<%(OCLASS)s>::Kind;
 #endif
-    core::af_setf_findClass(%(CLASSNAME)s,%(OCLASS)s::static_classSymbol(),true,_Nil<core::Environment_O>());
+    core::core__setf_find_class(%(CLASSNAME)s,%(OCLASS)s::static_classSymbol(),true,_Nil<core::Environment_O>());
     {
         gctools::tagged_pointer<core::LispObjectCreator<%(OCLASS)s>> cb = gctools::ClassAllocator<core::LispObjectCreator<%(OCLASS)s>>::allocateClass();
         %(OCLASS)s::___set_static_creator(cb);

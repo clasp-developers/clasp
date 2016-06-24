@@ -59,31 +59,6 @@
     (when retval
       (error "Could not execute command with ext:vfork-execvp with ~s~%  return-value: ~d  error-message: ~s~%" cmd-list retval error-message))))
 
-
-
-
-(defun generate-compile-command (bitcode-pathname)
-  (let* ((bitcode-physical-pathname (translate-logical-pathname bitcode-pathname))
-         (file (namestring bitcode-physical-pathname))
-         (output-file (namestring (make-pathname :type "o" :defaults bitcode-physical-pathname))))
-    (cond
-      ((and (member :target-os-linux *features*)
-            (member :address-model-64 *features*))
-       (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file)))
-      ((and (member :target-os-darwin *features*)
-            (member :address-model-64 *features*))
-       (if (member :use-clang *features*)
-           (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
-                  (clang-executable (if clasp-clang-path
-                                        clasp-clang-path
-                                        "clang")))
-             (return-from generate-compile-command (values (bformat nil "%s -c -o %s %s" clang-executable output-file file) output-file)))
-           (return-from generate-compile-command (values (bformat nil "llc -filetype=obj -relocation-model=pic -o %s %s" output-file file) output-file))))
-      (t (error "Add support for running external clang to cmpbundle.lsp>generate-compile-command on this system")))))
-
-
-
-
 ;;; This function will compile a bitcode file in PART-BITCODE-PATHNAME with clang and put the output in the
 ;;; same directory as PART-BITCODE-PATHNAME
 (defun generate-object-file (part-bitcode-pathname &key test)
@@ -94,52 +69,49 @@
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
     (truename output-pathname)))
 
-
 (defun ensure-string (name)
   (cond
     ((pathnamep name) (core:coerce-to-filename name))
     ((stringp name) name)
     (t (string name))))
 
-(defun generate-link-command (in-all-names in-bundle-file)
+(in-package :ext)
+(defun run-ld (args)
+  (cmp:safe-system `("ld" ,@args)))
+
+(defun run-clang (args &key (clang core:*clang-bin*))
+  (unless (and clang (probe-file clang))
+    (error "You must ensure that core:*clang-bin* points to a valid clang"))
+  (cmp:safe-system `(,(namestring clang)
+                  ,@args)))
+
+(export '(run-ld run-clang))
+(in-package :cmp)
+
+(defun execute-link (in-bundle-file in-all-names)
   ;; options are a list of strings like (list "-v")
   (let ((options nil)
         (all-names (mapcar (lambda (n) (ensure-string n)) (if (listp in-all-names) in-all-names (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
     (cond
       ((member :target-os-darwin *features*)
-       (return-from generate-link-command
-         `("ld" ,@options 
-                ,@all-names
-                "-macosx_version_min" "10.7"
-                "-flat_namespace" 
-                "-undefined" "warning"
-                "-bundle"
-                "-o"
-                ,bundle-file)))
+       (ext:run-ld `(,@options
+                     ,@all-names
+                     "-macosx_version_min" "10.7"
+                     "-flat_namespace" 
+                     "-undefined" "warning"
+                     "-bundle"
+                     "-o"
+                     ,bundle-file)))
       ((member :target-os-linux *features*)
-       (let* ((clasp-clang-path (ext:getenv "CLASP_CLANG_PATH"))
-              (clang-executable (if clasp-clang-path
-                                    clasp-clang-path
-                                    "clang")))
-         (return-from generate-link-command
-           `(,clang-executable
-             ,@options
-             ,@all-names
-             "-shared"
-             "-o"
-             ,bundle-file))))
-      (t (error "Add support for this operating system to cmp:execute-link")))))
-
-(defun execute-link (bundle-pathname all-names &key test)
-  "Link object files together to create a shared library/bundle"
-  (let ((link-command (generate-link-command all-names bundle-pathname)))
-    (if test
-        (bformat t "About to execute: %s\n" link-command)
-        (safe-system link-command)))
-    (truename bundle-pathname))
-
-
+       ;; Linux needs to use clang to link
+       (ext:run-clang `(,@options
+                         ,@all-names
+                         "-shared"
+                         "-o"
+                         ,bundle-file)))
+      (t (error "Add support for this operating system to cmp:generate-link-command")))
+    (truename in-bundle-file)))
 
 #||
 ;;; Make a .bundle file on OS X or a .so file on linux
@@ -262,8 +234,8 @@
          (part-pathnames lisp-bitcode-files)
          ;;         (bundle-filename (string-downcase (pathname-name output-pathname)))
 	 (bundle-bitcode-pathname (cfp-output-file-default output-pathname :linked-bitcode)))
-    (let* ((prologue-module (if prologue-form (compile-form-into-module prologue-form "prologueForm")))
-           (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form "epilogueForm")))
+    (let* ((prologue-module (if prologue-form (compile-form-into-module prologue-form 'prologue-form)))
+           (epilogue-module (if epilogue-form (compile-form-into-module epilogue-form 'epilogue-form)))
            (module (link-bitcode-modules part-pathnames
                                          :additional-bitcode-pathnames (if intrinsics-bitcode-path
                                                                            (list intrinsics-bitcode-path)

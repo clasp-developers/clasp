@@ -38,10 +38,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-#define ARGS_af_makeRegex "(regex-str)"
-#define DECL_af_makeRegex ""
-#define DOCS_af_makeRegex "makeRegex"
-Regex_sp af_makeRegex(const string &str) {
+LAMBDA(regex-str);
+DECLARE();
+DOCSTRING("makeRegex");
+CL_DEFUN Regex_sp core__make_regex(const string &str) {
   _G();
   Regex_sp regex = Regex_O::make(str);
   return regex;
@@ -56,7 +56,6 @@ void Regex_O::exposeCando(core::Lisp_sp lisp) {
       .def("regexSedReplace", &Regex_O::regexSedReplace) // Need to rethink exposing this function so result is returned
       ;
   SYMBOL_EXPORT_SC_(CorePkg, makeRegex);
-  Defun(makeRegex);
 }
 
 void Regex_O::exposePython(core::Lisp_sp lisp) {
@@ -110,11 +109,10 @@ string Regex_O::regexSedReplace(const string &str, const string &replace) const 
                               boost::match_default | boost::format_sed);
 }
 
-#define ARGS_core_matched "(regex-match &optional (idx 0))"
-#define DECL_core_matched ""
-#define DOCS_core_matched "matched"
+#define ARGS_RegexMatch_O_matched "(regex-match &optional (idx 0))"
+#define DECL_RegexMatch_O_matched ""
+#define DOCS_RegexMatch_O_matched "Return true if this->_Match[idx].matched is true"
 bool RegexMatch_O::matched(int idx) const {
-  _OF();
   ASSERTF(idx < (int)this->_Match.size(), BF("index[%d] exceeded max[%d]") % idx % this->_Match.size());
   return this->_Match[idx].matched;
 }
@@ -127,7 +125,7 @@ void RegexMatch_O::exposeCando(core::Lisp_sp lisp) {
       .def("regex-match-prefix", &RegexMatch_O::prefix)
       .def("regex-match-suffix", &RegexMatch_O::suffix)
       .def("regex-match-part", &RegexMatch_O::part)
-      .def("regex-match-matched", &RegexMatch_O::matched, ARGS_core_matched);
+      .def("regex-match-matched", &RegexMatch_O::matched, ARGS_RegexMatch_O_matched);
 }
 
 void RegexMatch_O::exposePython(core::Lisp_sp lisp) {

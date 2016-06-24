@@ -1,8 +1,0 @@
-
-
-for n in *.h *.cc; do \
-	echo $n; \
-	./copyright $n; \
-done
-
-

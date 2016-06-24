@@ -54,7 +54,7 @@ Function_sp functionDesignator(T_sp obj) {
 
 Path_sp pathDesignator(T_sp obj) {
   _G();
-  if (af_strP(obj)) {
+  if (core__simple_string_p(obj)) {
     return Path_O::create(gc::As<Str_sp>(obj)->get());
   } else if (gc::IsA<Path_sp>(obj)) {
     return gc::As<Path_sp>(obj);
@@ -71,7 +71,7 @@ Package_sp packageDesignator(T_sp obj) {
     packageName = str;
     goto PACKAGE_NAME;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
-    packageName = af_symbolName(sym);
+    packageName = cl__symbol_name(sym);
     goto PACKAGE_NAME;
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     stringstream ss;
@@ -87,7 +87,7 @@ PACKAGE_NAME:
 
 string packageNameDesignator(T_sp obj) {
   _G();
-  if (cl_packagep(obj)) {
+  if (cl__packagep(obj)) {
     return gc::As<Package_sp>(obj)->getName();
   }
   Str_sp packageName = stringDesignator(obj);
@@ -128,7 +128,7 @@ Str_sp stringDesignator(T_sp obj) {
   if (Str_sp str = obj.asOrNull<Str_O>()) {
     return str;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
-    return af_symbolName(sym);
+    return cl__symbol_name(sym);
   } else if (Character_sp chr = obj.asOrNull<Character_O>()) {
     stringstream ss;
     ss << clasp_as_char(chr);
@@ -163,7 +163,7 @@ T_sp inputStreamDesignator(T_sp obj) {
     return cl::_sym_STARstandard_inputSTAR->symbolValue();
   } else if (obj == _lisp->_true()) {
     return cl::_sym_STARterminal_ioSTAR->symbolValue();
-  } else if (cl_streamp(obj)) {
+  } else if (cl__streamp(obj)) {
     return obj;
   }
   SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
@@ -175,7 +175,7 @@ T_sp outputStreamDesignator(T_sp obj) {
     return cl::_sym_STARstandard_outputSTAR->symbolValue();
   } else if (obj == _lisp->_true()) {
     return cl::_sym_STARterminal_ioSTAR->symbolValue();
-  } else if (cl_streamp(obj)) {
+  } else if (cl__streamp(obj)) {
     return obj;
   }
   SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));

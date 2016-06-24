@@ -134,10 +134,10 @@ bool clasp_print_circle(void) {
   return cl::_sym_STARprint_circleSTAR->symbolValue().isTrue();
 }
 
-#define ARGS_cl_write "(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*))"
-#define DECL_cl_write ""
-#define DOCS_cl_write "write"
-T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
+LAMBDA(x &key ((:stream strm) nil) (array *print-array*) (base *print-base*) ((:case cas) *print-case*) (circle *print-circle*) (escape *print-escape*) (gensym *print-gensym*) (length *print-length*) (level *print-level*) (lines *print-lines*) (miser_width *print-miser-width*) (pprint_dispatch *print-pprint-dispatch*) (pretty *print-pretty*) (radix *print-radix*) (readably *print-readably*) (right_margin *print-right-margin*));
+DECLARE();
+DOCSTRING("write");
+CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
               T_sp cas, T_sp circle, T_sp escape, T_sp gensym, T_sp length,
               T_sp level, T_sp lines, T_sp miser_width, T_sp pprint_dispatch,
               T_sp pretty, T_sp radix, T_sp readably, T_sp right_margin) {
@@ -179,10 +179,10 @@ T_sp cl_write(T_sp x, T_sp strm, T_sp array, T_sp base,
     }
 #endif
 
-#define ARGS_af_printUnreadableObjectFunction "(o stream type id function)"
-#define DECL_af_printUnreadableObjectFunction ""
-#define DOCS_af_printUnreadableObjectFunction "printUnreadableObjectFunction - see ecl::print_unreadable.d"
-void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
+LAMBDA(o stream type id function);
+DECLARE();
+DOCSTRING("printUnreadableObjectFunction - see ecl::print_unreadable.d");
+CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
   _G();
   if (clasp_print_readably()) {
     PRINT_NOT_READABLE_ERROR(o);
@@ -192,7 +192,7 @@ void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, 
     stringstream ss;
     ss << "#<";
     if (type.notnilp()) {
-      type = af_type_of(o);
+      type = cl__type_of(o);
       if (!gc::IsA<Symbol_sp>(type)) {
         type = cl::_sym_StandardObject_O;
       }
@@ -212,10 +212,10 @@ void af_printUnreadableObjectFunction(T_sp o, T_sp ostream, T_sp type, T_sp id, 
   }
 };
 
-#define ARGS_cl_pprint "(obj &optional stream)"
-#define DECL_cl_pprint ""
-#define DOCS_cl_pprint "pprint"
-void cl_pprint(T_sp obj, T_sp stream) {
+LAMBDA(obj &optional stream);
+DECLARE();
+DOCSTRING("pprint");
+CL_DEFUN void cl__pprint(T_sp obj, T_sp stream) {
   _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   scope.pushSpecialVariableAndSet(cl::_sym_STARprint_prettySTAR, _lisp->_true());
@@ -225,10 +225,10 @@ void cl_pprint(T_sp obj, T_sp stream) {
   clasp_force_output(stream);
 }
 
-#define ARGS_cl_princ "(obj &optional output-stream-desig)"
-#define DECL_cl_princ ""
-#define DOCS_cl_princ "See CLHS: princ"
-T_sp cl_princ(T_sp obj, T_sp output_stream_desig) {
+LAMBDA(obj &optional output-stream-desig);
+DECLARE();
+DOCSTRING("See CLHS: princ");
+CL_DEFUN T_sp cl__princ(T_sp obj, T_sp output_stream_desig) {
   _G();
   DynamicScopeManager scope1(cl::_sym_STARprint_escapeSTAR, _Nil<T_O>());
   DynamicScopeManager scope2(cl::_sym_STARprint_readablySTAR, _Nil<T_O>());
@@ -236,10 +236,10 @@ T_sp cl_princ(T_sp obj, T_sp output_stream_desig) {
   return obj;
 }
 
-#define ARGS_cl_prin1 "(obj &optional output-stream-desig)"
-#define DECL_cl_prin1 ""
-#define DOCS_cl_prin1 "See CLHS: prin1"
-T_sp cl_prin1(T_sp obj, T_sp output_stream_desig) {
+LAMBDA(obj &optional output-stream-desig);
+DECLARE();
+DOCSTRING("See CLHS: prin1");
+CL_DEFUN T_sp cl__prin1(T_sp obj, T_sp output_stream_desig) {
   _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   //  T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
@@ -247,32 +247,26 @@ T_sp cl_prin1(T_sp obj, T_sp output_stream_desig) {
   return obj;
 }
 
-#define ARGS_cl_print "(obj &optional output-stream-desig)"
-#define DECL_cl_print ""
-#define DOCS_cl_print "See CLHS: print"
-T_sp cl_print(T_sp obj, T_sp output_stream_desig) {
+LAMBDA(obj &optional output-stream-desig);
+DECLARE();
+DOCSTRING("See CLHS: print");
+CL_DEFUN T_sp cl__print(T_sp obj, T_sp output_stream_desig) {
   _G();
   DynamicScopeManager scope(cl::_sym_STARprint_escapeSTAR, _lisp->_true());
   T_sp sout = coerce::outputStreamDesignator(output_stream_desig);
   clasp_write_string("\n", sout);
-  cl_prin1(obj, sout);
+  cl__prin1(obj, sout);
   clasp_write_string(" ", sout);
   clasp_force_output(sout);
   return obj;
 }
 
 void initialize_print() {
-  ClDefun(write);
   //        SYMBOL_EXPORT_SC_(CorePkg,writeAddr);
   //        Defun(writeAddr);
   SYMBOL_EXPORT_SC_(CorePkg, printUnreadableObjectFunction);
-  Defun(printUnreadableObjectFunction);
-  ClDefun(pprint);
   SYMBOL_EXPORT_SC_(ClPkg, print);
-  ClDefun(print);
   SYMBOL_EXPORT_SC_(ClPkg, prin1);
-  ClDefun(prin1);
   SYMBOL_EXPORT_SC_(ClPkg, princ);
-  ClDefun(princ);
 }
 };

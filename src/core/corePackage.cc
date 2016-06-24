@@ -137,6 +137,7 @@ SYMBOL_EXPORT_SC_(ClPkg, lambdaParametersLimit);
 SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
+SYMBOL_EXPORT_SC_(CorePkg, STARcxxDocumentationSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, topLevel);
 SYMBOL_EXPORT_SC_(CorePkg, scharSet);
 SYMBOL_EXPORT_SC_(CorePkg, STARuseInterpreterForEvalSTAR);
@@ -159,6 +160,8 @@ SYMBOL_EXPORT_SC_(CorePkg, atanh);
 SYMBOL_EXPORT_SC_(ClPkg, nil);
 SYMBOL_EXPORT_SC_(CorePkg, STARpollTicksPerGcSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_standardReadtable_PLUS_);
+SYMBOL_EXPORT_SC_(KeywordPkg, create);
+SYMBOL_EXPORT_SC_(KeywordPkg, append);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugStartup);
 SYMBOL_EXPORT_SC_(KeywordPkg, cclasp);
 SYMBOL_EXPORT_SC_(KeywordPkg, bclasp);
@@ -629,7 +632,9 @@ SYMBOL_SC_(KeywordPkg, changed);
 #pragma GCC visibility push(default)
 #define CorePkg_SYMBOLS
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) Symbol_sp cname; // = UNDEFINED_SYMBOL;
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #undef DO_SYMBOL
 #undef CorePkg_SYMBOLS
 #pragma GCC visibility pop
@@ -879,7 +884,9 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
     _BLOCK_TRACEF(BF("Exporting symbols in lisp"));
 #define CorePkg_EXPORT
 #define DO_SYMBOL(cname, idx, pkgName, lispName, export) cname->exportYourself(export);
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #undef DO_SYMBOL
 #undef CorePkg_EXPORT
   };
@@ -1038,6 +1045,7 @@ void CoreExposer::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugStartupSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedFunctionsSTAR->defparameter(_Nil<T_O>());
   _sym_STARuseInterpreterForEvalSTAR->defparameter(_Nil<T_O>());
+  _sym_STARcxxDocumentationSTAR->defparameter(_Nil<T_O>());
   _sym_STARnotify_on_compileSTAR->defparameter(_Nil<T_O>());
   _sym_STARtrace_startupSTAR->defparameter(_Nil<T_O>());
   _sym_STARinterpreterTraceSTAR->defparameter(_Nil<T_O>());

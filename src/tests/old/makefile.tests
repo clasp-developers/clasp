@@ -1,5 +1,0 @@
-
-
-all:
-	python testSpanningTree.py parmOnly.xml min_pro2s4s.moe >testSpanningTree.out
-

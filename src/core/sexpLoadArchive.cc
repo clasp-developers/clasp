@@ -48,7 +48,7 @@ namespace core {
 SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
   if (obj.nilp()) {
     return LeafSNode_O::create(_Nil<T_O>());
-  } else if (cl_atom(obj)) {
+  } else if (cl__atom(obj)) {
     SNode_sp node = gc::As<SNode_sp>(objToNode->gethash(obj, _Unbound<T_O>()));
     if (node.unboundp()) {
       node = LeafSNode_O::create(obj);
@@ -130,7 +130,7 @@ void SexpLoadArchive_O::parseFromStream(T_sp streamDesignator) {
   // Don't track source code for archives
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
   scope.pushSpecialVariableAndSet(_sym_STARmonitorRegisterSourceInfoSTAR, _lisp->_true());
-  T_sp obj = cl_read(streamDesignator, _lisp->_true(), _Unbound<T_O>());
+  T_sp obj = cl__read(streamDesignator, _lisp->_true(), _Unbound<T_O>());
   if (obj.unboundp()) {
     SIMPLE_ERROR(BF("Nothing could be read from stream"));
   }

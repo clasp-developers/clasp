@@ -42,10 +42,10 @@ THE SOFTWARE.
 
 namespace core {
 
-#define ARGS_core_makeSmallMap "()"
-#define DECL_core_makeSmallMap ""
-#define DOCS_core_makeSmallMap "makeSmallMap"
-SmallMap_sp core_makeSmallMap() {
+LAMBDA();
+DECLARE();
+DOCSTRING("makeSmallMap");
+CL_DEFUN SmallMap_sp core__make_small_map() {
   _G();
   GC_ALLOCATE(SmallMap_O, sm);
   return sm;
@@ -70,7 +70,6 @@ void SmallMap_O::exposeCando(Lisp_sp lisp) {
       .def("map_setf", &SmallMap_O::setf)
       .def("map_size", &SmallMap_O::size)
       .def("map_capacity", &SmallMap_O::capacity);
-  CoreDefun(makeSmallMap);
 }
 
 void SmallMap_O::exposePython(Lisp_sp lisp) {

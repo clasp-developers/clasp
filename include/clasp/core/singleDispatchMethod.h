@@ -88,8 +88,7 @@ template <>
 struct gctools::GCInfo<core::SingleDispatchMethod_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::SingleDispatchMethod_O);
 
@@ -125,6 +124,10 @@ public:
 	  Use next-emfun to set up a FunctionValueEnvironment that defines call-next-method and next-method-p */
   void LISP_INVOKE();
 };
+
+ void core__ensure_single_dispatch_method(Symbol_sp gfname, Class_sp receiver_class, LambdaListHandler_sp lambda_list_handler, List_sp declares, gc::Nilable<Str_sp> docstring, Function_sp body);
+
+
 };
 
 #endif /* _singleDispatchMethod_H_ */

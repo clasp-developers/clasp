@@ -77,19 +77,19 @@ namespace core {
 
 const int Class_O::NumberOfClassSlots;
 
-#define ARGS_af_inheritDefaultAllocator "(class directSuperclasses)"
-#define DECL_af_inheritDefaultAllocator ""
-#define DOCS_af_inheritDefaultAllocator "inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time"
-void af_inheritDefaultAllocator(Class_sp cl, T_sp directSuperclasses) {
+LAMBDA(class directSuperclasses);
+DECLARE();
+DOCSTRING("inheritDefaultAllocator - make this a regular function so that there are no dispatching problems at boot time");
+CL_DEFUN void core__inherit_default_allocator(Class_sp cl, T_sp directSuperclasses) {
   _G();
-  //        printf("%s:%d In af_inheritDefaultAllocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
+  //        printf("%s:%d In core__inherit_default_allocator for class: %s direct-superclasses: %s\n",__FILE__,__LINE__, _rep_(cl).c_str(), _rep_(directSuperclasses).c_str());
   cl->inheritDefaultAllocator(directSuperclasses);
 };
 
-#define ARGS_af_allocateRawClass "(original meta-class slots &optional name)"
-#define DECL_af_allocateRawClass ""
-#define DOCS_af_allocateRawClass "allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O."
-T_sp af_allocateRawClass(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
+LAMBDA(original meta-class slots &optional name);
+DECLARE();
+DOCSTRING("allocateRawClass - behaves like ECL instance::allocate_raw_instance, The allocator for the new class is taken from (allocatorPrototype).  If (allocatorPrototype) is nil then use the allocator for Instance_O.");
+CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, Class_sp metaClass, int slots, T_sp className) {
   _G();
   if (orig.notnilp()) {
     SIMPLE_ERROR(BF("Deal with non-nil orig class in allocateRawClass"));
@@ -306,7 +306,7 @@ void Class_O::lowLevel_calculateClassPrecedenceList() {
   HashTableEq_sp supers = HashTableEq_O::create_default();
   VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
-  vector<list<int>> graph(cl_length(arrayedSupers));
+  vector<list<int>> graph(cl__length(arrayedSupers));
 
   class TopoSortSetup : public KeyValueMapper {
   private:
@@ -333,7 +333,7 @@ void Class_O::lowLevel_calculateClassPrecedenceList() {
   supers->lowLevelMapHash(&topoSortSetup);
 #ifdef DEBUG_ON
   {
-    for (size_t zi(0), ziEnd(cl_length(arrayedSupers)); zi < ziEnd; ++zi) {
+    for (size_t zi(0), ziEnd(cl__length(arrayedSupers)); zi < ziEnd; ++zi) {
       stringstream ss;
       ss << (BF("graph[%d/name=%s] = ") % zi % arrayedSupers->operator[](zi).as<Class_O>()->instanceClassName()).str();
       for (list<int>::const_iterator it = graph[zi].begin(); it != graph[zi].end(); it++) {
@@ -445,7 +445,7 @@ void Class_O::addInstanceBaseClass(Symbol_sp className) {
 
 void Class_O::setInstanceBaseClasses(List_sp classes) {
   _OF();
-  this->instanceSet(REF_DIRECT_SUPERCLASSES, cl_copyList(classes));
+  this->instanceSet(REF_DIRECT_SUPERCLASSES, cl__copy_list(classes));
   this->lowLevel_calculateClassPrecedenceList();
 }
 
@@ -556,10 +556,10 @@ void Class_O::__setupStage3NameAndCalculateClassPrecedenceList(Symbol_sp classNa
   this->lowLevel_calculateClassPrecedenceList();
 }
 
-#define ARGS_af_subclassp "(low high)"
-#define DECL_af_subclassp ""
-#define DOCS_af_subclassp "subclassp"
-bool af_subclassp(T_sp low, T_sp high) {
+LAMBDA(low high);
+DECLARE();
+DOCSTRING("subclassp");
+CL_DEFUN bool core__subclassp(T_sp low, T_sp high) {
   _G();
   if (low == high)
     return true;
@@ -582,11 +582,8 @@ void Class_O::exposeCando(Lisp_sp lisp) {
       //	SYMBOL_SC_(CorePkg,makeSureClosClassSlotsMatchClass);
       //	Defun(makeSureClosClassSlotsMatchClass);
       SYMBOL_SC_(CorePkg, subclassp);
-  Defun(subclassp);
   SYMBOL_SC_(CorePkg, allocateRawClass);
-  Defun(allocateRawClass);
   SYMBOL_EXPORT_SC_(CorePkg, inheritDefaultAllocator);
-  Defun(inheritDefaultAllocator);
 }
 void Class_O::exposePython(Lisp_sp lisp) {
   _G();

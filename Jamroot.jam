@@ -5,7 +5,11 @@ import bitcode ;
 
 CLASP_VERSION = [ SHELL "(cd $CLASP_HOME;git describe --always | tr -d '\n') || echo unknown-version" ] ;
 
+LLVM_CONFIG = [ os.environ LLVM_CONFIG ] ;
+LLVM_VERSION = [ SHELL "($LLVM_CONFIG --version | tr -d '\n') || echo unknown-version" ] ;
+
 echo "CLASP_VERSION " $(CLASP_VERSION) ;
+echo "LLVM_VERSION " $(LLVM_VERSION) ;
 
 
 using clang : : [ os.environ CLASP_CLANG_PATH ] ;
@@ -22,6 +26,7 @@ feature.compose <gc>mps-prep : <define>USE_MPS <define>RUNNING_GC_BUILDER ;  # u
 ###
 ### Build clasp or cando
 ###
+
 feature.feature program : clasp cando
                 : symmetric composite propagated link-incompatible ;
 feature.compose <program>clasp : <define>PROGRAM_CLASP <define>APPLICATION_CONFIG="\"<clasp/main/application.config>\"" ;
@@ -72,6 +77,7 @@ project clasp : requirements
         <toolset>clang-linux:<cxxflags>"-ferror-limit=999"
         <define>CLASP_GIT_COMMIT="\\\"$(GIT_COMMIT)\\\""
         <define>CLASP_VERSION="\\\"$(CLASP_VERSION)\\\""
+        <define>LLVM_VERSION="\\\"$(LLVM_VERSION)\\\""
         <program>cando:<include>projects/cando/include
         <cxxflags>"-Wno-attributes -Wno-null-conversion"
         <target-os>linux:<cxxflags>"-fPIC"
@@ -274,8 +280,8 @@ use-project internals/clbind : src/clbind ;
 use-project internals/serveEvent : src/serveEvent ;
 use-project internals/lisp : src/lisp ;
 use-project internals/main : src/main ;
-
-
+use-project internals/include/clasp : include/clasp ;
+use-project internals/src : src ;
 
 
 ## If using cando

@@ -98,8 +98,8 @@ void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimen
 }
 
 void VectorObjects_O::fillInitialContents(T_sp ic) {
-  if (cl_length(ic) != this->dimension())
-    SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl_length(ic) % this->dimension());
+  if (cl__length(ic) != this->dimension())
+    SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl__length(ic) % this->dimension());
   if (Cons_sp ccInitialContents = ic.asOrNull<Cons_O>()) {
     List_sp cInitialContents = ccInitialContents;
     size_t i = 0;
@@ -186,7 +186,7 @@ T_sp VectorObjects_O::rowMajorAref(cl_index idx) const {
 }
 
 gc::Fixnum VectorObjects_O::arrayRowMajorIndex(List_sp indices) const {
-  ASSERTF(cl_length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices));
+  ASSERTF(cl__length(indices) == 1, BF("Vectors have only one dimension - you passed indices %s") % _rep_(indices));
   return unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices)));
 }
 
@@ -200,7 +200,7 @@ T_sp VectorObjects_O::elt(int index) const {
 
 T_sp VectorObjects_O::aref(List_sp indices) const {
   _G();
-  ASSERTF(cl_length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
+  ASSERTF(cl__length(indices) == 1, BF("Vectors only support one index - passed: %s") % _rep_(indices));
   return this->elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices))));
 }
 
@@ -212,7 +212,7 @@ T_sp VectorObjects_O::setf_elt(int index, T_sp obj) {
 
 T_sp VectorObjects_O::setf_aref(List_sp indices_val) {
   _G();
-  ASSERTF(cl_length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
+  ASSERTF(cl__length(indices_val) == 2, BF("Vectors only support one index followed by a value - passed: %s") % _rep_(indices_val));
   return this->setf_elt(clasp_to_int(gc::As<Integer_sp>(oCar(indices_val))), oCadr(indices_val));
 }
 

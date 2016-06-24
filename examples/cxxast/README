@@ -1,3 +1,0 @@
-An example by Georgiy Tugai  georgiy.tugai@gmail.com
-
-The directory entry in the compile_commands.json needs to be to reflect the final absolute path of the test.cpp file.

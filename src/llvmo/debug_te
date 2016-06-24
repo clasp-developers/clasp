@@ -1,5 +1,0 @@
-#! /bin/bash
-llvm-dis <te.bc -o=te.ll
-opt -analyze te.bc -dot-cfg
-testException/dotAll.sh cfg*.dot
-open *.svg

@@ -281,8 +281,7 @@ template <>
 struct gctools::GCInfo<core::LexicalEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::LexicalEnvironment_O);
@@ -312,8 +311,7 @@ template <>
 struct gctools::GCInfo<core::RuntimeVisibleEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::RuntimeVisibleEnvironment_O);
@@ -408,8 +406,7 @@ template <>
 struct gctools::GCInfo<core::ValueEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::ValueEnvironment_O);
@@ -457,8 +454,7 @@ template <>
 struct gctools::GCInfo<core::FunctionValueEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::FunctionValueEnvironment_O);
@@ -535,8 +531,7 @@ template <>
 struct gctools::GCInfo<core::UnwindProtectEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::UnwindProtectEnvironment_O);
 
@@ -581,8 +576,7 @@ template <>
 struct gctools::GCInfo<core::BlockEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::BlockEnvironment_O);
 
@@ -611,8 +605,7 @@ template <>
 struct gctools::GCInfo<core::CatchEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::CatchEnvironment_O);
 
@@ -650,8 +643,7 @@ template <>
 struct gctools::GCInfo<core::FunctionContainerEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::FunctionContainerEnvironment_O);
 
@@ -710,8 +702,7 @@ template <>
 struct gctools::GCInfo<core::TagbodyEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::TagbodyEnvironment_O);
 
@@ -751,8 +742,7 @@ template <>
 struct gctools::GCInfo<core::MacroletEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 TRANSLATE(core::MacroletEnvironment_O);
 
@@ -794,8 +784,7 @@ template <>
 struct gctools::GCInfo<core::SymbolMacroletEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::SymbolMacroletEnvironment_O);
@@ -838,8 +827,7 @@ template <>
 struct gctools::GCInfo<core::StackValueEnvironment_O> {
   static bool const NeedsInitialization = true;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 TRANSLATE(core::StackValueEnvironment_O);
@@ -875,12 +863,12 @@ public:
 TRANSLATE(core::GlueEnvironment_O);
 
 namespace core {
-T_sp af_environmentActivationFrame(T_sp env);
+T_sp core__environment_activation_frame(T_sp env);
 
 bool af_updateValue(T_sp env, Symbol_sp sym, T_sp val);
 
-T_mv core_lexicalFunction(T_sp sym, T_sp env);
-T_mv core_lexicalMacroFunction(T_sp sym, T_sp env);
+T_mv core__lexical_function(T_sp sym, T_sp env);
+T_mv core__lexical_macro_function(T_sp sym, T_sp env);
 };
 
 #endif //]

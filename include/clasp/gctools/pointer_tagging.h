@@ -35,8 +35,8 @@
 // (C) 2004 Christian E. Schafmeister
 //
 
-#ifndef _core_pointer_tagging_H
-#define _core_pointer_tagging_H
+#ifndef _core__pointer_tagging_H
+#define _core__pointer_tagging_H
 
 #include <boost/utility/binary.hpp>
 

@@ -133,8 +133,7 @@ template <>
 struct gctools::GCInfo<core::ValueFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
   //  static bool const InlineScan = true;
   //  static bool const Roo
 };
@@ -292,8 +291,7 @@ template <>
 struct gctools::GCInfo<core::FunctionFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
@@ -335,7 +333,7 @@ public:
 
   static FunctionFrame_sp create(List_sp args, T_sp parent) {
     _G();
-    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args), parent));
+    FunctionFrame_sp vf(FunctionFrame_O::create(cl__length(args), parent));
     //	    vf->allocateStorage(args->length());
     int idx = 0;
     for (auto cur : args) {
@@ -421,8 +419,7 @@ template <>
 struct gctools::GCInfo<core::TagbodyFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #if 0

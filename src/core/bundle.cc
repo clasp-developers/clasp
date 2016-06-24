@@ -201,6 +201,10 @@ void Bundle::findSubDirectories(boost_filesystem::path rootDir) {
         this->_DatabasesDir = dirs->path();
       } else if (leaf == "lib" && (this->_LibDir.empty() || (dirsSize < this->_LibDir.string().size()))) {
         this->_LibDir = dirs->path();
+      } else if (leaf == "clasp-src" && (this->_SourceDir.empty() || (dirsSize < this->_SourceDir.string().size()))) {
+        this->_SourceDir = dirs->path();
+      } else if (leaf == "include" && (this->_IncludeDir.empty() || (dirsSize < this->_IncludeDir.string().size()))) {
+        this->_IncludeDir = dirs->path();
       } else if (leaf == "lisp" && (this->_LispDir.empty() || (dirsSize < this->_LispDir.string().size()))) {
         this->_LispDir = dirs->path();
       }
@@ -222,8 +226,10 @@ string Bundle::describe() {
   ss << "Resources dir:   " << this->_ResourcesDir.string() << std::endl;
   ss << "Databases dir:   " << this->_DatabasesDir.string() << std::endl;
   ss << "Scripts dir:     " << this->_ScriptsDir.string() << std::endl;
-  ss << "Lisp dir: " << this->_LispDir.string() << std::endl;
-  ss << "Lib dir: " << this->_LibDir.string() << std::endl;
+  ss << "Lisp dir:        " << this->_LispDir.string() << std::endl;
+  ss << "Source dir:      " << this->_SourceDir.string() << std::endl;
+  ss << "Include dir:      " << this->_IncludeDir.string() << std::endl;
+  ss << "Lib dir:         " << this->_LibDir.string() << std::endl;
   return ss.str();
 }
 
@@ -264,7 +270,23 @@ Pathname_sp Bundle::getSysPathname() {
   ss << this->_LispDir.string();
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
+}
+
+Pathname_sp Bundle::getSourcePathname() {
+  stringstream ss;
+  ss << this->_SourceDir.string();
+  ss << DIR_SEPARATOR;
+  ss << "**/*.*";
+  return cl__pathname(Str_O::create(ss.str()));
+}
+
+Pathname_sp Bundle::getIncludePathname() {
+  stringstream ss;
+  ss << this->_IncludeDir.string();
+  ss << DIR_SEPARATOR;
+  ss << "**/*.*";
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getAppContentsResourcesPathname() {
@@ -277,7 +299,7 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
   ss << "Resources";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 Pathname_sp Bundle::getAppContentsPathname() {
@@ -288,7 +310,7 @@ Pathname_sp Bundle::getAppContentsPathname() {
   ss << "Contents";
   ss << DIR_SEPARATOR;
   ss << "**/*.*";
-  return cl_pathname(Str_O::create(ss.str()));
+  return cl__pathname(Str_O::create(ss.str()));
 }
 
 bf::path Bundle::getLibDir() {

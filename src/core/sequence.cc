@@ -40,10 +40,10 @@ namespace core {
 SYMBOL_EXPORT_SC_(KeywordPkg, start);
 SYMBOL_EXPORT_SC_(KeywordPkg, end);
 
-#define ARGS_cl_length "(arg)"
-#define DECL_cl_length ""
-#define DOCS_cl_length "See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs"
-uint cl_length(T_sp arg) {
+LAMBDA(arg);
+DECLARE();
+DOCSTRING("See CLHS length - works with SEQUENCES and ACTIVATION_FRAMEs");
+CL_DEFUN uint cl__length(T_sp arg) {
   if (arg.nilp()) {
     return 0;
   } else if (Cons_sp l = arg.asOrNull<Cons_O>()) {
@@ -56,12 +56,10 @@ uint cl_length(T_sp arg) {
   TYPE_ERROR(arg, cl::_sym_sequence);
 };
 
-#define ARGS_cl_elt "(sequence index)"
-#define DECL_cl_elt ""
-#define DOCS_cl_elt "elt"
-#define FILE_cl_elt __FILE__
-#define LINE_cl_elt __LINE__
-T_sp cl_elt(T_sp sequence, int index) {
+LAMBDA(sequence index);
+DECLARE();
+DOCSTRING("elt");
+CL_DEFUN T_sp cl__elt(T_sp sequence, int index) {
   _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
@@ -73,11 +71,10 @@ T_sp cl_elt(T_sp sequence, int index) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-#define DOCS_af_make_sequence "make_sequence"
-#define LOCK_af_make_sequence 0
-#define ARGS_af_make_sequence "(type size &key (initial-element nil iesp))"
-#define DECL_af_make_sequence ""
-T_mv af_make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
+LAMBDA(type size &key (initial-element nil iesp));
+DECLARE();
+DOCSTRING("make_sequence");
+CL_DEFUN T_mv cl__make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp) {
   _G();
   IMPLEMENT_MEF(BF("make-sequence"));
 #if 0
@@ -98,11 +95,10 @@ T_mv af_make_sequence(T_sp type, Fixnum_sp size, T_sp initial_element, T_sp iesp
 #endif
 };
 
-#define DOCS_cl_reverse "reverse"
-#define LOCK_cl_reverse 1
-#define ARGS_cl_reverse "(seq)"
-#define DECL_cl_reverse ""
-T_sp cl_reverse(T_sp seq) {
+LAMBDA(seq);
+DECLARE();
+DOCSTRING("reverse");
+CL_DEFUN T_sp cl__reverse(T_sp seq) {
   _G();
   if (seq.nilp()) {
     return _Nil<T_O>();
@@ -114,11 +110,10 @@ T_sp cl_reverse(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-#define ARGS_cl_nreverse "(seq)"
-#define DECL_cl_nreverse "(declare (locked))"
-#define DOCS_cl_nreverse "nreverse"
-#define LOCK_cl_nreverse 1
-T_sp cl_nreverse(T_sp seq) {
+LAMBDA(seq);
+DECLARE((declare (locked)));
+DOCSTRING("nreverse");
+CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   _G();
   if (seq.nilp()) {
     return _Nil<T_O>();
@@ -130,10 +125,10 @@ T_sp cl_nreverse(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-#define ARGS_cl_subseq "(sequence start &optional end)"
-#define DECL_cl_subseq ""
-#define DOCS_cl_subseq "subseq"
-T_sp cl_subseq(T_sp seq, int start, T_sp end) {
+LAMBDA(sequence start &optional end);
+DECLARE();
+DOCSTRING("subseq");
+CL_DEFUN T_sp cl__subseq(T_sp seq, int start, T_sp end) {
   _G();
   if (seq.nilp()) {
     if (start == 0 && (end.nilp() || (end.fixnump() && unbox_fixnum(gc::As<Fixnum_sp>(end)) == 0))) {
@@ -148,10 +143,10 @@ T_sp cl_subseq(T_sp seq, int start, T_sp end) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-#define ARGS_cl_copySeq "(seq)"
-#define DECL_cl_copySeq ""
-#define DOCS_cl_copySeq "copy_seq"
-T_sp cl_copySeq(T_sp seq) {
+LAMBDA(seq);
+DECLARE();
+DOCSTRING("copy_seq");
+CL_DEFUN T_sp cl__copy_seq(T_sp seq) {
   _G();
   if (seq.nilp()) {
     return _Nil<T_O>();
@@ -163,10 +158,10 @@ T_sp cl_copySeq(T_sp seq) {
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
 
-#define ARGS_core_setfElt "(sequence index value)"
-#define DECL_core_setfElt ""
-#define DOCS_core_setfElt "setfElt"
-T_sp core_setfElt(T_sp sequence, int index, T_sp value) {
+LAMBDA(sequence index value);
+DECLARE();
+DOCSTRING("setfElt");
+CL_DEFUN T_sp core__setf_elt(T_sp sequence, int index, T_sp value) {
   _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
@@ -180,18 +175,18 @@ T_sp core_setfElt(T_sp sequence, int index, T_sp value) {
   TYPE_ERROR(sequence, cl::_sym_sequence);
 };
 
-#define ARGS_core_eltSet "(seq index val)"
-#define DECL_core_eltSet ""
-#define DOCS_core_eltSet "eltSet"
-T_sp core_eltSet(T_sp sequence, int index, T_sp val) {
+LAMBDA(seq index val);
+DECLARE();
+DOCSTRING("eltSet");
+CL_DEFUN T_sp core__elt_set(T_sp sequence, int index, T_sp val) {
   _G();
-  return core_setfElt(sequence, index, val);
+  return core__setf_elt(sequence, index, val);
 };
 
-#define ARGS_core_setfSubseq "(sequence start end subseq)"
-#define DECL_core_setfSubseq ""
-#define DOCS_core_setfSubseq "setfSubseq"
-T_sp core_setfSubseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
+LAMBDA(sequence start end subseq);
+DECLARE();
+DOCSTRING("setfSubseq");
+CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
   _G();
   if (sequence.nilp()) {
     TYPE_ERROR(sequence, cl::_sym_sequence);
@@ -222,33 +217,23 @@ T_sp core_setfSubseq(T_sp sequence, int start, Fixnum_sp end, T_sp subseq) {
 
 void initialize_sequence() {
   SYMBOL_EXPORT_SC_(CorePkg, setfElt);
-  CoreDefun(setfElt);
 
   SYMBOL_EXPORT_SC_(CorePkg, eltSet);
-  CoreDefun(eltSet);
 
-  ClDefun(elt);
 
   SYMBOL_EXPORT_SC_(CorePkg, setfSubseq);
-  CoreDefun(setfSubseq);
 
   SYMBOL_EXPORT_SC_(ClPkg, make_sequence);
-  Defun(make_sequence);
 
   SYMBOL_EXPORT_SC_(ClPkg, reverse);
-  ClDefun(reverse);
 
   SYMBOL_EXPORT_SC_(ClPkg, nreverse);
-  ClDefun(nreverse);
 
   SYMBOL_EXPORT_SC_(ClPkg, subseq);
-  ClDefun(subseq);
 
   SYMBOL_EXPORT_SC_(ClPkg, copySeq);
-  ClDefun(copySeq);
 
   SYMBOL_EXPORT_SC_(ClPkg, length);
-  ClDefun(length);
 }
 
 #if 0
@@ -286,7 +271,7 @@ size_t_pair sequenceStartEnd(const char *file, uint line, const char *functionNa
                              T_sp sequence, Fixnum_sp start, T_sp end) {
   size_t_pair p;
   size_t l;
-  p.length = l = cl_length(sequence);
+  p.length = l = cl__length(sequence);
   unlikely_if(!af_fixnumP(start) || clasp_minusp(start)) {
     af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
                        kw::_sym_start, start, cl::_sym_UnsignedByte);

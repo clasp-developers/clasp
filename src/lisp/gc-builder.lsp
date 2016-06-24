@@ -4194,8 +4194,6 @@ I think this is handled by the classify-XXXXX functions for gcobjects, globals, 
                      (ecase var-kind
                        (:global nil) ;; not recognized here - see setup-global-variable-search
                        (:static-local
-                        (if (string= key "_staticObj@/Users/meister/Development/cando/clasp/src/asttooling/testAST.cc:16:13")
-                            (break "Caught static var"))
                         (setf (gethash key hash-table)
                               (make-static-local-variable :location location
                                                           :name varname

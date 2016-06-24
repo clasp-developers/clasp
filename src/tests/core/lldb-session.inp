@@ -1,5 +1,0 @@
-run
-(load "dwarf2.bundle")
-(gdb)
-image dump line-table dwarf2.lsp
-quit

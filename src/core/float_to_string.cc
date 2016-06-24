@@ -28,7 +28,7 @@ _clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
   if (buffer.nilp()) {
     buffer = StrWithFillPtr_O::create(' ', length, 0, true);
 #if 0
-	    buffer = core_make_vector(cl::_sym_base_char, clasp_make_fixnum(length),
+	    buffer = core__make_vector(cl::_sym_base_char, clasp_make_fixnum(length),
 				      _lisp->_true() /* adjustable */,
 				      clasp_make_fixnum(0) /* fill pointer */,
 				      _Nil<T_O>() /* displacement */,
@@ -94,7 +94,7 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
   if (e != 'e' || exp != 0) {
     StrWithFillPtr_sp sbuffer = gc::As<StrWithFillPtr_sp>(buffer);
     sbuffer->pushCharExtend(e);
-    core_integerToString(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
+    core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
                          false, false);
   }
 }
@@ -110,8 +110,8 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
     T_sp s = eval::funcall(ext::_sym_float_infinity_string, number);
     return push_base_string(buffer_or_nil, s);
   }
-  base = cl_length(buffer_or_nil);
-  T_mv mv_exp = core_float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
+  base = cl__length(buffer_or_nil);
+  T_mv mv_exp = core__float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
   T_sp exp = mv_exp;
   StrWithFillPtr_sp buffer = gc::As<StrWithFillPtr_sp>(mv_exp.second());
   e = clasp_to_fixnum(exp);
