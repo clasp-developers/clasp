@@ -52,13 +52,36 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
 };
 
 CL_PKG_NAME(CorePkg,make-bignum);
-CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
+CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string)
+{
   GC_ALLOCATE(Bignum_O, bn);
   bn->_value = value_in_string;
   return ((bn));
 };
 
-Bignum Bignum_O::as_mpz_() const {
+string Bignum_O::valueAsString() const
+{
+  stringstream      ss;
+  int               ibase = 10;
+  char            * buffer = NULL;
+
+  buffer = mpz_get_str( NULL, ibase, this->_value.get_mpz_t() );
+
+  return string( buffer );
+};
+
+string Bignum_O::description() const
+{
+  return this->valueAsString();
+};
+
+string Bignum_O::__repr__() const
+{
+  return this->valueAsString();
+};
+
+Bignum Bignum_O::as_mpz_() const
+{
   return ((this->_value));
 }
 
@@ -170,12 +193,6 @@ Integer_sp Bignum_O::shift_(gc::Fixnum bits) const {
     mpz_mul_2exp(res.get_mpz_t(), this->_value.get_mpz_t(), bits);
   }
   return Integer_O::create(res);
-}
-
-string Bignum_O::__repr__() const {
-  stringstream ss;
-  ss << this->_value;
-  return ((ss.str()));
 }
 
 Bignum Bignum_O::get() const {
