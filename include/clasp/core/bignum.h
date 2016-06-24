@@ -34,8 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/bignum.fwd.h>
 #include "clasp/core/numberToString.h"
 
-namespace core
-{
+namespace core {
 
   struct BignumExportBuffer {
   BignumExportBuffer() : buffer(NULL), bufferSize(0){};

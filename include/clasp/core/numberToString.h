@@ -30,8 +30,8 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/strWithFillPtr.h>
 
-namespace core
-{
+namespace core {
+
   StrWithFillPtr_sp core__integer_to_string( StrWithFillPtr_sp buffer, Integer_sp integer,
                                              Fixnum_sp base, bool radix, bool decimalp);
 
