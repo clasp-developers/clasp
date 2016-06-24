@@ -27,12 +27,12 @@ THE SOFTWARE.
 #define DEBUG_LEVEL_FULL
 
 #include <boost/format.hpp>
+#include <clasp/core/bignum.h>
 #include <clasp/core/common.h>
-#include <clasp/core/numbers.h>
-#include <clasp/core/symbol.h>
 #include <clasp/core/conditions.h>
 #include <clasp/core/hashTable.h>
-#include <clasp/core/bignum.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/symbol.h>
 #include <clasp/core/wrappers.h>
 
 namespace core {
@@ -51,7 +51,7 @@ unsigned int *BignumExportBuffer::getOrAllocate(const mpz_class &bignum, int nai
   return this->buffer;
 };
 
-CL_PKG_NAME(CorePkg,make-bignum);
+CL_PKG_NAME(CorePkg, make-bignum);
 CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
   GC_ALLOCATE(Bignum_O, bn);
   bn->_value = value_in_string;
@@ -59,13 +59,21 @@ CL_DEFUN Bignum_sp Bignum_O::make(const string &value_in_string) {
 };
 
 string Bignum_O::valueAsString() const {
-  stringstream      ss;
-  int               ibase = 10;
-  char            * buffer = NULL;
+  stringstream ss;
+  int ibase = 10;
+  char *buffer = NULL;
+  std::string result;
 
-  buffer = mpz_get_str( NULL, ibase, this->_value.get_mpz_t() );
+  buffer = mpz_get_str(NULL, ibase, this->_value.get_mpz_t());
 
-  return string( buffer );
+  if (buffer != NULL) {
+    result = buffer;
+    free(buffer);
+  } else {
+    SIMPLE_ERROR(BF("Could not convert Bignum to String"));
+  }
+
+  return result;
 };
 
 string Bignum_O::description() const {
@@ -195,12 +203,12 @@ Bignum Bignum_O::get() const {
 }
 
 #if 0
-    Number_sp Bignum_O::copy() const
-    {
-        GC_ALLOCATE(Bignum_O,cp );
-        cp->_value = this->_value;
-	return((cp));
-    };
+  Number_sp Bignum_O::copy() const
+  {
+    GC_ALLOCATE(Bignum_O,cp );
+    cp->_value = this->_value;
+    return((cp));
+  };
 #endif
 
 Number_sp Bignum_O::abs_() const {
@@ -219,16 +227,11 @@ bool Bignum_O::eql_(T_sp o) const {
 }
 
 #if 0
-    bool Bignum_O::eqn(T_sp o) const
-    {
-	return((this->eql(o)));
-    }
+  bool Bignum_O::eqn(T_sp o) const
+  {
+    return((this->eql(o)));
+  }
 #endif
-
-
-
-
-
 
 Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b) {
   Bignum mpzq, mpzr;
