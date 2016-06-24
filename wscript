@@ -22,7 +22,7 @@ class variant():
     stage = 0
     def common_setup(self,cfg):
         cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name)
-        
+
 def configure_clasp(cfg,variant):
     include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir) #__class__.__name__)
     print("Including from %s" % include_path )
@@ -30,7 +30,7 @@ def configure_clasp(cfg,variant):
     cfg.define("EXECUTABLE_NAME",variant.executable_name)
     cfg.define("BITCODE_NAME",variant.bitcode_name)
     cfg.define("VARIANT_NAME",variant.variant_name)
-    
+
 class boehm_o(variant):
     variant_dir = 'boehm_o'
     variant_name = 'boehm'
@@ -45,6 +45,7 @@ class boehm_o(variant):
         cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
+        cfg.env.append_value('LINKFLAGS', ['-lgmp'])
         self.common_setup(cfg)
         cfg.write_config_header('%s/config.h'%self.variant_dir, remove=True)
     def install(self):
@@ -84,6 +85,7 @@ class boehmdc_o(variant):
         cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
         cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
         cfg.env.append_value('LINKFLAGS', ['-lgc'])
+        cfg.env.append_value('LINKFLAGS', ['-lgmp'])
         self.common_setup(cfg)
         cfg.write_config_header('boehmdc_o/config.h', remove=True)
     def install(self):
@@ -127,7 +129,7 @@ class mpsprep_o(variant):
         cfg.write_config_header('mpsprep_o/config.h', remove=True)
     def install(self):
         return self.executable_name
-        
+
 class mpsprep_d(variant):
     variant_dir = 'mpsprep_d'
     variant_name = 'mpsprep'
@@ -358,7 +360,7 @@ def build(bld):
     print("Building with variant = %s" % variant)
     bld.program(source=source_files,target=[clasp_executable,lto_debug_info])
     bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name), variant.executable_name, chmod=Utils.O755)
-        
+
 #        files = lisp_source_files(clasp_executable.abspath(),"aclasp")
 #        print("aclasp source files: %s" % files)
 #        if (variant.stage>=0):
@@ -392,7 +394,7 @@ class preprocess(Task.Task):
 
     def keyword(ctx):
         return "Preprocessing"
-    
+
 class sif(Task.Task):
     clasp_home = os.getenv("CLASP_HOME")
     run_str = 'generate-one-sif ${SRC[0].abspath()} ${TGT[0].abspath()}'
@@ -481,4 +483,3 @@ def init(ctx):
 	for x in VARIANTS:
             var = 'build_'+x
 	    waflib.Options.commands.insert(0, var)
-
