@@ -18,3 +18,5 @@ boost_build_v2/engine/bootstrap
 build/
 projects/
 build2/
+plugin_headers.h
+wbuild

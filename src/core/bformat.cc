@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -69,7 +69,7 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
       } else if (core__bignump(fobj)) {
         Bignum_sp flli = gc::As<Bignum_sp>(fobj);
         stringstream ss;
-        ss << clasp_to_mpz(flli);
+        ss << flli->valueAsString();
         fmter % ss.str();
       } else if (core__simple_string_p(fobj)) {
         Str_sp ftext = gc::As<Str_sp>(fobj);
