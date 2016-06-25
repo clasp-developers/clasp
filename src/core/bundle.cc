@@ -28,7 +28,9 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 
 
-#define DEBUG_BUNDLE
+//#define DEBUG_DESC_BUNDLE
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -113,7 +115,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   bf::path curPath = appDir;
   // Climb up one level
   this->_Directories->_ExecutableDir = curPath;
-#ifdef DEBUG_BUNDLE
+#ifdef DEBUG_DESC_BUNDLE
   printf("%s:%d Bundle::initialize raw_argv0: %s\n", __FILE__, __LINE__, raw_argv0.c_str());
   printf("%s:%d Bundle::initialize argv0: %s\n", __FILE__, __LINE__, argv0.c_str());
   printf("%s:%d    _ExecutableDir = %s\n", __FILE__, __LINE__, this->_Directories->_ExecutableDir.string().c_str());
@@ -128,7 +130,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   if (bf::exists(srcPath)) {
     this->_Directories->_CxxBitcodeDir = this->_Directories->_ExecutableDir;
-#ifdef DEBUG_BUNDLE
+#ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Looking for Content subdirectories for building\n", __FILE__, __LINE__ );
 #endif
     this->findContentSubDirectories(srcPath);
@@ -139,7 +141,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     // While building generated is within the executable directory
     this->_Directories->_LispGeneratedDir = this->_Directories->_ExecutableDir / "generated";
   } else {
-#ifdef DEBUG_BUNDLE
+#ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
 #endif
 //  this->_Directories->_RootDir = curPath;
@@ -149,7 +151,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     this->findContentSubDirectories(one_up_contents);
     this->fillInMissingPaths();
   }
-#ifdef DEBUG_BUNDLE
+#ifdef DEBUG_DESC_BUNDLE
   printf("%s\n", this->describe().c_str());
   printf("%s:%d Aborting for now\n", __FILE__, __LINE__ );
 #endif

@@ -126,12 +126,32 @@ CxxFunctionInvocationLogger::~CxxFunctionInvocationLogger() {
   _lisp->debugLog().endNode(DEBUG_CPP_FUNCTION);
 };
 
+size_t global_signal_simple_error_depth = 0;
+
+struct SignalSimpleErrorTrap {
+  SignalSimpleErrorTrap() {
+    global_signal_simple_error_depth++;
+  }
+  ~SignalSimpleErrorTrap() {
+    global_signal_simple_error_depth--;
+  }
+};
+    
+
 CL_LAMBDA(base-condition continue-message format-control format-args &rest args);
 CL_DECLARE();
 CL_DOCSTRING("signalSimpleError");
 CL_DEFUN T_sp core__signal_simple_error(T_sp baseCondition, T_sp continueMessage, T_sp formatControl, T_sp formatArgs, T_sp args) {
+  SignalSimpleErrorTrap depth;
   printf("%s:%d core__signal_simple_error  caught because signal-simple-error is not installed yet\n", __FILE__, __LINE__);
-  printf("%s\n", _rep_(baseCondition).c_str());
+  printf("%s:%d baseCondition: %s\n", __FILE__, __LINE__, _rep_(baseCondition).c_str());
+  printf("%s:%d formatControl: %s\n", __FILE__, __LINE__, _rep_(formatControl).c_str());
+  printf("%s:%d    formatArgs: %s\n", __FILE__, __LINE__, _rep_(formatArgs).c_str());
+  if ( global_signal_simple_error_depth > 3 ) {
+    printf("%s:%d    signal-simple-error depth is %zu - aborting\n", __FILE__, __LINE__, global_signal_simple_error_depth );
+    abort();
+  }
+  printf("%s:%d  About to try and FORMAT the error\n", __FILE__, __LINE__);
   cl__format(_lisp->_true(), formatControl, formatArgs);
   dbg_hook("core__signal_simple_error");
   core__invoke_internal_debugger(_Nil<core::T_O>());
