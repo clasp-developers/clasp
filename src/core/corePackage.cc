@@ -170,6 +170,7 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
+SYMBOL_EXPORT_SC_(CorePkg,fiddle_faddle);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
