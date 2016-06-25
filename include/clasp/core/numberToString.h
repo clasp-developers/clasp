@@ -35,8 +35,8 @@ namespace core {
   StrWithFillPtr_sp core__integer_to_string( StrWithFillPtr_sp buffer, Integer_sp integer,
                                              Fixnum_sp base, bool radix, bool decimalp);
 
-  StrWithFillPtr_sp core__bignum_to_string( StrWithFillPtr_sp, Bignum_sp,
-                                            Fixnum_sp );
+  // StrWithFillPtr_sp core__bignum_to_string( StrWithFillPtr_sp, Bignum_sp,
+  //                                          Fixnum_sp );
 
 };
 #endif

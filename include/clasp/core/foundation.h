@@ -37,13 +37,16 @@ THE SOFTWARE.
 #ifdef USE_BOEHM
 //#define USE_BOEHM_MEMORY_MARKER
 #endif
-#ifndef APPLICATION_CONFIG
-//#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
+
 #define APPLICATION_CONFIG <application.config>
+
+#if !defined( APPLICATION_CONFIG )
+#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
 #endif
 
 // Load the waf config file
 #include <config.h>
+
 /*! Configure the application Clasp or Cando currently */
 #include APPLICATION_CONFIG
 
