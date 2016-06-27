@@ -197,7 +197,8 @@ public:
 //
 // Constructor
 //
-Lisp_O::GCRoots::GCRoots() : _BufferStringPool(_Nil<T_O>()),
+Lisp_O::GCRoots::GCRoots() :
+  // _BufferStringPool(_Nil<T_O>()),
                              _MultipleValuesCur(NULL),
                              _BignumRegister0(_Unbound<Bignum_O>()),
                              _BignumRegister1(_Unbound<Bignum_O>()),
@@ -577,12 +578,18 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 /*! Get a buffer string from the BufferStringPool */
 StrWithFillPtr_sp Lisp_O::get_buffer_string() {
   /* BufferStringPool must be thread local */
-  if (this->_Roots._BufferStringPool.nilp()) {
+  if (!my_thread->_BufferStringPool) {
+    // Lazy initialize
+    my_thread->_BufferStringPool = _Nil<T_O>();
     StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true);
-    this->_Roots._BufferStringPool = Cons_O::create(one, _Nil<T_O>());
+    my_thread->_BufferStringPool = Cons_O::create(one, my_thread->_BufferStringPool);
+  } else if (my_thread->_BufferStringPool.nilp()) {
+    // If list is empty, link in a buffer
+    StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true);
+    my_thread->_BufferStringPool = Cons_O::create(one, my_thread->_BufferStringPool);
   }
-  StrWithFillPtr_sp ret = gc::As<StrWithFillPtr_sp>(oCar(this->_Roots._BufferStringPool));
-  this->_Roots._BufferStringPool = oCdr(this->_Roots._BufferStringPool);
+  StrWithFillPtr_sp ret = gc::As<StrWithFillPtr_sp>(oCar(my_thread->_BufferStringPool));
+  my_thread->_BufferStringPool = oCdr(my_thread->_BufferStringPool);
   ret->setFillPointer(0);
   return ret;
 }
@@ -590,7 +597,7 @@ StrWithFillPtr_sp Lisp_O::get_buffer_string() {
 /*! Return a buffer string to the BufferStringPool
 */
 void Lisp_O::put_buffer_string(StrWithFillPtr_sp str) {
-  this->_Roots._BufferStringPool = Cons_O::create(str, this->_Roots._BufferStringPool);
+  my_thread->_BufferStringPool = Cons_O::create(str, my_thread->_BufferStringPool);
 }
 
 ReadTable_sp Lisp_O::getCurrentReadTable() {

@@ -157,13 +157,13 @@ void StructureObject_O::__write__(T_sp stream) const {
 }
 
 void Integer_O::__write__(T_sp stream) const {
-  StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
+  SafeBuffer buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer, this->const_sharedThis<Integer_O>(),
+  core__integer_to_string(buffer._Buffer, this->const_sharedThis<Integer_O>(),
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl__write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
 #if 0 // working
@@ -419,21 +419,21 @@ void Integer_O::__write__(T_sp stream) const {
 
 void
 _clasp_write_fixnum(gctools::Fixnum i, T_sp stream) {
-  StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
-  core__integer_to_string(buffer,
+  SafeBuffer buffer;
+  core__integer_to_string(buffer._Buffer,
                        clasp_make_fixnum(i), clasp_make_fixnum(clasp_print_base()), cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(), true);
-  cl__write_sequence(buffer, stream, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, stream, make_fixnum(0), _Nil<T_O>());
 }
 
 void write_fixnum(T_sp strm, T_sp i) {
   Fixnum_sp fn = gc::As<Fixnum_sp>(i);
-  StrWithFillPtr_sp buffer = StrWithFillPtr_O::createBufferString(128);
+  SafeBuffer buffer;
   int print_base = clasp_print_base();
-  core__integer_to_string(buffer, fn,
+  core__integer_to_string(buffer._Buffer, fn,
                        make_fixnum(print_base),
                        cl::_sym_STARprint_radixSTAR->symbolValue().isTrue(),
                        true);
-  cl__write_sequence(buffer, strm, make_fixnum(0), _Nil<T_O>());
+  cl__write_sequence(buffer._Buffer, strm, make_fixnum(0), _Nil<T_O>());
 }
 
 void write_single_float(T_sp strm, SingleFloat_sp i) {

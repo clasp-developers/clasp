@@ -209,7 +209,8 @@ class Lisp_O {
   struct GCRoots //: public gctools::HeapRoot
       {
     //! A pool of strings for string manipulation - must be per thread
-    List_sp _BufferStringPool;
+        // Now it's in my_thread
+//    List_sp _BufferStringPool;
     /*! The invocation history stack this should be per thread */
         //InvocationHistoryStack _InvocationHistoryStack;
         //ExceptionStack _ExceptionStack;
@@ -984,6 +985,21 @@ public:
   virtual ~Lisp_O(){};
 };
 
+
+ /*! Use RAII to safely allocate a buffer */
+ 
+struct SafeBuffer {
+  StrWithFillPtr_sp _Buffer;
+  SafeBuffer() {
+    this->_Buffer = _lisp->get_buffer_string();
+  };
+  ~SafeBuffer() {
+    _lisp->put_buffer_string(this->_Buffer);
+  };
+};
+
+
+ 
 /*! Scoped change of lisp mode */
 class PushLispMode {
 private:

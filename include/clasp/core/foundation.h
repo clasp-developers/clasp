@@ -1176,17 +1176,20 @@ namespace core {
     ThreadLocalState() {
       this->_Bindings.reserve(1024);
       this->_InvocationHistoryStack = NULL;
+      this->_BufferStringPool.reset_(); // Can't use _Nil<core::T_O>(); - too early
     };
     DynamicBindingStack _Bindings;
     InvocationHistoryFrame* _InvocationHistoryStack;
     ExceptionStack _ExceptionStack;
     MultipleValues _MultipleValues;
-
+    List_sp _BufferStringPool;
     inline core::DynamicBindingStack& bindings() { return this->_Bindings; };
     inline ExceptionStack& exceptionStack() { return this->_ExceptionStack; };
   };
 
 };
+
+
 
 /*! Should be thread_local on linux or __thread on OS X */
 #define THREAD_LOCAL

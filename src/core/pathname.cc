@@ -1811,7 +1811,7 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
 
   new_string = false;
   l = cl__length(pattern);
-  StrWithFillPtr_sp token = StrWithFillPtr_O::createBufferString();
+  SafeBuffer token;
   for (j = i = 0; i < l;) {
     size_t c = cl__char(pattern, i);
     if (c != '*') {
@@ -1819,19 +1819,19 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
       continue;
     }
     if (i != j) {
-      token->pushSubString(pattern, j, i);
+      token._Buffer->pushSubString(pattern, j, i);
     }
     new_string = true;
     if (cl__endp(wilds)) {
       return kw::_sym_error;
     }
-    token->pushString(CAR(wilds));
+    token._Buffer->pushString(CAR(wilds));
     wilds = CDR(wilds);
     j = i++;
   }
   /* Only create a new string when needed */
   if (new_string) {
-    pattern = Str_O::create(token->c_str(), token->size());
+    pattern = Str_O::create(token._Buffer->c_str(), token._Buffer->size());
   }
   //	si_put_buffer_string(token);
   *wilds_list = wilds;

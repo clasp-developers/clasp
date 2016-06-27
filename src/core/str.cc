@@ -68,6 +68,12 @@ CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_
   return make_fixnum(static_cast<int>(pos + unbox_fixnum(start2)));
 };
 
+Str_sp Str_O::create(Str_sp val) {
+  GC_ALLOCATE(Str_O, v);
+  v->set(val->c_str());
+  return v;
+}
+
 Str_sp Str_O::create(const boost::format &nm) {
   GC_ALLOCATE(Str_O, v);
   v->set(nm.str());
