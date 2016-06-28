@@ -1,3 +1,4 @@
+import sys
 import os
 import StringIO
 from waflib.extras import clang_compilation_database
@@ -17,19 +18,20 @@ GCS = [ 'boehm',
         'mps' ]
 DEBUG_CHARS = [ 'o', 'd' ]
 
-def previous_stage(ctx,s):
+def stage_value(ctx,s):
     if ( s == 'i' ):
-        sval = None
+        sval = 0
     elif ( s == 'a' ):
-        sval = 'i'
+        sval = 1
     elif ( s == 'b' ):
-        sval = 'a'
+        sval = 2
     elif ( s == 'c' ):
-        sval = 'b'
+        sval = 3
     else:
         ctx.fatal("Illegal stage: %s" % s)
     return sval
-    
+
+
 class variant():
     def executable_name(self,stage=None):
         if ( stage == None ):
@@ -387,6 +389,7 @@ def build(bld):
     if not bld.variant:
         bld.fatal('Call waf with build_variant')
     stage = bld.stage
+    stage_val = stage_value(bld,stage)
     print("Building stage --> %s" % stage)
     bld.clasp_source_files = []
     bld.recurse('src')
@@ -406,6 +409,28 @@ def build(bld):
     bld.program(source=source_files,target=[clasp_executable,lto_debug_info])
     if (bld.env['DEST_OS'] == DARWIN_OS):
         iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
+    if (stage_val >= 1):
+        print("About to add compile_aclasp")
+        cmp_aclasp = compile_aclasp(env=bld.env)
+        cmp_aclasp.set_inputs(clasp_executable)
+        aclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='a'))
+        cmp_aclasp.set_outputs(aclasp_executable)
+        bld.add_to_group(cmp_aclasp)
+        if (stage_val >= 2):
+            print("About to add compile_bclasp")
+            cmp_bclasp = compile_bclasp(env=bld.env)
+            cmp_bclasp.set_inputs(aclasp_executable)
+            bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
+            cmp_bclasp.set_outputs(bclasp_executable)
+            bld.add_to_group(cmp_bclasp)
+            if (stage_val >= 3):
+                print("About to add compile_cclasp")
+                cmp_cclasp = compile_cclasp(env=bld.env)
+                cmp_cclasp.set_inputs(bclasp_executable)
+                cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+                cmp_cclasp.set_outputs(cclasp_executable)
+                bld.add_to_group(cmp_cclasp)
+
 #        bld.program(features='dsymutil',source=[clasp_executable],target=[iclasp_dsym])
 #    bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name(stage=0), variant.executable_name, chmod=Utils.O755)
         
@@ -444,6 +469,43 @@ def add_dsymutil_task(self):
     except AttributeError:
         return
     self.create_task('dsymutil',link_task.outputs[0])
+
+class compile_aclasp(Task.Task):
+    def run(self):
+        print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
+        cmd = '%s -I -f ecl-min -N -e "(compile-aclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        print("  cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(compile_aclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Compile aclasp using... '
+
+class compile_bclasp(Task.Task):
+    def run(self):
+        print("In compile_bclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
+        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        print("  cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(compile_bclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Compile bclasp using... '
+
+class compile_cclasp(Task.Task):
+    def run(self):
+        print("In compile_cclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
+        cmd = '%s -N -e "(compile-cclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        print("  cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(compile_cclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Compile cclasp using... '
+    
 
 class llvm_link(Task.Task):
     def run(self):

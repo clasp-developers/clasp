@@ -177,6 +177,7 @@ SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);
 SYMBOL_EXPORT_SC_(ExtPkg,array_index);
 SYMBOL_EXPORT_SC_(CorePkg,index);
 SYMBOL_EXPORT_SC_(KeywordPkg,read_only);
+SYMBOL_EXPORT_SC_(KeywordPkg,interactive);
 SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);

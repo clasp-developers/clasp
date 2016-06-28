@@ -1299,11 +1299,16 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("lowLevelRepl - this is a built in repl for when the top-level repl isn't available");
 CL_DEFUN void core__low_level_repl() {
-  _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
+  List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
+  if ( features.notnilp() ) {
+    List_sp interactive = gc::As<Cons_sp>(features)->memberEq(kw::_sym_interactive);
+    if ( interactive.notnilp() ) {
+      _lisp->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
+    }
+  }
 };
 
 void Lisp_O::readEvalPrintInteractive() {
-  _OF();
   Cons_sp expression;
   //	TopLevelIHF topFrame(my_thread->invocationHistoryStack(),_Nil<T_O>());
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), _Nil<T_O>(), true, true);
