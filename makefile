@@ -248,10 +248,13 @@ mps-build:
 	make executable-symlinks
 
 
-boot:
+configure:
 	make submodules
 	make asdf
-	./waf configure build_cboehmdc_o
+	./waf configure
+
+boot:
+	./waf build_cboehmdc_o
 #	make -C src/main bclasp-boehmdc-addons
 
 boot-cclasp:
