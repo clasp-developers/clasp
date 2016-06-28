@@ -253,7 +253,7 @@ configure:
 	make asdf
 	./waf configure
 
-boot:
+cboehmdc-o:
 	./waf build_cboehmdc_o
 #	make -C src/main bclasp-boehmdc-addons
 
