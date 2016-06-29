@@ -868,6 +868,9 @@ a relative path from there."
     :all
     :bclasp
     #'add-cleavir-build-files
+    :pre-addons
+    #P"modules/serve-event/serve-event"
+    #P"modules/asdf/build/asdf"
     #'maybe-insert-epilogue-cclasp
     :cclasp
 ;;    lsp;pprint
@@ -1235,7 +1238,7 @@ Return files."
                  :lisp-bitcode-files (list (core:build-pathname #P"modules/serve-event/serve-event" :bc)))
   (cmp:llvm-link (core:build-pathname #P"modules/asdf/asdf" :fasl)
                  :lisp-bitcode-files (list (core:build-pathname #P"modules/asdf/build/asdf" :bc))))
-
+(export '(compile-addons link-addons))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Setup the build system for SICL
