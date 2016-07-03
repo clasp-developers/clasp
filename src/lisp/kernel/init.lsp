@@ -672,13 +672,17 @@ a relative path from there."
 
 (defun out-of-date-executable (executable source-files)
   (let* ((last-source (car (reverse source-files)))
+         (cxx-bitcode (build-intrinsics-bitcode-pathname :executable))
          (last-bitcode (build-pathname (entry-filename last-source) :bc))
          (executable-file executable))
-    (format t "last-bitcode: ~a~%" last-bitcode)
-    (format t "executable-file: ~a~%" executable-file)
+    #+(or)(progn
+            (format t "last-bitcode: ~a~%" last-bitcode)
+            (format t "executable-file: ~a~%" executable-file))
     (if (probe-file executable-file)
-        (> (file-write-date last-bitcode)
-           (file-write-date executable-file))
+        (or (> (file-write-date last-bitcode)
+               (file-write-date executable-file))
+            (> (file-write-date cxx-bitcode)
+               (file-write-date executable-file)))
         t)))
 
 (defun compile-kernel-file (entry &key (reload nil) load-bitcode (force-recompile nil) counter total-files)

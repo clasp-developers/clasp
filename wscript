@@ -490,10 +490,17 @@ def build(bld):
                 cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                 cmp_cclasp.set_outputs(cclasp_executable)
                 bld.add_to_group(cmp_cclasp)
-
+    print("bld.__dict__.keys() = %s" % bld.__dict__.keys() )
+    print("bld.path = %s" % bld.path)
+    print("out = %s" % out)
+    print(" variant.variant_dir() = %s" % variant.variant_dir())
+    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
+    print("contents_path = %s" % contents_path)
+    print("Contents/**/*.* = %s" % contents_path.ant_glob('**/*.*'))
+    bld.install_files('${PREFIX}/Contents/',contents_.ant_glob('**/*.*'))
 #        bld.program(features='dsymutil',source=[clasp_executable],target=[iclasp_dsym])
 #    bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name(stage=0), variant.executable_name, chmod=Utils.O755)
-        
+      
 #        files = lisp_source_files(clasp_executable.abspath(),"aclasp")
 #        print("aclasp source files: %s" % files)
 #        if (variant.stage>=0):
@@ -653,11 +660,6 @@ def preprocess_task_generator(self):
     library_node = self.path.find_or_declare('%s-all.lbc' % variant.bitcode_name() )
     intrinsics_library_name = '%s-intrinsics.lbc' % variant.bitcode_name()
     intrinsics_library_node = self.path.find_or_declare(intrinsics_library_name)
-    print("intrinsics_library_name = %s" % intrinsics_library_name)
-    print("library_node = %s" % library_node.abspath())
-    print("all_o_files = %s" % all_o_files)
-    print("intrinsics_o = %s" % intrinsics_o)
-    print("intrinsics_library_node = %s" % intrinsics_library_node)
     self.create_task('link_bitcode',all_o_files,library_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_library_node)
 
