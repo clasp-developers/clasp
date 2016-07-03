@@ -141,8 +141,6 @@
          (ext:run-clang `(,@options
                           ,@all-names
                           #+(or)"-v"
-                          "-flto"
-                          "-Wl,-export_dynamic"
                           ,@link-flags
                           ,(bformat nil "-Wl,-lto_library,%s/libLTO.%s" link-lib-path library-extension)
                           ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
@@ -153,12 +151,7 @@
          ;; Linux needs to use clang to link
          (ext:run-clang `(,@options
                           ,@all-names
-                          "-v"
-                          "-flto"
-                          "-Wl,-export_dynamic"
                           ,@link-flags
-                          ,(bformat nil "-Wl,-lto_library,%s/libLTO.%s" link-lib-path library-extension)
-                          ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
                           "-o"
                           ,exec-file)
                         :output-file-name exec-file))

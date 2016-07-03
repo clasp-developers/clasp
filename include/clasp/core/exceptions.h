@@ -210,7 +210,7 @@ private:
 public:
   CatchThrow(int frame) : _Frame(frame){};
   int getFrame() { return this->_Frame; };
-  ATTR_WEAK virtual ~CatchThrow(){};
+  /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
 #else
 #pragma GCC visibility push(default)
@@ -228,7 +228,7 @@ public:
   }
   ~T_sp getThrownTag() { return this->_ThrownTag; };
   T_mv getReturnedObject() { return this->_ReturnedObject; };
-  ATTR_WEAK virtual ~CatchThrow(){};
+  /*ATTR_WEAK*/ virtual ~CatchThrow(){};
 };
 #endif
 
@@ -243,7 +243,7 @@ public:
     this->_Frame = frame;
   }
   int getFrame() const { return this->_Frame; };
-  ATTR_WEAK virtual ~ReturnFrom(){};
+  /*ATTR_WEAK*/ virtual ~ReturnFrom(){};
 };
 
 /*! Thrown by slot_ref when a slot_ref call fails because the symbol_name is invalid */
@@ -262,7 +262,7 @@ public:
   ATTR_WEAK LexicalGo(int frame, int index) : _Frame(frame), _Index(index){};
   int getFrame() const { return this->_Frame; };
   int index() const { return this->_Index; };
-  ATTR_WEAK virtual ~LexicalGo(){};
+  /*ATTR_WEAK*/ virtual ~LexicalGo(){};
 };
 
 class ATTR_WEAK DynamicGo //: public gctools::HeapRoot
@@ -275,7 +275,7 @@ private:
 
 public:
   ATTR_WEAK DynamicGo(size_t frame, size_t index) : _Frame(frame), _Index(index){};
-  ATTR_WEAK virtual ~DynamicGo(){};
+  /*ATTR_WEAK*/ virtual ~DynamicGo(){};
   size_t getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
 };
@@ -289,7 +289,7 @@ private:
 
 public:
   ATTR_WEAK Unwind(T_O *frame, size_t index) : _Frame(frame), _Index(index){};
-  ATTR_WEAK virtual ~Unwind(){};
+  /*ATTR_WEAK*/ virtual ~Unwind(){};
   T_O *getFrame() const { return this->_Frame; };
   size_t index() const { return this->_Index; };
 };

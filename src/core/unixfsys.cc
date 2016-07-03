@@ -36,6 +36,8 @@ THE SOFTWARE.
     See file '../Copyright' for full details.
 */
 
+#include <clasp/core/foundation.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
@@ -78,7 +80,6 @@ typedef int mode_t;
 #include <fcntl.h>
 #include <errno.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/str.h>
 #include <clasp/core/fileSystem.h>

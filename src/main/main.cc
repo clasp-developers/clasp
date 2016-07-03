@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
+
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #include <sys/resource.h>
@@ -35,7 +37,6 @@ THE SOFTWARE.
 #include <boost/mpi.hpp>
 #endif
 #include <string>
-#include <clasp/core/foundation.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>

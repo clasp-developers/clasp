@@ -497,19 +497,10 @@ a relative path from there."
            (libdir (read-line stream))
            (libdir-flag (list (bformat nil "-L%s" libdir)))
            (libs (split-at-white-space (read-line stream)))
-           (clasp-build-libraries (split-at-white-space *clasp-build-libraries*))
-           (extra-flags (list "-lcurses"
-                              "-lexpat"
-                              "-lgmp"
-                              "-lgmpxx"
-                              "-lm"
-                              "-lc++"
-                              "-Wl,-stack_size,0x1000000"
-                              "-flto"
-                              "-fvisibility=default"
-                              "-stdlib=libc++"
-                              ))
-           (link-flags (append ldflags #+(or)(list clasp-lib-dir) libdir-flag libs clasp-build-libraries extra-flags)))
+           (build-lib (split-at-white-space *build-lib*))
+           (build-stlib (split-at-white-space *build-stlib*))
+           (build-linkflags (split-at-white-space *build-linkflags*))
+           (link-flags (append ldflags #+(or)(list clasp-lib-dir) build-linkflags libdir-flag libs build-stlib build-lib)))
       (close stream)
       (if (or (member :use-boehm *features*) (member :use-boehmdc *features*))
           (setq link-flags (cons "-lgc" link-flags)))

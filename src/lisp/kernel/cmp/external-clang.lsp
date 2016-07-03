@@ -3,7 +3,7 @@
 ;;; adapted to clasp by Christian Schafmeister 2015
 
 (defun llvm-short-version ()
-  (subseq (ext:llvm-version) 0 (position #\. (ext:llvm-version) :from-end t)))
+  (ext:llvm-version))
 
 ;; don't include this if you already have a splitting function (you probably do)
 #+(or)
@@ -31,8 +31,8 @@
    (core:split var ":")))
 
 (defvar *clang-names* (list
-                       (format NIL "clang-~a" (llvm-short-version))
-                       (format NIL "clang++-~a" (llvm-short-version))
+                       (core:bformat NIL "clang-%s" (llvm-short-version))
+                       (core:bformat NIL "clang++-%s" (llvm-short-version))
                        "clang" "clang++"))
 
 (defun discover-clang (&key debug (search-paths (external-path-paths)) (names *clang-names*))
@@ -80,6 +80,12 @@
                  (setf *clang-bin* value clang value)
                  NIL))))
     (loop until (clang-usable-p)))
+  (when (member :debug-run-clang *features*)
+    (let ((cmd (with-output-to-string (sout)
+                                      (core:bformat sout "%s" (namestring clang))
+				      (dolist (arg args)
+					(core:bformat sout " %s" arg)))))
+      (core:bformat t "run-clang:  %s\n" cmd)))
   (cmp:safe-system (list* (namestring clang) args) :output-file-name output-file-name))
 
 (export 'run-clang)

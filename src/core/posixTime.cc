@@ -27,12 +27,13 @@ THE SOFTWARE.
 #undef USEBOOSTPYTHON
 #define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
+
 #ifdef _TARGET_OS_LINUX
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
 
-#include <clasp/core/common.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/multipleValues.h>

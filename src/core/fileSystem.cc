@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
+
 #include <sys/types.h>
 #include <pwd.h>
 #ifdef _TARGET_OS_LINUX
@@ -33,7 +35,6 @@ THE SOFTWARE.
 #include <uuid/uuid.h>
 #endif
 
-#include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/ql.h>

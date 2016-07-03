@@ -1090,7 +1090,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("LLVM38"), features);
 #endif
 #if (LLVM_VERSION_X100>=390)
-  #error "Remove old LLVM code and add a feature for LLVM39"
+  features = Cons_O::create(_lisp->internKeyword("LLVM39"), features);
 #endif
 #ifdef VARARGS
   features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
