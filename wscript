@@ -146,6 +146,8 @@ class variant(object):
 class boehm(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
         cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
         self.common_setup(cfg)        
     
@@ -324,18 +326,22 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Uncommenting these checks causes problems-- AttributeError: 'BuildContext' object has no attribute 'variant_obj'
+    cfg.plugins_includes = []
+    cfg.plugins_headers = []
+    cfg.plugins_stlib = []
+    cfg.plugins_lib = []
+    cfg.recurse('plugins')
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
-    cfg.check_cxx(lib='tinfo', cflags='-Wall', uselib_store='TINFO')
+    cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
     cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
-    cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM')
-    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG')
-    cfg.plugins_includes = []
-    cfg.plugins_headers = []
-    cfg.recurse('plugins')
+    clasp_release_llvm_lib_dir = os.getenv("CLASP_RELEASE_LLVM_LIB_DIR")
+    cfg.env.append_value('LINKFLAGS', "-L%s" % clasp_release_llvm_lib_dir )
+    cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM', stlibpath = clasp_release_llvm_lib_dir )
+    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = clasp_release_llvm_lib_dir )
 #    print("DEBUG cfg.plugins_includes = %s" % cfg.plugins_includes)
 #    print("DEBUG cfg.plugins_headers = %s" % cfg.plugins_headers)
     cfg.env.append_value('CXXFLAGS', ['-I./'])
@@ -343,7 +349,6 @@ def configure(cfg):
         pass
     else:
         cfg.env.append_value('CXXFLAGS', ['-I%s/include/clasp/main/'% (os.getenv("CLASP_HOME"))] )
-
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
@@ -398,8 +403,8 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', '-pthread')
     elif (cfg.env['DEST_OS'] == DARWIN_OS ):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
-        cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
+        lto_library = "%s/libLTO.%s" % (os.getenv("CLASP_RELEASE_LLVM_LIB_DIR"), os.getenv("CLASP_LIB_EXTENSION"))
         cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s" % lto_library)
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
@@ -410,20 +415,20 @@ def configure(cfg):
     cfg.env.append_value('CXXFLAGS', ['-Wno-invalid-offsetof'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-#pragma-messages'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-inconsistent-missing-override'] )
-    lto_library = "%s/libLTO.%s" % (os.getenv("CLASP_RELEASE_LLVM_LIB_DIR"), os.getenv("CLASP_LIB_EXTENSION"))
     cfg.env.append_value('LINKFLAGS', ['-flto'])
     cfg.env.append_value('LIBPATH', ['/usr/lib'])
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
     cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
     sep = " "
-    cfg.recurse('plugins')
+    cfg.env.append_value('STLIB', cfg.plugins_stlib)
+    cfg.env.append_value('LIB', cfg.plugins_lib)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
     cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
+    cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
     cfg.env.append_value('LIB', cfg.env.LIB_M)
-    cfg.env.append_value('LIB', cfg.env.LIB_TINFO)
     cfg.env.append_value('LIB', cfg.env.LIB_GMP)
     print("cfg.env.STLIB = %s" % cfg.env.STLIB)
     print("cfg.env.LIB = %s" % cfg.env.LIB)
