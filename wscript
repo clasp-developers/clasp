@@ -406,6 +406,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
         lto_library = "%s/libLTO.%s" % (os.getenv("CLASP_RELEASE_LLVM_LIB_DIR"), os.getenv("CLASP_LIB_EXTENSION"))
         cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s" % lto_library)
+        cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )

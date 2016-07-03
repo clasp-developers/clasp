@@ -142,7 +142,6 @@
                           ,@all-names
                           #+(or)"-v"
                           ,@link-flags
-                          ,(bformat nil "-Wl,-lto_library,%s/libLTO.%s" link-lib-path library-extension)
                           ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
                           "-o"
                           ,exec-file)
