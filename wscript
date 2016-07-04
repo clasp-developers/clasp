@@ -14,7 +14,7 @@ top = '.'
 out = 'wbuild'
 APPNAME = 'clasp'
 VERSION = '0.0'
-
+EXECUTABLE_DIR = os.getenv("EXECUTABLE_DIR")
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
 STAGE_CHARS = [ 'i', 'a', 'b', 'c' ]
@@ -112,7 +112,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s' % (use_stage,self.gc_name,self.debug_char)
+        return '%s%s%s-%s' % (use_stage,APPNAME,self.gc_name,self.debug_char)
     def variant_dir(self):
         return "%s_%s"%(self.gc_name,self.debug_char)
     def variant_name(self):
@@ -333,6 +333,7 @@ def configure(cfg):
     cfg.recurse('plugins')
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    cfg.check_cxx(stlib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
@@ -426,6 +427,7 @@ def configure(cfg):
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
     cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
+    cfg.env.append_value('STLIB', cfg.env.STLIB_Z)
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.env.append_value('LIB', cfg.env.LIB_DL)
     cfg.env.append_value('LIB', cfg.env.LIB_NCURSES)
@@ -441,6 +443,10 @@ def configure(cfg):
             print("Setting up variant: %s" % variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
             build_plugin_headers("%s/%s" % (cfg.bldnode,variant),cfg.plugins_headers)
+
+def copy_tree(bld,src,dest):
+    print("Copy tree src = %s" % src)
+    print("          dest= %s" % dest)
 
 def build(bld):
 #    bld(name='myInclude', export_includes=[bld.env.MY_MYSDK, 'include'])
@@ -466,7 +472,6 @@ def build(bld):
     elif (bld.env['DEST_OS'] == DARWIN_OS ):
         lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
         bld.program(source=source_files,target=[clasp_executable,lto_debug_info])
-    intrinsics_info = bld.path.find_or_declare('%s-intrinsics.lbc'%variant.bitcode_name())
     print("Building with variant = %s" % variant)
     if (bld.env['DEST_OS'] == DARWIN_OS):
         iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
@@ -477,6 +482,7 @@ def build(bld):
         aclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='a'))
         cmp_aclasp.set_outputs(aclasp_executable)
         bld.add_to_group(cmp_aclasp)
+        bld.install_as('${PREFIX}/%s/%s' % (EXECUTABLE_DIR, aclasp_executable.name), aclasp_executable)
         if (stage_val >= 2):
             print("About to add compile_bclasp")
             cmp_bclasp = compile_bclasp(env=bld.env)
@@ -491,16 +497,11 @@ def build(bld):
                 cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                 cmp_cclasp.set_outputs(cclasp_executable)
                 bld.add_to_group(cmp_cclasp)
-    print("bld.__dict__.keys() = %s" % bld.__dict__.keys() )
-    print("bld.path = %s" % bld.path)
-    print("out = %s" % out)
-    print(" variant.variant_dir() = %s" % variant.variant_dir())
-    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
-    print("contents_path = %s" % contents_path)
-    print("Contents/**/*.* = %s" % contents_path.ant_glob('**/*.*'))
-    bld.install_files('${PREFIX}/Contents/',contents_.ant_glob('**/*.*'))
+#    bld.install_files('${PREFIX}/Contents/',contents_path)
+#    copy_tree(bld,contents_path,bld.path.find_or_declare("%s/Contents/" % bld.env.PREFIX))
+#    bld.install_files('${PREFIX}/Contents/',contents_path.ant_glob('**/*.*'),relative_trick=True)
 #        bld.program(features='dsymutil',source=[clasp_executable],target=[iclasp_dsym])
-#    bld.install_as('${PREFIX}/%s/%s' % (os.getenv("EXECUTABLE_DIR"),variant.executable_name(stage=0), variant.executable_name, chmod=Utils.O755)
+#    bld.install_as('${PREFIX}/%s/%s' % (EXECUTABLE_DIR,variant.executable_name(stage=0), variant.executable_name, chmod=Utils.O755)
       
 #        files = lisp_source_files(clasp_executable.abspath(),"aclasp")
 #        print("aclasp source files: %s" % files)
@@ -517,6 +518,15 @@ def build(bld):
         #     bld.add_group()
         #     bld(rule='b%s -e "(compile-link-cclasp)"' % variant.bitcode_name,target="c%s"%variant.bitcode_name)
         # install
+
+
+
+def install(ctx):
+    print("Do stuff for install")
+    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
+    contents_tree = contents_path.ant_glob('**/*.*')
+    for c in contents_tree:
+        bld.install_files('${PREFIX}/Contents/%s' % c.path_from(contents_path).__str__(), c)
 
 from waflib import TaskGen
 from waflib import Task
@@ -658,11 +668,14 @@ def preprocess_task_generator(self):
         nodes.append(self.path.find_or_declare(x))
     self.create_task('generated_headers',all_sif_files,nodes)
     variant = self.bld.variant_obj
-    library_node = self.path.find_or_declare('%s-all.lbc' % variant.bitcode_name() )
-    intrinsics_library_name = '%s-intrinsics.lbc' % variant.bitcode_name()
-    intrinsics_library_node = self.path.find_or_declare(intrinsics_library_name)
-    self.create_task('link_bitcode',all_o_files,library_node)
-    self.create_task('link_bitcode',[intrinsics_o],intrinsics_library_node)
+    cxx_all_bitcode_name = '%s-all.lbc' % variant.bitcode_name()
+    cxx_all_bitcode_node = self.path.find_or_declare(cxx_all_bitcode_name)
+    intrinsics_bitcode_name = '%s-intrinsics.lbc' % variant.bitcode_name()
+    intrinsics_bitcode_node = self.path.find_or_declare(intrinsics_bitcode_name)
+    self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
+    self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/cxx-bitcode/%s'%intrinsics_bitcode_name,intrinsics_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/cxx-bitcode/%s'%cxx_all_bitcode_name,cxx_all_bitcode_node)
 
 
 def init(ctx):
