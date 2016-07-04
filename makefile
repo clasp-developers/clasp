@@ -176,8 +176,8 @@ define varprint
 endef
 
 all:
-	make boehmdc-o
-#	make mps-all
+	make configure
+	make build
 
 boehm-all:
 	make print-config
@@ -253,8 +253,11 @@ configure:
 	make asdf
 	./waf configure
 
+build:
+	make boehmdc-o
+
 boehmdc-o:
-	./waf build_cboehmdc_o
+	./waf -j $(PJOBS) build_cboehmdc_o
 #	make -C src/main bclasp-boehmdc-addons
 
 boot-cclasp:

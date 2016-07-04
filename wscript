@@ -467,8 +467,8 @@ def build(bld):
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
-    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
-    bld.install_files('${PREFIX}/Contents',contents_path,relative_trick=True)
+#    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
+#    bld.install_files('${PREFIX}/Contents',contents_path,relative_trick=True)
 #    contents_tree = contents_path.ant_glob('**/*.*')
 #    for c in contents_tree:
 #        bld.install_files('${PREFIX}/Contents/%s' % c.path_from(contents_path).__str__(), c)
