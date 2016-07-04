@@ -12,7 +12,7 @@ from waflib import Utils
 
 top = '.'
 out = 'wbuild'
-APPNAME = 'clasp'
+APP_NAME = 'clasp'
 VERSION = '0.0'
 EXECUTABLE_DIR = os.getenv("EXECUTABLE_DIR")
 DARWIN_OS = 'darwin'
@@ -91,6 +91,7 @@ def configure_clasp(cfg,variant):
 #    print("Including from %s" % include_path )
     cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
+    cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
     cfg.define("VARIANT_NAME",variant.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags(cfg.env.STLIB_ST,cfg.env.STLIB))
@@ -112,7 +113,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s%s-%s' % (use_stage,APPNAME,self.gc_name,self.debug_char)
+        return '%s%s-%s-%s' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
     def variant_dir(self):
         return "%s_%s"%(self.gc_name,self.debug_char)
     def variant_name(self):

@@ -462,7 +462,7 @@ a relative path from there."
                           (find-lisp-source module (translate-logical-pathname "LISP-SOURCE:")))))
                       ((eq type :executable)
                        (let* ((stage-char (default-target-stage))cond
-                              (filename (bformat nil "%s%s" stage-char +bitcode-name+))
+                              (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
                               (exec-pathname (merge-pathnames (make-pathname :name filename :type nil :defaults module) (translate-logical-pathname "app-executable:") )))
                          exec-pathname))
                       (t

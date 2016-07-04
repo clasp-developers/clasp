@@ -544,6 +544,7 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_llvmTargetTriple_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_variant_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_bitcode_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_executable_name_PLUS_);
+SYMBOL_EXPORT_SC_(CorePkg, _PLUS_application_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_libSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_stlibSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARbuild_linkflagsSTAR);
@@ -1093,6 +1094,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym__PLUS_variant_name_PLUS_->defconstant(Str_O::create(VARIANT_NAME));
   _sym__PLUS_bitcode_name_PLUS_->defconstant(Str_O::create(BITCODE_NAME));
   _sym__PLUS_executable_name_PLUS_->defconstant(Str_O::create(EXECUTABLE_NAME));
+  _sym__PLUS_application_name_PLUS_->defconstant(Str_O::create(APP_NAME));
   _sym_STARbuild_libSTAR->defconstant(Str_O::create(BUILD_LIB));
   _sym_STARbuild_stlibSTAR->defconstant(Str_O::create(BUILD_STLIB));
   _sym_STARbuild_linkflagsSTAR->defconstant(Str_O::create(BUILD_LINKFLAGS));
