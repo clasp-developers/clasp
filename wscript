@@ -467,6 +467,11 @@ def build(bld):
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
+    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
+    bld.install_files('${PREFIX}/Contents',contents_path,relative_trick=True)
+#    contents_tree = contents_path.ant_glob('**/*.*')
+#    for c in contents_tree:
+#        bld.install_files('${PREFIX}/Contents/%s' % c.path_from(contents_path).__str__(), c)
     clasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
     if (bld.env['DEST_OS'] == LINUX_OS ):
         bld.program(source=source_files,target=[clasp_executable])
@@ -498,29 +503,7 @@ def build(bld):
                 cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                 cmp_cclasp.set_outputs(cclasp_executable)
                 bld.add_to_group(cmp_cclasp)
-#    bld.install_files('${PREFIX}/Contents/',contents_path)
-#    copy_tree(bld,contents_path,bld.path.find_or_declare("%s/Contents/" % bld.env.PREFIX))
-#    bld.install_files('${PREFIX}/Contents/',contents_path.ant_glob('**/*.*'),relative_trick=True)
-#        bld.program(features='dsymutil',source=[clasp_executable],target=[iclasp_dsym])
-#    bld.install_as('${PREFIX}/%s/%s' % (EXECUTABLE_DIR,variant.executable_name(stage=0), variant.executable_name, chmod=Utils.O755)
       
-#        files = lisp_source_files(clasp_executable.abspath(),"aclasp")
-#        print("aclasp source files: %s" % files)
-#        if (variant.stage>=0):
-        #     bld.add_group()
-        #     aclasp_lisp_sources = ''
-        #     bld(rule='i%s -I -f ecl-min -e "(compile-aclasp)" -e "(link-aclasp)"' % variant.bitcode_name,target="a%s"%variant.bitcode_name)
-        #     bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-all.lbc' % variant.bitcode_name, '%s-all.lbc'%variant.bitcode_name)
-        #     bld.install_as('${PREFIX}/Contents/cxx-bitcode/%s-intrinsics.lbc' % variant.bitcode_name, '%s-intrinsics.lbc'%variant.bitcode_name)
-        # if (variant.stage>=1):
-        #     bld.add_group()
-        #     bld(rule='a%s -e "(compile-link-bclasp)"' % variant.bitcode_name,target="b%s"%variant.bitcode_name)
-        # if (variant.stage>=2):
-        #     bld.add_group()
-        #     bld(rule='b%s -e "(compile-link-cclasp)"' % variant.bitcode_name,target="c%s"%variant.bitcode_name)
-        # install
-
-
 
 def install(ctx):
     print("Do stuff for install")
