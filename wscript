@@ -667,18 +667,18 @@ def init(ctx):
     for s in STAGE_CHARS:
         for gc in GCS:
             for debug_char in DEBUG_CHARS:
-	        for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
-	            name = y.__name__.replace('Context','').lower()
-	            class tmp(y):
+                for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+                    name = y.__name__.replace('Context','').lower()
+                    class tmp(y):
                         variant = gc+'_'+debug_char
-		        cmd = name + '_' + s + variant
+                        cmd = name + '_' + s + variant
                         stage = s
 
     def buildall(ctx):
-	import waflib.Options
+        import waflib.Options
         for s in STAGE_CHARS:
-	    for gc in GCS:
+            for gc in GCS:
                 for debug_char in DEBUG_CHARS:
                     var = 'build_'+s+x+'_'+debug_char
-	            waflib.Options.commands.insert(0, var)
+                    waflib.Options.commands.insert(0, var)
 
