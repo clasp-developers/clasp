@@ -105,7 +105,7 @@ def strip_libs(libs):
     result = []
     split_libs = libs.split()
     for lib in split_libs:
-        result.append(lib[2:])
+        result.append("%s" % str(lib[2:]))
     return result 
     
 class variant(object):
@@ -329,8 +329,8 @@ def configure(cfg):
     cfg.check_waf_version(mini='1.7.5')
     llvm_config = cfg.find_program("llvm-config",var="LLVM_CONFIG")
 #    print("llvm_config = %s" % llvm_config[0])
-    llvm_libs = subprocess.Popen([llvm_config[0], "--libs"], stdout=subprocess.PIPE).communicate()[0]
-    LLVM_LIBRARIES = strip_libs(llvm_libs)
+    llvm_libs_bytes = subprocess.Popen([llvm_config[0], "--libs"], stdout=subprocess.PIPE).communicate()[0]
+    LLVM_LIBRARIES = strip_libs(llvm_libs_bytes.decode("ASCII",'ignore'))
 #    print("llvm_libs = %s" % llvm_libs)
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
