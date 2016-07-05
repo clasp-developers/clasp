@@ -133,7 +133,7 @@ Read all of the scraped info files and interpret their tags."
     (format t "args: ~a~%" args)
     (format t "*default-pathname-defaults* --> ~a~%" *default-pathname-defaults*)
     (do-scraping args))
-  (sb-ext:quit))
+  (sb-ext:exit))
 
 (export '(legacy-scraper))
 
