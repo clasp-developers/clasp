@@ -35,14 +35,9 @@
 (setq core::*clang-bin* (ext:getenv "CLASP_CLANG_PATH"))
 (export 'core::*clang-bin*)
 
-;;(setq *features* (cons :ecl-min *features*))
 (setq *features* (cons :clasp *features*))
-;;(setq *features* (cons :clos *features*))
-;;(setq *features* (cons :debug-compiler *features*))
 (setq *features* (cons :compile-mcjit *features*))
 
-
-;;(setq *features* (cons :compare *features*)) ;; compare ecl to clasp
 
 ;; When boostrapping in stages, set this feature,
 ;; it guarantees that everything that is declared at compile/eval time
@@ -397,11 +392,11 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (export '(+image-pathname+ build-intrinsics-bitcode-pathname))
 
 (defun default-target-stage ()
-  (if (member :ecl-min *features*)
-      "a"
-      (if (member :cclasp *features*)
-          "c"
-          "b")))
+  (if (member :cclasp *features*)
+      "c"
+      (if (member :bclasp *features*)
+          "b"
+          "a")))
 
 (defun build-target-dir (type &optional stage)
   (let* ((stage (if stage 
@@ -637,6 +632,15 @@ a relative path from there."
            (file-write-date source-path))
         nil)))
 
+(defun bitcode-pathnames (start end &key (system *system-files*))
+  (let ((sources (select-source-files end :first-file start :system system)))
+    (mapcar #'(lambda (f &aux (fn (entry-filename f))) (build-pathname fn :bc)) sources)))
+
+(defun print-bitcode-file-names-one-line (start end)
+  (mapc #'(lambda (f) (bformat t " %s" (namestring f)))
+        (bitcode-pathnames start end))
+  nil)
+
 (defun out-of-date-bitcodes (start end &key (system *system-files*))
   (let ((sources (select-source-files end :first-file start :system system))
         out-of-dates)
@@ -725,19 +729,19 @@ a relative path from there."
 
 (defun maybe-insert-epilogue-aclasp ()
   "Insert epilogue if we are compiling aclasp"
-  (if (member :ecl-min *features*)
+  (if (string= (default-target-stage) "a")
       (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
 (defun maybe-insert-epilogue-bclasp ()
   "Insert epilogue if we are compiling bclasp"
-  (if (member :bclasp *features*)
+  (if (string= (default-target-stage) "b")
       (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
 (defun maybe-insert-epilogue-cclasp ()
   "Insert epilogue if we are compiling cclasp"
-  (if (member :cclasp *features*)
+  (if (string= (default-target-stage) "a")
       (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
@@ -1032,11 +1036,13 @@ Return files."
                    :link-type :executable)))
 (export '(link-system))
         
-(export '(compile-aclasp source-files-aclasp))
+(export '(compile-aclasp source-files-aclasp bitcode-files-aclasp))
 (defun source-files-aclasp ()
-  (bformat t "%s\n" (source-file-names :min-start :cmp-pre-epilogue)))
+  (bformat t "%s\n" (source-file-names :min-start :cmp)))
+(defun bitcode-files-aclasp ()
+  (print-bitcode-file-names-one-line :min-start :cmp))
 (defun compile-aclasp (&key (target-backend (default-target-backend)) (system *system-files*))
-  (min-features)
+  (aclasp-features)
   (if (out-of-date-bitcodes :min-start :cmp)
       (progn
         (load-system :start :cmp-pre-epilogue :system system)
@@ -1050,7 +1056,7 @@ Return files."
 
 (export 'link-aclasp)
 (defun link-aclasp (&key force)
-  (min-features)
+  (aclasp-features)
   (if (or force (out-of-date-image (build-pathname +image-pathname+ :executable) (select-source-files :cmp :first-file :min-start)))
       (progn
         (load-system :start :cmp-pre-epilogue)
@@ -1087,14 +1093,14 @@ Return files."
 	(load clasprc))))
 (export 'load-clasprc)
 
-(export 'min-features)
-(defun min-features ()
+(export 'aclasp-features)
+(defun aclasp-features ()
   (remove-stage-features)
   (setq *features* (list* :ecl-min *features*)))
 
 (export '(compile-link-aclasp))
 (defun compile-link-aclasp (&key clean)
-  (min-features)
+  (aclasp-features)
   (if clean (clean-system :init :no-prompt t))
   (compile-aclasp))
 
@@ -1114,9 +1120,11 @@ Return files."
   (let ((*target-backend* (default-target-backend)))
     (load-system :start :all :interp t )))
 
-(export '(compile-bclasp source-files-bclasp))
+(export '(compile-bclasp source-files-bclasp bitcode-files-bclasp))
 (defun source-files-bclasp ()
   (bformat t "%s\n" (source-file-names :init :all)))
+(defun bitcode-files-bclasp ()
+  (print-bitcode-file-names-one-line :init :all))
 (defun compile-bclasp (&key clean)
   (bclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
@@ -1138,9 +1146,11 @@ Return files."
             (out-of-date-image (build-pathname +image-pathname+ :executable) (select-source-files :all :first-file :init)))
         (link-system :init :all))))
 
-(export '(compile-cclasp source-files-cclasp))
+(export '(compile-cclasp source-files-cclasp bitcode-files-cclasp))
 (defun source-files-cclasp ()
   (bformat t "%s\n" (source-file-names :init :cclasp)))
+(defun bitcode-files-bclasp ()
+  (print-bitcode-file-names-one-line :init :cclasp))
 (defun compile-cclasp (&key clean)
   (cclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
