@@ -6,7 +6,10 @@ c_compiler['linux'] = ['clang']
 
 import sys
 import os
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from waflib.extras import clang_compilation_database
 from waflib import Utils
 
