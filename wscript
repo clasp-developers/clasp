@@ -70,7 +70,7 @@ BOOST_LIBRARIES = [
             'boost_iostreams']
 
 def libraries_as_link_flags(fmt,libs):
-    all_libs = StringIO.StringIO()
+    all_libs = StringIO()
     for x in libs:
         all_libs.write(" ")
         all_libs.write(fmt % x)
@@ -152,7 +152,12 @@ class boehm(variant):
         cfg.define("USE_BOEHM",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
             cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
-        cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
+        print("Setting up boehm library cfg.env.STLIB_BOEHM = %s " % cfg.env.STLIB_BOEHM)
+        print("Setting up boehm library cfg.env.LIB_BOEHM = %s" % cfg.env.LIB_BOEHM)
+        if (cfg.env.LIB_BOEHM == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)        
     
 class boehm_o(boehm):
@@ -336,7 +341,10 @@ def configure(cfg):
     cfg.plugins_lib = []
     cfg.recurse('plugins')
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
-    cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    try:
+        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     cfg.check_cxx(stlib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
@@ -572,7 +580,7 @@ class compile_cclasp(Task.Task):
 
 class llvm_link(Task.Task):
     def run(self):
-        all_inputs = StringIO.StringIO()
+        all_inputs = StringIO()
         for x in self.inputs:
             all_inputs.write(' %s' % x)
         return self.exec_command('llvm-link %s -o %s' % ( all_inputs.getvalue(), self.outputs[0]) )
@@ -596,7 +604,7 @@ class sif(Task.Task):
 class generated_headers(Task.Task):
     ext_out = ['.h']
     def run(self):
-        cmd = StringIO.StringIO()
+        cmd = StringIO()
         cmd.write('generate-headers-from-all-sifs src/main/')
         for f in self.inputs:
             cmd.write(' %s' % f.abspath())
@@ -605,7 +613,7 @@ class generated_headers(Task.Task):
 class link_bitcode(Task.Task):
     ext_out = ['.lbc']
     def run(self):
-        cmd = StringIO.StringIO()
+        cmd = StringIO()
         cmd.write('llvm-link ')
         for f in self.inputs:
             cmd.write(' %s' % f.abspath())
