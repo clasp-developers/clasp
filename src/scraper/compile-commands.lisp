@@ -139,7 +139,7 @@ Split the list of ccs into a number of lists."
             do (when (= (funcall (find-symbol "FORK" "SB-POSIX")) 0)
                  (loop for cc in job
                        do (run-cpp cc forki))
-                 (sb-ext:quit)))
+                 (SB-EXT:exit)))
       (loop repeat pjobs
             do
            (funcall (find-symbol "WAIT" "SB-POSIX"))))))

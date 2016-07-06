@@ -80,7 +80,21 @@ InvocationHistoryFrameIterator_sp LispDebugger::currentFrame() const {
   abort(); //THROW_HARD_ERROR(BF("%s:%d Could not get frame") % __FILE__ % __LINE__);
 }
 
+size_t global_low_level_debugger_depth = 0;
+
 T_sp LispDebugger::invoke() {
+  if ( cl::_sym_STARfeaturesSTAR
+       && cl::_sym_STARfeaturesSTAR->symbolValue()
+       && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
+       && !gctools::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_interactive)) {
+    printf("This is not an interactive list and the low-level debugger was entered - aborting\n");
+    abort();
+  }
+  ++global_low_level_debugger_depth;
+  if ( global_low_level_debugger_depth > 20 ) {
+    printf("This is not an interactive list and the low-level debugger was entered - aborting\n");
+    abort();
+  }    
   //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {
     _lisp->print(BF("Debugger entered with condition: %s") % _rep_(this->_Condition));

@@ -4,15 +4,6 @@
 [submodule "src/lisp/modules/asdf"]
 	path = src/lisp/modules/asdf
 	url = https://github.com/drmeister/asdf.git
-[submodule "src/boehm/libatomic_ops"]
-	path = src/boehm/libatomic_ops
-	url = https://github.com/ivmai/libatomic_ops
-[submodule "src/boehm/bdwgc"]
-	path = src/boehm/bdwgc
-	url = https://github.com/ivmai/bdwgc
-[submodule "tools/boost_build"]
-	path = tools/boost_build
-	url = https://github.com/clasp-developers/build
 [submodule "src/mps"]
 	path = src/mps
 	url = https://github.com/Ravenbrook/mps.git

@@ -35,8 +35,8 @@ THE SOFTWARE.
 #include <clasp/gctools/hardErrors.h>
 
 #ifdef USE_BOEHM
-#include <clasp/gc/gc.h>
-#include <clasp/gc/gc_allocator.h>
+#include <gc/gc.h>
+#include <gc/gc_allocator.h>
 typedef void *LocationDependencyPtrT;
 #endif // USE_BOEHM
 
