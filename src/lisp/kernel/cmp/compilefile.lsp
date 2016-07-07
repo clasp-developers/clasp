@@ -463,8 +463,7 @@ epilogue module - one that terminates a series of linked modules. "
 	     (ensure-directories-exist temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
 	     (cmp:llvm-link output-file
-                            :lisp-bitcode-files (list temp-bitcode-file)
-                            :link-time-optimization t)))
+                            :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
 	(dolist (c conditions)

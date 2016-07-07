@@ -17,6 +17,8 @@
 ### tell the build system where it is located. No
 ### further options should be necessary.
 ### 
+## Where to install Clasp
+#export PREFIX
 
 ## Where Clasp is located. Defaults to the cwd.
 #export CLASP_HOME

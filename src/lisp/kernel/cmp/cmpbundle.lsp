@@ -157,6 +157,49 @@
         (t (error "Add support for this operating system to cmp:generate-link-command"))))
     (truename output-file-name)))
 
+
+(defun link-bitcode-modules (output-pathname part-pathnames
+                             &key additional-bitcode-pathnames
+                             &aux conditions)
+  "Link a bunch of modules together, return the linked module"
+  (with-compiler-env (conditions)
+    (multiple-value-bind (module function-pass-manager)
+        (create-llvm-module-for-compile-file (pathname-name output-pathname))
+      (let* ((*compile-file-pathname* (pathname (merge-pathnames output-pathname)))
+	     (*compile-file-truename* (translate-logical-pathname *compile-file-pathname*))
+	     (bcnum 0))
+	(with-module ( :module module
+                               :optimize nil
+                               :source-namestring (namestring output-pathname))
+          (with-debug-info-generator (:module module :pathname output-pathname)
+            (let* ((linker (llvm-sys:make-linker *the-module*)))
+              ;; Don't enforce .bc extension for additional-bitcode-pathnames
+              ;; This is where I used to link the additional-bitcode-pathnames
+              (dolist (part-pn part-pathnames)
+                (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
+                  (bformat t "Linking %s\n" bc-file)
+                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                    (multiple-value-bind (failure error-msg)
+                        (llvm-sys:link-in-module linker part-module)
+                      (when failure
+                        (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
+              ;; The following links in additional-bitcode-pathnames
+              (dolist (part-pn additional-bitcode-pathnames)
+                (let* ((bc-file part-pn))
+                  (bformat t "Linking %s\n" bc-file)
+                  (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                    (remove-main-function-if-exists part-module) ;; Remove the ClaspMain FN if it exists
+                    (multiple-value-bind (failure error-msg)
+                        (llvm-sys:link-in-module linker part-module)
+                      (when failure
+                        (error "While linking additional module: ~a  encountered error: ~a" bc-file error-msg))
+                      ))))
+              (llvm-sys:write-bitcode-to-file *the-module* (core:coerce-to-filename (pathname output-pathname)))
+              *the-module*)))))))
+(export 'link-bitcode-modules)
+
+
+
 ;;;
 ;;; Gather a list of boot parts as pathnames
 ;;; Skip over keyword symbols in the boot part lists
@@ -175,16 +218,17 @@
 (defun llvm-link (output-pathname
                   &key (link-type :fasl)
                     lisp-bitcode-files
-                    debug-ir
-                    link-time-optimization
                     (target-backend (default-target-backend)))
   (let* ((*target-backend* target-backend)
          (intrinsics-bitcode-path (core:build-intrinsics-bitcode-pathname link-type))
          (all-bitcode (list* intrinsics-bitcode-path lisp-bitcode-files))
          (output-pathname (pathname output-pathname)))
-    (if (eq link-type :executable)
-        (execute-link-executable output-pathname all-bitcode)
-        (execute-link-fasl output-pathname all-bitcode))
+    (cond
+      ((eq link-type :executable)
+       (execute-link-executable output-pathname all-bitcode))
+      ((eq link-type :fasl)
+       (execute-link-fasl output-pathname all-bitcode))
+      (t (error "Cannot link format ~a" link-type)))
     output-pathname))
 
 (export '(llvm-link))

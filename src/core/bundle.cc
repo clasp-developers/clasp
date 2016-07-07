@@ -56,7 +56,7 @@ namespace core {
 struct BundleDirectories {
   boost_filesystem::path _StartupWorkingDir;
   boost_filesystem::path _ExecutableDir;
-  boost_filesystem::path _CxxBitcodeDir;
+  boost_filesystem::path _BitcodeDir;
   boost_filesystem::path _ContentsDir;
   boost_filesystem::path _ResourcesDir;
   boost_filesystem::path _LispSourceDir;
@@ -129,7 +129,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   if (bf::exists(srcPath)) {
-    this->_Directories->_CxxBitcodeDir = this->_Directories->_ExecutableDir;
+    this->_Directories->_BitcodeDir = this->_Directories->_ExecutableDir;
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Looking for Content subdirectories for building\n", __FILE__, __LINE__ );
 #endif
@@ -244,8 +244,8 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir) {
           this->_Directories->_ResourcesDir = dirs->path();
         } else if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
           this->_Directories->_LibDir = dirs->path();
-        } else if (leaf == "cxx-bitcode" && (this->_Directories->_CxxBitcodeDir.empty())) {
-          this->_Directories->_CxxBitcodeDir = dirs->path();
+        } else if (leaf == "bitcode" && (this->_Directories->_BitcodeDir.empty())) {
+          this->_Directories->_BitcodeDir = dirs->path();
         } else if (leaf == "include" && (this->_Directories->_IncludeDir.empty())) {
           this->_Directories->_IncludeDir = dirs->path();
         } else if (leaf == "lisp" && (this->_Directories->_LispSourceDir.empty())) {
@@ -285,7 +285,7 @@ void Bundle::fillInMissingPaths() {
 string Bundle::describe() {
   stringstream ss;
   ss << "ExecutableDir:     " << this->_Directories->_ExecutableDir.string() << std::endl;
-  ss << "CxxBitcodeDir:     " << this->_Directories->_CxxBitcodeDir.string() << std::endl;
+  ss << "BitcodeDir:     " << this->_Directories->_BitcodeDir.string() << std::endl;
   ss << "Contents dir:      " << this->_Directories->_ContentsDir.string() << std::endl;
   ss << "Resources dir:     " << this->_Directories->_ResourcesDir.string() << std::endl;
   ss << "Databases dir:     " << this->_Directories->_DatabasesDir.string() << std::endl;
@@ -362,9 +362,9 @@ void Bundle::setup_pathname_translations()
   {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("CXX-BITCODE:**;*.*"),
-                                            generate_pathname(this->_Directories->_CxxBitcodeDir)));
-    core__pathname_translations(Str_O::create("CXX-BITCODE"), _lisp->_true(), pts);
+                         Cons_O::createList(Str_O::create("BITCODE:**;*.*"),
+                                            generate_pathname(this->_Directories->_BitcodeDir)));
+    core__pathname_translations(Str_O::create("BITCODE"), _lisp->_true(), pts);
   }
     // setup the TMP logical-pathname-translations
   Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),

@@ -113,8 +113,10 @@ T_sp LispDebugger::invoke() {
     sprompt << "[" << _lisp->debuggerLevel() << "]>";
     bool end_of_transmission(false);
     line = myReadLine(sprompt.str(), end_of_transmission);
-    if (end_of_transmission)
+    if (end_of_transmission) {
+      printf("%s:%d Exiting debugger\n", __FILE__, __LINE__ );
       throw core::ExitProgram(0);
+    }
     char cmd;
     if (line[0] == ':') {
       cmd = line[1];

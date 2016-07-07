@@ -1,11 +1,14 @@
 #+ecl-min
 (progn
   (if (member :interactive *features*)
+      (setq *features* (cons :ecl-min *features*))
+      (setq *features* (cons :aclasp *features*))
       (bformat t "Starting %s ... loading image... it takes a few seconds\n"
                (lisp-implementation-version))))
 #+bclasp
 (progn
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
+  (setq *features* (cons :bclasp *features*))
   (if (member :interactive *features*)
       (bformat t "Starting %s ... loading image... it takes a few seconds\n"
                (lisp-implementation-version))))
@@ -14,6 +17,7 @@
   (make-package "CLEAVIR-AST")
   (make-package "CLASP-CLEAVIR-AST")
   (make-package "CLASP-CLEAVIR")
+  (setq *features* (cons :cclasp *features*))
   (if (member :clos *features*) nil (setq *features* (cons :clos *features*)))
   (if (member :cclasp *features*) nil (setq *features* (cons :cclasp *features*)))
   (if (member :interactive *features*) 

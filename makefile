@@ -96,11 +96,7 @@ export CLASP_CLANGXX_PATH := $(or $(CLASP_CLANGXX_PATH),\
 			$(call pathsearch, clang++),\
 			$(error Could not find clang - it needs to be installed and in your path.))
 
-export CLASP_INTERNAL_BUILD_TARGET_DIR ?= $(shell pwd)/build/clasp
 export BUILD ?= $(CLASP_HOME)/src/common/build
-export CLASP_APP_EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs
-export CLASP_APP_RESOURCES_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources
-export CLASP_APP_RESOURCES_LIB_COMMON_DIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/Resources/lib/common
 
 export CLASP_DEBUG_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_DEBUG) --libdir | tr -d '\n')
 export CLASP_RELEASE_LLVM_LIB_DIR ?= $(shell $(LLVM_CONFIG_RELEASE) --libdir | tr -d '\n')
@@ -139,9 +135,6 @@ export CLASP_DEBUG_CXXFLAGS += $(include_flags)
 export CLASP_RELEASE_CXXFLAGS += $(include_flags)
 #export CLASP_RELEASE_LINKFLAGS += $(lib_flags)
 
-export BINDIR ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/$(EXECUTABLE_DIR)
-export EXECS ?= $(CLASP_INTERNAL_BUILD_TARGET_DIR)/Contents/execs/
-
 export PATH := $(LLVM_BIN_DIR):$(PATH)
 export PATH := $(CLASP_HOME)/src/common:$(PATH)
 export PATH := $(BINDIR):$(PATH)
@@ -168,7 +161,7 @@ all:
 configure:
 	make submodules
 	make asdf
-	./waf configure
+	./waf configure --prefix=$(PREFIX) --externals_clasp_dir=$(EXTERNALS_CLASP_DIR)
 
 build:
 	make boehmdc-o
@@ -273,12 +266,7 @@ cloc-files:
 
 clean:
 	git submodule sync
-#	make boehm-clean
 	./waf distclean
-ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
-	install -d $(CLASP_INTERNAL_BUILD_TARGET_DIR)
-	-(find $(CLASP_INTERNAL_BUILD_TARGET_DIR) -type f -print0 | xargs -0 rm -f)
-endif
 
 pull-sicl-master:
 	(cd src/lisp/kernel/contrib/sicl; git pull origin master)
@@ -310,7 +298,6 @@ print-config:
 	$(call varprint, CLASP_CLANGXX_PATH)
 	$(call varprint, GIT_COMMIT)
 	$(call varprint, CLASP_VERSION)
-	$(call varprint, CLASP_INTERNAL_BUILD_TARGET_DIR)
 	$(call varprint, LIBATOMIC_OPS_SOURCE_DIR)
 	$(call varprint, CLASP_APP_EXECS)
 	$(call varprint, CLASP_APP_RESOURCES_DIR)
