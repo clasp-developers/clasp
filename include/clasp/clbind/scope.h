@@ -84,7 +84,7 @@ namespace clbind {
 
 struct CLBIND_API scope {
   scope();
-  explicit scope(std::auto_ptr<detail::registration> reg);
+  explicit scope(std::unique_ptr<detail::registration> reg);
   scope(scope const &other_);
   ~scope();
 

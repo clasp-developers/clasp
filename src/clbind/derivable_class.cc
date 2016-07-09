@@ -144,7 +144,7 @@ void derivable_class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 derivable_class_base::derivable_class_base(char const *name)
-    : scope(std::auto_ptr<registration>(
+    : scope(std::unique_ptr<registration>(
           m_registration = new derivable_class_registration(name))) {
 }
 
@@ -167,13 +167,13 @@ void derivable_class_base::set_default_constructor(registration *member) {
 }
 
 void derivable_class_base::add_member(registration *member) {
-  std::auto_ptr<registration> ptr(member);
-  m_registration->m_members.operator, (scope(ptr));
+  std::unique_ptr<registration> ptr(member);
+  m_registration->m_members.operator, (scope(std::move(ptr)));
 }
 
 void derivable_class_base::add_default_member(registration *member) {
-  std::auto_ptr<registration> ptr(member);
-  m_registration->m_default_members.operator, (scope(ptr));
+  std::unique_ptr<registration> ptr(member);
+  m_registration->m_default_members.operator, (scope(std::move(ptr)));
 }
 
 const char *derivable_class_base::name() const {

@@ -454,7 +454,7 @@ struct default_pointer {
 
 template <class T>
 struct default_pointer<reg::null_type, T> {
-  typedef std::auto_ptr<T> type;
+  typedef std::unique_ptr<T> type;
 };
 
 template <typename ConstructorType>
