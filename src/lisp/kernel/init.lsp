@@ -744,7 +744,7 @@ a relative path from there."
 
 (defun maybe-insert-epilogue-cclasp ()
   "Insert epilogue if we are compiling cclasp"
-  (if (string= (default-target-stage) "a")
+  (if (string= (default-target-stage) "c")
       (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
