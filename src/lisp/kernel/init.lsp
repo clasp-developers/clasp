@@ -441,7 +441,7 @@ a relative path from there."
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
     (let ((module (ensure-relative-pathname partial-pathname))
-          (target-host "lisp-build")
+          (target-host "bitcode")
           (target-dir (build-target-dir type stage))
           pn)
       #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
@@ -455,7 +455,7 @@ a relative path from there."
                           (find-lisp-source (make-pathname
                                              :directory (cons :relative (cddr (pathname-directory module)))
                                              :name (pathname-name module))
-                                            (translate-logical-pathname "LISP-GENERATED:")))
+                                            (translate-logical-pathname "GENERATED:")))
                          (t
                           (find-lisp-source module (translate-logical-pathname "LISP-SOURCE:")))))
                       ((eq type :executable)

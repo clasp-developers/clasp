@@ -175,7 +175,7 @@ Split the list of ccs into a number of lists."
       (read-sequence data stream)
       (make-instance 'buffer-stream
                      :buffer data
-                     :buffer-pathname (pathname filename #+(or)(input cc))
+                     :buffer-pathname (truename (pathname filename))
                      :buffer-stream (make-string-input-stream data)))))
 
 (defun read-entire-cpp-file (cc)

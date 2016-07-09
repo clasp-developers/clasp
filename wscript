@@ -19,9 +19,8 @@ APP_NAME = 'clasp'
 VERSION = '0.0'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
-EXECUTABLE_DIR = "bin"
     
-STAGE_CHARS = [ 'i', 'a', 'b', 'c' ]
+STAGE_CHARS = [ 's', 'i', 'a', 'b', 'c' ]
 
 GCS = [ 'boehm',
         'boehmdc',
@@ -78,7 +77,9 @@ def libraries_as_link_flags(fmt,libs):
     return all_libs.getvalue()
     
 def stage_value(ctx,s):
-    if ( s == 'i' ):
+    if ( s == 's' ):
+        sval = -1
+    elif ( s == 'i' ):
         sval = 0
     elif ( s == 'a' ):
         sval = 1
@@ -146,6 +147,7 @@ class variant(object):
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_DEBUG_CXXFLAGS").split() )
+        print("CLASP_DEBUG_LINKFLAGS = %s" % os.getenv("CLASP_DEBUG_LINKFLAGS"))
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
     def common_setup(self,cfg):
@@ -339,12 +341,8 @@ def options(cfg):
     cfg.add_option('--externals_clasp_dir', action='store', default=False, help='Path to externals-clasp')
 
 def configure(cfg):
-    global LLVM_LIBRARIES, EXECUTABLE_DIR
+    global LLVM_LIBRARIES
     cfg.check_waf_version(mini='1.7.5')
-    if (cfg.env['DEST_OS'] == DARWIN_OS ):
-        EXECUTABLE_DIR = "MacOS"
-    else:
-        EXECUTABLE_DIR = "bin"
     llvm_config = cfg.find_program("llvm-config",var="LLVM_CONFIG")
 #    print("llvm_config = %s" % llvm_config[0])
     llvm_libs_bytes = subprocess.Popen([llvm_config[0], "--libs"], stdout=subprocess.PIPE).communicate()[0]
@@ -353,8 +351,8 @@ def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 ### Uncommenting these checks causes problems-- AttributeError: 'BuildContext' object has no attribute 'variant_obj'
-    cfg.plugins_includes = []
-    cfg.plugins_headers = []
+    cfg.plugins_include_dirs = []
+    cfg.plugins_gcinterface_include_files = []
     cfg.plugins_stlib = []
     cfg.plugins_lib = []
     cfg.recurse('plugins')
@@ -372,14 +370,13 @@ def configure(cfg):
     print("externals_clasp_dir = %s" % cfg.options.externals_clasp_dir)
     if ( cfg.options.externals_clasp_dir != False ):
         clasp_release_llvm_lib_dir = "%s/build/release/lib/"%cfg.options.externals_clasp_dir
-#        cfg.env.append_value('LINKFLAGS', "-L%s" % clasp_release_llvm_lib_dir )
+        cfg.env.append_value('LINKFLAGS', "-L%s" % clasp_release_llvm_lib_dir )
         cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM', stlibpath = clasp_release_llvm_lib_dir )
         cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = clasp_release_llvm_lib_dir )
     else:    
         cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM')
         cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG')
 #    print("DEBUG cfg.plugins_includes = %s" % cfg.plugins_includes)
-#    print("DEBUG cfg.plugins_headers = %s" % cfg.plugins_headers)
     cfg.env.append_value('CXXFLAGS', ['-I./'])
     if ('program_name' in cfg.__dict__):
         pass
@@ -422,7 +419,7 @@ def configure(cfg):
 #    cfg.env.append_value('CXXFLAGS', ['-v'] )
 #    cfg.env.append_value('CXXFLAGS', ['-I../src/main/'] )
     includes = [ 'include/' ]
-    includes = includes + cfg.plugins_includes
+    includes = includes + cfg.plugins_include_dirs
     includes_from_build_dir = []
     for x in includes:
         includes_from_build_dir.append("-I%s/%s"%(cfg.path.abspath(),x))
@@ -481,7 +478,7 @@ def configure(cfg):
             variant_instance = eval("i"+variant+"()")
             print("Setting up variant: %s" % variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
-            build_plugin_headers("%s/%s" % (cfg.bldnode,variant),cfg.plugins_headers)
+            build_plugin_headers("%s/%s" % (cfg.bldnode,variant),cfg.plugins_gcinterface_include_files)
 
 def copy_tree(bld,src,dest):
     print("Copy tree src = %s" % src)
@@ -496,12 +493,19 @@ def build(bld):
     print("Building stage --> %s" % stage)
     bld.clasp_source_files = []
     bld.recurse('src')
+    bld.plugins_include_files = []
     bld.plugins_source_files = []
     bld.recurse('plugins')
     bld.recurse('src/main')
     source_files = bld.clasp_source_files + bld.plugins_source_files
 #    print("DEBUG recursed source_files = %s" % source_files)
-#    bld.program(source=all_files(),target="clasp")
+    bld.install_files('${PREFIX}/Contents/Resources/source-code/',source_files,relative_trick=True,cwd=bld.path)
+#    print("bld.path = %s"%bld.path)
+    clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
+#    print("clasp_headers = %s" % clasp_headers)
+    bld.install_files('${PREFIX}/Contents/Resources/source-code/',clasp_headers,relative_trick=True,cwd=bld.path)
+    lisp_source = bld.path.ant_glob("src/lisp/**/*.l*")
+    bld.install_files('${PREFIX}/Contents/Resources/source-code/',lisp_source,relative_trick=True,cwd=bld.path)
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
@@ -510,46 +514,48 @@ def build(bld):
 #    contents_tree = contents_path.ant_glob('**/*.*')
 #    for c in contents_tree:
 #        bld.install_files('${PREFIX}/Contents/%s' % c.path_from(contents_path).__str__(), c)
-    clasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
-    if (bld.env['DEST_OS'] == LINUX_OS ):
-        bld.program(source=source_files,target=[clasp_executable])
-    elif (bld.env['DEST_OS'] == DARWIN_OS ):
-        lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
-        bld.program(source=source_files,target=[clasp_executable,lto_debug_info])
     print("Building with variant = %s" % variant)
-    if (bld.env['DEST_OS'] == DARWIN_OS):
-        iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
-    if (stage_val >= 1):
-        print("About to add compile_aclasp")
-        cmp_aclasp = compile_aclasp(env=bld.env)
-        cmp_aclasp.set_inputs(clasp_executable)
-        aclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='a'))
-        cmp_aclasp.set_outputs(aclasp_executable)
-        bld.add_to_group(cmp_aclasp)
-        bld.install_as('${PREFIX}/%s/%s' % (EXECUTABLE_DIR, aclasp_executable.name), aclasp_executable)
-        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
-        bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
-        if (stage_val >= 2):
-            print("About to add compile_bclasp")
-            cmp_bclasp = compile_bclasp(env=bld.env)
-            cmp_bclasp.set_inputs(aclasp_executable)
-            bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
-            cmp_bclasp.set_outputs(bclasp_executable)
-            bld.add_to_group(cmp_bclasp)
-            bld.install_as('${PREFIX}/%s/%s' % (EXECUTABLE_DIR, bclasp_executable.name), bclasp_executable)
-            bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
-            bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
-            if (stage_val >= 3):
-                print("About to add compile_cclasp")
-                cmp_cclasp = compile_cclasp(env=bld.env)
-                cmp_cclasp.set_inputs(bclasp_executable)
-                cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-                cmp_cclasp.set_outputs(cclasp_executable)
-                bld.add_to_group(cmp_cclasp)
-                bld.install_as('${PREFIX}/%s/%s' % (EXECUTABLE_DIR, cclasp_executable.name), cclasp_executable)
-                cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
-                bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
-      
+    if (stage_val >= 0):
+        clasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
+        if (bld.env['DEST_OS'] == LINUX_OS ):
+            executable_dir = "bin"
+            bld.program(source=source_files,target=[clasp_executable],install_path='${PREFIX}/bin')
+        elif (bld.env['DEST_OS'] == DARWIN_OS ):
+            lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
+            executable_dir = "MacOS"
+            bld.program(source=source_files,target=[clasp_executable,lto_debug_info],install_path='${PREFIX}/MacOS')
+            iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
+        if (stage_val >= 1):
+            print("About to add compile_aclasp")
+            cmp_aclasp = compile_aclasp(env=bld.env)
+            cmp_aclasp.set_inputs(clasp_executable)
+            aclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='a'))
+            cmp_aclasp.set_outputs(aclasp_executable)
+            bld.add_to_group(cmp_aclasp)
+            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_executable.name), aclasp_executable)
+            aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+            bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
+            if (stage_val >= 2):
+                print("About to add compile_bclasp")
+                cmp_bclasp = compile_bclasp(env=bld.env)
+                cmp_bclasp.set_inputs(aclasp_executable)
+                bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
+                cmp_bclasp.set_outputs(bclasp_executable)
+                bld.add_to_group(cmp_bclasp)
+                bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_executable.name), bclasp_executable)
+                bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
+                bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
+                if (stage_val >= 3):
+                    print("About to add compile_cclasp")
+                    cmp_cclasp = compile_cclasp(env=bld.env)
+                    cmp_cclasp.set_inputs(bclasp_executable)
+                    cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+                    cmp_cclasp.set_outputs(cclasp_executable)
+                    bld.add_to_group(cmp_cclasp)
+                    bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable)
+                    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
+                    bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
+
 
 from waflib import TaskGen
 from waflib import Task
@@ -682,13 +688,12 @@ def preprocess_task_generator(self):
                           'generated/initFunctions_inc.h',
                           'generated/initializers_inc.h',
                           'generated/sourceInfo_inc.h',
-                          'generated/symbols_scraped_inc.h'
-#                          'src/include/clasp/main/generated/symbols_scraped_inc.h'
-    ]
+                          'generated/symbols_scraped_inc.h']
     nodes = []
     for x in generated_headers:
         nodes.append(self.path.find_or_declare(x))
     self.create_task('generated_headers',all_sif_files,nodes)
+    self.bld.install_files('${PREFIX}/Contents/Resources/source-code/include/', nodes)
     variant = self.bld.variant_obj
     cxx_all_bitcode_name = '%s-all-cxx.lbc' % variant.bitcode_name()
     intrinsics_bitcode_name = '%s-intrinsics-cxx.lbc' % variant.bitcode_name()

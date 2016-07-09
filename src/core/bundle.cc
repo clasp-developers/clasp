@@ -60,8 +60,8 @@ struct BundleDirectories {
   boost_filesystem::path _ContentsDir;
   boost_filesystem::path _ResourcesDir;
   boost_filesystem::path _LispSourceDir;
-  boost_filesystem::path _LispGeneratedDir;
-  boost_filesystem::path _LispBuildDir;
+  boost_filesystem::path _GeneratedDir;
+  boost_filesystem::path _SourceDir;
   boost_filesystem::path _IncludeDir;
   boost_filesystem::path _LibDir;
   boost_filesystem::path _DatabasesDir;
@@ -139,7 +139,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     this->findContentSubDirectories(this->_Directories->_ContentsDir);
     this->fillInMissingPaths();
     // While building generated is within the executable directory
-    this->_Directories->_LispGeneratedDir = this->_Directories->_ExecutableDir / "generated";
+    this->_Directories->_GeneratedDir = this->_Directories->_ExecutableDir / "generated";
   } else {
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
@@ -246,23 +246,25 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir) {
           this->_Directories->_LibDir = dirs->path();
         } else if (leaf == "bitcode" && (this->_Directories->_BitcodeDir.empty())) {
           this->_Directories->_BitcodeDir = dirs->path();
+        } else if (leaf == "source-code" && (this->_Directories->_SourceDir.empty())) {
+          this->_Directories->_IncludeDir = dirs->path();
         } else if (leaf == "include" && (this->_Directories->_IncludeDir.empty())) {
           this->_Directories->_IncludeDir = dirs->path();
         } else if (leaf == "lisp" && (this->_Directories->_LispSourceDir.empty())) {
           this->_Directories->_LispSourceDir = dirs->path();
-        } else if (leaf == "generated" && (this->_Directories->_LispGeneratedDir.empty() )) {
-          this->_Directories->_LispGeneratedDir = dirs->path();
-        } else if (leaf == "lisp-build" && (this->_Directories->_LispBuildDir.empty() )) {
-          this->_Directories->_LispBuildDir = dirs->path();
+        } else if (leaf == "generated" && (this->_Directories->_GeneratedDir.empty() )) {
+          this->_Directories->_GeneratedDir = dirs->path();
         }
       }
       dirs++;
     }
   }
-  char *lispdir = getenv("CLASP_LISP_SOURCE_DIR");
-  if (lispdir != NULL) {
+  char *homedir = getenv("CLASP_HOME");
+  if (homedir != NULL) {
     //	    printf("Using CLASP_LISP_SOURCE_DIR --> %s\n", lispdir );
+    boost_filesystem::path lispdir = boost_filesystem::path(homedir) / "src" / "lisp";
     this->_Directories->_LispSourceDir = boost_filesystem::path(lispdir);
+    this->_Directories->_SourceDir = boost_filesystem::path(homedir);
   }
 }
 
@@ -275,25 +277,20 @@ void Bundle::fillInMissingPaths() {
     this->_Directories->_ResourcesDir = this->_Directories->_ContentsDir / "Resources";
     bool created = bf::create_directory(this->_Directories->_ResourcesDir);
   }
-  if ( this->_Directories->_LispBuildDir.empty() ) {
-    this->_Directories->_LispBuildDir = this->_Directories->_ResourcesDir / "lisp-build";
-    bf::create_directory(this->_Directories->_LispBuildDir);
-  }
 }
 
 
 string Bundle::describe() {
   stringstream ss;
-  ss << "ExecutableDir:     " << this->_Directories->_ExecutableDir.string() << std::endl;
-  ss << "BitcodeDir:     " << this->_Directories->_BitcodeDir.string() << std::endl;
-  ss << "Contents dir:      " << this->_Directories->_ContentsDir.string() << std::endl;
-  ss << "Resources dir:     " << this->_Directories->_ResourcesDir.string() << std::endl;
-  ss << "Databases dir:     " << this->_Directories->_DatabasesDir.string() << std::endl;
-  ss << "Lisp source dir:   " << this->_Directories->_LispSourceDir.string() << std::endl;
-  ss << "Lisp generated dir:" << this->_Directories->_LispGeneratedDir.string() << std::endl;
-  ss << "LispBuild dir:     " << this->_Directories->_LispBuildDir.string() << std::endl;
-  ss << "Include dir:       " << this->_Directories->_IncludeDir.string() << std::endl;
-  ss << "Lib dir:           " << this->_Directories->_LibDir.string() << std::endl;
+  ss << "ExecutableDir:   " << this->_Directories->_ExecutableDir.string() << std::endl;
+  ss << "BitcodeDir:      " << this->_Directories->_BitcodeDir.string() << std::endl;
+  ss << "Contents dir:    " << this->_Directories->_ContentsDir.string() << std::endl;
+  ss << "Resources dir:   " << this->_Directories->_ResourcesDir.string() << std::endl;
+  ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
+  ss << "Lisp source dir: " << this->_Directories->_LispSourceDir.string() << std::endl;
+  ss << "Generated dir:   " << this->_Directories->_GeneratedDir.string() << std::endl;
+  ss << "Include dir:     " << this->_Directories->_IncludeDir.string() << std::endl;
+  ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
   return ss.str();
 }
 
@@ -348,16 +345,16 @@ void Bundle::setup_pathname_translations()
   {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("LISP-GENERATED:**;*.*"),
-                                            generate_pathname(this->_Directories->_LispGeneratedDir)));
-    core__pathname_translations(Str_O::create("LISP-GENERATED"), _lisp->_true(), pts);
+                         Cons_O::createList(Str_O::create("SOURCE-DIR:**;*.*"),
+                                            generate_pathname(this->_Directories->_SourceDir)));
+    core__pathname_translations(Str_O::create("SOURCE-DIR"), _lisp->_true(), pts);
   }
   {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("LISP-BUILD:**;*.*"),
-                                            generate_pathname(this->_Directories->_LispBuildDir)));
-    core__pathname_translations(Str_O::create("LISP-BUILD"), _lisp->_true(), pts);
+                         Cons_O::createList(Str_O::create("GENERATED:**;*.*"),
+                                            generate_pathname(this->_Directories->_GeneratedDir)));
+    core__pathname_translations(Str_O::create("GENERATED"), _lisp->_true(), pts);
   }
   {
     Cons_sp pts =

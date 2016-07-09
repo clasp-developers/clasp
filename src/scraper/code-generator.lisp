@@ -83,7 +83,8 @@
 
 (defun generate-expose-one-source-info-helper (sout obj idx)
   (let* ((lisp-name (lisp-name% obj))
-         (file (file% obj))
+         (absolute-file (truename (pathname (file% obj))))
+         (file (enough-namestring absolute-file (pathname (format nil "~a/" (sb-ext:posix-getenv "CLASP_HOME")))))
          (line (line% obj))
          (char-offset (character-offset% obj))
          (docstring (docstring% obj))

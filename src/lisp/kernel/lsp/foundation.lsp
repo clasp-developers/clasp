@@ -373,7 +373,7 @@ the corresponding VAR.  Returns NIL."
                 ((or (string= src-type "lsp")
                      (string= src-type "lisp"))
                  (let* ((pn (if (eq (car src-directory) :relative)
-                                (merge-pathnames src-pathname (translate-logical-pathname "SYS:"))
+                                (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
                                 src-pathname)))
                    (return-from compiled-function-file (values pn filepos lineno))))
                 ((or (string= src-type "cc")
@@ -381,7 +381,7 @@ the corresponding VAR.  Returns NIL."
                      (string= src-type "h")
                      (string= src-type "hpp"))
                  (let ((absolute-dir (merge-pathnames src-pathname
-                                                      (translate-logical-pathname "source-main:"))))
+                                                      (translate-logical-pathname "source-dir:"))))
                    (return-from compiled-function-file (values absolute-dir filepos lineno))))))))))
   (values nil 0 0))
 
