@@ -57,11 +57,11 @@ public:
      */
 private:
   boost_filesystem::path findAppDir(const string &argv0, const string &cwd, const string &env);
-  void findContentSubDirectories(boost_filesystem::path p);
-  void fillInMissingPaths();
+  void findContentSubDirectories(boost_filesystem::path p, bool verbose=false);
+  void fillInMissingPaths(bool verbose=false);
 
 public:
-  void initializeStartupWorkingDirectory();
+  void initializeStartupWorkingDirectory(bool verbose=false);
   void initialize(const string &argv0, const string &appPathEnvironmentVariable);
 
   Pathname_sp getRootPathname();

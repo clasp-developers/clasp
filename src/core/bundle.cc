@@ -53,6 +53,7 @@ namespace bf = boost_filesystem;
 
 namespace core {
 
+
 struct BundleDirectories {
   boost_filesystem::path _StartupWorkingDir;
   boost_filesystem::path _ExecutableDir;
@@ -72,7 +73,7 @@ Bundle::Bundle() {
   this->_Directories = NULL;
 }
 
-void Bundle::initializeStartupWorkingDirectory() {
+void Bundle::initializeStartupWorkingDirectory(bool verbose) {
   string cwd = "";
   boost_filesystem::path curPath;
   try {
@@ -86,12 +87,19 @@ void Bundle::initializeStartupWorkingDirectory() {
   }
   cwd = curPath.string();
   this->_Directories->_StartupWorkingDir = boost_filesystem::path(cwd);
+  if ( verbose ) {
+    printf("%s:%d  _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str() );
+  }
 }
 
 
 void Bundle::initialize(const string &raw_argv0, const string &envVar) {
+  bool verbose = false;
+  if (getenv("CLASP_VERBOSE_BUNDLE_SETUP") != NULL) {
+    verbose = true;
+  }
   this->_Directories = new BundleDirectories();
-  this->initializeStartupWorkingDirectory();
+  this->initializeStartupWorkingDirectory(verbose);
   pid_t pid = getpid();
 #ifdef _TARGET_OS_DARWIN
   char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
@@ -115,6 +123,9 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   bf::path curPath = appDir;
   // Climb up one level
   this->_Directories->_ExecutableDir = curPath;
+  if (verbose) {
+    printf("%s:%d _ExecutableDir = %s\n", __FILE__, __LINE__, this->_Directories->_ExecutableDir.string().c_str());
+  }
 #ifdef DEBUG_DESC_BUNDLE
   printf("%s:%d Bundle::initialize raw_argv0: %s\n", __FILE__, __LINE__, raw_argv0.c_str());
   printf("%s:%d Bundle::initialize argv0: %s\n", __FILE__, __LINE__, argv0.c_str());
@@ -122,25 +133,39 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   printf("%s:%d    _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str());
 #endif
   curPath = curPath.branch_path();
-  if (!curPath.has_relative_path()) {
-    THROW_HARD_ERROR(BF("Could not find the root directory of the cando application bundle.\n"
-                        " It must contain the word \"clasp\".\n"));
+  if (verbose) {
+    printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, curPath.string().c_str());
   }
+  
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
   bf::path srcPath = this->_Directories->_ExecutableDir / "src";
   if (bf::exists(srcPath)) {
+    if (verbose) {
+      printf("%s:%d   Found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
+    }
     this->_Directories->_BitcodeDir = this->_Directories->_ExecutableDir;
+    if (verbose) {
+      printf("%s:%d   Set _BitcodeDir = %s\n", __FILE__, __LINE__, this->_Directories->_BitcodeDir.string().c_str());
+    }
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Looking for Content subdirectories for building\n", __FILE__, __LINE__ );
 #endif
-    this->findContentSubDirectories(srcPath);
     bf::path contents = this->_Directories->_ExecutableDir / "Contents";
     this->_Directories->_ContentsDir = contents;
-    this->findContentSubDirectories(this->_Directories->_ContentsDir);
-    this->fillInMissingPaths();
+    if (verbose) {
+      printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+    }
+    this->findContentSubDirectories(this->_Directories->_ContentsDir,verbose);
+    this->fillInMissingPaths(verbose);
     // While building generated is within the executable directory
     this->_Directories->_GeneratedDir = this->_Directories->_ExecutableDir / "generated";
+    if (verbose) {
+      printf("%s:%d   Set _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());
+    }
   } else {
+    if (verbose) {
+      printf("%s:%d   Did not find src dir\n", __FILE__, __LINE__ );
+    }
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
 #endif
@@ -148,8 +173,15 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
     one_up_contents /= std::string("Contents");
     this->_Directories->_ContentsDir = one_up_contents;
-    this->findContentSubDirectories(one_up_contents);
-    this->fillInMissingPaths();
+    if (verbose) {
+      printf("%s:%d   Set _ContentsDir = %s\n", __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str());
+    }
+    this->findContentSubDirectories(one_up_contents,verbose);
+    this->fillInMissingPaths(verbose);
+  }
+  if (verbose) {
+    printf("%s:%d  Final bundle setup:\n", __FILE__, __LINE__ );
+    printf("%s\n", this->describe().c_str());
   }
 #ifdef DEBUG_DESC_BUNDLE
   printf("%s\n", this->describe().c_str());
@@ -222,9 +254,12 @@ boost_filesystem::path Bundle::findAppDir(const string &argv0, const string &cwd
   THROW_HARD_ERROR(BF("Could not determine absolute path to executable: " + argv0 + "\n" + " set environment variable(" + appVariableName + ") before running\n" + " or add application directory to PATH"));
 }
 
-void Bundle::findContentSubDirectories(boost_filesystem::path contentDir) {
+void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool verbose) {
   if ( !bf::exists(contentDir) ) {
     bf::create_directories(contentDir);
+    if (verbose) {
+      printf("%s:%d Setting up contentDir = %s\n", __FILE__, __LINE__, contentDir.string().c_str());
+    }
   }
   string appDirName;
 #ifdef _TARGET_OS_DARWIN
@@ -242,18 +277,39 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir) {
         std::transform(leaf.begin(), leaf.end(), leaf.begin(), ::tolower);
         if (leaf == "resources" && (this->_Directories->_ResourcesDir.empty())) {
           this->_Directories->_ResourcesDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _ResourcesDir = %s\n", __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str());
+          }
         } else if (leaf == "lib" && (this->_Directories->_LibDir.empty())) {
           this->_Directories->_LibDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
+          }
         } else if (leaf == "bitcode" && (this->_Directories->_BitcodeDir.empty())) {
           this->_Directories->_BitcodeDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _BitcodeDir = %s\n", __FILE__, __LINE__, this->_Directories->_BitcodeDir.string().c_str());
+          }
         } else if (leaf == "source-code" && (this->_Directories->_SourceDir.empty())) {
-          this->_Directories->_IncludeDir = dirs->path();
+          this->_Directories->_SourceDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
+          }
         } else if (leaf == "include" && (this->_Directories->_IncludeDir.empty())) {
           this->_Directories->_IncludeDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _IncludeDir = %s\n", __FILE__, __LINE__, this->_Directories->_IncludeDir.string().c_str());
+          }
         } else if (leaf == "lisp" && (this->_Directories->_LispSourceDir.empty())) {
           this->_Directories->_LispSourceDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _LispSourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_LispSourceDir.string().c_str());
+          }
         } else if (leaf == "generated" && (this->_Directories->_GeneratedDir.empty() )) {
           this->_Directories->_GeneratedDir = dirs->path();
+          if (verbose) {
+            printf("%s:%d Setting up _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());
+          }
         }
       }
       dirs++;
@@ -261,21 +317,33 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir) {
   }
   char *homedir = getenv("CLASP_HOME");
   if (homedir != NULL) {
-    //	    printf("Using CLASP_LISP_SOURCE_DIR --> %s\n", lispdir );
+    this->_Directories->_SourceDir = boost_filesystem::path(homedir);
     boost_filesystem::path lispdir = boost_filesystem::path(homedir) / "src" / "lisp";
     this->_Directories->_LispSourceDir = boost_filesystem::path(lispdir);
-    this->_Directories->_SourceDir = boost_filesystem::path(homedir);
+    boost_filesystem::path includedir = boost_filesystem::path(homedir) / "include";
+    this->_Directories->_IncludeDir = boost_filesystem::path(includedir);
+    if (verbose) {
+      printf("%s:%d  Using CLASP_HOME to set _SourceDir = %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.string().c_str());
+      printf("        and to set _LispSourceDir = %s\n",this->_Directories->_LispSourceDir.string().c_str());
+      printf("        and to set _IncludeDir = %s\n", this->_Directories->_IncludeDir.string().c_str());
+    }
   }
 }
 
 
-void Bundle::fillInMissingPaths() {
+void Bundle::fillInMissingPaths(bool verbose) {
   if ( !bf::exists(this->_Directories->_ContentsDir) ) {
     bool created = bf::create_directory(this->_Directories->_ContentsDir);
+    if (verbose) {
+      printf("%s:%d  Created _ContentsDir = %s\n",  __FILE__, __LINE__, this->_Directories->_ContentsDir.string().c_str() );
+    }
   }
   if ( this->_Directories->_ResourcesDir.empty() ) {
     this->_Directories->_ResourcesDir = this->_Directories->_ContentsDir / "Resources";
     bool created = bf::create_directory(this->_Directories->_ResourcesDir);
+    if (verbose) {
+      printf("%s:%d  Created _ResourcesDir = %s\n",  __FILE__, __LINE__, this->_Directories->_ResourcesDir.string().c_str() );
+    }
   }
 }
 
@@ -286,11 +354,12 @@ string Bundle::describe() {
   ss << "BitcodeDir:      " << this->_Directories->_BitcodeDir.string() << std::endl;
   ss << "Contents dir:    " << this->_Directories->_ContentsDir.string() << std::endl;
   ss << "Resources dir:   " << this->_Directories->_ResourcesDir.string() << std::endl;
-  ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
   ss << "Lisp source dir: " << this->_Directories->_LispSourceDir.string() << std::endl;
+  ss << "Source dir:      " << this->_Directories->_SourceDir.string() << std::endl;
   ss << "Generated dir:   " << this->_Directories->_GeneratedDir.string() << std::endl;
   ss << "Include dir:     " << this->_Directories->_IncludeDir.string() << std::endl;
   ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
+  ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
   return ss.str();
 }
 
