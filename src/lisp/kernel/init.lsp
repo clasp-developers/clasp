@@ -876,9 +876,6 @@ a relative path from there."
     :all
     :bclasp
     #'add-cleavir-build-files
-    :pre-addons
-    #P"modules/serve-event/serve-event"
-    #P"modules/asdf/build/asdf"
     #'maybe-insert-epilogue-cclasp
     :cclasp
 ;;    lsp;pprint
