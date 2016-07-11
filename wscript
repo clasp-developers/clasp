@@ -11,6 +11,7 @@ try:
 except ImportError:
     from io import StringIO
 from waflib.extras import clang_compilation_database
+from waflib.Errors import ConfigurationError
 from waflib import Utils
 
 top = '.'
@@ -360,7 +361,7 @@ def configure(cfg):
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     try:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
-    except waflib.Errors.ConfigurationError:
+    except ConfigurationError:
         cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     cfg.check_cxx(stlib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
