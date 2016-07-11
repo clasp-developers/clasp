@@ -555,6 +555,12 @@ def build(bld):
                     bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable)
                     cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
                     bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
+                    cmp_addons = compile_addons(env=bld.env)
+                    cmp_addons.set_inputs(cclasp_executable)
+                    asdf_fasl = bld.path.find_or_declare("cboehmdc/modules/asdf/build/asdf.fasl")
+                    cmp_addons.set_outputs(asdf_fasl)
+                    bld.add_to_group(cmp_addons)
+                    bld.install_as('${PREFIX}/Contents/Resources/bitcode/cboehmdc/modules/asdf/build/asdf.fasl',asdf_fasl)
 
 
 from waflib import TaskGen
@@ -610,6 +616,19 @@ class compile_cclasp(Task.Task):
         return super(compile_cclasp, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile cclasp using... '
+    
+
+class compile_addons(Task.Task):
+    def run(self):
+        print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
+        cmd = '%s -N -e "(compile-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        print("  cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(compile_cclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Compile addons using... '
     
 
 class llvm_link(Task.Task):
