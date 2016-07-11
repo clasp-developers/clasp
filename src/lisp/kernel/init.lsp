@@ -113,7 +113,7 @@
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
 (export '*register-with-pde-hook*)
-(core::fset 'register-with-pde
+(core:fset 'register-with-pde
              #'(lambda (whole env)
                  (let* ((definition (second whole))
                         (output-form (third whole)))
@@ -132,7 +132,7 @@
   (core:select-package :core))
 
 
-(si::fset 'core::defvar #'(lambda (whole env)
+(si:fset 'core::defvar #'(lambda (whole env)
 			     (let ((var (cadr whole))
 				   (formp (cddr whole))
 				   (form (caddr whole))
@@ -721,14 +721,20 @@ a relative path from there."
     bitcode-path))
 (export 'compile-kernel-file)
 
+(eval-when (:compile-toplevel :execute)
+  (core:fset 'compile-execute-time-value
+             #'(lambda (whole env)
+                 (let* ((expression (second whole))
+                        (result (eval expression)))
+                   `',result))
+             t))
+
+(defun read-cleavir-system ()
+  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp))))
+    (unwind-protect (read fin) (close fin))))
+
 (defun add-cleavir-build-files ()
-  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp)))
-         cleavir-files)
-    (unwind-protect
-         (progn
-           (setq cleavir-files (read fin)))
-      (close fin))
-    cleavir-files))
+  (compile-execute-time-value (read-cleavir-system)))
 
 (defun maybe-insert-epilogue-aclasp ()
   "Insert epilogue if we are compiling aclasp"
@@ -1050,10 +1056,11 @@ Return files."
       (progn
         (load-system :start :cmp-pre-epilogue :system system)
         (let* ((*target-backend* target-backend)
-               (files (out-of-date-bitcodes :min-start :cmp-pre-epilogue :system system)))
+               (files (out-of-date-bitcodes :min-start :cmp-pre-epilogue :system system))
+               (files-with-epilogue (out-of-date-bitcodes :min-start :cmp :system system)))
           (with-compilation-unit ()
             (compile-system files :reload t)
-            (compile-system (out-of-date-bitcodes :cmp-pre-epilogue :cmp :system system) :reload nil))
+            (if files-with-epilogue (compile-system (bitcode-pathnames :cmp-pre-epilogue :cmp :system system) :reload nil)))
           (let ((cl-bitcode-pathname (build-common-lisp-bitcode-pathname))
                 (all-bitcode (bitcode-pathnames :min-start :cmp)))
             (if (out-of-date-target cl-bitcode-pathname all-bitcode)
@@ -1099,7 +1106,7 @@ Return files."
 (defun aclasp-features ()
   (remove-stage-features)
   (setq *features* (list* :ecl-min *features*)))
-(core::fset 'with-aclasp-features
+(core:fset 'with-aclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
                   `(let ((*features* (cons :ecl-min *features*)))
@@ -1117,7 +1124,7 @@ Return files."
 (defun bclasp-features()
   (remove-stage-features)
   (setq *features* (list* :clos :bclasp *features*)))
-(core::fset 'with-bclasp-features
+(core:fset 'with-bclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
                   `(let ((*features* (list* :bclasp :clos *features*)))
@@ -1128,7 +1135,7 @@ Return files."
 (defun cclasp-features ()
   (remove-stage-features)
   (setq *features* (list* :clos :cclasp *features*)))
-(core::fset 'with-cclasp-features
+(core:fset 'with-cclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
                   `(let ((*features* (list* :cclasp :clos *features*)))
