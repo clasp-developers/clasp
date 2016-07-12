@@ -121,6 +121,14 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s-%s' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
+    def fasl_name(self,stage=None):
+        if ( stage == None ):
+            use_stage = self.stage_char
+        else:
+            use_stage = stage
+        if (not (use_stage>='a' and use_stage <= 'z')):
+            raise Exception("Bad stage: %s"% use_stage)
+        return '%s%s-%s-image.fasl' % (use_stage,APP_NAME,self.gc_name)
     def common_lisp_bitcode_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -531,26 +539,26 @@ def build(bld):
             print("About to add compile_aclasp")
             cmp_aclasp = compile_aclasp(env=bld.env)
             cmp_aclasp.set_inputs(clasp_executable)
-            aclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='a'))
-            cmp_aclasp.set_outputs(aclasp_executable)
+            aclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
+            cmp_aclasp.set_outputs(aclasp_product)
             bld.add_to_group(cmp_aclasp)
-            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_executable.name), aclasp_executable)
+            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_product.name), aclasp_product)
             aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
             bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
             if (stage_val >= 2):
                 print("About to add compile_bclasp")
                 cmp_bclasp = compile_bclasp(env=bld.env)
-                cmp_bclasp.set_inputs(aclasp_executable)
-                bclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='b'))
-                cmp_bclasp.set_outputs(bclasp_executable)
+                cmp_bclasp.set_inputs([clasp_executable,aclasp_product])
+                bclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
+                cmp_bclasp.set_outputs(bclasp_product)
                 bld.add_to_group(cmp_bclasp)
-                bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_executable.name), bclasp_executable)
+                bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_product.name), bclasp_product)
                 bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
                 bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
                 if (stage_val >= 3):
                     print("About to add compile_cclasp")
                     cmp_cclasp = compile_cclasp(env=bld.env)
-                    cmp_cclasp.set_inputs(bclasp_executable)
+                    cmp_cclasp.set_inputs([clasp_executable,bclasp_product])
                     cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                     cmp_cclasp.set_outputs(cclasp_executable)
                     bld.add_to_group(cmp_cclasp)
@@ -595,10 +603,13 @@ class compile_aclasp(Task.Task):
     def keyword(self):
         return 'Compile aclasp using... '
 
+#
+# Use the aclasp fasl file
 class compile_bclasp(Task.Task):
     def run(self):
-        print("In compile_bclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
+#        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -i %s -f ecl-min -N -e "(compile-aclasp)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -609,8 +620,9 @@ class compile_bclasp(Task.Task):
 
 class compile_cclasp(Task.Task):
     def run(self):
-        print("In compile_cclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -N -e "(compile-cclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
+#        cmd = '%s -N -e "(compile-cclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -i %s -f ecl-min -N -e "(compile-aclasp)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
