@@ -93,7 +93,7 @@
 
 (in-package :cmp)
 
-(defun execute-link-fasl (in-bundle-file in-all-names &key (link-type :executable))
+(defun execute-link-fasl (in-bundle-file in-all-names)
   ;; options are a list of strings like (list "-v")
   (let ((options nil)
         (all-object-files (mapcar (lambda (n)

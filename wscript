@@ -128,7 +128,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s-image.fasl' % (use_stage,APP_NAME,self.gc_name)
+        return '%s%s-%s-%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
     def common_lisp_bitcode_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -594,7 +594,7 @@ def add_dsymutil_task(self):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -I -f ecl-min -N -e "(compile-aclasp :link-type :executable)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -I -f ecl-min -N -e "(compile-aclasp :link-type :fasl)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -609,7 +609,7 @@ class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
 #        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -f ecl-min -N -e "(compile-bclasp)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -N -e "(compile-bclasp :link-type :fasl)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -622,7 +622,7 @@ class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
 #        cmd = '%s -N -e "(compile-cclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -f ecl-min -N -e "(compile-aclasp)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -N -e "(compile-cclasp :link-type :executable)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
