@@ -381,13 +381,13 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-intrinsics-bitcode-pathname (link-type)
   (cond
     ((eq link-type :fasl)
-     (translate-logical-pathname (bformat nil "bitcode:%s-intrinsics-cxx.lbc" +bitcode-name+)))
+     (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.lbc" +bitcode-name+)))
     ((eq link-type :executable)
-     (translate-logical-pathname (bformat nil "bitcode:%s-all-cxx.lbc" +bitcode-name+)))
+     (translate-logical-pathname (bformat nil "lib:%s-all-cxx.lbc" +bitcode-name+)))
     (t (error "Provide a bitcode file for the link-type ~a" link-type))))
 
 (defun build-common-lisp-bitcode-pathname ()
-  (translate-logical-pathname (pathname (bformat nil "bitcode:%sclasp-%s-common-lisp.bc" (default-target-stage) +variant-name+))))
+  (translate-logical-pathname (pathname (bformat nil "lib:%sclasp-%s-common-lisp.bc" (default-target-stage) +variant-name+))))
 
 
 (defconstant +image-pathname+ (make-pathname :directory '(:relative) :name "image" :type "fasl"))
@@ -440,7 +440,7 @@ a relative path from there."
             (probe-file (merge-pathnames (merge-pathnames module (make-pathname :type "lisp")) root))
             (error "Could not find a lisp source file with root: ~a module: ~a" root module))))
     (let ((module (ensure-relative-pathname partial-pathname))
-          (target-host "bitcode")
+          (target-host "lib")
           (target-dir (build-target-dir type stage))
           pn)
       #+dbg-print(bformat t "DBG-PRINT build-pathname  module: %s\n" module)
@@ -458,7 +458,7 @@ a relative path from there."
                          (t
                           (find-lisp-source module (translate-logical-pathname "LISP-SOURCE:")))))
                       ((eq type :executable)
-                       (let* ((stage-char (default-target-stage))cond
+                       (let* ((stage-char (default-target-stage))
                               (filename (bformat nil "%s%s-%s" stage-char +application-name+ +bitcode-name+))
                               (exec-pathname (merge-pathnames (make-pathname :name filename :type nil :defaults module) (translate-logical-pathname "app-executable:") )))
                          exec-pathname))
@@ -604,7 +604,7 @@ a relative path from there."
                     given-stage
                     (default-target-stage)))
          (garbage-collector (build-configuration))
-         (target-backend (bformat nil "%s-%s" stage garbage-collector)))
+         (target-backend (bformat nil "%s%s" stage garbage-collector)))
     target-backend))
 (export 'default-target-backend)
 
@@ -1045,7 +1045,7 @@ Return files."
   (bformat t "%s\n" (source-file-names :min-start :cmp)))
 (defun bitcode-files-aclasp ()
   (with-aclasp-features (bformat t "%s\n" (namestring (build-common-lisp-bitcode-pathname)))))
-(defun compile-aclasp (&key clean (target-backend (default-target-backend)) (system *system-files*))
+(defun compile-aclasp (&key clean (link-type :bc) (target-backend (default-target-backend)) (system *system-files*))
   (aclasp-features)
   (if clean (clean-system :min-start :no-prompt t))
   (if (out-of-date-bitcodes :min-start :cmp)
@@ -1062,10 +1062,12 @@ Return files."
             (if (out-of-date-target cl-bitcode-pathname all-bitcode)
                 (let ((exec-pathname (build-pathname +image-pathname+ :executable)))
                   (cmp:link-bitcode-modules cl-bitcode-pathname all-bitcode)
-                  (bformat t "Linking aclasp executable\n")
-                  (cmp:llvm-link exec-pathname
-                                 :lisp-bitcode-files (list cl-bitcode-pathname)
-                                 :link-type :executable))))))))
+                  (if (not (eq link-type :bc)) ;; link an executable
+                      (progn
+                        (bformat t "Linking aclasp %s\n" (string-downcase (string link-type)))
+                        (cmp:llvm-link exec-pathname
+                                       :lisp-bitcode-files (list cl-bitcode-pathname)
+                                       :link-type link-type))))))))))
                    
 (defun recursive-remove-from-list (item list)
   (if list
@@ -1150,7 +1152,7 @@ Return files."
   (bformat t "%s\n" (source-file-names :init :all)))
 (defun bitcode-files-bclasp ()
   (with-bclasp-features (bformat t "%s\n" (namestring (build-common-lisp-bitcode-pathname)))))
-(defun compile-bclasp (&key clean)
+(defun compile-bclasp (&key clean (link-type :bc))
   (bclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
   (if clean (clean-system :init :no-prompt t))
@@ -1165,17 +1167,35 @@ Return files."
               (if (out-of-date-target cl-bitcode-pathname all-bitcode)
                   (let ((exec-pathname (build-pathname +image-pathname+ :executable)))
                     (cmp:link-bitcode-modules cl-bitcode-pathname all-bitcode)
-                    (bformat t "Linking bclasp executable\n")
-                    (cmp:llvm-link exec-pathname
-                                   :lisp-bitcode-files (list cl-bitcode-pathname)
-                                   :link-type :executable)))))))))
+                    (if (not (eq link-type :bc))
+                        (progn
+                          (bformat t "Linking bclasp %s\n" (string-downcase (string link-type)))
+                          (cmp:llvm-link exec-pathname
+                                         :lisp-bitcode-files (list cl-bitcode-pathname)
+                                         :link-type link-type)))))))))))
 
-(export '(compile-cclasp source-files-cclasp bitcode-files-cclasp))
+(export '(compile-cclasp recompile-cclasp source-files-cclasp bitcode-files-cclasp))
 (defun source-files-cclasp ()
   (bformat t "%s\n" (source-file-names :init :cclasp)))
 (defun bitcode-files-cclasp ()
   (with-cclasp-features (bformat t "%s\n" (namestring (build-common-lisp-bitcode-pathname)))))
-(defun compile-cclasp (&key clean)
+(defun recompile-cclasp (&key clean (link-type :executable))
+  (if clean (clean-system :init :no-prompt t))
+  (let ((files (out-of-date-bitcodes :init :cclasp)))
+    (compile-system files)
+    (let ((cl-bitcode-pathname (build-common-lisp-bitcode-pathname))
+          (all-bitcode (bitcode-pathnames :init :cclasp)))
+      (if (out-of-date-target cl-bitcode-pathname all-bitcode)
+          (let ((exec-pathname (build-pathname +image-pathname+ :executable)))
+            (cmp:link-bitcode-modules cl-bitcode-pathname all-bitcode)
+            (if (not (eq link-type :bc))
+                (progn
+                  (bformat t "Linking cclasp %s\n" (string-downcase (string link-type))
+                  (cmp:llvm-link exec-pathname
+                                 :lisp-bitcode-files (list cl-bitcode-pathname)
+                                 :link-type link-type))))))))
+
+(defun compile-cclasp (&key clean (link-type :executable))
   (cclasp-features)
   (setq *system-files* (expand-build-file-list *build-files*))
   (if clean (clean-system :init :no-prompt t))
@@ -1191,10 +1211,12 @@ Return files."
                (if (out-of-date-target cl-bitcode-pathname all-bitcode)
                    (let ((exec-pathname (build-pathname +image-pathname+ :executable)))
                      (cmp:link-bitcode-modules cl-bitcode-pathname all-bitcode)
-                     (bformat t "Linking cclasp executable\n")
-                     (cmp:llvm-link exec-pathname
-                                    :lisp-bitcode-files (list cl-bitcode-pathname)
-                                    :link-type :executable))))))))))
+                     (if (not (eq link-type :bc))
+                         (progn
+                           (bformat t "Linking cclasp %s\n" (string link-type))
+                           (cmp:llvm-link exec-pathname
+                                          :lisp-bitcode-files (list cl-bitcode-pathname)
+                                          :link-type link-type))))))))))))
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))
@@ -1287,18 +1309,9 @@ Return files."
 	(load-clasprc)
 	(core:top-level))
       (core:low-level-repl)))
-
-(eval-when (:execute :compile-toplevel :load-toplevel)
-  (bformat t "*features* --> %s\n" *features*))
   
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
   (bformat t "Low level repl\n")
   (core:low-level-repl))
-
-(eval-when (:execute)
-  (bformat t "Reached the end of init.lsp  :execute\n"))
-
-(eval-when (:load-toplevel)
-  (bformat t "Reached the end of init.lsp  :load-toplevel\n"))

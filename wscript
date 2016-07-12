@@ -103,7 +103,7 @@ def configure_clasp(cfg,variant):
     cfg.define("BUILD_STLIB", libraries_as_link_flags(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags(cfg.env.LIB_ST,cfg.env.LIB))
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS))
-    cfg.define("DEBUG_STARTUP",1)
+#    cfg.define("DEBUG_STARTUP",1)
 
 def strip_libs(libs):
     result = []
@@ -544,7 +544,7 @@ def build(bld):
             bld.add_to_group(cmp_aclasp)
             bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_product.name), aclasp_product)
             aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
-            bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
+            bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
             if (stage_val >= 2):
                 print("About to add compile_bclasp")
                 cmp_bclasp = compile_bclasp(env=bld.env)
@@ -554,7 +554,7 @@ def build(bld):
                 bld.add_to_group(cmp_bclasp)
                 bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_product.name), bclasp_product)
                 bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
-                bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
+                bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
                 if (stage_val >= 3):
                     print("About to add compile_cclasp")
                     cmp_cclasp = compile_cclasp(env=bld.env)
@@ -564,13 +564,13 @@ def build(bld):
                     bld.add_to_group(cmp_cclasp)
                     bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable)
                     cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
-                    bld.install_as('${PREFIX}/Contents/Resources/bitcode/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
+                    bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
                     cmp_addons = compile_addons(env=bld.env)
                     cmp_addons.set_inputs(cclasp_executable)
-                    asdf_fasl = bld.path.find_or_declare("cboehmdc/modules/asdf/build/asdf.fasl")
+                    asdf_fasl = bld.path.find_or_declare("cclasp-boehmdc/modules/asdf/asdf.fasl")
                     cmp_addons.set_outputs(asdf_fasl)
                     bld.add_to_group(cmp_addons)
-                    bld.install_as('${PREFIX}/Contents/Resources/bitcode/cboehmdc/modules/asdf/build/asdf.fasl',asdf_fasl)
+                    bld.install_as('${PREFIX}/Contents/Resources/lib/cclasp-boehmdc/modules/asdf/asdf.fasl',asdf_fasl)
 
 
 from waflib import TaskGen
@@ -594,7 +594,7 @@ def add_dsymutil_task(self):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -I -f ecl-min -N -e "(compile-aclasp)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -I -f ecl-min -N -e "(compile-aclasp :link-type :executable)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -609,7 +609,7 @@ class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
 #        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -f ecl-min -N -e "(compile-aclasp)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -f ecl-min -N -e "(compile-bclasp)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -635,12 +635,12 @@ class compile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -N -e "(compile-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
-        return super(compile_cclasp, self).exec_command(cmd, **kw)
+        return super(compile_addons, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile addons using... '
     
@@ -734,8 +734,8 @@ def preprocess_task_generator(self):
     intrinsics_bitcode_node = self.path.find_or_declare(intrinsics_bitcode_name)
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_node)
-    self.bld.install_files('${PREFIX}/Contents/Resources/bitcode/%s'%intrinsics_bitcode_name,intrinsics_bitcode_node)
-    self.bld.install_files('${PREFIX}/Contents/Resources/bitcode/%s'%cxx_all_bitcode_name,cxx_all_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%intrinsics_bitcode_name,intrinsics_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%cxx_all_bitcode_name,cxx_all_bitcode_node)
 
 
 def init(ctx):
