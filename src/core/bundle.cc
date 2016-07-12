@@ -57,7 +57,6 @@ namespace core {
 struct BundleDirectories {
   boost_filesystem::path _StartupWorkingDir;
   boost_filesystem::path _ExecutableDir;
-  boost_filesystem::path _BitcodeDir;
   boost_filesystem::path _ContentsDir;
   boost_filesystem::path _ResourcesDir;
   boost_filesystem::path _LispSourceDir;
@@ -143,9 +142,9 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
     if (verbose) {
       printf("%s:%d   Found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
     }
-    this->_Directories->_BitcodeDir = this->_Directories->_ExecutableDir;
+    this->_Directories->_LibDir = this->_Directories->_ExecutableDir;
     if (verbose) {
-      printf("%s:%d   Set _BitcodeDir = %s\n", __FILE__, __LINE__, this->_Directories->_BitcodeDir.string().c_str());
+      printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
     }
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Looking for Content subdirectories for building\n", __FILE__, __LINE__ );
@@ -285,11 +284,6 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool v
           if (verbose) {
             printf("%s:%d Setting up _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
           }
-        } else if (leaf == "bitcode" && (this->_Directories->_BitcodeDir.empty())) {
-          this->_Directories->_BitcodeDir = dirs->path();
-          if (verbose) {
-            printf("%s:%d Setting up _BitcodeDir = %s\n", __FILE__, __LINE__, this->_Directories->_BitcodeDir.string().c_str());
-          }
         } else if (leaf == "source-code" && (this->_Directories->_SourceDir.empty())) {
           this->_Directories->_SourceDir = dirs->path();
           if (verbose) {
@@ -351,14 +345,13 @@ void Bundle::fillInMissingPaths(bool verbose) {
 string Bundle::describe() {
   stringstream ss;
   ss << "ExecutableDir:   " << this->_Directories->_ExecutableDir.string() << std::endl;
-  ss << "BitcodeDir:      " << this->_Directories->_BitcodeDir.string() << std::endl;
+  ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
   ss << "Contents dir:    " << this->_Directories->_ContentsDir.string() << std::endl;
   ss << "Resources dir:   " << this->_Directories->_ResourcesDir.string() << std::endl;
   ss << "Lisp source dir: " << this->_Directories->_LispSourceDir.string() << std::endl;
   ss << "Source dir:      " << this->_Directories->_SourceDir.string() << std::endl;
   ss << "Generated dir:   " << this->_Directories->_GeneratedDir.string() << std::endl;
   ss << "Include dir:     " << this->_Directories->_IncludeDir.string() << std::endl;
-  ss << "Lib dir:         " << this->_Directories->_LibDir.string() << std::endl;
   ss << "Databases dir:   " << this->_Directories->_DatabasesDir.string() << std::endl;
   return ss.str();
 }
@@ -428,9 +421,9 @@ void Bundle::setup_pathname_translations()
   {
     Cons_sp pts =
       Cons_O::createList(
-                         Cons_O::createList(Str_O::create("BITCODE:**;*.*"),
-                                            generate_pathname(this->_Directories->_BitcodeDir)));
-    core__pathname_translations(Str_O::create("BITCODE"), _lisp->_true(), pts);
+                         Cons_O::createList(Str_O::create("LIB:**;*.*"),
+                                            generate_pathname(this->_Directories->_LibDir)));
+    core__pathname_translations(Str_O::create("LIB"), _lisp->_true(), pts);
   }
     // setup the TMP logical-pathname-translations
   Cons_sp entryTmp = Cons_O::createList(Str_O::create("tmp:**;*.*"),
