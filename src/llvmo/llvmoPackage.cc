@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/loadTimeValues.h>
+#include <clasp/core/unixfsys.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
@@ -76,6 +77,36 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, STARrunTimeExecutionEngineSTAR);
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
+}
+
+CL_LAMBDA(filename &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+{
+  core::DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
+  T_sp tn = cl__truename(filename);
+  if ( tn.nilp() ) {
+    SIMPLE_ERROR(BF("Could not get truename for %s") % _rep_(filename));
+  }
+  core::T_sp tnamestring = cl__namestring(filename);
+  if ( tnamestring.nilp() ) {
+    SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
+  }
+  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
+    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
+  }
+  core::Str_sp namestring = gctools::As<core::Str_sp>(tnamestring);
+  Module_sp m = llvm_sys__parseBitcodeFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
+  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
+  TargetOptions_sp targetOptions = TargetOptions_O::make();
+  engineBuilder->setTargetOptions(targetOptions);
+  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
+  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
+    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
+  }
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,
+                                                     comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue(),
+                                                     namestring);
+  return true;
 }
 
 CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {

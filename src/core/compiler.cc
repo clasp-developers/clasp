@@ -25,7 +25,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-// #define DEBUG_STARTUP
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
 #define DEBUG_LEVEL_FULL

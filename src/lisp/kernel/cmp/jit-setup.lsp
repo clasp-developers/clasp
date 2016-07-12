@@ -137,11 +137,11 @@ Return the module and the global variable that represents the load-time-value-ho
 
 
 (llvm-sys:initialize-native-target)
-(defvar *llvm-context* (llvm-sys::get-global-context))
+;;;(defvar *llvm-context* (llvm-sys::get-global-context))
 
 (defvar *run-time-module* nil)
 
-(defvar *load-time-value-holder-name* "load-time-value-vector")
+;;;(defvar *load-time-value-holder-name* "load-time-value-vector")
 
 (defvar *the-module* nil "This stores the module into which compile puts its stuff")
 (defvar *run-time-execution-engine* nil)
@@ -290,21 +290,19 @@ No DIBuilder is defined for the default module")
 
 (setq core:*llvm-function-name-hook* #'jit-function-name)
 
-
+;;; Use the one in llvm-sys
+#+(or)
 (defun load-bitcode (filename &optional verbose print external_format)
   "Load a bitcode file, link it and execute it"
-  (let ((*package* *package*)
-        (time-load-start (clock-gettime-nanoseconds)))
-    ;;       (bformat t "Loading module from file: %s\n" filename)
-    (let* ((module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
-           (engine-builder (llvm-sys:make-engine-builder module))
-           ;; After make-engine-builder MODULE becomes invalid!!!!!
-           (target-options (llvm-sys:make-target-options)))
-      (llvm-sys:set-target-options engine-builder target-options)
+  (let* ((*package* *package*)
+         (module (llvm-sys:parse-bitcode-file (namestring (truename filename)) *llvm-context*))
+         (engine-builder (llvm-sys:make-engine-builder module))
+         (target-options (llvm-sys:make-target-options)))
+    (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-      (let* ((execution-engine (llvm-sys:create engine-builder)))
-        (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
-                                                                              *load-time-value-holder-name*
-                                                                              (namestring (truename filename)))
-        t))))
+    (let* ((execution-engine (llvm-sys:create engine-builder)))
+      (llvm-sys:finalize-engine-and-register-with-gc-and-run-main-functions execution-engine 
+                                                                            *load-time-value-holder-name*
+                                                                            (namestring (truename filename)))
+      t)))
 (export 'load-bitcode)

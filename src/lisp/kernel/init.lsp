@@ -35,7 +35,6 @@
 (setq core::*clang-bin* (ext:getenv "CLASP_CLANG_PATH"))
 (export 'core::*clang-bin*)
 
-(setq *features* (cons :clasp *features*))
 (setq *features* (cons :compile-mcjit *features*))
 
 
@@ -580,7 +579,7 @@ a relative path from there."
     (if load-bc
 	(progn
 	  (bformat t "Loading bitcode file: %s\n" bc-path)
-	  (load-bitcode bc-path))
+	  (llvm-sys:load-bitcode bc-path))
 	(if (probe-file-case lsp-path)
 	    (progn
               (if cmp:*implicit-compile-hook*
@@ -717,7 +716,7 @@ a relative path from there."
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
-		  (load-bitcode bitcode-path))))))
+		  (llvm-sys:load-bitcode bitcode-path))))))
     bitcode-path))
 (export 'compile-kernel-file)
 
@@ -1079,6 +1078,7 @@ Return files."
 (defun remove-stage-features ()
   (setq *features* (recursive-remove-from-list :ecl-min *features*))
   (setq *features* (recursive-remove-from-list :clos *features*))
+  (setq *features* (recursive-remove-from-list :aclasp *features*))
   (setq *features* (recursive-remove-from-list :bclasp *features*))
   (setq *features* (recursive-remove-from-list :cclasp *features*)))
 
@@ -1102,11 +1102,11 @@ Return files."
 (export '(aclasp-features with-aclasp-features))
 (defun aclasp-features ()
   (remove-stage-features)
-  (setq *features* (list* :ecl-min *features*)))
+  (setq *features* (list* :aclasp :ecl-min *features*)))
 (core:fset 'with-aclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
-                  `(let ((*features* (cons :ecl-min *features*)))
+                  `(let ((*features* (list* :aclasp :ecl-min *features*)))
                      ,@body)))
             t)
 
@@ -1288,6 +1288,17 @@ Return files."
 	(core:top-level))
       (core:low-level-repl)))
 
+(eval-when (:execute :compile-toplevel :load-toplevel)
+  (bformat t "*features* --> %s\n" *features*))
+  
+#-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)
+  (bformat t "Low level repl\n")
   (core:low-level-repl))
+
+(eval-when (:execute)
+  (bformat t "Reached the end of init.lsp  :execute\n"))
+
+(eval-when (:load-toplevel)
+  (bformat t "Reached the end of init.lsp  :load-toplevel\n"))

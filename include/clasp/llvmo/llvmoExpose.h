@@ -4267,6 +4267,9 @@ struct from_object<llvm::CmpInst::Predicate, std::true_type> {
 };
 
 namespace llvmo {
+  void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::Str_sp globalRunTimeValueName, core::T_sp fileName);
+
+  Module_sp llvm_sys__parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context);
 
 void initialize_llvmo_expose();
 }

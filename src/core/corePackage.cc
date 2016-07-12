@@ -170,6 +170,8 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
+SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
+SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,fiddle_faddle);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
@@ -374,7 +376,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARllvmFunctionNameHookSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, pathnamep);
 SYMBOL_EXPORT_SC_(CorePkg, STARtopLevelCommandHookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadSearchListSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, loadBitcode);
+SYMBOL_EXPORT_SC_(LlvmoPkg, loadBitcode);
 SYMBOL_EXPORT_SC_(CorePkg, loadSource);
 SYMBOL_EXPORT_SC_(CorePkg, loadBundle);
 SYMBOL_EXPORT_SC_(ClPkg, STARloadPathnameSTAR);
@@ -1151,12 +1153,15 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARllvmVersionSTAR->defparameter(Str_O::create(LLVM_VERSION));
   _sym__PLUS_numberOfFixedArguments_PLUS_->defconstant(make_fixnum(LCC_ARGS_IN_REGISTERS));
   cl::_sym_STARrandom_stateSTAR->defparameter(RandomState_O::create());
+  comp::_sym_STARllvm_contextSTAR->defparameter(llvmo::LLVMContext_O::get_global_context());
+  comp::_sym_STARload_time_value_holder_nameSTAR->defparameter(core::Str_O::create("load-time-value-vector"));
   List_sp hooks = _Nil<T_O>();
   hooks = Cons_O::create(Cons_O::create(Str_O::create("fasl"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("bundle"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("dylib"), _sym_loadBundle), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("so"), _sym_loadBundle), hooks);
-  hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"), _sym_loadBitcode), hooks);
+  hooks = Cons_O::create(Cons_O::create(Str_O::create("bc"), llvmo::_sym_loadBitcode), hooks);
+  hooks = Cons_O::create(Cons_O::create(Str_O::create("lbc"), llvmo::_sym_loadBitcode), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("l"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("L"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("lsp"), _sym_loadSource), hooks);

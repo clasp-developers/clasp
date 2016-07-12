@@ -2747,18 +2747,30 @@ struct CtorStruct {
 CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::Str_sp globalRunTimeValueName, core::T_sp fileName) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
+#ifdef DEBUG_STARTUP
+  printf("%s:%d Entered %s\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
   finalizeEngineAndTime(engine);
   void (*clasp_ctor)() = reinterpret_cast<void(*)()>(engine->getGlobalValueAddress(CLASP_CTOR_FUNCTION_NAME));
 //  printf("%s:%d clasp_ctor --> %p\n", __FILE__, __LINE__, clasp_ctor );
   if ( clasp_ctor == NULL ) {
     SIMPLE_ERROR(BF("Could not get a pointer to %s in finalizeEngineAndRegisterWithGcAndRunMainFunctions") % CLASP_CTOR_FUNCTION_NAME );
   }
+#ifdef DEBUG_STARTUP
+  printf("%s:%d About to call clasp_ctor\n", __FILE__, __LINE__ );
+#endif
   (clasp_ctor)();
+#ifdef DEBUG_STARTUP
+  printf("%s:%d Returned from call clasp_ctor\n", __FILE__, __LINE__ );
+#endif
   if ( core::startup_functions_are_waiting() ) {
     core::startup_functions_invoke();
   } else {
     SIMPLE_ERROR(BF("There were no startup functions to invoke\n"));
   }
+#ifdef DEBUG_STARTUP
+  printf("%s:%d Leaving %s\n", __FILE__, __LINE__, __FUNCTION__ );
+#endif
 }
 
 CL_DEFUN void finalizeClosure(ExecutionEngine_sp oengine, core::Function_sp func) {

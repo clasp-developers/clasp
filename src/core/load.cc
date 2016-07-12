@@ -47,7 +47,7 @@ namespace core {
 CL_LAMBDA(source &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("loadSource");
-CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, T_sp externalFormat) {
+CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_sp externalFormat) {
   T_sp strm;
   void *strmPointer;
   if (cl__streamp(source)) {

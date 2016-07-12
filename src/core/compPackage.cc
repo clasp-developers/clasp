@@ -38,7 +38,6 @@ namespace comp {
 SYMBOL_SC_(CompPkg, aSingleCompilerSymbol);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTraceSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARlowLevelTracePrintSTAR);
-
 void initialize_compPackage() {
   list<string> lnicknames = {"CMP"};
   list<string> luse = {"COMMON-LISP"};
