@@ -157,7 +157,6 @@ class variant(object):
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_DEBUG_CXXFLAGS").split() )
-        print("CLASP_DEBUG_LINKFLAGS = %s" % os.getenv("CLASP_DEBUG_LINKFLAGS"))
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
     def common_setup(self,cfg):

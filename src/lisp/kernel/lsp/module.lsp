@@ -72,7 +72,7 @@ module."
 (pushnew #'(lambda (module)
 	     (let* ((module (string module))
 		    (dc-module (string-downcase module))
-		    (pn (make-pathname :host "lib" :directory (list (default-target-backend)))))
+		    (pn (make-pathname :host "lib" :directory (list :absolute (default-target-backend)))))
 	       (block require-block
 		 (dolist (name (list module dc-module))
 		   (dolist (type (list "fasl" "FASL" "bundle" "lsp" "lisp" "LSP" "LISP"))
