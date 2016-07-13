@@ -1318,7 +1318,6 @@ Return files."
 (defun run-repl ()
   (if (fboundp 'core:top-level)
       (progn
-	(require 'system)
 	(load-clasprc)
 	(core:top-level))
       (core:low-level-repl)))

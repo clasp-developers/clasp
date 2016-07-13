@@ -87,7 +87,6 @@ p  (core:pathname-translations "cclasp-boehm" '(("**;*.*" #P"SYS:build;system;cc
                                                             (if (member :use-mps *features*) "MPS" "Boehm" ) (software-version))))
                          :epilogue-form '(progn
                                           (cl:in-package :cl-user)
-                                          (require 'system)
                                           (core:load-clasprc)
                                           (core:process-command-line-load-eval-sequence)
                                           (let ((core:*use-interpreter-for-eval* nil))

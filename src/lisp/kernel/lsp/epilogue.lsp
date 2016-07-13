@@ -10,7 +10,6 @@
             (when (member :interactive *features*) (core:run-repl))))
 #+cclasp(eval-when (:load-toplevel)
           (cl:in-package :cl-user)
-          (require 'system)
           (core:load-clasprc)
           (core:process-command-line-load-eval-sequence)
           (let ((core:*use-interpreter-for-eval* nil))
