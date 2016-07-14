@@ -426,7 +426,6 @@ def configure(cfg):
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
     cfg.env.append_value('CXXFLAGS', ['-v'] )
-    cfg.env.append_value('CFLAGS', ['-v'] )
 #    cfg.env.append_value('CXXFLAGS', ['-I../src/main/'] )
     includes = [ 'include/' ]
     includes = includes + cfg.plugins_include_dirs
@@ -436,7 +435,6 @@ def configure(cfg):
 #    print("DEBUG includes_from_build_dir = %s\n" % includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
     cfg.env.append_value('CXXFLAGS', ["_GLIBCXX_USE_CXX11_ABI=1"])
-    cfg.env.append_value('CFLAGS', ["_GLIBCXX_USE_CXX11_ABI=1"])
     cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
     cfg.env.append_value('CFLAGS', includes_from_build_dir )
     cfg.env.append_value('CXXFLAGS', '-flto')
