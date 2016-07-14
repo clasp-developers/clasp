@@ -35,6 +35,8 @@
 (setq core::*clang-bin* (ext:getenv "CLASP_CLANG_PATH"))
 (export 'core::*clang-bin*)
 
+;;; Turn on compiler warnings for missing features
+#+(or)(setq *features* (cons :verbose-compiler *features*))
 (setq *features* (cons :compile-mcjit *features*))
 
 

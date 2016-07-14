@@ -4,7 +4,7 @@
   (let ((head (car decl)))
     (cond
       ((eq head 'cl:ftype)
-       #+silence-cclasp-compile-warnings(warn "*** Do something with proclaim ftype ~s~%" decl))
+       #+verbose-compiler(warn "*** Do something with proclaim ftype ~s~%" decl))
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
