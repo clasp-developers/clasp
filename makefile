@@ -173,6 +173,7 @@ boehmdc-o:
 
 redeye:
 	./waf -j $(PJOBS) build_cboehmdc_o
+	./waf -j $(PJOBS) build_impsprep_o
 	wbuild/boehmdc_o/cclasp_boehmdc_o \
 		-e "(require :clasp-analyzer)" \
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"lib:compile_commands.json\")))" \

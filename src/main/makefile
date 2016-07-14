@@ -318,9 +318,3 @@ mps-interface-boot:
 	build -j$(PJOBS) toolset=$(TOOLSET) link=$(LINK) program=clasp --prefix=$(CLASP_APP_EXECS)/mps-prep/$(VARIANT) gc=mps-prep release clasp_install
 	make compile-commands
 	make mps-interface-run-boot
-
-scrape:
-	echo $(CLASP_CLANGXX_PATH)
-	$(BJAM) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n -a >bin/all-commands.txt
-	$(BJAM) toolset=$(TOOLSET) link=$(LINK) program=clasp gc=boehm release -n >bin/commands.txt
-	sbcl --load "../scraper/scraper.lisp" -- $(CLASP_CLANGXX_PATH) $(CLASP_HOME)/include/ `pwd`/include/application.config bin/all-commands.txt bin/commands.txt
