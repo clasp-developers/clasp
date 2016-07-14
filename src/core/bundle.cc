@@ -387,7 +387,7 @@ Pathname_sp Bundle::getAppContentsResourcesPathname() {
 void Bundle::setup_pathname_translations()
 {
       // setup the SYS logical-pathname-translations
-  {
+  if ( !this->_Directories->_LispSourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
                          Cons_O::createList(Str_O::create("sys:**;*.*"),
@@ -397,28 +397,28 @@ void Bundle::setup_pathname_translations()
     core__pathname_translations(Str_O::create("sys"), _lisp->_true(), pts);
   }
       // setup the LISP-SOURCE logical-pathname-translations
-  {
+  if ( !this->_Directories->_LispSourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
                          Cons_O::createList(Str_O::create("LISP-SOURCE:**;*.*"),
                                             generate_pathname(this->_Directories->_LispSourceDir)));
     core__pathname_translations(Str_O::create("LISP-SOURCE"), _lisp->_true(), pts);
   }
-  {
+  if ( !this->_Directories->_SourceDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
                          Cons_O::createList(Str_O::create("SOURCE-DIR:**;*.*"),
                                             generate_pathname(this->_Directories->_SourceDir)));
     core__pathname_translations(Str_O::create("SOURCE-DIR"), _lisp->_true(), pts);
   }
-  {
+  if ( !this->_Directories->_GeneratedDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
                          Cons_O::createList(Str_O::create("GENERATED:**;*.*"),
                                             generate_pathname(this->_Directories->_GeneratedDir)));
     core__pathname_translations(Str_O::create("GENERATED"), _lisp->_true(), pts);
   }
-  {
+  if ( !this->_Directories->_LibDir.empty() ) {
     Cons_sp pts =
       Cons_O::createList(
                          Cons_O::createList(Str_O::create("LIB:**;*.*"),
@@ -442,13 +442,13 @@ void Bundle::setup_pathname_translations()
   }
 
     // setup the APP-CONTENTS logical-pathname-translations
-  {
+  if ( !this->_Directories->_ContentsDir.empty() ) {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(Str_O::create("app-contents:**;*.*"),
                                             generate_pathname(this->_Directories->_ContentsDir)));
     core__pathname_translations(Str_O::create("app-contents"), _lisp->_true(), appc);
   }
-  {
+  if ( !this->_Directories->_ResourcesDir.empty() ) {
     Cons_sp appc =
       Cons_O::createList(Cons_O::createList(Str_O::create("app-resources:**;*.*"),
                                             generate_pathname(this->_Directories->_ResourcesDir)));
