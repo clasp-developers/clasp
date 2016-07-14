@@ -407,6 +407,7 @@ def configure(cfg):
     cfg.define("CLASP_GIT_COMMIT","ecf5585")
     cfg.define("CLASP_VERSION","0.4.0-622-g9e0535b")
     cfg.define("CLBIND_DYNAMIC_LINK",1)
+    cfg.define("_GLIBCXX_USE_CXX11_ABI",1)
     cfg.define("DEBUG_CL_SYMBOLS",1)
     cfg.define("DEBUG_DRAG",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
