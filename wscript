@@ -407,7 +407,6 @@ def configure(cfg):
     cfg.define("CLASP_GIT_COMMIT","ecf5585")
     cfg.define("CLASP_VERSION","0.4.0-622-g9e0535b")
     cfg.define("CLBIND_DYNAMIC_LINK",1)
-    cfg.define("_GLIBCXX_USE_CXX11_ABI",1)
     cfg.define("DEBUG_CL_SYMBOLS",1)
     cfg.define("DEBUG_DRAG",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
@@ -426,7 +425,8 @@ def configure(cfg):
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-#    cfg.env.append_value('CXXFLAGS', ['-v'] )
+    cfg.env.append_value('CXXFLAGS', ['-v'] )
+    cfg.env.append_value('CFLAGS', ['-v'] )
 #    cfg.env.append_value('CXXFLAGS', ['-I../src/main/'] )
     includes = [ 'include/' ]
     includes = includes + cfg.plugins_include_dirs
@@ -435,6 +435,8 @@ def configure(cfg):
         includes_from_build_dir.append("-I%s/%s"%(cfg.path.abspath(),x))
 #    print("DEBUG includes_from_build_dir = %s\n" % includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
+    cfg.env.append_value('CXXFLAGS', ["_GLIBCXX_USE_CXX11_ABI=1"])
+    cfg.env.append_value('CFLAGS', ["_GLIBCXX_USE_CXX11_ABI=1"])
     cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
     cfg.env.append_value('CFLAGS', includes_from_build_dir )
     cfg.env.append_value('CXXFLAGS', '-flto')
