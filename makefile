@@ -170,39 +170,14 @@ boehmdc-o:
 	./waf -j $(PJOBS) build_cboehmdc_o
 #	make -C src/main bclasp-boehmdc-addons
 
-boot-cclasp:
-	make boot
-	make -C src/main cclasp-boehmdc-bitcode
-	make -C src/main cclasp-boehmdc-fasl
-	make -C src/main cclasp-boehmdc-addons
 
-boot-mps-interface:
-	make boot
-	make -C src/main mps-interface-boot
-#	make -C src/main bclasp-boehmdc
-#	make -C src/main bclasp-boehmdc-addons
+redeye:
+	./waf -j $(PJOBS) build_cboehmdc_o
+	wbuild/boehmdc_o/cclasp_boehmdc_o \
+		-e "(require :clasp-analyzer)" \
+		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"lib:compile_commands.json\")))" \
+		-e "(quit)"
 
-executable-symlinks:
-	install -d $(BINDIR)
-	(cd $(BINDIR); if test -e ../Contents/execs/boehm/release/bin/clasp; then ln -sf ../Contents/execs/boehm/release/bin/clasp $(BINDIR)/clasp_boehm_o ; fi)
-	(cd $(BINDIR); if test -e ../Contents/execs/boehmdc/release/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/release/bin/clasp $(BINDIR)/clasp_boehmdc_o ; fi)
-	(cd $(BINDIR); if test -e ../Contents/execs/mps/release/bin/clasp ; then ln -sf ../Contents/execs/mps/release/bin/clasp $(BINDIR)/clasp_mps_o ; fi)
-	(cd $(BINDIR); if test -e ../Contents/execs/boehm/debug/bin/clasp ; then ln -sf ../Contents/execs/boehm/debug/bin/clasp $(BINDIR)/clasp_boehm_d ; fi)
-	(cd $(BINDIR); if test -e ../Contents/execs/boehmdc/debug/bin/clasp ; then ln -sf ../Contents/execs/boehmdc/debug/bin/clasp $(BINDIR)/clasp_boehmdc_d ; fi)
-	(cd $(BINDIR); if test -e ../Contents/execs/mps/debug/bin/clasp ; then ln -sf ../Contents/execs/mps/debug/bin/clasp $(BINDIR)/clasp_mps_d ; fi)
-
-libatomic-setup:
-	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); autoreconf -vif)
-	-(cd $(LIBATOMIC_OPS_SOURCE_DIR); automake --add-missing )
-	install -d $(CLASP_APP_RESOURCES_LIB_COMMON_DIR);
-	(cd $(LIBATOMIC_OPS_SOURCE_DIR); \
-		export ALL_INTERIOR_PTRS=1; \
-		CFLAGS="-DUSE_MMAP -g" \
-		./configure --enable-shared=yes --enable-static=yes --enable-handle-fork --enable-cplusplus --prefix=$(CLASP_APP_RESOURCES_LIB_COMMON_DIR);)
-
-libatomic-compile:
-	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) | tee _libatomic_ops.log)
-	(cd $(LIBATOMIC_OPS_SOURCE_DIR); make -j$(PJOBS) install | tee _libatomic_ops_install.log)
 
 
 pump:
