@@ -593,7 +593,7 @@ def add_dsymutil_task(self):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -I -f ecl-min -N -e "(compile-aclasp :link-type :fasl)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -I -f ecl-min -f debug-run-clang -N -e "(compile-aclasp :link-type :fasl)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -608,7 +608,7 @@ class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
 #        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -N -e "(compile-bclasp :link-type :fasl)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -N -f debug-run-clang -e "(compile-bclasp :link-type :fasl)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -621,7 +621,7 @@ class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
 #        cmd = '%s -N -e "(compile-cclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -N -e "(compile-cclasp :link-type :executable)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -f debug-run-clang -N -e "(compile-cclasp :link-type :executable)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
