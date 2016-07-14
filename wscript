@@ -434,7 +434,7 @@ def configure(cfg):
         includes_from_build_dir.append("-I%s/%s"%(cfg.path.abspath(),x))
 #    print("DEBUG includes_from_build_dir = %s\n" % includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
-    cfg.env.append_value('CXXFLAGS', ["_GLIBCXX_USE_CXX11_ABI=1"])
+    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
     cfg.env.append_value('CFLAGS', includes_from_build_dir )
     cfg.env.append_value('CXXFLAGS', '-flto')
