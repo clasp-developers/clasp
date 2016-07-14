@@ -7,3 +7,4 @@
 [submodule "src/mps"]
 	path = src/mps
 	url = https://github.com/Ravenbrook/mps.git
+	branch = version/1.115
