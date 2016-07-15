@@ -125,7 +125,7 @@ THE SOFTWARE.
   }
 
 /*! This is X86_64 dependent code */
-#if defined(X86) && defined(_ADDRESS_MODEL_64)
+#if defined(X86_64) && defined(_ADDRESS_MODEL_64)
 
 // This is VERY HACKISH
 // it's based on the System V Application Binary Interface for X86_64

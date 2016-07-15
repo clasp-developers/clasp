@@ -450,7 +450,7 @@ epilogue module - one that terminates a series of linked modules. "
 	   (with-open-file (fout output-path :direction :output)
 	     (let ((reloc-model (cond
 				  ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
-				  (t 'llvm-sys:reloc-model-default))))
+				  (t 'llvm-sys:reloc-model-undefined))))
 	       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
 	  ((eq output-type :bitcode)
 	   (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))

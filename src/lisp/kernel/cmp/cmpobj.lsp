@@ -2,7 +2,7 @@
 (in-package :cmp)
 
 
-(defun generate-obj-asm (module output-stream &key file-type (reloc-model 'llvm-sys:reloc-model-default))
+(defun generate-obj-asm (module output-stream &key file-type (reloc-model 'llvm-sys:reloc-model-undefined))
   (let* ((triple-string (llvm-sys:get-target-triple module))
 	 (normalized-triple-string (llvm-sys:triple-normalize triple-string))
 	 (triple (llvm-sys:make-triple normalized-triple-string))

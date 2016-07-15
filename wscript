@@ -160,7 +160,7 @@ class variant(object):
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
     def common_setup(self,cfg):
-        if ( self.debug_char == 'r' ):
+        if ( self.debug_char == 'o' ):
             self.configure_for_release(cfg)
         else:
             self.configure_for_debug(cfg)
@@ -419,13 +419,13 @@ def configure(cfg):
 #    cfg.define("READLINE",1)
     cfg.define("USE_AMC_POOL",1)
     cfg.define("USE_EXPENSIVE_BACKTRACE",1)
-    cfg.define("X86",1)
+    cfg.define("X86_64",1)
     cfg.define("DEBUG_FUNCTION_CALL_COUNTER",1)
     cfg.define("_ADDRESS_MODEL_64",1)
     cfg.define("__STDC_CONSTANT_MACROS",1)
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
-    cfg.env.append_value('CXXFLAGS', ['-v'] )
+#    cfg.env.append_value('CXXFLAGS', ['-v'] )
 #    cfg.env.append_value('CXXFLAGS', ['-I../src/main/'] )
     includes = [ 'include/' ]
     includes = includes + cfg.plugins_include_dirs
@@ -434,7 +434,7 @@ def configure(cfg):
         includes_from_build_dir.append("-I%s/%s"%(cfg.path.abspath(),x))
 #    print("DEBUG includes_from_build_dir = %s\n" % includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
-    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
+#    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
     cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
     cfg.env.append_value('CFLAGS', includes_from_build_dir )
     cfg.env.append_value('CXXFLAGS', '-flto')

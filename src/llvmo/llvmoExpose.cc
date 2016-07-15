@@ -239,12 +239,11 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
   CL_END_ENUM(_sym_CodeGenOpt);
   
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel);
-  SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_Default);
+  SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_undefined);
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_Static);
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_PIC_);
   SYMBOL_EXPORT_SC_(LlvmoPkg, RelocModel_DynamicNoPIC);
   CL_BEGIN_ENUM(llvm::Reloc::Model,_sym_RelocModel, "RelocModel");
-  CL_VALUE_ENUM(_sym_RelocModel_Default, llvm::Reloc::Model::Default);
   CL_VALUE_ENUM(_sym_RelocModel_Static, llvm::Reloc::Model::Static);
   CL_VALUE_ENUM(_sym_RelocModel_PIC_, llvm::Reloc::Model::PIC_);
   CL_VALUE_ENUM(_sym_RelocModel_DynamicNoPIC, llvm::Reloc::Model::DynamicNoPIC);;
@@ -779,7 +778,7 @@ CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::Str_sp sval
                                                       true, llvm::GlobalValue::InternalLinkage,
                                                       StrConstant);
   GV->setName(":::str");
-  GV->setUnnamedAddr(true);
+  GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
   return gc::As<Value_sp>(translate::to_object<llvm::Value *>::convert(GV));
 }
 
@@ -962,7 +961,7 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
                                   true, llvm::GlobalValue::InternalLinkage,
                                   StrConstant);
     GV->setName(name);
-    GV->setUnnamedAddr(true);
+    GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
     //	    GlobalVariableStringHolder holder;
     core::Str_sp first = core::Str_O::create(value);
     GlobalVariable_sp second = core::RP_Create_wrapped<GlobalVariable_O, llvm::GlobalVariable *>(GV);
@@ -2256,7 +2255,7 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)
   CL_LISPIFY_NAME(CreateInsertElement);
 CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *Vec, llvm::Value *NewElt, llvm::Value* Idx, const llvm::Twine &Name) )&IRBuilder_O::ExternalType::CreateInsertElement);
 CL_LISPIFY_NAME(CreateShuffleVector);
-CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *V1, llvm::Value *V2, llvm::ArrayRef<int> IntMask, const llvm::Twine &Name) ) &IRBuilder_O::ExternalType::CreateShuffleVector);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value*(IRBuilder_O::ExternalType::*) (llvm::Value *V1, llvm::Value *V2, llvm::Value *Mask, const llvm::Twine &Name) ) &IRBuilder_O::ExternalType::CreateShuffleVector);
 CL_LISPIFY_NAME(CreateLandingPad);
 CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateLandingPad);
   CL_LISPIFY_NAME(CreateIsNull);
@@ -2932,8 +2931,8 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   CL_EXTERN_DEFUN( &llvm::createReassociatePass);
   CL_LISPIFY_NAME(createSCCPPass);
   CL_EXTERN_DEFUN( &llvm::createSCCPPass);
-  CL_LISPIFY_NAME(createScalarReplAggregatesPass);
-  CL_EXTERN_DEFUN( &llvm::createScalarReplAggregatesPass);
+//  CL_LISPIFY_NAME(createScalarReplAggregatesPass);
+//  CL_EXTERN_DEFUN( &llvm::createScalarReplAggregatesPass);
   //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassSSA",&llvm::createScalarReplAggregatesPassSSA);
   //    core::af_def(LlvmoPkg,"createScalarReplAggregatesPassWithThreshold",&llvm::createScalarReplAggregatesPassWithThreshold);
   //    core::af_def(LlvmoPkg,"createSimplifyLibCallsPass",&llvm::createSimplifyLibCallsPass);

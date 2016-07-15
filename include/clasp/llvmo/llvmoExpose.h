@@ -609,18 +609,22 @@ struct from_object<llvm::CodeGenOpt::Level, std::true_type> {
 };
 
 template <>
-struct from_object<llvm::Reloc::Model, std::true_type> {
-  typedef llvm::Reloc::Model DeclareType;
+  struct from_object<llvm::Optional<llvm::Reloc::Model>, std::true_type> {
+  typedef llvm::Optional<llvm::Reloc::Model> DeclareType;
   DeclareType _v;
-  from_object(T_P object) : _v(llvm::Reloc::Default) {
+  from_object(T_P object) {
     if (object.nilp()) {
-      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+//      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
-      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
-      this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
+      if ( so == llvmo::_sym_RelocModel_undefined ) {
+        printf("%s:%d Leaving llvm::Reloc::Model Undefined\n", __FILE__, __LINE__ );
+      } else {
+        core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
+        this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
+      }
     } else {
-      SIMPLE_ERROR(BF("You must pass a valid RelocModel"));
+      SIMPLE_ERROR(BF("You must pass a valid RelocModel or %s") % _rep_(llvmo::_sym_RelocModel_undefined));
     }
   }
 };

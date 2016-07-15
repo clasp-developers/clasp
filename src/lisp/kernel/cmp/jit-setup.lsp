@@ -58,7 +58,7 @@ using features defined in corePackage.cc"
                           ""
                           ""
                           target-options
-                          'llvm-sys:reloc-model-default
+                          'llvm-sys:reloc-model-undefined
                           'llvm-sys:code-model-default
                           'llvm-sys:code-gen-opt-default)))
     (llvm-sys:create-data-layout target-machine)))

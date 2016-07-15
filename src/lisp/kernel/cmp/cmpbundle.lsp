@@ -74,7 +74,7 @@
   (let ((output-pathname (compile-file-pathname part-bitcode-pathname :output-type :object))
         (reloc-model (cond
                       ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
-                      (t 'llvm-sys:reloc-model-default))))
+                      (t 'llvm-sys:reloc-model-undefined))))
     (bitcode-to-obj-file part-bitcode-pathname output-pathname :reloc-model reloc-model)
     (truename output-pathname)))
 
