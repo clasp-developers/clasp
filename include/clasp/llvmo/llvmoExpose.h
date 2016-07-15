@@ -618,7 +618,7 @@ template <>
     }
     if (core::Symbol_sp so = object.asOrNull<core::Symbol_O>()) {
       if ( so == llvmo::_sym_RelocModel_undefined ) {
-        printf("%s:%d Leaving llvm::Reloc::Model Undefined\n", __FILE__, __LINE__ );
+        //printf("%s:%d Leaving llvm::Reloc::Model Undefined\n", __FILE__, __LINE__ );
       } else {
         core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_RelocModel->symbolValue());
         this->_v = converter->enumForSymbol<llvm::Reloc::Model>(so);
