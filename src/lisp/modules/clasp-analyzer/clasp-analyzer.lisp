@@ -3300,7 +3300,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
 - arguments-adjuster :: The arguments adjuster.
 * Description
 Run searches in *tools* on the source files in the compilation database."
-  (format t "serial-search-all --> current-dir: ~a~%" (core:current-dir))
+  (format t "serial-search-all --> getcwd: ~a~%" (ext:getcwd))
   (let ((tools (setup-tools compilation-tool-database))
         (all-jobs (clang-tool:source-namestrings compilation-tool-database)))
     (save-data all-jobs (merge-pathnames #P"project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
