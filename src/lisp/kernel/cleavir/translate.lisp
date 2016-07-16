@@ -1042,12 +1042,12 @@ nil)
         ((cleavir-env:no-variable-info
           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            (warn "Condition: ~a" condition)
+            #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-special)))
          (cleavir-env:no-function-info
           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            (warn "Condition: ~a" condition)
+            #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-global))))
       (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
           ;; The following test and true form should be removed`
