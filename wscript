@@ -543,7 +543,7 @@ def build(bld):
             print("About to add compile_aclasp")
             intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
             cmp_aclasp = compile_aclasp(env=bld.env)
-            cmp_aclasp.set_inputs([clasp_executable,cxx_all_bitcode_node,intrinsics_bitcode_node])
+            cmp_aclasp.set_inputs([clasp_executable,intrinsics_bitcode_node])
             aclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
             cmp_aclasp.set_outputs(aclasp_product)
             bld.add_to_group(cmp_aclasp)
