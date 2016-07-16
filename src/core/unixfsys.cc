@@ -214,8 +214,8 @@ safe_lstat(const char *path, struct stat *sb) {
 T_sp
 ecl_cstring_to_pathname(char *s)
 {
-	T_sp string = ecl_make_simple_base_string(s, -1);
-	return cl_parse_namestring(1, string);
+  T_sp string = ecl_make_simple_base_string(s, -1);
+  return cl_parse_namestring(1, string);
 }
 #endif
 
@@ -223,11 +223,13 @@ ecl_cstring_to_pathname(char *s)
  * Finds current directory by using getcwd() with an adjustable
  * string which grows until it can host the whole path.
  */
+};
 
+namespace ext {
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("currentDir");
-CL_DEFUN Str_sp core__current_dir() {
+CL_DOCSTRING("getcwd");
+CL_DEFUN Str_sp ext__getcwd() {
   const char *ok;
   size_t size = 128;
   StrWithFillPtr_sp output(StrWithFillPtr_O::create(' ', 1, 0, true));
@@ -255,7 +257,9 @@ CL_DEFUN Str_sp core__current_dir() {
   output->setFillPointer(size);
   return output;
 }
+};
 
+namespace core {
 /*
  * Using a certain path, guess the type of the object it points to.
  */
