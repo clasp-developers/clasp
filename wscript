@@ -143,6 +143,10 @@ class variant(object):
         return self.gc_name
     def bitcode_name(self):
         return "%s-%s" % (self.gc_name,self.debug_char)
+    def cxx_all_bitcode_name(self):
+        return '%s-all-cxx.lbc' % self.bitcode_name()
+    def intrinsics_bitcode_name(self):
+        return '%s-intrinsics-cxx.lbc' % self.bitcode_name()
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
@@ -537,8 +541,9 @@ def build(bld):
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
         if (stage_val >= 1):
             print("About to add compile_aclasp")
+            intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
             cmp_aclasp = compile_aclasp(env=bld.env)
-            cmp_aclasp.set_inputs(clasp_executable)
+            cmp_aclasp.set_inputs([clasp_executable,cxx_all_bitcode_node,intrinsics_bitcode_node])
             aclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
             cmp_aclasp.set_outputs(aclasp_product)
             bld.add_to_group(cmp_aclasp)
@@ -548,7 +553,7 @@ def build(bld):
             if (stage_val >= 2):
                 print("About to add compile_bclasp")
                 cmp_bclasp = compile_bclasp(env=bld.env)
-                cmp_bclasp.set_inputs([clasp_executable,aclasp_product])
+                cmp_bclasp.set_inputs([clasp_executable,aclasp_product,intrinsics_bitcode_node])
                 bclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
                 cmp_bclasp.set_outputs(bclasp_product)
                 bld.add_to_group(cmp_bclasp)
@@ -558,7 +563,8 @@ def build(bld):
                 if (stage_val >= 3):
                     print("About to add compile_cclasp")
                     cmp_cclasp = compile_cclasp(env=bld.env)
-                    cmp_cclasp.set_inputs([clasp_executable,bclasp_product])
+                    cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
+                    cmp_cclasp.set_inputs([clasp_executable,bclasp_product,cxx_all_bitcode_node])
                     cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                     cmp_cclasp.set_outputs(cclasp_executable)
                     bld.add_to_group(cmp_cclasp)
@@ -728,14 +734,12 @@ def preprocess_task_generator(self):
     self.create_task('generated_headers',all_sif_files,nodes)
     self.bld.install_files('${PREFIX}/Contents/Resources/source-code/include/', nodes)
     variant = self.bld.variant_obj
-    cxx_all_bitcode_name = '%s-all-cxx.lbc' % variant.bitcode_name()
-    intrinsics_bitcode_name = '%s-intrinsics-cxx.lbc' % variant.bitcode_name()
-    cxx_all_bitcode_node = self.path.find_or_declare(cxx_all_bitcode_name)
-    intrinsics_bitcode_node = self.path.find_or_declare(intrinsics_bitcode_name)
+    cxx_all_bitcode_node = self.path.find_or_declare(variant.cxx_all_bitcode_name())
+    intrinsics_bitcode_node = self.path.find_or_declare(variant.intrinsics_bitcode_name())
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_node)
-    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%intrinsics_bitcode_name,intrinsics_bitcode_node)
-    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%cxx_all_bitcode_name,cxx_all_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%variant.intrinsics_bitcode_name(),intrinsics_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%variant.cxx_all_bitcode_name(),cxx_all_bitcode_node)
 
 
 def init(ctx):
