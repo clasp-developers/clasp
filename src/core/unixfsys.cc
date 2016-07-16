@@ -214,8 +214,8 @@ safe_lstat(const char *path, struct stat *sb) {
 T_sp
 ecl_cstring_to_pathname(char *s)
 {
-  T_sp string = ecl_make_simple_base_string(s, -1);
-  return cl_parse_namestring(1, string);
+	T_sp string = ecl_make_simple_base_string(s, -1);
+	return cl_parse_namestring(1, string);
 }
 #endif
 
@@ -223,13 +223,9 @@ ecl_cstring_to_pathname(char *s)
  * Finds current directory by using getcwd() with an adjustable
  * string which grows until it can host the whole path.
  */
-};
 
-namespace ext {
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("getcwd");
-CL_DEFUN Str_sp ext__getcwd() {
+CL_DOCSTRING("currentDir");
+CL_DEFUN Str_sp core__current_dir() {
   const char *ok;
   size_t size = 128;
   StrWithFillPtr_sp output(StrWithFillPtr_O::create(' ', 1, 0, true));
@@ -257,6 +253,13 @@ CL_DEFUN Str_sp ext__getcwd() {
   output->setFillPointer(size);
   return output;
 }
+
+};
+
+namespace ext {
+CL_DOCSTRING("getcwd - identical to core:current_dir");
+CL_DEFUN core::Str_sp ext__getcwd() {
+  return core__current_dir();
 };
 
 namespace core {
