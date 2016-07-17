@@ -107,7 +107,7 @@
       (ext:run-clang `(,@options
                        ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
-                       "-flto"
+                       "-flto=thin"
                        "-flat_namespace" 
                        "-undefined" "warning"
                        "-bundle"
@@ -121,7 +121,7 @@
       (ext:run-clang `("-v"
                        ,@options
                        ,@all-object-files
-                       "-flto"
+                       "-flto=thin"
                        "-fuse-ld=gold"
                        "-shared"
                        "-o"
