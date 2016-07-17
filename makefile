@@ -161,7 +161,7 @@ all:
 configure:
 	make submodules
 	make asdf
-	./waf configure --prefix=$(PREFIX) --externals_clasp_dir=$(EXTERNALS_CLASP_DIR)
+	./waf configure --prefix=$(PREFIX)
 
 build:
 	make boehmdc-o

@@ -219,18 +219,20 @@ ecl_cstring_to_pathname(char *s)
 }
 #endif
 
+
+};
+
+namespace ext {
 /*
  * Finds current directory by using getcwd() with an adjustable
  * string which grows until it can host the whole path.
  */
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING("currentDir");
-CL_DEFUN Str_sp core__current_dir() {
+CL_DOCSTRING("Return the unix current working directory");
+CL_DEFUN core::Str_sp ext__getcwd() {
   const char *ok;
   size_t size = 128;
-  StrWithFillPtr_sp output(StrWithFillPtr_O::create(' ', 1, 0, true));
+  core::StrWithFillPtr_sp output(core::StrWithFillPtr_O::create(' ', 1, 0, true));
   do {
     output->setSize(size);
     clasp_disable_interrupts();
@@ -255,7 +257,9 @@ CL_DEFUN Str_sp core__current_dir() {
   output->setFillPointer(size);
   return output;
 }
+};
 
+namespace core {
 /*
  * Using a certain path, guess the type of the object it points to.
  */
