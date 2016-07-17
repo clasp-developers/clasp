@@ -1,3 +1,4 @@
 def build(bld):
     bld.clasp_source_files.append(bld.path.find_node('main.cc'))
+    bld.clasp_test_linking_source_file = bld.path.find_node('test_linking.cc')
         

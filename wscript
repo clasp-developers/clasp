@@ -519,11 +519,11 @@ def build(bld):
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
-#    contents_path = bld.path.find_dir('%s/%s/Contents'%(out,variant.variant_dir()))
-#    bld.install_files('${PREFIX}/Contents',contents_path,relative_trick=True)
-#    contents_tree = contents_path.ant_glob('**/*.*')
-#    for c in contents_tree:
-#        bld.install_files('${PREFIX}/Contents/%s' % c.path_from(contents_path).__str__(), c)
+#    test_linking_source = bld.clasp_test_linking_source_file
+#    test_linking_executable = bld.path.find_or_declare('test_linking')
+#    print("test_linking_source = %s" % test_linking_source)
+#    print("test_linking_executable = %s" % test_linking_executable)
+#    bld.program(source=[test_linking_source],target=test_linking_executable)
     print("Building with variant = %s" % variant)
     if (stage_val >= 0):
         clasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
@@ -535,6 +535,8 @@ def build(bld):
             executable_dir = "MacOS"
             bld.program(source=source_files,target=[clasp_executable,lto_debug_info],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
+        print("bld.cxx_all_bitcode_node = %s" % bld.cxx_all_bitcode_node)
+        print("bld.intrinsics_bitcode_node = %s" % bld.intrinsics_bitcode_node)
         if (stage_val >= 1):
             print("About to add compile_aclasp")
             cmp_aclasp = compile_aclasp(env=bld.env)
@@ -732,6 +734,8 @@ def preprocess_task_generator(self):
     intrinsics_bitcode_name = '%s-intrinsics-cxx.lbc' % variant.bitcode_name()
     cxx_all_bitcode_node = self.path.find_or_declare(cxx_all_bitcode_name)
     intrinsics_bitcode_node = self.path.find_or_declare(intrinsics_bitcode_name)
+    self.bld.cxx_all_bitcode_node = cxx_all_bitcode_node
+    self.bld.intrinsics_bitcode_node = intrinsics_bitcode_node
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_node)
     self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%intrinsics_bitcode_name,intrinsics_bitcode_node)
