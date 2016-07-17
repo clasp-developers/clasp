@@ -1,8 +1,8 @@
 import subprocess
 from waflib.Tools.compiler_cxx import cxx_compiler
 from waflib.Tools.compiler_c import c_compiler
-cxx_compiler['linux'] = ['clang++']
-c_compiler['linux'] = ['clang']
+#cxx_compiler['linux'] = ['clang++']
+#c_compiler['linux'] = ['clang']
 
 import sys
 import os
@@ -331,10 +331,6 @@ def lisp_source_files(exe,stage):
     print( "source-files-%s: %s" % (stage_name(stage),out))
     return out
 
-def options(opt):
-    opt.load('compiler_cxx')
-    opt.load('compiler_c')
-#    opt.add_option('--gc', default='boehm', help='Garbage collector');
 
 
 def build_plugin_headers(root,headers_list):
@@ -351,24 +347,34 @@ def build_plugin_headers(root,headers_list):
 def options(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
-    cfg.add_option('--externals_clasp_dir', action='store', default=False, help='Path to externals-clasp')
 
 def configure(cfg):
     global LLVM_LIBRARIES
     cfg.check_waf_version(mini='1.7.5')
-    llvm_config = cfg.find_program("llvm-config",var="LLVM_CONFIG")
+    path = os.getenv("PATH").split(":")
+    externals_clasp_dir = os.getenv("EXTERNALS_CLASP_DIR")
+    if (externals_clasp_dir != None):
+        externals_clasp_bin_dir = "%s/build/release/bin" % externals_clasp_dir
+        path.insert(0,externals_clasp_bin_dir)
+        print(" Inserted %s into the start of path" % externals_clasp_bin_dir)
+    print( "path = %s" % path)
+    llvm_config = cfg.find_program("llvm-config",var="LLVM_CONFIG",path_list=path)
+    print( "llvm_config = %s" % cfg.env.LLVM_CONFIG)
 #    print("llvm_config = %s" % llvm_config[0])
     llvm_libs_bytes = subprocess.Popen([llvm_config[0], "--libs"], stdout=subprocess.PIPE).communicate()[0]
     LLVM_LIBRARIES = strip_libs(llvm_libs_bytes.decode("ASCII",'ignore'))
-#    print("llvm_libs = %s" % llvm_libs)
+#    clang_bin_dir_bytes = subprocess.Popen([llvm_config[0], "--bindir"], stdout=subprocess.PIPE).communicate()[0]
+#    clang_bin_dir = str(clang_bin_dir_bytes.decode("ASCII",'ignore').split()[0])
+#    print("clang_bin_dir = %s" % clang_bin_dir)
+    global cxx_compiler, c_compiler
+    cxx_compiler['linux'] = ["clang++"]
+    c_compiler['linux'] = ["clang"]
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
+    llvm_release_lib_dir_bytes = subprocess.Popen([llvm_config[0], "--libdir"], stdout=subprocess.PIPE).communicate()[0]
+    llvm_release_lib_dir = str(llvm_release_lib_dir_bytes.decode("ASCII",'ignore').split()[0])
+    print("llvm_release_lib_dir = %s" % llvm_release_lib_dir )
 ### Uncommenting these checks causes problems-- AttributeError: 'BuildContext' object has no attribute 'variant_obj'
-    cfg.plugins_include_dirs = []
-    cfg.plugins_gcinterface_include_files = []
-    cfg.plugins_stlib = []
-    cfg.plugins_lib = []
-    cfg.recurse('plugins')
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     try:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
@@ -380,15 +386,16 @@ def configure(cfg):
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
     cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
-    print("externals_clasp_dir = %s" % cfg.options.externals_clasp_dir)
-    if ( cfg.options.externals_clasp_dir != False ):
-        clasp_release_llvm_lib_dir = "%s/build/release/lib/"%cfg.options.externals_clasp_dir
-        cfg.env.append_value('LINKFLAGS', "-L%s" % clasp_release_llvm_lib_dir )
-        cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM', stlibpath = clasp_release_llvm_lib_dir )
-        cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = clasp_release_llvm_lib_dir )
-    else:    
-        cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM')
-        cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG')
+    cfg.plugins_include_dirs = []
+    cfg.plugins_gcinterface_include_files = []
+    cfg.plugins_stlib = []
+    cfg.plugins_lib = []
+    cfg.recurse('plugins')
+    link_flag = "-L%s" % llvm_release_lib_dir
+    print("link_flag = %s" % link_flag )
+    cfg.env.append_value('LINKFLAGS', [link_flag])
+    cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM', stlibpath = llvm_release_lib_dir )
+    cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_release_lib_dir )
 #    print("DEBUG cfg.plugins_includes = %s" % cfg.plugins_includes)
     cfg.env.append_value('CXXFLAGS', ['-I./'])
     if ('program_name' in cfg.__dict__):
@@ -452,10 +459,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
-        if (cfg.options.externals_clasp_dir!=False):
-            lto_library = "%s/build/release/lib/%s" % (cfg.options.externals_clasp_dir,lto_library_name)
-        else:
-            raise Exception("You need to provide --externals_clasp_dir for now")
+        lto_library = "%s/%s" % ( llvm_release_lib_dir, lto_library_name)
         cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s" % lto_library)
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
