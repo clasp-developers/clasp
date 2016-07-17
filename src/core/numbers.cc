@@ -1370,24 +1370,6 @@ bool Number_O::equal(T_sp obj) const {
   return cl__eql(this->asSmartPtr(), obj);
 }
 
-#if 0
-    string Number_O::valueAsString() const
-    {
-	stringstream ss;
-	ss << "Value_of_class(" << this->_instanceClass()->classNameAsString() << ")";
-	return ss.str();
-    }
-#endif
-
-
-
-
-
-
-
-
-
-
 
 Rational_sp Rational_O::create(mpz_class const &num, mpz_class const &denom) {
   mpz_class q, r;
@@ -1468,33 +1450,6 @@ Integer_sp Integer_O::create(gctools::Fixnum v) {
   return Bignum_O::create(z);
 }
 
-#if 0 
-    Integer_sp Integer_O::create(uint v)
-    {
-	ASSERTF(sizeof(uint)<sizeof(gctools::Fixnum),BF("It is assumed that every uint is an element of Fixnum"));
-#if 1 // when every uint is a Fixnum...
-	return make_fixnum((gctools::Fixnum)v);
-#else
-	if ( v <= MOST_POSITIVE_FIXNUM )
-	{
-	    return make_fixnum((gctools::Fixnum)v);
-	}
-	Bignum z(v);
-	return Bignum_O::create(z);
-#endif
-    }
-
-    Integer_sp Integer_O::create(size_t v)
-    {
-	if ( v <= MOST_POSITIVE_FIXNUM )
-	{
-	    return make_fixnum((int)v);
-	}
-	Bignum z(v);
-	return Bignum_O::create(z);
-    }
-#endif
-
 #ifndef _TARGET_OS_LINUX
 Integer_sp Integer_O::create(uint64_t v) {
   if (v <= gc::most_positive_fixnum) {
@@ -1506,20 +1461,6 @@ Integer_sp Integer_O::create(uint64_t v) {
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
   return Bignum_O::create(z);
 }
-#endif
-#if 0
-    Integer_sp Integer_O::create(LongLongInt v)
-    {
-	if ( v >= MOST_NEGATIVE_FIXNUM && v <= MOST_POSITIVE_FIXNUM )
-	{
-	    return Integer_O::create((uint)v);
-	}
-	Bignum z;
-	mpz_import(z.get_mpz_t(),2,_lisp->integer_ordering()._mpz_import_word_order,
-		   _lisp->integer_ordering()._mpz_import_size,
-		   _lisp->integer_ordering()._mpz_import_endian, 0, &v);
-	return Bignum_O::create(z);
-    }
 #endif
 };
 
@@ -1547,190 +1488,6 @@ SYMBOL_EXPORT_SC_(ClPkg, logxor);
 
 
 
-
-
-#ifdef USE_HEAP_FIXNUM
-
-string Fixnum_O::__repr__() const {
-  stringstream ss;
-  ss << this->_Value;
-  return ss.str();
-}
-
-void Fixnum_O::sxhash_(HashGenerator &hg) const {
-  hg.addPart(this->_Value);
-}
-
-gc::Fixnum Fixnum_O::as_int_() const {
-  return this->_Value;
-}
-
-unsigned long long Fixnum_O::as_unsigned_long_long_() const {
-  if (this->_Value >= 0 || this->_Value <= gc::most_positive_unsigned_long_long)
-    return this->_Value;
-  TYPE_ERROR(this->asSmartPtr(), Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(gc::most_positive_unsigned_long_long)));
-}
-
-uint Fixnum_O::as_uint_() const {
-  return this->_Value;
-}
-
-Integer_sp Fixnum_O::shift_(int bits) const {
-  if (bits == 0)
-    return make_fixnum(this->_Value);
-  if (bits < 0) {
-    Fixnum y = this->_Value;
-    bits = -bits;
-    if (bits >= FIXNUM_BITS) {
-      y = (y < 0) ? -1 : 0;
-    } else {
-      y >>= bits;
-    }
-    return make_fixnum(y);
-  } else {
-    Bignum val(this->_Value);
-    Bignum res;
-    mpz_mul_2exp(res.get_mpz_t(), val.get_mpz_t(), bits);
-    return Integer_O::create(res);
-  }
-}
-
-int Fixnum_O::bit_length_() const {
-  int count, i(this->_Value);
-  if (i < 0)
-    i = ~i;
-  for (count = 0; i && (count < FIXNUM_BITS); i >>= 1, count++)
-    ;
-  return count;
-}
-
-LongLongInt Fixnum_O::as_LongLongInt_() const {
-  return this->_Value;
-}
-
-Bignum Fixnum_O::as_mpz_() const {
-  mpz_class z = this->_Value;
-  return z;
-}
-
-float Fixnum_O::as_float_() const {
-  return (float)this->_Value;
-}
-
-double Fixnum_O::as_double_() const {
-  return (double)this->_Value;
-}
-
-LongFloat Fixnum_O::as_long_float_() const {
-  return (LongFloat) this->_Value;
-}
-
-Number_sp Fixnum_O::signum_() const {
-  if (this->_Value == 0)
-    return make_fixnum(0);
-  if (this->_Value > 0)
-    return make_fixnum(1);
-  return make_fixnum(-1);
-}
-
-#if 0
-    Number_sp Fixnum_O::copy() const
-    {_OF();
-	return make_fixnum(this->_Value);
-    }
-#endif
-
-#if defined(OLD_SERIALIZE)
-void Fixnum_O::serialize(serialize::SNode node) {
-  if (node->saving()) {
-    //	    node.setObject(this->sharedThis<Fixnum_O>());
-  } else {
-    IMPLEMENT_ME();
-  }
-}
-#endif
-#if defined(XML_ARCHIVE)
-void Fixnum_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->attribute("val", this->_Value);
-}
-#endif // defined(XML_ARCHIVE)
-
-Fixnum_sp Fixnum_O::createFn(gctools::Fixnum nm) {
-  GC_ALLOCATE_VARIADIC(Fixnum_O, v, nm);
-  //	v->set(nm);
-  return v;
-}
-#if 0
-    Fixnum_sp make_fixnum(int nm)
-    {
-	GC_ALLOCATE(Fixnum_O,v );
-	v->set(nm);
-	return v;
-    }
-    Fixnum_sp make_fixnum(uint nm)
-    {
-	if ( nm > MOST_POSITIVE_FIXNUM )
-	{
-	    SIMPLE_ERROR(BF("uint value(%d) was too large/small to cast to int") % nm );
-	}
-	int inm = nm;
-	return make_fixnum(inm);
-    }
-#endif
-uint64_t Fixnum_O::as_uint64_() const {
-  return this->_Value;
-}
-
-string Fixnum_O::asChar_() const {
-  boost::format f("%c");
-  f % (char)(this->_Value);
-  TRY_BOOST_FORMAT_STRING(f, f_str);
-  return f_str;
-}
-
-bool Fixnum_O::eql_(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
-  if (obj.fixnump()) { // Fixnum_sp fobj = obj.asOrNull<Fixnum_O>()) {
-    return this->_Value == unbox_fixnum(obj);
-  } else if (Bignum_sp bobj = obj.asOrNull<Bignum_O>()) {
-    mpz_class me = this->_Value;
-    return me == bobj->ref();
-  }
-  return false;
-}
-
-#if 0
-    bool	Fixnum_O::eqn(T_sp obj) const
-    {
-	if ( this->eq(obj) ) return true;
-	if ( core__double_float_p(obj) )
-	{
-	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
-	    return this->get() == t->get();
-	} else if ( core__fixnump(obj) )
-	{
-	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
-	    bool b = (this->get() == t->get());
-	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
-	    return b;
-	} else if ( core__bignump(obj) )
-	{
-	    IMPLEMENT_ME();
-#if 0
-	    LongLongInt_sp t = obj.as<LongLongInt_O>();
-	    bool b = (this->get() == t->get());
-	    LOG(BF("Compared if %d == %d -> %d") % this->get() % t->get() % b  );
-	    return b;
-#endif
-	}
-	ASSERT(!cl__numberp(obj) );
-	return false;
-    }
-#endif
-
-#endif // ifdef USE_HEAP_FIXNUM
 
 // ------------------------------------------------------------------------
 
@@ -1764,59 +1521,9 @@ Integer_sp ShortFloat_O::castToInteger() const {
   return Integer_O::create((gc::Fixnum)cf);
 }
 
-#if 0
-    Number_sp ShortFloat_O::reciprocal() const
-    {
-	return ShortFloat_O::create(1.0/this->_Value);
-    }
-
-    Number_sp ShortFloat_O::signum_() const
-    {
-	return ShortFloat_O::create(this->_Value>0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0 ));
-    }
-#endif
-#if 0
-    string ShortFloat_O::valueAsString() const
-    {
-	stringstream ss;
-	ss << this->_Value;
-	return ss.str();
-    }
-#endif
 Number_sp ShortFloat_O::abs_() const {
   return ShortFloat_O::create(fabs(this->_Value));
 }
-
-#if 0
-    Number_sp ShortFloat_O::copy() const
-    {_OF();
-	return ShortFloat_O::create(this->_Value);
-    }
-#endif
-
-#if defined(OLD_SERIALIZE)
-void ShortFloat_O::serialize(serialize::SNode node) {
-  if (node->saving()) {
-    // node.setObject(this->sharedThis<ShortFloat_O>());
-  } else {
-    IMPLEMENT_ME();
-  }
-}
-#endif
-
-#if defined(XML_ARCHIVE)
-void ShortFloat_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->attribute("val", this->_Value);
-}
-#endif // defined(XML_ARCHIVE)
-
-#if 0
-    void ShortFloat_O::setFromString(const string& str)
-    {
-	this->_Value = atof(str.c_str());
-    }
-#endif
 
 void ShortFloat_O::sxhash_(HashGenerator &hg) const {
   _OF();
@@ -1832,177 +1539,11 @@ bool ShortFloat_O::eql_(T_sp obj) const {
   return false;
 }
 
-#if 0
-    bool	ShortFloat_O::eqn(T_sp obj) const
-    {_OF();
-	if ( core__short_float_p(obj) )
-	{
-	    ShortFloat_sp t = obj.as<ShortFloat_O>();
-	    return this->get() == t->get();
-	} else if ( core__fixnump(obj) )
-	{
-	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
-	    return this->get() == t->get();
-	}
-	ASSERT(!cl__numberp(obj) );
-	return false;
-    }
-#endif
-
 string ShortFloat_O::__repr__() const {
   stringstream ss;
   ss << this->_Value;
   return ss.str();
 }
-
-
-
-
-
-
-//----------------------------------------------------------------------
-
-#if 0
-    float SingleFloat_O::as_float_() const
-    {
-	return (float)this->_Value;
-    }
-
-    double SingleFloat_O::as_double_() const
-    {
-	return (double)this->_Value;
-    }
-
-    LongFloat SingleFloat_O::as_long_float_() const
-    {
-	return (LongFloat)this->_Value;
-    }
-
-
-    Integer_sp SingleFloat_O::castToInteger() const
-    {
-	if (this->_Value < 0) {
-	    float f = -this->_Value;
-	    int cf = *(int*)&f;
-	    return gc::As<Integer_sp>(clasp_negate(Integer_O::create(cf)));
-	}
-	int cf = *(int*)&this->_Value;
-	return Integer_O::create(cf);
-    }
-
-#if 0
-    Number_sp SingleFloat_O::copy() const
-    {_OF();
-	return clasp_make_single_float(this->_Value);
-    }
-#endif
-
-#if defined(OLD_SERIALIZE)
-    void SingleFloat_O::serialize(serialize::SNode node)
-    {
-	if ( node->saving() )
-	{
-	    // node.setObject(this->sharedThis<SingleFloat_O>());
-	} else
-	{
-	    IMPLEMENT_ME();
-	}
-    }
-#endif
-
-#if defined(XML_ARCHIVE)
-    void	SingleFloat_O::archiveBase(ArchiveP node)
-    {
-	this->Base::archiveBase(node);
-	node->attribute("val",this->_Value);
-    }
-#endif // defined(XML_ARCHIVE)
-
-
-
-    Number_sp SingleFloat_O::signum_() const
-    {
-	return clasp_make_single_float(this->_Value>0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0 ));
-    }
-
-#if 0
-    void SingleFloat_O::setFromString(const string& str)
-    {
-	this->_Value = atof(str.c_str());
-    }
-#endif
-
-
-
-
-
-
-    void SingleFloat_O::sxhash_(HashGenerator& hg) const
-    {_OF();
-	hg.addPart(std::abs(::floor(this->_Value)));
-    }
-
-
-    bool	SingleFloat_O::eql_(T_sp obj) const
-    {
-	if ( this->eq(obj) ) return true;
-	if ( gc::IsA<Number_sp>(obj) )
-	{
-	    Number_sp num = gc::As<Number_sp>(obj);
-	    return this->get() == clasp_to_double(num);
-	}
-	return false;
-    }
-
-#if 0
-    bool	SingleFloat_O::eqn(T_sp obj) const
-    {_OF();
-	if ( core__single_float_p(obj) )
-	{
-	    SingleFloat_sp t = obj.as<SingleFloat_O>();
-	    return this->get() == t->get();
-	} else if ( core__fixnump(obj) )
-	{
-	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
-	    return this->get() == t->get();
-	}
-	ASSERT(!cl__numberp(obj) );
-	return false;
-    }
-#endif
-
-#if 0
-    Number_sp SingleFloat_O::reciprocal() const
-    {
-	return clasp_make_single_float(1.0/this->_Value);
-    }
-#endif
-
-#if 0
-    string SingleFloat_O::valueAsString() const
-    {
-	stringstream ss;
-	ss << this->_Value;
-	return ss.str();
-    }
-#endif
-    Number_sp SingleFloat_O::abs_() const
-    {
-	return clasp_make_single_float(fabs(this->_Value));
-    }
-
-    string SingleFloat_O::__repr__() const
-    {
-	stringstream ss;
-	ss << this->_Value;
-	return ss.str();
-    }
-
-#endif
-
-
-
-
 
 
 //--------------------------------------------------
@@ -2034,46 +1575,6 @@ Integer_sp DoubleFloat_O::castToInteger() const {
   return Integer_O::create((gctools::Fixnum)cf);
 }
 
-#if 0
-    Number_sp DoubleFloat_O::copy() const
-    {_OF();
-	return DoubleFloat_O::create(this->_Value);
-    }
-#endif
-
-#if defined(OLD_SERIALIZE)
-void DoubleFloat_O::serialize(serialize::SNode node) {
-  if (node->saving()) {
-    // node.setObject(this->sharedThis<DoubleFloat_O>());
-  } else {
-    IMPLEMENT_ME();
-  }
-}
-#endif
-
-#if defined(XML_ARCHIVE)
-void DoubleFloat_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->attribute("val", this->_Value);
-}
-#endif // defined(XML_ARCHIVE)
-
-#if 0
-    string DoubleFloat_O::valueAsString() const
-    {
-	stringstream ss;
-	ss << this->_Value;
-	return ss.str();
-    }
-#endif
-
-#if 0
-    void DoubleFloat_O::setFromString(const string& str)
-    {
-	this->_Value = atof(str.c_str());
-    }
-#endif
-
 Number_sp DoubleFloat_O::signum_() const {
   return DoubleFloat_O::create(this->_Value > 0.0 ? 1 : (this->_Value < 0.0 ? -1 : 0));
 }
@@ -2093,23 +1594,6 @@ bool DoubleFloat_O::eql_(T_sp obj) const {
   }
   return false;
 }
-
-#if 0
-    bool	DoubleFloat_O::eqn(T_sp obj) const
-    {_OF();
-	if ( core__double_float_p(obj) )
-	{
-	    DoubleFloat_sp t = obj.as<DoubleFloat_O>();
-	    return this->get() == t->get();
-	} else if ( core__fixnump(obj) )
-	{
-	    Fixnum_sp t = gc::As<Fixnum_sp>(obj);
-	    return this->get() == t->get();
-	}
-	ASSERT(!cl__numberp(obj));
-	return false;
-    }
-#endif
 
 string DoubleFloat_O::__repr__() const {
   stringstream ss;
@@ -2260,13 +1744,6 @@ string Ratio_O::__repr__() const {
   return ss.str();
 }
 
-#if 0
-    string Ratio_O::valueAsString() const
-    {
-	return this->__repr__();
-    }
-#endif
-
 mpz_class Ratio_O::numerator_as_mpz() const {
   return clasp_to_mpz(this->_numerator);
 }
@@ -2290,21 +1767,6 @@ bool Ratio_O::eql_(T_sp obj) const {
   }
   return false;
 }
-
-#if 0
-    bool Ratio_O::eqn(T_sp other) const
-    {
-	return this->eql(other);
-    }
-#endif
-
-#if 0
-    Number_sp Ratio_O::copy() const
-    {
-	return Ratio_O::create(this->_numerator,this->_denominator);
-    }
-#endif
-
 void Ratio_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling())
     hg.hashObject(this->_numerator);
@@ -2318,21 +1780,6 @@ Number_sp Ratio_O::signum_() const {
 }
 
 
-
-#if defined(OLD_SERIALIZE)
-void Ratio_O::serialize(serialize::SNode node) {
-  IMPLEMENT_ME();
-}
-#endif
-
-#if defined(XML_ARCHIVE)
-void Ratio_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->archiveObject("numer", this->_numerator);
-  node->archiveObject("denom", this->_denominator);
-}
-#endif // defined(XML_ARCHIVE)
-
 void Ratio_O::setFromString(const string &str) {
   vector<string> parts = split(str, "/");
   ASSERT(parts.size() == 2);
@@ -2345,38 +1792,10 @@ void Ratio_O::setFromString(const string &str) {
 
 // --------------------------------------------------------------------------------
 
-#if 0
-    string Complex_O::valueAsString() const
-    {
-	return this->__repr__();
-    }
-#endif
-
 Number_sp Complex_O::signum_() const {
   return Complex_O::create(clasp_signum(this->_real),
                            clasp_signum(this->_imaginary));
 }
-
-#if defined(OLD_SERIALIZE)
-void Complex_O::serialize(serialize::SNode node) {
-  IMPLEMENT_ME();
-}
-#endif
-
-#if defined(XML_ARCHIVE)
-void Complex_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->archiveObject("re", this->_real);
-  node->archiveObject("im", this->_imaginary);
-}
-#endif // defined(XML_ARCHIVE)
-
-#if 0
-    void Complex_O::setFromString(const string& str)
-    {
-	IMPLEMENT_ME();
-    }
-#endif
 
 string Complex_O::__repr__() const {
   stringstream ss;
@@ -2391,22 +1810,6 @@ void Complex_O::sxhash_(HashGenerator &hg) const {
     hg.hashObject(this->_imaginary);
 }
 
-#if 0
-    Number_sp Complex_O::copy() const
-    {
-	return Complex_O::create(this->_real,this->_imaginary);
-    }
-#endif
-
-#if 0
-    bool Complex_O::eqn(T_sp o) const
-    {
-	if ( this->eq(o) ) return true;
-	if ( !af_complexP(o) ) return false;
-	Complex_sp co = o.as<Complex_O>();
-	return ( this->_real == co->_real && this->_imaginary == co->_imaginary );
-    }
-#endif
 bool Complex_O::eql_(T_sp o) const {
   if (this->eq(o)) return true;
   if (Complex_sp other = o.asOrNull<Complex_O>()) {
@@ -2450,18 +1853,6 @@ Number_sp Complex_O::abs_() const {
 
     See file '../Copyright' for full details.
 */
-
-#if 0
-Number_sp SingleFloat_O::sqrt_() const
-{
-    if ( clasp_minusp(this->asSmartPtr()) ) {
-	Number_sp x = clasp_negate( this->asSmartPtr())->sqrt();
-	return Complex_O::create(clasp_make_single_float(0.0),gc::As<Real_sp>(x));
-    } else {
-	return clasp_make_single_float(sqrtf(this->_Value));
-    }
-}
-#endif
 
 Number_sp DoubleFloat_O::sqrt_() const {
   if (clasp_minusp(this->asSmartPtr())) {
@@ -2521,12 +1912,7 @@ CL_DEFUN Number_sp cl__sqrt(Number_sp x) {
 Number_sp Rational_O::sin_() const {
   return clasp_make_single_float(sinf(this->as_float_()));
 }
-#if 0
-Number_sp SingleFloat_O::sin_() const
-{
-    return clasp_make_single_float(sinf(this->_Value));
-}
-#endif
+
 Number_sp DoubleFloat_O::sin_() const {
   return DoubleFloat_O::create(::sin(this->_Value));
 }
@@ -2584,12 +1970,6 @@ Number_sp Rational_O::cos_() const {
   return clasp_make_single_float(cosf(this->as_float_()));
 }
 
-#if 0
-    Number_sp SingleFloat_O::cos_() const
-{
-    return clasp_make_single_float(cosf(this->_Value));
-}
-#endif
 Number_sp DoubleFloat_O::cos_() const {
   return DoubleFloat_O::create(::cos(this->_Value));
 }
@@ -2655,12 +2035,7 @@ static double safe_tanf(double x) { return tan(x); }
 Number_sp Rational_O::tan_() const {
   return clasp_make_single_float(safe_tanf(this->as_float_()));
 }
-#if 0
-Number_sp SingleFloat_O::tan_() const
-{
-    return clasp_make_single_float(safe_tanf(this->_Value));
-}
-#endif
+
 Number_sp DoubleFloat_O::tan_() const {
   return DoubleFloat_O::create(::tan(this->_Value));
 }
@@ -2709,12 +2084,6 @@ Number_sp Rational_O::sinh_() const {
   return clasp_make_single_float(sinhf(this->as_float_()));
 }
 
-#if 0
-    Number_sp SingleFloat_O::sinh_() const
-{
-        return clasp_make_single_float(sinhf(this->_Value));
-}
-#endif
 Number_sp DoubleFloat_O::sinh_() const {
   return DoubleFloat_O::create(::sinh(this->_Value));
 }
@@ -2770,13 +2139,6 @@ CL_DEFUN Number_sp cl__sinh(Number_sp x) {
 Number_sp Rational_O::cosh_() const {
   return clasp_make_single_float(coshf(this->as_float_()));
 }
-
-#if 0
-    Number_sp SingleFloat_O::cosh_() const
-{
-        return clasp_make_single_float(coshf(this->_Value));
-}
-#endif
 
 Number_sp DoubleFloat_O::cosh_() const {
   return DoubleFloat_O::create(::cosh(this->_Value));
@@ -2835,12 +2197,6 @@ Number_sp Rational_O::tanh_() const {
   return clasp_make_single_float(tanhf(this->as_float_()));
 }
 
-#if 0
-    Number_sp SingleFloat_O::tanh_() const
-{
-    return clasp_make_single_float(tanhf(this->_Value));
-}
-#endif
 Number_sp DoubleFloat_O::tanh_() const {
   return DoubleFloat_O::create(::tanh(this->_Value));
 }
@@ -2928,12 +2284,6 @@ Number_sp Rational_O::exp_() const {
   return clasp_make_single_float(expf(this->as_float_()));
 }
 
-#if 0
-    Number_sp SingleFloat_O::exp_() const
-    {
-        return clasp_make_single_float(expf(this->_Value));
-    }
-#endif
 
 Number_sp DoubleFloat_O::exp_() const {
   return DoubleFloat_O::create(::exp(this->_Value));
@@ -3306,16 +2656,7 @@ Number_sp Rational_O::log1_() const {
                                     clasp_make_fixnum(0));
   return clasp_make_single_float(logf(this->as_float_()));
 }
-#if 0
-    Number_sp SingleFloat_O::log1() const
-    {
-        float f = this->as_float_();
-        if (std::isnan(f)) return this->asSmartPtr();
-        if (f < 0) return clasp_log1_complex_inner(this->asSmartPtr(),
-						  clasp_make_fixnum(0));
-        return clasp_make_single_float(logf(f));
-    }
-#endif
+
 Number_sp DoubleFloat_O::log1_() const {
   double f = this->as_double_();
   if (std::isnan(f))
@@ -3353,17 +2694,6 @@ Number_sp Rational_O::log1p_() const {
   return clasp_make_single_float(_log1p(f));
 }
 
-#if 0
-
-
-    Number_sp SingleFloat_O::log1p() const
-    {
-	float f = this->as_float_();
-	if (std::isnan(f)) return this->asSmartPtr();
-	if (f < -1) return this->Base::log1p();
-	return clasp_make_single_float(_log1p(f));
-    }
-#endif
 Number_sp DoubleFloat_O::log1p_() const {
   double f = this->as_double_();
   if (std::isnan(f))
@@ -3452,11 +2782,6 @@ fixint(T_sp x) {
     return unbox_fixnum(gc::As<Fixnum_sp>(x));
   if (core__bignump(x)) {
     IMPLEMENT_MEF(BF("Implement convert Bignum to fixint"));
-#if 0
-        if (mpz_fits_slong_p(x->big.big_num)) {
-            return mpz_get_si(x->big.big_num);
-        }
-#endif
   }
   ERROR_WRONG_TYPE_ONLY_ARG(cl::_sym_fixnum, x, cl::_sym_fixnum);
   UNREACHABLE();
