@@ -543,8 +543,6 @@ def build(bld):
             executable_dir = "MacOS"
             bld.program(source=source_files,target=[clasp_executable,lto_debug_info],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
-        print("bld.cxx_all_bitcode_node = %s" % bld.cxx_all_bitcode_node)
-        print("bld.intrinsics_bitcode_node = %s" % bld.intrinsics_bitcode_node)
         if (stage_val >= 1):
             print("About to add compile_aclasp")
             intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
