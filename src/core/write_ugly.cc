@@ -291,7 +291,7 @@ void Integer_O::__write__(T_sp stream) const {
 	    prefix = "closed output stream";
 	    tag = IO_STREAM_FILENAME(x);
 	    break;
-#ifdef ECL_MS_WINDOWS_HOST
+#ifdef CLASP_MS_WINDOWS_HOST
         case ecl_smm_input_wsock:
 	    prefix = "closed input win32 socket stream";
 	    tag = IO_STREAM_FILENAME(x);

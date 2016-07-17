@@ -2648,7 +2648,7 @@ CL_DEFUN T_sp cl__synonym_stream_symbol(T_sp strm) {
  * UNINTERRUPTED OPERATIONS
  */
 
-#ifdef ECL_MS_WINDOWS_HOST
+#ifdef CLASP_MS_WINDOWS_HOST
 #define clasp_mode_t int
 #else
 #define clasp_mode_t mode_t
@@ -2790,7 +2790,7 @@ io_file_listen(T_sp strm) {
   return file_listen(strm, IOFileStreamDescriptor(strm));
 }
 
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 static int
 isaconsole(int i) {
   HANDLE h = (HANDLE)_get_osfhandle(i);
@@ -2803,7 +2803,7 @@ isaconsole(int i) {
 static void
 io_file_clear_input(T_sp strm) {
   int f = IOFileStreamDescriptor(strm);
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   if (isatty(f)) {
     /* Flushes Win32 console */
     if (!FlushConsoleInputBuffer((HANDLE)_get_osfhandle(f)))
@@ -3447,7 +3447,7 @@ io_stream_listen(T_sp strm) {
 static void
 io_stream_clear_input(T_sp strm) {
   FILE *fp = IOStreamStreamFile(strm);
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   int f = fileno(fp);
   if (isatty(f)) {
     /* Flushes Win32 console */
@@ -3900,7 +3900,7 @@ const FileOps winsock_stream_input_ops = {
  * WINCONSOLE STREAM
  */
 
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 
 #define wcon_stream_element_type io_file_element_type
 
@@ -4216,7 +4216,7 @@ BEGIN:
   case clasp_smm_output_wsock:
   case clasp_smm_io_wsock:
 #endif
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   case clasp_smm_io_wcon:
 #endif
     return -1;
@@ -5053,7 +5053,7 @@ T_sp clasp_open_stream(T_sp fn, enum StreamMode smm, T_sp if_exists,
                        int flags, T_sp external_format) {
   T_sp output;
   int f;
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   clasp_mode_t mode = _S_IREAD | _S_IWRITE;
 #else
   clasp_mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
@@ -5240,7 +5240,7 @@ CL_DEFUN T_sp cl__close(T_sp strm, T_sp abort) {
 
 static int
 file_listen(T_sp stream, int fileno) {
-#if !defined(ECL_MS_WINDOWS_HOST)
+#if !defined(CLASP_MS_WINDOWS_HOST)
 #if defined(HAVE_SELECT)
   fd_set fds;
   int retv;
@@ -5629,7 +5629,7 @@ wsock_error(const char *err_msg, T_sp strm) {
 	T_sp aux;
 	T_sp null_stream;
 	T_sp external_format = _Nil<T_O>();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 #ifdef ECL_UNICODE
 	external_format = Cons_O::createList( kw::_sym_latin_1, kw::_sym_crlf);
 	flags = 0;

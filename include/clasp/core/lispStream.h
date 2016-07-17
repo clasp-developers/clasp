@@ -83,7 +83,7 @@ enum StreamMode {                          /*  stream mode  */
                   clasp_smm_output_wsock, /*  output socket (Win32) */
                   clasp_smm_io_wsock,     /*  input/output socket (Win32) */
 #endif
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
                   clasp_smm_io_wcon, /*  windows console (Win32) */
 #endif
                   clasp_smm_sequence_input, /*  sequence input  */

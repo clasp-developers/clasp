@@ -80,8 +80,13 @@ void initialize_smart_pointers();
 #ifdef _ADDRESS_MODEL_64
 static const uintptr_t alignment = 8;    // 16 byte alignment for all pointers
 static const uintptr_t pointer_size = 8; // 8 byte words 64-bits
-                                         //! Fixnum definition for 64 bit system
-typedef long int Fixnum;
+#if defined (CLASP_MS_WINDOWS_HOST)
+ #error "Define a 64bit Fixnum for windows"
+#else
+                                        //! Fixnum definition for 64 bit system
+ typedef intptr_t Fixnum;
+#endif
+ 
 typedef Fixnum cl_fixnum;
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */

@@ -73,7 +73,7 @@ typedef int mode_t;
 #include <sys/dir.h>
 #endif
 #endif
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 #include <windows.h>
 #undef ERROR
 #endif
@@ -341,7 +341,7 @@ CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
   return smart_file_kind(sfilename, follow_links);
 }
 
-#if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
+#if defined(HAVE_LSTAT) && !defined(CLASP_MS_WINDOWS_HOST)
 
 CL_LAMBDA(filename);
 CL_DECLARE();
@@ -583,7 +583,7 @@ int clasp_backup_open(const char *filename, int option, int mode) {
   sbackup << filename << ".BAK";
   string backupfilename = sbackup.str();
   clasp_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   /* Windows' rename doesn't replace an existing file */
   if (access(backupfilename, F_OK) == 0 && unlink(backupfilename)) {
     clasp_enable_interrupts();
@@ -655,7 +655,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
   {
     clasp_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
     int error = SetErrorMode(0);
     if (MoveFile((char *)old_filename->base_string.self,
                  (char *)new_filename->base_string.self)) {
@@ -702,7 +702,7 @@ CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
     }
 #endif
   }
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 FAILURE_CLOBBER:
 #endif
   clasp_enable_interrupts();
@@ -823,7 +823,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   size_t i;
   Str_sp namestring;
   const char *h;
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   const char *d;
 #endif
   if (Str_sp user = tuser.asOrNull<Str_O>()) {
@@ -852,7 +852,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
     namestring = Str_O::create(h);
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   } else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
     namestring =
         si_base_string_concatenate(2,
@@ -917,7 +917,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   while ((entry = readdir(dir))) {
     text = entry->d_name;
 #else
-#ifdef ECL_MS_WINDOWS_HOST
+#ifdef CLASP_MS_WINDOWS_HOST
   WIN32_FIND_DATA fd;
   HANDLE hFind = NULL;
   BOOL found = false;
@@ -957,7 +957,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
     if (dir.d_ino == 0)
       continue;
     text = dir.d_name;
-#endif /* !ECL_MS_WINDOWS_HOST */
+#endif /* !CLASP_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
     if (text[0] == '.' &&
         (text[1] == '\0' ||
@@ -989,11 +989,11 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
 #ifdef HAVE_DIRENT_H
   closedir(dir);
 #else
-#ifdef ECL_MS_WINDOWS_HOST
+#ifdef CLASP_MS_WINDOWS_HOST
   FindClose(hFind);
 #else
   fclose(fp);
-#endif /* !ECL_MS_WINDOWS_HOST */
+#endif /* !CLASP_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
   clasp_enable_interrupts();
 OUTPUT:
@@ -1007,7 +1007,7 @@ CL_DEFUN T_sp core__mkstemp(Str_sp thetemplate) {
   //  cl_index l;
   int fd;
 
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   T_sp phys, dir, file;
   char strTempDir[MAX_PATH];
   char strTempFileName[MAX_PATH];
@@ -1096,7 +1096,7 @@ si_get_library_pathname(void)
                         goto OUTPUT;
                 }
         }
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 	{
         char *buffer;
 	HMODULE hnd;
@@ -1170,7 +1170,7 @@ T_sp core__mkstemp(T_sp template)
     T_sp output;
     cl_index l;
     int fd;
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
     T_sp phys, dir, file;
     char strTempDir[MAX_PATH];
     char strTempFileName[MAX_PATH];
@@ -1483,7 +1483,7 @@ CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
     filename = filename->subseq(0, make_fixnum(last));
   }
 //    clasp_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   ok = mkdir((char *)filename->c_str());
 #else
   ok = mkdir((char *)filename->c_str(), modeint);

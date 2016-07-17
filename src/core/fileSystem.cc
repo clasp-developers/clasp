@@ -653,7 +653,7 @@ Pathname_sp homedirPathname(T_sp tuser) {
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
     namestring = Str_O::create(h);
-#if 0 //defined(ECL_MS_WINDOWS_HOST)
+#if 0 //defined(CLASP_MS_WINDOWS_HOST)
 	} else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
 	    namestring =
 		si_base_string_concatenate(2,
