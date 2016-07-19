@@ -383,9 +383,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 (defun build-intrinsics-bitcode-pathname (link-type)
   (cond
     ((eq link-type :fasl)
-     (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.lbc" +bitcode-name+)))
+     (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.a" +bitcode-name+)))
     ((eq link-type :executable)
-     (translate-logical-pathname (bformat nil "lib:%s-all-cxx.lbc" +bitcode-name+)))
+     (translate-logical-pathname (bformat nil "lib:%s-all-cxx.a" +bitcode-name+)))
     (t (error "Provide a bitcode file for the link-type ~a" link-type))))
 
 (defun build-common-lisp-bitcode-pathname ()

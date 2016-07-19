@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/LTO/legacy/ThinLTOCodeGenerator.h>
+#include <llvm/Analysis/ModuleSummaryAnalysis.h>
 #include <llvm/ADT/Triple.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/DerivedTypes.h>
@@ -647,7 +649,8 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathna
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
   }
-  llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false,true /* thinLTO */ );
+  llvm::ModuleSummaryIndexBuilder IndexBuilder(module->wrappedPtr());
+  llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &IndexBuilder.getIndex());
 };
 
 CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {

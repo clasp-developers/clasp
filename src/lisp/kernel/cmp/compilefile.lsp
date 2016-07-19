@@ -273,7 +273,6 @@ to append a NULL function to the list of main functions."
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) "bc")
-    ((eq output-type :linked-bitcode) "lbc")
     ((eq output-type :object) "o")
     ((eq output-type :fasl) "fasl")
     ((eq output-type :executable) #-windows "" #+windows "exe")

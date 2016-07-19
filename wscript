@@ -144,9 +144,9 @@ class variant(object):
     def bitcode_name(self):
         return "%s-%s" % (self.gc_name,self.debug_char)
     def cxx_all_bitcode_name(self):
-        return '%s-all-cxx.lbc' % self.bitcode_name()
+        return '%s-all-cxx.a' % self.bitcode_name()
     def intrinsics_bitcode_name(self):
-        return '%s-intrinsics-cxx.lbc' % self.bitcode_name()
+        return '%s-intrinsics-cxx.a' % self.bitcode_name()
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
@@ -655,12 +655,12 @@ class compile_addons(Task.Task):
         return 'Compile addons using... '
     
 
-class llvm_link(Task.Task):
-    def run(self):
-        all_inputs = StringIO()
-        for x in self.inputs:
-            all_inputs.write(' %s' % x)
-        return self.exec_command('llvm-link %s -o %s' % ( all_inputs.getvalue(), self.outputs[0]) )
+#class llvm_link(Task.Task):
+#    def run(self):
+#        all_inputs = StringIO()
+#        for x in self.inputs:
+#            all_inputs.write(' %s' % x)
+#        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
 
 class preprocess(Task.Task):
@@ -687,14 +687,14 @@ class generated_headers(Task.Task):
         return self.exec_command(cmd.getvalue())
 
 class link_bitcode(Task.Task):
-    ext_out = ['.lbc']
+    ext_out = ['.a']
     def run(self):
-        cmd = StringIO()
-        cmd.write('llvm-link ')
+        all_inputs = StringIO()
         for f in self.inputs:
-            cmd.write(' %s' % f.abspath())
-        cmd.write(' -o %s' % self.outputs[0])
-        return self.exec_command(cmd.getvalue())
+            all_inputs.write(' %s' % f.abspath())
+        cmd = "llvm-ar q %s %s" % (self.outputs[0], all_inputs.getvalue())
+#        print("link_bitcode command: %s" % cmd )
+        return self.exec_command(cmd)
 
 
 # Have all 'cxx' targets have 'include' in their include paths.
