@@ -650,7 +650,7 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathna
     SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
   }
   llvm::ModuleSummaryIndexBuilder IndexBuilder(module->wrappedPtr());
-  llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &IndexBuilder.getIndex());
+  llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &IndexBuilder.getIndex(),true);
 };
 
 CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {

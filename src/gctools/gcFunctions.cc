@@ -1,17 +1,22 @@
 /* -^- */
+int gcFunctions_top;
+#include <clasp/core/foundation.h>
+
 #include <boost/mpl/list.hpp>
 #ifdef USE_BOEHM
-#include <clasp/gc/gc_mark.h>
+#include <gc/gc_mark.h>
 #endif
+int gcFunctions_before;
 #ifdef USE_MPS
 extern "C" {
 #include <clasp/mps/code/mpscamc.h>
 };
 #endif
 
+int gcFunctions_after;
+
 #include <stdint.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
