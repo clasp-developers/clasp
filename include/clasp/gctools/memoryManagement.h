@@ -78,7 +78,7 @@ namespace gctools {
 template <class OT>
 struct GCKind;
 extern size_t global_alignup_sizeof_header;
-extern char *_global_stack_marker;
+extern const char* _global_stack_marker;
 extern size_t _global_stack_max_size;
 };
 

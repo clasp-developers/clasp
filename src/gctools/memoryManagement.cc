@@ -59,7 +59,7 @@ std::vector<Immediate_info> get_immediate_info() {
 namespace gctools {
 
 GCStack _ThreadLocalStack;
-char *_global_stack_marker;
+const char *_global_stack_marker;
 size_t _global_stack_max_size;
 /*! Keeps track of the next available header KIND value */
 kind_t global_next_header_kind = (kind_t)KIND_max+1;
@@ -193,7 +193,7 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
   int stackMarker = 0;
-  gctools::_global_stack_marker = (char*)&stackMarker;
+  gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
 //  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
   global_alignup_sizeof_header = AlignUp(sizeof(Header_s));

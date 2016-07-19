@@ -328,7 +328,7 @@ public:
   std::string _TrapInternPackage;
   std::string _TrapInternName;
   map<string, void *> _OpenDynamicLibraryHandles;
-  char *_StackTop;
+  const char *_StackTop;
   uint _StackWarnSize;
   uint _StackSampleCount;
   uint _StackSampleSize;

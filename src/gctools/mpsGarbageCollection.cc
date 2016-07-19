@@ -196,17 +196,17 @@ void rawHeaderDescribe(uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%p : 0x%p 0x%p\n", headerP, *headerP, *(headerP + 1));
     printf(" Not an object header!\n");
     break;
   case Header_s::kind_tag: {
-    printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
-    printf("  0x%16l0X : 0x%16l0X\n", (headerP+1), *(headerP+1));
+    printf("  0x%p : 0x%p\n", headerP, *headerP);
+    printf("  0x%p : 0x%p\n", (headerP+1), *(headerP+1));
 #ifdef DEBUG_GUARD
-    printf("  0x%16l0X : 0x%16l0X\n", (headerP+2), *(headerP+2));
-    printf("  0x%16l0X : 0x%16l0X\n", (headerP+3), *(headerP+3));
-    printf("  0x%16l0X : 0x%16l0X\n", (headerP+4), *(headerP+4));
-    printf("  0x%16l0X : 0x%16l0X\n", (headerP+5), *(headerP+5));
+    printf("  0x%p : 0x%p\n", (headerP+2), *(headerP+2));
+    printf("  0x%p : 0x%p\n", (headerP+3), *(headerP+3));
+    printf("  0x%p : 0x%p\n", (headerP+4), *(headerP+4));
+    printf("  0x%p : 0x%p\n", (headerP+5), *(headerP+5));
 #endif    
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
@@ -215,19 +215,19 @@ void rawHeaderDescribe(uintptr_t *headerP) {
   } break;
   case Header_s::fwd_tag: {
     Header_s *hdr = (Header_s *)headerP;
-    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%16l0X\n", (*headerP) & Header_s::fwd_ptr_mask);
-    printf("     fwdSize = %d/0x%16l0X\n", hdr->fwdSize(), hdr->fwdSize());
+    printf("  0x%p : 0x%p 0x%p\n", headerP, *headerP, *(headerP + 1));
+    printf(" fwd_tag - fwd address: 0x%p\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf("     fwdSize = %d/0x%p\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
-    printf("  0x%16l0X : 0x%16l0X 0x%16l0X\n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%p : 0x%p 0x%p\n", headerP, *headerP, *(headerP + 1));
     if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
       printf("   pad1_tag\n");
-      printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
+      printf("  0x%p : 0x%p\n", headerP, *headerP);
     } else {
       printf("   pad_tag\n");
-      printf("  0x%16l0X : 0x%16l0X\n", headerP, *headerP);
-      printf("  0x%16l0X : 0x%16l0X\n", (headerP+1), *(headerP+1));
+      printf("  0x%p : 0x%p\n", headerP, *headerP);
+      printf("  0x%p : 0x%p\n", (headerP+1), *(headerP+1));
     }
     break;
   }
@@ -269,7 +269,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
   //        memory_find_ref(_global_arena, addr, &searcher );
 
   // Search the stack
-  uintptr_t *sptr = reinterpret_cast<uintptr_t *>(&searcher) + 1;
+  const char* sptr = reinterpret_cast<const char *>(&searcher) + 1;
   for (; sptr < _global_stack_marker; ++sptr) {
     if (*sptr == reinterpret_cast<uintptr_t>(addr)) {
       searcher.stackMatches.push_back(sptr);
