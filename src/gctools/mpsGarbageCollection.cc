@@ -196,12 +196,12 @@ void rawHeaderDescribe(uintptr_t *headerP) {
   uintptr_t headerTag = (*headerP) & Header_s::tag_mask;
   switch (headerTag) {
   case 0:
-    printf("  0x%p : 0x%p 0x%p\n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%p : 0x%lu 0x%lu\n", headerP, *headerP, *(headerP + 1));
     printf(" Not an object header!\n");
     break;
   case Header_s::kind_tag: {
-    printf("  0x%p : 0x%p\n", headerP, *headerP);
-    printf("  0x%p : 0x%p\n", (headerP+1), *(headerP+1));
+    printf("  0x%p : 0x%lu\n", headerP, *headerP);
+    printf("  0x%p : 0x%lu\n", (headerP+1), *(headerP+1));
 #ifdef DEBUG_GUARD
     printf("  0x%p : 0x%p\n", (headerP+2), *(headerP+2));
     printf("  0x%p : 0x%p\n", (headerP+3), *(headerP+3));
@@ -215,19 +215,19 @@ void rawHeaderDescribe(uintptr_t *headerP) {
   } break;
   case Header_s::fwd_tag: {
     Header_s *hdr = (Header_s *)headerP;
-    printf("  0x%p : 0x%p 0x%p\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%p\n", (*headerP) & Header_s::fwd_ptr_mask);
-    printf("     fwdSize = %d/0x%p\n", hdr->fwdSize(), hdr->fwdSize());
+    printf("  0x%p : 0x%lu 0x%lu\n", headerP, *headerP, *(headerP + 1));
+    printf(" fwd_tag - fwd address: 0x%lu\n", (*headerP) & Header_s::fwd_ptr_mask);
+    printf("     fwdSize = %lu/0x%lu\n", hdr->fwdSize(), hdr->fwdSize());
   } break;
   case Header_s::pad_tag:
-    printf("  0x%p : 0x%p 0x%p\n", headerP, *headerP, *(headerP + 1));
+    printf("  0x%p : 0x%lu 0x%lu\n", headerP, *headerP, *(headerP + 1));
     if (((*headerP) & Header_s::pad1_tag) == Header_s::pad1_tag) {
       printf("   pad1_tag\n");
-      printf("  0x%p : 0x%p\n", headerP, *headerP);
+      printf("  0x%p : 0x%lu\n", headerP, *headerP);
     } else {
       printf("   pad_tag\n");
-      printf("  0x%p : 0x%p\n", headerP, *headerP);
-      printf("  0x%p : 0x%p\n", (headerP+1), *(headerP+1));
+      printf("  0x%p : 0x%lu\n", headerP, *headerP);
+      printf("  0x%p : 0x%lu\n", (headerP+1), *(headerP+1));
     }
     break;
   }
@@ -272,7 +272,7 @@ void searchMemoryForAddress(mps_addr_t addr) {
   const char* sptr = reinterpret_cast<const char *>(&searcher) + 1;
   for (; sptr < _global_stack_marker; ++sptr) {
     if (*sptr == reinterpret_cast<uintptr_t>(addr)) {
-      searcher.stackMatches.push_back(sptr);
+      searcher.stackMatches.push_back(reinterpret_cast<mps_addr_t>(const_cast<char*>(sptr)));
     }
     ++(searcher.stackAddresses);
   }
@@ -994,7 +994,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
                                       mps_scan_area_tagged_or_zero,
                                       gctools::pointer_tag_mask,
                                       gctools::pointer_tag_eq,
-                                      _global_stack_marker);
+                                      reinterpret_cast<mps_addr_t>(const_cast<char*>(_global_stack_marker)));
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create stack root");
 
