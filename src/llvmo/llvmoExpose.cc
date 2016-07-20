@@ -642,63 +642,68 @@ CL_DEFUN core::T_mv llvm_sys__verifyFunction(Function_sp function) {
   return Values(_lisp->_boolean(result), core::Str_O::create(ei.str()));
 };
 
-CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathname) {
+CL_LAMBDA(module pathname &optional (use-thin-lto t));
+CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathname, bool useThinLTO) {
   string pn = pathname->get();
   std::error_code errcode;
   llvm::raw_fd_ostream OS(pn.c_str(), errcode, ::llvm::sys::fs::OpenFlags::F_None);
   if (errcode) {
     SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
   }
-  llvm::ModuleSummaryIndexBuilder IndexBuilder(module->wrappedPtr());
-  llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &IndexBuilder.getIndex(),true);
+  if (useThinLTO) {
+    llvm::ModuleSummaryIndexBuilder IndexBuilder(module->wrappedPtr());
+    llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &IndexBuilder.getIndex(),true);
+  } else {
+    llvm::WriteBitcodeToFile(module->wrappedPtr(),OS);
+  }
 };
 
-CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {
+  CL_DEFUN Module_sp llvm_sys__parseBitcodeFile(core::Str_sp filename, LLVMContext_sp context) {
   //	printf("%s:%d af_parseBitcodeFile %s\n", __FILE__, __LINE__, filename->c_str() );
-  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
-  if (std::error_code ec = eo_membuf.getError()) {
-    SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
-  }
-  llvm::ErrorOr<std::unique_ptr<llvm::Module>> eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
-  if (std::error_code eo2 = eom.getError()) {
-    SIMPLE_ERROR(BF("Could not parse bitcode for file %s - error: %s") % filename->get() % eo2.message());
-  }
+    llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> eo_membuf = llvm::MemoryBuffer::getFile(filename->get());
+    if (std::error_code ec = eo_membuf.getError()) {
+      SIMPLE_ERROR(BF("Could not load bitcode for file %s - error: %s") % filename->get() % ec.message());
+    }
+    llvm::ErrorOr<std::unique_ptr<llvm::Module>> eom = llvm::parseBitcodeFile(eo_membuf.get()->getMemBufferRef(), *(context->wrappedPtr()));
+    if (std::error_code eo2 = eom.getError()) {
+      SIMPLE_ERROR(BF("Could not parse bitcode for file %s - error: %s") % filename->get() % eo2.message());
+    }
 
 #if 0
-	if ( engine->hasNamedModule(filename->get()))
-	    {
-		engine->removeNamedModule(filename->get());
-		LOG(BF("Removed existing module: %s") % filename->get());
-	    }
-	Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
-	engine->addNamedModule(filename->get(),omodule);
-	LOG(BF("Added module: %s") % filename->get());
+    if ( engine->hasNamedModule(filename->get()))
+    {
+      engine->removeNamedModule(filename->get());
+      LOG(BF("Removed existing module: %s") % filename->get());
+    }
+    Module_sp omodule = core::RP_Create_wrapped<Module_O,llvm::Module*>(m);
+    engine->addNamedModule(filename->get(),omodule);
+    LOG(BF("Added module: %s") % filename->get());
 #else
-        Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>(eom.get().release());
+    Module_sp omodule = core::RP_Create_wrapped<Module_O, llvm::Module *>(eom.get().release());
 #endif
-  return omodule;
-};
+    return omodule;
+  };
 
-CL_DEFUN bool llvm_sys__valuep(core::T_sp arg) {
-  return gc::IsA<Value_sp>(arg);
-};
+  CL_DEFUN bool llvm_sys__valuep(core::T_sp arg) {
+    return gc::IsA<Value_sp>(arg);
+  };
 
 #if 0
     // Jan 31, 2013 - the Attribute/Argument api is changing fast and I'm not using it right now
     // and I don't want to mess with this code until it settles down
-    Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_symbols)
+  Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_symbols)
+  {
+    llvm::AttrBuilder attrBuilder;
+    core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+    for ( core::Cons_sp cur=attribute_symbols;cur->notNil(); cur=cur->cdr() )
     {
-	llvm::AttrBuilder attrBuilder;
-	core::SymbolToEnumConverter_sp converter = _sym_AttributeEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
-	for ( core::Cons_sp cur=attribute_symbols;cur->notNil(); cur=cur->cdr() )
-	    {
-		core::Symbol_sp sym = cur->ocar().as<core::Symbol_O>();
-		llvm::Attribute::AttrKind e = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
-		attrBuilder.addAttribute(e);
-	    }
-	llvm::Attribute at = llvm::Attribute::get(*(context->wrappedPtr()),attrBuilder);
-	return translate::to_object<llvm::Attribute>::convert(at).as<Attribute_O>();
+      core::Symbol_sp sym = cur->ocar().as<core::Symbol_O>();
+      llvm::Attribute::AttrKind e = converter->enumForSymbol<llvm::Attribute::AttrKind>(sym);
+      attrBuilder.addAttribute(e);
     }
+    llvm::Attribute at = llvm::Attribute::get(*(context->wrappedPtr()),attrBuilder);
+    return translate::to_object<llvm::Attribute>::convert(at).as<Attribute_O>();
+  }
 #endif
 
 
@@ -774,50 +779,50 @@ CL_DEFUN bool llvm_sys__valuep(core::T_sp arg) {
 
 
 
-CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::Str_sp svalue) {
-  llvm::Module &M = *(module->wrappedPtr());
-  llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get());
-  llvm::GlobalVariable *GV = new llvm::GlobalVariable(M, StrConstant->getType(),
-                                                      true, llvm::GlobalValue::InternalLinkage,
-                                                      StrConstant);
-  GV->setName(":::str");
-  GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
-  return gc::As<Value_sp>(translate::to_object<llvm::Value *>::convert(GV));
-}
+  CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::Str_sp svalue) {
+    llvm::Module &M = *(module->wrappedPtr());
+    llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get());
+    llvm::GlobalVariable *GV = new llvm::GlobalVariable(M, StrConstant->getType(),
+                                                        true, llvm::GlobalValue::InternalLinkage,
+                                                        StrConstant);
+    GV->setName(":::str");
+    GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
+    return gc::As<Value_sp>(translate::to_object<llvm::Value *>::convert(GV));
+  }
 
 // Define Value_O::__repr__ which is prototyped in llvmoExpose.lisp
-string Value_O::__repr__() const {
-  stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
-  string str;
-  llvm::raw_string_ostream ro(str);
-  if (this->wrappedPtr() == 0) {
-    ss << "wrappedPtr()==0";
-  } else {
-    try {
-      this->wrappedPtr()->print(ro);
-      ss << ro.str();
-    } catch (...) {
-      ss << "COULD_NOT__REPR__LLVM::Value";
+  string Value_O::__repr__() const {
+    stringstream ss;
+    ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+    string str;
+    llvm::raw_string_ostream ro(str);
+    if (this->wrappedPtr() == 0) {
+      ss << "wrappedPtr()==0";
+    } else {
+      try {
+        this->wrappedPtr()->print(ro);
+        ss << ro.str();
+      } catch (...) {
+        ss << "COULD_NOT__REPR__LLVM::Value";
+      }
     }
+    ss << ">";
+    return ss.str();
   }
-  ss << ">";
-  return ss.str();
-}
 
-bool Value_O::valid() const {
-  return this->wrappedPtr() != NULL;
-}
+  bool Value_O::valid() const {
+    return this->wrappedPtr() != NULL;
+  }
 
-CL_DEFUN bool llvm_sys__valid(core::T_sp value) {
+  CL_DEFUN bool llvm_sys__valid(core::T_sp value) {
   // nil is a valid
-  if (value.nilp())
-    return true;
-  else if (Value_sp val = gc::As<Value_sp>(value)) {
-    return val->valid();
+    if (value.nilp())
+      return true;
+    else if (Value_sp val = gc::As<Value_sp>(value)) {
+      return val->valid();
+    }
+    SIMPLE_ERROR(BF("Illegal argument for VALID: %s") % _rep_(value));
   }
-  SIMPLE_ERROR(BF("Illegal argument for VALID: %s") % _rep_(value));
-}
 };
 
 namespace llvmo {
