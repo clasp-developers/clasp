@@ -78,9 +78,9 @@ module."
 		   (dolist (type (list "fasl" "FASL" "bundle" "lsp" "lisp" "LSP" "LISP"))
 		     (dolist (directory (list
 					 (list :absolute)
-					 (list :relative name)
-					 (list :relative "kernel" name)
-					 (list :relative "modules" name)))
+					 (list :absolute name)
+					 (list :absolute "kernel" name)
+					 (list :absolute "modules" name)))
 		       (if (let ((path (make-pathname :name name :type type :directory directory :defaults "SYS:")))
 			     (if (member :debug-require *features*)
                                  (format t "Require searching for ~a~%" path))
