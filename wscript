@@ -76,7 +76,14 @@ def libraries_as_link_flags(fmt,libs):
         all_libs.write(" ")
         all_libs.write(fmt % x)
     return all_libs.getvalue()
-    
+
+def generate_dsym_files(name,path):
+    info_plist = path.find_or_declare("Contents/Info.plist")
+    dwarf_file = path.find_or_declare("Contents/Resources/DWARF/%s"%name)
+    print("info_plist = %s" % info_plist)
+    print("dwarf_file = %s" % dwarf_file)
+    return [info_plist,dwarf_file]
+
 def stage_value(ctx,s):
     if ( s == 's' ):
         sval = -1
@@ -534,20 +541,26 @@ def build(bld):
 #    bld.program(source=[test_linking_source],target=test_linking_executable)
     print("Building with variant = %s" % variant)
     if (stage_val >= 0):
-        clasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
+        iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
         if (bld.env['DEST_OS'] == LINUX_OS ):
             executable_dir = "bin"
-            bld.program(source=source_files,target=[clasp_executable],install_path='${PREFIX}/bin')
+            bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/bin')
         elif (bld.env['DEST_OS'] == DARWIN_OS ):
-            lto_debug_info = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
+            iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
             executable_dir = "MacOS"
-            bld.program(source=source_files,target=[clasp_executable,lto_debug_info],install_path='${PREFIX}/MacOS')
+            bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
+            iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
+            dsymutil_iclasp = dsymutil(env=bld.env)
+            dsymutil_iclasp.set_inputs([iclasp_executable,iclasp_lto_o])
+            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
+            bld.add_to_group(dsymutil_iclasp)
+            bld.install_files('${PREFIX}/%s/%s'%(executable_dir,iclasp_dsym.name),iclasp_dsym_files,relative_trick=True,cwd=iclasp_dsym)
         if (stage_val >= 1):
             print("About to add compile_aclasp")
             intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
             cmp_aclasp = compile_aclasp(env=bld.env)
-            cmp_aclasp.set_inputs([clasp_executable,intrinsics_bitcode_node])
+            cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node])
             aclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
             cmp_aclasp.set_outputs(aclasp_product)
             bld.add_to_group(cmp_aclasp)
@@ -557,7 +570,7 @@ def build(bld):
             if (stage_val >= 2):
                 print("About to add compile_bclasp")
                 cmp_bclasp = compile_bclasp(env=bld.env)
-                cmp_bclasp.set_inputs([clasp_executable,aclasp_product,intrinsics_bitcode_node])
+                cmp_bclasp.set_inputs([iclasp_executable,aclasp_product,intrinsics_bitcode_node])
                 bclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
                 cmp_bclasp.set_outputs(bclasp_product)
                 bld.add_to_group(cmp_bclasp)
@@ -566,13 +579,23 @@ def build(bld):
                 bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
                 if (stage_val >= 3):
                     print("About to add compile_cclasp")
+                    # Build cclasp
                     cmp_cclasp = compile_cclasp(env=bld.env)
                     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-                    cmp_cclasp.set_inputs([clasp_executable,bclasp_product,cxx_all_bitcode_node])
+                    cmp_cclasp.set_inputs([iclasp_executable,bclasp_product,cxx_all_bitcode_node])
                     cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+                    cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
                     cmp_cclasp.set_outputs(cclasp_executable)
                     bld.add_to_group(cmp_cclasp)
-                    bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable)
+                    cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
+                    cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
+                    print("cclasp_dsym_files = %s" % cclasp_dsym_files)
+                    dsymutil_cclasp = dsymutil(env=bld.env)
+                    dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
+                    dsymutil_cclasp.set_outputs(cclasp_dsym_files)
+                    bld.add_to_group(dsymutil_cclasp)
+                    bld.install_files('${PREFIX}/%s/%s'%(executable_dir,cclasp_dsym.name),cclasp_dsym_files,relative_trick=True,cwd=cclasp_dsym)
+                    bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod=Utils.O755)
                     cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
                     bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
                     cmp_addons = compile_addons(env=bld.env)
@@ -587,19 +610,20 @@ from waflib import TaskGen
 from waflib import Task
 
 class dsymutil(Task.Task):
-    run_str = '${DSYMUTIL} ${SRC}'
     color = 'BLUE';
-    after = [ 'cprogram', 'cxxprogram' ]
-    before = ['inst']
+    def run(self):
+        cmd = 'dsymutil %s' % self.inputs[0]
+        print("  cmd: %s" % cmd)
+        return self.exec_command(cmd)
 
-@TaskGen.feature('dsymutil')
-@TaskGen.after('apply_link')
-def add_dsymutil_task(self):
-    try:
-        link_task = self.link_task
-    except AttributeError:
-        return
-    self.create_task('dsymutil',link_task.outputs[0])
+#@TaskGen.feature('dsymutil')
+#@TaskGen.after('apply_link')
+#def add_dsymutil_task(self):
+#    try:
+#        link_task = self.link_task
+#    except AttributeError:
+#        return
+#    self.create_task('dsymutil',link_task.outputs[0])
 
 class compile_aclasp(Task.Task):
     def run(self):
