@@ -3234,13 +3234,11 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
                (merged (if restart
                            (progn
                              (format t "Loading existing project and restarting from ~a~%" start)
-                             (load-project)
-                             )
+                             (load-project))
                            (make-project)))
                (endnum (if (null end)
                            (length all-jobs)
-                           end))
-               )
+                           end)))
           (setq *project* merged)
           (format t "Starting load/merge loop from ~a up to ~a~%" start endnum)
           (do ((proc start (1+ proc)))

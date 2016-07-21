@@ -7,6 +7,7 @@
 // <define>CONFIG_PF_ANSI    - use the generic "ANSI" platform
 // <define>CONFIG_THREAD_SINGLE - single threaded
 
+#include <config.h>
 #include <clasp/gctools/configure_memory.h>
 
 #ifdef USE_MPS

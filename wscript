@@ -103,6 +103,7 @@ def configure_clasp(cfg,variant):
     include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
 #    print("Including from %s" % include_path )
     cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
+    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
@@ -224,6 +225,14 @@ class boehmdc_d(boehm):
 class mps(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
+        print("Setting up boehm library cfg.env.STLIB_BOEHM = %s " % cfg.env.STLIB_BOEHM)
+        print("Setting up boehm library cfg.env.LIB_BOEHM = %s" % cfg.env.LIB_BOEHM)
+        if (cfg.env.LIB_BOEHM == [] ):
+            cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
+        else:
+            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)
         
 class mpsprep_o(mps):
@@ -405,6 +414,7 @@ def configure(cfg):
     cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_release_lib_dir )
 #    print("DEBUG cfg.plugins_includes = %s" % cfg.plugins_includes)
     cfg.env.append_value('CXXFLAGS', ['-I./'])
+    cfg.env.append_value('CFLAGS', ['-I./'])
     if ('program_name' in cfg.__dict__):
         pass
     else:
@@ -444,7 +454,7 @@ def configure(cfg):
     cfg.define("__STDC_FORMAT_MACROS",1)
     cfg.define("__STDC_LIMIT_MACROS",1)
 #    cfg.env.append_value('CXXFLAGS', ['-v'] )
-#    cfg.env.append_value('CXXFLAGS', ['-I../src/main/'] )
+#    cfg.env.append_value('CFLAGS', ['-v'] )
     includes = [ 'include/' ]
     includes = includes + cfg.plugins_include_dirs
     includes_from_build_dir = []
