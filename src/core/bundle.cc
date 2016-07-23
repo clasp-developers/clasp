@@ -207,9 +207,9 @@ boost_filesystem::path Bundle::findAppDir(const string &argv0, const string &cwd
     }
   }
 #if 0 // defined(darwin)
-	boost_filesystem::path cwdPath(cwd);
-	LOG(BF("Using current working directory: path=%s") % cwdPath.string() );
-	return cwdPath;
+  boost_filesystem::path cwdPath(cwd);
+  LOG(BF("Using current working directory: path=%s") % cwdPath.string() );
+  return cwdPath;
 #endif
   boost_filesystem::path argv0Path(argv0);
   if (argv0Path.has_root_path()) {

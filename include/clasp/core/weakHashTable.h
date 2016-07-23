@@ -34,6 +34,10 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 
+namespace cl {
+  extern core::Symbol_sp& _sym_eq;
+};
+
 namespace core {
 
 FORWARD(WeakHashTable);
