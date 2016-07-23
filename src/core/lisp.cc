@@ -151,6 +151,12 @@ extern "C" void add_history(char *line);
 extern void create_source_main_host();
 #endif
 
+#ifndef SCRAPING
+#define ALL_INITIALIZERS_EXTERN
+#include INITIALIZERS_INC_H
+#undef ALL_INITIALIZERS_EXTERN
+#endif
+
 namespace core {
 
 #if 0
@@ -2583,6 +2589,12 @@ void Lisp_O::run() {
   if ( initializer_functions_are_waiting() ) {
     initializer_functions_invoke();
   }
+#ifndef SCRAPING
+#define ALL_INITIALIZERS_CALLS
+#include INITIALIZERS_INC_H
+#undef ALL_INITIALIZERS_CALLS
+#endif
+  
 #ifdef DEBUG_PROGRESS
   printf("%s:%d run\n", __FILE__, __LINE__ );
 #endif
