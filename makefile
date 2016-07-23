@@ -168,6 +168,10 @@ build:
 
 boehmdc-o:
 	./waf -j $(PJOBS) build_cboehmdc_o
+
+install:
+	./waf -j $(PJOBS) install_cboehmdc_o
+
 #	make -C src/main bclasp-boehmdc-addons
 
 
