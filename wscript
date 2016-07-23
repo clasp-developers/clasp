@@ -678,7 +678,7 @@ class compile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -f ignore-plugins -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
