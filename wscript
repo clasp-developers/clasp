@@ -412,7 +412,6 @@ def configure(cfg):
     cfg.env.append_value('LINKFLAGS', [link_flag])
     cfg.check_cxx(stlib=LLVM_LIBRARIES, cflags='-Wall', uselib_store='LLVM', stlibpath = llvm_release_lib_dir )
     cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_release_lib_dir )
-#    print("DEBUG cfg.plugins_includes = %s" % cfg.plugins_includes)
     cfg.env.append_value('CXXFLAGS', ['-I./'])
     cfg.env.append_value('CFLAGS', ['-I./'])
     if ('program_name' in cfg.__dict__):
@@ -539,8 +538,8 @@ def build(bld):
     clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
 #    print("clasp_headers = %s" % clasp_headers)
     bld.install_files('${PREFIX}/Contents/Resources/source-code/',clasp_headers,relative_trick=True,cwd=bld.path)
-    lisp_source = bld.path.ant_glob("src/lisp/**/*.l*")
-    bld.install_files('${PREFIX}/Contents/Resources/source-code/',lisp_source,relative_trick=True,cwd=bld.path)
+#    lisp_source = bld.path.ant_glob("src/lisp/**/*.l*")
+#    bld.install_files('${PREFIX}/Contents/Resources/source-code/',lisp_source,relative_trick=True,cwd=bld.path)
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
@@ -696,6 +695,15 @@ class compile_addons(Task.Task):
 #            all_inputs.write(' %s' % x)
 #        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
+class link_bitcode(Task.Task):
+    ext_out = ['.a']
+    def run(self):
+        all_inputs = StringIO()
+        for f in self.inputs:
+            all_inputs.write(' %s' % f.abspath())
+        cmd = "llvm-ar q %s %s" % (self.outputs[0], all_inputs.getvalue())
+#        print("link_bitcode command: %s" % cmd )
+        return self.exec_command(cmd)
 
 class preprocess(Task.Task):
     run_str = '${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC} ${CXX_TGT_F}${TGT[0].abspath()}'
@@ -719,17 +727,6 @@ class generated_headers(Task.Task):
         for f in self.inputs:
             cmd.write(' %s' % f.abspath())
         return self.exec_command(cmd.getvalue())
-
-class link_bitcode(Task.Task):
-    ext_out = ['.a']
-    def run(self):
-        all_inputs = StringIO()
-        for f in self.inputs:
-            all_inputs.write(' %s' % f.abspath())
-        cmd = "llvm-ar q %s %s" % (self.outputs[0], all_inputs.getvalue())
-#        print("link_bitcode command: %s" % cmd )
-        return self.exec_command(cmd)
-
 
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')

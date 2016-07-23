@@ -1,0 +1,4 @@
+
+def build(bld):
+    lisp_source = bld.path.ant_glob("**/*.l*")
+    bld.install_files('${PREFIX}/Contents/Resources/source-code/',lisp_source,relative_trick=True,cwd=bld.path)
