@@ -169,6 +169,10 @@ Split the list of ccs into a number of lists."
       nil
       (elt (buffer bufs) pos))))
 
+(defun empty-out-file (filename output)
+  (with-open-file (stream (pathname filename) :direction :output :if-exists :supersede)
+    (format stream "This file has been overwritten once its contents were parsed to generate the ~a file~%" output)))
+
 (defun read-entire-file (filename)
   (with-open-file (stream (pathname filename))
     (let ((data (make-string (file-length stream))))
@@ -349,6 +353,7 @@ Read the input .i file and extract the tags from it and write out a .sif file"
   (let* ((bufs (read-entire-file input))
          (tags (process-all-recognition-elements bufs))
          (sif-pathname output))
+    #+(or)(empty-out-file input output)
     (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
       (let ((*print-readably* t)
             (*print-pretty* nil))

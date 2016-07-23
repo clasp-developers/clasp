@@ -365,7 +365,7 @@
                    #'(lambda (bufs)
                        (let* ((plist (read (cscrape:buffer-stream bufs)))
                               (signature-text (cscrape:read-string-to-character bufs #\) t)))
-                         (make-instance 'tags:expose-internal-function-tag
+                         (make-instance 'tags:initializer-tag
                                         :file% (getf plist :file)
                                         :line% (getf plist :line)
                                         :signature-text% signature-text))))
