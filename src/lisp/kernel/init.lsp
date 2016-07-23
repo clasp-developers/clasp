@@ -1099,6 +1099,15 @@ Return files."
   (setq *features* (recursive-remove-from-list :bclasp *features*))
   (setq *features* (recursive-remove-from-list :cclasp *features*)))
 
+(defvar *plugin-startup-loads* nil)
+(export 'process-plugin-loads)
+(defun process-plugin-loads ()
+  (mapcar #'(lambda (entry)
+              (if (eq (car entry) 'cl:load)
+                  (load (cadr entry))
+                  (eval (read-from-string (cdr entry)))))
+          core:*plugin-startup-loads*))
+
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()
   (mapcar #'(lambda (entry)
