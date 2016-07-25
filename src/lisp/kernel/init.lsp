@@ -414,10 +414,9 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
 
 (defun strip-root (l)
   "Search for the string 'kernel', 'module', or 'generated' and return the rest of the list that starts with that"
-  (or (member "kernel" l :test #'string=)
-      (member "modules" l :test #'string=)
+  (or (member "src" l :test #'string=)
       (member "generated" l :test #'string=)
-      (error "Could not find \"kernel\", \"modules\", or \"generated\" in ~a" l)))
+      (error "Could not find \"src\" or \"generated\" in ~a" l)))
 
 (defun ensure-relative-pathname (input)
   "If the input pathname is absolute then search for kernel, module, or generated and return
@@ -462,7 +461,7 @@ the stage, the +application-name+ and the +bitcode-name+"
                                         :name (pathname-name module))
                                        (translate-logical-pathname "GENERATED:")))
                     (t
-                     (find-lisp-source module (translate-logical-pathname "LISP-SOURCE:"))))))
+                     (find-lisp-source module (translate-logical-pathname "SOURCE-DIR:"))))))
                ((and partial-pathname (or (eq type :fasl) (eq type :bc)))
                 (merge-pathnames (merge-pathnames (ensure-relative-pathname partial-pathname)
                                                   (make-pathname :directory (list :relative target-dir) :type (string-downcase (string type))))
@@ -553,8 +552,8 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 
 (eval-when (:execute)
-  (load (build-pathname #P"kernel/cmp/jit-setup"))
-  (load (build-pathname #P"kernel/clsymbols")))
+  (load (build-pathname #P"src/lisp/kernel/cmp/jit-setup"))
+  (load (build-pathname #P"src/lisp/kernel/clsymbols")))
 
 (defun entry-filename (filename-or-cons)
   "If filename-or-cons is a list then the first entry is a filename"
@@ -742,7 +741,7 @@ the stage, the +application-name+ and the +bitcode-name+"
              t))
 
 (defun read-cleavir-system ()
-  (let* ((fin (open (build-pathname #P"kernel/cleavir-system" :lisp))))
+  (let* ((fin (open (build-pathname #P"src/lisp/kernel/cleavir-system" :lisp))))
     (unwind-protect (read fin) (close fin))))
 
 (defun add-cleavir-build-files ()
@@ -751,139 +750,139 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun maybe-insert-epilogue-aclasp ()
   "Insert epilogue if we are compiling aclasp"
   (if (string= (default-target-stage) "a")
-      (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
+      (list (list #P"src/lisp/kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
 (defun maybe-insert-epilogue-bclasp ()
   "Insert epilogue if we are compiling bclasp"
   (if (string= (default-target-stage) "b")
-      (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
+      (list (list #P"src/lisp/kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
 (defun maybe-insert-epilogue-cclasp ()
   "Insert epilogue if we are compiling cclasp"
   (if (string= (default-target-stage) "c")
-      (list (list #P"kernel/lsp/epilogue" (list :epilogue-module-p t)))
+      (list (list #P"src/lisp/kernel/lsp/epilogue" (list :epilogue-module-p t)))
       nil))
 
 (defvar *build-files*
   (list
    :init
-   #P"kernel/lsp/prologue"
-   #P"kernel/lsp/direct-calls"
+   #P"src/lisp/kernel/lsp/prologue"
+   #P"src/lisp/kernel/lsp/direct-calls"
    #P"generated/cl-wrappers"
    :min-start
-   #P"kernel/init"
+   #P"src/lisp/kernel/init"
    :start
-   #P"kernel/cmp/jit-setup"
-   #P"kernel/clsymbols"
-   #P"kernel/lsp/packages"
-   #P"kernel/lsp/foundation"
-   #P"kernel/lsp/export"
-   #P"kernel/lsp/defmacro"
+   #P"src/lisp/kernel/cmp/jit-setup"
+   #P"src/lisp/kernel/clsymbols"
+   #P"src/lisp/kernel/lsp/packages"
+   #P"src/lisp/kernel/lsp/foundation"
+   #P"src/lisp/kernel/lsp/export"
+   #P"src/lisp/kernel/lsp/defmacro"
    :defmacro
-   #P"kernel/lsp/helpfile"
-   #P"kernel/lsp/evalmacros"
-   #P"kernel/lsp/claspmacros"
-   #P"kernel/lsp/source-transformations"
+   #P"src/lisp/kernel/lsp/helpfile"
+   #P"src/lisp/kernel/lsp/evalmacros"
+   #P"src/lisp/kernel/lsp/claspmacros"
+   #P"src/lisp/kernel/lsp/source-transformations"
    :macros
-   #P"kernel/lsp/testing"
-   #P"kernel/lsp/makearray"
-   #P"kernel/lsp/arraylib"
-   #P"kernel/lsp/setf"
-   #P"kernel/lsp/listlib"
-   #P"kernel/lsp/mislib"
-   #P"kernel/lsp/defstruct"
-   #P"kernel/lsp/predlib"
-   #P"kernel/lsp/seq"
-   #P"kernel/lsp/cmuutil"
-   #P"kernel/lsp/seqmacros"
-   #P"kernel/lsp/seqlib"
-   #P"kernel/lsp/iolib"
-   ;;    #P"kernel/lsp/profiling"    ;; Do micro-profiling of the GC
-   #P"kernel/lsp/logging"
-   #P"kernel/lsp/trace"
+   #P"src/lisp/kernel/lsp/testing"
+   #P"src/lisp/kernel/lsp/makearray"
+   #P"src/lisp/kernel/lsp/arraylib"
+   #P"src/lisp/kernel/lsp/setf"
+   #P"src/lisp/kernel/lsp/listlib"
+   #P"src/lisp/kernel/lsp/mislib"
+   #P"src/lisp/kernel/lsp/defstruct"
+   #P"src/lisp/kernel/lsp/predlib"
+   #P"src/lisp/kernel/lsp/seq"
+   #P"src/lisp/kernel/lsp/cmuutil"
+   #P"src/lisp/kernel/lsp/seqmacros"
+   #P"src/lisp/kernel/lsp/seqlib"
+   #P"src/lisp/kernel/lsp/iolib"
+   ;;    #P"src/lisp/kernel/lsp/profiling"    ;; Do micro-profiling of the GC
+   #P"src/lisp/kernel/lsp/logging"
+   #P"src/lisp/kernel/lsp/trace"
    :pre-cmp
    ;; Compiler code
-   #P"kernel/cmp/packages"
-   #P"kernel/cmp/cmpsetup"
-   ;;    #P"kernel/cmp/cmpenv-fun"
-   ;;    #P"kernel/cmp/cmpenv-proclaim"
-   #P"kernel/cmp/cmpglobals"
-   #P"kernel/cmp/cmptables"
-   #P"kernel/cmp/cmpvar"
-   #P"kernel/cmp/cmputil"
-   #P"kernel/cmp/cmpintrinsics"
-   #P"kernel/cmp/cmpir"
-   #P"kernel/cmp/cmpeh"
-   #P"kernel/cmp/debuginfo"
-   #P"kernel/cmp/lambdalistva"
-   #P"kernel/cmp/cmpvars"
-   #P"kernel/cmp/cmpquote"
-   #P"kernel/cmp/cmpobj"
-   ;;    #P"kernel/cmp/mincomp"
-   #P"kernel/cmp/compiler"
-   #P"kernel/cmp/compilefile"
-   #P"kernel/cmp/external-clang"
-   #P"kernel/cmp/cmpbundle"
+   #P"src/lisp/kernel/cmp/packages"
+   #P"src/lisp/kernel/cmp/cmpsetup"
+   ;;    #P"src/lisp/kernel/cmp/cmpenv-fun"
+   ;;    #P"src/lisp/kernel/cmp/cmpenv-proclaim"
+   #P"src/lisp/kernel/cmp/cmpglobals"
+   #P"src/lisp/kernel/cmp/cmptables"
+   #P"src/lisp/kernel/cmp/cmpvar"
+   #P"src/lisp/kernel/cmp/cmputil"
+   #P"src/lisp/kernel/cmp/cmpintrinsics"
+   #P"src/lisp/kernel/cmp/cmpir"
+   #P"src/lisp/kernel/cmp/cmpeh"
+   #P"src/lisp/kernel/cmp/debuginfo"
+   #P"src/lisp/kernel/cmp/lambdalistva"
+   #P"src/lisp/kernel/cmp/cmpvars"
+   #P"src/lisp/kernel/cmp/cmpquote"
+   #P"src/lisp/kernel/cmp/cmpobj"
+   ;;    #P"src/lisp/kernel/cmp/mincomp"
+   #P"src/lisp/kernel/cmp/compiler"
+   #P"src/lisp/kernel/cmp/compilefile"
+   #P"src/lisp/kernel/cmp/external-clang"
+   #P"src/lisp/kernel/cmp/cmpbundle"
    :pre-repl
-   #P"kernel/cmp/cmprepl"
+   #P"src/lisp/kernel/cmp/cmprepl"
    :cmp-pre-epilogue
    #'maybe-insert-epilogue-aclasp
    :cmp
    :min
    :cmprepl
-   #P"kernel/cmp/cmpwalk"
+   #P"src/lisp/kernel/cmp/cmpwalk"
    :was-pre-cmp
-   #P"kernel/lsp/sharpmacros"
-   #P"kernel/lsp/assert"
-   #P"kernel/lsp/numlib"
-   #P"kernel/lsp/describe"
-   #P"kernel/lsp/module"
-   #P"kernel/lsp/loop2"
-   #P"kernel/lsp/shiftf-rotatef"
-   #P"kernel/lsp/assorted"
-   #P"kernel/lsp/packlib"
+   #P"src/lisp/kernel/lsp/sharpmacros"
+   #P"src/lisp/kernel/lsp/assert"
+   #P"src/lisp/kernel/lsp/numlib"
+   #P"src/lisp/kernel/lsp/describe"
+   #P"src/lisp/kernel/lsp/module"
+   #P"src/lisp/kernel/lsp/loop2"
+   #P"src/lisp/kernel/lsp/shiftf-rotatef"
+   #P"src/lisp/kernel/lsp/assorted"
+   #P"src/lisp/kernel/lsp/packlib"
    ;;    cmp/cmpinterpreted
-   #P"kernel/lsp/defpackage"
-   #P"kernel/lsp/format"
+   #P"src/lisp/kernel/lsp/defpackage"
+   #P"src/lisp/kernel/lsp/format"
    #|
    arraylib
    numlib
    |#
-    #P"kernel/clos/package"
-    #P"kernel/clos/hierarchy"
-    #P"kernel/clos/cpl"
-    #P"kernel/clos/std-slot-value"
-    #P"kernel/clos/slot"
-    #P"kernel/clos/boot"
-    #P"kernel/clos/kernel"
-    #P"kernel/clos/method"
-    #P"kernel/clos/combin"
-    #P"kernel/clos/std-accessors"
-    #P"kernel/clos/defclass"
-    #P"kernel/clos/slotvalue"
-    #P"kernel/clos/standard"
-    #P"kernel/clos/builtin"
-    #P"kernel/clos/change"
-    #P"kernel/clos/stdmethod"
-    #P"kernel/clos/generic"
+    #P"src/lisp/kernel/clos/package"
+    #P"src/lisp/kernel/clos/hierarchy"
+    #P"src/lisp/kernel/clos/cpl"
+    #P"src/lisp/kernel/clos/std-slot-value"
+    #P"src/lisp/kernel/clos/slot"
+    #P"src/lisp/kernel/clos/boot"
+    #P"src/lisp/kernel/clos/kernel"
+    #P"src/lisp/kernel/clos/method"
+    #P"src/lisp/kernel/clos/combin"
+    #P"src/lisp/kernel/clos/std-accessors"
+    #P"src/lisp/kernel/clos/defclass"
+    #P"src/lisp/kernel/clos/slotvalue"
+    #P"src/lisp/kernel/clos/standard"
+    #P"src/lisp/kernel/clos/builtin"
+    #P"src/lisp/kernel/clos/change"
+    #P"src/lisp/kernel/clos/stdmethod"
+    #P"src/lisp/kernel/clos/generic"
     :generic
-    #P"kernel/clos/fixup"
-    #P"kernel/clos/extraclasses"
-    #P"kernel/lsp/defvirtual"
+    #P"src/lisp/kernel/clos/fixup"
+    #P"src/lisp/kernel/clos/extraclasses"
+    #P"src/lisp/kernel/lsp/defvirtual"
     :stage3
-    #P"kernel/clos/conditions"
-    #P"kernel/clos/print"
-    #P"kernel/clos/streams"
-    #P"kernel/lsp/pprint"
-    #P"kernel/clos/inspect"
+    #P"src/lisp/kernel/clos/conditions"
+    #P"src/lisp/kernel/clos/print"
+    #P"src/lisp/kernel/clos/streams"
+    #P"src/lisp/kernel/lsp/pprint"
+    #P"src/lisp/kernel/clos/inspect"
     :clos
-    #P"kernel/lsp/ffi"
-    #P"modules/sockets/sockets"
+    #P"src/lisp/kernel/lsp/ffi"
+    #P"src/lisp/modules/sockets/sockets"
     ;;    asdf/build/asdf
     :front
-    #P"kernel/lsp/top"
+    #P"src/lisp/kernel/lsp/top"
     #'maybe-insert-epilogue-bclasp
     :all
     :bclasp
@@ -926,7 +925,7 @@ Return files."
 
 (defvar *asdf-files*
   '(:init
-    #P"kernel/asdf/build/asdf"
+    #P"src/lisp/kernel/asdf/build/asdf"
     :end))
 (export '*asdf-files*)
 
@@ -1298,27 +1297,27 @@ Return files."
 
 (defun compile-addons ()
   ;; Build serve-event and asdf
-  (core:compile-kernel-file #P"modules/serve-event/serve-event" :force-recompile t)
-  (core:compile-kernel-file #P"modules/asdf/build/asdf" :force-recompile t))
+  (core:compile-kernel-file #P"src/lisp/modules/serve-event/serve-event" :force-recompile t)
+  (core:compile-kernel-file #P"src/lisp/modules/asdf/build/asdf" :force-recompile t))
 
 (defun link-addons ()
-  (cmp:llvm-link (core:build-pathname #P"modules/serve-event/serve-event" :fasl)
-                 :lisp-bitcode-files (list (core:build-pathname #P"modules/serve-event/serve-event" :bc)))
-  (cmp:llvm-link (core:build-pathname #P"modules/asdf/asdf" :fasl)
-                 :lisp-bitcode-files (list (core:build-pathname #P"modules/asdf/build/asdf" :bc))))
+  (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :fasl)
+                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/serve-event/serve-event" :bc)))
+  (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/asdf/asdf" :fasl)
+                 :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bc))))
 (export '(compile-addons link-addons))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Setup the build system for SICL
 ;;
 (defun setup-cleavir ()
-  (load "kernel;asdf;build;asdf.fasl")
-  (load "kernel;cleavir;ccmp-all.lsp"))
+  (load "src;lisp;kernel;asdf;build;asdf.fasl")
+  (load "src;lisp;cleavir;ccmp-all.lsp"))
 
 (export 'setup-sicl)
 
 (defun load-cleavir-system ()
-  (let* ((fin (open "kernel;cleavir-system.lsp")))
+  (let* ((fin (open "src;lisp;kernel;cleavir-system.lsp")))
     (read fin)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -341,7 +341,7 @@ and the pathname of the source file - this will also be used as the module initi
 - epilogue-module-p :: T if this is an epilogue module.
 Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
-  (let* ((clasp-source-root (translate-logical-pathname "SYS:"))
+  (let* ((clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-location
           (if (pathname-match-p given-input-pathname clasp-source)
