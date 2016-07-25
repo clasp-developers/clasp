@@ -573,7 +573,7 @@ def build(bld):
             aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
             cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
             bld.add_to_group(cmp_aclasp)
-            lnk_aclasp = link_aclasp(env=bld.env)
+            lnk_aclasp = link_fasl(env=bld.env)
             lnk_aclasp.set_inputs([intrinsics_bitcode_node,aclasp_common_lisp_bitcode])
             aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
             lnk_aclasp.set_outputs([aclasp_link_product])
@@ -583,27 +583,36 @@ def build(bld):
             if (stage_val >= 2):
                 print("About to add compile_bclasp")
                 cmp_bclasp = compile_bclasp(env=bld.env)
-                cmp_bclasp.set_inputs([iclasp_executable,aclasp_product,intrinsics_bitcode_node])
-                bclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
-                cmp_bclasp.set_outputs(bclasp_product)
-                bld.add_to_group(cmp_bclasp)
-                bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_product.name), bclasp_product)
+                cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node])
                 bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
+                cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
+                bld.add_to_group(cmp_bclasp)
+                bclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
+                lnk_bclasp = link_fasl(env=bld.env)
+                lnk_bclasp.set_inputs([intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
+                lnk_bclasp.set_outputs([bclasp_link_product])
+                bld.add_to_group(lnk_bclasp)
+                bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_link_product.name), bclasp_link_product)
                 bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
                 if (stage_val >= 3):
                     print("About to add compile_cclasp")
                     # Build cclasp
                     cmp_cclasp = compile_cclasp(env=bld.env)
                     cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-                    cmp_cclasp.set_inputs([iclasp_executable,bclasp_product,cxx_all_bitcode_node])
+                    cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node])
+                    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
+                    cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
+                    bld.add_to_group(cmp_cclasp)
+                    lnk_cclasp = link_executable(env=bld.env)
+                    lnk_cclasp.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
                     cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                     if ( bld.env['DEST_OS'] == DARWIN_OS ):
                         cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
-                        cmp_cclasp.set_outputs([cclasp_executable,cclasp_lto_o])
+                        lnk_cclasp.set_outputs([cclasp_executable,cclasp_lto_o])
                     elif (bld.env['DEST_OS'] == LINUX_OS ):
                         cclasp_lto_o = None
-                        cmp_cclasp.set_outputs(cclasp_executable)
-                    bld.add_to_group(cmp_cclasp)
+                        lnk_cclasp.set_outputs(cclasp_executable)
+                    bld.add_to_group(lnk_cclasp)
                     if ( bld.env['DEST_OS'] == DARWIN_OS ):
                         cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
                         cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
@@ -618,10 +627,10 @@ def build(bld):
                     bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
                     cmp_addons = compile_addons(env=bld.env)
                     cmp_addons.set_inputs(cclasp_executable)
-                    asdf_fasl = bld.path.find_or_declare("cclasp-boehmdc/modules/asdf/asdf.fasl")
+                    asdf_fasl = bld.path.find_or_declare("cclasp-boehmdc/src/lisp/modules/asdf/asdf.fasl")
                     cmp_addons.set_outputs(asdf_fasl)
                     bld.add_to_group(cmp_addons)
-                    bld.install_as('${PREFIX}/Contents/Resources/lib/cclasp-boehmdc/modules/asdf/asdf.fasl',asdf_fasl)
+                    bld.install_as('${PREFIX}/Contents/Resources/lib/cclasp-boehmdc/src/lisp/modules/asdf/asdf.fasl',asdf_fasl)
 
 
 from waflib import TaskGen
@@ -646,7 +655,7 @@ class dsymutil(Task.Task):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -I -f ecl-min -f debug-run-clang -N -e "(compile-aclasp :link-type :fasl)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -I -f ecl-min -f debug-run-clang -N -e "(compile-aclasp :link-type :bc)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -655,28 +664,44 @@ class compile_aclasp(Task.Task):
     def keyword(self):
         return 'Compile aclasp using... '
 
-class link_aclasp(Task.Task):
+class link_fasl(Task.Task):
     def run(self):
-        print("In link_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        if (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "${CXX} %s %s -flto=thin -flat_namespace -undefined warning -bundle -o %s" % (self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        if (self.env['DEST_OS'] == DARWIN_OS ):
+            cmd = "%s %s %s -flto=thin -flat_namespace -undefined warning -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
+        elif (self.env['DEST_OS'] == LINUX_OS ):
+            cmd = "${CXX} ${SRC[0].abspath()} ${SRC[1].abspath()} -flto=thin -fuse-ld=gold -shared -o ${TGT[0].abspath()}"
         else:
-            cmd = "${CXX} %s %s -flto=thin -fuse-ld=gold -shared -o %s" % (self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
-        print("  link cmd: %s" % cmd)
+            self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
+        print(" link_fasl cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
-        return super(link_aclasp, self).exec_command(cmd, **kw)
+        return super(link_fasl, self).exec_command(cmd, **kw)
     def keyword(self):
-        return 'Link aclasp using... '
+        return 'Link fasl using... '
+
+class link_executable(Task.Task):
+    def run(self):
+        if (self.env['DEST_OS'] == DARWIN_OS ):
+            cmd = "%s %s %s %s %s %s -flto=thin -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
+        elif (self.env['DEST_OS'] == LINUX_OS ):
+            cmd = "${CXX} ${SRC[0].abspath()} ${SRC[1].abspath()} -flto=thin -fuse-ld=gold -o ${TGT[0].abspath()}"
+        else:
+            self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
+        print(" link_executable cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(link_executable, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Link executable using... '
 
 #
 # Use the aclasp fasl file
 class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-#        cmd = '%s -N -e "(compile-bclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -N -f debug-run-clang -e "(compile-bclasp :link-type :fasl)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -N -f debug-run-clang -e "(compile-bclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -688,8 +713,7 @@ class compile_bclasp(Task.Task):
 class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-#        cmd = '%s -N -e "(compile-cclasp)" -e "(quit)"' % self.inputs[0].abspath()
-        cmd = '%s -i %s -f debug-run-clang -N -e "(compile-cclasp :link-type :executable)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -f debug-run-clang -N -e "(compile-cclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -797,8 +821,10 @@ def preprocess_task_generator(self):
     intrinsics_bitcode_node = self.path.find_or_declare(variant.intrinsics_bitcode_name())
     self.create_task('link_bitcode',all_o_files,cxx_all_bitcode_node)
     self.create_task('link_bitcode',[intrinsics_o],intrinsics_bitcode_node)
-    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%variant.intrinsics_bitcode_name(),intrinsics_bitcode_node)
-    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%variant.cxx_all_bitcode_name(),cxx_all_bitcode_node)
+#    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%variant.intrinsics_bitcode_name(),intrinsics_bitcode_node)
+#    self.bld.install_files('${PREFIX}/Contents/Resources/lib/%s'%variant.cxx_all_bitcode_name(),cxx_all_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/Resources/lib/',intrinsics_bitcode_node)
+    self.bld.install_files('${PREFIX}/Contents/Resources/lib/',cxx_all_bitcode_node)
 
 
 def init(ctx):
