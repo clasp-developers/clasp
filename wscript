@@ -570,11 +570,14 @@ def build(bld):
             intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
             cmp_aclasp = compile_aclasp(env=bld.env)
             cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node])
-            aclasp_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
-            cmp_aclasp.set_outputs(aclasp_product)
-            bld.add_to_group(cmp_aclasp)
-            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_product.name), aclasp_product)
             aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+            cmp_aclasp.set_outputs(aclasp_common_lisp_product)
+            bld.add_to_group(cmp_aclasp)
+            link_aclasp = link_aclasp(env=bld.env)
+            link_aclasp.set_inputs([intrinsics_bitcode_node,aclasp_common_lisp_product])
+            aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
+            link_aclasp.set_outputs([aclasp_link_product])
+            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_link_product.name), aclasp_link_product)
             bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
             if (stage_val >= 2):
                 print("About to add compile_bclasp")
@@ -596,7 +599,7 @@ def build(bld):
                     if ( bld.env['DEST_OS'] == DARWIN_OS ):
                         cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
                         cmp_cclasp.set_outputs([cclasp_executable,cclasp_lto_o])
-                    else:
+                    elif (bld.env['DEST_OS'] == LINUX_OS ):
                         cclasp_lto_o = None
                         cmp_cclasp.set_outputs(cclasp_executable)
                     bld.add_to_group(cmp_cclasp)
@@ -650,6 +653,21 @@ class compile_aclasp(Task.Task):
         return super(compile_aclasp, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile aclasp using... '
+
+class link_aclasp(Task.Task):
+    def run(self):
+        print("In link_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
+        if (cfg.env['DEST_OS'] == DARWIN_OS ):
+            cmd = "${CXX} %s %s -flto=thin -flat_namespace -undefined warning -bundle -o %s" % (self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        else:
+            cmd = "${CXX} %s %s -flto=thin -fuse-ld=gold -shared -o %s" % (self.inputs[0].abspath(), self.inputs[1].abspath(), self.outputs[0].abspath())
+        print("  link cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(link_aclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Link aclasp using... '
 
 #
 # Use the aclasp fasl file
