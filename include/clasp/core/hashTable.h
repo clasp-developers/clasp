@@ -55,7 +55,7 @@ class HashTable_O : public General_O {
   friend class HashTableEqual_O;
   friend class HashTableEqualp_O;
   friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
-  friend T_mv cl__clrhash(HashTable_sp hash_table);
+  friend T_sp cl__clrhash(HashTable_sp hash_table);
 
 protected: // instance variables here
   uint _InitialSize;
