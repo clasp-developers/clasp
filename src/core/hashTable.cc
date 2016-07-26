@@ -157,9 +157,9 @@ CL_DEFUN T_mv cl__maphash(T_sp function_desig, T_sp thash_table) {
 CL_LAMBDA(hash-table);
 CL_DECLARE();
 CL_DOCSTRING("See CLHS");
-CL_DEFUN T_mv cl__clrhash(HashTable_sp hash_table) {
+CL_DEFUN T_sp cl__clrhash(HashTable_sp hash_table) {
   hash_table->clrhash();
-  return (Values(_Nil<T_O>()));
+  return hash_table;
 };
 
 CL_LAMBDA(cons);
