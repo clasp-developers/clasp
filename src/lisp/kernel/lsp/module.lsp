@@ -70,7 +70,7 @@ module."
 ;;; Set up a MODULES host pathname that points to the precompiled modules for this stage/gc
 (setf (logical-pathname-translations "MODULES")
       (list (list "**;*.*" (make-pathname :host "LIB"
-                                          :directory (list :absolute (default-target-backend) :wild-inferiors)
+                                          :directory (list :absolute (default-target-backend) "src" "lisp" :wild-inferiors)
                                           :name :wild
                                           :type :wild))))
 
@@ -85,19 +85,12 @@ module."
 					 (list :relative name)
 					 (list :relative "kernel" name)
 					 (list :relative "modules" name)))
-		       (if (let ((path (merge-pathnames
+                       (if (let ((path (merge-pathnames
                                         (translate-logical-pathname (make-pathname :name name :type type :directory directory))
-                                        (translate-logical-pathname (make-pathname :host "SYS")))))
-			     (if (member :debug-require *features*)
-                                 (format t "Require searching in sys: ~a~%" path))
-			     (load path :if-does-not-exist nil))
-			   (return-from require-block t)
-			   (if (let ((path (merge-pathnames
-                                            (translate-logical-pathname (make-pathname :name name :type type :directory directory))
-                                            (translate-logical-pathname (make-pathname :host "MODULES")))))
-                                 (if (member :debug-require *features*)
-                                     (format t "Require searching in modules: ~a~%" path))
-				 (load path :if-does-not-exist nil))
-			       (return-from require-block t)))))))))
+                                        (translate-logical-pathname (make-pathname :host "MODULES")))))
+                             (if (member :debug-require *features*)
+                                 (format t "Require searching in modules: ~a~%" path))
+                             (load path :if-does-not-exist nil))
+                           (return-from require-block t))))))))
 	 ext:*module-provider-functions*)
 
