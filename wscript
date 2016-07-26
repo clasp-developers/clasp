@@ -669,7 +669,7 @@ class link_fasl(Task.Task):
         if (self.env['DEST_OS'] == DARWIN_OS ):
             cmd = "%s %s %s -flto=thin -flat_namespace -undefined warning -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "${CXX} ${SRC[0].abspath()} ${SRC[1].abspath()} -flto=thin -fuse-ld=gold -shared -o ${TGT[0].abspath()}"
+            cmd = "%s %s %s -flto=thin -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
         print(" link_fasl cmd: %s" % cmd)
@@ -685,7 +685,7 @@ class link_executable(Task.Task):
         if (self.env['DEST_OS'] == DARWIN_OS ):
             cmd = "%s %s %s %s %s %s -flto=thin -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "${CXX} ${SRC[0].abspath()} ${SRC[1].abspath()} -flto=thin -fuse-ld=gold -o ${TGT[0].abspath()}"
+            cmd = "%s %s %s %s %s %s -flto=thin -fuse-ld=gold -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
         print(" link_executable cmd: %s" % cmd)

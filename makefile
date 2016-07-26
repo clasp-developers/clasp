@@ -8,7 +8,7 @@ include $(wildcard $(CLASP_HOME)/local.config)
 export PJOBS ?= 1
 
 export PREFIX := $(or $(PREFIX), \
-                         $(error You must define PREFIX in local.config))
+			/usr/local/clasp )
 
 export TARGET_OS ?= $(shell uname)
 export TARGET_OS := $(or $(filter $(TARGET_OS), Linux),\
