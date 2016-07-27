@@ -7,3 +7,6 @@
            (format t "Test ~a failed - got: ~a  expected: ~a~%" ',the-test ,calc-result ,expected-result)))))
 
 (load "low0.lisp")
+(load "array0.lisp")
+
+
