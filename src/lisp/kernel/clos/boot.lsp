@@ -129,6 +129,8 @@
     (defvar +the-std-class+)
     (defvar +the-funcallable-standard-class+))
 
+(defmacro dbg-boot (fmt &rest fmt-args)
+  `(bformat t ,fmt ,@fmt-args))
 
 ;;;
 ;;; make-empty-standard-class compiles a lot of code using EVAL
@@ -136,10 +138,15 @@
 ;;; This is being run every time Clasp starts up!
 ;;; We have to figure out how ECL avoids this.
 ;;;
+(dbg-boot "About to start block\n")
 (let* ((class-hierarchy '#.+class-hierarchy+))
   ;; The loop is expensive and slows down startup
+  (dbg-boot "About to accumulate classes\n")
   (let ((all-classes (loop for c in class-hierarchy
 			for class = (progn
+                                      (dbg-boot "About to accumulate class %s\n" c)
+                                      (if (eq (car c) 'standard-generic-function)
+                                          (core:gdb "About to trap"))
 				      (apply #'make-empty-standard-class c))
 			collect class)))
     #+ecl
@@ -151,6 +158,7 @@
 	(find-class 'funcallable-standard-class nil)))
     #+clasp
     (progn
+      (dbg-boot "About to setq stuff\n")
       (setq +the-t-class+ (find-class 't nil))
       (setq +the-class+ (find-class 'class nil))
       (setq +the-std-class+ (find-class 'std-class nil))
@@ -167,6 +175,7 @@
     ;;
     ;; 4) This is needed for further optimization
     ;;
+    (dbg-boot "About to set slot-value for method-combination\n")
     (setf (slot-value (find-class 'method-combination) 'sealedp) t)
     ;;
     ;; 5) This is needed so that slot-definition objects are not marked
@@ -174,8 +183,8 @@
     ;;
     (with-early-accessors (+standard-class-slots+)
       (loop for c in all-classes
+         do (dbg-boot "About to set slots for: %s\n" c)
 	 do (loop for s in (class-direct-slots c)
 	       do (si::instance-sig-set s))
 	 do (loop for s in (class-slots c)
-	       do (si::instance-sig-set s))))
-    ))
+	       do (si::instance-sig-set s))))))
