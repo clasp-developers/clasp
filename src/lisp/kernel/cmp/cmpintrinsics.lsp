@@ -373,6 +373,8 @@ Boehm and MPS use a single pointer"
 
 
 (defun add-global-ctor-function (module main-function)
+  "Create a function with the name core:+clasp-ctor-function-name+ and
+have it call the main-function"
   (let ((*the-module* module))
     (let ((fn (with-new-function
                   (ctor-func func-env result
@@ -386,59 +388,42 @@ Boehm and MPS use a single pointer"
                   (irc-intrinsic "cc_register_startup_function" bc-bf)))))
       fn)))
 
+(defun find-global-ctor-function (module)
+  (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
+    (or ctor (error "Couldn't find the ctor-function: ~a" core:+clasp-ctor-function-name+))
+    ctor))
+
+(defun remove-llvm.global_ctors-if-exists (module)
+  (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
+    (if global
+      (llvm-sys:erase-from-parent global))))
+
+(defun add-llvm.global_ctors (module priority global-ctor-function)
+  (or global-ctor-function (error "global-ctor-function must not be NIL"))
+  (llvm-sys:make-global-variable module
+                                 +global-ctors-struct[1]+
+                                 nil
+                                 'llvm-sys:appending-linkage
+                                 (llvm-sys:constant-array-get
+                                  +global-ctors-struct[1]+
+                                  (list
+                                   (llvm-sys:constant-struct-get +global-ctors-struct+
+                                                                 (list
+                                                                  (jit-constant-i32 priority)
+                                                                  global-ctor-function
+                                                                  (llvm-sys:constant-pointer-null-get +i8*+)))))
+                                 "llvm.global_ctors")))
+
 (defun make-boot-function-global-variable (module func-ptr)
   "* Arguments
 - module :: An llvm module
 - func-ptr :: An llvm function
 * Description
 Add the global variable llvm.global_ctors to the Module (linkage appending)
-and initialize it with an array consisting of one function pointer.
-Create "
-  (let* (#+(or)(boot-function-global (llvm-sys:make-global-variable module
-                                                              +fn-prototype*[1]+ ; type
-                                                              t ; is constant
-                                                              'llvm-sys:internal-linkage
-                                                              (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr))
-                                                              "global-boot-functions"))
-         (global-ctor (add-global-ctor-function module func-ptr)))
+and initialize it with an array consisting of one function pointer."
+  (let* ((global-ctor (add-global-ctor-function module func-ptr)))
     (incf *compilation-unit-module-index*)
-    (llvm-sys:make-global-variable module
-                                   +global-ctors-struct[1]+
-                                   nil
-                                   'llvm-sys:appending-linkage
-                                   (llvm-sys:constant-array-get
-                                    +global-ctors-struct[1]+
-                                    (list
-                                     (llvm-sys:constant-struct-get +global-ctors-struct+
-                                                                   (list
-                                                                    (jit-constant-i32 *compilation-unit-module-index*)
-                                                                    global-ctor
-                                                                    (llvm-sys:constant-pointer-null-get +i8*+)))))
-                                   "llvm.global_ctors")))
-
-#+(or)
-(defun reset-global-boot-functions-name-size (module)
-  #+(or)(remove-main-function-if-exists module)
-  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
-         (ptype (llvm-sys:get-type funcs))
-         (atype (llvm-sys:get-sequential-element-type ptype))
-         (num-elements (llvm-sys:get-array-num-elements atype))
-         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
-    (if var (llvm-sys:erase-from-parent var))
-    (llvm-sys:make-global-variable module
-                                   +i32+ ; type
-                                   t     ; is constant
-                                   'llvm-sys:internal-linkage
-                                   (jit-constant-i32 num-elements)
-                                   llvm-sys:+global-boot-functions-name-size+)))
-
-
-#+(or)(defun remove-main-function-if-exists (module)
-  (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
-    (if fn
-      (llvm-sys:erase-from-parent fn))))
-
-
+    (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor)))
 
 ;;
 ;; Ensure that the LLVM model of

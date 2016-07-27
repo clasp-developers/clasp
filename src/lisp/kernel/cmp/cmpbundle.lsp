@@ -96,7 +96,7 @@
 ;;;                                 "-macosx_version_min" "10.10"
                        "-flto=thin"
                        "-flat_namespace" 
-                       "-undefined" "warning"
+                       "-undefined" "suppress"
                        "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
@@ -164,15 +164,21 @@
                                :optimize nil
                                :source-namestring (namestring output-pathname))
           (with-debug-info-generator (:module module :pathname output-pathname)
-            (let* ((linker (llvm-sys:make-linker *the-module*)))
+            (let* ((linker (llvm-sys:make-linker *the-module*))
+                   (part-index 1))
               ;; Don't enforce .bc extension for additional-bitcode-pathnames
               ;; This is where I used to link the additional-bitcode-pathnames
               (dolist (part-pn part-pathnames)
                 (let* ((bc-file (make-pathname :type "bc" :defaults part-pn)))
                   (bformat t "Linking %s\n" bc-file)
                   (let* ((part-module (llvm-sys:parse-bitcode-file (namestring (truename bc-file)) *llvm-context*)))
+                    (incf part-index)
                     (multiple-value-bind (failure error-msg)
-                        (llvm-sys:link-in-module linker part-module)
+                        (let ((global-ctor (find-global-ctor-function part-module))
+                              (priority part-index))
+                          (remove-llvm.global_ctors-if-exists part-module)
+                          (add-llvm.global_ctors part-module priority global-ctor)
+                          (llvm-sys:link-in-module linker part-module))
                       (when failure
                         (error "While linking part module: ~a  encountered error: ~a" part-pn error-msg))))))
               ;; The following links in additional-bitcode-pathnames
