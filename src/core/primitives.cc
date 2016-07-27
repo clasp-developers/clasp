@@ -854,7 +854,7 @@ CL_DEFUN void core__gdb(T_sp msg) {
     smsg = _rep_(obj);
   }
   dbg_hook(smsg.c_str());
-  core__invoke_internal_debugger(_Nil<core::T_O>());
+//  core__invoke_internal_debugger(_Nil<core::T_O>());
 };
 
 
