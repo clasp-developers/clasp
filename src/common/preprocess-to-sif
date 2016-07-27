@@ -1,0 +1,7 @@
+#! /bin/bash
+export sif_file=$1
+shift
+# run the preprocessor
+$*
+sbcl --noinform --lose-on-corruption --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp --eval "(progn (cscrape:generate-one-sif #P\"$sif_file.i\" #P\"$sif_file\")(quit))"
+rm $sif_file.i

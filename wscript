@@ -99,6 +99,9 @@ def stage_value(ctx,s):
         ctx.fatal("Illegal stage: %s" % s)
     return sval
 
+def yadda(cfg):
+    print("In Yadda")
+
 def configure_clasp(cfg,variant):
     include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
 #    print("Including from %s" % include_path )
@@ -183,7 +186,7 @@ class boehm(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
+            cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
         print("Setting up boehm library cfg.env.STLIB_BOEHM = %s " % cfg.env.STLIB_BOEHM)
         print("Setting up boehm library cfg.env.LIB_BOEHM = %s" % cfg.env.LIB_BOEHM)
         if (cfg.env.LIB_BOEHM == [] ):
@@ -226,7 +229,7 @@ class mps(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
-            cfg.env.append_value('LINKFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
+            cfg.env.append_value('LDFLAGS', '-Wl,-object_path_lto,%s.lto.o' % self.executable_name())
         print("Setting up boehm library cfg.env.STLIB_BOEHM = %s " % cfg.env.STLIB_BOEHM)
         print("Setting up boehm library cfg.env.LIB_BOEHM = %s" % cfg.env.LIB_BOEHM)
         if (cfg.env.LIB_BOEHM == [] ):
@@ -557,7 +560,7 @@ def build(bld):
         elif (bld.env['DEST_OS'] == DARWIN_OS ):
             iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
             executable_dir = "MacOS"
-            bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/MacOS')
+            bld.program(source=source_files,target=[iclasp_executable,iclasp_lto_o],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
             iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
             dsymutil_iclasp = dsymutil(env=bld.env)
@@ -607,7 +610,7 @@ def build(bld):
                     lnk_cclasp.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
                     cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
                     if ( bld.env['DEST_OS'] == DARWIN_OS ):
-                        cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
+                        cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
                         lnk_cclasp.set_outputs([cclasp_executable,cclasp_lto_o])
                     elif (bld.env['DEST_OS'] == LINUX_OS ):
                         cclasp_lto_o = None
@@ -667,7 +670,7 @@ class compile_aclasp(Task.Task):
 class link_fasl(Task.Task):
     def run(self):
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s -flto=thin -flat_namespace -undefined warning -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
+            cmd = "%s %s %s -flto=thin -flat_namespace -undefined suppress -bundle -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
             cmd = "%s %s %s -flto=thin -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
         else:
@@ -683,7 +686,7 @@ class link_fasl(Task.Task):
 class link_executable(Task.Task):
     def run(self):
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s %s %s %s -flto=thin -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
+            cmd = "%s %s %s %s %s %s -flto=thin -o %s -Wl,-object_path_lto,%s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath(),self.outputs[1].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
             cmd = "%s %s %s %s %s %s -flto=thin -fuse-ld=gold -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
         else:
@@ -726,7 +729,7 @@ class compile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -f ignore-plugins -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -f ignore-plugins -f debug-run-clang -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -754,18 +757,11 @@ class link_bitcode(Task.Task):
         return self.exec_command(cmd)
 
 class preprocess(Task.Task):
-    run_str = '${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC} ${CXX_TGT_F}${TGT[0].abspath()}'
-    ext_out = ['.i']
-
-    def keyword(ctx):
-        return "Preprocessing"
-    
-class sif(Task.Task):
-    run_str = 'generate-one-sif ${SRC[0].abspath()} ${TGT[0].abspath()}'
+    run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC} ${CXX_TGT_F}${TGT[0].abspath()}.i'
     ext_out = ['.sif']
 
     def keyword(ctx):
-        return "Scraping"
+        return "Preprocessing"
 
 class generated_headers(Task.Task):
     ext_out = ['.h']
@@ -789,11 +785,8 @@ def preprocess_task_generator(self):
     for task in self.compiled_tasks:
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
-                i_node = node.change_ext('.i')
                 sif_node = node.change_ext('.sif')
-                self.create_task('preprocess',node,[i_node])
-                self.source.append(i_node)
-                self.create_task('sif',i_node,[sif_node])
+                self.create_task('preprocess',node,[sif_node])
                 all_sif_files.append(sif_node)
             for node in task.outputs:
 #                print("node = %s" % node.get_src())
@@ -839,11 +832,11 @@ def init(ctx):
                         cmd = name + '_' + s + variant
                         stage = s
 
-    def buildall(ctx):
-        import waflib.Options
-        for s in STAGE_CHARS:
-            for gc in GCS:
-                for debug_char in DEBUG_CHARS:
-                    var = 'build_'+s+x+'_'+debug_char
-                    waflib.Options.commands.insert(0, var)
+def buildall(ctx):
+    import waflib.Options
+    for s in STAGE_CHARS:
+        for gc in GCS:
+            for debug_char in DEBUG_CHARS:
+                var = 'build_'+s+x+'_'+debug_char
+                waflib.Options.commands.insert(0, var)
 
