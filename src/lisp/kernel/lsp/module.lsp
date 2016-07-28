@@ -84,12 +84,12 @@ module."
 		    (dc-module (string-downcase module)))
 	       (block require-block
 		 (dolist (name (list module dc-module))
-		   (dolist (type (list "fasl" "FASL" "bundle" "lsp" "lisp" "LSP" "LISP"))
-		     (dolist (directory (list
-					 (list :relative)
-					 (list :relative name)
-					 (list :relative "kernel" name)
-					 (list :relative "modules" name)))
+                   (dolist (directory (list
+                                       (list :relative)
+                                       #+(or)(list :relative name)
+                                       #+(or)(list :relative "kernel" name)
+                                       (list :relative "modules" name)))
+		   (dolist (type (list "fasl" "FASL" "lsp" "lisp" "LSP" "LISP"))
                        (if (let ((path (merge-pathnames
                                         (translate-logical-pathname (make-pathname :name name :type type :directory directory))
                                         (translate-logical-pathname (make-pathname :host "MODULES")))))
