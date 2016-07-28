@@ -107,18 +107,6 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
 }
 
 
-void create_source_main_host()
-{
-  #if 0
-  core::Cons_sp pts =
-    core::Cons_O::createList(core::Cons_O::createList(core::Str_O::create("source-main:**;*.*"),
-                                                      cl__pathname(core::Str_O::create("app-resources:clasp;src;main;**;*.*")))
-        /* ,  more here */
-                       );
-core__pathname_translations(core::Str_O::create("source-main"), _lisp->_true(), pts);
- #endif
-}
-
 class DummyClass { };
 
 class EmptyClass : public DummyClass { // : public gctools::GCObject {
