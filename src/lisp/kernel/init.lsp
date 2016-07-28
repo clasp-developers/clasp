@@ -1203,7 +1203,7 @@ Return files."
   (bformat t "%s\n" (source-file-names :init :cclasp)))
 (defun bitcode-files-cclasp ()
   (with-cclasp-features (bformat t "%s\n" (namestring (build-common-lisp-bitcode-pathname)))))
-(defun recompile-cclasp (&key clean (link-type :executable))
+(defun recompile-cclasp (&key clean (link-type :bc))
   (if clean (clean-system :init :no-prompt t))
   (let ((files (out-of-date-bitcodes :init :cclasp)))
     (compile-system files)
