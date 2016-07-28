@@ -73,6 +73,11 @@ module."
                                           :directory (list :absolute (default-target-backend) "src" "lisp" :wild-inferiors)
                                           :name :wild
                                           :type :wild))))
+(setf (logical-pathname-translations "MODULES-SOURCE")
+      (list (list "**;*.*" (make-pathname :host "SOURCE-DIR"
+                                          :directory (list :absolute (default-target-backend) "src" "lisp" :wild-inferiors)
+                                          :name :wild
+                                          :type :wild))))
 
 (pushnew #'(lambda (module)
 	     (let* ((module (string module))
@@ -91,6 +96,14 @@ module."
                              (if (member :debug-require *features*)
                                  (format t "Require searching in modules: ~a~%" path))
                              (load path :if-does-not-exist nil))
-                           (return-from require-block t))))))))
+                           (return-from require-block t))
+                       (if (let ((path (merge-pathnames
+                                        (translate-logical-pathname (make-pathname :name name :type type :directory directory))
+                                        (translate-logical-pathname (make-pathname :host "MODULES-SOURCE")))))
+                             (if (member :debug-require *features*)
+                                 (format t "Require searching in modules: ~a~%" path))
+                             (load path :if-does-not-exist nil))
+                           (return-from require-block t))
+                       ))))))
 	 ext:*module-provider-functions*)
 
