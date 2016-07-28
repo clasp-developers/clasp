@@ -148,8 +148,8 @@
   (let ((all-classes (loop for c in class-hierarchy
 			for class = (progn
                                       (dbg-boot "About to accumulate class %s\n" c)
-                                      (if (eq (car c) 'standard-generic-function)
-                                          (core:gdb "About to trap"))
+                                      #+(or)(if (eq (car c) 'standard-generic-function)
+                                                (core:gdb "About to trap problem in make-empty-standard-class of standard-generic-function"))
 				      (apply #'make-empty-standard-class c))
 			collect class)))
     #+ecl

@@ -560,7 +560,8 @@ def build(bld):
         elif (bld.env['DEST_OS'] == DARWIN_OS ):
             iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
             executable_dir = "MacOS"
-            bld.program(source=source_files,target=[iclasp_executable,iclasp_lto_o],install_path='${PREFIX}/MacOS')
+#            bld.program(source=source_files,target=[iclasp_executable,iclasp_lto_o],install_path='${PREFIX}/MacOS')
+            bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
             iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
             dsymutil_iclasp = dsymutil(env=bld.env)
