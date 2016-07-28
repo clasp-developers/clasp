@@ -130,6 +130,9 @@
     (defvar +the-funcallable-standard-class+))
 
 (defmacro dbg-boot (fmt &rest fmt-args)
+  nil)
+
+#+(or)(defmacro dbg-boot (fmt &rest fmt-args)
   `(bformat t ,fmt ,@fmt-args))
 
 ;;;
