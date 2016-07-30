@@ -44,6 +44,13 @@ THE SOFTWARE.
 
 // Load the waf config file
 #include <config.h>
+// Checkif we are running the static analyzer
+// Modify the preprocessor settings for the static analyzer
+// Turn on USE_MPS and turn off USE_BOEHM
+#ifdef RUNNING_GC_BUILDER
+#undef USE_BOEHM
+#define USE_MPS
+#endif
 /*! Configure the application Clasp or Cando currently */
 #include APPLICATION_CONFIG
 
