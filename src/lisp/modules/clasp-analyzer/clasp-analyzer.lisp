@@ -34,27 +34,27 @@
 ;;(push :use-breaks *features*)
 ;;(push :gc-warnings *features*)
 
-(defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-  #+target-os-linux "/usr/include/clang/3.6/include"
-  "Define the -isystem command line option for Clang compiler runs")
+#+(or)(defconstant +isystem-dir+ 
+        #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+        #+target-os-linux "/usr/include/clang/3.6/include"
+        "Define the -isystem command line option for Clang compiler runs")
 
-(defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
-  #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
-  #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
-  "Define the -resource-dir command line option for Clang compiler runs")
-(defconstant +additional-arguments+
-  #+target-os-darwin (vector
-                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
-  #-target-os-darwin (vector
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
-                      #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
+#+(or)(defconstant +resource-dir+ 
+        #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0"
+        #+target-os-linux "/usr/lib/llvm-3.6/bin/../lib/clang/3.6.0/include"
+        #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
+        "Define the -resource-dir command line option for Clang compiler runs")
+#+(or)(defconstant +additional-arguments+
+        #+target-os-darwin (vector
+                            "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
+                            "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+                            "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include"
+                            "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
+        #-target-os-darwin (vector
+                            #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
+                            #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
+                            #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/tr1"
+                            #+(or)"-I/home/meister/local/gcc-4.8.3/lib/gcc/x86_64-redhat-linux/4.8.3/include"))
 
 
 ;;; --------------------------------------------------
@@ -201,10 +201,9 @@
   (maphash (lambda (k v) (setf (gethash k (project-classallocs union)) v)) (project-classallocs one))
   (maphash (lambda (k v) (setf (gethash k (project-rootclassallocs union)) v)) (project-rootclassallocs one))
   (maphash (lambda (k v) (setf (gethash k (project-containerallocs union)) v)) (project-containerallocs one))
-  (maphash (lambda (k v) (setf (gethash k (project-containerallocs union)) v)) (project-containerallocs one))
-  (maphash (lambda (k v) (setf (gethash k (project-local-variables union)) v)) (project-local-variables one))
   (maphash (lambda (k v) (setf (gethash k (project-global-variables union)) v)) (project-global-variables one))
-  (maphash (lambda (k v) (setf (gethash k (project-static-local-variables union)) v)) (project-static-local-variables one))
+  #+(or)(maphash (lambda (k v) (setf (gethash k (project-static-local-variables union)) v)) (project-static-local-variables one))
+  #+(or)(maphash (lambda (k v) (setf (gethash k (project-local-variables union)) v)) (project-local-variables one))
 )
 
 
@@ -1258,9 +1257,6 @@ can be saved and reloaded within the project for later analysis"
                     (let* ((metadata-node (clang-tool:mtag-node minfo :metadata))
                            (metadata-name (string-upcase (clang-tool:mtag-name minfo :metadata))))
                       (push (intern metadata-name :keyword) metadata))))
-                 ;;                   (when (string= record-key "gctools::StackRootedPointer<class asttooling::BAR>") (break "Check fields"))
-                 (when (search "gctools::GCVector_moveable<chem::(anonymous)>" record-key)
-                   (break "Check (clang-tool:mtag-node :whole)"))
                  (setf (gethash record-key results)
                        (make-cclass :key record-key
                                     :template-specializer template-specializer
@@ -1286,7 +1282,10 @@ can be saved and reloaded within the project for later analysis"
                              :name :cclasses
                              :matcher-sexp *class-matcher*
                              :initializer (lambda () (setf results (make-hash-table :test #'equal)))
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%class-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback
+                                                      :timer (make-instance 'clang-tool:code-match-timer
+                                                                            :name 'class-callback)
+                                                      :match-code (function %%class-callback))))))
 
 
 
@@ -1336,7 +1335,10 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :lispallocs
                              :matcher-sexp `(:bind :whole ,*lispalloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%lispalloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback
+                                                      :timer (make-instance 'clang-tool:code-match-timer
+                                                                            :name 'lisp-alloc-matcher)
+                                                      :match-code (function %%lispalloc-matcher-callback))))))
 
 
 
@@ -1385,7 +1387,10 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :classallocs
                              :matcher-sexp `(:bind :whole ,*classalloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%classalloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback
+                                                      :timer (make-instance 'clang-tool:code-match-timer
+                                                                            :name 'classalloc-matcher)
+                                                      :match-code (function %%classalloc-matcher-callback))))))
 
 
 
@@ -1435,7 +1440,10 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :rootclassallocs
                              :matcher-sexp `(:bind :whole ,*rootclassalloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%rootclassalloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback
+                                                      :timer (make-instance 'clang-tool:code-match-timer
+                                                                            :name 'rootclassalloc-matcher)
+                                                      :match-code (function %%rootclassalloc-matcher-callback))))))
 
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -1477,7 +1485,10 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :containerallocs
                              :matcher-sexp `(:bind :whole ,*containeralloc-matcher*)
                              :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%containeralloc-matcher-callback))))))
+                             :callback (make-instance 'clang-tool:code-match-callback
+                                                      :timer (make-instance 'clang-tool:code-match-timer
+                                                                            :name 'containeralloc-matcher)
+                                                      :match-code (function %%containeralloc-matcher-callback))))))
 
 
 ;; ----------------------------------------------------------------------
@@ -1538,70 +1549,78 @@ and the inheritance hierarchy that the garbage collector will need"
                              :name :global-variables
                              :matcher-sexp *global-variable-matcher*
                              :initializer (lambda () (setf global-variables (make-hash-table :test #'equal)))
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%global-variable-callback)))))) 
+                             :callback (make-instance 'clang-tool:code-match-callback
+                                                      :timer (make-instance 'clang-tool:code-match-timer
+                                                                            :name 'global-variable)
+                                                      :match-code (function %%global-variable-callback)))))) 
 
-(defparameter *variable-matcher*
-  '(:bind :whole
-    (:var-decl
-     (:is-definition)
-     (:has-ancestor
-      (:function-decl
-       (:bind :function (:function-decl))))
-     (:unless (:parm-var-decl))
-     (:unless
-         (:matches-name ".*_gc_safe"))))) 
+#+(or)
+(progn
+  (defparameter *variable-matcher*
+    '(:bind :whole
+      (:var-decl
+       (:is-definition)
+       (:has-ancestor
+        (:function-decl
+         (:bind :function (:function-decl))))
+       (:unless (:parm-var-decl))
+       (:unless
+           (:matches-name ".*_gc_safe"))))) 
 
-(clang-tool:compile-matcher *variable-matcher*)
+  (clang-tool:compile-matcher *variable-matcher*)
 
-(defun setup-variable-search (mtool)
-  (symbol-macrolet ((static-local-variables (project-static-local-variables (clang-tool:multitool-results mtool)))
-                    (local-variables (project-local-variables (clang-tool:multitool-results mtool))))
-    ;; The matcher is going to match globals as well as static locals and locals - so we need to explicitly recognize and ignore globals
-    (flet ((%%variable-callback (match-info)
-             (block matcher
-               (gclog "VARIABLE MATCH: ------------------~%")
-               (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
-               (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
-               (gclog "    namespace: ~a~%" (clang-tool:mtag-name match-info :ns))
-               (let* ((var-node (clang-tool:mtag-node match-info :whole))
-                      (varname (decl-name var-node))
-                      (location (clang-tool:mtag-loc-start match-info :whole))
-                      (var-kind (cond
-                                  ((and (cast:has-global-storage var-node) (not (cast:is-static-local var-node))) :global)
-                                  ((and (cast:has-global-storage var-node) (cast:is-static-local var-node)) :static-local)
-                                  (t :local)))
-                      (hash-table (ecase var-kind
-                                    (:global nil)
-                                    (:static-local static-local-variables)
-                                    (:local local-variables)))
-                      (key (format nil "~a@~a" varname location)))
-                 (unless (and hash-table (gethash key hash-table))
-                   (let* ((qtype (cast:get-type var-node))
-                          (type (cast:get-type-ptr-or-null qtype))
-                          (classified-type (let ((*debug-info* (make-debug-info :name varname :location location)))
-                                             (classify-ctype (to-canonical-type type)))))
-                     (ecase var-kind
-                       (:global nil) ;; not recognized here - see setup-global-variable-search
-                       (:static-local
-                        (setf (gethash key hash-table)
-                              (make-static-local-variable :location location
-                                                          :name varname
-                                                          :ctype classified-type)))
-                       (:local
-                        (unless classified-type
-                          #+use-breaks(break "classified-type is nil"))
-                        (setf (gethash key hash-table)
-                              (make-local-variable :location location
-                                                   :name varname
-                                                   :ctype classified-type))))))))))
-      (clang-tool:multitool-add-matcher mtool
-                             :name :variables
-                             :matcher-sexp *variable-matcher*
-                             :initializer (lambda ()
-                                            (setf static-local-variables (make-hash-table :test #'equal))
-                                            (setf local-variables (make-hash-table :test #'equal)))
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%variable-callback)))))) 
-
+  (defun setup-variable-search (mtool)
+    (symbol-macrolet ((static-local-variables (project-static-local-variables (clang-tool:multitool-results mtool)))
+                      (local-variables (project-local-variables (clang-tool:multitool-results mtool))))
+      ;; The matcher is going to match globals as well as static locals and locals - so we need to explicitly recognize and ignore globals
+      (flet ((%%variable-callback (match-info)
+               (block matcher
+                 (gclog "VARIABLE MATCH: ------------------~%")
+                 (gclog "    Start:~%~a~%" (clang-tool:mtag-loc-start match-info :whole))
+                 (gclog "    Name: ~a~%" (clang-tool:mtag-name match-info :whole))
+                 (gclog "    namespace: ~a~%" (clang-tool:mtag-name match-info :ns))
+                 (let* ((var-node (clang-tool:mtag-node match-info :whole))
+                        (varname (decl-name var-node))
+                        (location (clang-tool:mtag-loc-start match-info :whole))
+                        (var-kind (cond
+                                    ((and (cast:has-global-storage var-node) (not (cast:is-static-local var-node))) :global)
+                                    ((and (cast:has-global-storage var-node) (cast:is-static-local var-node)) :static-local)
+                                    (t :local)))
+                        (hash-table (ecase var-kind
+                                      (:global nil)
+                                      (:static-local static-local-variables)
+                                      (:local local-variables)))
+                        (key (format nil "~a@~a" varname location)))
+                   (unless (and hash-table (gethash key hash-table))
+                     (let* ((qtype (cast:get-type var-node))
+                            (type (cast:get-type-ptr-or-null qtype))
+                            (classified-type (let ((*debug-info* (make-debug-info :name varname :location location)))
+                                               (classify-ctype (to-canonical-type type)))))
+                       (ecase var-kind
+                         (:global nil) ;; not recognized here - see setup-global-variable-search
+                         (:static-local
+                          (setf (gethash key hash-table)
+                                (make-static-local-variable :location location
+                                                            :name varname
+                                                            :ctype classified-type)))
+                         (:local
+                          (unless classified-type
+                            #+use-breaks(break "classified-type is nil"))
+                          (setf (gethash key hash-table)
+                                (make-local-variable :location location
+                                                     :name varname
+                                                     :ctype classified-type))))))))))
+        (clang-tool:multitool-add-matcher mtool
+                                          :name :variables
+                                          :matcher-sexp *variable-matcher*
+                                          :initializer (lambda ()
+                                                         (setf static-local-variables (make-hash-table :test #'equal))
+                                                         (setf local-variables (make-hash-table :test #'equal)))
+                                          :callback (make-instance 'clang-tool:code-match-callback
+                                                                   :timer (make-instance 'clang-tool:code-match-timer
+                                                                                         :name 'variable-callback)
+                                                                   :match-code (function %%variable-callback)))))) 
+  )
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -1647,10 +1666,13 @@ and the inheritance hierarchy that the garbage collector will need"
                    (setf (gethash class-key class-results) gcinfo))))))
       ;; Initialize the class search
       (clang-tool:multitool-add-matcher mtool
-                             :name :gcinfos
-                             :matcher-sexp `(:bind :whole ,*gcinfo-matcher*)
-                             :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
-                             :callback (make-instance 'clang-tool:code-match-callback :match-code (function %%gcinfo-matcher-callback)))))) 
+                                        :name :gcinfos
+                                        :matcher-sexp `(:bind :whole ,*gcinfo-matcher*)
+                                        :initializer (lambda () (setf class-results (make-hash-table :test #'equal))) ; initializer
+                                        :callback (make-instance 'clang-tool:code-match-callback
+                                                                 :timer (make-instance 'clang-tool:code-match-timer
+                                                                                       :name 'gcinfo-matcher)
+                                                                 :match-code (function %%gcinfo-matcher-callback))))))
 
 ;; ----------------------------------------------------------------------
 ;; ----------------------------------------------------------------------
@@ -3146,12 +3168,10 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
                     )))
 
 (defun build-arguments-adjuster ()
-  "Build a function that fixes up compile command arguments.
-It converts relative -I../... arguments to absolute paths"
+  "Build a function that fixes up compile command arguments to run the static analyzer."
   (lambda (args filename) 
-    (let ((result (concatenate 'vector #-quiet args #+quiet(remove "-v" args)
-                               (vector "-DUSE_MPS"
-                                       "-DRUNNING_GC_BUILDER"))))
+    (let ((result (concatenate 'vector args
+                               (vector "-v" "-DRUNNING_GC_BUILDER" "-Wno-nullability-completeness"))))
       result)))
 
 (defun setup-tools (compilation-tool-database)
@@ -3165,7 +3185,7 @@ Setup all of the ASTMatcher tools for the clasp-analyzer."
     (setup-rootclassalloc-search tools)
     (setup-containeralloc-search tools)
     (setup-global-variable-search tools)
-    (setup-variable-search tools)
+    #+(or)(setup-variable-search tools)
     tools))
 
 (defun split-list (list pieces)

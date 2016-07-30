@@ -32,6 +32,7 @@ Find directories that look like them and replace the ones defined in the constan
    #:multitool-add-matcher
    #:multitool-results
    #:code-match-callback
+   #:code-match-timer
    #:mtag-node
    #:mtag-loc-start
    #:mtag-source
@@ -46,6 +47,7 @@ Find directories that look like them and replace the ones defined in the constan
    #:source-loc-as-string
    #:sub-match-run
    #:cform-matcher
+   #:*print-reports*
    #:load-asts))
 
 (in-package :clang-tool)
@@ -53,6 +55,8 @@ Find directories that look like them and replace the ones defined in the constan
 (use-package :ast-tooling)
 (use-package :clang-ast)
 
+
+(defparameter *print-reports* nil)
 
 (defun keyword-everything (tree)
   (mapcar #'(lambda (l) (mapcar #'(lambda (x) (intern x :keyword)))) l) tree )
@@ -399,21 +403,21 @@ Find directories that look like them and replace the ones defined in the constan
 
 
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
+  #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0"
+  #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
   #+target-os-linux "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/3.8.0"
   #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
   #+target-os-darwin (vector
-                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/usr/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include"
-                      "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk/System/Library/Frameworks")
+                      "-I/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
+                      "-I/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+                      #+(or)"-I/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include"
+                      "-I/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
   #-target-os-darwin (vector
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
@@ -585,15 +589,76 @@ Select a subset (or all) source file names from the compilation database and ret
 
 (defparameter *match-refactoring-tool* nil)
 (defparameter *run-and-save* nil)
+(defparameter *number-of-files* 0)
+(defparameter *current-file-index* 0)
 
 (defparameter *match-counter* 0)
 (defparameter *match-counter-limit* nil)
+(defparameter *search-start-real-time* 0.0)
+(defparameter *search-start-run-time* 0.0)
+(defparameter *search-start-bytes-allocated* 0)
+
+(defclass code-match-timer ()
+  ((name :initarg :name :accessor name)
+   (callback-counter :initform 0 :accessor callback-counter)
+   (start-real-time :initarg :start-real-time :accessor start-real-time)
+   (start-run-time :initarg :start-run-time :accessor start-run-time)
+   (start-bytes-allocated :initarg :start-bytes-allocated :accessor start-bytes-allocated)
+   (accumulated-real-time :initform 0.0 :initarg :accumulated-real-time :accessor accumulated-real-time)
+   (accumulated-run-time :initform 0.0 :initarg :accumulated-run-time :accessor accumulated-run-time)
+   (accumulated-bytes-allocated :initform 0 :initarg :accumulated-bytes-allocated :accessor accumulated-bytes-allocated)))
+
+(defun get-seconds-real-time ()
+  (float (/ (get-internal-real-time) internal-time-units-per-second)))
+
+(defun get-seconds-run-time ()
+  (float (/ (get-internal-run-time) internal-time-units-per-second)))
+
+(defun start-timer (timer)
+  (setf (start-real-time timer) (get-seconds-real-time)
+        (start-run-time timer) (get-seconds-run-time)
+        (start-bytes-allocated timer) (gctools:bytes-allocated)))
+
+(defun stop-timer (timer)
+  (incf (accumulated-real-time timer) (- (get-seconds-real-time) (start-real-time timer)))
+  (incf (accumulated-run-time timer) (- (get-seconds-run-time) (start-run-time timer)))
+  (incf (accumulated-bytes-allocated timer) (- (gctools:bytes-allocated) (start-bytes-allocated timer)))
+  (incf (callback-counter timer)))
+
+(defun describe-timer (timer)
+  (if (> (callback-counter timer) 0)
+      (format t "Timer ~a(~a times) Real(~a[~a]) Run(~a[~a]) Bytes(~a[~a])~%"
+              (name timer)
+              (callback-counter timer)
+              (accumulated-real-time timer) (/ (accumulated-real-time timer) (callback-counter timer))
+              (accumulated-run-time timer) (/ (accumulated-run-time timer) (callback-counter timer))
+              (accumulated-bytes-allocated timer) (floor (accumulated-bytes-allocated timer) (callback-counter timer)))
+      (format t "Timer ~a - never invoked~%" (name timer))))
+
+(defun print-report ()
+  (format t "-------- *match-counter*: ~a~%" *match-counter*)
+  (format t "Overall search Real(~a sec) Run(~a sec) Bytes(~a)~%"
+          (- (get-seconds-real-time) *search-start-real-time*)
+          (- (get-seconds-run-time) *search-start-run-time*)
+          (- (gctools:bytes-allocated) *search-start-bytes-allocated*))
+  (dolist (tool (multitool-active-tools *current-multitool*))
+    (let ((callback (single-tool-callback tool)))
+      (when (typep callback 'code-match-callback)
+        (describe-timer (timer callback))))))
+
+(defun start-search-timer ()
+  (setf *search-start-real-time* (get-seconds-real-time))
+  (setf *search-start-run-time* (get-seconds-run-time))
+  (setf *search-start-bytes-allocated* (gctools::bytes-allocated)))
 
 (defun advance-match-counter ()
-  (setq *match-counter* (1+ *match-counter*))
+  (setf *match-counter* (1+ *match-counter*))
   (when *match-counter-limit*
       (when (>= *match-counter* *match-counter-limit*)
-        (throw 'match-counter-reached-limit *match-counter*))))
+        (throw 'match-counter-reached-limit *match-counter*)))
+  (when (and *print-reports* (= (rem *match-counter* 10000) 0))
+    (print-report)))
+
 
 (defparameter *match-dump-tag* nil)
 (defclass good-dump-match-callback (ast-tooling:match-callback) () )
@@ -647,14 +712,33 @@ Select a subset (or all) source file names from the compilation database and ret
 ;;Requires a lambda CODE that takes a single match-info argument
 (defclass code-match-callback (ast-tooling:match-callback)
   ((start-of-translation-unit-code :initarg :start-of-translation-unit-code :accessor start-of-translation-unit-code)
+   (timer :initarg :timer
+          :initform (make-instance 'code-match-timer :name (gensym))
+          :accessor timer)
    (match-code :initarg :match-code :accessor match-code)
    (end-of-translation-unit-code :initarg :end-of-translation-unit-code :accessor end-of-translation-unit-code)))
 
+(defparameter *on-start-translation-unit-depth* 0)
+(defparameter *on-end-translation-unit-depth* 0)
+
 (core:defvirtual ast-tooling:on-start-of-translation-unit ((self code-match-callback))
-;  (format t "on-start-of-translation-unit for code-match-callback of: ~a~%" self)
-  (when (slot-boundp self 'start-of-translation-unit-code)
-    (assert (start-of-translation-unit-code self))
-    (funcall (start-of-translation-unit-code self))))
+  (setf *on-end-translation-unit-depth* 0)
+  (incf *on-start-translation-unit-depth*)
+  (when (= *on-start-translation-unit-depth* 1)
+    (format t "on-start-of-translation-unit for file ~a of ~a~%" *current-file-index* *number-of-files*)
+    (incf *current-file-index*)
+    (when (slot-boundp self 'start-of-translation-unit-code)
+      (assert (start-of-translation-unit-code self))
+      (funcall (start-of-translation-unit-code self)))))
+
+(core:defvirtual ast-tooling:on-end-of-translation-unit ((self code-match-callback))
+  (setf *on-start-translation-unit-depth* 0)
+  (incf *on-end-translation-unit-depth*)
+  (when (= *on-end-translation-unit-depth* 1)
+    (format t "on-end-of-translation-unit for code-match-callback of: ~a~%" self)
+    (when (slot-boundp self 'end-of-translation-unit-code)
+      (assert (end-of-translation-unit-code self))
+      (funcall (end-of-translation-unit-code self)))))
 
 (core:defvirtual ast-tooling:run ((self code-match-callback) match)
   (let* ((nodes (ast-tooling:nodes match))
@@ -663,15 +747,10 @@ Select a subset (or all) source file names from the compilation database and ret
                                     :ast-context (context match)
                                     :source-manager (ast-tooling:source-manager match))))
     (when (match-code self)
+      (start-timer (timer self))
       (funcall (match-code self) match-info)
+      (stop-timer (timer self))
       (advance-match-counter))))
-
-(core:defvirtual ast-tooling:on-end-of-translation-unit ((self code-match-callback))
-  (format t "on-end-of-translation-unit for code-match-callback of: ~a~%" self)
-  (when (slot-boundp self 'end-of-translation-unit-code)
-    (assert (end-of-translation-unit-code self))
-    (funcall (end-of-translation-unit-code self))))
-
 
 
 (defclass source-loc-match-callback (code-match-callback)
@@ -956,7 +1035,8 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                 (ast-tooling:run-and-save *match-refactoring-tool* factory)))
       (format t "Number of matches ~a~%" *match-counter*))))
 
-
+(defparameter *current-multitool* nil
+  "Keep track of the current multitool")
 
 (defstruct multitool
   "Store multiple tools to run in one go across a bunch of source files."
@@ -1008,10 +1088,18 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
   (mapcar (lambda (ot) (single-tool-name ot)) (multitool-active-tools mtool)))
 
 
-(defun batch-run-multitool (mtool &key compilation-tool-database run-and-save)
+(defun batch-run-multitool (mtool &key compilation-tool-database run-and-save (print-reports t))
   (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
                                     (clang-database compilation-tool-database)
-                                    (source-namestrings compilation-tool-database))))
+                                    (source-namestrings compilation-tool-database)))
+         (*match-counter* 0)
+         (*current-multitool* mtool)
+         (*print-reports* print-reports)
+         (*number-of-files* (length (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
+         (*current-file-index* 0))
+    (format t "Starting search of ~a files~%" *number-of-files*)
+    (incf *current-file-index*)
+    (start-search-timer)
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
     (when (multitool-arguments-adjuster mtool)
       (ast-tooling:append-arguments-adjuster *match-refactoring-tool* (multitool-arguments-adjuster mtool)))
@@ -1029,7 +1117,8 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
                 (ast-tooling:run-and-save *match-refactoring-tool* factory)
                 (ast-tooling:clang-tool-run *match-refactoring-tool* factory)))
       (format t "Ran tools: ~a~%" (multitool-active-tool-names mtool))
-      (format t "Number of matches ~a~%" *match-counter*))))
+      (format t "Total number of matches ~a~%" *match-counter*)
+      (print-report))))
 
 (defun sub-match-run (compiled-matcher matcher-sexp node ast-context code)
   "* Arguments

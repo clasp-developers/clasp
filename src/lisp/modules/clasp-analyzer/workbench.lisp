@@ -1,3 +1,11 @@
+(require :clasp-analyzer)
+(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database #P"lib:compile_commands.json")))
+(print "Testing")
+
+
+(apropos "code-match-timer")
+
+
 (print "Testing")
 (progn
   (format t "About to require clang-tool and clasp-analyzer~%")
