@@ -140,6 +140,12 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s-%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
+    def fasl_dir(self,stage=None):
+        if ( stage == None ):
+            use_stage = self.stage_char
+        else:
+            use_stage = stage
+        return '%s%s-%s' % (use_stage,APP_NAME,self.gc_name)
     def common_lisp_bitcode_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -556,12 +562,11 @@ def build(bld):
         iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
         if (bld.env['DEST_OS'] == LINUX_OS ):
             executable_dir = "bin"
-            bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/bin')
+            bld_task = bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/bin')
         elif (bld.env['DEST_OS'] == DARWIN_OS ):
             iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
             executable_dir = "MacOS"
-#            bld.program(source=source_files,target=[iclasp_executable,iclasp_lto_o],install_path='${PREFIX}/MacOS')
-            bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/MacOS')
+            bld_task = bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
             iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
             dsymutil_iclasp = dsymutil(env=bld.env)
@@ -631,10 +636,10 @@ def build(bld):
                     bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
                     cmp_addons = compile_addons(env=bld.env)
                     cmp_addons.set_inputs(cclasp_executable)
-                    asdf_fasl = bld.path.find_or_declare("cclasp-boehmdc/src/lisp/modules/asdf/asdf.fasl")
+                    asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl"%variant.fasl_dir(stage="c"))
                     cmp_addons.set_outputs(asdf_fasl)
                     bld.add_to_group(cmp_addons)
-                    bld.install_as('${PREFIX}/Contents/Resources/lib/cclasp-boehmdc/src/lisp/modules/asdf/asdf.fasl',asdf_fasl)
+                    bld.install_as('${PREFIX}/Contents/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl'%variant.fasl_dir(stage="c"),asdf_fasl)
 
 
 from waflib import TaskGen
@@ -841,3 +846,16 @@ def buildall(ctx):
                 var = 'build_'+s+x+'_'+debug_char
                 waflib.Options.commands.insert(0, var)
 
+
+#
+#def my_post_run(self):
+#    bld=self.generator.bld
+#    for node in self.outputs:
+# 	if not node.exists():
+# 	    self.hasrun=MISSING
+# 	    self.err_msg='-> missing file: %r'%node.abspath()
+# 	    raise Errors.WafError(self.err_msg)
+# 	bld.node_sigs[node]=self.uid()
+#     bld.task_sigs[self.uid()]=self.signature()
+
+# Task.Task.post_run = my_post_run
