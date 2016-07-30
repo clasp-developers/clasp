@@ -146,10 +146,6 @@ extern "C" char *readline(const char *prompt);
 extern "C" void add_history(char *line);
 #endif
 
-/*! A function that creates the source-main: host */
-#ifndef PROGRAM_CLBIND
-extern void create_source_main_host();
-#endif
 
 #ifndef SCRAPING
 #define ALL_INITIALIZERS_EXTERN
@@ -512,11 +508,6 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
     // Setup the pathname translation
     this->_Bundle->setup_pathname_translations();
       
-    // -------------------------------------------------------------
-    /* Call the function defined in main.cc that creates the source-main: host */
-#ifndef PROGRAM_CLBIND
-    create_source_main_host();
-#endif
   }
   coreExposer->expose(_lisp, Exposer_O::candoFunctions);
   coreExposer->expose(_lisp, Exposer_O::candoGlobals);
