@@ -1210,10 +1210,10 @@ Return files."
     (let ((cl-bitcode-pathname (build-common-lisp-bitcode-pathname))
           (all-bitcode (bitcode-pathnames :init :cclasp)))
       (if (out-of-date-target cl-bitcode-pathname all-bitcode)
-          (let ((exec-pathname (build-pathname nil link-type)))
+          (progn
             (cmp:link-bitcode-modules cl-bitcode-pathname all-bitcode)
             (if (not (eq link-type :bc))
-                (progn
+                (let ((exec-pathname (build-pathname nil link-type)))
                   (bformat t "Linking cclasp %s\n" (string-downcase (string link-type))
                            (cmp:llvm-link exec-pathname
                                           :lisp-bitcode-files (list cl-bitcode-pathname)
