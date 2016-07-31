@@ -1,5 +1,8 @@
 def build(bld):
-    bld._intrinsics = bld.path.find_node('intrinsics.cc')
+    full_name = 'intrinsics.cc'
+    node = bld.path.find_node(full_name)
+    assert node != None, "Could not find %s/%s" % ( bld.path.abspath(), full_name )
+    bld._intrinsics = node
     for name in [
             'debugInfoExpose',
             'debugLoc',
@@ -11,6 +14,9 @@ def build(bld):
             'llvmoExpose',
             'llvmoPackage',
             'clbindLlvmExpose']:
-        bld.clasp_source_files.append(bld.path.find_node(name+'.cc'))
+        full_name = name+'.cc'
+        node = bld.path.find_node(full_name)
+        assert node != None, "Could not find %s/%s" % ( bld.path.abspath(), full_name )
+        bld.clasp_source_files.append(node)
 
         
