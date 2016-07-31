@@ -407,7 +407,15 @@ def configure(cfg):
     cfg.plugins_gcinterface_include_files = []
     cfg.plugins_stlib = []
     cfg.plugins_lib = []
+    cfg.plugins_names = []
     cfg.recurse('plugins')
+    print("cfg.plugins_names before sort = %s" % cfg.plugins_names)
+    cfg.plugins_names = sorted(cfg.plugins_names)
+    print("cfg.plugins_names after sort = %s" % cfg.plugins_names)
+    clasp_gc_filename = "clasp_gc.cc"
+    if (len(cfg.plugins_names)>0):
+        clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.plugins_names))
+    cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
     link_flag = "-L%s" % llvm_release_lib_dir
     print("link_flag = %s" % link_flag )
     cfg.env.append_value('LINKFLAGS', [link_flag])
