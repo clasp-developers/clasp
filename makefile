@@ -175,7 +175,7 @@ redeye-prep:
 	./waf -j $(PJOBS) clean_impsprep_o build_impsprep_o
 
 redeye-run:
-	wbuild/boehmdc_o/cclasp-boehmdc-o \
+	build/boehmdc_o/cclasp-boehmdc-o \
 		-e "(require :clasp-analyzer)" \
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"lib:compile_commands.json\")))" \
 		-e "(quit)"
