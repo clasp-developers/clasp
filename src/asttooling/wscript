@@ -5,6 +5,9 @@ def build(bld):
             'clangTooling',
             'asttoolingPackage',
             'clangCompiler' ]:
-        bld.clasp_source_files.append(bld.path.find_node(name+'.cc'))
+        full_name = name+'.cc'
+        node = bld.path.find_node(full_name)
+        assert node != None, "Could not find %s/%s" % ( bld.path.abspath(), full_name )
+        bld.clasp_source_files.append(node)
 
         

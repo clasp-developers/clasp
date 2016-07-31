@@ -8,8 +8,10 @@
 ### Most of the options are detected and determined
 ### automatically and don't have to be specified
 ### manually.
-### 
-### On Linux, no options should currently be necessary
+###
+### Set PREFIX to define where clasp will be installed
+###
+### On Linux, no other options should currently be necessary
 ### if you have installed the required packages.
 ### 
 ### On Darwin/OS X, you have to build externals-clasp
