@@ -159,14 +159,14 @@ endef
 
 all:
 	make configure
-	make build
+	make build_cboehm
 
 configure:
 	make submodules
 	make asdf
 	./waf configure --prefix=$(PREFIX)
 
-build:
+build_cboehm:
 	./waf -j $(PJOBS) build_cboehm_o
 
 
