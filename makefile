@@ -180,6 +180,9 @@ redeye-run:
 		-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"lib:compile_commands.json\")))" \
 		-e "(quit)"
 
+redeye:
+	make redeye-prep
+	make redeye-run
 
 
 pump:
