@@ -186,7 +186,10 @@ Split the list of ccs into a number of lists."
   (read-entire-file (cpp-name cc)))
 
 (defun peek-for-element (bufs tag end)
-  (let ((tag-pos (search tag (buffer bufs) :start2 (file-position (buffer-stream bufs)) :end2 end)))
+  (declare (optimize speed))
+  (let ((tag-pos (search (the simple-string tag)
+                         (the simple-string (buffer bufs))
+                         :start2 (file-position (buffer-stream bufs)) :end2 end)))
     (when tag-pos
       (let ((next-pos (+ tag-pos (length tag))))
         (values tag-pos next-pos)))))

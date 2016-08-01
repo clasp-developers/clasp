@@ -105,10 +105,25 @@ Read all of the scraped info files and interpret their tags."
       (format t "Reading sif files~%")
       (process-all-sif-files main-path (mapcar (lambda (cc) (sif-name cc)) all-cc)))))
 
+(defun slurp-clang-output (file command)
+  (let ((output
+          (with-output-to-string (str)
+            (sb-ext:run-program "sh" (list "-c" command) :search t
+                                                         :output str
+                                                         :external-format :latin1))))
+    (make-instance 'buffer-stream
+                   :buffer output
+                   :buffer-pathname file
+                   :buffer-stream (make-string-input-stream output))))
 
-;;; Helper function to generate one sif file from one .i file
-(defun generate-one-sif (input output)
-  (generate-sif-file input output))
+(defun generate-one-sif (clang-command output)
+  (let* ((bufs (slurp-clang-output output clang-command))
+         (tags (process-all-recognition-elements bufs))
+         (sif-pathname output))
+    (with-open-file (fout sif-pathname :direction :output :if-exists :supersede)
+      (let ((*print-readably* t)
+            (*print-pretty* nil))
+        (prin1 tags fout)))))
 
 (defun generate-headers-from-all-sifs ()
   (let* ((minus-minus-pos (position "--" sb-ext:*posix-argv* :test #'string=))
