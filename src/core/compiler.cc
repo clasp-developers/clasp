@@ -532,7 +532,7 @@ CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   }
 }
 
-CL_LAMBDA(form &optional environment);
+CL_LAMBDA(form &optional env);
 CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   // Convert the form into a thunk and return like COMPILE does
   LambdaListHandler_sp llh = LambdaListHandler_O::create(0);

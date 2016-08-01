@@ -2421,7 +2421,6 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   //	    SYMBOL_SC_(CorePkg,extractDeclaresDocstringCode);
   //	    Defun(extractDeclaresDocstringCode);
   SYMBOL_SC_(CorePkg, evaluateVerbosity);
-  SYMBOL_EXPORT_SC_(CompPkg, compileFormAndEvalWithEnv);
   SYMBOL_SC_(CorePkg, evaluateDepth);
   SYMBOL_SC_(CorePkg, classifyLetVariablesAndDeclares);
   SYMBOL_EXPORT_SC_(ClPkg, apply);

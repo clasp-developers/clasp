@@ -1496,7 +1496,7 @@ CL_DEFUN T_mv core__getline(Str_sp prompt) {
 */
 
 
-CL_LAMBDA(symbol &optional (errorp t) environment);
+CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
 CL_DOCSTRING("findClass");
 CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {

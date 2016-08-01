@@ -334,11 +334,11 @@ CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
     printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
 }
 
-CL_LAMBDA(name value);
+CL_LAMBDA(name value &optional (overwrite t));
 CL_DECLARE();
 CL_DOCSTRING("Set environment variable NAME to VALUE");
-CL_DEFUN void ext__setenv(Str_sp name, Str_sp value) {
-  setenv(name->get().c_str(), value->get().c_str(), 1);
+CL_DEFUN void ext__setenv(Str_sp name, Str_sp value, bool overwrite) {
+  setenv(name->get().c_str(), value->get().c_str(), overwrite);
 }
 
 CL_LAMBDA(cmd);
@@ -535,13 +535,6 @@ CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream)
     obj.unsafe_cons()->describe(stream);
   }
   SIMPLE_ERROR(BF("Use the CL facilities to describe this object"));
-};
-
-CL_LAMBDA(name arg overwrite);
-CL_DECLARE();
-CL_DOCSTRING(R"doc(Set an environment variable)doc");
-CL_DEFUN void core__setenv(Str_sp name, Str_sp arg, bool overwrite) {
-  setenv(name->c_str(), arg->c_str(), overwrite);
 };
 
 CL_LAMBDA(arg);
