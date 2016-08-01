@@ -168,7 +168,7 @@ typedef bool _Bool;
 //#include <clasp/asttooling/Marshallers.h>
 
 #define GC_INTERFACE_INCLUDE
-#include PLUGIN_HEADERS_INCLUDE
+#include EXTENSION_HEADERS_INCLUDE
 #undef GC_INTERFACE_INCLUDE
 
 #define NAMESPACE_gctools
@@ -200,7 +200,7 @@ Layout_code* get_kind_layout_codes() {
 #if defined(USE_MPS) || (defined(USE_BOEHM) && !defined(USE_CXX_DYNAMIC_CAST))
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_HELPERS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_SCAN_HELPERS
 #endif // #ifndef RUNNING_GC_BUILDER
 #endif // #if defined(USE_MPS) || (defined(USE_BOEHM) && !defined(USE_CXX_DYNAMIC_CAST))
@@ -327,7 +327,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
 #ifndef RUNNING_GC_BUILDER
   #ifndef USE_CXX_DYNAMIC_CAST
     #define GC_OBJ_DEALLOCATOR_TABLE
-    #include CLASP_GC_CC
+    #include CLASP_GC_FILENAME
     #undef GC_OBJ_DEALLOCATOR_TABLE
   #endif // USE_CXX_DYNAMIC_CAST
 #endif
@@ -341,7 +341,7 @@ void obj_deallocate_unmanaged_instance(gctools::smart_ptr<core::T_O> obj ) {
   size_t jump_table_index = (size_t)kind - kind_first_general;
   goto *(OBJ_DEALLOCATOR_table[jump_table_index]);
     #define GC_OBJ_DEALLOCATOR
-    #include CLASP_GC_CC
+    #include CLASP_GC_FILENAME
     #undef GC_OBJ_DEALLOCATOR
   #endif // USE_CXX_DYNAMIC_CASE
 #else
@@ -376,7 +376,7 @@ mps_addr_t obj_skip(mps_addr_t client) {
 // The client must have a valid header
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SKIP_TABLE
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_SKIP_TABLE
 #endif
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
@@ -441,7 +441,7 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
   size_t size = 0;  // Used to store the size of the object
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_SCAN_TABLE
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_SCAN_TABLE
 #endif
   GCKindEnum kind;
@@ -530,7 +530,7 @@ extern "C" {
 void client_validate_internal(void* tagged_client) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_VALIDATE_TABLE
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_VALIDATE_TABLE
 #endif
   if (!gctools::tagged_objectp(tagged_client)) return;
@@ -564,7 +564,7 @@ void client_validate_internal(void* tagged_client) {
 #define SMART_PTR_VALIDATE(x) client_validate((x).rawRef_())
 #define TAGGED_POINTER_VALIDATE(x) client_validate((x).rawRef_())
 #define GC_OBJ_VALIDATE
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_VALIDATE
 #undef SMART_PTR_VALIDATE
 #undef TAGGED_PTR_VALIDATE
@@ -585,7 +585,7 @@ void client_validate_internal(void* tagged_client) {
 void client_validate_recursive(void* tagged_client, std::set<void*>& seen) {
 #ifndef RUNNING_GC_BUILDER
 #define GC_OBJ_VALIDATE_TABLE
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_VALIDATE_TABLE
 #endif
   if ( !gctools::tagged_objectp(tagged_client) ) return;
@@ -622,7 +622,7 @@ void client_validate_recursive(void* tagged_client, std::set<void*>& seen) {
 #define SMART_PTR_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
 #define TAGGED_POINTER_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
 #define GC_OBJ_VALIDATE
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_OBJ_VALIDATE
 #undef SMART_PTR_VALIDATE
 #undef TAGGED_PTR_VALIDATE
@@ -646,7 +646,7 @@ void obj_finalize(mps_addr_t client) {
   DEBUG_THROW_IF_INVALID_CLIENT(client);
   #ifndef RUNNING_GC_BUILDER
     #define GC_OBJ_FINALIZE_TABLE
-    #include CLASP_GC_CC
+    #include CLASP_GC_FILENAME
     #undef GC_OBJ_FINALIZE_TABLE
   #endif // ifndef RUNNING_GC_BUILDER
   gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
@@ -658,7 +658,7 @@ void obj_finalize(mps_addr_t client) {
   size_t table_index = (size_t)kind - kind_first_general;
   goto *(OBJ_FINALIZE_table[table_index]);
     #define GC_OBJ_FINALIZE
-    #include CLASP_GC_CC
+    #include CLASP_GC_FILENAME
     #undef GC_OBJ_FINALIZE
   #endif // ifndef RUNNING_GC_BUILDER
 }; // obj_finalize
@@ -687,7 +687,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
     }
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_GLOBALS
 #endif
 
@@ -699,7 +699,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
 #if USE_STATIC_ANALYZER_GLOBAL_SYMBOLS
   #ifndef RUNNING_GC_BUILDER
   #define GC_GLOBAL_SYMBOLS
-  #include CLASP_GC_CC
+  #include CLASP_GC_FILENAME
   #undef GC_GLOBAL_SYMBOLS
   #endif // if RUNNING_GC_BUILDER
 #else
@@ -732,7 +732,7 @@ mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   #ifndef RUNNING_GC_BUILDER
     #ifndef SCRAPING
       #define HOUSEKEEPING_SCANNERS
-      #include CLASP_GC_CC
+      #include CLASP_GC_FILENAME
       #undef HOUSEKEEPING_SCANNERS
     #endif // ifdef USE_MPS
   #endif // ifndef RUNNING_GC_BUILDER

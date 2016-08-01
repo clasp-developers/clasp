@@ -561,7 +561,7 @@ def build(bld):
     include_dirs.append("%s/src/main/" % bld.path.abspath())
     include_dirs.append("%s/include/" % (bld.path.abspath()))
     include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(),out,variant.variant_dir()))
-    include_dirs = include_dirs + bld.plugins_include_dirs
+    include_dirs = include_dirs + bld.extensions_include_dirs
     print("include_dirs = %s" % include_dirs)
                         
     print("Building with variant = %s" % variant)
