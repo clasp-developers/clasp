@@ -267,7 +267,7 @@ CL_DEFMETHOD List_sp Path_O::parts() const {
   return l.cons();
 }
 
-CL_LISPIFY_NAME("asString");
+CL_LISPIFY_NAME("path-asString");
 CL_DEFMETHOD string Path_O::asString() const {
   _OF();
   return this->_Path.string();

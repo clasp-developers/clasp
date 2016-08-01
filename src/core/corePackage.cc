@@ -262,11 +262,11 @@ SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
 SYMBOL_SC_(CorePkg, printf);
 
-SYMBOL_EXPORT_SC_(CorePkg, asin);
-SYMBOL_EXPORT_SC_(CorePkg, asinh);
-SYMBOL_EXPORT_SC_(CorePkg, acos);
-SYMBOL_EXPORT_SC_(CorePkg, acosh);
-SYMBOL_EXPORT_SC_(CorePkg, atanh);
+//SYMBOL_EXPORT_SC_(CorePkg, asin);
+//SYMBOL_EXPORT_SC_(CorePkg, asinh);
+//SYMBOL_EXPORT_SC_(CorePkg, acos);
+//SYMBOL_EXPORT_SC_(CorePkg, acosh);
+//SYMBOL_EXPORT_SC_(CorePkg, atanh);
 SYMBOL_EXPORT_SC_(CorePkg, bclasp_compile);
 
 SYMBOL_EXPORT_SC_(ClPkg, nil);

@@ -491,7 +491,7 @@ bool Package_O::usePackage(Package_sp usePackage) {
   // Check for symbol conflicts
   //
   FindConflicts findConflicts(this->asSmartPtr());
-  this->_ExternalSymbols->lowLevelMapHash(&findConflicts);
+  usePackage->_ExternalSymbols->lowLevelMapHash(&findConflicts);
   if (findConflicts._conflicts.size() > 0) {
     stringstream ss;
     for (set<string>::iterator si = findConflicts._conflicts.begin();
@@ -531,13 +531,13 @@ bool Package_O::unusePackage(Package_sp usePackage) {
 bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   Str_sp nameKey = gc::As<Str_sp>(key);
   Symbol_sp svalue = gc::As<Symbol_sp>(value);
-
   Symbol_mv values = this->_me->_findSymbol(nameKey);
   Symbol_sp mine = values;
   T_sp foundp = values.second();
   if (foundp.notnilp() && mine != svalue) {
     LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
     this->_conflicts.insert(svalue->symbolNameAsString());
+//    printf("%s:%d  Found symbol conflict for %s and %s\n", __FILE__, __LINE__, _rep_(svalue).c_str(), _rep_(mine).c_str());
   }
   return true;
 }
