@@ -281,8 +281,7 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
 
 CL_LAMBDA(arg);
 CL_DECLARE();
-CL_DOCSTRING("dumpAddressOf");
-CL_DEFUN void core__dump_address_of(T_sp arg) {
+CL_DEFUN void core__print_address_of(T_sp arg) {
   ASSERT(arg.objectp());
   void *ptr = &(*arg);
   printf("%s:%d  AddressOf = %p\n", __FILE__, __LINE__, ptr);

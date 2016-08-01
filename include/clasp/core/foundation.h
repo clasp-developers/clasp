@@ -39,7 +39,7 @@ THE SOFTWARE.
 #endif
 #ifndef APPLICATION_CONFIG
 //#error "You must define the APPLICATION_CONFIG as something like <clasp/main/application.config>"
-#define APPLICATION_CONFIG <application.config>
+#define APPLICATION_CONFIG <clasp/main/application.config>
 #endif
 
 // Load the waf config file

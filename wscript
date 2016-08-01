@@ -103,10 +103,9 @@ def yadda(cfg):
     print("In Yadda")
 
 def configure_clasp(cfg,variant):
-    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
-#    print("Including from %s" % include_path )
-    cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
-    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
+#    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
+#    cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
+#    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
@@ -423,10 +422,10 @@ def configure(cfg):
     cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_release_lib_dir )
     cfg.env.append_value('CXXFLAGS', ['-I./'])
     cfg.env.append_value('CFLAGS', ['-I./'])
-    if ('program_name' in cfg.__dict__):
-        pass
-    else:
-        cfg.env.append_value('CXXFLAGS', ['-I%s/include/clasp/main/'% cfg.path.abspath() ])
+#    if ('program_name' in cfg.__dict__):
+#        pass
+#    else:
+#        cfg.env.append_value('CXXFLAGS', ['-I%s/include/clasp/main/'% cfg.path.abspath() ])
 # Check if GC_enumerate_reachable_objects_inner is available
 # If so define  BOEHM_GC_ENUMERATE_REACHABLE_OBJECTS_INNER_AVAILABLE
 #
@@ -463,16 +462,16 @@ def configure(cfg):
     cfg.define("__STDC_LIMIT_MACROS",1)
 #    cfg.env.append_value('CXXFLAGS', ['-v'] )
 #    cfg.env.append_value('CFLAGS', ['-v'] )
-    includes = [ 'include/' ]
-    includes = includes + cfg.plugins_include_dirs
-    includes_from_build_dir = []
-    for x in includes:
-        includes_from_build_dir.append("-I%s/%s"%(cfg.path.abspath(),x))
+#    includes = [ 'include/' ]
+#    includes = includes + cfg.plugins_include_dirs
+#    includes_from_build_dir = []
+#    for x in includes:
+#        includes_from_build_dir.append("-I%s/%s"%(cfg.path.abspath(),x))
+#    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
+#    cfg.env.append_value('CFLAGS', includes_from_build_dir )
 #    print("DEBUG includes_from_build_dir = %s\n" % includes_from_build_dir)
     cfg.env.append_value('CXXFLAGS', [ '-std=c++11'])
 #    cfg.env.append_value('CXXFLAGS', ["-D_GLIBCXX_USE_CXX11_ABI=1"])
-    cfg.env.append_value('CXXFLAGS', includes_from_build_dir )
-    cfg.env.append_value('CFLAGS', includes_from_build_dir )
     cfg.env.append_value('CXXFLAGS', '-flto=thin')
     cfg.env.append_value('CFLAGS', '-flto=thin')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
@@ -535,6 +534,7 @@ def build(bld):
     print("Building stage --> %s" % stage)
     bld.clasp_source_files = []
     bld.recurse('src')
+    bld.plugins_include_dirs = []
     bld.plugins_include_files = []
     bld.plugins_source_files = []
     bld.plugins_gcinterface_include_files = []
@@ -557,6 +557,13 @@ def build(bld):
 #    print("test_linking_source = %s" % test_linking_source)
 #    print("test_linking_executable = %s" % test_linking_executable)
 #    bld.program(source=[test_linking_source],target=test_linking_executable)
+    include_dirs = ['.']
+    include_dirs.append("%s/src/main/" % bld.path.abspath())
+    include_dirs.append("%s/include/" % (bld.path.abspath()))
+    include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(),out,variant.variant_dir()))
+    include_dirs = include_dirs + bld.plugins_include_dirs
+    print("include_dirs = %s" % include_dirs)
+                        
     print("Building with variant = %s" % variant)
     wscript_node = bld.path.find_resource("wscript")
     plugin_headers_node = variant.plugin_headers_node(bld)
@@ -570,11 +577,15 @@ def build(bld):
         iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
         if (bld.env['DEST_OS'] == LINUX_OS ):
             executable_dir = "bin"
-            bld_task = bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/bin')
+            bld_task = bld.program(source=source_files,
+                                   includes=include_dirs,
+                                   target=[iclasp_executable],install_path='${PREFIX}/bin')
         elif (bld.env['DEST_OS'] == DARWIN_OS ):
             iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
             executable_dir = "MacOS"
-            bld_task = bld.program(source=source_files,target=[iclasp_executable],install_path='${PREFIX}/MacOS')
+            bld_task = bld.program(source=source_files,
+                                   includes=include_dirs,
+                                   target=[iclasp_executable],install_path='${PREFIX}/MacOS')
             iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
             iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
             dsymutil_iclasp = dsymutil(env=bld.env)
@@ -784,6 +795,10 @@ class link_bitcode(Task.Task):
 class preprocess(Task.Task):
     run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
+
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(preprocess, self).exec_command(cmd, **kw)
 
     def keyword(ctx):
         return "Preprocessing"
