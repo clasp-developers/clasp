@@ -131,8 +131,8 @@ class variant(object):
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s-%s' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
-    def plugin_headers_node(self,bld):
-        return bld.path.find_or_declare("generated/plugin_headers.h")
+    def extension_headers_node(self,bld):
+        return bld.path.find_or_declare("generated/extension_headers.h")
     def fasl_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -402,18 +402,18 @@ def configure(cfg):
     cfg.check_cxx(lib='ncurses', cflags='-Wall', uselib_store='NCURSES')
     cfg.check_cxx(lib='m', cflags='-Wall', uselib_store='M')
     cfg.check_cxx(stlib=BOOST_LIBRARIES, cflags='-Wall', uselib_store='BOOST')
-    cfg.plugins_include_dirs = []
-    cfg.plugins_gcinterface_include_files = []
-    cfg.plugins_stlib = []
-    cfg.plugins_lib = []
-    cfg.plugins_names = []
-    cfg.recurse('plugins')
-    print("cfg.plugins_names before sort = %s" % cfg.plugins_names)
-    cfg.plugins_names = sorted(cfg.plugins_names)
-    print("cfg.plugins_names after sort = %s" % cfg.plugins_names)
+    cfg.extensions_include_dirs = []
+    cfg.extensions_gcinterface_include_files = []
+    cfg.extensions_stlib = []
+    cfg.extensions_lib = []
+    cfg.extensions_names = []
+    cfg.recurse('extensions')
+    print("cfg.extensions_names before sort = %s" % cfg.extensions_names)
+    cfg.extensions_names = sorted(cfg.extensions_names)
+    print("cfg.extensions_names after sort = %s" % cfg.extensions_names)
     clasp_gc_filename = "clasp_gc.cc"
-    if (len(cfg.plugins_names)>0):
-        clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.plugins_names))
+    if (len(cfg.extensions_names)>0):
+        clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
     link_flag = "-L%s" % llvm_release_lib_dir
     print("link_flag = %s" % link_flag )
@@ -500,8 +500,8 @@ def configure(cfg):
     cfg.env.append_value('LINKFLAGS', ['-fvisibility=default'])
     cfg.env.append_value('LINKFLAGS', ['-rdynamic'])
     sep = " "
-    cfg.env.append_value('STLIB', cfg.plugins_stlib)
-    cfg.env.append_value('LIB', cfg.plugins_lib)
+    cfg.env.append_value('STLIB', cfg.extensions_stlib)
+    cfg.env.append_value('LIB', cfg.extensions_lib)
     cfg.env.append_value('STLIB', cfg.env.STLIB_CLANG)
     cfg.env.append_value('STLIB', cfg.env.STLIB_LLVM)
     cfg.env.append_value('STLIB', cfg.env.STLIB_BOOST)
@@ -534,13 +534,13 @@ def build(bld):
     print("Building stage --> %s" % stage)
     bld.clasp_source_files = []
     bld.recurse('src')
-    bld.plugins_include_dirs = []
-    bld.plugins_include_files = []
-    bld.plugins_source_files = []
-    bld.plugins_gcinterface_include_files = []
-    bld.recurse('plugins')
+    bld.extensions_include_dirs = []
+    bld.extensions_include_files = []
+    bld.extensions_source_files = []
+    bld.extensions_gcinterface_include_files = []
+    bld.recurse('extensions')
     bld.recurse('src/main')
-    source_files = bld.clasp_source_files + bld.plugins_source_files
+    source_files = bld.clasp_source_files + bld.extensions_source_files
 #    print("DEBUG recursed source_files = %s" % source_files)
     bld.install_files('${PREFIX}/Contents/Resources/source-code/',source_files,relative_trick=True,cwd=bld.path)
 #    print("bld.path = %s"%bld.path)
@@ -566,13 +566,13 @@ def build(bld):
                         
     print("Building with variant = %s" % variant)
     wscript_node = bld.path.find_resource("wscript")
-    plugin_headers_node = variant.plugin_headers_node(bld)
-    print("plugin_headers_node = %s" % plugin_headers_node.abspath())
-    plugins_task = build_plugin_headers(env=bld.env)
-    inputs = [wscript_node] + bld.plugins_gcinterface_include_files
-    plugins_task.set_inputs(inputs)
-    plugins_task.set_outputs([plugin_headers_node])
-    bld.add_to_group(plugins_task)
+    extension_headers_node = variant.extension_headers_node(bld)
+    print("extension_headers_node = %s" % extension_headers_node.abspath())
+    extensions_task = build_extension_headers(env=bld.env)
+    inputs = [wscript_node] + bld.extensions_gcinterface_include_files
+    extensions_task.set_inputs(inputs)
+    extensions_task.set_outputs([extension_headers_node])
+    bld.add_to_group(extensions_task)
     if (stage_val >= 0):
         iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
         if (bld.env['DEST_OS'] == LINUX_OS ):
@@ -754,7 +754,7 @@ class compile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -f ignore-plugins -f debug-run-clang -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -f ignore-extensions -f debug-run-clang -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -771,12 +771,12 @@ class compile_addons(Task.Task):
 #            all_inputs.write(' %s' % x)
 #        return self.exec_command('llvm-ar a %s %s' % ( self.outputs[0], all_inputs.getvalue()) )
 
-class build_plugin_headers(Task.Task):
-#    print("DEBUG build_plugin_headers directory = %s\n" % root )
-#    print("DEBUG build_plugin_headers headers_list=%s\n"% headers_list)
+class build_extension_headers(Task.Task):
+#    print("DEBUG build_extension_headers directory = %s\n" % root )
+#    print("DEBUG build_extension_headers headers_list=%s\n"% headers_list)
     def run(self):
         fout = open(self.outputs[0].abspath(),"w")
-        fout.write("// Generated by wscript build_plugin_headers - Do not modify!!\n" )
+        fout.write("// Generated by wscript build_extension_headers - Do not modify!!\n" )
         for x in self.inputs[1:]:
             if ( x != None ):
                 fout.write("#include \"%s\"\n" % x.abspath())
