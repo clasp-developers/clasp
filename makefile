@@ -170,9 +170,13 @@ build_cboehm:
 	./waf -j $(PJOBS) build_cboehm_o
 
 
+redeye-clean:
+	./waf configure --prefix=$(PREFIX)
+	./waf -j $(PJOBS) clean_impsprep_o
+
 redeye-prep:
-	./waf -j $(PJOBS) build_cboehmdc_o
-	./waf -j $(PJOBS) clean_impsprep_o build_impsprep_o
+	./waf -j $(PJOBS) build_impsprep_o build_cboehmdc_o
+#	./waf -j $(PJOBS) build_cboehmdc_o
 
 redeye-run:
 	build/boehmdc_o/cclasp-boehmdc-o \
