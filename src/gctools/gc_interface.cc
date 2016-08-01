@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#ifndef RUNNING_GC_BUILDER // wraps entire file
 typedef bool _Bool;
 #include <clasp/core/foundation.h>
 #include <type_traits>
@@ -941,3 +942,4 @@ extern "C" {
 #endif
 };
 
+#endif // #ifndef RUNNING_GC_BUILDER
