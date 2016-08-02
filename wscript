@@ -792,16 +792,16 @@ class link_bitcode(Task.Task):
 #        print("link_bitcode command: %s" % cmd )
         return self.exec_command(cmd)
 
-class preprocess(Task.Task):
+class scrape(Task.Task):
     run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
 
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
-        return super(preprocess, self).exec_command(cmd, **kw)
+        return super(scrape, self).exec_command(cmd, **kw)
 
     def keyword(ctx):
-        return "Preprocessing"
+        return "Scraping"
 
 class generated_headers(Task.Task):
     ext_out = ['.h']
@@ -815,7 +815,7 @@ class generated_headers(Task.Task):
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
-def preprocess_task_generator(self):
+def scrape_task_generator(self):
     if ( not 'variant_obj' in self.bld.__dict__ ):
         return
     compiled_tasks = self.compiled_tasks
@@ -826,7 +826,7 @@ def preprocess_task_generator(self):
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
                 sif_node = node.change_ext('.sif')
-                self.create_task('preprocess',node,[sif_node])
+                self.create_task('scrape',node,[sif_node])
                 all_sif_files.append(sif_node)
             for node in task.outputs:
 #                print("node = %s" % node.get_src())
