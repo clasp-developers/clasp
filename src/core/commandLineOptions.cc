@@ -47,9 +47,16 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       _PauseForDebugger(false)
 
 {
+  int endArg = argc;
+  for (int i = 0; i < argc; ++i) {
+    if (strcmp(argv[i], "--") == 0) {
+      endArg = i;
+    }
+  }
+  this->_EndArg = endArg;
   this->_ExecutableName = argv[0];
   int iarg = 1;
-  while (iarg < argc) {
+  while (iarg < endArg) {
     string arg = argv[iarg];
     if (arg == "-h" || arg == "--help") {
       printf("clasp options\n"
@@ -57,6 +64,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-i/--image file      - Use the file as the boot image\n"
              "-N/--non-interactive - Suppress all repls\n"
              "-v/--version         - Print version\n"
+             "-R/--resource-dir    - This directory is treated as the executable directory\n"
+             "                       and it is used to start the search for resource directories\n"
              "-s/--verbose         - Print more info while booting\n"
              "-f/--feature feature - Add the feature to *features*\n"
              "-e/--eval {form}     - Evaluate a form\n"
@@ -69,7 +78,8 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "*feature* settings\n"
              "  debug-startup      - Print a message for every top level form at startup\n"
              "Environment variables:\n"
-             "export CLASP_TRAP_INTERN=PKG:SYM to trap the intern of the symbol\n"
+             "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
+             "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
              "export CLASP_TELEMETRY_FILE=/tmp/clasp.tel # (file to write telemetry)\n"
              "# to control MPS\n"
@@ -79,6 +89,9 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
       this->_DontLoadImage = true;
     } else if (arg == "-N" || arg == "--non-interactive") {
       this->_Interactive = false;
+    } else if (arg == "-R" || arg == "--resource-dir") {
+      this->_ResourceDir = argv[iarg+1];
+      iarg++;
     } else if (arg == "-r" || arg == "--norc") {
       this->_NoRc = true;
     } else if (arg == "-w" || arg == "--wait") {
@@ -90,21 +103,21 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
     } else if (arg == "-s" || arg == "--verbose") {
       this->_SilentStartup = false;
     } else if (arg == "-f" || arg == "--feature") {
-      ASSERTF(iarg < (argc + 1), BF("Missing argument for --feature,-f"));
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --feature,-f"));
       this->_Features.push_back(argv[iarg + 1]);
       iarg++;
     } else if (arg == "-i" || arg == "--image") {
-      ASSERTF(iarg < (argc + 1), BF("Missing argument for --image,-i"));
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --image,-i"));
       this->_HasImageFile = true;
       this->_ImageFile = argv[iarg + 1];
       iarg++;
     } else if (arg == "-e" || arg == "--eval") {
-      ASSERTF(iarg < (argc + 1), BF("Missing argument for --eval,-e"));
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --eval,-e"));
       pair<LoadEvalEnum, std::string> eval(std::make_pair(cloEval, argv[iarg + 1]));
       this->_LoadEvalList.push_back(eval);
       iarg++;
     } else if (arg == "-l" || arg == "--load") {
-      ASSERTF(iarg < (argc + 1), BF("Missing argument for --load,-l"));
+      ASSERTF(iarg < (endArg + 1), BF("Missing argument for --load,-l"));
       pair<LoadEvalEnum, std::string> eval(std::make_pair(cloLoad, argv[iarg + 1]));
       this->_LoadEvalList.push_back(eval);
       iarg++;

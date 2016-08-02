@@ -37,7 +37,7 @@
 
 ;;; Turn on compiler warnings for missing features
 #+(or)(setq *features* (cons :verbose-compiler *features*))
-(setq *features* (cons :compile-mcjit *features*))
+#+(or)(setq *features* (cons :compile-mcjit *features*))
 
 
 ;; When boostrapping in stages, set this feature,

@@ -46,6 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/translators.h>
+#include <clasp/core/commandLineOptions.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/readtable.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
@@ -922,7 +923,7 @@ public:
 	 * Cons of code if code was provided on the command line or through a script file
 	 * Otherwise return nil
 	 */
-  void parseCommandLineArguments(int argc, char *argv[], bool compile);
+  void parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options );
 
   List_sp getCommandLineArguments() { return this->_Roots._CommandLineArguments; };
 

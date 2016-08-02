@@ -1036,17 +1036,8 @@ uint Lisp_O::nextEnvironmentId() {
 
 #define DLINE() printf("%s:%d debug\n", __FILE__, __LINE__);
 
-void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInputFile) {
-  int endArg = argc;
-  for (int i = 0; i < argc; ++i) {
-    if (strcmp(argv[i], "--") == 0) {
-      endArg = i;
-    }
-  }
-
-  //
-  // Pass whatever is left over to the Lisp environment
-  //
+void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLineOptions& options) {
+  int endArg = options._EndArg;
   LOG(BF("Parsing what is left over into lisp environment arguments"));
   gctools::Vec0<T_sp> vargs;
   for (int j(endArg + 1); j < argc; ++j) {
@@ -1056,8 +1047,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   LOG(BF(" Command line arguments are being set in Lisp to: %s") % _rep_(args));
   SYMBOL_EXPORT_SC_(CorePkg, STARcommandLineArgumentsSTAR);
   _sym_STARcommandLineArgumentsSTAR->defparameter(args);
-
-  CommandLineOptions options(endArg, argv);
 
   if (options._PauseForDebugger) {
     printf("The PID is  %d  - press enter to continue\n", getpid());
@@ -1100,9 +1089,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
   features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
 #else // _RELEASE_BUILD
   features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
-#endif
-#ifdef USE_REFCOUNT
-  features = Cons_O::create(_lisp->internKeyword("USE-REFCOUNT"), features);
 #endif
 #ifdef USE_BOEHM
 #ifdef USE_CXX_DYNAMIC_CAST
@@ -2707,8 +2693,8 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
   for (int i = 0; i < argc; ++i) {
     this->_Lisp->_Argv.push_back(string(argv[i]));
   }
-  Bundle *bundle = new Bundle();
-  bundle->initialize(argv0, appPathEnvironmentVariable);
+  CommandLineOptions options(argc, argv);
+  Bundle *bundle = new Bundle(argv0,options._ResourceDir);
   this->_Lisp->startupLispEnvironment(bundle);
 #if 0
 	if (_lisp->mpiEnabled())
@@ -2718,7 +2704,7 @@ void LispHolder::startup(int argc, char *argv[], const string &appPathEnvironmen
 	    printvPushPrefix(ss.str());
 	}
 #endif
-  _lisp->parseCommandLineArguments(argc, argv, true);
+  _lisp->parseCommandLineArguments(argc, argv, options);
 }
 
 LispHolder::~LispHolder() {

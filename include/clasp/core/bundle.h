@@ -56,13 +56,12 @@ public:
   /*! Initialize the bundle and set up all the paths
      */
 private:
-  boost_filesystem::path findAppDir(const string &argv0, const string &cwd, const string &env);
+  boost_filesystem::path findAppDir(const string &argv0, const string &cwd);
   void findContentSubDirectories(boost_filesystem::path p, bool verbose=false);
   void fillInMissingPaths(bool verbose=false);
 
 public:
   void initializeStartupWorkingDirectory(bool verbose=false);
-  void initialize(const string &argv0, const string &appPathEnvironmentVariable);
 
   Pathname_sp getRootPathname();
   Pathname_sp getExecutablePathname();
@@ -73,7 +72,7 @@ public:
   Pathname_sp getAppContentsResourcesPathname();
 
   string describe();
-  Bundle();
+  Bundle(const string &argv0, const string &appPath);
 
   void setup_pathname_translations();
   

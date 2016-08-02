@@ -95,6 +95,8 @@ def stage_value(ctx,s):
         sval = 2
     elif ( s == 'c' ):
         sval = 3
+    elif ( s == 'rebuild' ):
+        sval = 0
     else:
         ctx.fatal("Illegal stage: %s" % s)
     return sval
@@ -573,92 +575,102 @@ def build(bld):
     extensions_task.set_inputs(inputs)
     extensions_task.set_outputs([extension_headers_node])
     bld.add_to_group(extensions_task)
-    if (stage_val >= 0):
-        iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
-        if (bld.env['DEST_OS'] == LINUX_OS ):
-            executable_dir = "bin"
-            bld_task = bld.program(source=source_files,
-                                   includes=include_dirs,
-                                   target=[iclasp_executable],install_path='${PREFIX}/bin')
-        elif (bld.env['DEST_OS'] == DARWIN_OS ):
-            iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
-            executable_dir = "MacOS"
-            bld_task = bld.program(source=source_files,
-                                   includes=include_dirs,
-                                   target=[iclasp_executable],install_path='${PREFIX}/MacOS')
-            iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
-            iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
-            dsymutil_iclasp = dsymutil(env=bld.env)
-            dsymutil_iclasp.set_inputs([iclasp_executable,iclasp_lto_o])
-            dsymutil_iclasp.set_outputs(iclasp_dsym_files)
-            bld.add_to_group(dsymutil_iclasp)
-            bld.install_files('${PREFIX}/%s/%s'%(executable_dir,iclasp_dsym.name),iclasp_dsym_files,relative_trick=True,cwd=iclasp_dsym)
-        if (stage_val >= 1):
-            print("About to add compile_aclasp")
-            intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
-            cmp_aclasp = compile_aclasp(env=bld.env)
-            cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node])
-            aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
-            cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
-            bld.add_to_group(cmp_aclasp)
-            lnk_aclasp = link_fasl(env=bld.env)
-            lnk_aclasp.set_inputs([intrinsics_bitcode_node,aclasp_common_lisp_bitcode])
-            aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
-            lnk_aclasp.set_outputs([aclasp_link_product])
-            bld.add_to_group(lnk_aclasp)
-            bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_link_product.name), aclasp_link_product)
-            bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
-            if (stage_val >= 2):
-                print("About to add compile_bclasp")
-                cmp_bclasp = compile_bclasp(env=bld.env)
-                cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node])
-                bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
-                cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
-                bld.add_to_group(cmp_bclasp)
-                bclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
-                lnk_bclasp = link_fasl(env=bld.env)
-                lnk_bclasp.set_inputs([intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
-                lnk_bclasp.set_outputs([bclasp_link_product])
-                bld.add_to_group(lnk_bclasp)
-                bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_link_product.name), bclasp_link_product)
-                bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
-                if (stage_val >= 3):
-                    print("About to add compile_cclasp")
-                    # Build cclasp
-                    cmp_cclasp = compile_cclasp(env=bld.env)
-                    cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-                    cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node])
-                    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
-                    cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
-                    bld.add_to_group(cmp_cclasp)
-                    lnk_cclasp = link_executable(env=bld.env)
-                    lnk_cclasp.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
-                    cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
-                    if ( bld.env['DEST_OS'] == DARWIN_OS ):
-                        cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
-                        lnk_cclasp.set_outputs([cclasp_executable,cclasp_lto_o])
-                    elif (bld.env['DEST_OS'] == LINUX_OS ):
-                        cclasp_lto_o = None
-                        lnk_cclasp.set_outputs(cclasp_executable)
-                    bld.add_to_group(lnk_cclasp)
-                    if ( bld.env['DEST_OS'] == DARWIN_OS ):
-                        cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
-                        cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
-                        print("cclasp_dsym_files = %s" % cclasp_dsym_files)
-                        dsymutil_cclasp = dsymutil(env=bld.env)
-                        dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
-                        dsymutil_cclasp.set_outputs(cclasp_dsym_files)
-                        bld.add_to_group(dsymutil_cclasp)
-                        bld.install_files('${PREFIX}/%s/%s'%(executable_dir,cclasp_dsym.name),cclasp_dsym_files,relative_trick=True,cwd=cclasp_dsym)
-                    bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod=Utils.O755)
-                    cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
-                    bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), aclasp_common_lisp_bitcode)
-                    cmp_addons = compile_addons(env=bld.env)
-                    cmp_addons.set_inputs(cclasp_executable)
-                    asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl"%variant.fasl_dir(stage="c"))
-                    cmp_addons.set_outputs(asdf_fasl)
-                    bld.add_to_group(cmp_addons)
-                    bld.install_as('${PREFIX}/Contents/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl'%variant.fasl_dir(stage="c"),asdf_fasl)
+    # Always build the C++ code
+    iclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='i'))
+    if (bld.env['DEST_OS'] == LINUX_OS ):
+        executable_dir = "bin"
+        bld_task = bld.program(source=source_files,
+                               includes=include_dirs,
+                               target=[iclasp_executable],install_path='${PREFIX}/bin')
+    elif (bld.env['DEST_OS'] == DARWIN_OS ):
+        iclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='i'))
+        executable_dir = "MacOS"
+        bld_task = bld.program(source=source_files,
+                               includes=include_dirs,
+                               target=[iclasp_executable],install_path='${PREFIX}/MacOS')
+        iclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='i'))
+        iclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='i'),iclasp_dsym)
+        dsymutil_iclasp = dsymutil(env=bld.env)
+        dsymutil_iclasp.set_inputs([iclasp_executable,iclasp_lto_o])
+        dsymutil_iclasp.set_outputs(iclasp_dsym_files)
+        bld.add_to_group(dsymutil_iclasp)
+        bld.install_files('${PREFIX}/%s/%s'%(executable_dir,iclasp_dsym.name),iclasp_dsym_files,relative_trick=True,cwd=iclasp_dsym)
+    if (stage_val >= 1):   
+        print("About to add compile_aclasp")
+        intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
+        cmp_aclasp = compile_aclasp(env=bld.env)
+        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node])
+        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+        cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
+        bld.add_to_group(cmp_aclasp)
+        lnk_aclasp = link_fasl(env=bld.env)
+        lnk_aclasp.set_inputs([intrinsics_bitcode_node,aclasp_common_lisp_bitcode])
+        aclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='a'))
+        lnk_aclasp.set_outputs([aclasp_link_product])
+        bld.add_to_group(lnk_aclasp)
+        bld.install_as('${PREFIX}/%s/%s' % (executable_dir, aclasp_link_product.name), aclasp_link_product)
+        bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='a'), aclasp_common_lisp_bitcode)
+    if (stage_val >= 2):
+        print("About to add compile_bclasp")
+        cmp_bclasp = compile_bclasp(env=bld.env)
+        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node])
+        bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
+        cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
+        bld.add_to_group(cmp_bclasp)
+        bclasp_link_product = bld.path.find_or_declare(variant.fasl_name(stage='b'))
+        lnk_bclasp = link_fasl(env=bld.env)
+        lnk_bclasp.set_inputs([intrinsics_bitcode_node,bclasp_common_lisp_bitcode])
+        lnk_bclasp.set_outputs([bclasp_link_product])
+        bld.add_to_group(lnk_bclasp)
+        bld.install_as('${PREFIX}/%s/%s' % (executable_dir, bclasp_link_product.name), bclasp_link_product)
+        bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='b'), aclasp_common_lisp_bitcode)
+    if (stage_val >= 3):
+        print("About to add compile_cclasp")
+        # Build cclasp
+        cmp_cclasp = compile_cclasp(env=bld.env)
+        cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
+        cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node])
+        cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
+        cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
+        bld.add_to_group(cmp_cclasp)
+    if (stage == 'rebuild'):
+        print("About to add recompile_cclasp")
+        # Build cclasp
+        recmp_cclasp = recompile_cclasp(env=bld.env)
+        recmp_cclasp.set_inputs([])
+        cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
+        recmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
+        bld.add_to_group(recmp_cclasp)
+    if (stage == 'rebuild' or stage_val >= 3):
+        lnk_cclasp = link_executable(env=bld.env)
+        cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
+        lnk_cclasp.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
+        cclasp_executable = bld.path.find_or_declare(variant.executable_name(stage='c'))
+        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+            cclasp_lto_o = bld.path.find_or_declare('%s.lto.o' % variant.executable_name(stage='c'))
+            lnk_cclasp.set_outputs([cclasp_executable,cclasp_lto_o])
+        elif (bld.env['DEST_OS'] == LINUX_OS ):
+            cclasp_lto_o = None
+            lnk_cclasp.set_outputs(cclasp_executable)
+        bld.add_to_group(lnk_cclasp)
+        if ( bld.env['DEST_OS'] == DARWIN_OS ):
+            cclasp_dsym = bld.path.find_or_declare("%s.dSYM"%variant.executable_name(stage='c'))
+            cclasp_dsym_files = generate_dsym_files(variant.executable_name(stage='c'),cclasp_dsym)
+            print("cclasp_dsym_files = %s" % cclasp_dsym_files)
+            dsymutil_cclasp = dsymutil(env=bld.env)
+            dsymutil_cclasp.set_inputs([cclasp_executable,cclasp_lto_o])
+            dsymutil_cclasp.set_outputs(cclasp_dsym_files)
+            bld.add_to_group(dsymutil_cclasp)
+            bld.install_files('${PREFIX}/%s/%s'%(executable_dir,cclasp_dsym.name),cclasp_dsym_files,relative_trick=True,cwd=cclasp_dsym)
+        bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod=Utils.O755)
+        cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
+        bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), cclasp_common_lisp_bitcode)
+        cmp_addons = compile_addons(env=bld.env)
+        cmp_addons.set_inputs(cclasp_executable)
+        asdf_fasl = bld.path.find_or_declare("%s/src/lisp/modules/asdf/asdf.fasl"%variant.fasl_dir(stage="c"))
+        cmp_addons.set_outputs(asdf_fasl)
+        bld.add_to_group(cmp_addons)
+        bld.install_as('${PREFIX}/Contents/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl'%variant.fasl_dir(stage="c"),asdf_fasl)
 
 
 from waflib import TaskGen
@@ -749,6 +761,18 @@ class compile_cclasp(Task.Task):
         return super(compile_cclasp, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile cclasp using... '
+
+class recompile_cclasp(Task.Task):
+    def run(self):
+        print("In recompile_cclasp -> %s" % self.outputs[0].abspath())
+        cmd = 'cclasp -f debug-run-clang -N -e "(recompile-cclasp :link-type :bc)" -e "(quit)"'
+        print("  cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(recompile_cclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Recompile cclasp using... '
     
 
 class compile_addons(Task.Task):
@@ -862,15 +886,19 @@ def scrape_task_generator(self):
 
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
-    for s in STAGE_CHARS:
-        for gc in GCS:
-            for debug_char in DEBUG_CHARS:
-                for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
-                    name = y.__name__.replace('Context','').lower()
+    for gc in GCS:
+        for debug_char in DEBUG_CHARS:
+            for y in (BuildContext, CleanContext, InstallContext, UninstallContext):
+                name = y.__name__.replace('Context','').lower()
+                for s in STAGE_CHARS:
                     class tmp(y):
                         variant = gc+'_'+debug_char
                         cmd = name + '_' + s + variant
                         stage = s
+            class tmp(BuildContext):
+                variant = gc+'_'+debug_char
+                cmd = 'rebuild_c'+variant
+                stage = 'rebuild'
 
 def buildall(ctx):
     import waflib.Options

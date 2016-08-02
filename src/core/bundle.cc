@@ -67,61 +67,42 @@ struct BundleDirectories {
   boost_filesystem::path _DatabasesDir;
 };
 
-Bundle::Bundle() {
+Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   this->_Initialized = false;
   this->_Directories = NULL;
-}
-
-void Bundle::initializeStartupWorkingDirectory(bool verbose) {
-  string cwd = "";
-  boost_filesystem::path curPath;
-  try {
-    curPath = boost_filesystem::current_path();
-  } catch (std::runtime_error &e) {
-    printf("%s:%d - There was a problem getting the current_path - error[%s]\n",
-           __FILE__, __LINE__, e.what());
-    printf("     This appears to be a problem with boost_filesystem\n");
-    printf("     - see https://svn.boost.org/trac/boost/ticket/4688\n");
-    SIMPLE_ERROR(BF("There is a problem with boost_filesystem"));
-  }
-  cwd = curPath.string();
-  this->_Directories->_StartupWorkingDir = boost_filesystem::path(cwd);
-  if ( verbose ) {
-    printf("%s:%d  _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str() );
-  }
-}
-
-
-void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   bool verbose = false;
   if (getenv("CLASP_VERBOSE_BUNDLE_SETUP") != NULL) {
     verbose = true;
   }
   this->_Directories = new BundleDirectories();
   this->initializeStartupWorkingDirectory(verbose);
-  pid_t pid = getpid();
+  bf::path appDir;
+  if (appDirName.size() == 0) {
+    pid_t pid = getpid();
 #ifdef _TARGET_OS_DARWIN
-  char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
-  /*int ret = */ proc_pidpath(pid, pathbuf, sizeof(pathbuf));
+    char pathbuf[PROC_PIDPATHINFO_MAXSIZE];
+    /*int ret = */ proc_pidpath(pid, pathbuf, sizeof(pathbuf));
   //        printf("%s:%d pid path = %s\n", __FILE__, __LINE__, pathbuf );
-  string argv0 = string(pathbuf);
+    string argv0 = string(pathbuf);
 #endif
 #ifdef _TARGET_OS_LINUX
-  stringstream path;
-  path << "/proc/" << pid << "/exe";
-  char buffer[PATH_MAX + 1];
-  char *rp = realpath(path.str().c_str(), buffer);
-  if (!rp) {
-    printf("%s:%d Could not resolve pid realpath for %s\n", __FILE__, __LINE__, path.str().c_str());
-  }
-  string argv0 = string(rp);
+    stringstream path;
+    path << "/proc/" << pid << "/exe";
+    char buffer[PATH_MAX + 1];
+    char *rp = realpath(path.str().c_str(), buffer);
+    if (!rp) {
+      printf("%s:%d Could not resolve pid realpath for %s\n", __FILE__, __LINE__, path.str().c_str());
+    }
+    string argv0 = string(rp);
 #endif
-  string cwd = this->_Directories->_StartupWorkingDir.string();
-  bf::path appDir = this->findAppDir(argv0, cwd, envVar);
+    string cwd = this->_Directories->_StartupWorkingDir.string();
+    appDir = this->findAppDir(argv0, cwd);
+  } else {
+    appDir = bf::path(appDirName);
+  }
   // First crawl up the directory tree and look for the cando root
-  bf::path curPath = appDir;
   // Climb up one level
-  this->_Directories->_ExecutableDir = curPath;
+  this->_Directories->_ExecutableDir = appDir;
   if (verbose) {
     printf("%s:%d _ExecutableDir = %s\n", __FILE__, __LINE__, this->_Directories->_ExecutableDir.string().c_str());
   }
@@ -131,9 +112,9 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
   printf("%s:%d    _ExecutableDir = %s\n", __FILE__, __LINE__, this->_Directories->_ExecutableDir.string().c_str());
   printf("%s:%d    _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str());
 #endif
-  curPath = curPath.branch_path();
+  appDir = appDir.branch_path();
   if (verbose) {
-    printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, curPath.string().c_str());
+    printf("%s:%d   Climb one level up from _ExecutablePath = %s\n", __FILE__, __LINE__, appDir.string().c_str());
   }
   
   // Check if there is a 'src' directory in _ExecutableDir - if so we are building
@@ -168,7 +149,7 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
 #ifdef DEBUG_DESC_BUNDLE
     printf("%s:%d Find Contents elsewhere\n", __FILE__, __LINE__ );
 #endif
-//  this->_Directories->_RootDir = curPath;
+//  this->_Directories->_RootDir = appDir;
     bf::path one_up_contents = this->_Directories->_ExecutableDir.parent_path();
     one_up_contents /= std::string("Contents");
     this->_Directories->_ContentsDir = one_up_contents;
@@ -188,24 +169,34 @@ void Bundle::initialize(const string &raw_argv0, const string &envVar) {
 #endif
 }
 
+void Bundle::initializeStartupWorkingDirectory(bool verbose) {
+  string cwd = "";
+  boost_filesystem::path curPath;
+  try {
+    curPath = boost_filesystem::current_path();
+  } catch (std::runtime_error &e) {
+    printf("%s:%d - There was a problem getting the current_path - error[%s]\n",
+           __FILE__, __LINE__, e.what());
+    printf("     This appears to be a problem with boost_filesystem\n");
+    printf("     - see https://svn.boost.org/trac/boost/ticket/4688\n");
+    SIMPLE_ERROR(BF("There is a problem with boost_filesystem"));
+  }
+  cwd = curPath.string();
+  this->_Directories->_StartupWorkingDir = boost_filesystem::path(cwd);
+  if ( verbose ) {
+    printf("%s:%d  _StartupWorkingDir = %s\n", __FILE__, __LINE__, this->_Directories->_StartupWorkingDir.string().c_str() );
+  }
+}
+
+
+
 // Find the absolute path where this application has been run from.
 // argv0 is wxTheApp->argv[0]
 // cwd is the current working directory (at startup)
 // appVariableName is the name of a variable containing the directory for this app, e.g.
 // MYAPPDIR. This is checked first.
 
-boost_filesystem::path Bundle::findAppDir(const string &argv0, const string &cwd, const string &appVariableName) {
-  // Try appVariableName
-  if (appVariableName != "") {
-    char *cenv = getenv(appVariableName.c_str());
-    if (cenv != NULL) {
-      string str = cenv;
-      boost_filesystem::path strPath(str);
-      if (bf::exists(strPath)) {
-        return strPath;
-      }
-    }
-  }
+boost_filesystem::path Bundle::findAppDir( const string &argv0, const string &cwd) {
 #if 0 // defined(darwin)
   boost_filesystem::path cwdPath(cwd);
   LOG(BF("Using current working directory: path=%s") % cwdPath.string() );
@@ -250,7 +241,7 @@ boost_filesystem::path Bundle::findAppDir(const string &argv0, const string &cwd
       return onePath.branch_path();
     }
   }
-  THROW_HARD_ERROR(BF("Could not determine absolute path to executable: " + argv0 + "\n" + " set environment variable(" + appVariableName + ") before running\n" + " or add application directory to PATH"));
+  THROW_HARD_ERROR(BF("Could not determine absolute path to executable: %s") % argv0 );
 }
 
 void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool verbose) {
