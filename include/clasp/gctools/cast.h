@@ -35,13 +35,13 @@ namespace clbind {
 //----------------------------------------------------------------------
 #ifndef USE_CXX_DYNAMIC_CAST
 #define DECLARE_FORWARDS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef DECLARE_FORWARDS
 #endif
 namespace cast {
 #ifndef USE_CXX_DYNAMIC_CAST
 #define GC_DYNAMIC_CAST
-#include CLASP_GC_CC // "main/clasp_gc.cc"
+#include CLASP_GC_FILENAME // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };
@@ -53,13 +53,13 @@ namespace cast {
 //----------------------------------------------------------------------
 #ifndef RUNNING_GC_BUILDER
 #define DECLARE_FORWARDS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef DECLARE_FORWARDS
 #endif
 namespace cast {
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_DYNAMIC_CAST
-#include CLASP_GC_CC // "main/clasp_gc.cc"
+#include CLASP_GC_FILENAME // "main/clasp_gc.cc"
 #undef GC_DYNAMIC_CAST
 #endif
 };

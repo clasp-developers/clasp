@@ -112,7 +112,6 @@ struct GCAllocationPoint;
 /*!
   Template struct:   DynamicCast
 
-  Specialized inCLASP_GC_CC
 */
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/pointer_tagging.h>

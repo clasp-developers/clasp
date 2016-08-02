@@ -535,6 +535,8 @@ bool FindConflicts::mapKeyValue(T_sp key, T_sp value) {
   Symbol_sp mine = values;
   T_sp foundp = values.second();
   if (foundp.notnilp() && mine != svalue) {
+    // If mine is in my shadowing list then it's not a conflict
+    if ( this->_me->_Shadowing->contains(mine) ) return true;
     LOG(BF("usePackage conflict - my symbol[%s] : usePackage symbol[%s]") % _rep_(mine) % _rep_(svalue));
     this->_conflicts.insert(svalue->symbolNameAsString());
 //    printf("%s:%d  Found symbol conflict for %s and %s\n", __FILE__, __LINE__, _rep_(svalue).c_str(), _rep_(mine).c_str());

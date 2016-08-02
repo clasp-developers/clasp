@@ -101,7 +101,7 @@ class GCObject {};
 #if !defined(RUNNING_GC_BUILDER)
 #define GC_ENUM
 typedef
-#include CLASP_GC_CC //"main/clasp_gc.cc"
+#include CLASP_GC_FILENAME //"main/clasp_gc.cc"
     GCKindEnum;
 #undef GC_ENUM
 #else

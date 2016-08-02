@@ -58,7 +58,7 @@ class ConstructorCreator_O;
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
 #define DECLARE_FORWARDS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef DECLARE_FORWARDS
 #endif // ifndef RUNNING_GC_BUILDER
 #endif
@@ -67,7 +67,7 @@ class ConstructorCreator_O;
 // nothing
 #else
 #define DECLARE_FORWARDS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef DECLARE_FORWARDS
 #endif
 #endif
@@ -77,7 +77,7 @@ namespace gctools {
 #ifdef USE_MPS
 #ifndef RUNNING_GC_BUILDER // when running the static analyzer - don't include the following
 #define GC_KIND_SELECTORS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_KIND_SELECTORS
 #endif // ifndef RUNNING_GC_BUILDER
 #endif
@@ -86,7 +86,7 @@ namespace gctools {
 // Nothing
 #else
 #define GC_KIND_SELECTORS
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
 #undef GC_KIND_SELECTORS
 #endif
 #endif

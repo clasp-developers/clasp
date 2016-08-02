@@ -345,6 +345,4 @@ CL_DEFUN void core__clear_gfun_hash(T_sp what) {
   }
 };
 
-  SYMBOL_SC_(ClosPkg, clearGfunHash);
-
 };

@@ -79,7 +79,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 #else
   typedef
 #define GC_ENUM
-#include CLASP_GC_CC
+#include CLASP_GC_FILENAME
     GCKindEnum;
 #undef GC_ENUM
 #endif // #else USE_CXX_DYNAMIC_CAST

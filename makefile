@@ -187,6 +187,7 @@ redeye-run:
 redeye:
 	make redeye-prep
 	make redeye-run
+	./waf build_boehm_o
 
 
 pump:
