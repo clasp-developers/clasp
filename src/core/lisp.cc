@@ -411,6 +411,7 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
       if (trapIntern[nameStart] == ':') ++nameStart;
       this->_TrapInternPackage = trapIntern.substr(0, sep);
       this->_TrapInternName = trapIntern.substr(nameStart, 9999999);
+      printf("%s:%d  Trapping intern of %s:%s\n", __FILE__, __LINE__, this->_TrapInternPackage.c_str(),this->_TrapInternName.c_str());
     }
   }
   this->_Mode = FLAG_EXECUTE;
@@ -1177,23 +1178,6 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], bool compileInput
     _sym_STARcommandLineImageSTAR->defparameter(cl__pathname(Str_O::create(options._ImageFile)));
   } else {
     _sym_STARcommandLineImageSTAR->defparameter(core__startup_image_pathname());
-  }
-  {
-    this->_TrapIntern = false;
-    if (options._TrapIntern != "") {
-      this->_TrapIntern = true;
-      size_t sep = options._TrapIntern.find(':');
-      if (sep == string::npos) {
-        printf("You must provide a symbol name of the form PKG:NAME or PKG::NAME\n");
-        abort();
-      }
-      size_t nameStart = sep + 1;
-      if (options._TrapIntern[nameStart] == ':')
-        ++nameStart;
-      this->_TrapInternPackage = options._TrapIntern.substr(0, sep);
-      this->_TrapInternName = options._TrapIntern.substr(nameStart, 9999999);
-      printf("%s:%d Trapping INTERN of symbol %s in package %s\n", __FILE__, __LINE__, this->_TrapInternName.c_str(), this->_TrapInternPackage.c_str() );
-    }
   }
   LOG(BF("lisp->_ScriptInFile(%d)  lisp->_FileNameOrCode(%s)") % this->_ScriptInFile % this->_FileNameOrCode);
 }

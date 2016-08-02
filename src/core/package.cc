@@ -585,7 +585,7 @@ void Package_O::_export2(Symbol_sp sym) {
       if (status == kw::_sym_internal) {
         this->_InternalSymbols->remhash(nameKey);
       }
-      this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
+      this->add_symbol_to_package(nameKey,sym,true);
       error = no_problem;
     }
   } // TO HERE
@@ -618,7 +618,7 @@ bool Package_O::shadow(Str_sp symbolName) {
     shadowSym->makunbound();
     shadowSym->setPackage(this->sharedThis<Package_O>());
     LOG(BF("Created symbol<%s>") % _rep_(shadowSym));
-    this->add_symbol_to_package(shadowSym->symbolName()->get().c_str(), shadowSym);
+    this->add_symbol_to_package(shadowSym->symbolName(), shadowSym, false);
   }
   this->_Shadowing->setf_gethash(shadowSym, _lisp->_true());
   return true;
@@ -647,17 +647,18 @@ void trapSymbol(Package_O *pkg, Symbol_sp sym, const string &name) {
 #endif
 }
 
-void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp) {
+void Package_O::add_symbol_to_package(Str_sp nameKey, Symbol_sp sym, bool exportp) {
   //trapSymbol(this,sym,symName);
+//  printf("%s:%d add_symbol_to_package  symbol: %s package: %s\n", __FILE__, __LINE__, nameKey->c_str(), this->_Name.c_str());
   if (_lisp->_TrapIntern) {
     if (strcmp(this->_Name.c_str(), _lisp->_TrapInternPackage.c_str()) == 0) {
-      if (strcmp(symName, _lisp->_TrapInternName.c_str()) == 0) {
-        printf("%s:%d TRAPPED INTERN of symbol %s@%p in package %s\n", __FILE__, __LINE__, symName, sym.raw_(), this->_Name.c_str() );
+      if (strcmp(nameKey->c_str(), _lisp->_TrapInternName.c_str()) == 0) {
+        printf("%s:%d TRAPPED INTERN of symbol %s@%p in package %s\n", __FILE__, __LINE__, nameKey->c_str(), sym.raw_(), this->_Name.c_str() );
       }
     }
   }
 #if 0
-  if ( strcmp(symName,"POINTER") == 0 ) {
+  if ( strcmp(symName,"CLEAR-GFUN-CACHE") == 0 ) {
     printf("%s:%d Interning POINTER@%p in %s exportp: %d\n", __FILE__, __LINE__, sym.raw_(), this->_Name.c_str(), exportp );
   }
 #endif
@@ -667,15 +668,10 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
     printf("%s:%d Interning an internal symbol %s within COMMON-LISP\n", __FILE__, __LINE__, symName );
   }
 #endif
-  Str_sp nameKey = Str_O::create(symName);
   if (this->isKeywordPackage() || this->actsLikeKeywordPackage() || exportp) {
     this->_ExternalSymbols->hash_table_setf_gethash(nameKey, sym);
   } else {
     this->_InternalSymbols->hash_table_setf_gethash(nameKey, sym);
-  }
-  if (llvm_interface::addSymbol != NULL) {
-    DEPRECIATED();
-    llvm_interface::addSymbol(sym);
   }
 }
 
@@ -683,7 +679,8 @@ void Package_O::add_symbol_to_package(const char *symName, Symbol_sp sym, bool e
 
 
 void Package_O::bootstrap_add_symbol_to_package(const char *symName, Symbol_sp sym, bool exportp, bool shadowp) {
-  this->add_symbol_to_package(symName,sym,exportp);
+  Str_sp nameKey = Str_O::create(symName);
+  this->add_symbol_to_package(nameKey,sym,exportp);
   if ( shadowp ) {
     this->_Shadowing->setf_gethash(sym,_lisp->_true());
   }
@@ -699,7 +696,7 @@ T_mv Package_O::intern(Str_sp name) {
     status = _Nil<Symbol_O>();
     sym->setPackage(this->sharedThis<Package_O>());
     LOG(BF("Created symbol<%s>") % _rep_(sym));
-    this->add_symbol_to_package(sym->symbolName()->get().c_str(), sym);
+    this->add_symbol_to_package(sym->symbolName(), sym, false);
   }
   if (this->actsLikeKeywordPackage()) {
     sym->setf_symbolValue(sym);
@@ -783,7 +780,7 @@ void Package_O::import(List_sp symbols) {
     if (status == kw::_sym_external || status == kw::_sym_internal) {
       // do nothing
     } else if (status == kw::_sym_inherited || status.nilp()) {
-      this->_InternalSymbols->hash_table_setf_gethash(nameKey, symbolToImport);
+      this->add_symbol_to_package(nameKey,symbolToImport,false);
     } else {
       PACKAGE_ERROR(this->sharedThis<Package_O>());
     }
@@ -800,7 +797,7 @@ void Package_O::shadowingImport(List_sp symbols) {
     if (status == kw::_sym_internal || status == kw::_sym_external) {
       this->unintern(foundSymbol);
     }
-    this->_InternalSymbols->hash_table_setf_gethash(nameKey, symbolToImport);
+    this->add_symbol_to_package(nameKey,symbolToImport,false);
     this->_Shadowing->setf_gethash(symbolToImport, _lisp->_true());
   }
 }

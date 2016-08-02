@@ -1183,7 +1183,7 @@ Return files."
   (let ((*target-backend* (default-target-backend)))
     (if (out-of-date-bitcodes :init :all)
         (progn
-          (load-system :start :all :interp t )
+          (load-system :init :all :interp t ) ;; was :start
           (let ((files (out-of-date-bitcodes :init :all)))
             (compile-system files)
             (let ((cl-bitcode-pathname (build-common-lisp-bitcode-pathname))

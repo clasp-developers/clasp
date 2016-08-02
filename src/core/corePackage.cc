@@ -880,98 +880,6 @@ void CoreExposer_O::expose(core::Lisp_sp lisp, WhatToExpose what) const {
     break;
   }
 }
-#if 0
-gctools::tagged_pointer<CoreExposer> CoreExposer::create_core_packages_and_classes() {
-  BootStrapCoreSymbolMap bootStrapSymbolMap;
-
-  initialize_clasp();
-
-  // initialize classSymbol's only if they have not been done before
-  if (IS_SYMBOL_UNDEFINED(T_O::static_classSymbol())) {
-    _BLOCK_TRACE("Setting static classSymbols for core classes");
-
-//
-// The following will set the static_ClassSymbol to the Symbol created
-// by BootStrapCoreSymbolMap for each core class
-//
-    {
-      _BLOCK_TRACEF(BF("LOOKUP Symbol"));
-//      set_static_class_symbols(bootStrapSymbolMap);
-    }
-  } else {
-    THROW_HARD_ERROR(BF("You cannot initializes classes twice"));
-  }
-//
-// The following will create each class as an instance of
-// BuiltInClass or whatever was specified as its LISP_METACLASS,
-// it will also set its _WeakThis and _WeakLisp pointers
-// and set its InstanceClassSymbol variable
-// It will also put the Class instance into the Lisp class table
-#if 0
-#define CREATE_CLASS
-#define Use_CorePkg
-//#include <clasp/core/initClasses.h>
-#undef Use_CorePkg
-#endif
-#if 0
-    Package_sp commonLispPackage = cl::initialize_commonLispPackage();
-    initializeAllClSymbols(commonLispPackage);
-    Package_sp keywordPackage = kw::initialize_keywordPackage();
-#endif
-  //	ASSERT_lt(classesHandInitialized, get_nextGlobalClassSymbol())
-  //
-  // Define the base class for every hand initialized class
-  //
-  //	classObject->_DirectSuperClasses.clear();
-#if 0
-    {
-      _BLOCK_TRACEF(BF("Define base classes"));
-#define Use_CorePkg
-#define DEFINE_BASE_CLASSES
-//#include <clasp/core/initClasses.h>
-#undef Use_CorePkg
-        }
-    gctools::tagged_pointer<CoreExposer> coreExposerPtr = gctools::ClassAllocator<CoreExposer>::allocate_class(_lisp);
-    Package_sp corePackage = coreExposerPtr->package();
-    _lisp->_Roots._CorePackage = _lisp->findPackage(CorePkg);
-    _lisp->_Roots._KeywordPackage = _lisp->findPackage(KeywordPkg);
-    _lisp->_Roots._CommonLispPackage = _lisp->findPackage(ClPkg);
-#endif
-//  ext::initialize_extensionPackage();
-//  comp::initialize_compPackage();
-//  clos::initialize_closPackage();
-//  cleavirPrimops::initialize_cleavirPrimopsPackage();
-//  cleavirEnv::initialize_cleavirEnvPackage();
-//  gray::initialize_grayPackage();
-//  cluser::initialize_commonLispUserPackage();
-//  {
-//    _BLOCK_TRACEF(BF("Setup instance base classes for T_O"));
-//    T_O::___staticClass->setInstanceBaseClasses(_Nil<T_O>());
-//  }
-#if 0
-    {
-      _BLOCK_TRACEF(BF("Define class names"));
-#define DEFINE_CLASS_NAMES
-      string NSPkg = CorePkg;
-#define Use_CorePkg
-//#include <clasp/core/initClasses.h>
-#undef Use_CorePkg
-    };
-#endif
-  //
-  // Finish setting up the symbols
-  //
-//  bootStrapSymbolMap.finish_setup_of_symbols();
-#if 0
-    reg::lisp_registerClassSymbol<Character_I>(cl::_sym_character);
-    reg::lisp_registerClassSymbol<Fixnum_I>(cl::_sym_fixnum);
-    reg::lisp_registerClassSymbol<SingleFloat_I>(cl::_sym_single_float);
-#endif
-//    return coreExposerPtr;
-}
-#endif
-
-
   
 void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   {
@@ -1000,7 +908,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
   cl::_sym_nil->makeSpecial();
   cl::_sym_nil->exportYourself();
-  _lisp->commonLispPackage()->add_symbol_to_package("NIL", _Nil<Symbol_O>(), true);
+  _lisp->commonLispPackage()->add_symbol_to_package(Str_O::create("NIL"), _Nil<Symbol_O>(), true);
 #endif
   _lisp->_Roots._TrueObject = cl::_sym_T_O;
   cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
