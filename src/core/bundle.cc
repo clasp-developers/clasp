@@ -68,6 +68,7 @@ struct BundleDirectories {
 };
 
 Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
+  printf("%s:%d ---------- Initializing Bundle\n", __FILE__, __LINE__);
   this->_Initialized = false;
   this->_Directories = NULL;
   bool verbose = false;
@@ -77,6 +78,9 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
   this->_Directories = new BundleDirectories();
   this->initializeStartupWorkingDirectory(verbose);
   bf::path appDir;
+  if (verbose) {
+    printf("%s:%d Bundle appDirName = %s\n", __FILE__, __LINE__, appDirName.c_str() );
+  }
   if (appDirName.size() == 0) {
     pid_t pid = getpid();
 #ifdef _TARGET_OS_DARWIN

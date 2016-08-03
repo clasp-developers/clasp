@@ -663,6 +663,7 @@ def build(bld):
             bld.add_to_group(dsymutil_cclasp)
             bld.install_files('${PREFIX}/%s/%s'%(executable_dir,cclasp_dsym.name),cclasp_dsym_files,relative_trick=True,cwd=cclasp_dsym)
         bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod=Utils.O755)
+        bld.symlink_as('${PREFIX}/%s/cclasp' % executable_dir, '%s' % cclasp_executable.name)
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), cclasp_common_lisp_bitcode)
         cmp_addons = compile_addons(env=bld.env)
@@ -671,7 +672,6 @@ def build(bld):
         cmp_addons.set_outputs(asdf_fasl)
         bld.add_to_group(cmp_addons)
         bld.install_as('${PREFIX}/Contents/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl'%variant.fasl_dir(stage="c"),asdf_fasl)
-
 
 from waflib import TaskGen
 from waflib import Task
@@ -765,7 +765,9 @@ class compile_cclasp(Task.Task):
 class recompile_cclasp(Task.Task):
     def run(self):
         print("In recompile_cclasp -> %s" % self.outputs[0].abspath())
-        cmd = 'cclasp -f debug-run-clang -N -e "(recompile-cclasp :link-type :bc)" -e "(quit)"'
+#        cclasp_exe = self.bld.find_program("cclasp")
+#        print("cclasp_exe = %s"%cclasp_exe)
+        cmd = 'cclasp -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
