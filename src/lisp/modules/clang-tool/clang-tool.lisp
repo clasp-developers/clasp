@@ -668,7 +668,7 @@ Select a subset (or all) source file names from the compilation database and ret
   (let* ((nodes (ast-tooling:nodes match))
          (id-to-node-map (ast-tooling:idto-node-map nodes))
          (node (gethash *match-dump-tag* id-to-node-map))
-         (context (context match))
+         (context (match-result-context match))
          (source-manager (ast-tooling:source-manager match))
          (lang-options (get-lang-opts context))
          (begin (get-loc-start node))
@@ -727,11 +727,11 @@ Select a subset (or all) source file names from the compilation database and ret
   (setf *on-end-translation-unit-depth* 0)
   (incf *on-start-translation-unit-depth*)
   (when (= *on-start-translation-unit-depth* 1)
-    (format t "on-start-of-translation-unit for file ~a of ~a~%" *current-file-index* *number-of-files*)
+    (format t "In on-start-of-translation-unit for file ~a of ~a~%" *current-file-index* *number-of-files*)
     (incf *current-file-index*)
     (when (slot-boundp self 'start-of-translation-unit-code)
       (assert (start-of-translation-unit-code self))
-      (funcall (start-of-translation-unit-code self)))))
+c      (funcall (start-of-translation-unit-code self)))))
 
 (core:defvirtual ast-tooling:on-end-of-translation-unit ((self code-match-callback))
   (setf *on-start-translation-unit-depth* 0)
@@ -743,10 +743,11 @@ Select a subset (or all) source file names from the compilation database and ret
       (funcall (end-of-translation-unit-code self)))))
 
 (core:defvirtual ast-tooling:run ((self code-match-callback) match)
+  (format t "In ast-tooling:run callback~%")
   (let* ((nodes (ast-tooling:nodes match))
          (match-info (make-instance 'match-info
                                     :id-to-node-map (ast-tooling:idto-node-map nodes)
-                                    :ast-context (context match)
+                                    :ast-context (match-result-context match)
                                     :source-manager (ast-tooling:source-manager match))))
     (when (match-code self)
       (start-timer (timer self))
@@ -786,7 +787,7 @@ Return true if the node describes source code that matches source-loc-match-call
          (source-manager (ast-tooling:source-manager match))
          (match-info (make-instance 'match-info
                                     :id-to-node-map id-to-node-map
-                                    :ast-context (context match)
+                                    :ast-context (match-result-context match)
                                     :source-manager (ast-tooling:source-manager match))))
     (when (source-loc-equal match-info self node)
       (when (match-code self)
