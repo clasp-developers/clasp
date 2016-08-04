@@ -1027,25 +1027,15 @@ Return files."
          (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
 
-#+(or)
-(progn
-  (defun link-system (start end &key (system *system-files*))
-    #+dbg-print(bformat t "DBG-PRINT About to link-system\n")
-    (let ((bitcode-files (mapcar #'(lambda (x) (build-pathname (entry-filename x) :bc)) (select-source-files end :first-file start :system system))))
-      (cmp:llvm-link (build-pathname +image-pathname+ :executable)
-                     :lisp-bitcode-files bitcode-files
-                     :link-type :executable)))
-  (export '(link-system)))
-        
-(defvar *plugin-startup-loads* nil)
-(export 'process-plugin-loads)
-(defun process-plugin-loads ()
-  (if (not (member :ignore-plugins *features*))
+(defvar *extension-startup-loads* nil)
+(export 'process-extension-loads)
+(defun process-extension-loads ()
+  (if (not (member :ignore-extensions *features*))
       (mapcar #'(lambda (entry)
                   (if (eq (car entry) 'cl:load)
                       (load (cadr entry))
                       (eval (read-from-string (cdr entry)))))
-              core:*plugin-startup-loads*)))
+              core:*extension-startup-loads*)))
 
 (export 'process-command-line-load-eval-sequence)
 (defun process-command-line-load-eval-sequence ()
