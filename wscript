@@ -695,7 +695,7 @@ class dsymutil(Task.Task):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -I -f ecl-min -f debug-run-clang -N -e "(compile-aclasp :link-type :bc)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -I -f ecl-min -f clasp-builder -f debug-run-clang -N -e "(compile-aclasp :link-type :bc)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -741,7 +741,7 @@ class link_executable(Task.Task):
 class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -i %s -N -f debug-run-clang -e "(compile-bclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -N -f clasp-builder -f debug-run-clang -e "(compile-bclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -753,7 +753,7 @@ class compile_bclasp(Task.Task):
 class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -i %s -f debug-run-clang -N -e "(compile-cclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = '%s -i %s -f clasp-builder -f debug-run-clang -N -e "(compile-cclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -767,7 +767,7 @@ class recompile_cclasp(Task.Task):
         print("In recompile_cclasp -> %s" % self.outputs[0].abspath())
 #        cclasp_exe = self.bld.find_program("cclasp")
 #        print("cclasp_exe = %s"%cclasp_exe)
-        cmd = 'cclasp -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
+        cmd = 'cclasp -f clasp-builder -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -780,7 +780,7 @@ class recompile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -f ignore-extensions -f debug-run-clang -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = '%s -f ignore-extensions -f clasp-builder -f debug-run-clang -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
