@@ -173,7 +173,6 @@ const char *CorePkg_nicknames[] = {
 
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
-SYMBOL_EXPORT_SC_(CorePkg,fiddle_faddle);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
 SYMBOL_EXPORT_SC_(CorePkg,_PLUS_known_typep_predicates_PLUS_);
 SYMBOL_EXPORT_SC_(ExtPkg,check_arguments_type);

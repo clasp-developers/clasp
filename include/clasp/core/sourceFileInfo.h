@@ -155,7 +155,7 @@ struct gctools::GCInfo<core::SourcePosInfo_O> {
 
 namespace core {
 class SourceManager_O : public General_O {
-  LISP_CLASS(core, CorePkg, SourceManager_O, "SourceManager",General_O);
+  LISP_CLASS(core, CorePkg, SourceManager_O, "ClaspSourceManager",General_O);
   void initialize();
 
 public: // ctor/dtor for classes with shared virtual base

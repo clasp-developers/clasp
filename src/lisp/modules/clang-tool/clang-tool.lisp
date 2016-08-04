@@ -11,6 +11,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 (defpackage #:clang-tool
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
+  (:shadow #:dump #:get-string #:size #:type #:source-manager)
   (:export
    #:with-compilation-tool-database
    #:match-in-compilation-tool-database-source-tree
@@ -48,7 +49,8 @@ Find directories that look like them and replace the ones defined in the constan
    #:sub-match-run
    #:cform-matcher
    #:*print-reports*
-   #:load-asts))
+   #:load-asts
+   #:type))
 
 (in-package :clang-tool)
 

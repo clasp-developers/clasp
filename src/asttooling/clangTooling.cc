@@ -563,8 +563,8 @@ SYMBOL_EXPORT_SC_(AstToolingPkg, VisitDecl);
 SYMBOL_EXPORT_SC_(AstToolingPkg, VisitType);
 SYMBOL_EXPORT_SC_(AstToolingPkg, HandleTranslationUnit);
 SYMBOL_EXPORT_SC_(AstToolingPkg, CreateASTConsumer);
-SYMBOL_EXPORT_SC_(AstToolingPkg, create);
 SYMBOL_EXPORT_SC_(AstToolingPkg, run);
+SYMBOL_EXPORT_SC_(AstToolingPkg, create);
 SYMBOL_EXPORT_SC_(AstToolingPkg, onStartOfTranslationUnit);
 SYMBOL_EXPORT_SC_(AstToolingPkg, onEndOfTranslationUnit);
 };
@@ -844,7 +844,7 @@ void initialize_clangTooling() {
      class_<clang::tooling::Replacement>("Replacement", no_default_constructor)
      .def_constructor("newReplacement", constructor<clang::SourceManager &, const clang::CharSourceRange &, StringRef>())
      .def("toString", &clang::tooling::Replacement::toString)
-     .def("apply", &clang::tooling::Replacement::apply),
+     .def("replacement-apply", &clang::tooling::Replacement::apply),
      class_<clang::tooling::Range>("Range", no_default_constructor),
      class_<clang::tooling::Replacements>("Replacements", no_default_constructor),
      def("Replacements-insert", &ast_tooling__Replacements_insert) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
@@ -865,7 +865,7 @@ void initialize_clangTooling() {
      class_<clang::tooling::FrontendActionFactory, clang::tooling::ToolAction>("Clang-FrontendActionFactory", no_default_constructor),
      def("newFrontendActionFactory", &ast_tooling__newFrontendActionFactory),
      derivable_class_<DerivableFrontendActionFactory, clang::tooling::FrontendActionFactory>("FrontendActionFactory")
-     .def("create", &DerivableFrontendActionFactory::default_create),
+     .def("derivable-frontend-action-factory-create", &DerivableFrontendActionFactory::default_create),
      class_<clang::tooling::ArgumentsAdjuster>("ArgumentsAdjuster", no_default_constructor),
      def("getClangSyntaxOnlyAdjuster", &clang::tooling::getClangSyntaxOnlyAdjuster),
      def("getClangStripOutputAdjuster", &clang::tooling::getClangStripOutputAdjuster)
@@ -906,7 +906,7 @@ void initialize_clangTooling() {
      .def("onEndOfTranslationUnit", &DerivableMatchCallback::default_onEndOfTranslationUnit),
      class_<clang::ast_matchers::MatchFinderMatchResult>("MatchResult", no_default_constructor)
      .def("Nodes", &clang::ast_matchers::MatchFinderMatchResult::getNodes)
-     .def("Context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
+     .def("match-result-context", &clang::ast_matchers::MatchFinderMatchResult::getContext)
      .def("SourceManager", &clang::ast_matchers::MatchFinderMatchResult::getSourceManager)
     //            .  property("Nodes",&clang::ast_matchers::MatchFinderMatchResult::Nodes)
     //            .  property("Context",&clang::ast_matchers::MatchFinderMatchResult::Context)

@@ -1,3 +1,4 @@
+
 (require :clasp-analyzer)
 (time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database #P"lib:compile_commands.json")))
 (print "Testing")

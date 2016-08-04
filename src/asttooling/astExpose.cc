@@ -1201,15 +1201,15 @@ void initialize_astExpose() {
         .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
         .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)[
-      value("Type", clang::TemplateArgument::ArgKind::Type),
-      value("Null", clang::TemplateArgument::ArgKind::Null),
-      value("Declaration", clang::TemplateArgument::ArgKind::Declaration),
-      value("NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
-      value("Integral", clang::TemplateArgument::ArgKind::Integral),
-      value("Template", clang::TemplateArgument::ArgKind::Template),
-      value("TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
-      value("Expression", clang::TemplateArgument::ArgKind::Expression),
-      value("Pack", clang::TemplateArgument::ArgKind::Pack)
+      value("argkind-Type", clang::TemplateArgument::ArgKind::Type),
+      value("argkind-Null", clang::TemplateArgument::ArgKind::Null),
+      value("argkind-Declaration", clang::TemplateArgument::ArgKind::Declaration),
+      value("argkind-NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
+      value("argkind-Integral", clang::TemplateArgument::ArgKind::Integral),
+      value("argkind-Template", clang::TemplateArgument::ArgKind::Template),
+      value("argkind-TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
+      value("argkind-Expression", clang::TemplateArgument::ArgKind::Expression),
+      value("argkind-Pack", clang::TemplateArgument::ArgKind::Pack)
     ],
     class_<clang::TemplateName>("TemplateName", no_default_constructor)
         .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl),

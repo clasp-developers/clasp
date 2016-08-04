@@ -142,6 +142,7 @@ public:
   }
 };
 
+
 class DerivableFrontendActionFactory : public clbind::Derivable<clang::tooling::FrontendActionFactory> {
   typedef clang::tooling::FrontendActionFactory Base;
 

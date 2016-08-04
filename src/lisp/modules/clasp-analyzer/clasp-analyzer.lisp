@@ -2,6 +2,7 @@
 
 (defpackage #:clasp-analyzer
   (:use #:common-lisp #:core #:ast-tooling #:clang-ast)
+  (:shadow #:dump #:get-string #:size #:type)
   (:export
    #:setup-clasp-analyzer-compilation-tool-database
    #:search/generate-code
@@ -847,22 +848,21 @@ Generate offsets for every array element that exposes the fields in elements."
 (defun template-arg-as-string (template-arg)
   (let* ((template-arg-kind (cast:get-kind template-arg)))
     (case template-arg-kind
-      (ast-tooling:type
+      (ast-tooling:argkind-type
 ;;       (cast:get-as-string (cast:get-as-type template-arg))
-       (record-key (cast:get-type-ptr-or-null (cast:get-as-type template-arg)))
-       )
-      (ast-tooling:integral
+       (record-key (cast:get-type-ptr-or-null (cast:get-as-type template-arg))))
+      (ast-tooling:argkind-integral
        (llvm:to-string (cast:get-as-integral template-arg) 10 t))
-      (ast-tooling:pack
+      (ast-tooling:argkind-pack
        (let ((pack-size (cast:pack-size template-arg)))
          (if (eql pack-size 0)
              ""
              (format nil "TEMPLATE_ARG_PACK_SIZE~a" pack-size))))
-      (ast-tooling:template
+      (ast-tooling:argkind-template
        "TEMPLATE_ARG_AS_STRING::TEMPLATE")
-      (ast-tooling:expression
+      (ast-tooling:argkind-expression
        "TEMPLATE_ARG_AS_STRING::EXPRESSION")
-      (ast-tooling:declaration
+      (ast-tooling:argkind-declaration
        "TEMPLATE_ARG_AS_STRING::DECLARATION")
       (otherwise
        (error "Add support for template-arg-as-string of kind: ~a" template-arg-kind)))))
@@ -926,7 +926,7 @@ This avoids the prefixing of 'class ' and 'struct ' to the names of classes and 
              (template-arg-kind (cast:get-kind arg))
              classified)
         (case template-arg-kind
-          (ast-tooling:type
+          (ast-tooling:argkind-type
            (let* ((qtarg (cast:get-as-type arg))
                   (tsty-new (cast:get-type-ptr-or-null qtarg)))
              (gclog "classify-template-arg: ~a~%" (cast:get-as-string qtarg))
