@@ -210,6 +210,7 @@ and wraps it in an flet |#
             ;; are inserted to communicate the class of the method's
             ;; arguments to the code walk.
             `(lambda ,lambda-list
+               #+clasp(declare (core:lambda-name '(:method ,name ,specializers)))
                ,@(and class-declarations `((declare ,@class-declarations)))
                ,(if copied-variables
                     `(let* ,copied-variables ,block)
