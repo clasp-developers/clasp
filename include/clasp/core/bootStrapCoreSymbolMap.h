@@ -73,7 +73,7 @@ public:
   
   NOINLINE Symbol_sp maybe_allocate_unique_symbol(string const &pkgName, string const &symbolName, bool exportp = false, bool shadowp = false);
 
-  bool lookupSymbol(string const &packageName, string const &symbolName, SymbolStorage& symbolStorage, bool recursivep=false) const;
+  bool find_symbol(string const &packageName, string const &symbolName, SymbolStorage& symbolStorage, bool recursivep=false) const;
 
   void dump();
 };

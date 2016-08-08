@@ -760,10 +760,14 @@ void set_one_static_class_symbol(core::BootStrapCoreSymbolMap* symbols, const st
   symbol_part = core::lispify_symbol_name(orig_symbol_part);
 //  printf("%s:%d set_one_static_class_symbol --> %s:%s\n", __FILE__, __LINE__, package_part.c_str(), symbol_part.c_str() );
   core::SymbolStorage store;
-  bool found =  symbols->lookupSymbol(package_part,symbol_part, store );
+  bool found =  symbols->find_symbol(package_part,symbol_part, store );
   if ( !found ) {
     printf("%s:%d ERROR!!!! The static class symbol %s was not found orig_symbol_part=|%s| symbol_part=|%s|!\n", __FILE__, __LINE__, full_name.c_str(), orig_symbol_part.c_str(), symbol_part.c_str() );
     abort();
+  }
+  if (store._PackageName != package_part) {
+    printf("%s:%d For symbol %s there is a mismatch in the package desired %s and the one retrieved %s\n", __FILE__, __LINE__, full_name.c_str(), package_part.c_str(), store._PackageName.c_str());
+    SIMPLE_ERROR(BF("Mismatch of package when setting a class symbol"));
   }
   TheClass::set_static_class_symbol(store._Symbol);
 }

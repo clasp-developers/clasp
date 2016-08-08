@@ -242,14 +242,23 @@ CL_DEFUN T_mv cl__import(T_sp symbols_desig, T_sp package_desig) {
 }
 
 CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
-CL_DECLARE();
 CL_DOCSTRING("See CLHS: shadow");
-CL_DEFUN T_mv cl__shadow(List_sp symbol_names_desig, T_sp package_desig) {
+CL_DEFUN T_mv cl__shadow(T_sp symbol_names_desig, T_sp package_desig) {
   List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
   Package_sp package = coerce::packageDesignator(package_desig);
   package->shadow(symbolNames);
   return (Values(_lisp->_true()));
 }
+
+CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
+CL_DOCSTRING("This was my old CL:SHADOW function - if called with (core:broken-shadow \"FOO\" :bar) will signal an error but the wrong one.  I need to debug why when passing a string to a function that expects a list the error generates a second error");
+CL_DEFUN T_mv core__broken_shadow(List_sp symbol_names_desig, T_sp package_desig) {
+  List_sp symbolNames = coerce::listOfStringDesignators(symbol_names_desig);
+  Package_sp package = coerce::packageDesignator(package_desig);
+  package->shadow(symbolNames);
+  return (Values(_lisp->_true()));
+}
+
 
 CL_LAMBDA(symbol-names-desig &optional (package-desig *package*));
 CL_DECLARE();
@@ -625,7 +634,6 @@ bool Package_O::shadow(Str_sp symbolName) {
 }
 
 bool Package_O::shadow(List_sp symbolNames) {
-  _OF();
   for (auto cur : symbolNames) {
     Str_sp name = gc::As<Str_sp>(oCar(cur));
     this->shadow(name);
