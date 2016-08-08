@@ -3110,6 +3110,7 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
        (format stream "#endif // defined(GC_~a_TABLE)~%" ,table-name))))
 
 (defun generate-code (analysis &key test )
+  (format t "About to generate code~%")
   (let ((filename (if test
                       "test_clasp_gc"
                     "clasp_gc")))
@@ -3355,14 +3356,14 @@ Two files (mps.c and gc_interface.cc) are removed from the list of files that cl
 If the source location of a match contains the string source-path-identifier then that match is processed."
   (let* ((compilation-tool-database (clang-tool:load-compilation-tool-database
                                      pathname
-                                     :convert-relative-includes-to-absolute t
+                                     :convert-relative-includes-to-absolute nil
                                      :source-path-identifier source-path-identifier))
          (source-filenames (clang-tool:select-source-namestrings compilation-tool-database selection-pattern))
          (regex-mps-dot-c (core:make-regex ".*mps\.c$"))
          (removed-mps-dot-c (remove-if #'(lambda (x) (core:regex-matches regex-mps-dot-c x)) source-filenames))
-         (regex-gc_interface (core:make-regex ".gc_interface\.cc$"))
-         (removed-gc_interface (remove-if (lambda (x) (core:regex-matches regex-gc_interface x)) removed-mps-dot-c)))
-    (setf (clang-tool:source-namestrings compilation-tool-database) removed-gc_interface)
+         (final-list removed-mps-dot-c))
+    (format t "Searching list of files: ~a~%" final-list)
+    (setf (clang-tool:source-namestrings compilation-tool-database) final-list)
     (push #'translate-include (clang-tool:arguments-adjuster-list compilation-tool-database))
     (when arguments-adjuster (push arguments-adjuster (clang-tool:arguments-adjuster-list compilation-tool-database)))
     compilation-tool-database))
