@@ -24,6 +24,7 @@
 #define INTERN_(ns,name) BEGIN_TAG SYMBOL_INTERN ( :FILE __FILE__ :LINE __LINE__ :NAMESPACE #ns :NAME #name )
 #define PACKAGE_USE(name_str) BEGIN_TAG PACKAGE_USE_TAG ( :FILE __FILE__ :LINE __LINE__ :NAME name_str)
 #define PACKAGE_NICKNAME(name_str) BEGIN_TAG PACKAGE_NICKNAME_TAG ( :FILE __FILE__ :LINE __LINE__ :NAME name_str)
+#define PACKAGE_SHADOW(name_str) BEGIN_TAG PACKAGE_SHADOW_TAG ( :FILE __FILE__ :LINE __LINE__ :NAME name_str)
 #define NAMESPACE_PACKAGE_ASSOCIATION(ns,pkg,pkgname) BEGIN_TAG NAMESPACE_PACKAGE_ASSOCIATION_TAG ( :FILE __FILE__ :LINE __LINE__ :NAMESPACE #ns :PACKAGE #pkg :PACKAGE-NAME pkgname )
 #define LISP_META_CLASS(...) BEGIN_TAG META_CLASS_TAG ( :FILE __FILE__ :LINE __LINE__ :META-CLASS  #__VA_ARGS__ )
 #define LISP_CLASS(n,p,c,s,b) BEGIN_TAG LISP_CLASS_TAG ( :FILE __FILE__ :LINE __LINE__ :NAMESPACE #n :PACKAGE #p :CLASS #c :CLASS-SYMBOL s :BASE #b) \
@@ -55,6 +56,7 @@
 #define INTERN_(ns,name) (ns::_sym_##name)
 #define PACKAGE_USE(name_str)
 #define PACKAGE_NICKNAME(name_str)
+#define PACKAGE_SHADOW(name_str)
 #define NAMESPACE_PACKAGE_ASSOCIATION(x, y, z) \
   static const std::string y = z;              \
   namespace x {                                \
