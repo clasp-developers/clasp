@@ -224,7 +224,7 @@ and wraps it in an flet |#
     (multiple-value-bind (declarations body doc)
         (process-declarations (cddr method-lambda) t) ; We expect docstring
       (values `(lambda (.method-args. .next-methods. ,@(cadr method-lambda))
-                 (declare ,@declarations)
+                 (declare (core:lambda-name make-method-lambda.lambda) ,@declarations)
                  ,doc
                  (flet (,@(and call-next-method-p
                                `((call-next-method (&rest args)
