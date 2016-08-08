@@ -29,6 +29,7 @@
    (line% :initarg :line% :accessor line%)
    (character-offset% :initarg :character-offset% :accessor character-offset%)
    (packages-to-use% :initarg :packages-to-use% :accessor packages-to-use%)
+   (shadow% :initarg :shadow% :accessor shadow%)
    (nicknames% :initarg :nicknames% :accessor nicknames%)))
 
 (defclass function-mixin ()
@@ -181,6 +182,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
         cur-declare
         cur-package-nickname-tags
         cur-package-use-tags
+        cur-package-shadow-tags
         cur-namespace-tag
         cur-class
         cur-meta-class
@@ -210,11 +212,13 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                      :character-offset% (tags:character-offset% tag)
                                      :name% (tags:package-str% tag)
                                      :packages-to-use% (mapcar (lambda (x) (tags:name% x)) cur-package-use-tags)
+                                     :shadow% (mapcar (lambda (x) (tags:name% x)) cur-package-shadow-tags)
                                      :nicknames% (mapcar (lambda (x) (tags:name% x)) cur-package-nickname-tags))
                       packages-to-create
                       :test #'string=
                       :key (lambda (x) (name% x)))
              (setf cur-package-use-tags nil
+                   cur-package-shadow-tags nil
                    cur-package-nickname-tags nil))
             (tags:namespace-tag
              (setf cur-namespace-tag tag))
@@ -236,6 +240,8 @@ If override-name-tag is not nil then return its value, otherwise return name"
              (push tag cur-package-nickname-tags))
             (tags:package-use-tag
              (push tag cur-package-use-tags))
+            (tags:package-shadow-tag
+             (push tag cur-package-shadow-tags))
             (tags:expose-internal-function-tag
              (error-if-bad-expose-info-setup tag
                                              cur-name
