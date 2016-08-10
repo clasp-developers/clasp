@@ -332,7 +332,7 @@ CL_DEFUN T_sp core__startup_image_pathname() {
 };
 
 
-  
+
 CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("loadBundle");
@@ -451,25 +451,21 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
 }
 #endif
 
-CL_LAMBDA(pathDesig);
-CL_DECLARE();
 CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
-  string lib_extension = ".dylib";
   int mode = RTLD_NOW | RTLD_LOCAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
   string ts0 = path->asString();
+  dlerror(); // clear any previous error
   void *handle = dlopen(ts0.c_str(), mode);
   if (!handle) {
-    printf("%s:%d Could not open %s  error: %s\n", __FILE__, __LINE__, ts0.c_str(), dlerror());
     string error = dlerror();
+    printf("%s:%d Could not open %s  error: %s\n", __FILE__, __LINE__, ts0.c_str(), error.c_str());
     return (Values(_Nil<T_O>(), Str_O::create(error)));
   }
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
-CL_LAMBDA(name &optional (handle :rtld-default));
-CL_DECLARE();
 CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   void *handle = NULL;
@@ -506,16 +502,12 @@ CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   return Pointer_O::create(ptr);
 }
 
-CL_LAMBDA(addr);
-CL_DECLARE();
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
   (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
 }
 
-CL_LAMBDA(addr);
-CL_DECLARE();
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
 CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   uint64_t val = clasp_to_uint64(addr);
@@ -779,7 +771,7 @@ void allocateStackFrame5() {
   STACK_FRAME(buff, frame, 5);
 }
 #endif
- 
+
 Cons_sp consList5() {
   T_sp val = _Nil<T_O>();
   return Cons_O::createList(val, val, val, val, val);
@@ -815,7 +807,7 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
   int val = 0;
   for (int i = 0; i < 5; ++i)
     frame1[i] = make_fixnum(++val).raw_();
-  
+
   ALLOC_STACK_VALUE_FRAME(frameImpl2, frame2, 5);
   frame::SetParentFrame(frame2, frame1);
   T_O **values2 = frame::ValuesArray(frame1);
@@ -1251,6 +1243,3 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 }
 
 }; /* namespace */
-
-
-        

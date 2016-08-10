@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#if defined(__CLASP_CORE_EXTERNAL_OBJECT_H__)
+#if !defined(__CLASP_CORE_EXTERNAL_OBJECT_H__)
 #define __CLASP_CORE_EXTERNAL_OBJECT_H__ __FILE__" $Id"
 
 #include <clasp/core/foundation.h>
@@ -34,10 +34,16 @@ THE SOFTWARE.
 
 namespace core {
 
+  typedef enum {
+    None = 0,
+    DeleteOnDtor = 1,
+    Copyable = 2,
+  } ForeignDataFlagEnum;
+
 // set this class up by hand
   SMART(ExternalObject);
   class ExternalObject_O : public General_O {
-    LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject", General_O);
+    LISP_CLASS(core,CorePkg,ExternalObject_O,"ExternalObject",General_O);
 
   private:
     Class_sp _Class;

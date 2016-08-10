@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -145,6 +145,7 @@ typedef bool _Bool;
 #include <clasp/core/sharpEqualWrapper.h>
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/weakHashTable.h>
+#include <clasp/core/foreign_data.h> // frgo, 2016-08-09: ADDED
 #include <clasp/gctools/gc_boot.h>
 
 //#include <clasp/core/clc.h>
@@ -893,7 +894,7 @@ void initialize_clasp()
 
   MPS_LOG("initialize_clasp allocate_symbols");
   allocate_symbols(&bootStrapCoreSymbolMap);
-  
+
   MPS_LOG("initialize_clasp set_static_class_symbols");
   set_static_class_symbols(&bootStrapCoreSymbolMap);
 
@@ -903,7 +904,7 @@ void initialize_clasp()
     #include INIT_CLASSES_INC_H
   #endif
   #undef ALLOCATE_ALL_CLASSES
-  
+
   create_packages();
 
   bootStrapCoreSymbolMap.finish_setup_of_symbols();
@@ -927,7 +928,7 @@ void initialize_clasp()
   reg::lisp_registerClassSymbol<core::SingleFloat_I>(cl::_sym_single_float);
 
   initialize_enums();
-  
+
 // Moved to lisp.cc
 //  initialize_functions();
   // initialize methods???
@@ -940,4 +941,3 @@ extern "C" {
 #include C_WRAPPERS
 #endif
 };
-

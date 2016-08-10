@@ -37,12 +37,6 @@ THE SOFTWARE.
 
 // --- IMPLEMEMTATION NOTES ---
 //
-// THESE ARE ALREADY DEFINED IN FILE COMPILER.CC
-// SYMBOL_EXPORT_SC_(KeywordPkg, rtld_default);
-// SYMBOL_EXPORT_SC_(KeywordPkg, rtld_next);
-// SYMBOL_EXPORT_SC_(KeywordPkg, rtld_self);
-// SYMBOL_EXPORT_SC_(KeywordPkg, rtld_main_only);
-//
 // HOW-TO: Global symbol instantion with gc::Initializer's :
 //
 // 20:33:22	drmeister	Yeah, declare a function like:
@@ -77,8 +71,11 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
-#include <clasp/core/foreign_data.h>
+#include <clasp/core/compiler.h>
 #include <clasp/core/symbolTable.h>
+#include <clasp/core/foreign_data.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/str.h>
 #include <clasp/core/wrappers.h> // last include is wrappers.h
 
 // ---------------------------------------------------------------------------
@@ -155,8 +152,9 @@ void register_foreign_type_spec(const Symbol_sp lispSymbol,
                                 const size_t size,
                                 const size_t alignment,
                                 const std::string &cxxName) {
+
   foreign_type_spec_t foreign_type_spec = {lispSymbol,
-                                           Str_O::create(lispName.c_str()),
+                                           Str_O::create( lispName ),
                                            make_fixnum(size),
                                            make_fixnum(alignment),
                                            cxxName};
@@ -310,8 +308,8 @@ inline string ForeignData_O::__repr__() const {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void * ForeignData_O::externalObject(T_sp obj) const {
-  return this->w_raw_data;
+void * ForeignData_O::externalObject() const {
+  return this->m_raw_data;
 }
 
 // ---------------------------------------------------------------------------
@@ -345,7 +343,7 @@ void ForeignData_O::free() {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 CL_DOCSTRING("Allocate a chunk of memory for foreign-data");
-CL_DEFUN ForeignData_sp ForeignData_O::allocate_foreign_object(T_sp kind) {
+CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_object(T_sp kind) {
   GC_ALLOCATE(ForeignData_O, obj);
   Cons_sp ckind = gc::As<Cons_sp>(kind);
   ASSERTF(oCar(ckind) == cl::_sym_array || oCar(ckind) == kw::_sym_array, BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
@@ -357,7 +355,7 @@ CL_DEFUN ForeignData_sp ForeignData_O::allocate_foreign_object(T_sp kind) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFMETHOD void ForeignData_O::freeForeignObject() {
+CL_DEFMETHOD void ForeignData_O::PERCENTfree_foreign_object() {
   this->free();
 }
 
@@ -380,40 +378,48 @@ CL_DEFMETHOD void ForeignData_O::PERCENTfree_foreign_data() {
 // ---------------------------------------------------------------------------
 ForeignData_sp ForeignData_O::create(const cl_intptr_t address) {
   GC_ALLOCATE(ForeignData_O, self);
-  self->m_raw_data = (void *) address;
+  self->m_raw_data = reinterpret_cast<void *>( address );
   return self;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 CL_DEFUN ForeignData_sp ForeignData_O::PERCENTmake_pointer(T_sp address) {
-  return ForeignData_O::create( (gc::As<Integer_sp>( address ))->as_cl_intptr_t() );
+  return ForeignData_O::create( clasp_to_cl_intptr_t( gc::As<Integer_sp>( address )) );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 CL_DEFUN ForeignData_sp ForeignData_O::PERCENTmake_nullpointer() {
-  return PERCENTmake_pointer((const cl_intptr_t)0);
+  return ForeignData_O::create( (const cl_intptr_t) 0 );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 CL_DEFMETHOD ForeignData_sp ForeignData_O::PERCENTinc_pointer( Integer_sp offset) {
-  this->m_raw_data  = (void *) ((uint64_t) this->raw_data()) + (uint64_t) clasp_to_int( offset );
+  cl_intptr_t new_address = 0;
+  cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
+  cl_intptr_t offset_ = clasp_to_cl_intptr_t( offset );
+
+  new_address = raw_data_address + offset_;
+  this->m_raw_data  = reinterpret_cast<void *>( new_address );
+
   return this->asSmartPtr();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN Fixnum_sp core__PERCENTforeign_type_alignment(Symbol_sp atype) {
+CL_DOCSTRING("Return the memory alignment of a foreign type");
+CL_DEFUN core::Fixnum_sp core__PERCENTforeign_type_alignment(core::Symbol_sp atype) {
+
   Fixnum_sp result = nullptr;
 
   auto iterator = FOREIGN_TYPE_SPEC_TABLE.begin();
   auto it_end = FOREIGN_TYPE_SPEC_TABLE.end();
 
-  for (; iterator != it_end; iterator++) {
-    if (iterator->first == atype) {
-      result = iterator->second;
+  for ( ; iterator != it_end; iterator++ ) {
+    if ( iterator->lispSymbol->eql_( atype ) ) {
+      result = iterator->alignment;
       goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
     }
   }
@@ -428,15 +434,16 @@ RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN Fixnum_sp core__PERCENTforeign_type_size(Symbol_sp atype) {
+CL_DOCSTRING("Return the size of a foreign type");
+CL_DEFUN core::Fixnum_sp core__PERCENTforeign_type_size(core::Symbol_sp atype) {
   Fixnum_sp result = nullptr;
 
   auto iterator = FOREIGN_TYPE_SPEC_TABLE.begin();
   auto it_end = FOREIGN_TYPE_SPEC_TABLE.end();
 
   for (; iterator != it_end; iterator++) {
-    if (iterator->first == atype) {
-      result = iterator->second;
+    if ( iterator->lispSymbol->eql_( atype ) ) {
+      result = iterator->size;
       goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
     }
   }

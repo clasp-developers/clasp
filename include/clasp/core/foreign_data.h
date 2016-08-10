@@ -67,6 +67,8 @@ namespace core {
 //   CLASSES & METHODS & FUNCTIONS
 // ---------------------------------------------------------------------------
 
+  // CLASS ForeignData_O
+
   SMART(ForeignData);
 
   class ForeignData_O : public ExternalObject_O {
@@ -79,14 +81,8 @@ namespace core {
     virtual ~ForeignData_O(); // non-trivial
 
   // OVERLADED FUNCTIONS
-    void *externalObject();
-    bool eql_(T_sp obj);
-
-    static ForeignData_sp create(const cl_intptr_t address = 0);
-
-  // LISP EXPOSED CTORs
-    static ForeignData_sp PERCENTmake_pointer(T_sp address);
-    static ForeignData_sp PERCENTmake_nullpointer();
+    void *externalObject() const;
+    bool eql_(T_sp obj) const;
 
   // SLOT ACCESS
 
@@ -94,7 +90,7 @@ namespace core {
     const T_sp kind() { return m_kind; };
     const int ownership_flags() { return m_ownership_flags; };
     const void *orig_data_ptr() { return m_orig_data_ptr; };
-    const void *raw_data() { return m_raw_data; };
+    void *raw_data() { return m_raw_data; };
 
   // -- TRANSFORMING ACCESS --
     template <class T>
@@ -107,7 +103,14 @@ namespace core {
 
   // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
 
-  // static ForeignData_sp PERCENTallocate_foreign_object(T_sp kind);
+    static ForeignData_sp create(const cl_intptr_t address = 0);
+
+    static ForeignData_sp PERCENTmake_pointer(T_sp address);
+    static ForeignData_sp PERCENTmake_nullpointer();
+
+    static ForeignData_sp PERCENTallocate_foreign_object(T_sp kind);
+    void PERCENTfree_foreign_object();
+
     static ForeignData_sp PERCENTallocate_foreign_data(Integer_sp size);
     void PERCENTfree_foreign_data();
 
@@ -141,59 +144,19 @@ namespace core {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-  CL_DEFUN Fixnum_sp core__PERCENTforeign_type_alignment(Symbol_sp atype) {
-    Fixnum_sp result = nullptr;
-
-    auto iterator = FOREIGN_TYPE_SPEC_TABLE.begin();
-    auto it_end = FOREIGN_TYPE_SPEC_TABLE.end();
-
-    for (; iterator != it_end; iterator++) {
-      if (iterator->first == atype) {
-        result = iterator->second;
-        goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
-      }
-    }
-
-    SIMPLE_ERROR(BF("No foreign type alignment available for %s") % _rep_(atype));
-    return nullptr;
-
-  RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
-
-    return result;
-  }
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-  CL_DEFUN Fixnum_sp core__PERCENTforeign_type_size(Symbol_sp atype) {
-    Fixnum_sp result = nullptr;
-
-    auto iterator = FOREIGN_TYPE_SPEC_TABLE.begin();
-    auto it_end = FOREIGN_TYPE_SPEC_TABLE.end();
-
-    for (; iterator != it_end; iterator++) {
-      if (iterator->first == atype) {
-        result = iterator->second;
-        goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
-      }
-    }
-
-    SIMPLE_ERROR(BF("No foreign type size available for %s") % _rep_(atype));
-    return nullptr;
-
-  RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
-
-    return result;
-  }
+  // FOREIGN TYPE SIZE AND ALIGNMENT
+  Fixnum_sp core__PERCENTforeign_type_alignment(Symbol_sp atype);
+  Fixnum_sp core__PERCENTforeign_type_size(Symbol_sp atype);
 
 }; // namespace core
 
 // GC Policy Info for ForeignPataPtr_O imstances
-template <>
-struct gctools::GCInfo<core::ForeignData_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
+  template <>
+    struct gctools::GCInfo<core::ForeignData_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static GCInfo_policy constexpr Policy = normal;
+  };
 
 // ---------------------------------------------------------------------------
 //   END OF FILE
