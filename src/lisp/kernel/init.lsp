@@ -7,9 +7,9 @@
 
 #+(or)(setq *features* (cons :dbg-print *features*))
 (SYS:*MAKE-SPECIAL '*echo-repl-tpl-read*)
-(export '(*echo-repl-tpl-read* 
-          run-repl 
-          *load-current-source-file-info* 
+(export '(*echo-repl-tpl-read*
+          run-repl
+          *load-current-source-file-info*
           *load-current-linenumber*
           cons-car
           cons-cdr))
@@ -400,7 +400,7 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
           "a")))
 
 (defun build-target-dir (type &optional stage)
-  (let* ((stage (if stage 
+  (let* ((stage (if stage
                     stage
                     (default-target-stage)))
          (type-modified-host-suffix (build-configuration))
@@ -476,7 +476,7 @@ the stage, the +application-name+ and the +bitcode-name+"
         #+dbg-print(bformat t "DBG-PRINT build-pathname   result: %s\n" result)
         result))))
 (export '(build-pathname build-host))
-  
+
 (defun get-pathname-with-type (module &optional (type "lsp"))
   (error "Depreciated get-pathname-with-type")
   (cond
@@ -518,7 +518,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   (default-link-flags))
 (export 'link-flags)
 
-  
+
 (si:fset 'and
 	   #'(lambda (whole env)
 	       (let ((forms (cdr whole)))
@@ -598,7 +598,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun delete-init-file (entry &key (really-delete t) stage)
   (let* ((module (entry-filename entry))
-         (bitcode-path (build-pathname module :bc stage))) 
+         (bitcode-path (build-pathname module :bc stage)))
     (if (probe-file bitcode-path)
 	(if really-delete
 	    (progn
@@ -659,7 +659,7 @@ the stage, the +application-name+ and the +bitcode-name+"
        (bformat sout "%s " (namestring (build-pathname pn :lisp)))
        (if cur (go top)))
     (get-output-stream-string sout)))
-  
+
 (defun out-of-date-image (image source-files)
   (let* ((last-source (car (reverse source-files)))
          (last-bitcode (build-pathname (entry-filename last-source) :bc))
@@ -1027,7 +1027,9 @@ Return files."
          (bformat t "Starting %s ... loading image... it takes a few seconds\n" (lisp-implementation-version)))))
 
 
+(export '*extension-startup-loads*) ;; ADDED: frgo, 2016-08-10
 (defvar *extension-startup-loads* nil)
+
 (export 'process-extension-loads)
 (defun process-extension-loads ()
   (if (not (member :ignore-extensions *features*))
@@ -1043,7 +1045,7 @@ Return files."
               (if (eq (car entry) :load)
                   (load (cdr entry))
                 (eval (read-from-string (cdr entry)))))
-          core::*command-line-load-eval-sequence*)) 
+          core::*command-line-load-eval-sequence*))
 
 (defun load-clasprc ()
   "Load the users startup code"
@@ -1135,7 +1137,7 @@ Return files."
 	(load-clasprc)
 	(core:top-level))
       (core:low-level-repl)))
-  
+
 #-(or aclasp bclasp cclasp)
 (eval-when (:execute)
   (process-command-line-load-eval-sequence)

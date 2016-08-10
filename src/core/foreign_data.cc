@@ -103,16 +103,15 @@ static void register_foreign_type_spec(const Symbol_sp lispSymbol,
 //   TYPE DEFINTITIONS
 // ---------------------------------------------------------------------------
 
-typedef struct {
+using foreign_type_spec_t = struct {
   Symbol_sp lispSymbol;
   Str_sp lispName;
   Fixnum_sp size;
   Integer_sp alignment;
   string cxxName;
+};
 
-} foreign_type_spec_t;
-
-typedef std::vector<core::foreign_type_spec_t> foreign_type_spec_table_t;
+using foreign_type_spec_table_t = std::vector<core::foreign_type_spec_t>;
 
 template <class T>
 struct register_foreign_type {
