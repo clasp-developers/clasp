@@ -30,6 +30,9 @@
 (defclass tags:package-use-tag (tag)
   ((name% :initform nil :initarg :name% :accessor name%)))
 
+(defclass tags:package-shadow-tag (tag)
+  ((name% :initform nil :initarg :name% :accessor name%)))
+
 (defclass tags:package-nickname-tag (tag)
   ((name% :initform nil :initarg :name% :accessor name%)))
 
@@ -341,6 +344,13 @@
                    #'(lambda (bufs)
                        (let* ((plist (read (cscrape:buffer-stream bufs))))
                          (make-instance 'tags:package-use-tag
+                                        :file% (getf plist :file)
+                                        :line% (getf plist :line)
+                                        :name% (getf plist :name)))))
+  (add-tag-handler *tag-handlers* 'package-shadow-tag "PACKAGE_SHADOW_TAG"
+                   #'(lambda (bufs)
+                       (let* ((plist (read (cscrape:buffer-stream bufs))))
+                         (make-instance 'tags:package-shadow-tag
                                         :file% (getf plist :file)
                                         :line% (getf plist :line)
                                         :name% (getf plist :name)))))

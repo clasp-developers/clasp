@@ -416,6 +416,7 @@ def configure(cfg):
     clasp_gc_filename = "clasp_gc.cc"
     if (len(cfg.extensions_names)>0):
         clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
+    print("clasp_gc_filename = %s"%clasp_gc_filename)
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
     link_flag = "-L%s" % llvm_release_lib_dir
     print("link_flag = %s" % link_flag )

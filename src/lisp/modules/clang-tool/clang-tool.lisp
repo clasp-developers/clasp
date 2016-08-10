@@ -567,15 +567,8 @@ it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
 * Return Value
 A pathname.
 * Description
-Return the pathname of the directory that contains the main source file."
-  (let ((source-namestrings (select-source-namestrings compilation-tool-database))
-        (main-source-filename (pathname (main-source-filename compilation-tool-database))))
-    (dolist (name source-namestrings)
-      (let ((pn (pathname name)))
-        (when (and (string= (pathname-name pn) (pathname-name main-source-filename))
-                   (string= (pathname-type pn) (pathname-type main-source-filename)))
-          (return-from main-pathname pn)))))
-  (error "Could not find main filename"))
+Return the pathname of the directory that contains the main source file. This is where the project.dat and clasp_gc.cc file will be written."
+  (translate-logical-pathname #P"source-dir:src/main/"))
 
 
 (defun select-source-namestrings (compilation-tool-database &optional (pattern ".*"))
@@ -743,7 +736,6 @@ c      (funcall (start-of-translation-unit-code self)))))
       (funcall (end-of-translation-unit-code self)))))
 
 (core:defvirtual ast-tooling:run ((self code-match-callback) match)
-  (format t "In ast-tooling:run callback~%")
   (let* ((nodes (ast-tooling:nodes match))
          (match-info (make-instance 'match-info
                                     :id-to-node-map (ast-tooling:idto-node-map nodes)
@@ -1023,6 +1015,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
 (defun batch-run-matcher (match-sexp &key compilation-tool-database callback run-and-save)
   (declare (type list match-sexp)
            (type ast-tooling:match-callback callback))
+  (format t "About to start batch-run-matcher~%")
   (let* ((*match-refactoring-tool* (ast-tooling:new-refactoring-tool
                                     (clang-database compilation-tool-database)
                                     (source-namestrings compilation-tool-database))))
@@ -1101,6 +1094,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
          (*number-of-files* (length (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
          (*current-file-index* 0))
     (format t "Starting search of ~a files~%" *number-of-files*)
+    (finish-output)
     (incf *current-file-index*)
     (start-search-timer)
     (apply-arguments-adjusters compilation-tool-database *match-refactoring-tool*)
@@ -1116,6 +1110,7 @@ run out of memory. This function can be used to rapidly search ASTs for testing 
       (dolist (tool tools)
         (let ((initializer (single-tool-initializer tool)))
           (when initializer (funcall (single-tool-initializer tool)))))
+      (format t "About to run!~%")
       (time (if run-and-save
                 (ast-tooling:run-and-save *match-refactoring-tool* factory)
                 (ast-tooling:clang-tool-run *match-refactoring-tool* factory)))

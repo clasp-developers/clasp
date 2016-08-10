@@ -285,6 +285,8 @@ No DIBuilder is defined for the default module")
                           (string (package-name sym-pkg))
                           "NIL")))
        (bformat nil "FN-SETF/%s::%s" pkg-name sym-name)))
+    ((consp lname)
+     (bformat nil "FN/%s" lname))
     (t (error "Illegal lisp function name[~a]" lname))))
 (export 'jit-function-name)
 

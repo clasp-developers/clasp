@@ -1,5 +1,18 @@
 
 (require :clasp-analyzer)
+
+;;; Everything
+(defparameter *db* (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database #P"lib:compile_commands.json"))
+
+;;; Just the gc_interface.cc file
+(defparameter *db*
+  (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
+   #P"lib:compile_commands.json"
+   :selection-pattern ".*gc_interface\.cc.*"))
+
+(time (clasp-analyzer:search/generate-code *db*))
+
+
 (time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database #P"lib:compile_commands.json")))
 (print "Testing")
 

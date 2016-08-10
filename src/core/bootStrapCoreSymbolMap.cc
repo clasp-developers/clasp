@@ -52,7 +52,7 @@ Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkg
   string name = BootStrapCoreSymbolMap::fullSymbolName(pkgName, symbolName);
   if ( !shadowp ) {
     core::SymbolStorage other;
-    bool found = this->lookupSymbol(pkgName,symbolName,other,false);
+    bool found = this->find_symbol(pkgName,symbolName,other,false);
     if ( found ) {
       if ((exportp != other._Export)) {
         printf("%s:%d WARNING   The symbol %s in package %s has been declared twice with different export setting\n", __FILE__, __LINE__, symbolName.c_str(), pkgName.c_str());
@@ -77,24 +77,22 @@ Symbol_sp BootStrapCoreSymbolMap::maybe_allocate_unique_symbol(string const &pkg
   return (sym);
 }
 
-bool BootStrapCoreSymbolMap::lookupSymbol(string const &packageName, string const &rawSymbolName, SymbolStorage& symbolStorage, bool recursivep) const {
-  map<string,list<string>>::const_iterator found = this->_PackageUseInfo.find(packageName);
-  for ( auto used_pkg : found->second ) {
-    bool found = this->lookupSymbol(used_pkg,rawSymbolName,symbolStorage,true);
-    if (found) return found;
-  }
+bool BootStrapCoreSymbolMap::find_symbol(string const &packageName, string const &rawSymbolName, SymbolStorage& symbolStorage, bool recursivep) const {
   string fullName = BootStrapCoreSymbolMap::fullSymbolName(packageName, rawSymbolName);
   map<string, int>::const_iterator it = this->_SymbolNamesToIndex.find(fullName);
-  if (it == this->_SymbolNamesToIndex.end()) {
-    return false;
+  if (it != this->_SymbolNamesToIndex.end()) {
+    symbolStorage = this->_IndexToSymbol[it->second];
+    return true;
   }
-  if ( recursivep ) {
-    if (this->_IndexToSymbol[it->second]._Export == false) {
-      return false;
+  if ( !recursivep ) {
+    // If not a recursive call then look in the use list
+    map<string,list<string>>::const_iterator found = this->_PackageUseInfo.find(packageName);
+    for ( auto used_pkg : found->second ) {
+      bool found = this->find_symbol(used_pkg,rawSymbolName,symbolStorage,true);
+      if (found) return found;
     }
   }
-  symbolStorage = this->_IndexToSymbol[it->second];
-  return true;
+  return false;
 }
 
 void BootStrapCoreSymbolMap::finish_setup_of_symbols() {

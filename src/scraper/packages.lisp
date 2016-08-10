@@ -55,6 +55,7 @@
    #:internal-code-tag
    #:external-code-tag
    #:package-use-tag
+   #:package-shadow-tag
    #:package-nickname-tag
    #:pkg-name-tag
    #:name%

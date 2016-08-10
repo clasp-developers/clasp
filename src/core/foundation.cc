@@ -1049,12 +1049,12 @@ void lisp_defineSingleDispatchMethod(Symbol_sp sym,
     T_mv mv_llprocessed = LambdaListHandler_O::process_single_dispatch_lambda_list(llraw, true);
     T_sp tllproc = coerce_to_list(mv_llprocessed); // slice
     Symbol_sp sd_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(1));
-    Symbol_sp sd_class_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(2));
+    Symbol_sp specializer_symbol = gc::As<Symbol_sp>(mv_llprocessed.valueGet_(2));
     List_sp llproc = coerce_to_list(tllproc);
-    if (sd_class_symbol.notnilp() && sd_class_symbol != classSymbol) {
+    if (specializer_symbol.notnilp() && specializer_symbol != classSymbol) {
       SIMPLE_ERROR(BF("Mismatch between hard coded class[%s] and"
-                      " lambda-list single-dispatch argument class[%s] in argument list: %s") %
-                   _rep_(classSymbol) % _rep_(sd_class_symbol) % _rep_(llraw));
+                      " specializer_symbol[%s] for function %s with argument list: %s") %
+                   classSymbol->fullName() % specializer_symbol->fullName() % _rep_(sym) % _rep_(llraw));
     }
     llhandler = lisp_function_lambda_list_handler(llproc, ldeclares, pureOutIndices);
     if (sd_symbol.notnilp()) {

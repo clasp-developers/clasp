@@ -281,7 +281,8 @@ void Lisp_O::addToStarModulesStar(Symbol_sp sym) {
 
 template <class oclass>
 void setup_static_classSymbol(BootStrapCoreSymbolMap const &sidMap) {
-  oclass::___set_static_ClassSymbol(sidMap.lookupSymbol(oclass::static_packageName(), oclass::static_className()));
+  DEPRECIATED();
+  oclass::___set_static_ClassSymbol(sidMap.find_symbol(oclass::static_packageName(), oclass::static_className()));
 }
 
 string dump_instanceClass_info(Class_sp co, Lisp_sp prog) {
@@ -874,7 +875,7 @@ void Lisp_O::unmapNameToPackage(const string &name) {
   this->_PackageNameIndexMap.erase(it);
 }
 
-Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages) {
+Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames, list<string> const &usePackages, list<std::string> const& shadow) {
   map<string, int>::iterator it = this->_PackageNameIndexMap.find(name);
   if (it != this->_PackageNameIndexMap.end()) {
     SIMPLE_ERROR(BF("There already exists a package with name: %s") % name);
@@ -909,6 +910,11 @@ Package_sp Lisp_O::makePackage(const string &name, list<string> const &nicknames
     this->_MakePackageCallback(name, _lisp);
   } else {
     LOG(BF("_MakePackageCallback is NULL - not calling callback"));
+  }
+  for ( auto x : shadow ) {
+    Str_sp sx = Str_O::create(x);
+    printf("%s:%d in makePackage  for package %s  shadow: %s\n", __FILE__,__LINE__, newPackage->getName().c_str(),sx->c_str());
+    newPackage->shadow(sx);
   }
   return newPackage;
 }

@@ -906,7 +906,7 @@ public:
   Package_sp getCurrentPackage() const;
   void mapNameToPackage(const string &name, Package_sp pkg);
   void unmapNameToPackage(const string &name);
-  Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages);
+  Package_sp makePackage(const string &packageName, list<string> const &nicknames, list<string> const &usePackages, list<string> const& shadow = {});
   bool usePackage(const string &packageName);
 
   List_sp getBackTrace() const;
