@@ -261,12 +261,12 @@ strings."
 	   )
 	  t)
 
-(defun default-annotation-logic (source-location definition output-form
+(defun default-annotation-logic (source-loc definition output-form
                                  &optional (dspec (make-dspec definition)))
   (let* ((kind (first definition))
          (name (second definition)))
     `(progn
-       (ext:optional-annotation ',name 'location ',dspec ',source-location)
+       (ext:optional-annotation ',name 'location ',dspec ',source-loc)
        ,(when (member kind '(defun defmacro defgeneric))
           `(ext:optional-annotation ',name :lambda-list nil ',(third definition)))
        ,output-form)))
