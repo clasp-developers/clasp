@@ -142,7 +142,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   pntype = pathname->_Type;
 
   filename = _Nil<T_O>();
-  hooks = cl__symbol_value(ext::_sym_STARloadHooksSTAR);
+  hooks = cl__symbol_value(core::_sym_STARloadHooksSTAR);
   if (pathname->_Directory.nilp() &&
       pathname->_Host.nilp() &&
       pathname->_Device.nilp() &&

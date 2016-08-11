@@ -39,7 +39,6 @@ namespace ext {
 using namespace core;
 
 
-SYMBOL_EXPORT_SC_(ExtPkg, STARloadHooksSTAR);
 SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvokeDebuggerHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
