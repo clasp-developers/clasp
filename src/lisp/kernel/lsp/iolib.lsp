@@ -282,16 +282,16 @@ the one used internally by ECL compiled files."
            :ISO-8859-1 :LATIN-1 :US-ASCII :DEFAULT)
          #-unicode
          '(:DEFAULT))
-       (all-encodings nil))
+       (ext:all-encodings nil))
   (defun ext:all-encodings ()
-    (or all-encodings
+    (or ext:all-encodings
         (progn
-          (setf all-encodings basic-encodings)
+          (setf ext:all-encodings basic-encodings)
           #+unicode
           (dolist (i (directory "sys:encodings;*"))
-            (push (intern (pathname-name i) "KEYWORD") all-encodings))
-          all-encodings))))
-(export 'ext:all-encodings)
+            (push (intern (pathname-name i) "KEYWORD") ext:all-encodings))
+          ext:all-encodings))))
+(export 'ext:all-encodings :ext)
 
 (defun ext:load-encoding (name)
   #-unicode

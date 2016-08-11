@@ -343,7 +343,7 @@ FORM returns no value, NIL."
   (do ((vl vars (cdr vl))
        (sym (gensym))
        (forms nil)
-       (n 0 (truly-the fixnum (1+ n))))
+       (n 0 (ext:truly-the fixnum (1+ n))))
       ((endp vl) `(LET ((,sym (MULTIPLE-VALUE-LIST ,form))) ,@forms))
     (declare (fixnum n))
     (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
@@ -456,7 +456,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
       (second form)
       form))
 
-(defun maybe-quote (form)
+#-clasp(defun maybe-quote (form)
   ;; Quotes a form only if strictly required. This happens only when FORM is
   ;; either a symbol and not a keyword
   (if (if (atom form)
@@ -466,19 +466,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
       form))
 
 ;; CLOS needs this in the ext package and I can't find it anywhere but here - meister 2013
-#+clasp (progn
+#| #+clasp |#
+#+(or)(progn
 	  (import 'maybe-quote :ext)
 	  (export 'maybe-quote :ext))
-
-(in-package :ext)
-(defmacro truly-the (&rest args)
-  `(the ,@args))
-
-
-(defmacro checked-value (&rest args)
-  `(the ,@args))
-
-(in-package :core)
-(import 'ext:truly-the)
-(export 'truly-the)
 

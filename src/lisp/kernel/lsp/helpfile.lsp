@@ -203,7 +203,7 @@
     (when (and object (listp object) (si::valid-function-name-p object))
       (setq object (second object) key 'setf-documentation))
     (if string
-        (annotate object key doc-type string)
+        (ext:annotate object key doc-type string)
         (remove-annotation object key doc-type)))
   string)
 

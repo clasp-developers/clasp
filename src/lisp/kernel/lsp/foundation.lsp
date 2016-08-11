@@ -128,16 +128,24 @@ the corresponding VAR.  Returns NIL."
 
 (fset 'cons-cdr #'(lambda (def env) `(cdr ,(cadr def))) t)
 
-#|
-;; truly-the is now a special operator
-(si::fset 'truly-the
-	  #'(lambda-block truly-the (args env)
-			  (let ((ty (cadr args))
-				(obj (caddr args)))
-			    (list 'the ty obj)))
-	  t)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (select-package :ext))
 
-|#
+(core:fset 'truly-the
+      #'(lambda (whole env)
+          `(the ,@(cdr whole)))
+      t)
+
+(core:fset 'checked-value
+      #'(lambda (whole env)
+          `(the ,@(cdr whole)))
+      t)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package :core))
+(import 'ext:truly-the :core)
+(export 'truly-the)
+
 
 (si::fset 'prog1 #'(lambda (whole env)
 		     (let ((sym (gensym))
@@ -354,42 +362,6 @@ the corresponding VAR.  Returns NIL."
 
 (export 'class-name)
 
-(in-package :ext)
-(defun compiled-function-name (x)
-  (core:function-name x))
-
-(defun compiled-function-file (x)
-  (if (and x (functionp x))
-      (multiple-value-bind (sfi pos lineno)
-          (core:function-source-pos x)
-        (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
-          (when source-file
-            (let* ((src-pathname (pathname source-file))
-                   (src-directory (pathname-directory src-pathname))
-                   (src-name (pathname-name src-pathname))
-                   (src-type (pathname-type src-pathname))
-                   (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-              (let* ((pn (if (eq (car src-directory) :relative)
-                             (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
-                             src-pathname)))
-                (return-from compiled-function-file (values pn filepos lineno))))))))
-  (values nil 0 0))
-
-(defun where (id &optional (stream *standard-output*))
-  "* Arguments 
-- id :: An object (symbol, function etc)
-* Desciption
-Print the source location of id."
-  (cond
-    ((symbolp id)
-     (when (fboundp id)
-       (multiple-value-bind (file pos line)
-           (ext:compiled-function-file (fdefinition id))
-         (format stream "~a ~a~%" file line))))
-    (t (error "Add support to generate source info for ~a~%" id))))
-     
-
-(export '(compiled-function-name compiled-function-file where))
 
 (defun warn-or-ignore (x &rest args)
   nil)
