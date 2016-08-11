@@ -57,7 +57,7 @@ Closure_sp closureDesignator(T_sp obj) {
     return fnobj;
   } else if (Symbol_sp sym = obj.asOrNull<Symbol_O>()) {
     if (!sym->fboundp())
-      SIMPLE_ERROR(BF("Closure value for %s is unbound") % _rep_(sym));
+      SIMPLE_ERROR(BF("Function value for %s is unbound") % _rep_(sym));
     Closure_sp closure = sym->symbolFunction().asOrNull<Closure_O>();
     ASSERT(closure);
     return closure;
