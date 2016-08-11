@@ -1,0 +1,6 @@
+import build_files
+
+def build(bld):
+    bld.clasp_aclasp = build_files.aclasp()
+    bld.clasp_bclasp = build_files.bclasp()
+    bld.clasp_cclasp = build_files.cclasp()
