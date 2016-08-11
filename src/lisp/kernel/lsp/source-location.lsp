@@ -1,3 +1,6 @@
+;;;
+;;; Any symbols we want to export from EXT must be done in init.lsp
+;;;
 
 (in-package :ext)
 (defun compiled-function-name (x)
@@ -42,4 +45,3 @@ Return the source-location for the name/kind pair"
                rel-source-info)))
 |#     
 
-(export '(compiled-function-name compiled-function-file source-location where))
