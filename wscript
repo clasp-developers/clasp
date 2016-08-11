@@ -123,7 +123,28 @@ def strip_libs(libs):
     for lib in split_libs:
         result.append("%s" % str(lib[2:]))
     return result 
-    
+
+def fix_lisp_paths(bld_path,out,variant,paths):
+    nodes = []
+    for p in paths:
+        if ( p[:4] == "src/" ):
+            file_name = p
+            lsp_name = "%s.lsp"%file_name
+            lsp_res = bld_path.find_resource(lsp_name)
+            if (lsp_res == None):
+                lsp_name = "%s.lisp"%file_name
+                lsp_res = bld_path.find_resource(lsp_name)
+#            print("Looking for file_name with .lsp or .lisp: %s  --> %s" % (file_name,lsp_res))
+            assert lsp_res!=None
+        else: # generated files
+#            lsp_name = "%s/%s/%s.lisp"%(out,variant.variant_dir(),p)
+            lsp_name = "%s.lisp"%(p)
+            lsp_res = bld_path.find_or_declare(lsp_name)
+#            print("Looking for generated file with .lisp: %s  --> %s" % (lsp_name,lsp_res))
+            assert lsp_res!=None
+        nodes.append(lsp_res)
+    return nodes
+
 class variant(object):
     def executable_name(self,stage=None):
         if ( stage == None ):
@@ -536,6 +557,9 @@ def build(bld):
     stage_val = stage_value(bld,stage)
     print("Building stage --> %s" % stage)
     bld.clasp_source_files = []
+    bld.clasp_aclasp = []
+    bld.clasp_bclasp = []
+    bld.clasp_cclasp = []
     bld.recurse('src')
     bld.extensions_include_dirs = []
     bld.extensions_include_files = []
@@ -544,29 +568,19 @@ def build(bld):
     bld.recurse('extensions')
     bld.recurse('src/main')
     source_files = bld.clasp_source_files + bld.extensions_source_files
-#    print("DEBUG recursed source_files = %s" % source_files)
     bld.install_files('${PREFIX}/Contents/Resources/source-code/',source_files,relative_trick=True,cwd=bld.path)
-#    print("bld.path = %s"%bld.path)
+    print("bld.path = %s"%bld.path)
     clasp_headers = bld.path.ant_glob("include/clasp/**/*.h")
-#    print("clasp_headers = %s" % clasp_headers)
     bld.install_files('${PREFIX}/Contents/Resources/source-code/',clasp_headers,relative_trick=True,cwd=bld.path)
-#    lisp_source = bld.path.ant_glob("src/lisp/**/*.l*")
-#    bld.install_files('${PREFIX}/Contents/Resources/source-code/',lisp_source,relative_trick=True,cwd=bld.path)
     variant = eval(bld.variant+"()")
     bld.env = bld.all_envs[bld.variant]
     bld.variant_obj = variant
-#    test_linking_source = bld.clasp_test_linking_source_file
-#    test_linking_executable = bld.path.find_or_declare('test_linking')
-#    print("test_linking_source = %s" % test_linking_source)
-#    print("test_linking_executable = %s" % test_linking_executable)
-#    bld.program(source=[test_linking_source],target=test_linking_executable)
     include_dirs = ['.']
     include_dirs.append("%s/src/main/" % bld.path.abspath())
     include_dirs.append("%s/include/" % (bld.path.abspath()))
     include_dirs.append("%s/%s/%s/generated/" % (bld.path.abspath(),out,variant.variant_dir()))
     include_dirs = include_dirs + bld.extensions_include_dirs
     print("include_dirs = %s" % include_dirs)
-                        
     print("Building with variant = %s" % variant)
     wscript_node = bld.path.find_resource("wscript")
     extension_headers_node = variant.extension_headers_node(bld)
@@ -600,7 +614,8 @@ def build(bld):
         print("About to add compile_aclasp")
         intrinsics_bitcode_node = bld.path.find_or_declare(variant.intrinsics_bitcode_name())
         cmp_aclasp = compile_aclasp(env=bld.env)
-        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node])
+        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
@@ -614,7 +629,7 @@ def build(bld):
     if (stage_val >= 2):
         print("About to add compile_bclasp")
         cmp_bclasp = compile_bclasp(env=bld.env)
-        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node])
+        cmp_bclasp.set_inputs([iclasp_executable,aclasp_link_product,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_bclasp))
         bclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='b'))
         cmp_bclasp.set_outputs(bclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_bclasp)
@@ -630,7 +645,7 @@ def build(bld):
         # Build cclasp
         cmp_cclasp = compile_cclasp(env=bld.env)
         cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
-        cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node])
+        cmp_cclasp.set_inputs([iclasp_executable,bclasp_link_product,cxx_all_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(cmp_cclasp)
@@ -696,8 +711,17 @@ class dsymutil(Task.Task):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -I -f ecl-min -f clasp-builder -f debug-run-clang -N -e "(compile-aclasp :link-type :bc)" -e "(quit)"' % self.inputs[0].abspath()
-        print("  cmd: %s" % cmd)
+#        cmd = '%s -I -f ecl-min -f clasp-builder -f debug-run-clang -N -e "(compile-aclasp :link-type :bc)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = [self.inputs[0].abspath(),
+               "-I",
+               "-f", "ecl-min",
+               "-f", "clasp-builder",
+               "-f", "debug-run-clang",
+               "-N",
+               "-e", "(compile-aclasp :link-type :bc)",
+               "-e", "(quit)",
+               "--" ] + self.bld.clasp_aclasp
+        print("  compile_aclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -742,8 +766,16 @@ class link_executable(Task.Task):
 class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -i %s -N -f clasp-builder -f debug-run-clang -e "(compile-bclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
-        print("  cmd: %s" % cmd)
+#        cmd = '%s -i %s -N -f clasp-builder -f debug-run-clang -e "(compile-bclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = [self.inputs[0].abspath(),
+               "-i", self.inputs[1].abspath(),
+               "-N",
+               "-f", "clasp-builder",
+               "-f", "debug-run-clang",
+               "-e", "(compile-bclasp :link-type :bc)",
+               "-e", "(quit)",
+               "--" ] + self.bld.clasp_bclasp
+        print("  compile_bclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -754,8 +786,16 @@ class compile_bclasp(Task.Task):
 class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -i %s -f clasp-builder -f debug-run-clang -N -e "(compile-cclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
-        print("  cmd: %s" % cmd)
+#        cmd = '%s -i %s -N -f clasp-builder -f debug-run-clang -e "(compile-cclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
+        cmd = [self.inputs[0].abspath(),
+               "-i", self.inputs[1].abspath(),
+               "-N",
+               "-f", "clasp-builder",
+               "-f", "debug-run-clang",
+               "-e", "(compile-cclasp :link-type :bc)",
+               "-e", "(quit)",
+               "--" ] + self.bld.clasp_cclasp
+        print("  compile_cclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
