@@ -81,10 +81,15 @@
 (if (find-package "FFI") nil
   (make-package "FFI" :use '(:CL :CORE)))
 
-;; Setup a few things for the EXT package
+;;; Setup a few things for the EXT package
+;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
 (export '(*module-provider-functions*
+          source-location
+          where
+          compiled-function-name
+          compiled-function-file
           check-arguments-type
           array-index
           byte8
