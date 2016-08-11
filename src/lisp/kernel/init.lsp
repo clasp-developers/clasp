@@ -121,8 +121,6 @@
                         ,output-form)))
              t)
 (export 'register-with-pde)
-(core:*make-special '*invoke-debugger-hook*)
-(setq *invoke-debugger-hook* nil)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :core))

@@ -156,6 +156,7 @@ const char *CorePkg_nicknames[] = {
 
 
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARinvoke_debugger_hookSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
 SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
@@ -883,21 +884,14 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   };
   /* Set the values of some essential global symbols */
   cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_tagged_Symbol_OP_nil); //->initialize();
-#if 1
   cl::_sym_nil->_Name = Str_O::create("NIL");
-#if 1
   //        printf("%s:%d About to add NIL to the COMMON-LISP package - is it defined at this point\n", __FILE__, __LINE__ );
   //	_lisp->_Roots._CommonLispPackage->add_symbol_to_package("NIL"cl::_sym_nil);
   cl::_sym_nil->_HomePackage = _lisp->_Roots._CommonLispPackage;
-#else
-  _lisp->_CoreLispPackage->_add_symbol_to_package(cl::_sym_nil);
-  cl::_sym_nil->_WeakPackage = _lisp->_CoreLispPackage;
-#endif
   cl::_sym_nil->setf_symbolValue(_Nil<T_O>());
   cl::_sym_nil->makeSpecial();
   cl::_sym_nil->exportYourself();
   _lisp->commonLispPackage()->add_symbol_to_package(Str_O::create("NIL"), _Nil<Symbol_O>(), true);
-#endif
   _lisp->_Roots._TrueObject = cl::_sym_T_O;
   cl::_sym_T_O->exportYourself()->defparameter(_lisp->_Roots._TrueObject);
   cl::_sym_T_O->setReadOnly(true);
@@ -1083,30 +1077,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
-#if 0
-  clasp_cleavir::_sym_STARsimple_environmentSTAR->defparameter(_Nil<T_O>());
-  clasp_cleavir::_sym_STARcode_walkerSTAR->defparameter(_Nil<T_O>());
-#endif
-#if 0
-
-  _sym_STARbq_simplifySTAR->defparameter(_lisp->_true());
-  _sym_STARbackquote_expand_hookSTAR->defparameter(_sym_backquote_completely_process->symbolFunction());
-#endif
-
-#if 0 //Old system checking
-	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
-#if defined(_TARGET_OS_DARWIN)
-  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_darwin);
-  Symbol_sp target_os = kw::_sym_target_os_darwin;
-#elif defined(_TARGET_OS_LINUX)
-  SYMBOL_EXPORT_SC_(KeywordPkg,target_os_linux);
-  Symbol_sp target_os = kw::_sym_target_os_linux;
-#endif
-
-#endif //End old system checking
-
+  _sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
-
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;
 
@@ -1158,17 +1130,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   //
   features << target_os;
 
-#if 0 //Old System checking
-	/*! Set up the features based on _TARGET_OS_xxxx and _ADDRESS_MODEL_ */
-#if defined(_ADDRESS_MODEL_64)
-  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_64);
-  Symbol_sp address_model = kw::_sym_address_model_64;
-#elif defined(_ADDRESS_MODEL_32)
-  SYMBOL_EXPORT_SC_(KeywordPkg,address_model_32);
-  Symbol_sp address_model = kw::_sym_address_model_32;
-#endif
-
-#endif //End old system checking
   //
   // The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined
   // Check src/Jamfile.jam to add definitions for other <target-os> types

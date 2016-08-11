@@ -95,7 +95,6 @@
             external-process-wait
             external-process-status
             compiled-function-name
-            *invoke-debugger-hook*
             system
             float-nan-string
             float-infinity-string
