@@ -150,27 +150,15 @@ THE SOFTWARE.
 #undef NAMESPACE_core
 
 namespace core {
-#if 0
-#define EXPOSE_TO_CANDO
-#define Use_CorePkg
-#define Use_ClPkg
-#define Use_ExtPkg
-#define EXTERN_REGISTER
-#include <clasp/core/initClasses.h>
-#undef EXTERN_REGISTER
-#undef Use_ExtPkg
-#undef Use_ClPkg
-#undef Use_CorePkg
-#undef EXPOSE_TO_CANDO
-#endif
-};
-
-namespace core {
 const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
 
+SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
+SYMBOL_EXPORT_SC_(CorePkg,variable_source_location)
+SYMBOL_EXPORT_SC_(CorePkg,class_source_location)
+SYMBOL_EXPORT_SC_(CorePkg,cxx_method_source_location);
 SYMBOL_EXPORT_SC_(CompPkg, STARllvm_contextSTAR);
 SYMBOL_EXPORT_SC_(CompPkg, STARload_time_value_holder_nameSTAR);
 SYMBOL_EXPORT_SC_(CorePkg,c_local);
@@ -183,8 +171,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg,interactive);
 SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
-SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 
+SYMBOL_EXPORT_SC_(ClPkg, class);
+SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 SYMBOL_EXPORT_SC_(ClPkg, simple_base_string);
 SYMBOL_EXPORT_SC_(ClPkg, provide);
 SYMBOL_EXPORT_SC_(ClPkg, condition);
@@ -1080,7 +1069,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   hooks = Cons_O::create(Cons_O::create(Str_O::create("lisp"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("LISP"), _sym_loadSource), hooks);
   hooks = Cons_O::create(Cons_O::create(Str_O::create("clasprc"), _sym_loadSource), hooks);
-  ext::_sym_STARloadHooksSTAR->defparameter(hooks);
+  _sym_STARloadHooksSTAR->defparameter(hooks);
   ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
   ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
   _sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
