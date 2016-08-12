@@ -27,7 +27,8 @@ GCS = [ 'boehm',
         'boehmdc',
         'mpsprep',
         'mps' ]
-DEBUG_CHARS = [ 'o', 'd' ]
+# DEBUG_CHARS None == optimized
+DEBUG_CHARS = [ None, 'd' ]
 
 LLVM_LIBRARIES = []
 
@@ -80,8 +81,8 @@ def libraries_as_link_flags(fmt,libs):
 def generate_dsym_files(name,path):
     info_plist = path.find_or_declare("Contents/Info.plist")
     dwarf_file = path.find_or_declare("Contents/Resources/DWARF/%s"%name)
-    print("info_plist = %s" % info_plist)
-    print("dwarf_file = %s" % dwarf_file)
+#    print("info_plist = %s" % info_plist)
+#    print("dwarf_file = %s" % dwarf_file)
     return [info_plist,dwarf_file]
 
 def stage_value(ctx,s):
@@ -96,6 +97,8 @@ def stage_value(ctx,s):
     elif ( s == 'c' ):
         sval = 3
     elif ( s == 'rebuild' ):
+        sval = 0
+    elif ( s == 'dangerzone' ):
         sval = 0
     else:
         ctx.fatal("Illegal stage: %s" % s)
@@ -145,7 +148,14 @@ def fix_lisp_paths(bld_path,out,variant,paths):
         nodes.append(lsp_res)
     return nodes
 
+def debug_ext(c):
+    if (c):
+        return "-%s"%c
+    return ""
+
 class variant(object):
+    def debug_extension(self):
+        return debug_ext(self.debug_char)
     def executable_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -153,7 +163,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s-%s' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
+        return '%s%s-%s%s' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
     def extension_headers_node(self,bld):
         return bld.path.find_or_declare("generated/extension_headers.h")
     def fasl_name(self,stage=None):
@@ -163,7 +173,7 @@ class variant(object):
             use_stage = stage
         if (not (use_stage>='a' and use_stage <= 'z')):
             raise Exception("Bad stage: %s"% use_stage)
-        return '%s%s-%s-%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_char)
+        return '%s%s-%s%s-image.fasl' % (use_stage,APP_NAME,self.gc_name,self.debug_extension())
     def fasl_dir(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -179,11 +189,11 @@ class variant(object):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s-common-lisp.bc' % (use_stage,APP_NAME,self.gc_name)
     def variant_dir(self):
-        return "%s_%s"%(self.gc_name,self.debug_char)
+        return "%s%s"%(self.gc_name,self.debug_extension())
     def variant_name(self):
         return self.gc_name
     def bitcode_name(self):
-        return "%s-%s" % (self.gc_name,self.debug_char)
+        return "%s%s"%(self.gc_name,self.debug_extension())
     def cxx_all_bitcode_name(self):
         return '%s-all-cxx.a' % self.bitcode_name()
     def intrinsics_bitcode_name(self):
@@ -205,14 +215,14 @@ class variant(object):
         if (os.getenv("CLASP_DEBUG_LINKFLAGS") != None):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_DEBUG_LINKFLAGS").split())
     def common_setup(self,cfg):
-        if ( self.debug_char == 'o' ):
+        if ( self.debug_char == None ):
             self.configure_for_release(cfg)
         else:
             self.configure_for_debug(cfg)
         configure_clasp(cfg,self)
         cfg.write_config_header("%s/config.h"%self.variant_dir(),remove=True)
 
-class boehm(variant):
+class boehm_base(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_BOEHM",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
@@ -225,29 +235,29 @@ class boehm(variant):
             cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)        
     
-class boehm_o(boehm):
+class boehm(boehm_base):
     gc_name = 'boehm'
-    debug_char = 'o'
+    debug_char = None
     def configure_variant(self,cfg,env_copy):
         cfg.setenv(self.variant_dir(), env=env_copy.derive())
-        super(boehm_o,self).configure_variant(cfg,env_copy)
+        super(boehm,self).configure_variant(cfg,env_copy)
 
-class boehm_d(boehm):
+class boehm_d(boehm_base):
     gc_name = 'boehm'
     debug_char = 'd'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("boehm_d", env=env_copy.derive())
         super(boehm_d,self).configure_variant(cfg,env_copy)
 
-class boehmdc_o(boehm):
+class boehmdc(boehm_base):
     gc_name = 'boehmdc'
-    debug_char = 'o'
+    debug_char = None
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("boehmdc_o", env=env_copy.derive())
+        cfg.setenv("boehmdc", env=env_copy.derive())
         cfg.define("USE_CXX_DYNAMIC_CAST",1)
-        super(boehmdc_o,self).configure_variant(cfg,env_copy)
+        super(boehmdc,self).configure_variant(cfg,env_copy)
 
-class boehmdc_d(boehm):
+class boehmdc_d(boehm_base):
     gc_name = 'boehmdc'
     debug_char = 'd'
     def configure_variant(self,cfg,env_copy):
@@ -255,7 +265,7 @@ class boehmdc_d(boehm):
         cfg.define("USE_CXX_DYNAMIC_CAST",1)
         super(boehmdc_d,self).configure_variant(cfg,env_copy)
 
-class mps(variant):
+class mps_base(variant):
     def configure_variant(self,cfg,env_copy):
         cfg.define("USE_MPS",1)
         if (cfg.env['DEST_OS'] == DARWIN_OS ):
@@ -268,15 +278,15 @@ class mps(variant):
 #            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)
         
-class mpsprep_o(mps):
+class mpsprep(mps_base):
     gc_name = 'mpsprep'
-    debug_char = 'o'
+    debug_char = None
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mpsprep_o", env=env_copy.derive())
+        cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
-        super(mpsprep_o,self).configure_variant(cfg,env_copy)
+        super(mpsprep,self).configure_variant(cfg,env_copy)
         
-class mpsprep_d(mps):
+class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
     debug_char = 'd'
     def configure_variant(self,cfg,env_copy):
@@ -284,27 +294,27 @@ class mpsprep_d(mps):
         cfg.define("RUNNING_GC_BUILDER",1)
         super(mpsprep_d,self).configure_variant(cfg,env_copy)
 
-class mps_o(mps):
+class mps(mps_base):
     gc_name = 'mps'
-    debug_char = 'o'
+    debug_char = None
     def configure_variant(self,cfg,env_copy):
-        cfg.setenv("mps_o", env=env_copy.derive())
-        super(mps_o,self).configure_variant(cfg,env_copy)
+        cfg.setenv("mps", env=env_copy.derive())
+        super(mps,self).configure_variant(cfg,env_copy)
 
-class mps_d(mps):
+class mps_d(mps_base):
     gc_name = 'mps'
     debug_char = 'd'
     def configure_variant(self,cfg,env_copy):
         cfg.setenv("mps_d", env=env_copy.derive())
         super(mps_d,self).configure_variant(cfg,env_copy)
 
-class iboehm_o(boehm_o):
+class iboehm(boehm):
     stage_char = 'i'
-class aboehm_o(boehm_o):
+class aboehm(boehm):
     stage_char = 'a'
-class bboehm_o(boehm_o):
+class bboehm(boehm):
     stage_char = 'b'
-class cboehm_o(boehm_o):
+class cboehm(boehm):
     stage_char = 'c'
     
 class iboehm_d(boehm_d):
@@ -316,13 +326,13 @@ class bboehm_d(boehm_d):
 class cboehm_d(boehm_d):
     stage_char = 'c'
 
-class iboehmdc_o(boehmdc_o):
+class iboehmdc(boehmdc):
     stage_char = 'i'
-class aboehmdc_o(boehmdc_o):
+class aboehmdc(boehmdc):
     stage_char = 'a'
-class bboehmdc_o(boehmdc_o):
+class bboehmdc(boehmdc):
     stage_char = 'b'
-class cboehmdc_o(boehmdc_o):
+class cboehmdc(boehmdc):
     stage_char = 'c'
 
 class iboehmdc_d(boehmdc_d):
@@ -335,13 +345,13 @@ class cboehmdc_d(boehmdc_d):
     stage_char = 'c'
 
 
-class imps_o(mps_o):
+class imps(mps):
     stage_char = 'i'
-class amps_o(mps_o):
+class amps(mps):
     stage_char = 'a'
-class bmps_o(mps_o):
+class bmps(mps):
     stage_char = 'b'
-class cmps_o(mps_o):
+class cmps(mps):
     stage_char = 'c'
     
 class imps_d(mps_d):
@@ -353,13 +363,13 @@ class bmps_d(mps_d):
 class cmps_d(mps_d):
     stage_char = 'c'
 
-class impsprep_o(mpsprep_o):
+class impsprep(mpsprep):
     stage_char = 'i'
-class ampsprep_o(mpsprep_o):
+class ampsprep(mpsprep):
     stage_char = 'a'
-class bmpsprep_o(mpsprep_o):
+class bmpsprep(mpsprep):
     stage_char = 'b'
-class cmpsprep_o(mpsprep_o):
+class cmpsprep(mpsprep):
     stage_char = 'c'
 
 class impsprep_d(mpsprep_d):
@@ -540,7 +550,10 @@ def configure(cfg):
     env_copy = cfg.env.derive()
     for gc in GCS:
         for debug_char in DEBUG_CHARS:
-            variant = gc+"_"+debug_char
+            if (debug_char==None):
+                variant = gc
+            else:
+                variant = gc+"_"+debug_char
             variant_instance = eval("i"+variant+"()")
             print("Setting up variant: %s" % variant_instance.variant_dir())
             variant_instance.configure_variant(cfg,env_copy)
@@ -649,21 +662,25 @@ def build(bld):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(cmp_cclasp)
-    if (stage == 'rebuild'):
-        print("About to add recompile_cclasp")
+    if (stage == 'rebuild' or stage == 'dangerzone'):
+        print("!------------------------------------------------------------")
+        print("!   You have entered the dangerzone!  ")
+        print("!   While you wait...  https://www.youtube.com/watch?v=kyAn3fSs8_A")
+        print("!------------------------------------------------------------")
         # Build cclasp
         recmp_cclasp = recompile_cclasp(env=bld.env)
-        recmp_cclasp.set_inputs([])
+        recmp_cclasp.set_inputs(fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         recmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(recmp_cclasp)
-    if (stage == 'rebuild' or stage_val >= 3):
+    if (stage == 'dangerzone' or stage == 'rebuild' or stage_val >= 3):
         cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
         lnk_cclasp_fasl = link_fasl(env=bld.env)
         lnk_cclasp_fasl.set_inputs([intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
         lnk_cclasp_fasl.set_outputs([cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
         bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_fasl.name), cclasp_fasl)
+    if (stage == 'rebuild' or stage_val >= 3):
         lnk_cclasp_exec = link_executable(env=bld.env)
         cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
         lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
@@ -821,15 +838,17 @@ class recompile_cclasp(Task.Task):
         print("In recompile_cclasp -> %s" % self.outputs[0].abspath())
 #        cclasp_exe = self.bld.find_program("cclasp")
 #        print("cclasp_exe = %s"%cclasp_exe)
-        cmd = [self.inputs[0].abspath(),
-               "-i", self.inputs[1],
+#        cmd = 'cclasp -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
+        cmd = ["cclasp",
                "-N",
                "-f", "clasp-builder",
                "-f", "debug-run-clang",
+               "-f", "ignore-extensions",
+               "-R", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                "-e", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                "-e", "(quit)",
                "--" ] + self.bld.clasp_cclasp
-        print("  cmd: %s" % cmd)
+        print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -973,32 +992,32 @@ def init(ctx):
                 name = y.__name__.replace('Context','').lower()
                 for s in STAGE_CHARS:
                     class tmp(y):
-                        variant = gc+'_'+debug_char
+                        if (debug_char==None):
+                            variant = gc
+                        else:
+                            variant = gc+'_'+debug_char
                         cmd = name + '_' + s + variant
                         stage = s
             class tmp(BuildContext):
-                variant = gc+'_'+debug_char
+                if (debug_char==None):
+                    variant = gc
+                else:
+                    variant = gc+'_'+debug_char
                 cmd = 'rebuild_c'+variant
                 stage = 'rebuild'
+            class tmp(BuildContext):
+                if (debug_char==None):
+                    variant = gc
+                else:
+                    variant = gc+'_'+debug_char
+                cmd = 'dangerzone_c'+variant
+                stage = 'dangerzone'
 
-def buildall(ctx):
-    import waflib.Options
-    for s in STAGE_CHARS:
-        for gc in GCS:
-            for debug_char in DEBUG_CHARS:
-                var = 'build_'+s+x+'_'+debug_char
-                waflib.Options.commands.insert(0, var)
+#def buildall(ctx):
+#    import waflib.Options
+#    for s in STAGE_CHARS:
+#        for gc in GCS:
+#            for debug_char in DEBUG_CHARS:
+#                var = 'build_'+s+x+'_'+debug_char
+#                waflib.Options.commands.insert(0, var)
 
-
-#
-#def my_post_run(self):
-#    bld=self.generator.bld
-#    for node in self.outputs:
-# 	if not node.exists():
-# 	    self.hasrun=MISSING
-# 	    self.err_msg='-> missing file: %r'%node.abspath()
-# 	    raise Errors.WafError(self.err_msg)
-# 	bld.node_sigs[node]=self.uid()
-#     bld.task_sigs[self.uid()]=self.signature()
-
-# Task.Task.post_run = my_post_run

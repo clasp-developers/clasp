@@ -16,7 +16,6 @@
 (sys:*make-special 'core::*notify-on-compile*)
 (setq *notify-on-compile* (member :notify-on-compile *features*))
 (export '*notify-on-compile*)
-
 (sys:*make-special 'core::*trace-startup*)
 (setq *trace-startup* (member :trace-startup *features*))
 (export '*trace-startup*)

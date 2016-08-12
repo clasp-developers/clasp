@@ -1369,10 +1369,9 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
   if (_lisp->sourceDatabase().notnilp()) {
     spi = gc::As<SourceManager_sp>(_lisp->sourceDatabase())->lookupSourcePosInfo(code);
   }
-  if (!spi || spi.nilp()) {
-    spi = gc::As<SourcePosInfo_sp>(_sym_STARcurrentSourcePosInfoSTAR->symbolValue());
-    if (spi.nilp()) {
-      printf("%s:%d   Could not find source info for lambda\n", __FILE__, __LINE__);
+  if (spi.nilp()) {
+    if ( _sym_STARcurrentSourcePosInfoSTAR->symbolValue().notnilp() ) {
+      spi = _sym_STARcurrentSourcePosInfoSTAR->symbolValue();
     }
   }
   Closure_sp ic = gc::GC<InterpretedClosure_O>::allocate(name, kw::_sym_function, llh, declares, docstring, env, code, SOURCE_POS_INFO_FIELDS(spi));
