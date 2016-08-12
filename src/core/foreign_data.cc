@@ -438,8 +438,10 @@ T mem_ref( cl_intptr_t address ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFMETHOD T_sp ForeignData_O::PERCENTmem_ref( T_sp atype,
-                                                 Integer_sp offset ) {
+CL_DEFUN T_sp core__PERCENTmem_ref( T_sp adress_or_foreign_data_ptr,
+                                    T_sp atype,
+                                    Integer_sp offset ) {
+
   cl_intptr_t address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
   cl_intptr_t _offset = offset->as_cl_intptr_t_();
 
