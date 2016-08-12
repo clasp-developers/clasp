@@ -83,6 +83,15 @@ THE SOFTWARE.
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
+//   LOCAL DEFINES
+// ---------------------------------------------------------------------------
+
+#undef CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE
+#define CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(CXX_TYPE,LISP_SYM_TYPE,CXX_SYM_VAR,CXX_DESC_STR) \
+  SYMBOL_EXPORT_SC_(KeywordPkg,LISP_SYM_TYPE); \
+  register_foreign_type<CXX_TYPE>::doit(kw::CXX_SYM_VAR,CXX_DESC_STR);
+
+// ---------------------------------------------------------------------------
 //   NAMESPACE
 // ---------------------------------------------------------------------------
 
@@ -147,10 +156,10 @@ Initializer global_initializer_for_foreign_types(register_foreign_types);
 // ---------------------------------------------------------------------------
 
 void register_foreign_type_spec(const Symbol_sp lispSymbol,
-                                const std::string &lispName,
+                                const std::string& lispName,
                                 const size_t size,
                                 const size_t alignment,
-                                const std::string &cxxName) {
+                                const std::string& cxxName) {
 
   foreign_type_spec_t foreign_type_spec = {lispSymbol,
                                            Str_O::create( lispName ),
@@ -164,12 +173,17 @@ void register_foreign_type_spec(const Symbol_sp lispSymbol,
 // ---------------------------------------------------------------------------
 
 void register_foreign_types(void) {
-  // CHAR
-  register_foreign_type<char>::doit(INTERN_(kw, char),
-                                    ":char");
 
-  register_foreign_type<unsigned char>::doit(INTERN_(kw, unsigned_char),
-                                             "unsigned char");
+#define CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(LISP_SYM_TYPE,CXX_TYPE,CXX_SYM_VAR,CXX_DESC_STR) \
+  SYMBOL_EXPORT_SC_(KeywordPkg,LISP_SYM_TYPE); \
+  register_foreign_type<CXX_TYPE>::doit(kw::CXX_SYM_VAR,CXX_DESC_STR)
+
+
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(char,char,_sym_char,":char");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
+
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(short,short,_sym_short,":short");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(unsigned short,short,_sym_short,":short");
 
   // SHORT
   register_foreign_type<short>::doit(INTERN_(kw, short),
@@ -335,8 +349,25 @@ void ForeignData_O::allocate(T_sp kind, ForeignDataFlagEnum ownership_flags, siz
 void ForeignData_O::free() {
   clasp_dealloc( (char *)this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
-  this->m_raw_data      = nullptr;
   this->m_size          = 0;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFMETHOD T_sp ForeignData_O::PERCENTkind() {
+  return this->kind();
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFMETHOD Integer_sp ForeignData_O::PERCENTownership_flags() {
+  return Integer_O::create( (gctools::Fixnum) this->ownership_flags());
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFMETHOD Integer_sp ForeignData_O::PERCENTforeign_data_address() {
+  return Integer_O::create(this->data<cl_intptr_t>());
 }
 
 // ---------------------------------------------------------------------------
@@ -346,7 +377,7 @@ CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_object(T_sp kind)
   GC_ALLOCATE(ForeignData_O, obj);
   Cons_sp ckind = gc::As<Cons_sp>(kind);
   ASSERTF(oCar(ckind) == cl::_sym_array || oCar(ckind) == kw::_sym_array, BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
-  ASSERTF(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte, BF("The first element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
+  ASSERTF(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte, BF("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
   size_t size = unbox_fixnum(gc::As<Fixnum_sp>(oCaddr(ckind)));
   obj->allocate(kind, DeleteOnDtor, size);
   return obj;
@@ -455,5 +486,26 @@ RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
   return result;
 }
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+template<class T>
+T mem_ref( cl_intptr_t address ) {
+  T *ptr = reinterpret_cast< T*> address;
+
+  return (*ptr);
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFMETHOD T_sp ForeignData_O::PERCENTmem_ref( T_sp type,
+                                                 Integer_sp offset ) {
+  cl_intptr_t address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
+  cl_intptr_t _offset = offset->as_cl_intptr_t_();
+
+  address += _offset;
+
+  // HERE WE NEED SOME MAGIC !
+  return SOME_MAGIC_CLASP_FN( mem_ref<typename ...??????> ... );
+}
 
 }; // namespace core

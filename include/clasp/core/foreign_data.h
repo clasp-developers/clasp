@@ -97,9 +97,9 @@ namespace core {
       T data() { return reinterpret_cast<T>(this->raw_data()); };
 
   // LISP EXPOSED SETTER & GETTER METHODS
-    T_sp PERCENTkind() { return this->kind(); };
-    Integer_sp PERCENTownership_flags() { return Integer_O::create((gctools::Fixnum)this->ownership_flags()); };
-    Integer_sp PERCENTforeign_data_ptr_address() { return Integer_O::create((uint64_t)this->data<cl_intptr_t>()); };
+    T_sp PERCENTkind();
+    Integer_sp PERCENTownership_flags();
+    Integer_sp PERCENTforeign_data_address();
 
   // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
 
@@ -118,8 +118,8 @@ namespace core {
     ForeignData_sp PERCENTinc_pointer(Integer_sp offset);
 
   // MEMORY ACEESS / MEMORY CONTENT CONVERSION
-    static T_sp PERCENTmem_ref(Integer_sp address);
-    static void PERCENTset_mem_ref(Integer_sp address, T_sp value);
+    static T_sp PERCENTmem_ref(ForeignData_sp ptr, T_sp type, Integer_sp offset);
+    static void PERCENTmem_set(ForeignData_sp ptr, T_sp type, Integer_sp offset, T_sp value);
 
   // OBJECT PRINTING
     string __repr__() const;
@@ -147,6 +147,12 @@ namespace core {
   // FOREIGN TYPE SIZE AND ALIGNMENT
   Fixnum_sp core__PERCENTforeign_type_alignment(Symbol_sp atype);
   Fixnum_sp core__PERCENTforeign_type_size(Symbol_sp atype);
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
+  template <class T>
+    T mem_ref(cl_intptr_t address);
 
 }; // namespace core
 
