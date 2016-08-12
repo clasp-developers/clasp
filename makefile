@@ -151,15 +151,15 @@ configure:
 	./waf configure --prefix=$(PREFIX)
 
 build_cboehm:
-	./waf -j $(PJOBS) build_cboehm_o
+	./waf -j $(PJOBS) build_cboehm
 
 
 redeye-prep:
-	./waf -j $(PJOBS) build_impsprep_o build_cboehmdc_o
-#	./waf -j $(PJOBS) build_cboehmdc_o
+	./waf -j $(PJOBS) build_impsprep build_cboehmdc
+#	./waf -j $(PJOBS) build_cboehmdc
 
 redeye-run:
-	(cd build/boehmdc_o; \
+	(cd build/boehmdc; \
 		./cclasp-boehmdc-o -f ignore-extensions \
 			-e "(require :clasp-analyzer)" \
 			-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"lib:compile_commands.json\")))" \
@@ -168,7 +168,7 @@ redeye-run:
 redeye:
 	make redeye-prep
 	make redeye-run
-	./waf build_boehm_o
+	./waf build_boehm
 
 
 pump:
