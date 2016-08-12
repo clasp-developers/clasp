@@ -80,8 +80,8 @@ def libraries_as_link_flags(fmt,libs):
 def generate_dsym_files(name,path):
     info_plist = path.find_or_declare("Contents/Info.plist")
     dwarf_file = path.find_or_declare("Contents/Resources/DWARF/%s"%name)
-    print("info_plist = %s" % info_plist)
-    print("dwarf_file = %s" % dwarf_file)
+#    print("info_plist = %s" % info_plist)
+#    print("dwarf_file = %s" % dwarf_file)
     return [info_plist,dwarf_file]
 
 def stage_value(ctx,s):
@@ -96,6 +96,8 @@ def stage_value(ctx,s):
     elif ( s == 'c' ):
         sval = 3
     elif ( s == 'rebuild' ):
+        sval = 0
+    elif ( s == 'dangerzone' ):
         sval = 0
     else:
         ctx.fatal("Illegal stage: %s" % s)
@@ -649,21 +651,25 @@ def build(bld):
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         cmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(cmp_cclasp)
-    if (stage == 'rebuild'):
-        print("About to add recompile_cclasp")
+    if (stage == 'rebuild' or stage == 'dangerzone'):
+        print("!------------------------------------------------------------")
+        print("!   You have entered the dangerzone!  ")
+        print("!   While you wait...  https://www.youtube.com/watch?v=kyAn3fSs8_A")
+        print("!------------------------------------------------------------")
         # Build cclasp
         recmp_cclasp = recompile_cclasp(env=bld.env)
-        recmp_cclasp.set_inputs([])
+        recmp_cclasp.set_inputs(fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         recmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(recmp_cclasp)
-    if (stage == 'rebuild' or stage_val >= 3):
+    if (stage == 'dangerzone' or stage == 'rebuild' or stage_val >= 3):
         cclasp_fasl = bld.path.find_or_declare(variant.fasl_name(stage='c'))
         lnk_cclasp_fasl = link_fasl(env=bld.env)
         lnk_cclasp_fasl.set_inputs([intrinsics_bitcode_node,cclasp_common_lisp_bitcode])
         lnk_cclasp_fasl.set_outputs([cclasp_fasl])
         bld.add_to_group(lnk_cclasp_fasl)
         bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_fasl.name), cclasp_fasl)
+    if (stage == 'rebuild' or stage_val >= 3):
         lnk_cclasp_exec = link_executable(env=bld.env)
         cxx_all_bitcode_node = bld.path.find_or_declare(variant.cxx_all_bitcode_name())
         lnk_cclasp_exec.set_inputs([cxx_all_bitcode_node,cclasp_common_lisp_bitcode])
@@ -821,15 +827,17 @@ class recompile_cclasp(Task.Task):
         print("In recompile_cclasp -> %s" % self.outputs[0].abspath())
 #        cclasp_exe = self.bld.find_program("cclasp")
 #        print("cclasp_exe = %s"%cclasp_exe)
-        cmd = [self.inputs[0].abspath(),
-               "-i", self.inputs[1],
+#        cmd = 'cclasp -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
+        cmd = ["cclasp",
                "-N",
                "-f", "clasp-builder",
                "-f", "debug-run-clang",
+               "-f", "ignore-extensions",
+               "-R", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                "-e", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                "-e", "(quit)",
                "--" ] + self.bld.clasp_cclasp
-        print("  cmd: %s" % cmd)
+        print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -980,6 +988,10 @@ def init(ctx):
                 variant = gc+'_'+debug_char
                 cmd = 'rebuild_c'+variant
                 stage = 'rebuild'
+            class tmp(BuildContext):
+                variant = gc+'_'+debug_char
+                cmd = 'dangerzone_c'+variant
+                stage = 'dangerzone'
 
 def buildall(ctx):
     import waflib.Options
