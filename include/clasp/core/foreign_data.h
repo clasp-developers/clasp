@@ -64,6 +64,16 @@ THE SOFTWARE.
 namespace core {
 
 // ---------------------------------------------------------------------------
+//   LISP SYMBOLS
+// ---------------------------------------------------------------------------
+
+  // Keyword symbols designating ForeignData_O kinds
+  SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_dynamic_library);
+  SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_built_in_type);
+  SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_data);
+  SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_pointer);
+
+// ---------------------------------------------------------------------------
 //   CLASSES & METHODS & FUNCTIONS
 // ---------------------------------------------------------------------------
 
@@ -88,6 +98,8 @@ namespace core {
 
   // -- SETTER & GETTER --
     const T_sp kind() { return m_kind; };
+    void set_kind( T_sp kind ) { this->m_kind = kind; };
+
     const int ownership_flags() { return m_ownership_flags; };
     const void *orig_data_ptr() { return m_orig_data_ptr; };
     void *raw_data() { return m_raw_data; };
@@ -104,6 +116,7 @@ namespace core {
   // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
 
     static ForeignData_sp create(const cl_intptr_t address = 0);
+    static ForeignData_sp create(void * p_address = nullptr);
 
     static ForeignData_sp PERCENTmake_pointer(T_sp address);
     static ForeignData_sp PERCENTmake_nullpointer();
@@ -118,8 +131,8 @@ namespace core {
     ForeignData_sp PERCENTinc_pointer(Integer_sp offset);
 
   // MEMORY ACEESS / MEMORY CONTENT CONVERSION
-    static T_sp PERCENTmem_ref(ForeignData_sp ptr, T_sp type, Integer_sp offset);
-    static void PERCENTmem_set(ForeignData_sp ptr, T_sp type, Integer_sp offset, T_sp value);
+    T_sp PERCENTmem_ref(T_sp type, Integer_sp offset);
+    void PERCENTmem_set(T_sp type, Integer_sp offset, T_sp value);
 
   // OBJECT PRINTING
     string __repr__() const;
@@ -143,16 +156,19 @@ namespace core {
   }; // ForeignData_O
 
 // ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE AND ALIGNMENT
   Fixnum_sp core__PERCENTforeign_type_alignment(Symbol_sp atype);
   Fixnum_sp core__PERCENTforeign_type_size(Symbol_sp atype);
 
 // ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-
+  // FOREIGN MEMORY DIRECT ACCESS
   template <class T>
     T mem_ref(cl_intptr_t address);
+
+// ---------------------------------------------------------------------------
+  // DYNAMIC LIBRARY LOADING AND UNLOADING
+  T_sp core__PERCENTdlopen( T_sp path_designator);
+  T_sp core__PERCENTdlclose( ForeignData_sp handle );
 
 }; // namespace core
 

@@ -44,9 +44,6 @@ void initialize_compiler_primitives(Lisp_sp lisp);
 
 namespace core {
   typedef void (*InitializerFunction)();
-
-      
-
   void register_initializer_function(InitializerFunction fptr);
   size_t initializer_functions_are_waiting();
   void initializer_functions_invoke();
@@ -62,5 +59,9 @@ functionality but before any Common Lisp startup functions are invoked. */
   void register_startup_function(fnLispCallingConvention fptr);
   size_t startup_functions_are_waiting();
   void startup_functions_invoke();
+
+  std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode);
+  std::tuple< int, string > do_dlclose(void * p_handle);
+
 };
 #endif /* _compiler_H_ */
