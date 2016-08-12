@@ -79,6 +79,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "  debug-startup      - Print a message for every top level form at startup\n"
              "  ignore-extensions  - Ignore any extensions startup scripts\n"
              "Environment variables:\n"
+             "export CLASP_HOME=<dir>   Define where clasp source code lives\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"
              "export CLASP_TELEMETRY_MASK=1  #turn on telemetry for (1=gc,2=stack)\n"
