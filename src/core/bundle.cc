@@ -146,7 +146,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     if (verbose) {
       printf("%s:%d   Set _GeneratedDir = %s\n", __FILE__, __LINE__, this->_Directories->_GeneratedDir.string().c_str());
     }
-    this->_Directories->_SourceDir = srcPath.parent_path().parent_path();
+    this->_Directories->_SourceDir = srcPath.parent_path().parent_path().parent_path();
     boost_filesystem::path lispdir = this->_Directories->_SourceDir / "src" / "lisp";
     this->_Directories->_LispSourceDir = boost_filesystem::path(lispdir);
     boost_filesystem::path includedir = this->_Directories->_SourceDir / "include";
@@ -311,6 +311,9 @@ void Bundle::findContentSubDirectories(boost_filesystem::path contentDir, bool v
   }
   char *homedir = getenv("CLASP_HOME");
   if (homedir != NULL) {
+    if ( !this->_Directories->_SourceDir.empty() ) {
+      printf("%s:%d CLASP_HOME will override the default SOURCE-DIR: (was %s) will now be set to %s\n", __FILE__, __LINE__, this->_Directories->_SourceDir.c_str(), homedir);
+    }
     this->_Directories->_SourceDir = boost_filesystem::path(homedir);
     boost_filesystem::path lispdir = this->_Directories->_SourceDir / "src" / "lisp";
     this->_Directories->_LispSourceDir = boost_filesystem::path(lispdir);
