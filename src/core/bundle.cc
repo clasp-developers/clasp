@@ -127,7 +127,7 @@ Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
     if (verbose) {
       printf("%s:%d   Found src path = %s\n", __FILE__, __LINE__, srcPath.string().c_str());
     }
-    this->_Directories->_LibDir = this->_Directories->_ExecutableDir;
+    this->_Directories->_LibDir = this->_Directories->_ExecutableDir / "fasl";
     if (verbose) {
       printf("%s:%d   Set _LibDir = %s\n", __FILE__, __LINE__, this->_Directories->_LibDir.string().c_str());
     }

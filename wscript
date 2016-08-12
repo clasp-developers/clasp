@@ -179,7 +179,7 @@ class variant(object):
             use_stage = self.stage_char
         else:
             use_stage = stage
-        return '%s%s-%s' % (use_stage,APP_NAME,self.gc_name)
+        return 'fasl/%s%s-%s' % (use_stage,APP_NAME,self.gc_name)
     def common_lisp_bitcode_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
