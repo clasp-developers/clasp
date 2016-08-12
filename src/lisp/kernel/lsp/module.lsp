@@ -23,7 +23,7 @@
   "This is a list of module names that have been loaded into Lisp so far.
 It is used by PROVIDE and REQUIRE.")
 
-(defparameter *module-provider-functions* nil
+(defparameter ext:*module-provider-functions* nil
   "See function documentation for REQUIRE")
 
 ;;;; PROVIDE and REQUIRE
@@ -43,7 +43,7 @@ Module-name is a string designator"
   "Loads a module, unless it already has been loaded. PATHNAMES, if supplied,
 is a designator for a list of pathnames to be loaded if the module
 needs to be. If PATHNAMES is not supplied, functions from the list
-*MODULE-PROVIDER-FUNCTIONS* are called in order with MODULE-NAME
+ext:*MODULE-PROVIDER-FUNCTIONS* are called in order with MODULE-NAME
 as an argument, until one of them returns non-NIL.  User code is
 responsible for calling PROVIDE to indicate a successful load of the
 module."
@@ -62,7 +62,7 @@ module."
 		 (load ele)))
 	      (t
 	       (unless (some (lambda (p) (funcall p module-name))
-			     *module-provider-functions*)
+			     ext:*module-provider-functions*)
 		 (require-error "Don't know how to ~S ~A."
 				'require module-name)))))
       (set-difference *modules* saved-modules))))

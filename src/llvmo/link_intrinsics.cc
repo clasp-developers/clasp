@@ -82,11 +82,20 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
   case invalidIndexForFunctionFrame:
     SIMPLE_ERROR(BF("Invalid index[%d] for FunctionFrame(size=%d)") % _rep_(arg0) % _rep_(arg1));
   case unboundSymbolValue:
-    SIMPLE_ERROR(BF("The symbol %s is unbound") % _rep_(arg0));
+    {
+      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
+      SIMPLE_ERROR(BF("The symbol %s is unbound") % sym->_Name->c_str());
+    };
   case unboundSymbolFunction:
-    SIMPLE_ERROR(BF("The symbol %s has no function bound to it") % _rep_(arg0));
+    {
+      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
+      SIMPLE_ERROR(BF("The symbol %s has no function bound to it") % sym->_Name->c_str());
+    }
   case unboundSymbolSetfFunction:
-    SIMPLE_ERROR(BF("The symbol %s has no setf function bound to it") % _rep_(arg0));
+    {
+      core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
+      SIMPLE_ERROR(BF("The symbol %s has no setf function bound to it") % sym->_Name->c_str());
+    }
   default:
     SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
   };

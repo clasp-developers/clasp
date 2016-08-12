@@ -94,7 +94,7 @@ CL_DEFUN T_sp core__rem_record_field(List_sp record, T_sp key, T_sp sub_key) {
 
 CL_LAMBDA(object key sub-key value);
 CL_DECLARE();
-CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol so I'll trigger an exception if it isn't");
+CL_DOCSTRING("annotate - see ecl>>helpfile.lsp>>annotate; key is either 'documentation or 'setf-documentation and I currently think (object) must be a symbol");
 CL_DEFUN T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value) {
   HashTable_sp dict = gc::As<HashTable_sp>(oCar(_sym_STARdocumentation_poolSTAR->symbolValue()));
   List_sp record = coerce_to_list(dict->gethash(object, _Nil<T_O>()));

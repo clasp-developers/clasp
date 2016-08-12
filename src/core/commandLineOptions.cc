@@ -77,6 +77,7 @@ CommandLineOptions::CommandLineOptions(int argc, char *argv[])
              "-- {ARGS}*           - Trailing are added to core:*command-line-arguments*\n"
              "*feature* settings\n"
              "  debug-startup      - Print a message for every top level form at startup\n"
+             "  ignore-extensions  - Ignore any extensions startup scripts\n"
              "Environment variables:\n"
              "export CLASP_TRAP_INTERN=PKG:SYMBOL Trap the intern of the symbol\n"
              "export CLASP_VERBOSE_BUNDLE_SETUP   Dump info during bundle setup\n"

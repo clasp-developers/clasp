@@ -2081,10 +2081,9 @@ CL_DEFUN T_mv core__function_lambda_list(T_sp obj) {
 CL_LAMBDA(function);
 CL_DECLARE();
 CL_DOCSTRING("functionSourcePosInfo");
-CL_DEFUN gc::Nilable<SourcePosInfo_sp> core__function_source_pos_info(T_sp functionDesignator) {
+CL_DEFUN T_sp core__function_source_pos_info(T_sp functionDesignator) {
   Closure_sp closure = coerce::closureDesignator(functionDesignator);
-  gc::Nilable<SourcePosInfo_sp> sourcePosInfo = closure->sourcePosInfo();
-  return sourcePosInfo;
+  return closure->sourcePosInfo();
 }
 
 CL_LAMBDA(fn kind);

@@ -3,7 +3,7 @@
 
 (defvar *debug-cleavir* nil)
 (export '*debug-cleavir*)
-
+;;;
 ;;; The first argument to this function is an instruction that has a
 ;;; single successor.  Whether a GO is required at the end of this
 ;;; function is determined by the code layout algorithm.  

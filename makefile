@@ -19,22 +19,6 @@ export ADDRESS-MODEL ?= 64
 export ADDRESS-MODEL := $(or $(filter $(ADDRESS-MODEL), 64),\
                              $(error Invalid ADDRESS-MODEL: $(ADDRESS-MODEL)))
 
-export LINK ?= shared
-export LINK := $(or $(filter $(LINK), shared),\
-                    $(filter $(LINK), static),\
-                    $(error Invalid LINK: $(LINK)))
-
-export VARIANT ?= release
-export VARIANT := $(or $(filter $(VARIANT), debug),\
-                       $(filter $(VARIANT), release),\
-                       $(error Invalid VARIANT: $(VARIANT)))
-
-export TOOLSET ?= $(or $(and $(filter $(TARGET_OS),Linux), clang-linux),\
-                       $(and $(filter $(TARGET_OS),Darwin), clang-darwin))
-export TOOLSET := $(or $(filter $(TOOLSET), clang-linux),\
-                       $(filter $(TOOLSET), clang-darwin),\
-                       $(error Invalid TOOLSET: $(TOOLSET)))
-
 # From the GNU Make manual; portably search PATH for a program. We can't rely on `which` existing...
 # Use $(call pathsearch,foo) instead of $(shell which foo)
 pathsearch = $(firstword $(wildcard $(addsuffix /$(strip $(1)),$(subst :, ,$(PATH)))))
@@ -271,7 +255,6 @@ print-config:
 	$(call varprint, LLVM_CONFIG)
 	$(call varprint, TARGET_OS)
 	$(call varprint, ADDRESS-MODEL)
-	$(call varprint, LINK)
 	$(call varprint, PJOBS)
 	$(call varprint, LLVM_CONFIG_DEBUG)
 	$(call varprint, LLVM_CONFIG_RELEASE)
@@ -290,8 +273,6 @@ print-config:
 	$(call varprint, CLASP_DEBUG_LINKFLAGS)
 	$(call varprint, CLASP_RELEASE_CXXFLAGS)
 	$(call varprint, CLASP_RELEASE_LINKFLAGS)
-	$(call varprint, VARIANT)
-	$(call varprint, TOOLSET)
 	$(call varprint, DEVEMACS)
 	$(call varprint, PYTHON2)
 	$(call varprint, EXECUTABLE_DIR)

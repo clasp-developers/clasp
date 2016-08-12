@@ -115,7 +115,9 @@
                                     ,(specializers-expression specializers)
                                     ',lambda-list
                                     ,(maybe-remove-block wrapped-lambda)
-                                    ,@(mapcar #'si::maybe-quote options))
+                                    ,@(mapcar #-clasp #'si::maybe-quote
+                                              #+clasp #'ext::maybe-quote
+                                              options))
                   #+clasp(maybe-augment-generic-function-lambda-list ',name ',lambda-list))))))))))
 
 (defun specializers-expression (specializers)

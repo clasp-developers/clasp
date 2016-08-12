@@ -68,7 +68,7 @@ struct BundleDirectories {
 };
 
 Bundle::Bundle(const string &raw_argv0, const string &appDirName) {
-  printf("%s:%d ---------- Initializing Bundle\n", __FILE__, __LINE__);
+//  printf("%s:%d ---------- Initializing Bundle\n", __FILE__, __LINE__);
   this->_Initialized = false;
   this->_Directories = NULL;
   bool verbose = false;

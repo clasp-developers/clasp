@@ -56,7 +56,7 @@
 ;; Setup a few things for the CORE package
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
-(use-package '(:compiler :ext))
+#+(or)(use-package '(:compiler :ext))
 
 ;; Setup a few things for the CMP package
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -81,10 +81,15 @@
 (if (find-package "FFI") nil
   (make-package "FFI" :use '(:CL :CORE)))
 
-;; Setup a few things for the EXT package
+;;; Setup a few things for the EXT package
+;;; EXT exports
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
-#+(or)(export '(*module-provider-functions*
+(export '(*module-provider-functions*
+          source-location
+          where
+          compiled-function-name
+          compiled-function-file
           check-arguments-type
           array-index
           byte8
@@ -105,7 +110,6 @@
           assume-right-type))
 (core:*make-special '*register-with-pde-hook*)
 (core:*make-special '*module-provider-functions*)
-(export '*module-provider-functions*)
 (setq *register-with-pde-hook* ())
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
@@ -122,8 +126,6 @@
                         ,output-form)))
              t)
 (export 'register-with-pde)
-(core:*make-special '*invoke-debugger-hook*)
-(setq *invoke-debugger-hook* nil)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core:select-package :core))
@@ -750,25 +752,24 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defvar *build-files*
   (list
-   :init
+   #P"src/lisp/kernel/tag/start"
    #P"src/lisp/kernel/lsp/prologue"
    #P"src/lisp/kernel/lsp/direct-calls"
    #P"generated/cl-wrappers"
-   :min-start
+   #P"src/lisp/kernel/tag/min-start"
    #P"src/lisp/kernel/init"
-   :start
+   #P"src/lisp/kernel/tag/after-init"
    #P"src/lisp/kernel/cmp/jit-setup"
    #P"src/lisp/kernel/clsymbols"
    #P"src/lisp/kernel/lsp/packages"
    #P"src/lisp/kernel/lsp/foundation"
    #P"src/lisp/kernel/lsp/export"
    #P"src/lisp/kernel/lsp/defmacro"
-   :defmacro
    #P"src/lisp/kernel/lsp/helpfile"
+   #P"src/lisp/kernel/lsp/source-location"
    #P"src/lisp/kernel/lsp/evalmacros"
    #P"src/lisp/kernel/lsp/claspmacros"
    #P"src/lisp/kernel/lsp/source-transformations"
-   :macros
    #P"src/lisp/kernel/lsp/testing"
    #P"src/lisp/kernel/lsp/makearray"
    #P"src/lisp/kernel/lsp/arraylib"
@@ -782,15 +783,10 @@ the stage, the +application-name+ and the +bitcode-name+"
    #P"src/lisp/kernel/lsp/seqmacros"
    #P"src/lisp/kernel/lsp/seqlib"
    #P"src/lisp/kernel/lsp/iolib"
-   ;;    #P"src/lisp/kernel/lsp/profiling"    ;; Do micro-profiling of the GC
    #P"src/lisp/kernel/lsp/logging"
    #P"src/lisp/kernel/lsp/trace"
-   :pre-cmp
-   ;; Compiler code
    #P"src/lisp/kernel/cmp/packages"
    #P"src/lisp/kernel/cmp/cmpsetup"
-   ;;    #P"src/lisp/kernel/cmp/cmpenv-fun"
-   ;;    #P"src/lisp/kernel/cmp/cmpenv-proclaim"
    #P"src/lisp/kernel/cmp/cmpglobals"
    #P"src/lisp/kernel/cmp/cmptables"
    #P"src/lisp/kernel/cmp/cmpvar"
@@ -803,20 +799,15 @@ the stage, the +application-name+ and the +bitcode-name+"
    #P"src/lisp/kernel/cmp/cmpvars"
    #P"src/lisp/kernel/cmp/cmpquote"
    #P"src/lisp/kernel/cmp/cmpobj"
-   ;;    #P"src/lisp/kernel/cmp/mincomp"
    #P"src/lisp/kernel/cmp/compiler"
    #P"src/lisp/kernel/cmp/compilefile"
    #P"src/lisp/kernel/cmp/external-clang"
    #P"src/lisp/kernel/cmp/cmpbundle"
-   :pre-repl
    #P"src/lisp/kernel/cmp/cmprepl"
-   :cmp-pre-epilogue
-   #'maybe-insert-epilogue-aclasp
-   :cmp
-   :min
-   :cmprepl
+   #P"src/lisp/kernel/tag/min-pre-epilogue"
+   #P"src/lisp/kernel/lsp/epilogue-aclasp"
+   #P"src/lisp/kernel/tag/min-end"
    #P"src/lisp/kernel/cmp/cmpwalk"
-   :was-pre-cmp
    #P"src/lisp/kernel/lsp/sharpmacros"
    #P"src/lisp/kernel/lsp/assert"
    #P"src/lisp/kernel/lsp/numlib"
@@ -826,54 +817,42 @@ the stage, the +application-name+ and the +bitcode-name+"
    #P"src/lisp/kernel/lsp/shiftf-rotatef"
    #P"src/lisp/kernel/lsp/assorted"
    #P"src/lisp/kernel/lsp/packlib"
-   ;;    cmp/cmpinterpreted
    #P"src/lisp/kernel/lsp/defpackage"
    #P"src/lisp/kernel/lsp/format"
-   #|
-   arraylib
-   numlib
-   |#
-    #P"src/lisp/kernel/clos/package"
-    #P"src/lisp/kernel/clos/hierarchy"
-    #P"src/lisp/kernel/clos/cpl"
-    #P"src/lisp/kernel/clos/std-slot-value"
-    #P"src/lisp/kernel/clos/slot"
-    #P"src/lisp/kernel/clos/boot"
-    #P"src/lisp/kernel/clos/kernel"
-    #P"src/lisp/kernel/clos/method"
-    #P"src/lisp/kernel/clos/combin"
-    #P"src/lisp/kernel/clos/std-accessors"
-    #P"src/lisp/kernel/clos/defclass"
-    #P"src/lisp/kernel/clos/slotvalue"
-    #P"src/lisp/kernel/clos/standard"
-    #P"src/lisp/kernel/clos/builtin"
-    #P"src/lisp/kernel/clos/change"
-    #P"src/lisp/kernel/clos/stdmethod"
-    #P"src/lisp/kernel/clos/generic"
-    :generic
-    #P"src/lisp/kernel/clos/fixup"
-    #P"src/lisp/kernel/clos/extraclasses"
-    #P"src/lisp/kernel/lsp/defvirtual"
-    :stage3
-    #P"src/lisp/kernel/clos/conditions"
-    #P"src/lisp/kernel/clos/print"
-    #P"src/lisp/kernel/clos/streams"
-    #P"src/lisp/kernel/lsp/pprint"
-    #P"src/lisp/kernel/clos/inspect"
-    :clos
-    #P"src/lisp/kernel/lsp/ffi"
-    #P"src/lisp/modules/sockets/sockets"
-    ;;    asdf/build/asdf
-    :front
-    #P"src/lisp/kernel/lsp/top"
-    #'maybe-insert-epilogue-bclasp
-    :all
-    :bclasp
-    #'add-cleavir-build-files
-    #'maybe-insert-epilogue-cclasp
-    :cclasp
-;;    lsp;pprint
-    ))
+   #P"src/lisp/kernel/clos/package"
+   #P"src/lisp/kernel/clos/hierarchy"
+   #P"src/lisp/kernel/clos/cpl"
+   #P"src/lisp/kernel/clos/std-slot-value"
+   #P"src/lisp/kernel/clos/slot"
+   #P"src/lisp/kernel/clos/boot"
+   #P"src/lisp/kernel/clos/kernel"
+   #P"src/lisp/kernel/clos/method"
+   #P"src/lisp/kernel/clos/combin"
+   #P"src/lisp/kernel/clos/std-accessors"
+   #P"src/lisp/kernel/clos/defclass"
+   #P"src/lisp/kernel/clos/slotvalue"
+   #P"src/lisp/kernel/clos/standard"
+   #P"src/lisp/kernel/clos/builtin"
+   #P"src/lisp/kernel/clos/change"
+   #P"src/lisp/kernel/clos/stdmethod"
+   #P"src/lisp/kernel/clos/generic"
+   #P"src/lisp/kernel/clos/fixup"
+   #P"src/lisp/kernel/clos/extraclasses"
+   #P"src/lisp/kernel/lsp/defvirtual"
+   #P"src/lisp/kernel/clos/conditions"
+   #P"src/lisp/kernel/clos/print"
+   #P"src/lisp/kernel/clos/streams"
+   #P"src/lisp/kernel/lsp/pprint"
+   #P"src/lisp/kernel/clos/inspect"
+   #P"src/lisp/kernel/lsp/ffi"
+   #P"src/lisp/modules/sockets/sockets"
+   #P"src/lisp/kernel/lsp/top"
+   #P"src/lisp/kernel/lsp/epilogue-bclasp"
+   #P"src/lisp/kernel/tag/bclasp"
+   #'add-cleavir-build-files
+   #P"src/lisp/kernel/lsp/epilogue-cclasp"
+   #P"src/lisp/kernel/tag/cclasp"
+   ))
 
 (defun expand-build-file-list (sources)
   "Copy the list of symbols and pathnames into files
@@ -916,7 +895,7 @@ Return files."
 (defun select-source-files (last-file &key first-file (system *system-files*))
   (or first-file (error "You must provide first-file to select-source-files"))
   (or system (error "You must provide system to select-source-files"))
-  (let ((cur (member first-file system))
+  (let ((cur (member first-file system :test #'equal))
 	files
 	file)
     (or cur (error "first-file ~a was not a member of ~a" first-file system))
@@ -978,7 +957,7 @@ Return files."
      done)))
 
 
-(defun compile-system (files &key reload (system *system-files*))
+(defun compile-system (files &key reload)
   #+dbg-print(bformat t "DBG-PRINT compile-system files: %s\n" files)
   (with-compilation-unit ()
     (let* ((cur files)

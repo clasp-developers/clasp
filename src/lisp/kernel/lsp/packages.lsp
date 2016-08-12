@@ -94,9 +94,7 @@
             +process-standard-input+
             external-process-wait
             external-process-status
-            all-encodings
             compiled-function-name
-            *invoke-debugger-hook*
             system
             float-nan-string
             float-infinity-string
