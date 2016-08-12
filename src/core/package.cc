@@ -508,7 +508,7 @@ bool Package_O::usePackage(Package_sp usePackage) {
       ss << " " << *si;
     }
     SIMPLE_ERROR(BF("Error: Name conflict when importing package[%s]"
-                    " into package[%s] - conflicting symbols: %s") %
+                    " into package[%s]\n - conflicting symbols: %s") %
                  usePackage->getName() % this->getName() % (ss.str()));
   }
   this->_UsingPackages.push_back(usePackage);
