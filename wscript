@@ -415,7 +415,10 @@ def configure(cfg):
     print("llvm_release_lib_dir = %s" % llvm_release_lib_dir )
 ### Uncommenting these checks causes problems-- AttributeError: 'BuildContext' object has no attribute 'variant_obj'
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
-    cfg.check_cxx(lib='gc',stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    try:
+        cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
+    except ConfigurationError:
+        cfg.check_cxx(lib='gc', cflags='-Wall', uselib_store='BOEHM')
     cfg.check_cxx(stlib='z', cflags='-Wall', uselib_store='Z')
     if (cfg.env['DEST_OS'] == LINUX_OS ):
         cfg.check_cxx(lib='dl', cflags='-Wall', uselib_store='DL')
@@ -718,7 +721,7 @@ class link_fasl(Task.Task):
             cmd = "%s %s %s -flto=thin -fuse-ld=gold -shared -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
-        print(" link_fasl cmd: %s" % cmd)
+        print(" link_fasl cmd: %s\n" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -734,7 +737,7 @@ class link_executable(Task.Task):
             cmd = "%s %s %s %s %s %s -flto=thin -fuse-ld=gold -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
-        print(" link_executable cmd: %s" % cmd)
+        print(" link_executable cmd: %s\n" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
