@@ -508,6 +508,28 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
+std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol ) {
+  std::string str_error{ "" };
+  void *p_sym = nullptr;
+
+  dlerror(); // clear any earlier error
+
+  if( ! p_handle ) {
+    fprintf( stderr, "%s:%d Handle is NULL! (Symbol = %s)\n",
+             __FILE__, __LINE__, pc_symbol );
+  }
+  else {
+    p_sym = dlsym( p_handle, pc_symbol );
+    if( p_sym == nullptr ) {
+      str_error = dlerror();
+      fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
+               __FILE__, __LINE__, p_handle, str_error.c_str() );
+    }
+  }
+
+  return std::make_tuple( p_sym, str_error );
+}
+
 CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   void *handle = NULL;
@@ -537,12 +559,15 @@ CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
     }
   }
   string ts = name->get();
-  dlerror(); // clear any previous error
-  void *ptr = dlsym(handle, ts.c_str());
-  if (ptr == NULL) {
-    return _Nil<T_O>();
+  auto result = do_dlsym(handle, ts.c_str());
+
+  void * p_sym = std::get<0>( result );
+
+  if( p_sym == nullptr ) {
+    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
   }
-  return Pointer_O::create(ptr);
+
+  return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
 }
 
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");

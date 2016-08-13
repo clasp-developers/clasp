@@ -503,4 +503,23 @@ CL_DEFUN T_sp core__PERCENTdlclose( ForeignData_sp handle ) {
   return ( Values( _lisp->_true(), _Nil<T_O>()) );
 }
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFUN T_sp core__PERCENTdlsym( Str_sp name ) {
+
+  ForeignData_sp sp_sym;
+  auto result = do_dlsym( RTLD_DEFAULT, name->get().c_str() );
+  void *p_sym = std::get<0>( result );
+
+  if( ! p_sym ) {
+    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
+  }
+
+  sp_sym = ForeignData_O::create( p_sym );
+  sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
+
+  return ( Values( sp_sym, _Nil<T_O>()) );
+}
+
+
 }; // namespace core

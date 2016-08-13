@@ -62,6 +62,7 @@ functionality but before any Common Lisp startup functions are invoked. */
 
   std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode);
   std::tuple< int, string > do_dlclose(void * p_handle);
+  std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol );
 
 };
 #endif /* _compiler_H_ */

@@ -72,6 +72,7 @@ namespace core {
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_built_in_type);
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_data);
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_pointer);
+  SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_symbol_pointer);
 
 // ---------------------------------------------------------------------------
 //   CLASSES & METHODS & FUNCTIONS
