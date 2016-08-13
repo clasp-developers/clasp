@@ -153,6 +153,8 @@ configure:
 build_cboehm:
 	./waf -j $(PJOBS) build_cboehm
 
+build_cboehmdc:
+	./waf -j $(PJOBS) build_cboehmdc
 
 redeye-prep:
 	./waf -j $(PJOBS) build_impsprep build_cboehmdc
