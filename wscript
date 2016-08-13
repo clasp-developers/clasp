@@ -195,9 +195,9 @@ class variant(object):
     def bitcode_name(self):
         return "%s%s"%(self.gc_name,self.debug_extension())
     def cxx_all_bitcode_name(self):
-        return '%s-all-cxx.a' % self.bitcode_name()
+        return 'fasl/%s-all-cxx.a' % self.bitcode_name()
     def intrinsics_bitcode_name(self):
-        return '%s-intrinsics-cxx.a' % self.bitcode_name()
+        return 'fasl/%s-intrinsics-cxx.a' % self.bitcode_name()
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
