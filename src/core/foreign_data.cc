@@ -438,9 +438,10 @@ T mem_ref( cl_intptr_t address ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTmem_ref( T_sp adress_or_foreign_data_ptr,
+CL_DEFUN T_sp core__PERCENTmem_ref( T_sp address_or_foreign_data_ptr,
                                     T_sp atype,
                                     Integer_sp offset ) {
+  IMPLEMENT_ME();
 
 #if 0
   cl_intptr_t address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
@@ -464,6 +465,15 @@ CL_DEFUN T_sp core__PERCENTmem_ref( T_sp adress_or_foreign_data_ptr,
  RETURN_FROM_CORE__PERCENT_MEM_REF:
 #endif
   return _Nil<T_O>();
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFUN T_sp core__PERCENTmem_sef( T_sp address_or_foreign_data_ptr,
+                                    T_sp atype,
+                                    Integer_sp offset,
+                                    T_sp value) {
+  IMPLEMENT_ME();
 }
 
 // ---------------------------------------------------------------------------

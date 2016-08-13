@@ -131,10 +131,6 @@ namespace core {
   // POINTER ADDRESS MANIPULATION
     ForeignData_sp PERCENTinc_pointer(Integer_sp offset);
 
-  // MEMORY ACEESS / MEMORY CONTENT CONVERSION
-    T_sp PERCENTmem_ref(T_sp type, Integer_sp offset);
-    void PERCENTmem_set(T_sp type, Integer_sp offset, T_sp value);
-
   // OBJECT PRINTING
     string __repr__() const;
 
@@ -149,8 +145,8 @@ namespace core {
     size_t m_size;
 
     void *m_orig_data_ptr;
-  // If we allocate memory then we save the address o  the original address.
-  // This enables changing the poimter of m__ata without loosing the ability
+  // If we allocate memory then we save the ptr to the original address.
+  // This enables changing the pointer of m_raw_data without loosing the ability
   // to free the originally allocated memory.
 
     void *m_raw_data;
@@ -160,6 +156,15 @@ namespace core {
   // FOREIGN TYPE SIZE AND ALIGNMENT
   Fixnum_sp core__PERCENTforeign_type_alignment(Symbol_sp atype);
   Fixnum_sp core__PERCENTforeign_type_size(Symbol_sp atype);
+
+  // LISP MEMORY ACEESS / MEMORY CONTENT CONVERSION
+  T_sp core__PERCENTmem_ref( T_sp address_or_foreign_data_ptr,
+                             T_sp type,
+                             Integer_sp offset);
+  void core__PERCENTmem_set( T_sp address_or_foreign_data_ptr,
+                             T_sp type,
+                             Integer_sp offset,
+                             T_sp value);
 
 // ---------------------------------------------------------------------------
   // FOREIGN MEMORY DIRECT ACCESS
