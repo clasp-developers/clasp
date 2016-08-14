@@ -143,7 +143,7 @@ endef
 
 all:
 	make configure
-	make build_cboehm
+	make build_cboehmdc
 
 configure:
 	make submodules
@@ -155,6 +155,7 @@ build_cboehm:
 
 build_cboehmdc:
 	./waf -j $(PJOBS) build_cboehmdc
+
 
 redeye-prep:
 	./waf -j $(PJOBS) build_impsprep build_cboehmdc

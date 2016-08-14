@@ -204,9 +204,7 @@ Lisp_O::GCRoots::GCRoots() :
                              _MultipleValuesCur(NULL),
                              _BignumRegister0(_Unbound<Bignum_O>()),
                              _BignumRegister1(_Unbound<Bignum_O>()),
-                             _BignumRegister2(_Unbound<Bignum_O>())
-                             ,
-                             _SystemProperties(_Nil<T_O>()),
+                             _BignumRegister2(_Unbound<Bignum_O>()) ,
                              _CatchInfo(_Nil<T_O>()),
                              _SpecialForms(_Unbound<HashTableEq_O>()),
                              _NullStream(_Nil<T_O>()),

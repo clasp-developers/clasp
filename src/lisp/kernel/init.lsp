@@ -409,14 +409,16 @@ Gives a global declaration.  See DECLARE for possible DECL-SPECs."
     bitcode-host))
 
 
-(defun strip-root (l)
-  "Search for the string 'kernel', 'module', or 'generated' and return the rest of the list that starts with that"
-  (or (member "src" l :test #'string=)
-      (member "generated" l :test #'string=)
-      (error "Could not find \"src\" or \"generated\" in ~a" l)))
+(defun strip-root (pn-dir)
+  "Remove the SOURCE-DIR: part of the path in l and then
+search for the string 'src', or 'generated' and return the rest of the list that starts with that"
+  (let ((rel (cdr (pathname-directory (enough-namestring (make-pathname :directory pn-dir) (translate-logical-pathname #P"SOURCE-DIR:"))))))
+    (or (member "src" rel :test #'string=)
+        (member "generated" rel :test #'string=)
+        (error "Could not find \"src\" or \"generated\" in ~a" rel))))
 
 (defun ensure-relative-pathname (input)
-  "If the input pathname is absolute then search for kernel, module, or generated and return
+  "If the input pathname is absolute then search for src, or generated and return
 a relative path from there."
   #+(or)(bformat t "ensure-relative-pathname input = %s   sys-pn = %s\n" input sys-pn)
   (let ((result
@@ -425,7 +427,7 @@ a relative path from there."
             (make-pathname :directory (pathname-directory input)
                            :name (pathname-name input)))
            ((eq :absolute (car (pathname-directory input)))
-            (make-pathname :directory (cons :relative (strip-root (cdr (pathname-directory input))))
+            (make-pathname :directory (cons :relative (strip-root (pathname-directory input)))
                            :name (pathname-name input)))
            (t (error "ensure-relative-pathname could not handle ~a" input)))))
     #+(or)(bformat t "ensure-relative-pathname result = %s\n" result)
@@ -730,24 +732,6 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (defun add-cleavir-build-files ()
   (compile-execute-time-value (read-cleavir-system)))
-
-(defun maybe-insert-epilogue-aclasp ()
-  "Insert epilogue if we are compiling aclasp"
-  (if (string= (default-target-stage) "a")
-      (list (list #P"src/lisp/kernel/lsp/epilogue" (list :epilogue-module-p t)))
-      nil))
-
-(defun maybe-insert-epilogue-bclasp ()
-  "Insert epilogue if we are compiling bclasp"
-  (if (string= (default-target-stage) "b")
-      (list (list #P"src/lisp/kernel/lsp/epilogue" (list :epilogue-module-p t)))
-      nil))
-
-(defun maybe-insert-epilogue-cclasp ()
-  "Insert epilogue if we are compiling cclasp"
-  (if (string= (default-target-stage) "c")
-      (list (list #P"src/lisp/kernel/lsp/epilogue" (list :epilogue-module-p t)))
-      nil))
 
 (defvar *build-files*
   (list

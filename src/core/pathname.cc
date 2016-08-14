@@ -1457,7 +1457,7 @@ CL_DEFUN Str_sp cl__host_namestring(T_sp tpname) {
 
 CL_LAMBDA(tpath &optional (defaults (core::safe-default-pathname-defaults)));
 CL_DECLARE();
-CL_DOCSTRING("enoughNamestring");
+CL_DOCSTRING("enough-namestring");
 CL_DEFUN Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   T_sp newpath, fname;
   Pathname_sp defaults = cl__pathname(tdefaults);
@@ -1474,8 +1474,30 @@ CL_DEFUN Str_sp cl__enough_namestring(T_sp tpath, T_sp tdefaults) {
   } else {
     /* The new pathname is an absolute one. We compare it with the defaults
 	   and if they have some common elements, we just output the remaining ones. */
+#if 1
+    // Implement MISMATCH for this special case
+    T_sp tdir_begin = _Nil<T_O>();
+    int mismatch = 0;
+    List_sp lpathdir = gc::As<List_sp>(pathdir);
+    List_sp ldefaultdir = gc::As<List_sp>(defaultdir);
+    while (1) {
+      if ( lpathdir.nilp() && ldefaultdir.nilp() ) break;
+      if ( lpathdir.nilp() || ldefaultdir.nilp() ) {
+        tdir_begin = core::clasp_make_fixnum(mismatch);
+        break;
+      }
+      if ( !cl__equal(oCar(lpathdir),oCar(ldefaultdir)) ) {
+        tdir_begin = core::clasp_make_fixnum(mismatch);
+        break;
+      }
+      lpathdir = oCdr(lpathdir);
+      ldefaultdir = oCdr(ldefaultdir);
+      ++mismatch;
+    }
+#else
     /*Integer_sp*/ T_sp tdir_begin = eval::funcall(cl::_sym_mismatch, pathdir, defaultdir,
                                                    kw::_sym_test, cl::_sym_equal);
+#endif
     if (tdir_begin.nilp()) {
       pathdir = _Nil<T_O>();
     } else {
