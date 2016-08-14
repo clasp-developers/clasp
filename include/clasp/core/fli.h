@@ -1,5 +1,5 @@
 /*
-    File: foreign_data.h
+    File: fli.h
 */
 
 /*
@@ -29,15 +29,25 @@ THE SOFTWARE.
 
 // ===========================================================================
 //
-//  FOREIGN DATA  - Foreign Data Interface for allocating, setting,
-//                  getting and freeing foreign memory.
+//  FLI - Foreign Language Interface for allocating, setting,
+//        getting and freeing foreign memory and calling foreign
+//        functions.
 //
-//  August 2016 by Frank Goenninger, Gönninger B&T UG, Germany
+//  Augiust 2016 by Frank Goenninger, Gönninger B&T UG, Germany
 //
 // ===========================================================================
 
-#if !defined(__CLASP_CORE_FOREIGN_DATA_H__)
-#define __CLASP_CORE_FOREIGN_DATA_H__ __FILE__" $Id$"
+// --- IMPLEMEMTATION NOTES ---
+//
+// The complete FLI is comprised of the following files:
+// .../src/core/fli.cc            - corresponding .cc file
+// .../include/clasp/core/fli.h   - this file
+// .../src/lisp/kernel/fli.lsp    - Lisp land macros and functions
+//
+// --- END OF IMPLEMEMTATION NOTES ---
+
+#if !defined(__CLASP_CORE_FLI_H__)
+#define __CLASP_CORE_FLI_H__ __FILE__" $Id$"
 
 // ---------------------------------------------------------------------------
 //    SYSTEM INCLUDES
@@ -191,4 +201,4 @@ struct gctools::GCInfo<core::ForeignData_O> {
 // ---------------------------------------------------------------------------
 
 #endif // __cplusplus
-#endif // __CLASP_CORE_FOREIGN_DATA_H__
+#endif // __CLASP_CORE_FLI_H__

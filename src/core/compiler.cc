@@ -28,13 +28,18 @@ THE SOFTWARE.
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
 #define DEBUG_LEVEL_FULL
+
+#include <dlfcn.h>
+#ifdef _TARGET_OS_DARWIN
+#import <mach-o/dyld.h>
+#endif
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/record.h>
 #include <clasp/core/lisp.h>
-#include <dlfcn.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lightProfiler.h>
@@ -56,11 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
-
-#ifdef _TARGET_OS_DARWIN
-#import <mach-o/dyld.h>
-#endif
-
 
 namespace core {
 
@@ -451,6 +451,8 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
 }
 #endif
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode) {
   void * p_handle = nullptr;
   std::string str_error{ "" };
@@ -468,6 +470,8 @@ std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode)
   return std::make_tuple( p_handle, str_error );
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 std::tuple< int, string > do_dlclose(void * p_handle) {
 
   std::string str_error{ "" };
@@ -492,6 +496,8 @@ std::tuple< int, string > do_dlclose(void * p_handle) {
   return std::make_tuple( n_rc, str_error );
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
@@ -508,6 +514,8 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol ) {
   std::string str_error{ "" };
   void *p_sym = nullptr;
@@ -530,6 +538,8 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
   return std::make_tuple( p_sym, str_error );
 }
 
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   void *handle = NULL;

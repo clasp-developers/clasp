@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <sys/select.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/foreign_data.h> // frgo, 2016-08-09: CHANGED
+#include <clasp/core/fli.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/core/wrappers.h>

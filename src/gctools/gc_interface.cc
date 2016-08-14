@@ -145,7 +145,7 @@ typedef bool _Bool;
 #include <clasp/core/sharpEqualWrapper.h>
 #include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/weakHashTable.h>
-#include <clasp/core/foreign_data.h> // frgo, 2016-08-09: ADDED
+#include <clasp/core/fli.h>
 #include <clasp/gctools/gc_boot.h>
 
 //#include <clasp/core/clc.h>

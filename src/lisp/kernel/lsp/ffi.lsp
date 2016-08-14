@@ -3,6 +3,15 @@
 ;;; NOTE:
 ;;; C++ base support for FFI is in fli.h/.cc and in externalObject.h/.cc
 
+;;; -- IMPLEMEMTATION NOTES ---
+;;;
+;;; The complete FLI is comprised of the following files:
+;;; .../src/core/fli.cc            - corresponding .cc file
+;;; .../include/clasp/core/fli.h   - corresponding .h file
+;;; .../src/lisp/kernel/fli.lsp    - this file
+;;;
+;;; --- END OF IMPLEMEMTATION NOTES ---
+
 ;;;----------------------------------------------------------------------
 ;;;----------------------------------------------------------------------
 ;;; MACROS

@@ -136,7 +136,7 @@ def build(bld):
             'intArray',
             'bitVector',
             'posixTime',
-            'foreign_data' ]:
+            'fli' ]:
         full_name = name+'.cc'
         node = bld.path.find_node(full_name)
         assert node != None, "Could not find %s/%s" % ( bld.path.abspath(), full_name )

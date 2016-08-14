@@ -1,5 +1,5 @@
 /*
-    File: foreign_data.cc
+    File: fli.cc
 */
 
 /*
@@ -28,8 +28,9 @@ THE SOFTWARE.
 
 // ===========================================================================
 //
-//  FOREIGN DATA - Foreign Data Interface for allocating, setting,
-//                 getting and freeing foreign memory.
+//  FLI - Foreign Language Interface for allocating, setting,
+//        getting and freeing foreign memory and calling foreign
+//        functions.
 //
 //  Augiust 2016 by Frank Goenninger, Gönninger B&T UG, Germany
 //
@@ -37,17 +38,10 @@ THE SOFTWARE.
 
 // --- IMPLEMEMTATION NOTES ---
 //
-// HOW-TO: Global symbol instantion with gc::Initializer's :
-//
-// 20:33:22	drmeister	Yeah, declare a function like:
-//                               void initialize_symbol_foo() {...}
-// 20:33:57	drmeister	Then declare a global: core::Initializer
-//                              static_initializer_for_symbol_foo(initialize
-//                              _symbol_foo);
-// 20:34:15	drmeister	You have to #include <clasp/core/compiler.h>
-// 20:34:53	drmeister	That will register initialize_symbol_foo as a
-//                              callback to be invoked once clasp is at a
-//                              reasonable level of initialization.
+// The complete FLI is comprised of the following files:
+// .../src/core/fli.cc            - this file
+// .../include/clasp/core/fli.h   - corresponding .h file
+// .../src/lisp/kernel/fli.lsp    - Lisp land macros and functions
 //
 // --- END OF IMPLEMEMTATION NOTES ---
 
@@ -75,7 +69,7 @@ THE SOFTWARE.
 #include <clasp/core/lisp.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/foreign_data.h>
+#include <clasp/core/fli.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/str.h>
 #include <clasp/core/designators.h>
