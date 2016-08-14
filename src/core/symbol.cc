@@ -50,9 +50,6 @@ CL_LAMBDA(sym);
 CL_DECLARE();
 CL_DOCSTRING("Return the symbol plist");
 CL_DEFUN List_sp cl__symbol_plist(Symbol_sp sym) {
-  if (sym.nilp()) {
-    return _Nil<List_V>();
-  };
   return sym->plist();
 }
 
@@ -60,9 +57,11 @@ CL_LAMBDA(sym indicator &optional default);
 CL_DECLARE();
 CL_DOCSTRING("Return the symbol plist");
 CL_DEFUN T_sp cl__get(Symbol_sp sym, T_sp indicator, T_sp defval) {
+#if 0
   if (sym.nilp()) {
     return cl__getf(coerce_to_list(cl::_sym_nil), indicator, defval);
   }
+#endif
   return cl__getf(sym->_PropertyList, indicator, defval);
 }
 
