@@ -86,6 +86,8 @@
   (select-package :ext))
 (export '(*module-provider-functions*
           source-location
+          source-location-pathname
+          source-location-offset
           where
           compiled-function-name
           compiled-function-file

@@ -26,22 +26,49 @@
      (error "use source-location for methods"))
     (t (values nil 0 0))))
 
-(defun source-location (name kind)
-  "* Arguments
-- what : A symbol.
-- kind : A symbol (:function :method :class :variable)
-Return the source-location for the name/kind pair"
-  (error "Return the source-location for the ~a named ~a" kind name))
-#|   Use this in source-location
-     ;; Return a list of source info with absolute paths
-     (let ((rel-source-info (core:get-sysprop x 'core:cxx-method-source-info)))
-       (mapcar (lambda (file-pos)
-                 (let* ((file (car file-pos))
-                        (character-offset (cadr file-pos))
-                        (pn (pathname file)))
-                   (if (eq (car (pathname-directory pn)) :relative)
-                       (list (merge-pathnames pn (translate-logical-pathname "source-dir:")) character-offset)
-                       (list pn character-offset))))
-               rel-source-info)))
-|#     
 
+(defstruct source-location
+  pathname offset)
+
+(defun source-location-impl (name kind)
+  "* Arguments
+- name : A symbol.
+- kind : A symbol (:function :method :class)
+Return the source-location for the name/kind pair"
+  (labels ((fix-paths-and-make-source-locations (rels)
+             (let ((source-dir (translate-logical-pathname #P"source-dir:")))
+               (mapcar (lambda (dir-pos)
+                         (let ((dir (first dir-pos))
+                               (pos (second dir-pos)))
+                           (make-source-location :pathname (merge-pathnames dir source-dir)
+                                                 :offset pos)))
+                       rels))))
+    (cond
+      (:class
+       (let ((source-loc (list (core:get-sysprop name 'core:class-source-location))))
+         (fix-paths-and-make-source-locations source-loc)))
+      (:method
+       (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
+         (fix-paths-and-make-source-locations source-loc)))
+      (:function
+       (if (fboundp name)
+           (multiple-value-bind (file pos)
+               (compiled-function-file (fdefinition name))
+             (list (make-source-location :pathname file :offset pos)))
+           (values nil))))))
+
+(defun source-location (obj kind)
+  "* Arguments
+- obj : A symbol or object.
+- kind : A symbol (:function :method :class t)
+Return the source-location for the name/kind pair"
+  (cond
+    ((eq kind t)
+     (cond
+       ((clos:classp obj) (source-location-impl (class-name obj) :class))
+       ((multiple-value-bind (file pos)
+            (compiled-function-file obj)
+          (list (make-source-location :pathname file :offset pos))))
+       (t (error "Cannot obtain source-location for ~a" obj))))
+    ((symbolp kind) (source-location-impl obj kind))
+    (t (error "Cannot obtain source-location for ~a of kind ~a" obj kind))))
