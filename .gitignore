@@ -19,3 +19,4 @@ boost_build_v2/engine/bootstrap
 build/
 projects/
 build2/
+waf

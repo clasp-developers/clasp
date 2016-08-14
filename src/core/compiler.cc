@@ -28,13 +28,18 @@ THE SOFTWARE.
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
 #define DEBUG_LEVEL_FULL
+
+#include <dlfcn.h>
+#ifdef _TARGET_OS_DARWIN
+#import <mach-o/dyld.h>
+#endif
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/record.h>
 #include <clasp/core/lisp.h>
-#include <dlfcn.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lightProfiler.h>
@@ -56,11 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
-
-#ifdef _TARGET_OS_DARWIN
-#import <mach-o/dyld.h>
-#endif
-
 
 namespace core {
 
@@ -332,7 +332,7 @@ CL_DEFUN T_sp core__startup_image_pathname() {
 };
 
 
-  
+
 CL_LAMBDA(name &optional verbose print external-format);
 CL_DECLARE();
 CL_DOCSTRING("loadBundle");
@@ -405,7 +405,7 @@ LOAD:
 #ifdef EXPOSE_DLLOAD
 CL_DOCSTRING("dlload - Open a dynamic library and evaluate the 'init_XXXX' extern C function. Returns (values returned-value error-message(or nil if no error)");
 CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
-  string lib_extension = ".dylib";
+  string lib_extension;
 #ifdef _TARGET_OS_DARWIN
   lib_extension = ".dylib";
 #endif
@@ -451,25 +451,95 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
 }
 #endif
 
-CL_LAMBDA(pathDesig);
-CL_DECLARE();
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode) {
+  void * p_handle = nullptr;
+  std::string str_error{ "" };
+
+  dlerror(); // clear any previous error
+
+  p_handle = dlopen( str_path.c_str(), n_mode );
+
+  if ( ! p_handle ) {
+    str_error = dlerror();
+    fprintf( stderr, "%s:%d Could not open %s - error: %s\n",
+             __FILE__, __LINE__, str_path.c_str(), str_error.c_str());
+  }
+
+  return std::make_tuple( p_handle, str_error );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+std::tuple< int, string > do_dlclose(void * p_handle) {
+
+  std::string str_error{ "" };
+  int n_rc = 0;
+
+  dlerror(); // clear any previous error
+
+  if( ! p_handle ) {
+    str_error = "Library handle is invalid (NULL/NIL)!";
+    n_rc = -1;
+  }
+  else {
+    n_rc = dlclose( p_handle );
+
+    if ( n_rc != 0 ) {
+      str_error = dlerror();
+      fprintf( stderr, "%s:%d Could not close dynamic library (handle %p) - error: %s !\n",
+             __FILE__, __LINE__, p_handle, str_error.c_str());
+    }
+  }
+
+  return std::make_tuple( n_rc, str_error );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
-  string lib_extension = ".dylib";
+
   int mode = RTLD_NOW | RTLD_LOCAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
   string ts0 = path->asString();
-  void *handle = dlopen(ts0.c_str(), mode);
-  if (!handle) {
-    printf("%s:%d Could not open %s  error: %s\n", __FILE__, __LINE__, ts0.c_str(), dlerror());
-    string error = dlerror();
-    return (Values(_Nil<T_O>(), Str_O::create(error)));
+
+  auto result = do_dlopen( ts0, mode );
+  void * handle = std::get<0>( result );
+
+  if( handle == nullptr ) {
+    return (Values(_Nil<T_O>(), Str_O::create( get<1>( result ))));
   }
   return (Values(Pointer_O::create(handle), _Nil<T_O>()));
 }
 
-CL_LAMBDA(name &optional (handle :rtld-default));
-CL_DECLARE();
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol ) {
+  std::string str_error{ "" };
+  void *p_sym = nullptr;
+
+  dlerror(); // clear any earlier error
+
+  if( ! p_handle ) {
+    fprintf( stderr, "%s:%d Handle is NULL! (Symbol = %s)\n",
+             __FILE__, __LINE__, pc_symbol );
+  }
+  else {
+    p_sym = dlsym( p_handle, pc_symbol );
+    if( p_sym == nullptr ) {
+      str_error = dlerror();
+      fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
+               __FILE__, __LINE__, p_handle, str_error.c_str() );
+    }
+  }
+
+  return std::make_tuple( p_sym, str_error );
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   void *handle = NULL;
@@ -499,23 +569,23 @@ CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
     }
   }
   string ts = name->get();
-  void *ptr = dlsym(handle, ts.c_str());
-  if (ptr == NULL) {
-    return _Nil<T_O>();
+  auto result = do_dlsym(handle, ts.c_str());
+
+  void * p_sym = std::get<0>( result );
+
+  if( p_sym == nullptr ) {
+    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
   }
-  return Pointer_O::create(ptr);
+
+  return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
 }
 
-CL_LAMBDA(addr);
-CL_DECLARE();
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
 CL_DEFUN void core__call_dl_main_function(Pointer_sp addr) {
   InitFnPtr mainFunctionPointer = (InitFnPtr)addr->ptr();
   (*mainFunctionPointer)(LCC_PASS_ARGS0_VA_LIST_INITFNPTR());
 }
 
-CL_LAMBDA(addr);
-CL_DECLARE();
 CL_DOCSTRING("(call dladdr with the address and return nil if not found or the contents of the Dl_info structure as multiple values)");
 CL_DEFUN T_mv core__dladdr(Integer_sp addr) {
   uint64_t val = clasp_to_uint64(addr);
@@ -779,7 +849,7 @@ void allocateStackFrame5() {
   STACK_FRAME(buff, frame, 5);
 }
 #endif
- 
+
 Cons_sp consList5() {
   T_sp val = _Nil<T_O>();
   return Cons_O::createList(val, val, val, val, val);
@@ -815,7 +885,7 @@ CL_DEFUN T_mv core__operations_per_second(int op, T_sp arg) {
   int val = 0;
   for (int i = 0; i < 5; ++i)
     frame1[i] = make_fixnum(++val).raw_();
-  
+
   ALLOC_STACK_VALUE_FRAME(frameImpl2, frame2, 5);
   frame::SetParentFrame(frame2, frame1);
   T_O **values2 = frame::ValuesArray(frame1);
@@ -1251,6 +1321,3 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 }
 
 }; /* namespace */
-
-
-        

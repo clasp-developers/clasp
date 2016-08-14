@@ -220,7 +220,7 @@ devemacs_no_clasp_lisp_source_dir:
 devshell:
 	@echo This shell sets up environment variables
 	@echo as they are defined when commands execute within the makefile
-	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) bash)
+	(CLASP_LISP_SOURCE_DIR=$(DEV_CLASP_LISP_SOURCE_DIR) bash -l)
 
 
 devshell-telemetry:

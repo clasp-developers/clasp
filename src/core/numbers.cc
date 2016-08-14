@@ -1462,13 +1462,26 @@ Integer_sp Integer_O::create(uint64_t v) {
   return Bignum_O::create(z);
 }
 #endif
-};
+Integer_sp Integer_O::create(cl_intptr_t v) {  // ADDED, frgo 2016-08-10
+  if (v <= gc::most_positive_fixnum) {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create(z);
+}
 
-namespace core {
 uint64_t Integer_O::as_uint64_() const {
   SUBIMP();
-};
+}
 
+cl_intptr_t Integer_O::as_cl_intptr_t_() const {
+  SUBIMP();
+}
+
+}; // namespace core
 
 
 SYMBOL_EXPORT_SC_(ClPkg, logand);
@@ -1487,7 +1500,7 @@ SYMBOL_EXPORT_SC_(ClPkg, logxor);
 
 
 
-
+namespace core {
 
 // ------------------------------------------------------------------------
 
@@ -1637,26 +1650,8 @@ Integer_sp LongFloat_O::castToInteger() const {
 }
 
 Number_sp LongFloat_O::copy() const {
-  _OF();
   return LongFloat_O::create(this->_Value);
 }
-
-#if defined(XML_ARCHIVE)
-void LongFloat_O::archiveBase(ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->attribute("val", this->_Value);
-}
-#endif // defined(XML_ARCHIVE)
-
-#if defined(OLD_SERIALIZE)
-void LongFloat_O::serialize(serialize::SNode node) {
-  if (node->saving()) {
-    // node.setObject(this->sharedThis<DoubleFloat_O>());
-  } else {
-    IMPLEMENT_ME();
-  }
-}
-#endif
 
 void LongFloat_O::setFromString(const string &str) {
   this->_Value = atof(str.c_str());
@@ -1677,7 +1672,6 @@ Number_sp LongFloat_O::abs() const {
 }
 
 void LongFloat_O::sxhash(HashGenerator &hg) const {
-  _OF();
   hg.addPart(std::abs(::floor(this->_Value)));
 }
 
@@ -1692,7 +1686,6 @@ bool LongFloat_O::eql(T_sp obj) const {
 }
 
 bool LongFloat_O::eqn(T_sp obj) const {
-  _OF();
   if (core__long_float_p(obj)) {
     LongFloat_sp t = obj.as<LongFloat_O>();
     return this->get() == t->get();
