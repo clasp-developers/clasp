@@ -207,6 +207,9 @@ void register_foreign_types(void) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(time,time_t,_sym_time,":time");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(pointer,void *,_sym_pointer,":pointer");
 
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(size,size_t,_sym_size,":size");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(ssize,ssize_t,_sym_ssize,":ssize");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(ptrdiff,ptrdiff_t,_sym_ptrdiff,":ptrdiff");
 };
 
 // ---------------------------------------------------------------------------
