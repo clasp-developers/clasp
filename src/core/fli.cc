@@ -279,6 +279,12 @@ void ForeignData_O::free() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+inline bool ForeignData_O::null_pointer_p() {
+  return ( this->raw_data() == nullptr );
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 CL_DEFMETHOD T_sp ForeignData_O::PERCENTkind() {
   return this->kind();
 }
@@ -361,6 +367,39 @@ CL_DEFUN ForeignData_sp ForeignData_O::PERCENTmake_nullpointer() {
   ForeignData_sp ptr = ForeignData_O::create( (const cl_intptr_t) 0 );
   ptr->m_kind = kw::_sym_clasp_foreign_data_kind_pointer;
   return ptr;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFUN T_sp core__PERCENTpointerp( T_sp obj ) {
+
+  ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
+
+  if( sp_foreign_data.nilp() ) {
+    return _Nil<T_O>();
+  }
+  else {
+    return _lisp->_true();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_DEFUN T_sp core__PERCENTnull_pointer_p( T_sp obj ) {
+
+  ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
+
+  if( sp_foreign_data.nilp() ) {
+    return _Nil<T_O>();
+  }
+  else {
+    if( sp_foreign_data->null_pointer_p() ) {
+      return _lisp->_true();
+    }
+    else {
+      return _Nil<T_O>();
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

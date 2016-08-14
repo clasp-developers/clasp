@@ -143,6 +143,7 @@ namespace core {
 
   // OBJECT PRINTING
     string __repr__() const;
+    bool null_pointer_p();
 
   private:
   // MENORY MGMT
@@ -161,6 +162,12 @@ namespace core {
 
     void *m_raw_data;
   }; // ForeignData_O
+
+// ---------------------------------------------------------------------------
+  // POINTER UTILS
+  T_sp core__PERCENTnull_pointer_p( T_sp obj );
+  T_sp core__PERCENTpointerp( T_sp obj );
+
 
 // ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE AND ALIGNMENT
@@ -189,12 +196,12 @@ namespace core {
 }; // namespace core
 
 // GC Policy Info for ForeignPataPtr_O imstances
-template <>
-struct gctools::GCInfo<core::ForeignData_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
+  template <>
+    struct gctools::GCInfo<core::ForeignData_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static GCInfo_policy constexpr Policy = normal;
+  };
 
 // ---------------------------------------------------------------------------
 //   END OF FILE
