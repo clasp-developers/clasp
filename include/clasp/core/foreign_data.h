@@ -179,12 +179,12 @@ namespace core {
 }; // namespace core
 
 // GC Policy Info for ForeignPataPtr_O imstances
-  template <>
-    struct gctools::GCInfo<core::ForeignData_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = true;
-    static GCInfo_policy constexpr Policy = normal;
-  };
+template <>
+struct gctools::GCInfo<core::ForeignData_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 // ---------------------------------------------------------------------------
 //   END OF FILE

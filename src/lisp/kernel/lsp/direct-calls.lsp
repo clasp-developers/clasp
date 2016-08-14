@@ -14,7 +14,9 @@
       (apply 'core:magic-name (cdr raw-lisp-name))
     (let ((lisp-name (find-symbol sym pkg))
           (source-info (gensym)))
-      (if (and (not (declared-global-inline-p lisp-name)) (dlsym c-name) (fboundp lisp-name))
+      (if (and (not (declared-global-inline-p lisp-name))
+               (dlsym c-name :rtld-default)
+               (fboundp lisp-name))
           `(progn
              (let ((,source-info (source-info (fdefinition ',lisp-name)))) ;;save source info
                (defun ,lisp-name ,lambda-list
@@ -24,4 +26,3 @@
                (set-source-info (fdefinition ',lisp-name) ,source-info)))
           `(unless core:*silent-startup*
              (bformat t "Will not generate wrapper for %s - the symbol is not available or set up for CL inlining\n" ',lisp-name))))))
-
