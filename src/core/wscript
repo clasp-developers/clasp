@@ -136,6 +136,7 @@ def build(bld):
             'intArray',
             'bitVector',
             'posixTime',
+            'clasp_ffi_package',
             'fli' ]:
         full_name = name+'.cc'
         node = bld.path.find_node(full_name)

@@ -38,15 +38,15 @@ namespace serveEvent {
 
 using namespace core;
 
-CL_DEFUN void serve_event_internal__ll_fd_zero(core::ForeignData_sp fdset) {
+CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) {
   FD_ZERO(fdset->data<fd_set *>());
 }
 
-CL_DEFUN void serve_event_internal__ll_fd_set(int fd, core::ForeignData_sp fdset) {
+CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) {
   FD_SET(fd, fdset->data<fd_set *>());
 }
 
-CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, core::ForeignData_sp fdset) {
+CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp fdset) {
   return FD_ISSET(fd, fdset->data<fd_set *>());
 }
 
@@ -54,12 +54,12 @@ CL_DEFUN int serve_event_internal__ll_fdset_size() {
   return sizeof(fd_set);
 }
 
-CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1) {
+CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1) {
   gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set *>(), wfd->data<fd_set *>(), NULL, NULL);
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
-CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(core::ForeignData_sp rfd, core::ForeignData_sp wfd, int maxfdp1, double seconds) {
+CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd, int maxfdp1, double seconds) {
   if (seconds < 0.0) {
     SIMPLE_ERROR(BF("Illegal timeout %lf seconds") % seconds);
   }

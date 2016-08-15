@@ -1,4 +1,4 @@
-(in-package :core)
+(in-package :clasp-ffi)
 
 ;;; NOTE:
 ;;; C++ base support for FFI is in fli.h/.cc and in externalObject.h/.cc

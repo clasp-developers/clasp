@@ -92,14 +92,14 @@ THE SOFTWARE.
 //   NAMESPACE
 // ---------------------------------------------------------------------------
 
-namespace core {
+namespace clasp_ffi {
 
 // ---------------------------------------------------------------------------
 //   FORWARD DECLARATIONS
 // ---------------------------------------------------------------------------
 
 static void register_foreign_types(void);
-static void register_foreign_type_spec(const Symbol_sp lispSymbol,
+static void register_foreign_type_spec(const core::Symbol_sp lispSymbol,
                                        const std::string &lispName,
                                        const size_t size,
                                        const size_t alignment,
@@ -109,19 +109,21 @@ static void register_foreign_type_spec(const Symbol_sp lispSymbol,
 //   TYPE DEFINTITIONS
 // ---------------------------------------------------------------------------
 
-using foreign_type_spec_t = struct {
-  Symbol_sp lispSymbol;
-  Str_sp lispName;
-  Fixnum_sp size;
-  Integer_sp alignment;
+// meister - changed this from using foreign_type_spec_t = struct {
+struct foreign_type_spec_t {
+  core::Symbol_sp lispSymbol;
+  core::Str_sp lispName;
+  core::Fixnum_sp size;
+  core::Integer_sp alignment;
   string cxxName;
 };
 
-using foreign_type_spec_table_t = std::vector<core::foreign_type_spec_t>;
+// meister - changed this from using foreign_type_spec_table_t = std::vector<core::foreign_type_spec_t>
+typedef gctools::Vec0<foreign_type_spec_t> foreign_type_spec_table_t;
 
 template <class T>
 struct register_foreign_type {
-  static void doit(Symbol_sp lispSymbol, const std::string &cxxName) {
+  static void doit(core::Symbol_sp lispSymbol, const std::string &cxxName) {
     size_t size = sizeof(T);
     size_t alignment = std::alignment_of<T>::value;
 
@@ -145,21 +147,21 @@ struct register_foreign_type {
 
 static foreign_type_spec_table_t FOREIGN_TYPE_SPEC_TABLE;
 
-Initializer global_initializer_for_foreign_types(register_foreign_types);
+core::Initializer global_initializer_for_foreign_types(register_foreign_types);
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
-void register_foreign_type_spec(const Symbol_sp lispSymbol,
+void register_foreign_type_spec(const core::Symbol_sp lispSymbol,
                                 const std::string& lispName,
                                 const size_t size,
                                 const size_t alignment,
                                 const std::string& cxxName) {
 
   foreign_type_spec_t foreign_type_spec = {lispSymbol,
-                                           Str_O::create( lispName ),
-                                           make_fixnum(size),
-                                           make_fixnum(alignment),
+                                           core::Str_O::create( lispName ),
+                                           core::make_fixnum(size),
+                                           core::make_fixnum(alignment),
                                            cxxName};
   FOREIGN_TYPE_SPEC_TABLE.emplace_back(foreign_type_spec);
 };
@@ -209,7 +211,7 @@ void register_foreign_types(void) {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignData_O::ForeignData_O() : m_kind(_Nil<T_O>()),
-                                 m_ownership_flags(ForeignDataFlagEnum::None),
+                                 m_ownership_flags(core::ForeignDataFlagEnum::None),
                                  m_size(0),
                                  m_orig_data_ptr(nullptr),
                                  m_raw_data(nullptr) {
@@ -219,7 +221,7 @@ ForeignData_O::ForeignData_O() : m_kind(_Nil<T_O>()),
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignData_O::~ForeignData_O() {
-  if ( this->m_ownership_flags & ForeignDataFlagEnum::DeleteOnDtor ) {
+  if ( this->m_ownership_flags & core::ForeignDataFlagEnum::DeleteOnDtor ) {
     this->free();
   }
 }
@@ -252,27 +254,27 @@ void * ForeignData_O::externalObject() const {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-bool ForeignData_O::eql_(T_sp obj) const {
+bool ForeignData_O::eql_(core::T_sp obj) const {
   if (core__external_object_p(obj)) {
-    return (gc::As<ExternalObject_sp>(obj)->externalObject() == this->externalObject());
+    return (gc::As<core::ExternalObject_sp>(obj)->externalObject() == this->externalObject());
   }
   return false;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::allocate(T_sp kind, ForeignDataFlagEnum ownership_flags, size_t size) {
+void ForeignData_O::allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size) {
   this->m_kind = kind;
   this->m_ownership_flags = ownership_flags;
   this->m_size = size;
-  this->m_raw_data = (void *)clasp_alloc_atomic(size);
+  this->m_raw_data = (void *)core::clasp_alloc_atomic(size);
   this->m_orig_data_ptr = this->m_raw_data;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 void ForeignData_O::free() {
-  clasp_dealloc( (char *)this->m_orig_data_ptr );
+  core::clasp_dealloc( (char *)this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
   this->m_size          = 0;
 }
@@ -285,36 +287,36 @@ inline bool ForeignData_O::null_pointer_p() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFMETHOD T_sp ForeignData_O::PERCENTkind() {
+CL_DEFMETHOD core::T_sp ForeignData_O::PERCENTkind() {
   return this->kind();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFMETHOD Integer_sp ForeignData_O::PERCENTownership_flags() {
-  return Integer_O::create( (gctools::Fixnum) this->ownership_flags());
+CL_DEFMETHOD core::Integer_sp ForeignData_O::PERCENTownership_flags() {
+  return core::Integer_O::create( (gctools::Fixnum) this->ownership_flags());
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFMETHOD Integer_sp ForeignData_O::PERCENTforeign_data_address() {
-  return Integer_O::create(this->data<cl_intptr_t>());
+CL_DEFMETHOD core::Integer_sp ForeignData_O::PERCENTforeign_data_address() {
+  return core::Integer_O::create(this->data<cl_intptr_t>());
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 CL_DOCSTRING("Allocate a chunk of memory for foreign-data");
-CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_object(T_sp kind) {
+CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_object(core::T_sp kind) {
   GC_ALLOCATE(ForeignData_O, obj);
-  Cons_sp ckind = gc::As<Cons_sp>(kind);
+  core::Cons_sp ckind = gc::As<core::Cons_sp>(kind);
   if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) ) {
     SIMPLE_ERROR(BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
   }
   if (!(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte)) {
     SIMPLE_ERROR(BF("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
   }
-  size_t size = unbox_fixnum(gc::As<Fixnum_sp>(oCaddr(ckind)));
-  obj->allocate(kind, DeleteOnDtor, size);
+  size_t size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
+  obj->allocate(kind, core::DeleteOnDtor, size);
   return obj;
 }
 
@@ -326,10 +328,10 @@ CL_DEFMETHOD void ForeignData_O::PERCENTfree_foreign_object() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_data(Integer_sp size) {
+CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_data(core::Integer_sp size) {
   size_t _size = unbox_fixnum( size );
   GC_ALLOCATE(ForeignData_O, self);
-  self->allocate( kw::_sym_clasp_foreign_data_kind_data, DeleteOnDtor, _size);
+  self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size);
   return self;
 }
 
@@ -359,8 +361,8 @@ ForeignData_sp ForeignData_O::create(void * p_address) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN ForeignData_sp ForeignData_O::PERCENTmake_pointer(T_sp address) {
-  ForeignData_sp ptr = ForeignData_O::create( clasp_to_cl_intptr_t( gc::As<Integer_sp>( address )) );
+CL_DEFUN ForeignData_sp ForeignData_O::PERCENTmake_pointer(core::T_sp address) {
+  ForeignData_sp ptr = ForeignData_O::create( clasp_to_cl_intptr_t( gc::As<core::Integer_sp>( address )) );
   ptr->m_kind = kw::_sym_clasp_foreign_data_kind_pointer;
   return ptr;
 }
@@ -375,12 +377,12 @@ CL_DEFUN ForeignData_sp ForeignData_O::PERCENTmake_nullpointer() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTpointerp( T_sp obj ) {
+CL_DEFUN core::T_sp core__PERCENTpointerp( core::T_sp obj ) {
 
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
   if( sp_foreign_data.nilp() ) {
-    return _Nil<T_O>();
+    return _Nil<core::T_O>();
   }
   else {
     return _lisp->_true();
@@ -389,26 +391,26 @@ CL_DEFUN T_sp core__PERCENTpointerp( T_sp obj ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTnull_pointer_p( T_sp obj ) {
+CL_DEFUN core::T_sp core__PERCENTnull_pointer_p( core::T_sp obj ) {
 
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
 
   if( sp_foreign_data.nilp() ) {
-    return _Nil<T_O>();
+    return _Nil<core::T_O>();
   }
   else {
     if( sp_foreign_data->null_pointer_p() ) {
       return _lisp->_true();
     }
     else {
-      return _Nil<T_O>();
+      return _Nil<core::T_O>();
     }
   }
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFMETHOD ForeignData_sp ForeignData_O::PERCENTinc_pointer( Integer_sp offset) {
+CL_DEFMETHOD ForeignData_sp ForeignData_O::PERCENTinc_pointer( core::Integer_sp offset) {
   cl_intptr_t new_address = 0;
   cl_intptr_t raw_data_address = reinterpret_cast<cl_intptr_t>( this->raw_data() );
   cl_intptr_t offset_ = clasp_to_cl_intptr_t( offset );
@@ -424,7 +426,7 @@ CL_DEFMETHOD ForeignData_sp ForeignData_O::PERCENTinc_pointer( Integer_sp offset
 CL_DOCSTRING("Return the memory alignment of a foreign type");
 CL_DEFUN core::Fixnum_sp core__PERCENTforeign_type_alignment(core::Symbol_sp atype) {
 
-  Fixnum_sp result = nullptr;
+  core::Fixnum_sp result = nullptr;
 
   auto iterator = FOREIGN_TYPE_SPEC_TABLE.begin();
   auto it_end = FOREIGN_TYPE_SPEC_TABLE.end();
@@ -437,7 +439,7 @@ CL_DEFUN core::Fixnum_sp core__PERCENTforeign_type_alignment(core::Symbol_sp aty
   }
 
   SIMPLE_ERROR(BF("No foreign type alignment available for %s") % _rep_(atype));
-  return _Nil<T_O>();
+  return _Nil<core::T_O>();
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
 
@@ -448,7 +450,7 @@ RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT:
 // ---------------------------------------------------------------------------
 CL_DOCSTRING("Return the size of a foreign type");
 CL_DEFUN core::Fixnum_sp core__PERCENTforeign_type_size(core::Symbol_sp atype) {
-  Fixnum_sp result = nullptr;
+  core::Fixnum_sp result = nullptr;
 
   auto iterator = FOREIGN_TYPE_SPEC_TABLE.begin();
   auto it_end = FOREIGN_TYPE_SPEC_TABLE.end();
@@ -461,7 +463,7 @@ CL_DEFUN core::Fixnum_sp core__PERCENTforeign_type_size(core::Symbol_sp atype) {
   }
 
   SIMPLE_ERROR(BF("No foreign type size available for %s") % _rep_(atype));
-  return _Nil<T_O>();
+  return _Nil<core::T_O>();
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
 
@@ -478,9 +480,9 @@ T mem_ref( cl_intptr_t address ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTmem_ref( T_sp address_or_foreign_data_ptr,
-                                    T_sp atype,
-                                    Integer_sp offset ) {
+CL_DEFUN core::T_sp core__PERCENTmem_ref( core::T_sp address_or_foreign_data_ptr,
+                                    core::T_sp atype,
+                                    core::Integer_sp offset ) {
   IMPLEMENT_ME();
 
 #if 0
@@ -504,72 +506,72 @@ CL_DEFUN T_sp core__PERCENTmem_ref( T_sp address_or_foreign_data_ptr,
 
  RETURN_FROM_CORE__PERCENT_MEM_REF:
 #endif
-  return _Nil<T_O>();
+  return _Nil<core::T_O>();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTmem_sef( T_sp address_or_foreign_data_ptr,
-                                    T_sp atype,
-                                    Integer_sp offset,
-                                    T_sp value) {
+CL_DEFUN core::T_sp core__PERCENTmem_sef( core::T_sp address_or_foreign_data_ptr,
+                                    core::T_sp atype,
+                                    core::Integer_sp offset,
+                                    core::T_sp value) {
   IMPLEMENT_ME();
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 CL_DOCSTRING("%dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
-CL_DEFUN T_sp core__PERCENTdlopen( T_sp path_designator ) {
+CL_DEFUN core::T_sp core__PERCENTdlopen( core::T_sp path_designator ) {
 
   ForeignData_sp sp_handle;
   int n_mode = RTLD_NOW | RTLD_GLOBAL;
 
-  Path_sp path = coerce::pathDesignator( path_designator );
+  core::Path_sp path = core::coerce::pathDesignator( path_designator );
   string str_path = path->asString();
 
-  auto result = do_dlopen( str_path, n_mode );
+  auto result = core::do_dlopen( str_path, n_mode );
   void * p_handle = std::get<0>( result );
 
   if( p_handle == nullptr ) {
-    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
   }
 
   sp_handle = ForeignData_O::create( p_handle );
   sp_handle->set_kind( kw::_sym_clasp_foreign_data_kind_dynamic_library );
 
-  return ( Values( sp_handle, _Nil<T_O>()) );
+  return ( Values( sp_handle, _Nil<core::T_O>()) );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTdlclose( ForeignData_sp handle ) {
+CL_DEFUN core::T_sp core__PERCENTdlclose( ForeignData_sp handle ) {
 
-  auto result = do_dlclose( handle->raw_data() );
+  auto result = core::do_dlclose( handle->raw_data() );
   int n_rc = std::get<0>( result );
 
   if( n_rc != 0 ) {
-    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
   }
-  return ( Values( _lisp->_true(), _Nil<T_O>()) );
+  return ( Values( _lisp->_true(), _Nil<core::T_O>()) );
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-CL_DEFUN T_sp core__PERCENTdlsym( Str_sp name ) {
+CL_DEFUN core::T_sp core__PERCENTdlsym( core::Str_sp name ) {
 
   ForeignData_sp sp_sym;
-  auto result = do_dlsym( RTLD_DEFAULT, name->get().c_str() );
+  auto result = core::do_dlsym( RTLD_DEFAULT, name->get().c_str() );
   void *p_sym = std::get<0>( result );
 
   if( ! p_sym ) {
-    return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
+    return ( Values(_Nil<core::T_O>(), core::Str_O::create( get<1>( result ))) );
   }
 
   sp_sym = ForeignData_O::create( p_sym );
   sp_sym->set_kind( kw::_sym_clasp_foreign_data_kind_symbol_pointer );
 
-  return ( Values( sp_sym, _Nil<T_O>()) );
+  return ( Values( sp_sym, _Nil<core::T_O>()) );
 }
 
 
-}; // namespace core
+}; // namespace clasp_ffi

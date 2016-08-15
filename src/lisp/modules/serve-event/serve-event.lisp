@@ -170,11 +170,10 @@
   ;; However we can fine out its size and allocate a char array of
   ;; the same size which can be used in its place.
   (let ((fsize (fdset-size)))
-    (with-foreign-objects ((rfd `(:array :unsigned-byte ,fsize))
-                           (wfd `(:array :unsigned-byte ,fsize)))
+    (clasp-ffi:with-foreign-objects ((rfd `(:array :unsigned-byte ,fsize))
+                                     (wfd `(:array :unsigned-byte ,fsize)))
       (fd-zero rfd)
       (fd-zero wfd)
-
       (let ((maxfd 0))
         ;; Load the descriptors into the relevant set
         (dolist (handler *descriptor-handlers*)

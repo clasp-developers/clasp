@@ -1125,16 +1125,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
 #endif
 
   ql::list features(_lisp);
-  //
-  // The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined
-  // Check src/Jamfile.jam to add definitions for other <target-os> types
-  //
   features << target_os;
-
-  //
-  // The following will fail at compile time if a _TARGET_OS_xxxx wasn't defined
-  // Check src/Jamfile.jam to add definitions for other <target-os> types
-  //
   features << address_model;
 
   // Now add other standard features
