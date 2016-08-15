@@ -307,8 +307,12 @@ CL_DOCSTRING("Allocate a chunk of memory for foreign-data");
 CL_DEFUN ForeignData_sp ForeignData_O::PERCENTallocate_foreign_object(T_sp kind) {
   GC_ALLOCATE(ForeignData_O, obj);
   Cons_sp ckind = gc::As<Cons_sp>(kind);
-  ASSERTF(oCar(ckind) == cl::_sym_array || oCar(ckind) == kw::_sym_array, BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
-  ASSERTF(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte, BF("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
+  if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) ) {
+    SIMPLE_ERROR(BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
+  }
+  if (!(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte)) {
+    SIMPLE_ERROR(BF("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
+  }
   size_t size = unbox_fixnum(gc::As<Fixnum_sp>(oCaddr(ckind)));
   obj->allocate(kind, DeleteOnDtor, size);
   return obj;
