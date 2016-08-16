@@ -1,5 +1,7 @@
 (in-package :clasp-ffi)
 
+(export '(with-foreign-objects))
+
 ;;; NOTE:
 ;;; C++ base support for FFI is in fli.h/.cc and in externalObject.h/.cc
 
