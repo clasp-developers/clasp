@@ -8,11 +8,11 @@ This document is for those who would like to become an actual contributor to Cla
 # Submission Constraints
 While we welcome submissions very much, we nevertheless need to enforce some rules and guidelines in order to keep things from looking like a plate of cold spaghetti. As Clasp does not have a big developer team at the moment, these rules are not too strict or roundabout. Submissions that do not follow them will be rejected.
 
-## Code Style
-Please follow the [LLVM style standard](http://llvm.org/docs/CodingStandards.html), in the very least concerning code formatting, indentation, and brace-style. There is a `.dir-locals.el` file at the Clasp root that should automatically configure the proper rules, if you happen to use Emacs. Otherwise you can run `clang-format` on your code with the settings from the `.clang-format` file, which you can find at the Clasp root as well.
-
 ## Setting up Your Work Area
 You will want to [fork](https://github.com/drmeister/clasp/fork) the Clasp repository, clone that to your machine and set up the upstream remote using `git remote add upstream https://github.com/drmeister/clasp`. While developing you should periodically synchronise your fork with the upstream as otherwise things can get too out of sync to still be mergeable. In case of updates from upstream, you should pull those in using `git pull --rebase upstream dev` while on your local `dev` or feature branch. **Only create merge commits if there is a conflict**; we'd like to keep a somewhat clean history.
+
+## Code Style
+Please follow the [LLVM style standard](http://llvm.org/docs/CodingStandards.html), in the very least concerning code formatting, indentation, and brace-style. There is a `.dir-locals.el` file at the Clasp root that should automatically configure the proper rules, if you happen to use Emacs. Otherwise you can run `clang-format` on your code with the settings from the `.clang-format` file, which you can find at the Clasp root as well.
 
 ## Branching and Committing
 You should never, *ever* commit to `testing` or `preview`. These branches are solely for build testing and should not receive any commits. If you do commit to them by mistake, switch to the `dev` branch, cherry-pick the commit, and then reset the `testing` branch to the commit before that.
