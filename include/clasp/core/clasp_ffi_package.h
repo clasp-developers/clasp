@@ -3,15 +3,15 @@
 */
 
 /*
-Copyright (c) 2014, Christian E. Schafmeister
- 
+Copyright (c) 2016, Christian E. Schafmeister
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -24,16 +24,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _clasp_ffi__H
-#define _clasp_ffi__H
+#if !defined( __CLASP_CORE_FFI_PACKAGE_H__ )
+#define __CLASP_CORE_FFI_PACKAGE_H__ __FILE__" $Id$"
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
 
+#if defined( __cplusplus )
+
 namespace clasp_ffi {
 
-void initialize_clasp_ffi_Package();
+  void initialize_clasp_ffi_package( void );
+
 };
 
-#endif
+#endif // __cplusplus
+#endif // __CLASP_CORE_FFI_PACKAGE_H__
