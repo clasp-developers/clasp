@@ -487,12 +487,9 @@ core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype) {
   auto it_end = sp_tst->end();
 
   for (; iterator != it_end; iterator++) {
-    ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
-    if ( sp_fts.notnilp() ) {
-      if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
-        result = sp_fts->PERCENTalignment();
-        goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
-      }
+    if ( iterator->lisp_symbol()->eql_( atype ) ) {
+      result = iterator->alignment;
+      goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
     }
   }
 
