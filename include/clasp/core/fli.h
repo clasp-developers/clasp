@@ -65,6 +65,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
+#include <clasp/gctools/containers.h>
 #include <clasp/core/externalObject.h>
 
 #if defined(__cplusplus)
@@ -86,10 +87,15 @@ namespace clasp_ffi {
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_pointer);
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_symbol_pointer);
 
+  // The Foreign Type Spec Table, accessible from Lisp
+  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,STARforeign_type_spec_tableSTAR);
+
 // ---------------------------------------------------------------------------
-//   CLASSES & METHODS & FUNCTIONS
+//   TYPEDEFS & CLASSES & METHODS & FUNCTIONS
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
   // CLASS ForeignData_O
 
   SMART(ForeignData);
@@ -99,17 +105,18 @@ namespace clasp_ffi {
                ForeignData_O, "ForeignData", core::ExternalObject_O);
 
   public:
-  // CTOR & DTOR
+
+    // CTOR & DTOR
     explicit ForeignData_O();
     virtual ~ForeignData_O(); // non-trivial
 
-  // OVERLADED FUNCTIONS
+    // OVERLADED FUNCTIONS
     void *externalObject() const;
     bool eql_(core::T_sp obj) const;
 
-  // SLOT ACCESS
+    // SLOT ACCESS
 
-  // -- SETTER & GETTER --
+    // -- SETTER & GETTER --
     const core::T_sp kind() { return m_kind; };
     void set_kind( core::T_sp kind ) { this->m_kind = kind; };
 
@@ -117,93 +124,156 @@ namespace clasp_ffi {
     const void *orig_data_ptr() { return m_orig_data_ptr; };
     void *raw_data() { return m_raw_data; };
 
-  // -- TRANSFORMING ACCESS --
+    // -- TRANSFORMING ACCESS --
     template <class T>
       T data() { return reinterpret_cast<T>(this->raw_data()); };
 
-  // LISP EXPOSED SETTER & GETTER METHODS
-    core::T_sp PERCENTkind();
-    core::Integer_sp PERCENTownership_flags();
-    core::Integer_sp PERCENTforeign_data_address();
+    // LISP EXPOSED SETTER & GETTER METHODS
+    CL_DEFMETHOD core::T_sp PERCENTkind();
+    CL_DEFMETHOD core::Integer_sp PERCENTownership_flags();
+    CL_DEFMETHOD core::Integer_sp PERCENTforeign_data_address();
 
-  // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
-
+    // MAKE AND CREATE
     static ForeignData_sp create(const cl_intptr_t address = 0);
     static ForeignData_sp create(void * p_address = nullptr);
 
-    static ForeignData_sp PERCENTmake_pointer(core::T_sp address);
-    static ForeignData_sp PERCENTmake_nullpointer();
+    // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
+    CL_DEFUN static ForeignData_sp PERCENTmake_pointer(core::T_sp address);
+    CL_DEFUN static ForeignData_sp PERCENTmake_nullpointer();
 
-    static ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
-    void PERCENTfree_foreign_object();
+    CL_DEFUN static ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
+    CL_DEFMETHOD void PERCENTfree_foreign_object();
 
-    static ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
-    void PERCENTfree_foreign_data();
+    CL_DEFUN static ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
+    CL_DEFMETHOD void PERCENTfree_foreign_data();
 
-  // POINTER ADDRESS MANIPULATION
-    ForeignData_sp PERCENTinc_pointer(core::Integer_sp offset);
+    // POINTER ADDRESS MANIPULATION
+    CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer(core::Integer_sp offset);
 
-  // OBJECT PRINTING
+    // OBJECT PRINTING
     string __repr__() const;
     bool null_pointer_p();
 
   private:
-  // MENORY MGMT
+
+    // MENORY MGMT
     void allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size);
     void free();
 
-  // SLOTS
+    // SLOTS
     core::T_sp m_kind;
     core::ForeignDataFlagEnum m_ownership_flags;
     size_t m_size;
 
     void *m_orig_data_ptr;
-  // If we allocate memory then we save the ptr to the original address.
-  // This enables changing the pointer of m_raw_data without loosing the ability
-  // to free the originally allocated memory.
+    // If we allocate memory then we save the ptr to the original address.
+    // This enables changing the pointer of m_raw_data without loosing the
+    // ability to free the originally allocated memory.
 
     void *m_raw_data;
+
   }; // ForeignData_O
 
-// ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // POINTER UTILS
-  core::T_sp core__PERCENTnull_pointer_p( core::T_sp obj );
-  core::T_sp core__PERCENTpointerp( core::T_sp obj );
+  CL_DEFUN core::T_sp PERCENTnull_pointer_p( core::T_sp obj );
+  CL_DEFUN core::T_sp PERCENTpointerp( core::T_sp obj );
 
-
-// ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE AND ALIGNMENT
-  core::Fixnum_sp core__PERCENTforeign_type_alignment(core::Symbol_sp atype);
-  core::Fixnum_sp core__PERCENTforeign_type_size(core::Symbol_sp atype);
+  CL_DEFUN core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype);
+  CL_DEFUN core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype);
 
   // LISP MEMORY ACEESS / MEMORY CONTENT CONVERSION
-  core::T_sp core__PERCENTmem_ref( core::T_sp address_or_foreign_data_ptr,
-                             core::T_sp type,
-                             core::Integer_sp offset);
-  void core__PERCENTmem_set( core::T_sp address_or_foreign_data_ptr,
-                             core::T_sp type,
-                             core::Integer_sp offset,
-                             core::T_sp value);
+  CL_DEFUN core::T_sp PERCENTmem_ref( core::T_sp address_or_foreign_data_ptr,
+                                      core::T_sp type,
+                                      core::Integer_sp offset);
+  CL_DEFUN void PERCENTmem_set( core::T_sp address_or_foreign_data_ptr,
+                                core::T_sp type,
+                                core::Integer_sp offset,
+                                core::T_sp value);
 
-// ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   // FOREIGN MEMORY DIRECT ACCESS
   template <class T>
     T mem_ref(cl_intptr_t address);
 
-// ---------------------------------------------------------------------------
-  // DYNAMIC LIBRARY LOADING AND UNLOADING
-  core::T_sp core__PERCENTdlopen( core::T_sp path_designator);
-  core::T_sp core__PERCENTdlclose( ForeignData_sp handle );
+  // ---------------------------------------------------------------------------
+  // DYNAMIC LIBRARY HANDLING
+  CL_DEFUN core::T_sp PERCENTdlopen( core::T_sp path_designator);
+  CL_DEFUN core::T_sp PERCENTdlclose( ForeignData_sp handle );
+  CL_DEFUN core::T_sp PERCENTdlsym( core::Str_sp name );
 
 }; // namespace clasp_ffi
 
-// GC Policy Info for ForeignPataPtr_O imstances
+// GC Policy Info for ForeignPataPtr_O instances
   template <>
     struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
     static bool constexpr NeedsInitialization = false;
     static bool constexpr NeedsFinalization = true;
     static GCInfo_policy constexpr Policy = normal;
   };
+
+namespace clasp_ffi {
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+  // CLASS ForeignTypeSpec_O
+
+  SMART(ForeignTypeSpec);
+
+  class ForeignTypeSpec_O : public core::General_O {
+    LISP_CLASS(clasp_ffi, Clasp_ffi_pkg,
+               ForeignTypeSpec_O, "ForeignTypeSpec", core::General_O);
+
+  public:
+
+    // CTOR & DTOR
+    explicit ForeignTypeSpec_O();
+    virtual ~ForeignTypeSpec_O();
+
+    // OVERLADED FUNCTIONS
+    bool eql_(ForeignTypeSpec_sp sp_obj) const;
+
+    // OBJECT PRINTING
+    string __repr__() const;
+
+    // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
+
+    static ForeignTypeSpec_sp create( core::Symbol_sp   lisp_symbol,
+                                      core::Str_sp      lisp_name,
+                                      core::Integer_sp  size,
+                                      core::Fixnum_sp   alignment,
+                                      core::Str_sp      cxx_name );
+
+    // SLOT ACCESS
+    CL_DEFMETHOD core::Symbol_sp   PERCENTlisp_symbol() { return m_lisp_symbol; };
+    CL_DEFMETHOD core::Str_sp      PERCENTlisp_name() { return m_lisp_name; };
+    CL_DEFMETHOD core::Integer_sp  PERCENTsize() { return m_size; };
+    CL_DEFMETHOD core::Fixnum_sp   PERCENTalignment() { return m_alignment; };
+    CL_DEFMETHOD core::Str_sp      PERCENTcxx_name() { return m_cxx_name; };
+
+    // SLOTS
+    core::Symbol_sp   m_lisp_symbol;
+    core::Str_sp      m_lisp_name;
+    core::Integer_sp  m_size;
+    core::Fixnum_sp   m_alignment;
+    core::Str_sp      m_cxx_name;
+
+  }; // ForeignTypeSpec_O
+
+  typedef gctools::Vec0<ForeignTypeSpec_O> foreign_type_spec_table_t;
+
+}; // namespace clasp_fffi
+
+// GC Policy Info for ForeignTypeSpec_O instances
+template <>
+struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 
 // ---------------------------------------------------------------------------
 //   END OF FILE
