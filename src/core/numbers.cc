@@ -1462,7 +1462,7 @@ Integer_sp Integer_O::create(uint64_t v) {
   return Bignum_O::create(z);
 }
 #endif
-Integer_sp Integer_O::create(cl_intptr_t v) {  // ADDED, frgo 2016-08-10
+Integer_sp Integer_O::create(cl_intptr_t v) {
   if (v <= gc::most_positive_fixnum) {
     return Integer_O::create((Fixnum)v);
   }
