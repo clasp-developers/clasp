@@ -915,6 +915,11 @@ class link_bitcode(Task.Task):
         cmd = "llvm-ar ru %s %s" % (self.outputs[0], all_inputs.getvalue())
 #        print("link_bitcode command: %s" % cmd )
         return self.exec_command(cmd)
+    def str(self):
+        return "Processing link_bitcode - all object files"
+#        master = self.generator.bld.producer
+#        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
+    
 
 class scrape(Task.Task):
     run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
@@ -936,6 +941,13 @@ class generated_headers(Task.Task):
             cmd.write(' %s' % f.abspath())
         return self.exec_command(cmd.getvalue())
 
+    def str(self):
+        return "Generating headers from all sif files"
+    
+#    def display(self):
+#        master = self.generator.bld.producer
+#        return "[%d/%d] Generating headers from all sif files\n" % (master.processed-1,master.total)
+    
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
