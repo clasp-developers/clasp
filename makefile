@@ -159,11 +159,10 @@ build_cboehmdc:
 
 redeye-prep:
 	./waf -j $(PJOBS) build_impsprep build_cboehmdc
-#	./waf -j $(PJOBS) build_cboehmdc
 
 redeye-run:
 	(cd build/boehmdc; \
-		./cclasp-boehmdc-o -f ignore-extensions \
+		./cclasp-boehmdc -f ignore-extensions \
 			-e "(require :clasp-analyzer)" \
 			-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database \"lib:compile_commands.json\")))" \
 			-e "(quit)")
