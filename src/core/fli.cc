@@ -99,7 +99,7 @@ namespace clasp_ffi {
 // ---------------------------------------------------------------------------
 
 void clasp_ffi_initialization(void);
-static void register_foreign_type_spec(foreign_type_spec_table_t& tst,
+static void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
                                        const core::Symbol_sp lispSymbol,
                                        const std::string &lispName,
                                        const size_t size,
@@ -112,11 +112,13 @@ static void register_foreign_type_spec(foreign_type_spec_table_t& tst,
 
 template <class T>
 struct register_foreign_type {
-  static void doit(foreign_type_spec_table_t& tst, core::Symbol_sp lispSymbol, const std::string &cxxName) {
+  static void doit( core::VectorObjects_sp sp_tst,
+                    core::Symbol_sp lispSymbol,
+                    const std::string &cxxName) {
     size_t size = sizeof(T);
     size_t alignment = std::alignment_of<T>::value;
 
-    register_foreign_type_spec(tst,
+    register_foreign_type_spec(sp_tst,
                                lispSymbol,
                                lispSymbol->symbolNameAsString(),
                                size,
@@ -132,7 +134,7 @@ struct register_foreign_type {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
-void register_foreign_type_spec(foreign_type_spec_table_t& tst,
+void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
                                 const core::Symbol_sp lisp_symbol,
                                 const std::string& lisp_name,
                                 const size_t size,
@@ -145,7 +147,7 @@ void register_foreign_type_spec(foreign_type_spec_table_t& tst,
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
                                core::Str_O::create( cxx_name ));
-  tst.emplace_back(sp_fts);
+  sp_tst->vectorPushExtend( sp_fts->asSmartPtr() );
 };
 
 // ---------------------------------------------------------------------------
@@ -155,49 +157,49 @@ CL_INITIALIZER void clasp_ffi_initialization(void) {
 
   // STEP 1 : REGISTER FOREIGN TYPES
 
-  foreign_type_spec_table_t tst;
+  core::VectorObjects_sp sp_tst = core::VectorObjects_O::make(_Nil<core::T_O>(), _Nil<core::T_O>(), 64, true, cl::_sym_T_O);
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,char,char,_sym_char,":char");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,char,char,_sym_char,":char");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
 
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,short,short,_sym_short,":short");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,unsigned_short,unsigned short,_sym_short,":short");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,int,int,_sym_int,":int");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,unsigned_int,unsigned int,_sym_unsigned_int,":unsigned int");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,long,long,_sym_long,":long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,unsigned_long,unsigned long,_sym_long,":unsigned long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,long_long,long long,_sym_long_long,":long long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,unsigned_long_long,unsigned long long,_sym_long_long,":unsigned long long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,uchar,unsigned char,_sym_char,":uchar");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,ushort,unsigned short,_sym_ushort,":ushort");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,uint,unsigned int,_sym_uint,":uint");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,ulong,unsigned long,_sym_ulong,":ulong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,llong,long long,_sym_llong,":llong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,ullong,unsigned long long,_sym_ullong,":ullong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,int8,int8_t,_sym_int8,":int8");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,uint8,uint8_t,_sym_uint8,":uint8");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,int16,int16_t,_sym_int16,":int16");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,uint16,uint16_t,_sym_uint16,":uint16");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,int32,int32_t,_sym_int32,":int32");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,uint32,uint32_t,_sym_uint32,":uint32");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,int64,int64_t,_sym_int64,":int64");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,uint64,uint64_t,_sym_uint64,":uint64");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,double,double,_sym_double,":double");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,single_float,float,_sym_single_float,":float");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,long_double,long double,_sym_long_double,":long-double");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,time,time_t,_sym_time,":time");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,pointer,void *,_sym_pointer,":pointer");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,short,short,_sym_short,":short");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,unsigned_short,unsigned short,_sym_short,":short");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,int,int,_sym_int,":int");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,unsigned_int,unsigned int,_sym_unsigned_int,":unsigned int");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,long,long,_sym_long,":long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,unsigned_long,unsigned long,_sym_long,":unsigned long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,long_long,long long,_sym_long_long,":long long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,unsigned_long_long,unsigned long long,_sym_long_long,":unsigned long long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,uchar,unsigned char,_sym_char,":uchar");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,ushort,unsigned short,_sym_ushort,":ushort");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,uint,unsigned int,_sym_uint,":uint");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,ulong,unsigned long,_sym_ulong,":ulong");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,llong,long long,_sym_llong,":llong");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,ullong,unsigned long long,_sym_ullong,":ullong");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,int8,int8_t,_sym_int8,":int8");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,uint8,uint8_t,_sym_uint8,":uint8");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,int16,int16_t,_sym_int16,":int16");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,uint16,uint16_t,_sym_uint16,":uint16");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,int32,int32_t,_sym_int32,":int32");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,uint32,uint32_t,_sym_uint32,":uint32");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,int64,int64_t,_sym_int64,":int64");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,uint64,uint64_t,_sym_uint64,":uint64");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,double,double,_sym_double,":double");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,single_float,float,_sym_single_float,":float");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,long_double,long double,_sym_long_double,":long-double");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,time,time_t,_sym_time,":time");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,pointer,void *,_sym_pointer,":pointer");
 
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,size,size_t,_sym_size,":size");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,ssize,ssize_t,_sym_ssize,":ssize");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(tst,ptrdiff,ptrdiff_t,_sym_ptrdiff,":ptrdiff");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,size,size_t,_sym_size,":size");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,ssize,ssize_t,_sym_ssize,":ssize");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,ptrdiff,ptrdiff_t,_sym_ptrdiff,":ptrdiff");
 
   //  - 1.2 : ASSIGN FOREGN TYPE SPEC TABLE TO GLOBAL SYMBOL
 
-  _sym_STARforeign_type_spec_tableSTAR->defparameter( tst );
+  _sym_STARforeign_type_spec_tableSTAR->defparameter( sp_tst );
 
   // CLASP FFI INITIALIZATION DONE
 };
@@ -304,7 +306,7 @@ core::Integer_sp ForeignData_O::PERCENTforeign_data_address() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTallocate_foreign_object(core::T_sp kind) {
+ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind) {
   GC_ALLOCATE(ForeignData_O, obj);
   core::Cons_sp ckind = gc::As<core::Cons_sp>(kind);
   if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) ) {
@@ -326,7 +328,7 @@ void ForeignData_O::PERCENTfree_foreign_object() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTallocate_foreign_data(core::Integer_sp size) {
+ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
   size_t _size = unbox_fixnum( size );
   GC_ALLOCATE(ForeignData_O, self);
   self->allocate( kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size);
@@ -344,7 +346,7 @@ void ForeignData_O::PERCENTfree_foreign_data() {
 ForeignData_sp ForeignData_O::create(const cl_intptr_t address) {
   GC_ALLOCATE(ForeignData_O, self);
   self->m_raw_data = reinterpret_cast<void *>( address );
-  self->m_kind = kw::_sym_clasp_foreign_data_kind_pointer;
+  self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return self;
 }
 
@@ -353,23 +355,23 @@ ForeignData_sp ForeignData_O::create(const cl_intptr_t address) {
 ForeignData_sp ForeignData_O::create(void * p_address) {
   GC_ALLOCATE(ForeignData_O, self);
   self->m_raw_data = p_address;
-  self->m_kind = kw::_sym_clasp_foreign_data_kind_pointer;
+  self->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return self;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTmake_pointer(core::T_sp address) {
+ForeignData_sp PERCENTmake_pointer(core::T_sp address) {
   ForeignData_sp ptr = ForeignData_O::create( clasp_to_cl_intptr_t( gc::As<core::Integer_sp>( address )) );
-  ptr->m_kind = kw::_sym_clasp_foreign_data_kind_pointer;
+  ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTmake_nullpointer() {
+ForeignData_sp PERCENTmake_nullpointer() {
   ForeignData_sp ptr = ForeignData_O::create( (const cl_intptr_t) 0 );
-  ptr->m_kind = kw::_sym_clasp_foreign_data_kind_pointer;
+  ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }
 
@@ -425,14 +427,17 @@ core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype) {
 
   core::Fixnum_sp result = nullptr;
 
-  foreign_type_spec_table_t tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
-  auto iterator = tst.begin();
-  auto it_end = tst.end();
+  core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
+  auto iterator = sp_tst->begin();
+  auto it_end = sp_tst->end();
 
   for (; iterator != it_end; iterator++) {
-    if ( iterator->lisp_symbol()->eql_( atype ) ) {
-      result = iterator->alignment;
-      goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
+    ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
+    if ( sp_fts.notnilp() ) {
+      if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
+        result = sp_fts->PERCENTalignment();
+        goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_ALIGNMENT;
+      }
     }
   }
 
@@ -450,14 +455,17 @@ core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype) {
 
   core::Fixnum_sp result = nullptr;
 
-  foreign_type_spec_table_t tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
-  auto iterator = tst.begin();
-  auto it_end = tst.end();
+  core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
+  auto iterator = sp_tst->begin();
+  auto it_end = sp_tst->end();
 
   for (; iterator != it_end; iterator++) {
-    if ( iterator->lisp_symbol()->eql_( atype ) ) {
-      result = iterator->size;
-      goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
+    ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
+    if ( sp_fts.notnilp() ) {
+      if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
+        result = sp_fts->PERCENTsize();
+        goto RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE;
+      }
     }
   }
 
