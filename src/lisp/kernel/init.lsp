@@ -85,6 +85,7 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (select-package :ext))
 (export '(*module-provider-functions*
+          *source-location-kinds*
           source-location
           source-location-pathname
           source-location-offset
