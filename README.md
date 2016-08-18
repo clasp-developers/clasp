@@ -32,7 +32,7 @@ Clasp has been successfully built on
 * **Debian Wheezy**
 * **OpenSuse 13.1**
 * **Gentoo**
-* **Arch**, currently requires downgrading Clang and LLVM to 3.6 .
+* **Arch**
 
 ### Building on OS X
 First you will need what is listed for OS X under the [dependencies](#external-dependencies). Next you need an additional step that is documented [on the wiki](https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang). The rest of the procedure is the same as for [building with externals-clasp](#building-with-externals-clasp).
