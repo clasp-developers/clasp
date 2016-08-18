@@ -65,7 +65,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
-#include <clasp/gctools/containers.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/externalObject.h>
 
 #if defined(__cplusplus)
@@ -137,14 +137,7 @@ namespace clasp_ffi {
     static ForeignData_sp create(const cl_intptr_t address = 0);
     static ForeignData_sp create(void * p_address = nullptr);
 
-    // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
-    CL_DEFUN static ForeignData_sp PERCENTmake_pointer(core::T_sp address);
-    CL_DEFUN static ForeignData_sp PERCENTmake_nullpointer();
-
-    CL_DEFUN static ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
     CL_DEFMETHOD void PERCENTfree_foreign_object();
-
-    CL_DEFUN static ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
     CL_DEFMETHOD void PERCENTfree_foreign_data();
 
     // POINTER ADDRESS MANIPULATION
@@ -154,11 +147,11 @@ namespace clasp_ffi {
     string __repr__() const;
     bool null_pointer_p();
 
-  private:
-
     // MENORY MGMT
     void allocate(core::T_sp kind, core::ForeignDataFlagEnum ownership_flags, size_t size);
     void free();
+
+  private:
 
     // SLOTS
     core::T_sp m_kind;
@@ -175,9 +168,15 @@ namespace clasp_ffi {
   }; // ForeignData_O
 
   // ---------------------------------------------------------------------------
-  // POINTER UTILS
-  CL_DEFUN core::T_sp PERCENTnull_pointer_p( core::T_sp obj );
+  // MAKE AND TEST FOREIGN DATA POINTER
+  CL_DEFUN ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
+  CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
+
+  CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::T_sp address);
   CL_DEFUN core::T_sp PERCENTpointerp( core::T_sp obj );
+
+  CL_DEFUN ForeignData_sp PERCENTmake_nullpointer();
+  CL_DEFUN core::T_sp PERCENTnull_pointer_p( core::T_sp obj );
 
   // ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE AND ALIGNMENT
@@ -261,8 +260,6 @@ namespace clasp_ffi {
     core::Str_sp      m_cxx_name;
 
   }; // ForeignTypeSpec_O
-
-  typedef gctools::Vec0<ForeignTypeSpec_O> foreign_type_spec_table_t;
 
 }; // namespace clasp_fffi
 
