@@ -556,9 +556,12 @@ Convert colons to underscores"
                             (let ((data (make-string (file-length stream))))
                               (read-sequence data stream)
                               data)))))
-      (unless (string= data-in-file code)
-        (with-open-file (stream pn :direction :output :if-exists :supersede)
-          (write-sequence code stream))))))
+      (if (string= data-in-file code)
+          (format t "There are no changes to ~a - not writing to file.~%" pn)
+          (progn
+            (format t "There are changes to ~a - writing to file.~%" pn)
+            (with-open-file (stream pn :direction :output :if-exists :supersede)
+              (write-sequence code stream)))))))
 
 (defun safe-app-config (key app-config)
   (let ((value (gethash key app-config)))
