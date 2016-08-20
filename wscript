@@ -704,7 +704,7 @@ def build(bld):
             bld.add_to_group(dsymutil_cclasp)
             bld.install_files('${PREFIX}/%s/%s'%(executable_dir,cclasp_dsym.name),cclasp_dsym_files,relative_trick=True,cwd=cclasp_dsym)
         bld.install_as('${PREFIX}/%s/%s' % (executable_dir, cclasp_executable.name), cclasp_executable, chmod=Utils.O755)
-        bld.symlink_as('${PREFIX}/%s/cclasp' % executable_dir, '%s' % cclasp_executable.name)
+        bld.symlink_as('${PREFIX}/%s/clasp' % executable_dir, '%s' % cclasp_executable.name)
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         bld.install_as('${PREFIX}/Contents/Resources/lib/%s' % variant.common_lisp_bitcode_name(stage='c'), cclasp_common_lisp_bitcode)
         # Build serve-event
@@ -721,9 +721,23 @@ def build(bld):
         cmp_asdf.set_outputs(asdf_fasl)
         bld.add_to_group(cmp_asdf)
         bld.install_as('${PREFIX}/Contents/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl'%variant.fasl_dir(stage="c"),asdf_fasl)
+        print("Final bld.path at symlinkstage = %s" % bld.path)
+        clasp_symlink_node = bld.path.find_or_declare("../clasp")
+        print("clasp_symlink_node =  %s" % clasp_symlink_node)
+        clasp_symlnk = clasp_symlink(env=bld.env)
+        clasp_symlnk.set_inputs(cclasp_executable)
+        clasp_symlnk.set_outputs(clasp_symlink_node)
+        bld.add_to_group(clasp_symlnk)
+
 
 from waflib import TaskGen
 from waflib import Task
+
+class clasp_symlink(Task.Task):
+    def run(self):
+        cmd = 'ln -fs %s %s' % (self.inputs[0],self.outputs[0])
+        return self.exec_command(cmd)
+
 
 class dsymutil(Task.Task):
     color = 'BLUE';
@@ -888,7 +902,7 @@ class compile_module(Task.Task):
         return super(compile_module, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile module using... '
-
+                               
 
 #class llvm_link(Task.Task):
 #    def run(self):
@@ -907,7 +921,7 @@ class build_extension_headers(Task.Task):
             if ( x != None ):
                 fout.write("#include \"%s\"\n" % x.abspath())
         fout.close()
-
+                               
 class link_bitcode(Task.Task):
     ext_out = ['.a']
     def run(self):
@@ -929,10 +943,13 @@ class scrape_with_preproc_scan(Task.Task):
     shell = False
 
     def scan(self):
+        saved_env = self.env
         self.env = self.env.derive()
         self.env.DEFINES = list(self.env.DEFINES)+["SCRAPING=1"]
-        return c_preproc.scan(self)
-    
+        scan_result = c_preproc.scan(self)
+        self.env = saved_env
+        return scan_result
+                               
     def keyword(ctx):
         return "Scraping with preproc.scan"
 
