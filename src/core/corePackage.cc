@@ -154,6 +154,7 @@ const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
 
+SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARinvoke_debugger_hookSTAR);
@@ -1066,6 +1067,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARloadHooksSTAR->defparameter(hooks);
   ext::_sym_STARdefault_external_formatSTAR->defparameter(_lisp->_true());
   ext::_sym_STARinspectorHookSTAR->defparameter(_Nil<T_O>());
+  ext::_sym_STARclasp_clang_pathSTAR->defparameter(Str_O::create(CLASP_CLANG_PATH));
   _sym_STARloadSearchListSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugInterpretedClosureSTAR->defparameter(_Nil<T_O>());
   _sym_STARdebugFlowControlSTAR->defparameter(_Nil<T_O>());
