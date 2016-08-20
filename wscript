@@ -113,6 +113,7 @@ def configure_clasp(cfg,variant):
 #    cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
 #    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
+    cfg.define("CLASP_CLANG_PATH",os.getenv("CLASP_CLANG_PATH"))
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
     cfg.define("VARIANT_NAME",variant.variant_name())
