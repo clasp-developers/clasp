@@ -37,6 +37,7 @@
 
 (defun discover-clang (&key debug (search-paths (external-path-paths)) (names *clang-names*))
   (or (ext:getenv "CLASP_CLANG_PATH")
+      (and ext:*clasp-clang-path* (stringp ext:*clasp-clang-path*) (probe-file (pathname ext:*clasp-clang-path*)))
       (dolist (path search-paths)
         (dolist (n names)
           (let ((cp (make-pathname :name n :type nil :defaults path)))
