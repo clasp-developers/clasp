@@ -539,7 +539,6 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
 }
 
 // -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
 CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
   void *handle = NULL;
@@ -547,8 +546,7 @@ CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
     SIMPLE_ERROR(BF("Invalid ohandle passed -> nil"));
   } else if (Pointer_sp phandle = ohandle.asOrNull<Pointer_O>()) {
     handle = phandle->ptr();
-  } else if (gc::IsA<Symbol_sp>(ohandle)) {
-    Symbol_sp sym = ohandle.asOrNull<Symbol_O>();
+  } else if (Symbol_sp sym = ohandle.asOrNull<Symbol_O>() ) {
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_default);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_next);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_self);
@@ -567,16 +565,15 @@ CL_DEFUN T_sp core__dlsym(Str_sp name, T_sp ohandle) {
     } else {
       SIMPLE_ERROR(BF("Illegal keyword[%s] for dlsym - only :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(sym));
     }
+  } else {
+    SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
   string ts = name->get();
   auto result = do_dlsym(handle, ts.c_str());
-
   void * p_sym = std::get<0>( result );
-
   if( p_sym == nullptr ) {
     return ( Values(_Nil<T_O>(), Str_O::create( get<1>( result ))) );
   }
-
   return ( Values(Pointer_O::create( p_sym ), _Nil<T_O>()) );
 }
 
@@ -621,31 +618,6 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   return eval::funcall(thunk);
 };
 
-#if 0
-CL_LAMBDA(fn &rest args);
-CL_DECLARE();
-CL_DOCSTRING("applysPerSecond");
-CL_DEFUN T_sp core__applys_per_second(T_sp fn, List_sp args) {
-  LightTimer timer;
-  int nargs = cl__length(args);
-  ALLOC_STACK_VALUE_FRAME(frameImpl, frame, nargs);
-  for (int pow = 0; pow < 16; ++pow) {
-    int times = 1 << pow * 2;
-    timer.reset();
-    timer.start();
-    // Fill frame here
-    for (int i(0); i < times; ++i) {
-      eval::applyLastArgsPLUSFirst(fn, args);
-    }
-    timer.stop();
-    if (timer.getAccumulatedTime() > 0.1) {
-      return DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime());
-    }
-  }
-  printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
-  return _Nil<T_O>();
-}
-#endif
 };
 
 extern "C" {
@@ -690,6 +662,8 @@ __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T
 };
 
 namespace core {
+
+
 
 #if 0
 CL_LAMBDA(stage fn &rest args);
