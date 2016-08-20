@@ -1,6 +1,7 @@
 def build(bld):
     for name in [
             'gc_interface',
+            'source_info',
             'gc_boot',
             'gcFunctions',
             'gctoolsPackage',
