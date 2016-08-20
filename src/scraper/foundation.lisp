@@ -26,7 +26,7 @@
 
 (defun setup-application-config (filename)
   (let ((config (read-application-config filename)))
-    (maphash (lambda (k v) (format t "key: ~s  value: ~s~%" k v))
-             config)
-    (finish-output)
+    #+(or)(progn
+            (maphash (lambda (k v) (format t "key: ~s  value: ~s~%" k v)) config)
+            (finish-output))
     config))
