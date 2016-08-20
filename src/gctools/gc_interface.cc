@@ -255,6 +255,9 @@ void initialize_functions()
 #endif
 };
 
+#if 0
+// I moved this into clasp/src/gctools/source_info.cc
+// so that changes in source info don't constantly force recompiles of gc_interface
 typedef enum { code_kind, method_kind, class_kind, variable_kind, unknown_kind } source_info_kind;
 NOINLINE void define_source_info(source_info_kind kind,
                         const string& lisp_name,
@@ -301,7 +304,7 @@ void initialize_source_info() {
 #endif
 #undef SOURCE_INFO
 };
-
+#endif
 
 
 
