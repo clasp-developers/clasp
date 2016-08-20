@@ -564,11 +564,6 @@ Convert colons to underscores"
           (format t   "| -------- | There are no changes to ~a.~%" pn)
           (progn
             (format t "| UPDATING | There are changes to ~a.~%" pn)
-=======
-          (format t "There are no changes to ~a - not writing to file.~%" pn)
-          (progn
-            (format t "There are changes to ~a - writing to file.~%" pn)
->>>>>>> Scraper now says when it is/isn't modifying files
             (with-open-file (stream pn :direction :output :if-exists :supersede)
               (write-sequence code stream)))))))
 
