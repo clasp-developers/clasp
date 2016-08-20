@@ -15,7 +15,7 @@
     (let ((lisp-name (find-symbol sym pkg))
           (source-info (gensym)))
       (if (and (not (declared-global-inline-p lisp-name))
-               (dlsym c-name :rtld-default)
+               (dlsym :rtld-default c-name)
                (fboundp lisp-name))
           `(progn
              (let ((,source-info (source-info (fdefinition ',lisp-name)))) ;;save source info
