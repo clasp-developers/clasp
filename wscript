@@ -1,4 +1,5 @@
 import subprocess
+from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
 from waflib.Tools.compiler_c import c_compiler
 #cxx_compiler['linux'] = ['clang++']
@@ -915,20 +916,27 @@ class link_bitcode(Task.Task):
         cmd = "llvm-ar ru %s %s" % (self.outputs[0], all_inputs.getvalue())
 #        print("link_bitcode command: %s" % cmd )
         return self.exec_command(cmd)
+    def str(self):
+        return "Processing link_bitcode - all object files"
+#        master = self.generator.bld.producer
+#        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
+    
 
-class scrape(Task.Task):
+class scrape_with_preproc_scan(Task.Task):
     run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
+    shell = False
 
-    def exec_command(self, cmd, **kw):
-        kw['stdout'] = sys.stdout
-        return super(scrape, self).exec_command(cmd, **kw)
-
+    def scan(self):
+        self.env = self.env.derive()
+        self.env.DEFINES = list(self.env.DEFINES)+["SCRAPING=1"]
+        return c_preproc.scan(self)
+    
     def keyword(ctx):
-        return "Scraping"
+        return "Scraping with preproc.scan"
 
 class generated_headers(Task.Task):
-    ext_out = ['.h']
+#    ext_out = ['.h']
     def run(self):
         cmd = StringIO()
         cmd.write('generate-headers-from-all-sifs src/main/')
@@ -936,6 +944,13 @@ class generated_headers(Task.Task):
             cmd.write(' %s' % f.abspath())
         return self.exec_command(cmd.getvalue())
 
+    def str(self):
+        return "Generating headers from all sif files"
+    
+#    def display(self):
+#        master = self.generator.bld.producer
+#        return "[%d/%d] Generating headers from all sif files\n" % (master.processed-1,master.total)
+    
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
@@ -950,7 +965,7 @@ def scrape_task_generator(self):
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
                 sif_node = node.change_ext('.sif')
-                self.create_task('scrape',node,[sif_node])
+                self.create_task('scrape_with_preproc_scan',node,[sif_node])
                 all_sif_files.append(sif_node)
             for node in task.outputs:
 #                print("node = %s" % node.get_src())
