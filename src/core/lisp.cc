@@ -45,6 +45,7 @@ THE SOFTWARE.
 #pragma GCC diagnostic pop
 //#i n c l u d e	"boost/fstream.hpp"
 #include <clasp/gctools/gc_interface.h>
+#include <clasp/gctools/source_info.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
