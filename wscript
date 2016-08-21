@@ -721,14 +721,13 @@ def build(bld):
         cmp_asdf.set_outputs(asdf_fasl)
         bld.add_to_group(cmp_asdf)
         bld.install_as('${PREFIX}/Contents/Resources/lib/%s/src/lisp/modules/asdf/asdf.fasl'%variant.fasl_dir(stage="c"),asdf_fasl)
-        print("Final bld.path at symlinkstage = %s" % bld.path)
-        clasp_symlink_node = bld.path.find_or_declare("../clasp")
+        build_node = bld.path.find_dir(out)
+        print("build_node = %s" % build_node)
+        clasp_symlink_node = build_node.make_node("clasp")
         print("clasp_symlink_node =  %s" % clasp_symlink_node)
-        clasp_symlnk = clasp_symlink(env=bld.env)
-        clasp_symlnk.set_inputs(cclasp_executable)
-        clasp_symlnk.set_outputs(clasp_symlink_node)
-        bld.add_to_group(clasp_symlnk)
-
+        if (os.path.islink(clasp_symlink_node.abspath())):
+            os.unlink(clasp_symlink_node.abspath())
+        os.symlink(cclasp_executable.abspath(),clasp_symlink_node.abspath())
 
 from waflib import TaskGen
 from waflib import Task

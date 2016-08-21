@@ -519,22 +519,13 @@ CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol ) {
   std::string str_error{ "" };
   void *p_sym = nullptr;
-
   dlerror(); // clear any earlier error
-
-  if( ! p_handle ) {
-    fprintf( stderr, "%s:%d Handle is NULL! (Symbol = %s)\n",
-             __FILE__, __LINE__, pc_symbol );
+  p_sym = dlsym( p_handle, pc_symbol );
+  if( p_sym == nullptr ) {
+    str_error = dlerror();
+    fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
+             __FILE__, __LINE__, p_handle, str_error.c_str() );
   }
-  else {
-    p_sym = dlsym( p_handle, pc_symbol );
-    if( p_sym == nullptr ) {
-      str_error = dlerror();
-      fprintf( stderr, "%s:%d Could not get symbol address in dynamic library (handle %p) - error: %s !\n",
-               __FILE__, __LINE__, p_handle, str_error.c_str() );
-    }
-  }
-
   return std::make_tuple( p_sym, str_error );
 }
 
@@ -548,12 +539,16 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
   } else if (Pointer_sp phandle = ohandle.asOrNull<Pointer_O>()) {
     handle = phandle->ptr();
   } else if (Symbol_sp sym = ohandle.asOrNull<Symbol_O>() ) {
+//    printf("%s:%d handle is symbol: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_default);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_next);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_self);
     SYMBOL_EXPORT_SC_(KeywordPkg, rtld_main_only);
     if (sym == kw::_sym_rtld_default) {
+//      printf("%s:%d handle is RDLD_DEFAULT\n", __FILE__, __LINE__ );
       handle = RTLD_DEFAULT;
+//      printf("%s:%d RTLD_DEFAULT = %p\n", __FILE__, __LINE__, RTLD_DEFAULT);
+//      printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
     } else if (sym == kw::_sym_rtld_next) {
       handle = RTLD_NEXT;
 #ifndef _TARGET_OS_LINUX
@@ -569,6 +564,7 @@ CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
   } else {
     SIMPLE_ERROR(BF("Illegal handle argument[%s] for dlsym only a pointer or :rtld-next :rtld-self :rtld-default :rtld-main-only are allowed") % _rep_(ohandle));
   }
+//  printf("%s:%d handle = %p\n", __FILE__, __LINE__, handle);
   string ts = name->get();
   auto result = do_dlsym(handle, ts.c_str());
   void * p_sym = std::get<0>( result );
