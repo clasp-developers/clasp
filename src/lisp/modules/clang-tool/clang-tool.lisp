@@ -877,7 +877,7 @@ Return the source code for the node that has been associated with the tag."
                                                    :defaults relative) absolute))
          (probed-file (probe-file pathname)))
     (if (null probed-file)
-        (format nil "Could not locate ~a --> after merging ~a" relative pathname)
+        (error "ploc-as-string could not locate ~a --> after merging ~a]" relative pathname)
         (format nil "~a:~a:~a" (namestring probed-file) (ast-tooling:get-line ploc) (ast-tooling:get-column ploc)))))
 
 
