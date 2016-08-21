@@ -732,12 +732,6 @@ def build(bld):
 from waflib import TaskGen
 from waflib import Task
 
-class clasp_symlink(Task.Task):
-    def run(self):
-        cmd = 'ln -fs %s %s' % (self.inputs[0],self.outputs[0])
-        return self.exec_command(cmd)
-
-
 class dsymutil(Task.Task):
     color = 'BLUE';
     def run(self):
