@@ -530,7 +530,8 @@ std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol )
 }
 
 // -----------------------------------------------------------------------------
-CL_DOCSTRING("(dlsym handle name) handle is from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
+// -----------------------------------------------------------------------------
+CL_DOCSTRING("(dlsym handle name) handle is pointer from dlopen or :rtld-next, :rtld-self, :rtld-default or :rtld-main-only (see dlsym man page) returns ptr or nil if not found.");
 CL_DEFUN T_sp core__dlsym(T_sp ohandle, Str_sp name) {
   void *handle = NULL;
   if (ohandle.nilp()) {
