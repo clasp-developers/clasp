@@ -132,14 +132,34 @@ struct register_foreign_type {
                                cxxName);
   };
 };
-
 // ---------------------------------------------------------------------------
 //   GLOBAL DECLARATIONS AND SPECIAL VARS
 // ---------------------------------------------------------------------------
 
+
 // ---------------------------------------------------------------------------
+//   FUNCTIONS & METHODS
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+inline void setup_endianess_info(void) {
+
+  core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
+
+  if ( htonl(47) == 47 ) {
+    // Big Endian
+    features = core::Cons_O::create(kw::_sym_big_endian, features);
+  } else {
+    // Little Endian.
+    features = core::Cons_O::create(kw::_sym_little_endian, features);
+  }
+
+  cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
                                 uint32_t n_index,
                                 const core::Symbol_sp lisp_symbol,
