@@ -54,6 +54,7 @@ THE SOFTWARE.
 #include <type_traits>
 
 #include <dlfcn.h>
+#include <arpa/inet.h> // for htonl
 
 // ---------------------------------------------------------------------------
 //   LLVM INCLUDES
@@ -98,6 +99,8 @@ namespace clasp_ffi {
 //   FORWARD DECLARATIONS
 // ---------------------------------------------------------------------------
 
+void setup_endianess_info(void);
+void register_foreign_types(void);
 void clasp_ffi_initialization(void);
 static void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
                                        uint32_t n_index,
@@ -157,8 +160,7 @@ void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-
-CL_INITIALIZER void clasp_fli_initialization(void) {
+inline void register_foreign_types( void ) {
 
   uint32_t n_index = 0;
 
@@ -208,6 +210,20 @@ CL_INITIALIZER void clasp_fli_initialization(void) {
 
   _sym_STARforeign_type_spec_tableSTAR->defparameter( sp_tst );
 
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+CL_INITIALIZER void clasp_fli_initialization(void) {
+
+  // 1 - REGISTER FOREIGN TYPES
+
+  register_foreign_types();
+
+  // 2 - SETUP ENDIANESS INFO
+
+  setup_endianess_info();
+
   // CLASP FFI INITIALIZATION DONE
 };
 
@@ -245,6 +261,7 @@ inline string ForeignData_O::__repr__() const {
      << " @ " << (BF("%p") % this)
      << " :kind " << this->m_kind
      << " :size " << this->m_size
+     << " :ownership-flags " << this->m_ownership_flags
      << " :data-ptr "
      << (BF("%p") % this->m_raw_data)
      << " :orig-ptr "
@@ -314,17 +331,28 @@ core::Integer_sp ForeignData_O::PERCENTforeign_data_address() {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind) {
-  GC_ALLOCATE(ForeignData_O, obj);
-  core::Cons_sp ckind = gc::As<core::Cons_sp>(kind);
-  if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) ) {
-    SIMPLE_ERROR(BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
+
+  size_t n_size = 0;
+
+  if( core::cl__symbolp( kind ) ) {
+    n_size = PERCENTforeign_type_size( kind );
   }
-  if (!(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte)) {
+  else {
+    // Get the size out of kind's value of form (:array n)
+    core::Cons_sp ckind = gc::As<core::Cons_sp>(kind);
+    if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) ) {
+      SIMPLE_ERROR(BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
+    }
+    if (!(oCadr(ckind) == cl::_sym_UnsignedByte || oCadr(ckind) == kw::_sym_UnsignedByte)) {
     SIMPLE_ERROR(BF("The second element of a foreign-data type must be UNSIGNED-BYTE or :UNSIGNED-BYTE"));
+    }
+    n_size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
   }
-  size_t size = unbox_fixnum(gc::As<core::Fixnum_sp>(oCaddr(ckind)));
-  obj->allocate(kind, core::DeleteOnDtor, size);
-  return obj;
+
+  GC_ALLOCATE(ForeignData_O, self);
+  self->allocate( kind, core::DeleteOnDtor, n_size );
+
+  return self;
 }
 
 // ---------------------------------------------------------------------------

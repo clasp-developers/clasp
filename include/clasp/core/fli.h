@@ -90,6 +90,10 @@ namespace clasp_ffi {
   // The Foreign Type Spec Table, accessible from Lisp
   SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,STARforeign_type_spec_tableSTAR);
 
+  // Endianness
+  SYMBOL_EXPORT_SC_(KeywordPkg,big_endian);
+  SYMBOL_EXPORT_SC_(KeywordPkg,little_endian);
+
 // ---------------------------------------------------------------------------
 //   TYPEDEFS & CLASSES & METHODS & FUNCTIONS
 // ---------------------------------------------------------------------------
@@ -186,11 +190,11 @@ namespace clasp_ffi {
   // LISP MEMORY ACEESS / MEMORY CONTENT CONVERSION
   CL_DEFUN core::T_sp PERCENTmem_ref( core::T_sp address_or_foreign_data_ptr,
                                       core::T_sp type,
-                                      core::Integer_sp offset);
+                                      core::Integer_sp offset );
   CL_DEFUN void PERCENTmem_set( core::T_sp address_or_foreign_data_ptr,
                                 core::T_sp type,
                                 core::Integer_sp offset,
-                                core::T_sp value);
+                                core::T_sp value );
 
   // ---------------------------------------------------------------------------
   // FOREIGN MEMORY DIRECT ACCESS
