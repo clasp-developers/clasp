@@ -629,7 +629,7 @@ def build(bld):
     if (stage_val >= 1):   
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
-        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+#        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
@@ -930,8 +930,8 @@ class link_bitcode(Task.Task):
         cmd = "llvm-ar ru %s %s" % (self.outputs[0], all_inputs.getvalue())
 #        print("link_bitcode command: %s" % cmd )
         return self.exec_command(cmd)
-    def str(self):
-        return "Processing link_bitcode - all object files"
+    def __str__(self):
+        return "link_bitcode - linking all object(bitcode) files."
 #        master = self.generator.bld.producer
 #        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
     
@@ -961,8 +961,8 @@ class generated_headers(Task.Task):
             cmd.write(' %s' % f.abspath())
         return self.exec_command(cmd.getvalue())
 
-    def str(self):
-        return "Generating headers from all sif files"
+    def __str__(self):
+        return "generating headers from all sif files."
     
 #    def display(self):
 #        master = self.generator.bld.producer
