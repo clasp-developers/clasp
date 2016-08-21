@@ -411,7 +411,7 @@ Find directories that look like them and replace the ones defined in the constan
 
 (defconstant +resource-dir+ 
   #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
-  #+target-os-linux "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/3.8.0"
+  #+target-os-linux (format nil "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/~a.0" (ext::llvm-short-version))
   #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+

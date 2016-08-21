@@ -2727,6 +2727,9 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod ignorable-ctype-p ((ctype dependent-name-ctype)) t)
 (defmethod ignorable-ctype-p ((ctype smart-ptr-ctype)) nil)
 (defmethod ignorable-ctype-p ((ctype tagged-pointer-ctype)) nil)
+(defmethod ignorable-ctype-p ((ctype unknown-ctype))
+  (warn "ignorable-ctype-p called with ~a" ctype)
+  t)
 
 (defun make-table (strings)
   (let ((ht (make-hash-table :test #'equal)))
@@ -3024,6 +3027,9 @@ Pointers to these objects are fixed in obj_scan or they must be roots."
 (defmethod fix-variable-p ((var tagged-pointer-ctype) analysis) t)
 (defmethod fix-variable-p ((var class-template-specialization-ctype) analysis) nil)
 (defmethod fix-variable-p ((var constant-array-ctype) analysis) nil)
+(defmethod fix-variable-p ((var unknown-ctype) analysis)
+  (warn "fix-variable-p called with ~a" var)
+  nil)
 (defmethod fix-variable-p ((var pointer-ctype) analysis)
   (let ((pointee (pointer-ctype-pointee var)))
     (cond
