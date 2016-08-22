@@ -8,6 +8,8 @@
 
 (defun compiled-function-file (x)
   (cond
+    ((and x (fboundp x) (core:single-dispatch-generic-function-p (fdefinition x)))
+     (error "use source-location for methods"))
     ((and x (functionp x))
      (multiple-value-bind (sfi pos lineno)
          (core:function-source-pos x)
@@ -22,8 +24,6 @@
                             (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
                             src-pathname)))
                (return-from compiled-function-file (values pn filepos lineno))))))))
-    ((and x (fboundp x) (core:single-dispatch-generic-function-p (fdefinition x)))
-     (error "use source-location for methods"))
     (t (values nil 0 0))))
 
 
@@ -44,19 +44,22 @@ Return the source-location for the name/kind pair"
                            (make-source-location :pathname (merge-pathnames dir source-dir)
                                                  :offset pos)))
                        rels))))
-    (cond
+    (case kind
       (:class
        (let ((source-loc (list (core:get-sysprop name 'core:class-source-location))))
          (fix-paths-and-make-source-locations source-loc)))
       (:method
-       (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
-         (fix-paths-and-make-source-locations source-loc)))
+          (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
+            (fix-paths-and-make-source-locations source-loc)))
       (:function
-       (if (fboundp name)
-           (multiple-value-bind (file pos)
-               (compiled-function-file (fdefinition name))
-             (list (make-source-location :pathname file :offset pos)))
-           (values nil))))))
+       (cond
+         ((and (fboundp name) (core:single-dispatch-generic-function-p (fdefinition name)))
+          (source-location name :method))
+         ((fboundp name)
+          (multiple-value-bind (file pos)
+              (compiled-function-file (fdefinition name))
+            (list (make-source-location :pathname file :offset pos))))
+         (values nil))))))
 
 (defparameter *source-location-kinds* '(:class :method :function))
 
