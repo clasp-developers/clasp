@@ -154,10 +154,16 @@ def debug_ext(c):
     if (c):
         return "-%s"%c
     return ""
+def debug_dir_ext(c):
+    if (c):
+        return "_%s"%c
+    return ""
 
 class variant(object):
     def debug_extension(self):
         return debug_ext(self.debug_char)
+    def debug_dir_extension(self):
+        return debug_dir_ext(self.debug_char)
     def executable_name(self,stage=None):
         if ( stage == None ):
             use_stage = self.stage_char
@@ -191,7 +197,7 @@ class variant(object):
             raise Exception("Bad stage: %s"% use_stage)
         return '%s%s-%s-common-lisp.bc' % (use_stage,APP_NAME,self.gc_name)
     def variant_dir(self):
-        return "%s%s"%(self.gc_name,self.debug_extension())
+        return "%s%s"%(self.gc_name,self.debug_dir_extension())
     def variant_name(self):
         return self.gc_name
     def bitcode_name(self):
