@@ -1006,10 +1006,7 @@ CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fdefinition");
 CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
-  if (cl__symbolp(functionName)) {
-    Symbol_sp sym = gc::As<Symbol_sp>(functionName);
-    return sym->symbolFunction();
-  } else if ((functionName).consp()) {
+  if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -1017,40 +1014,36 @@ CL_DEFUN T_sp cl__fdefinition(T_sp functionName) {
         return name->getSetfFdefinition();
       }
     }
+  } else if ( Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+    return sym->symbolFunction();
   }
-  SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
+  TYPE_ERROR(functionName,cl::_sym_function);
 }
 
 CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fboundp");
 CL_DEFUN bool cl__fboundp(T_sp functionName) {
-  if (functionName.nilp()) {
-    return false;
-  }
-  if (cl__symbolp(functionName)) {
-    Symbol_sp sym = gc::As<Symbol_sp>(functionName);
-    return sym->fboundp();
-  } else if ((functionName).consp()) {
+  if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
       if (name.notnilp())
         return name->setf_fboundp();
     }
+  } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+    return sym->fboundp();
+  } else if (functionName.nilp()) {
+    return false;
   }
-  SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
+  TYPE_ERROR(functionName,cl::_sym_function);
 }
 
 CL_LAMBDA(function-name);
 CL_DECLARE();
 CL_DOCSTRING("fmakunbound");
 CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
-  if (cl__symbolp(functionName)) {
-    Symbol_sp sym = gc::As<Symbol_sp>(functionName);
-    sym->setf_symbolFunction(_Unbound<Function_O>());
-    return (Values(sym));
-  } else if ((functionName).consp()) {
+  if ((functionName).consp()) {
     List_sp cname = functionName;
     if (oCar(cname) == cl::_sym_setf) {
       Symbol_sp name = gc::As<Symbol_sp>(oCadr(cname));
@@ -1059,8 +1052,11 @@ CL_DEFUN T_mv cl__fmakunbound(T_sp functionName) {
         return (Values(functionName));
       }
     }
+  } else if (Symbol_sp sym = functionName.asOrNull<Symbol_O>() ) {
+    sym->setf_symbolFunction(_Unbound<Function_O>());
+    return (Values(sym));
   }
-  SIMPLE_ERROR(BF("Illegal function-name[%s]") % _rep_(functionName));
+  TYPE_ERROR(functionName,cl::_sym_function);
 }
 
 CL_LAMBDA(char &optional input-stream-designator recursive-p);
