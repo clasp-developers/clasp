@@ -6,24 +6,29 @@
 (defun compiled-function-name (x)
   (core:function-name x))
 
+(defun compiled-function-file* (x)
+  (assert (functionp x))
+  (multiple-value-bind (sfi pos lineno)
+      (core:function-source-pos x)
+    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
+      (when source-file
+        (let* ((src-pathname (pathname source-file))
+               (src-directory (pathname-directory src-pathname))
+               (src-name (pathname-name src-pathname))
+               (src-type (pathname-type src-pathname))
+               (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
+          (let* ((pn (if (eq (car src-directory) :relative)
+                         (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
+                         src-pathname)))
+            (return-from compiled-function-file* (values pn filepos lineno))))))))
+
 (defun compiled-function-file (x)
+  "This is provided for slime - it can removed once slime switches to source-location"
   (cond
-    ((and x (fboundp x) (core:single-dispatch-generic-function-p (fdefinition x)))
-     (error "use source-location for methods"))
-    ((and x (functionp x))
-     (multiple-value-bind (sfi pos lineno)
-         (core:function-source-pos x)
-       (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
-         (when source-file
-           (let* ((src-pathname (pathname source-file))
-                  (src-directory (pathname-directory src-pathname))
-                  (src-name (pathname-name src-pathname))
-                  (src-type (pathname-type src-pathname))
-                  (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-             (let* ((pn (if (eq (car src-directory) :relative)
-                            (merge-pathnames src-pathname (translate-logical-pathname "source-dir:"))
-                            src-pathname)))
-               (return-from compiled-function-file (values pn filepos lineno))))))))
+    ((and x (core:single-dispatch-generic-function-p x))
+     (let ((locs (source-location x t)))
+       (values (source-location-pathname (car locs)) (source-location-offset (car locs)))))
+    ((and x (functionp x)) (compiled-function-file* x))
     (t (values nil 0 0))))
 
 
@@ -57,7 +62,7 @@ Return the source-location for the name/kind pair"
           (source-location name :method))
          ((fboundp name)
           (multiple-value-bind (file pos)
-              (compiled-function-file (fdefinition name))
+              (compiled-function-file* (fdefinition name))
             (list (make-source-location :pathname file :offset pos))))
          (values nil))))))
 
@@ -72,8 +77,11 @@ Return the source-location for the name/kind pair"
     ((eq kind t)
      (cond
        ((clos:classp obj) (source-location-impl (class-name obj) :class))
-       ((multiple-value-bind (file pos)
-            (compiled-function-file obj)
+       ((core:single-dispatch-generic-function-p obj)
+        (source-location (core:function-name obj) :method))
+       ((functionp obj)
+        (multiple-value-bind (file pos)
+            (compiled-function-file* obj)
           (list (make-source-location :pathname file :offset pos))))
        (t (error "Cannot obtain source-location for ~a" obj))))
     ((symbolp kind) (source-location-impl obj kind))
