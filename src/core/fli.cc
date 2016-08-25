@@ -84,10 +84,43 @@ THE SOFTWARE.
 //   LOCAL DEFINES
 // ---------------------------------------------------------------------------
 
+// frgo, 2016-08-25: The following is part of experieental code...
+// #undef MEM_REF_FUNC
+// #define MEM_REF_FUNC(CXX_TYPE,CLASP_FN) \
+//   void *mem_ref_fn = nullptr; \
+//   core::T_sp (*mem_ref_fn)(const cl_intptr_t address)  = []( const cl_intptr_t address ) -> core::T_sp { \
+//       return CLASP_FN( * (reinterpret_cast< CXX_TYPE * >( reinterpret_cast< void *>( address ) ) ) ); \
+//   };
+
+#undef CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX
+// This is a hell of a "macro" ... Here are the descriptions of the params:
+// TST           => core::VectorObjects_sp - SmartPtr to a symbol holding the
+//                                           an array of ForeignTypeSpec_sp
+// IDX           => int                    - Numeric index number as an index
+//                                           into the TST array
+// LISP_SYM_TYPE => :char, :short, ...     - The keyword representing the type
+//                                           on Lisp sie
+// CXX_SYM_VAR   => char, short, ...       - The C++ variable demoniating the
+//                                           Lisp symbol. This will be expanded
+//                                           info: kw::_sym_char, kw::_sym:short
+// CXX_DESC_STR  => ":char", ":short", ... - A string, used as a description
+// CLASP_MEM_REF_MAK_OBJ_FN =>               A function name for a fucntion,
+//                                           that translates memory content
+//                                           into a lisp value.
+
+#define CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX(TST,IDX,LISP_SYM_TYPE,CXX_TYPE,CXX_SYM_VAR,CXX_DESC_STR,CLASP_MEM_REF_MAKE_OBJ_FN) \
+  { \
+    SYMBOL_EXPORT_SC_(KeywordPkg,LISP_SYM_TYPE); \
+    // MEM_REF_FUNC(CXX_TYPE,CLASP_MEM_REF_MAKE_OBJ_FN); \
+    register_foreign_type<CXX_TYPE>::doit(TST,IDX,CXX_SYM_VAR,CXX_DESC_STR, CLASP_MEM_REF_MAKE_OBJ_FN); \
+  };
+
 #undef CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE
 #define CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(TST,IDX,LISP_SYM_TYPE,CXX_TYPE,CXX_SYM_VAR,CXX_DESC_STR) \
-  SYMBOL_EXPORT_SC_(KeywordPkg,LISP_SYM_TYPE); \
-  register_foreign_type<CXX_TYPE>::doit(TST,IDX,kw::CXX_SYM_VAR,CXX_DESC_STR);
+  { \
+    SYMBOL_EXPORT_SC_(KeywordPkg,LISP_SYM_TYPE); \
+    register_foreign_type<CXX_TYPE>::doit(TST,IDX,CXX_SYM_VAR,CXX_DESC_STR,nullptr); \
+  };
 
 // ---------------------------------------------------------------------------
 //   NAMESPACE
@@ -99,16 +132,16 @@ namespace clasp_ffi {
 //   FORWARD DECLARATIONS
 // ---------------------------------------------------------------------------
 
-void setup_endianess_info(void);
-void register_foreign_types(void);
-void clasp_ffi_initialization(void);
-static void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
-                                       uint32_t n_index,
-                                       const core::Symbol_sp lispSymbol,
-                                       const std::string &lispName,
-                                       const size_t size,
-                                       const size_t alignment,
-                                       const std::string &cxxName);
+static void setup_endianess_info(void);
+static void register_foreign_types(void);
+static void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
+                                        uint32_t n_index,
+                                        const core::Symbol_sp lispSymbol,
+                                        const std::string &lispName,
+                                        const size_t size,
+                                        const size_t alignment,
+                                        const std::string &cxxName,
+                                        std::function<core::T_sp (const cl_intptr_t)> mem_ref_fn);
 
 // ---------------------------------------------------------------------------
 //   TYPE DEFINTITIONS
@@ -119,23 +152,44 @@ struct register_foreign_type {
   static void doit( core::VectorObjects_sp sp_tst,
                     uint32_t n_index,
                     core::Symbol_sp lispSymbol,
-                    const std::string &cxxName) {
+                    const std::string &cxxName,
+                    std::function<core::T_sp (const cl_intptr_t)> mk_fn) {
+
+    std::function<core::T_sp (const cl_intptr_t)> mem_ref_fn = nullptr;
+
     size_t size = sizeof(T);
     size_t alignment = std::alignment_of<T>::value;
 
-    register_foreign_type_spec(sp_tst,
-                               n_index,
-                               lispSymbol,
-                               lispSymbol->symbolNameAsString(),
-                               size,
-                               alignment,
-                               cxxName);
+    if( mk_fn != nullptr ) {
+      mem_ref_fn = [=]( const cl_intptr_t n_address ) -> core::T_sp
+      {
+        return mk_fn(* reinterpret_cast< T * >( n_address ));
+      };
+    }
+
+    fprintf( stderr, "\n============================================================================\n" );
+    fprintf( stderr, "*** DEBUG: REGSITER_FOREIGN_TYPE\n" );
+    fprintf( stderr, "*** -> mem_ref_fn = %p\n", mem_ref_fn );
+    fprintf( stderr, "*** -> mk_fn      = %p\n", mk_fn );
+
+    fprintf( stderr, "\n" );
+
+    register_foreign_type_spec( sp_tst,
+                                n_index,
+                                lispSymbol,
+                                lispSymbol->symbolNameAsString(),
+                                size,
+                                alignment,
+                                cxxName,
+                                mem_ref_fn );
   };
 };
+
 // ---------------------------------------------------------------------------
 //   GLOBAL DECLARATIONS AND SPECIAL VARS
 // ---------------------------------------------------------------------------
 
+// NONE
 
 // ---------------------------------------------------------------------------
 //   FUNCTIONS & METHODS
@@ -166,17 +220,132 @@ void register_foreign_type_spec(core::VectorObjects_sp sp_tst,
                                 const std::string& lisp_name,
                                 const size_t size,
                                 const size_t alignment,
-                                const std::string& cxx_name) {
+                                const std::string& cxx_name,
+                                void *mem_ref_fn) {
 
   ForeignTypeSpec_sp sp_fts =
     ForeignTypeSpec_O::create( lisp_symbol,
                                core::Str_O::create( lisp_name ),
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
-                               core::Str_O::create( cxx_name ));
-  //sp_tst->vectorPushExtend( sp_fts->asSmartPtr() );
+                               core::Str_O::create( cxx_name ),
+                               mem_ref_fn );
+
   sp_tst->setf_elt( n_index, sp_fts->asSmartPtr() );
 };
+
+// ---------------------------------------------------------------------------
+//  HELPER FUNCTIONS FOR REGISTERING FOREIGN TYPES
+// ---------------------------------------------------------------------------
+
+inline gc::Fixnum mk_fixum_short( short value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_ushort( unsigned short value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_int( int value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_uint( unsigned int value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_int8( int8_t value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_uint8( uint8_t value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_int16( int16_t value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_uint16( uint16_t value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_int32( int32_t value ) {
+  return core::make_fixnum( value );
+}
+
+inline gc::Fixnum mk_fixum_uint32( uint32_t value ) {
+  return core::make_fixnum( value );
+}
+
+inline core::Integer_sp mk_integer_int64( int64_t value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_integer_uint64( uint64_t value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_integer_long( long value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_integer_ulong( unsigned long value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_integer_longlong( long long value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_integer_ulonglong( unsigned long long value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::DoubleFloat_sp mk_double_float( double value ) {
+  return core::DoubleFloat_O::create( value );
+}
+
+inline core::SingleFloat_sp mk_single_float( float value ) {
+  return core::make_single_float( value );
+}
+
+inline core::LongFloat_sp mk_long_double( long double value ) {
+  return core::LongFloat_O::create( value );
+}
+
+inline ForeignData_sp mk_time( time_t value ) {
+  size_t _size = sizeof( time_t );
+  GC_ALLOCATE(ForeignData_O, self);
+  self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, _size);
+  return self;
+}
+
+inline ForeignData_sp mk_pointer( void * value ) {
+  ForeignData_sp ptr = ForeignData_O::create( reinterpret_cast<cl_intptr_t>( value ) );
+  ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
+  return ptr;
+}
+
+inline core::Integer_sp mk_size( size_t value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_ssize( ssize_t value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Integer_sp mk_ptrdiff( ptrdiff_t value ) {
+  return core::Integer_O::create( value );
+}
+
+inline core::Character_sp mk_character( char value ) {
+  return core::clasp_make_character( value );
+}
+
+// ---------------------------------------------------------------------------
+//  FOREIGN TYPES REGISTRATION
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -190,41 +359,40 @@ inline void register_foreign_types( void ) {
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,char,char,_sym_char,":char");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
+  //CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX(sp_tst,n_index++,char,char,kw::_sym_char,":char",mk_character);
+  //CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX(sp_tst,n_index++,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char",mk_character);
+  //CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX(sp_tst,n_index++,short,short,_sym_short,":short",mk_fixnum_short);
+  //CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX(sp_tst,n_index++,unsigned_short,unsigned short,_sym_short,":short",mk_fixnum_ushort);
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int,int,kw::_sym_int,":int");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_int,unsigned int,kw::_sym_unsigned_int,":unsigned int");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long,long,kw::_sym_long,":long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long,unsigned long,kw::_sym_long,":unsigned long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_long,long long,kw::_sym_long_long,":long long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long_long,unsigned long long,kw::_sym_long_long,":unsigned long long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_char,unsigned char,kw::_sym_unsigned_char,":unsigned-char");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uchar,unsigned char,kw::_sym_char,":uchar");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ushort,unsigned short,kw::_sym_ushort,":ushort");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint,unsigned int,kw::_sym_uint,":uint");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ulong,unsigned long,kw::_sym_ulong,":ulong");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,llong,long long,kw::_sym_llong,":llong");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ullong,unsigned long long,kw::_sym_ullong,":ullong");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int8,int8_t,kw::_sym_int8,":int8");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint8,uint8_t,kw::_sym_uint8,":uint8");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int16,int16_t,kw::_sym_int16,":int16");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint16,uint16_t,kw::_sym_uint16,":uint16");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int32,int32_t,kw::_sym_int32,":int32");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint32,uint32_t,kw::_sym_uint32,":uint32");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int64,int64_t,kw::_sym_int64,":int64");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint64,uint64_t,kw::_sym_uint64,":uint64");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,double,double,kw::_sym_double,":double");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,kw::_sym_single_float,":float");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_double,long double,kw::_sym_long_double,":long-double");
+  //CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE_EX(sp_tst,n_index++,time,time_t,kw::_sym_time,":time",mk_time);
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,pointer,void *,kw::_sym_pointer,":pointer");
 
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,short,short,_sym_short,":short");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_short,unsigned short,_sym_short,":short");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int,int,_sym_int,":int");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_int,unsigned int,_sym_unsigned_int,":unsigned int");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long,long,_sym_long,":long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long,unsigned long,_sym_long,":unsigned long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_long,long long,_sym_long_long,":long long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long_long,unsigned long long,_sym_long_long,":unsigned long long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_char,unsigned char,_sym_unsigned_char,":unsigned-char");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uchar,unsigned char,_sym_char,":uchar");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ushort,unsigned short,_sym_ushort,":ushort");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint,unsigned int,_sym_uint,":uint");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ulong,unsigned long,_sym_ulong,":ulong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,llong,long long,_sym_llong,":llong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ullong,unsigned long long,_sym_ullong,":ullong");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int8,int8_t,_sym_int8,":int8");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint8,uint8_t,_sym_uint8,":uint8");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int16,int16_t,_sym_int16,":int16");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint16,uint16_t,_sym_uint16,":uint16");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int32,int32_t,_sym_int32,":int32");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint32,uint32_t,_sym_uint32,":uint32");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int64,int64_t,_sym_int64,":int64");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint64,uint64_t,_sym_uint64,":uint64");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,double,double,_sym_double,":double");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,_sym_single_float,":float");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_double,long double,_sym_long_double,":long-double");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,time,time_t,_sym_time,":time");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,pointer,void *,_sym_pointer,":pointer");
-
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,size,size_t,_sym_size,":size");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ssize,ssize_t,_sym_ssize,":ssize");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ptrdiff,ptrdiff_t,_sym_ptrdiff,":ptrdiff");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,size,size_t,kw::_sym_size,":size");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ssize,ssize_t,kw::_sym_ssize,":ssize");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ptrdiff,ptrdiff_t,kw::_sym_ptrdiff,":ptrdiff");
 
   //  - 1.2 : ASSIGN FOREGN TYPE SPEC TABLE TO GLOBAL SYMBOL
 
@@ -245,7 +413,7 @@ CL_INITIALIZER void clasp_fli_initialization(void) {
   setup_endianess_info();
 
   // CLASP FFI INITIALIZATION DONE
-};
+}
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -416,8 +584,8 @@ ForeignData_sp ForeignData_O::create(void * p_address) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTmake_pointer(core::T_sp address) {
-  ForeignData_sp ptr = ForeignData_O::create( clasp_to_cl_intptr_t( gc::As<core::Integer_sp>( address )) );
+ForeignData_sp PERCENTmake_pointer(core::Integer_sp address) {
+  ForeignData_sp ptr = ForeignData_O::create( clasp_to_cl_intptr_t( address ) );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }
@@ -627,9 +795,11 @@ ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
 // ---------------------------------------------------------------------------
 ForeignTypeSpec_O::~ForeignTypeSpec_O() {
   // TODO: Do we need to delete ourselves from the foregn type spec table?
-
-
 }
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+ForeignData_sp       PERCENTmem_ref_fn();
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -645,6 +815,7 @@ inline string ForeignTypeSpec_O::__repr__() const {
      << " :size "        << this->m_size
      << " :alignment "   << this->m_alignment
      << " :cxx-name "    << this->m_cxx_name
+     << " :mem-ref-fn "  << (BF("%p") % this->m_mem_ref_fn)
      << ">";
 
   return ss.str();
@@ -656,7 +827,8 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
                                               core::Str_sp      lisp_name,
                                               core::Integer_sp  size,
                                               core::Fixnum_sp   alignment,
-                                              core::Str_sp      cxx_name ) {
+                                              core::Str_sp      cxx_name,
+                                              void             *mem_ref_fn ) {
   GC_ALLOCATE(ForeignTypeSpec_O, self);
 
   self->m_lisp_symbol = lisp_symbol;
@@ -664,6 +836,7 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
   self->m_size        = size;
   self->m_alignment   = alignment;
   self->m_cxx_name    = cxx_name;
+  self->m_mem_ref_fn  = mem_ref_fn;
 
   return self;
 }

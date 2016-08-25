@@ -1461,6 +1461,17 @@ Integer_sp Integer_O::create(uint64_t v) {
              _lisp->integer_ordering()._mpz_import_endian, 0, &v);
   return Bignum_O::create(z);
 }
+
+Integer_sp Integer_O::create(int64_t v) {
+  if (v <= gc::most_positive_fixnum) {
+    return Integer_O::create((Fixnum)v);
+  }
+  Bignum z;
+  mpz_import(z.get_mpz_t(), 2, _lisp->integer_ordering()._mpz_import_word_order,
+             _lisp->integer_ordering()._mpz_import_size,
+             _lisp->integer_ordering()._mpz_import_endian, 0, &v);
+  return Bignum_O::create(z);
+}
 #endif
 Integer_sp Integer_O::create(cl_intptr_t v) {
   if (v <= gc::most_positive_fixnum) {
