@@ -289,8 +289,9 @@ public:
 //	static Integer_sp create(uint v);
 #ifndef _TARGET_OS_LINUX
   static Integer_sp create(uint64_t v);
+  static Integer_sp create(int64_t v);
 #endif
-  static Integer_sp create(cl_intptr_t v); // ADDED, frgo 2016-08-08
+  static Integer_sp create(cl_intptr_t v);
   static Integer_sp create(float f);
   static Integer_sp create(double f);
   static Integer_sp createLongFloat(LongFloat f);

@@ -86,6 +86,7 @@ namespace clasp_ffi {
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_data);
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_pointer);
   SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_symbol_pointer);
+  SYMBOL_EXPORT_SC_(KeywordPkg,clasp_foreign_data_kind_time);
 
   // The Foreign Type Spec Table, accessible from Lisp
   SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,STARforeign_type_spec_tableSTAR);
@@ -94,9 +95,18 @@ namespace clasp_ffi {
   SYMBOL_EXPORT_SC_(KeywordPkg,big_endian);
   SYMBOL_EXPORT_SC_(KeywordPkg,little_endian);
 
+  // Type Symbols
+  SYMBOL_EXPORT_SC_(KeywordPkg,char);
+
 // ---------------------------------------------------------------------------
 //   TYPEDEFS & CLASSES & METHODS & FUNCTIONS
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+  // FLI INITIALIZER
+
+  void clasp_fli_initialization( void );
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -210,14 +220,43 @@ namespace clasp_ffi {
 }; // namespace clasp_ffi
 
 // GC Policy Info for ForeignPataPtr_O instances
-  template <>
-    struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
-    static bool constexpr NeedsInitialization = false;
-    static bool constexpr NeedsFinalization = true;
-    static GCInfo_policy constexpr Policy = normal;
-  };
+template <>
+struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
 namespace clasp_ffi {
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+  // HELPER FUNCTIONS FOR MAKING CLASP LISP OBJECTS
+  gc::Fixnum mk_fixum_short( short value );
+  gc::Fixnum mk_fixum_ushort( unsigned short value );
+  gc::Fixnum mk_fixum_int( int value );
+  gc::Fixnum mk_fixum_uint( unsigned int value );
+  gc::Fixnum mk_fixum_int8( int8_t value );
+  gc::Fixnum mk_fixum_uint8( uint8_t value );
+  gc::Fixnum mk_fixum_int16( int16_t value );
+  gc::Fixnum mk_fixum_uint16( uint16_t value );
+  gc::Fixnum mk_fixum_int32( int32_t value );
+  gc::Fixnum mk_fixum_uint32( uint32_t value );
+  core::Integer_sp mk_integer_int64( int64_t value );
+  core::Integer_sp mk_integer_uint64( uint64_t value );
+  core::Integer_sp mk_integer_long( long value );
+  core::Integer_sp mk_integer_ulong( unsigned long value );
+  core::Integer_sp mk_integer_longlong( long long value );
+  core::Integer_sp mk_integer_ulonglong( unsigned long long value );
+  core::DoubleFloat_sp mk_double_float( double value );
+  core::SingleFloat_sp mk_single_float( float value );
+  core::LongFloat_sp mk_long_double( long double value );
+  ForeignData_sp mk_time( time_t value );
+  ForeignData_sp mk_pointer( void * value );
+  core::Integer_sp mk_size( size_t value );
+  core::Integer_sp mk_ssize( ssize_t value );
+  core::Integer_sp mk_ptrdiff( ptrdiff_t value );
+  core::Character_sp mk_character( char value );
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -247,14 +286,16 @@ namespace clasp_ffi {
                                       core::Str_sp      lisp_name,
                                       core::Integer_sp  size,
                                       core::Fixnum_sp   alignment,
-                                      core::Str_sp      cxx_name );
+                                      core::Str_sp      cxx_name,
+                                      void             *mem_ref_fn );
 
     // SLOT ACCESS
-    CL_DEFMETHOD core::Symbol_sp   PERCENTlisp_symbol() { return m_lisp_symbol; };
-    CL_DEFMETHOD core::Str_sp      PERCENTlisp_name() { return m_lisp_name; };
-    CL_DEFMETHOD core::Integer_sp  PERCENTsize() { return m_size; };
-    CL_DEFMETHOD core::Fixnum_sp   PERCENTalignment() { return m_alignment; };
-    CL_DEFMETHOD core::Str_sp      PERCENTcxx_name() { return m_cxx_name; };
+    CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; };
+    CL_DEFMETHOD core::Str_sp         PERCENTlisp_name() { return m_lisp_name; };
+    CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; };
+    CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; };
+    CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; };
+    CL_DEFMETHOD ForeignData_sp       PERCENTmem_ref_fn();
 
     // SLOTS
     core::Symbol_sp   m_lisp_symbol;
@@ -262,10 +303,11 @@ namespace clasp_ffi {
     core::Integer_sp  m_size;
     core::Fixnum_sp   m_alignment;
     core::Str_sp      m_cxx_name;
+    void             *m_mem_ref_fn;
 
   }; // ForeignTypeSpec_O
 
-}; // namespace clasp_fffi
+}; // namespace clasp_ffi
 
 // GC Policy Info for ForeignTypeSpec_O instances
 template <>
