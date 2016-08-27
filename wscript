@@ -391,12 +391,17 @@ class cmpsprep_d(mpsprep_d):
     
 import subprocess
 
-def lisp_source_files(exe,stage):
-    print("About to execute: %s" % exe)
-    proc = subprocess.Popen([exe, "-I", "-f", "ecl-min", "-e", "(source-files-%s)"%stage_name(stage), "-e", "(quit)"], stdout=subprocess.PIPE, shell=True)
-    (out, err) = proc.communicate()
-    print( "source-files-%s: %s" % (stage_name(stage),out))
-    return out
+def get_git_commit(cfg):
+    git = cfg.find_program("git",var="GIT")
+    proc = subprocess.Popen([git[0], "rev-parse", "--short", "HEAD"], stdout=subprocess.PIPE, shell=False)
+    (git_commit, err) = proc.communicate()
+    return git_commit.strip()
+
+def get_clasp_version(cfg):
+    git = cfg.find_program("git",var="GIT")
+    proc = subprocess.Popen([git[0], "describe", "--always"], stdout=subprocess.PIPE, shell=False)
+    (clasp_version, err) = proc.communicate()
+    return clasp_version.strip()
 
 
 
@@ -481,8 +486,8 @@ def configure(cfg):
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
     cfg.define("PROGRAM_CLASP",1)
-    cfg.define("CLASP_GIT_COMMIT","ecf5585")
-    cfg.define("CLASP_VERSION","0.4.0-622-g9e0535b")
+    cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
+    cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEBUG_CL_SYMBOLS",1)
     cfg.define("DEBUG_DRAG",1)
