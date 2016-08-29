@@ -2,20 +2,21 @@
 #ifdef SCRAPING
 #define BEGIN_TAG BEGIN_TAG_bfc54f90bafadf5
 #define END_TAG END_TAG_bfc54f90bafadf5
-#define CL_BEGIN_ENUM(type,symbol,desc) BEGIN_TAG BEGIN_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :TYPE #type :SYMBOL #symbol :DESCRIPTION desc )
-#define CL_VALUE_ENUM(symbol,value) BEGIN_TAG VALUE_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :SYMBOL #symbol :VALUE #value )
-#define CL_END_ENUM(symbol) BEGIN_TAG END_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :SYMBOL #symbol )
-#define CL_NAME(...) BEGIN_TAG NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-NAME #__VA_ARGS__ )
-#define CL_LISPIFY_NAME(...) BEGIN_TAG LISPIFY_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-NAME #__VA_ARGS__ )
-#define CL_PKG_NAME(pkg,name) BEGIN_TAG PKG_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-PKG #pkg :CL-NAME #name )
-#define CL_LAMBDA(...) BEGIN_TAG LAMBDA_TAG ( :FILE __FILE__ :LINE __LINE__ :LAMBDA-LIST  #__VA_ARGS__ )
-#define CL_DOCSTRING(...) BEGIN_TAG DOCSTRING_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
-#define CL_DECLARE(...) BEGIN_TAG DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
-#define CL_INITIALIZER BEGIN_TAG EXPOSE_INITIALIZE ( :FILE __FILE__ :LINE __LINE__ )
-#define CL_DEFUN BEGIN_TAG EXPOSE_FUNCTION ( :FILE __FILE__ :LINE __LINE__ )
-#define CL_DEFMETHOD BEGIN_TAG EXPOSE_METHOD ( :FILE __FILE__ :LINE __LINE__ )
-#define CL_EXTERN_DEFMETHOD(type,pointer) BEGIN_TAG EXTERN_DEFMETHOD (:FILE __FILE__ :LINE __LINE__ :TYPE #type :POINTER #pointer ) 
-#define CL_EXTERN_DEFUN(pointer) BEGIN_TAG EXTERN_DEFUN (:FILE __FILE__ :LINE __LINE__ :POINTER #pointer ) 
+#define CL_BEGIN_ENUM(type,symbol,desc) BEGIN_TAG CL_BEGIN_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :TYPE #type :SYMBOL #symbol :DESCRIPTION desc )
+#define CL_VALUE_ENUM(symbol,value) BEGIN_TAG CL_VALUE_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :SYMBOL #symbol :VALUE #value )
+#define CL_END_ENUM(symbol) BEGIN_TAG CL_END_ENUM_TAG ( :FILE __FILE__ :LINE __LINE__ :SYMBOL #symbol )
+#define CL_NAME(...) BEGIN_TAG CL_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-NAME #__VA_ARGS__ )
+#define CL_LISPIFY_NAME(...) BEGIN_TAG CL_LISPIFY_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-NAME #__VA_ARGS__ )
+#define CL_PKG_NAME(pkg,name) BEGIN_TAG CL_PKG_NAME_TAG ( :FILE __FILE__ :LINE __LINE__ :CL-PKG #pkg :CL-NAME #name )
+#define CL_LAMBDA(...) BEGIN_TAG CL_LAMBDA_TAG ( :FILE __FILE__ :LINE __LINE__ :LAMBDA-LIST  #__VA_ARGS__ )
+#define CL_DOCSTRING(...) BEGIN_TAG CL_DOCSTRING_TAG ( :FILE __FILE__ :LINE __LINE__ )  __VA_ARGS__ END_TAG
+#define CL_DECLARE(...) BEGIN_TAG CL_DECLARE_TAG ( :FILE __FILE__ :LINE __LINE__ :DECLARE #__VA_ARGS__ )
+#define CL_INITIALIZER BEGIN_TAG CL_INITIALIZER_TAG ( :FILE __FILE__ :LINE __LINE__ )
+#define CL_DEFUN BEGIN_TAG CL_DEFUN_TAG ( :FILE __FILE__ :LINE __LINE__ )
+#define CL_DEFMETHOD BEGIN_TAG CL_DEFMETHOD_TAG ( :FILE __FILE__ :LINE __LINE__ )
+#define CL_DEF_CLASS_METHOD BEGIN_TAG CL_DEF_CLASS_METHOD_TAG ( :FILE __FILE__ :LINE __LINE__ )
+#define CL_EXTERN_DEFMETHOD(type,pointer) BEGIN_TAG CL_EXTERN_DEFMETHOD_TAG (:FILE __FILE__ :LINE __LINE__ :TYPE #type :POINTER #pointer ) 
+#define CL_EXTERN_DEFUN(pointer) BEGIN_TAG CL_EXTERN_DEFUN_TAG (:FILE __FILE__ :LINE __LINE__ :POINTER #pointer ) 
 #define SYMBOL_SC_(pkg,name) BEGIN_TAG SYMBOL_INTERNAL ( :FILE __FILE__ :LINE __LINE__ :PACKAGE #pkg :NAME #name )
 #define SYMBOL_EXPORT_SC_(pkg,name) BEGIN_TAG SYMBOL_EXTERNAL ( :FILE __FILE__ :LINE __LINE__  :PACKAGE #pkg :NAME #name )
 //! Ensure that the symbol is present within the package - acts like CL:SHADOW
@@ -34,6 +35,10 @@
 #define LISP_EXTERNAL_CLASS(n,p,l,c,s,b) BEGIN_TAG LISP_EXTERNAL_CLASS_TAG ( :FILE __FILE__ :LINE __LINE__ :NAMESPACE #n :PACKAGE #p :CXXCLASS #l :CLASS #c :CLASS-SYMBOL s :BASE #b ) \
        DETAILED_SYMBOL_EXPORT_SC_(p,c,s)
 #else
+#define CL_INITIALIZE
+#define CL_DEFUN
+#define CL_DEFMETHOD
+#define CL_DEF_CLASS_METHOD
 #define CL_BEGIN_ENUM(type,symbol,desc)
 #define CL_VALUE_ENUM(symbol,value)
 #define CL_END_ENUM(symbol)
@@ -43,9 +48,6 @@
 #define CL_LAMBDA(...)
 #define CL_DOCSTRING(...)
 #define CL_DECLARE(...)
-#define CL_INITIALIZE
-#define CL_DEFUN
-#define CL_DEFMETHOD
 #define CL_TYPE(...)
 #define CL_EXTERN_DEFMETHOD(type,pointer)
 #define CL_EXTERN_DEFUN(pointer)

@@ -1,5 +1,12 @@
 (in-package :cscrape)
 
+;;; ------------------------------------------------------------
+;;;
+;;; Interpret the tags and generate objects used to generate code
+;;;
+;;;
+
+
 (define-condition bad-cl-defun/defmethod ()
   ((tag :initarg :tag :accessor tag)
    (other-tag :initarg :other-tag :accessor other-tag))
@@ -9,7 +16,8 @@
                      (tags:tag-code (tag condition))
                      (tags:identifier (tag condition))
                      (tags:tag-code (other-tag condition))
-                     (tags:source-pos (other-tag condition))))))
+                     (tags:source-pos (other-tag condition)))))
+  (:documentation "Error when CL_DEFUN, CL_DEFMETHOD are too far away from their modifiers are too far away"))
 
 
 
@@ -38,22 +46,29 @@
 (defclass expose-initializer (expose-code function-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
-(defclass expose-internal-function (expose-code function-mixin)
+(defclass expose-defun (expose-code function-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)
    (provide-declaration% :initform t :initarg :provide-declaration% :accessor provide-declaration%)))
 
-(defclass expose-external-function (expose-code function-mixin)
+(defclass expose-extern-defun (expose-code function-mixin)
   ((pointer% :initform nil :initarg :pointer% :accessor pointer%)))
 
 (defclass method-mixin ()
   ((class% :initform nil :initarg :class% :accessor class%)
    (method-name% :initform nil :initarg :method-name% :accessor method-name%)))
 
-(defclass expose-internal-method (expose-code method-mixin)
+(defclass expose-defmethod (expose-code method-mixin)
   ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
-(defclass expose-external-method (expose-code method-mixin)
+(defclass expose-extern-defmethod (expose-code method-mixin)
   ((pointer% :initform nil :initarg :pointer% :accessor pointer%)))
+
+(defclass class-method-mixin ()
+  ((class% :initform nil :initarg :class% :accessor class%)
+   (method-name% :initform nil :initarg :method-name% :accessor method-name%)))
+
+(defclass expose-def-class-method (expose-code class-method-mixin)
+  ((signature% :initform nil :initarg :signature% :accessor signature%)))
 
 (defclass exposed-class ()
   ((file% :initarg :file% :accessor file%)
@@ -66,7 +81,8 @@
    (class-key% :initarg :class-key% :accessor class-key%)
    (base% :initarg :base% :accessor base%)
    (lisp-name% :initarg :lisp-name% :accessor lisp-name%)
-   (methods% :initarg :methods% :accessor methods%)))
+   (methods% :initform nil :initarg :methods% :accessor methods%)
+   (class-methods% :initform nil :initarg :class-methods% :accessor class-methods%)))
 
 (defclass exposed-internal-class (exposed-class) ())
 (defclass exposed-external-class (exposed-class) ())
@@ -103,14 +119,13 @@
 (defclass completed-enum ()
   ((begin-enum% :initarg :begin-enum% :accessor begin-enum%)
    (values% :initarg :values% :accessor values%)))
-
    
 (defun lispify-class-name (tag packages)
   (format nil "core::magic_name(\"~a:~a\")" (gethash (tags:package% tag) packages) (tags:class-symbol% tag)))
 
 (defun maybe-override-name (namespace-tag override-name-tag name packages)
   "* Arguments
-- override-name-tag :: A name-tag.
+- override-name-tag :: A cl-name-tag.
 - name :: A string
 - packages :: A map of namespace and C++ package names to package name strings.
 * Description
@@ -118,17 +133,21 @@ If override-name-tag is not nil then return its value, otherwise return name"
   (if (null override-name-tag)
       name
       (etypecase override-name-tag
-        (tags:lispify-name-tag
+        (tags:cl-lispify-name-tag
          (packaged-name namespace-tag override-name-tag packages))
-        (tags:name-tag
+        (tags:cl-name-tag
          (packaged-name namespace-tag override-name-tag packages))
-        (tags:pkg-name-tag
+        (tags:cl-pkg-name-tag
          (format nil "core::magic_name(~s,~s)"
                  (tags:name% override-name-tag)
                  (gethash (tags:package% override-name-tag) packages))))))
 
 
 (defun order-packages-by-use (packages)
+  "* Arguments
+- packages :: A list.
+* Description
+Sort the packages in order of how they use each other."
   (declare (optimize debug))
   (let ((unsorted (make-hash-table :test #'eq))
         sorted)
@@ -160,6 +179,11 @@ If override-name-tag is not nil then return its value, otherwise return name"
 
 
 (defun check-symbol-against-previous (symbol previous-symbols)
+  "* Arguments
+- symbol :: A symbol
+- previous-symbols :: A hash-table
+* Description
+Compare the symbol against previous definitions of symbols - if there is a mismatch in definition signal an error"
   (let* ((key (format nil "~a/~a" (package% symbol) (lisp-name% symbol)))
          (previous (gethash key previous-symbols)))
     (if previous
@@ -173,6 +197,10 @@ If override-name-tag is not nil then return its value, otherwise return name"
 
 
 (defun interpret-tags (tags)
+  "* Arguments
+- tags :: A list of tags.
+* Description
+This interprets the tags and generates objects that are used to generate code."
   (declare (optimize (debug 3)))
   (let ((source-info (gather-source-files tags)))
     (calculate-character-offsets source-info))
@@ -222,19 +250,19 @@ If override-name-tag is not nil then return its value, otherwise return name"
                    cur-package-nickname-tags nil))
             (tags:namespace-tag
              (setf cur-namespace-tag tag))
-            (tags:name-tag
+            (tags:cl-name-tag
              (setf cur-name tag))
             (tags:meta-class-tag
              (setf cur-meta-class tag))
-            (tags:lispify-name-tag
+            (tags:cl-lispify-name-tag
              (setf cur-name tag))
-            (tags:pkg-name-tag
+            (tags:cl-pkg-name-tag
              (setf cur-name tag))
-            (tags:lambda-tag
+            (tags:cl-lambda-tag
              (setf cur-lambda tag))
-            (tags:docstring-tag
+            (tags:cl-docstring-tag
              (setf cur-docstring tag))
-            (tags:declare-tag
+            (tags:cl-declare-tag
              (setf cur-declare tag))
             (tags:package-nickname-tag
              (push tag cur-package-nickname-tags))
@@ -242,7 +270,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
              (push tag cur-package-use-tags))
             (tags:package-shadow-tag
              (push tag cur-package-shadow-tags))
-            (tags:expose-internal-function-tag
+            (tags:cl-defun-tag
              (error-if-bad-expose-info-setup tag
                                              cur-name
                                              cur-lambda
@@ -264,7 +292,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                (multiple-value-bind (function-name full-function-name simple-function)
                    (extract-function-name-from-signature signature-text tag)
                  (declare (ignore function-name))
-                 (pushnew (make-instance 'expose-internal-function
+                 (pushnew (make-instance 'expose-defun
                                          :namespace% namespace
                                          :lisp-name% packaged-function-name
                                          :function-name% full-function-name
@@ -283,7 +311,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                      cur-declare nil
                      cur-docstring nil
                      cur-name nil)))
-            (tags:expose-external-function-tag
+            (tags:cl-extern-defun-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
              (let* ((packaged-function-name
                      (maybe-override-name
@@ -297,7 +325,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                     (lambda-list (or (tags:maybe-lambda-list cur-lambda) ""))
                     (declare-form (tags:maybe-declare cur-declare))
                     (docstring (tags:maybe-docstring cur-docstring)))
-               (pushnew (make-instance 'expose-external-function
+               (pushnew (make-instance 'expose-extern-defun
                                        :namespace% namespace
                                        :lisp-name% packaged-function-name
                                        :function-name% function-name
@@ -315,13 +343,11 @@ If override-name-tag is not nil then return its value, otherwise return name"
                      cur-declare nil
                      cur-docstring nil
                      cur-name nil)))
-            (tags:expose-internal-method-tag
+            (tags:cl-defmethod-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
              (multiple-value-bind (tag-class-name method-name)
                  (cscrape:extract-method-name-from-signature (tags:signature-text% tag))
-               (let* ((class-name (if tag-class-name
-                                      tag-class-name
-                                      (tags:name% cur-class)))
+               (let* ((class-name (or tag-class-name (tags:name% cur-class)))
                       (class-key (make-class-key cur-namespace-tag class-name))
                       (class (gethash class-key classes))
                       (packaged-method-name (maybe-override-name
@@ -334,8 +360,8 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                        (parse-lambda-list-from-signature signature-text :class class)))
                       (declare-form (tags:maybe-declare cur-declare))
                       (docstring (tags:maybe-docstring cur-docstring)))
-                 (unless class (error "Couldn't find class ~a" class-key))
-                 (pushnew (make-instance 'expose-internal-method
+                 (unless class (error "For cl-defmethod-tag couldn't find class ~a" class-key))
+                 (pushnew (make-instance 'expose-defmethod
                                          :class% class
                                          :lisp-name% packaged-method-name
                                          :method-name% method-name
@@ -352,7 +378,42 @@ If override-name-tag is not nil then return its value, otherwise return name"
                    cur-declare nil
                    cur-docstring nil
                    cur-name nil))
-            (tags:expose-external-method-tag
+            (tags:cl-def-class-method-tag
+             (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
+             (multiple-value-bind (tag-class-name method-name)
+                 (cscrape:extract-class-method-name-from-signature (tags:signature-text% tag))
+               (let* ((class-name (or tag-class-name (tags:name% cur-class)))
+                      (class-key (make-class-key cur-namespace-tag class-name))
+                      (class (gethash class-key classes))
+                      (packaged-method-name (maybe-override-name
+                                             cur-namespace-tag
+                                             cur-name
+                                             (packaged-name cur-namespace-tag method-name packages)
+                                             packages))
+                      (signature-text (tags:signature-text% tag))
+                      (lambda-list (or (tags:maybe-lambda-list cur-lambda)
+                                       (parse-lambda-list-from-signature signature-text :class class)))
+                      (declare-form (tags:maybe-declare cur-declare))
+                      (docstring (tags:maybe-docstring cur-docstring)))
+                 (unless class (error "For cl-def-class-method-tag couldn't find class ~a" class-key))
+                 (pushnew (make-instance 'expose-def-class-method
+                                         :class% class
+                                         :lisp-name% packaged-method-name
+                                         :method-name% method-name
+                                         :file% (tags:file% tag)
+                                         :line% (tags:line% tag)
+                                         :character-offset% (tags:character-offset% tag)
+                                         :lambda-list% lambda-list
+                                         :declare% declare-form
+                                         :docstring% docstring)
+                          (class-methods% class)
+                          :test #'string=
+                          :key #'lisp-name%)))
+             (setf cur-lambda nil
+                   cur-declare nil
+                   cur-docstring nil
+                   cur-name nil))
+            (tags:cl-extern-defmethod-tag
              (error-if-bad-expose-info-setup tag cur-name cur-lambda cur-declare cur-docstring)
              (let* ((method-name (extract-method-name-from-pointer (tags:pointer% tag) tag))
                     (class-name (tags:class-name% tag))
@@ -369,7 +430,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                     (docstring (tags:maybe-docstring cur-docstring))
                     (pointer (tags:pointer% tag)))
                (unless class (error "Couldn't find class ~a" class-key))
-               (pushnew (make-instance 'expose-external-method
+               (pushnew (make-instance 'expose-extern-defmethod
                                        :class% class
                                        :lisp-name% packaged-method-name
                                        :method-name% method-name
@@ -406,8 +467,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                       :base% (make-class-key cur-namespace-tag (tags:base% tag))
                                       :class-key% class-key
                                       :lisp-name% (lispify-class-name tag packages)
-                                      :class-tag% tag
-                                      :methods% nil))))
+                                      :class-tag% tag))))
              (setf cur-docstring nil
                    cur-meta-class nil))
             (tags:lisp-external-class-tag
@@ -429,11 +489,10 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                       :class-key% class-key
                                       :base% (make-class-key cur-namespace-tag (tags:base% tag))
                                       :lisp-name% (lispify-class-name tag packages)
-                                      :class-tag% tag
-                                      :methods% nil))))
+                                      :class-tag% tag))))
              (setf cur-docstring nil
                    cur-meta-class nil))
-            (tags:begin-enum-tag
+            (tags:cl-begin-enum-tag
              (when cur-begin-enum
                (error 'tag-error
                       :message "Unexpected CL_BEGIN_ENUM - previous CL_BEGIN_ENUM at ~a:~d"
@@ -447,7 +506,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                                  :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
                                                  :description% (tags:description% tag))
                    cur-values nil))
-            (tags:value-enum-tag
+            (tags:cl-value-enum-tag
              (push (make-instance 'value-enum
                                   :file% (tags:file% tag)
                                   :line% (tags:line% tag)
@@ -455,7 +514,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                   :symbol% (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))
                                   :value% (maybe-namespace-enum cur-namespace-tag (tags:value% tag)))
                    cur-values))
-            (tags:end-enum-tag
+            (tags:cl-end-enum-tag
              (let ((end-symbol (maybe-namespace-symbol cur-namespace-tag (tags:symbol% tag))))
                (unless cur-begin-enum
                  (error 'tag-error :message "Missing BEGIN_ENUM" :tag tag))
@@ -477,15 +536,9 @@ If override-name-tag is not nil then return its value, otherwise return name"
                (setf cur-begin-enum nil
                      cur-values nil)))
             (tags:symbol-tag
-             (let* ((c++-name (if (tags:c++-name% tag)
-                                  (tags:c++-name% tag)
-                                  (tags:lisp-name% tag)))
-                    (namespace (if (tags:namespace% tag)
-                                   (tags:namespace% tag)
-                                   (tags:namespace% (gethash (tags:package% tag) package-to-assoc))))
-                    (package (if (tags:package% tag)
-                                 (tags:package% tag)
-                                 (tags:package% (gethash (tags:namespace% tag) namespace-to-assoc))))
+             (let* ((c++-name (or (tags:c++-name% tag) (tags:lisp-name% tag)))
+                    (namespace (or (tags:namespace% tag) (tags:namespace% (gethash (tags:package% tag) package-to-assoc))))
+                    (package (or (tags:package% tag) (tags:package% (gethash (tags:namespace% tag) namespace-to-assoc))))
                     (lisp-name (tags:lisp-name% tag))
                     (exported (typep tag 'tags:symbol-external-tag))
                     (shadow (typep tag 'tags:symbol-shadow-external-tag))
@@ -499,7 +552,7 @@ If override-name-tag is not nil then return its value, otherwise return name"
                                            :shadow% shadow)))
                (check-symbol-against-previous symbol previous-symbols)
                (push symbol symbols)))
-            (tags:initializer-tag
+            (tags:cl-initializer-tag
              (let* ((namespace (tags:namespace% cur-namespace-tag))
                     (signature-text (tags:signature-text% tag)))
                (multiple-value-bind (function-name full-function-name simple-function)

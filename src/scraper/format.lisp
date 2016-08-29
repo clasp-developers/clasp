@@ -8,18 +8,18 @@
 Return a string in the form <package>:<name>. If the name-base-tag has that form then return it, otherwise figure out the package name from the namespace and packages."))
 
 
-(defmethod packaged-name (namespace-tag (tag tags:name-tag) packages)
+(defmethod packaged-name (namespace-tag (tag tags:cl-name-tag) packages)
   (if (position #\: (tags:name% tag))
       (format nil "~s" (tags:name% tag))
       (format nil "\"~a:~a\""
               (gethash (tags:namespace% namespace-tag) packages)
               (tags:name% tag))))
 
-(defmethod packaged-name (namespace-tag (tag tags:pkg-name-tag) packages)
+(defmethod packaged-name (namespace-tag (tag tags:cl-pkg-name-tag) packages)
   (declare (ignore namespace-tag))
   (format nil "\"~a:~a\"" (gethash (tags:package% tag) packages) (tags:name% tag)))
 
-(defmethod packaged-name (namespace-tag (tag tags:lispify-name-tag) packages)
+(defmethod packaged-name (namespace-tag (tag tags:cl-lispify-name-tag) packages)
   (if (position #\: (tags:name% tag))
       (format nil "core::magic_name(~s)" (tags:name% tag))
       (format nil "core::magic_name(\"~a:~a\")"

@@ -12,7 +12,6 @@
 (load "packages.lisp")
 (in-package :cscrape)
 (defvar *generated-headers-path*)
-(defvar *use-multiprocessing-if-available* t)
 (defparameter *clang-path* nil)
 (defparameter *tags* nil)
 
@@ -20,7 +19,8 @@
 (load "serialize.lisp")
 (load "parse.lisp")
 (load "tags.lisp")
-(load "compile-commands.lisp")
+(load "extract-tags.lisp")
+(load "sif-file.lisp")
 (load "conditions.lisp")
 (load "sourcepos.lisp")
 (load "interpret-tags.lisp")
@@ -80,7 +80,7 @@ Read all of the scraped info files and interpret their tags."
 (export 'process-all-sif-files)
 
 (defun do-scraping (args &key (run-preprocessor t) regenerate-sifs)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (format t "do-scraping args -> ~a~%" args)
   (let* ((*clang-path* (first args))
          (main-path (second args))

@@ -44,7 +44,7 @@
                      (tags:identifier (tag condition))))))
    
 (defun error-if-bad-expose-info-setup* (tag other-tag)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (unless (and (string= (tags:file% tag) (tags:file% other-tag))
                (< (- (tags:line% tag) (tags:line% other-tag)) 20))
     (error 'bad-cl-defun/defmethod :tag tag :other-tag other-tag)))

@@ -4,13 +4,21 @@
 
 
 (progn
-  (defparameter *clasp-home* #P"/Users/meister/Development/clasp/")
+  (defparameter *clasp-home* #P"/Users/meister/Development/cando/")
   (setf *default-pathname-defaults* (merge-pathnames "src/scraper/" *clasp-home*))
   (push :testing-scraper *features*)
   (load "scraper.lisp"))
 
 (in-package :cscrape)
 
+(defparameter *s* "class Test_O : T_O { stuff }")
+(defparameter *b* (make-instance 'buffer-stream :buffer *s*
+                                 :buffer-pathname #P"foo"
+                                 :buffer-stream (make-string-input-stream *s*)))
+(next-recognition-element *b*)
+(process-all-recognition-elements *b*)
+(file-position (buffer-stream *b*))
+*recognition-elements*
 (defparameter *sif-files*
   (list
    "/Users/meister/Development/clasp/wbuild/boehmdc_o/plugins/cando/src/adapt/adaptPackage.sif"
