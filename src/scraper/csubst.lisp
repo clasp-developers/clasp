@@ -16,7 +16,7 @@
 
 ;;; Modified from stassats: https://github.com/stassats/inline-js
 (defun parse-c++ (stream arg char)
-  (declare (optimize (debug 3)))
+  (declare (optimize (speed 3)))
   (declare (ignore arg char))
   (let* (args
          previous-1

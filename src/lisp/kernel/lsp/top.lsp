@@ -1547,9 +1547,9 @@ package."
   ;; called when the debugger is disabled. We adopt this mechanism
   ;; from SBCL.
 ;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
-  (let ((old-hook *invoke-debugger-hook*))
+  (let ((old-hook ext:*invoke-debugger-hook*))
     (when old-hook
-      (let ((*invoke-debugger-hook* nil))
+      (let ((ext:*invoke-debugger-hook* nil))
         (funcall old-hook condition old-hook))))
   (let* ((old-hook *debugger-hook*))
     (when old-hook
@@ -1561,7 +1561,7 @@ package."
         (default-debugger condition)
         (let* (;; We do not have a si::top-level invocation above us
                ;; so we have to provide the environment for interactive use.
-               (*invoke-debugger-hook* *invoke-debugger-hook*)
+               (ext:*invoke-debugger-hook* ext:*invoke-debugger-hook*)
                (*debugger-hook* *debugger-hook*)
                (*ihs-top* *ihs-top*) ;; Or should it be 1?
                (*tpl-level* *tpl-level*) ;; Or should we simply say 0.

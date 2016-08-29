@@ -16,6 +16,7 @@
      #:gather-source-files
      #:extract-function-name-from-signature
      #:maybe-remove-one-prefix-from-start
+     #:extract-class-method-name-from-signature
      #:extract-method-name-from-signature
      #:extract-method-name-from-pointer
      #:packaged-class-name
@@ -31,43 +32,44 @@
    #:source-pos
    #:unknown-tag
    #:handler-code
-   #:initializer-tag
+   #:cl-initializer-tag
    #:lisp-base-tag
    #:lisp-class-tag
    #:lisp-internal-class-tag
    #:lisp-external-class-tag
-   #:begin-enum-tag
-   #:value-enum-tag
-   #:end-enum-tag
+   #:cl-begin-enum-tag
+   #:cl-value-enum-tag
+   #:cl-end-enum-tag
    #:symbol%
    #:description%
    #:value%
    #:base%
    #:namespace%
    #:namespace
+   #:class%
    #:package%
    #:c++-class%
    #:class-symbol%
    #:name-base-tag
-   #:name-tag
-   #:lispify-name-tag
+   #:cl-name-tag
+   #:cl-lispify-name-tag
    #:packaged-name
    #:internal-code-tag
    #:external-code-tag
    #:package-use-tag
    #:package-shadow-tag
    #:package-nickname-tag
-   #:pkg-name-tag
+   #:cl-pkg-name-tag
    #:name%
    #:full-name
    #:meta-class-tag
    #:meta-class%
    #:maybe-meta-class
-   #:lambda-tag
+   #:cl-lambda-tag
    #:lambda-list%
-   #:docstring-tag
+   #:cl-docstring-tag
    #:docstring%
-   #:declare-tag
+   #:cl-declare-tag
    #:declare-form%
    #:source-tag
    #:external-code-tag
@@ -79,10 +81,11 @@
    #:file%
    #:line%
    #:character-offset%
-   #:expose-internal-function-tag
-   #:expose-internal-method-tag
-   #:expose-external-function-tag
-   #:expose-external-method-tag
+   #:cl-defun-tag
+   #:cl-defmethod-tag
+   #:cl-def-class-method-tag
+   #:cl-extern-defun-tag
+   #:cl-extern-defmethod-tag
    #:function-name%
    #:signature-text%
    #:symbol-tag
@@ -97,6 +100,7 @@
    #:c++-name%
    #:lisp-name%
    #:namespace-tag
+   #:class-tag
    #:namespace-package-association-tag
    #:package%
    #:package-str%
