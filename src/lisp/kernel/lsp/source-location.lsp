@@ -35,6 +35,8 @@
 (defstruct source-location
   pathname offset)
 
+
+
 (defun source-location-impl (name kind)
   "* Arguments
 - name : A symbol.
@@ -51,8 +53,9 @@ Return the source-location for the name/kind pair"
                        rels))))
     (case kind
       (:class
-       (let ((source-loc (list (core:get-sysprop name 'core:class-source-location))))
-         (fix-paths-and-make-source-locations source-loc)))
+       (let ((source-loc (core:get-sysprop name 'core:class-source-location)))
+         (when source-loc
+           (fix-paths-and-make-source-locations (list source-loc)))))
       (:method
           (let ((source-loc (core:get-sysprop name 'core:cxx-method-source-location)))
             (fix-paths-and-make-source-locations source-loc)))
@@ -63,8 +66,7 @@ Return the source-location for the name/kind pair"
          ((fboundp name)
           (multiple-value-bind (file pos)
               (compiled-function-file* (fdefinition name))
-            (list (make-source-location :pathname file :offset pos))))
-         (values nil))))))
+            (list (make-source-location :pathname file :offset pos)))))))))
 
 (defparameter *source-location-kinds* '(:class :method :function))
 
