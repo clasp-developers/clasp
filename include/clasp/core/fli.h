@@ -186,7 +186,7 @@ namespace clasp_ffi {
   CL_DEFUN ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
   CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
 
-  CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::T_sp address);
+  CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::Integer_sp address);
   CL_DEFUN core::T_sp PERCENTpointerp( core::T_sp obj );
 
   CL_DEFUN ForeignData_sp PERCENTmake_nullpointer();
@@ -196,20 +196,6 @@ namespace clasp_ffi {
   // FOREIGN TYPE SIZE AND ALIGNMENT
   CL_DEFUN core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype);
   CL_DEFUN core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype);
-
-  // LISP MEMORY ACEESS / MEMORY CONTENT CONVERSION
-  CL_DEFUN core::T_sp PERCENTmem_ref( core::T_sp address_or_foreign_data_ptr,
-                                      core::T_sp type,
-                                      core::Integer_sp offset );
-  CL_DEFUN void PERCENTmem_set( core::T_sp address_or_foreign_data_ptr,
-                                core::T_sp type,
-                                core::Integer_sp offset,
-                                core::T_sp value );
-
-  // ---------------------------------------------------------------------------
-  // FOREIGN MEMORY DIRECT ACCESS
-  template <class T>
-    T mem_ref(cl_intptr_t address);
 
   // ---------------------------------------------------------------------------
   // DYNAMIC LIBRARY HANDLING

@@ -97,7 +97,7 @@ def bclasp():
         "src/lisp/kernel/clos/streams",
         "src/lisp/kernel/lsp/pprint",
         "src/lisp/kernel/clos/inspect",
-        "src/lisp/kernel/lsp/ffi",
+        "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",
         "src/lisp/kernel/lsp/epilogue-bclasp",
