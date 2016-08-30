@@ -187,12 +187,18 @@ printer and we should rather use MAKE-LOAD-FORM."
 
 (defmethod print-object ((m standard-method) stream)
   (print-unreadable-object (m stream :type t)
-    (format stream "~A ~A"
+    (format stream "~A ~{~S ~}~S"
 	    (let ((gf (method-generic-function m)))
 	      (if gf
 		  (generic-function-name gf)
 		  'UNNAMED))
-	    (method-specializers m)))
+            (method-qualifiers m)
+	    (loop for spec in (method-specializers m)
+                  collect (cond ((and (classp spec)
+                                      (class-name spec)))
+                                ((typep spec 'eql-specializer)
+                                 `(eql ,(eql-specializer-object spec)))
+                                (t spec)))))
   m)
 
 (defun ext::float-nan-string (x)
