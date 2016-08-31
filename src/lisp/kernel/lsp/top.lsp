@@ -49,7 +49,9 @@
 (defparameter *step-level* 0)			; repeated from trace.lsp
 
 (defparameter *break-hidden-functions* '(error cerror apply funcall invoke-debugger))
-(defparameter *break-hidden-packages* (list #-ecl-min (find-package 'system)))
+(defparameter *break-hidden-packages*
+  (list
+   #-(or ecl-min clasp-min) (find-package 'system)))
 
 (defconstant tpl-commands
    '(("Top level commands"
@@ -556,7 +558,8 @@ Use special code 0 to cancel this operation.")
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      (broken-at nil)
 	      (quiet nil))
-  ;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
+  #-(or ecl-min clasp)
+  (declare (c::policy-debug-ihs-frame))
   (let* ((*ihs-base* *ihs-top*)
 	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
 	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
@@ -896,7 +899,7 @@ Use special code 0 to cancel this operation.")
 
 #-(or ecl-min clasp)
 (defun decode-env-elt (env ndx)
-  (ffi:c-inline (env ndx) (:object :fixnum) :object  ;; I'm turning off this c-inline because I don't know what it does meister 2013
+  (ffi:c-inline (env ndx) (:object :fixnum) :object
                 "
 	cl_object v = #0;
 	cl_index ndx = #1;
@@ -953,9 +956,9 @@ Use special code 0 to cancel this operation.")
 (defun decode-ihs-env (*break-env*)
   (let ((env *break-env*))
     (if (vectorp env)
-      #+ecl-min
+      #+(or ecl-min clasp)
       nil
-      #-(or ecl-min clasp) ;; I'm turning off this c-inline for clasp because I don't know what it does meister 2013
+      #-(or ecl-min clasp)
       (let* ((next (decode-ihs-env
                     (ffi:c-inline (env) (:object) :object
                                   "(#0)->vector.self.t[0]" :one-liner t))))
@@ -1546,7 +1549,8 @@ package."
   ;; call *INVOKE-DEBUGGER-HOOK* first, so that *DEBUGGER-HOOK* is not
   ;; called when the debugger is disabled. We adopt this mechanism
   ;; from SBCL.
-;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
+  #-(or ecl-min clasp)
+  (declare (c::policy-debug-ihs-frame))
   (let ((old-hook ext:*invoke-debugger-hook*))
     (when old-hook
       (let ((ext:*invoke-debugger-hook* nil))

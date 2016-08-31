@@ -168,20 +168,22 @@ row-major order."
 (defun bit (bit-array &rest indices)
   "Args: (bit-array &rest indexes)
 Returns the bit of BIT-ARRAY specified by INDEXes."
-  (declare #+ecl(array bit-array) ;; FIXME! Should be (simple-array bit)
-           #+clasp(type (simple-array bit) bit-array)
+  (declare #+ecl (array bit-array) ;; FIXME! Should be (simple-array bit)
+           #+clasp (type (simple-array bit) bit-array)
            (ext:check-arguments-type))
-  #+(and clasp (not ecl-min))(check-type bit-array (simple-array bit))
+  #+(and clasp (not clasp-min))
+  (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 
 (defun sbit (bit-array &rest indices)
   "Args: (simple-bit-array &rest subscripts)
 Returns the specified bit in SIMPLE-BIT-ARRAY."
-  (declare #+ecl(array bit-array) ;; FIXME! Should be (simple-array bit)
-           #+clasp(type (simple-array bit) bit-array)
+  (declare #+ecl (array bit-array) ;; FIXME! Should be (simple-array bit)
+           #+clasp (type (simple-array bit) bit-array)
            (ext:check-arguments-type))
-  #+(and clasp (not ecl-min))(check-type bit-array (simple-array bit))
+  #+(and clasp (not clasp-min))
+  (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 

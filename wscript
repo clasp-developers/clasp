@@ -797,7 +797,7 @@ class compile_aclasp(Task.Task):
         print("In compile_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
         cmd = [self.inputs[0].abspath(),
                "-I",
-               "-f", "ecl-min",
+               "-f", "clasp-min",
                "-f", "clasp-builder",
                "-f", "debug-run-clang",
                "-N",
