@@ -133,6 +133,7 @@
 ;;;
 ;;; Incidentally, this is essentially the same operator which
 ;;; _On Lisp_ calls WITH-GENSYMS.
+;;;
 (defmacro with-unique-names (symbols &body body)
   `(let* ,(mapcar (lambda (symbol)
                     (let* ((symbol-name (symbol-name symbol))
