@@ -84,7 +84,6 @@ Return the source-location for the name/kind pair"
        ((functionp obj)
         (multiple-value-bind (file pos)
             (compiled-function-file* obj)
-          (list (make-source-location :pathname file :offset pos))))
-       (t (error "Cannot obtain source-location for ~a" obj))))
+          (list (make-source-location :pathname file :offset pos))))))
     ((symbolp kind) (source-location-impl obj kind))
     (t (error "Cannot obtain source-location for ~a of kind ~a" obj kind))))
