@@ -136,7 +136,7 @@
 (defmacro with-unique-names (symbols &body body)
   `(let* ,(mapcar (lambda (symbol)
                     (let* ((symbol-name (symbol-name symbol))
-                           (stem symbol-name)
+                           (stem symbol-name))
                       `(,symbol (gensym ,stem))))
                   symbols)
      ,@body))
