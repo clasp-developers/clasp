@@ -1,4 +1,4 @@
-#+ecl-min(eval-when (:load-toplevel)
+#+clasp-min(eval-when (:load-toplevel)
            (process-command-line-load-eval-sequence)
            (core::select-package :core)
            (let ((core:*use-interpreter-for-eval* nil))

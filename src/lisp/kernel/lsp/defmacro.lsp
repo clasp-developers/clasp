@@ -14,7 +14,7 @@
 
 (in-package "SYSTEM")
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'push
 	  (function 
 	   #+ecl(ext::lambda-block push (args env)
@@ -30,7 +30,7 @@
 	   )
 	  t)
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'pop
 	  (function 
 	   #+ecl(ext::lambda-block pop (args env)
@@ -50,7 +50,7 @@
 	   )
 	  t)
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'incf
 	  (function 
 	   #+ecl(ext::lambda-block incf (args env)
@@ -70,7 +70,7 @@
 	   )
 	  t)
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'decf
 	  (function 
 	   #+ecl(ext::lambda-block decf (args env)
@@ -318,7 +318,7 @@
                 ppn
                 doc)))))
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'defmacro
 	  (function 
 	   #+ecl(ext::lambda-block defmacro (def env)
