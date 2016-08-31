@@ -526,7 +526,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
     for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
+        SIMPLE_ERROR(BF("A nested lambda list was discovered while building handler for %s") % this->__repr__());
         List_sp sub_lambda_list = it->lambda_list();
         //		    throw_if_not_destructuring_context(context);
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);

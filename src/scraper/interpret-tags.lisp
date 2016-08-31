@@ -392,7 +392,7 @@ This interprets the tags and generates objects that are used to generate code."
                                              packages))
                       (signature-text (tags:signature-text% tag))
                       (lambda-list (or (tags:maybe-lambda-list cur-lambda)
-                                       (parse-lambda-list-from-signature signature-text :class class)))
+                                       (parse-lambda-list-from-signature signature-text)))
                       (declare-form (tags:maybe-declare cur-declare))
                       (docstring (tags:maybe-docstring cur-docstring)))
                  (unless class (error "For cl-def-class-method-tag couldn't find class ~a" class-key))
