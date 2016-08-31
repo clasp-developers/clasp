@@ -320,7 +320,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
+CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
   stringstream ss;
   ss << "build:";
