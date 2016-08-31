@@ -28,7 +28,7 @@
 
 
 (defun remove-stage-features ()
-  (setq *features* (recursive-remove-from-list :ecl-min *features*))
+  (setq *features* (recursive-remove-from-list :clasp-min *features*))
   (setq *features* (recursive-remove-from-list :clos *features*))
   (setq *features* (recursive-remove-from-list :aclasp *features*))
   (setq *features* (recursive-remove-from-list :bclasp *features*))
@@ -37,11 +37,11 @@
 (export '(aclasp-features with-aclasp-features))
 (defun aclasp-features ()
   (remove-stage-features)
-  (setq *features* (list* :aclasp :ecl-min *features*)))
+  (setq *features* (list* :aclasp :clasp-min *features*)))
 (core:fset 'with-aclasp-features
             #'(lambda (whole env)
                 (let* ((body (cdr whole)))
-                  `(let ((*features* (list* :aclasp :ecl-min *features*)))
+                  `(let ((*features* (list* :aclasp :clasp-min *features*)))
                      ,@body)))
             t)
 

@@ -657,7 +657,7 @@ Returns T if X belongs to TYPE; NIL otherwise."
 		  (when (eq (class-name c) class)
 		    (return t)))))))))
 
-#+(and clos ecl-min (not clasp))
+#+(and clos ecl-min)
 (defun clos::classp (foo)
   (declare (ignore foo))
   nil)

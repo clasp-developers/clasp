@@ -1,8 +1,8 @@
-#+ecl-min
+#+clasp-min
 (progn
   (if (member :interactive *features*)
       (progn
-        (setq *features* (cons :ecl-min *features*))
+        (setq *features* (cons :clasp-min *features*))
         (setq *features* (cons :aclasp *features*))
         (bformat t "Starting %s ... loading image... it takes a few seconds\n"
                  (lisp-implementation-version)))))

@@ -1,4 +1,4 @@
-;; Set features :ecl-min for minimal system without CLOS
+;; Set features :clasp-min for minimal system without CLOS
 ;; :clos to compile with CLOS
 ;;
 

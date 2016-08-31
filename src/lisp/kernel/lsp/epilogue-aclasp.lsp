@@ -1,4 +1,4 @@
-#+(or ecl-min aclasp)
+#+(or clasp-min aclasp)
 (eval-when (:load-toplevel)
   (process-command-line-load-eval-sequence)
   (core::select-package :core)

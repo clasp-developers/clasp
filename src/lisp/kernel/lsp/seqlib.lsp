@@ -15,19 +15,17 @@
 
 (in-package "SYSTEM")
 
-#|
 #+ecl-min
 (eval-when (:execute)
   (load (merge-pathnames "seqmacros.lsp" *load-truename*)))
 
-#-ecl-min
+#-(or ecl-min clasp)
 (eval-when (:compile-toplevel)
 (define-compiler-macro copy-subarray (&rest args)
   `(ffi:c-inline ,args (:object :fixnum :object :fixnum :fixnum) :void
                  "ecl_copy_subarray(#0,#1,#2,#3,#4)"
-                 :one-liner t))
-)
-|#
+                 :one-liner t)))
+
 (defun seqtype (sequence)
   (declare (si::c-local))
   (cond ((listp sequence) 'list)
