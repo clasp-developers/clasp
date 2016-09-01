@@ -27,7 +27,11 @@
                  (error "Cannot displace the array, because the element types don't match")))
            (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
     ((consp dimensions)
-     (and initial-contents (error "You passed initial-contents to make-array"))
+     (when (and initial-element initial-contents)
+       (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
+
+     ;; FIXME: #282
+     (when initial-contents (error "You passed :INITIAL-CONTENTS to MAKE-ARRAY (fixme)"))
      (if displaced-to
          (if (eq (array-element-type displaced-to) element-type)
              (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
