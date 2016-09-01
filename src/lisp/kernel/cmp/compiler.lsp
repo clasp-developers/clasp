@@ -1459,7 +1459,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	      (generate-lambda-expression-from-interpreted-function func)
 	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
 	    (compile-in-env name lambda-expression wrapped-env compile-hook)))
-	 (t (error "Could not compile func")))))
+         (t (warn "We have lost the original function definition for ~s. Compilation failed." func)
+            (values func t nil)))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
 
