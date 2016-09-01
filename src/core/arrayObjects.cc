@@ -196,7 +196,7 @@ LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
   _OF();
   LongLongInt elements = 1;
   int newRank = cl__length(dim);
-  if (newRank >= CLASP_ARRAY_RANK_LIMIT) {
+  if (newRank > CLASP_ARRAY_RANK_LIMIT) {
     SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
   }
   this->_Dimensions.resize(newRank);
