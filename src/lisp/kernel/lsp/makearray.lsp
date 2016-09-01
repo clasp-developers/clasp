@@ -22,7 +22,9 @@
            (progn
              (and adjustable (error "Displaced arrays don't support adjustable"))
              (and fill-pointer (error "Displaced arrays don't support fill-pointer yet"))
-             (if (eq (array-element-type displaced-to) element-type)
+             (if (let ((array-element-type (array-element-type displaced-to)))
+                   (and (subtypep array-element-type element-type)
+                        (subtypep element-type array-element-type)))
                  (make-vector-displaced dimensions element-type displaced-to displaced-index-offset)
                  (error "Cannot displace the array, because the element types don't match")))
            (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
@@ -33,7 +35,9 @@
      ;; FIXME: #282
      (when initial-contents (error "You passed :INITIAL-CONTENTS to MAKE-ARRAY (fixme)"))
      (if displaced-to
-         (if (eq (array-element-type displaced-to) element-type)
+         (if (let ((array-element-type (array-element-type displaced-to)))
+               (and (subtypep array-element-type element-type)
+                    (subtypep element-type array-element-type)))
              (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
              (error "Cannot displace the array, because the element types don't match"))
          (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element adjustable)))
