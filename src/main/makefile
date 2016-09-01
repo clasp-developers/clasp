@@ -14,7 +14,7 @@ ifneq ($(CLASP_INTERNAL_BUILD_TARGET_DIR),)
   BCLASP_BOEHM = bclasp-boehm-o
   CCLASP_BOEHMDC = $(CLASP_APP_EXECS)/boehmdc/release/bin/clasp
   CCLASP_BOEHM = cclasp-boehm-o
-  ACLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -I -f ecl-min
+  ACLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -I -f clasp-min
   BCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp -f bclasp
   CCLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
   CLASP_MPS = $(CLASP_APP_EXECS)/mps/release/bin/clasp
@@ -147,28 +147,28 @@ mps-debug-cxx-a:
 
 
 min-boehm-clean:
-	$(BCLASP_BOEHM) -I -f ecl-min -e "(clean-system :init :no-prompt t)" -e "(quit)"
+	$(BCLASP_BOEHM) -I -f clasp-min -e "(clean-system :init :no-prompt t)" -e "(quit)"
 
 bclasp-boehm-clean:
-	$(BCLASP_BOEHM) -I -f ecl-min -e "(bclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
+	$(BCLASP_BOEHM) -I -f clasp-min -e "(bclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
 
 cclasp-boehm-clean:
-	$(BCLASP_BOEHM) -I -f ecl-min -e "(cclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
+	$(BCLASP_BOEHM) -I -f clasp-min -e "(cclasp-features)" -e "(clean-system :init :no-prompt t)" -e "(quit)"
 
 min-boehm:
-	$(ICLASP_BOEHM) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+	$(ICLASP_BOEHM) -I -f clasp-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
 min-mps:
-	$(CLASP_MPS) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+	$(CLASP_MPS) -I -f clasp-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
 min-boehmdc:
-	$(CLASP_BOEHMDC) -I -f ecl-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
+	$(CLASP_BOEHMDC) -I -f clasp-min -e "(compile-min)" -e "(link-min)" -e "(quit)"
 
 bclasp-boehmdc-bitcode:
-	$(BCLASP_BOEHMDC) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+	$(BCLASP_BOEHMDC) -f clasp-min -e "(compile-bclasp)" -e "(quit)"
 
 bclasp-boehmdc-fasl:
-	$(BCLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	$(BCLASP_BOEHMDC) -f clasp-min -e "(link-bclasp)" -e "(quit)"
 
 bclasp-boehmdc:
 	make bclasp-boehmdc-bitcode
@@ -181,8 +181,8 @@ cclasp-boehmdc-fasl:
 	$(BCLASP_BOEHMDC) -e "(link-cclasp :force t)" -e "(quit)"
 
 link-all-boehmdc-fasl:
-	$(CLASP_BOEHMDC) -I -f ecl-min -e "(link-min)" -e "(quit)"
-	$(CLASP_BOEHMDC) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	$(CLASP_BOEHMDC) -I -f clasp-min -e "(link-min)" -e "(quit)"
+	$(CLASP_BOEHMDC) -f clasp-min -e "(link-bclasp)" -e "(quit)"
 	$(CLASP_BOEHMDC) -f bclasp -e "(link-cclasp)" -e "(quit)"
 	$(CLASP_BOEHMDC) -l "link_addons.lsp"
 
@@ -191,13 +191,13 @@ bclasp-boehm:
 	make bclasp-boehm-fasl
 
 bclasp-boehm-bitcode:
-	$(BCLASP_BOEHM) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+	$(BCLASP_BOEHM) -f clasp-min -e "(compile-bclasp)" -e "(quit)"
 
 bclasp-mps-bitcode:
-	$(CLASP_MPS) -f ecl-min -e "(compile-bclasp)" -e "(quit)"
+	$(CLASP_MPS) -f clasp-min -e "(compile-bclasp)" -e "(quit)"
 
 bclasp-boehm-fasl:
-	$(BCLASP_BOEHM) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	$(BCLASP_BOEHM) -f clasp-min -e "(link-bclasp)" -e "(quit)"
 
 
 bclasp-boehm-addons:
@@ -220,19 +220,19 @@ cclasp-boehm:
 	make cclasp-boehm-fasl
 
 cclasp-boehm-bitcode:
-	$(BCLASP_BOEHM) -f ecl-min -e "(compile-cclasp)" -e "(quit)"
+	$(BCLASP_BOEHM) -f clasp-min -e "(compile-cclasp)" -e "(quit)"
 
 cclasp-boehm-fasl:
-	$(BCLASP_BOEHM) -f ecl-min -e "(link-cclasp :force t)" -e "(quit)"
+	$(BCLASP_BOEHM) -f clasp-min -e "(link-cclasp :force t)" -e "(quit)"
 
 cclasp-mps-fasl:
 	$(BCLASP_MPS) -e "(link-cclasp :force t)" -e "(quit)"
 
 aclasp-mps-fasl:
-	$(CLASP_MPS) -I -f ecl-min -e "(link-min)" -e "(quit)"
+	$(CLASP_MPS) -I -f clasp-min -e "(link-min)" -e "(quit)"
 
 bclasp-mps-fasl:
-	$(CLASP_MPS) -f ecl-min -e "(link-bclasp)" -e "(quit)"
+	$(CLASP_MPS) -f clasp-min -e "(link-bclasp)" -e "(quit)"
 
 clasp-gc-interface:
 	$(BCLASP_BOEHM) -l "buildClaspGC.lsp"

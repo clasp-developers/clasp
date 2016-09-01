@@ -15,7 +15,7 @@
 
 (in-package "SYSTEM")
 
-#+(or) ;; #-ecl-min
+#-(or ecl-min clasp)
 (ffi:clines "#include <math.h>")
 
 #.
@@ -34,8 +34,8 @@
 	 (/= (float 1 x) (+ (float 1 x) x)))
        (epsilon- (x)
 	 (/= (float 1 x) (- (float 1 x) x))))
-;;  #+ecl-min
-;;  (si::trap-fpe 'last nil)
+  #+(and ecl-min (not clasp))
+  (si::trap-fpe 'last nil)
   `(eval-when (compile load eval)
     (defconstant short-float-epsilon
       ,(binary-search #'epsilon+ (coerce 0 'short-float) (coerce 1 'short-float))
@@ -126,8 +126,8 @@ zero.  Otherwise, returns the value of (/ NUMBER (ABS NUMBER))"
 Returns a complex number whose realpart and imagpart are the values of (COS
 RADIANS) and (SIN RADIANS) respectively."
   (exp (* imag-one x)))
-#||
-#-ecl-min
+
+#-(or ecl-min clasp)
 (eval-when (:compile-toplevel)
   (defmacro c-num-op (name arg)
     #+long-float
@@ -138,13 +138,14 @@ RADIANS) and (SIN RADIANS) respectively."
     `(ffi::c-inline (,arg) (:double) :double
 		    ,(format nil "~a(#0)" name)
 		    :one-liner t)))
-||#
+
 (defun asin (x)
   "Args: (number)
 Returns the arc sine of NUMBER."
-  (if #+ecl-min t #-ecl-min (complexp x)
+  (if #+(or ecl-min clasp-min) t
+      #-(or ecl-min clasp-min) (complexp x)
       (complex-asin x)
-      #-ecl-min
+      #-(or ecl-min clasp-min)
       (let* ((x (float x))
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
@@ -165,9 +166,10 @@ Returns the arc sine of NUMBER."
 (defun acos (x)
   "Args: (number)
 Returns the arc cosine of NUMBER."
-  (if #+ecl-min t #-ecl-min (complexp x)
+  (if #+(or ecl-min clasp-min) t
+      #-(or ecl-min clasp-min) (complexp x)
       (complex-acos x)
-      #-ecl-min
+      #-(or ecl-min clasp-min)
       (let* ((x (float x))
 	     (xr (float x 1l0)))
 	(declare (long-float xr))
@@ -184,20 +186,17 @@ Returns the arc cosine of NUMBER."
     (complex (* 2 (atan (realpart sqrt-1-z) (realpart sqrt-1+z)))
 	     (asinh (imagpart (* (conjugate sqrt-1+z)
 				 sqrt-1-z))))))
-#||
-#+(and (not ecl-min) win32 (not mingw32))
+#+(and (not ecl-min) win32 (not mingw32) (not clasp))
 (progn
   (ffi:clines "double asinh(double x) { return log(x+sqrt(1.0+x*x)); }")
   (ffi:clines "double acosh(double x) { return log(x+sqrt((x-1)*(x+1))); }")
   (ffi:clines "double atanh(double x) { return log((1+x)/(1-x))/2; }"))
 
-#+(and long-float (not ecl-min) win32 (not mingw32))
+#+(and long-float (not ecl-min) win32 (not mingw32) (not clasp))
 (progn
   (ffi:clines "double asinhl(long double x) { return logl(x+sqrtl(1.0+x*x)); }")
   (ffi:clines "double acoshl(long double x) { return logl(x+sqrtl((x-1)*(x+1))); }")
   (ffi:clines "double atanhl(long double x) { return logl((1+x)/(1-x))/2; }"))
-||#
-
 
 
 ;; Ported from CMUCL
@@ -205,27 +204,32 @@ Returns the arc cosine of NUMBER."
   "Args: (number)
 Returns the hyperbolic arc sine of NUMBER."
   ;(log (+ x (sqrt (+ 1.0 (* x x)))))
-  (if #+(or ecl-min) t #-(or ecl-min) (complexp x)
+  (if #+(or ecl-min clasp-min) t
+      #-(or ecl-min clasp-min) (complexp x)
       (let* ((iz (complex (- (imagpart x)) (realpart x)))
 	     (result (complex-asin iz)))
 	(complex (imagpart result)
 		 (- (realpart result))))
-      #-(or ecl-min)
-      (float #+ecl(c-num-op "asinh" x) #+clasp(core:num-op-asinh x) (float x))))
+      #-(or ecl-min clasp-min)
+      (float #+ecl (c-num-op "asinh" x)
+             #+clasp (core:num-op-asinh x)
+             (float x))))
 
 ;; Ported from CMUCL
 (defun acosh (x)
   "Args: (number)
 Returns the hyperbolic arc cosine of NUMBER."
   ;(log (+ x (sqrt (* (1- x) (1+ x)))))
-  (if #+(or ecl-min) t #-(or ecl-min) (complexp x)
+  (if #+(or ecl-min clasp-min) t
+      #-(or ecl-min clasp-min) (complexp x)
       (complex-acosh x)
-      #-(or ecl-min)
+      #-(or ecl-min clasp-min)
       (let* ((x (float x))
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (<= 1.0 xr)
-	    (float #+ecl(c-num-op "acosh" xr) #+clasp(core:num-op-acosh xr) (float x))
+	    (float #+ecl (c-num-op "acosh" xr)
+                   #+clasp (core:num-op-acosh xr) (float x))
 	    (complex-acosh x)))))
 
 (defun complex-acosh (z)
@@ -240,14 +244,17 @@ Returns the hyperbolic arc cosine of NUMBER."
   "Args: (number)
 Returns the hyperbolic arc tangent of NUMBER."
   ;(/ (- (log (1+ x)) (log (- 1 x))) 2)
-  (if #+(or ecl-min) t #-(or ecl-min) (complexp x)
+  (if #+(or ecl-min clasp-min) t
+      #-(or ecl-min clasp-min) (complexp x)
       (complex-atanh x)
-      #-(or ecl-min)
+      #-(or ecl-min clasp-min)
       (let* ((x (float x))
 	     (xr (float x 1d0)))
 	(declare (double-float xr))
 	(if (and (<= -1.0 xr) (<= xr 1.0))
-	    (float #+ecl(c-num-op "atanh" xr) #+clasp(core:num-op-atanh xr) (float x))
+	    (float #+ecl (c-num-op "atanh" xr)
+                   #+clasp(core:num-op-atanh xr)
+                   (float x))
 	    (complex-atanh x)))))
 
 (defun complex-atanh (z)

@@ -223,7 +223,7 @@ CL_DECLARE();
 CL_DOCSTRING("Print info about booting");
 CL_DEFUN void core__help_booting() {
   printf("Useful *features*\n"
-         ":ecl-min (should be clasp-min),  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
+         ":clasp-min,  :bclasp, :cclasp  -- Tells Clasp what stage it's in and where to get its init file.\n"
          ":notify-on-compile (core:*notify-on-compile*) - prints messages whenever COMPILE is invoked at startup\n"
          ":trace-startup (core:*trace-startup*) - prints messages and timing for running the main function of the compiled code of each system file at startup\n"
          ":debug-startup (core:*debug-startup*) - prints a message and timing for running each top level function\n"
@@ -320,7 +320,7 @@ CL_DEFUN T_mv core__mangle_name(Symbol_sp sym, bool is_function) {
 
 CL_LAMBDA();
 CL_DECLARE();
-CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :ECL-MIN, :USE-MPS, :BCLASP");
+CL_DOCSTRING("startupImagePathname - returns a pathname based on *features* :CLASP-MIN, :USE-MPS, :BCLASP");
 CL_DEFUN T_sp core__startup_image_pathname() {
   stringstream ss;
   ss << "build:";

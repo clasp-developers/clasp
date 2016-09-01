@@ -250,15 +250,15 @@ strings."
               "EXT")
 (si::fset 'ext:optional-annotation
           (function 
-	   #+ecl(ext:lambda-block ext:optional-annotation (whole env)
-				  (declare (ignore env #-ecl-min whole))
-				  #+ecl-min
-				  `(ext:annotate ,@(rest whole)))
-	   #+clasp(lambda (whole env)
-	    (declare (ignore env #-ecl-min whole) 
+	   #+ecl
+           #'(ext:lambda-block ext:optional-annotation (whole env)
+              (declare (ignore env))
+              `(ext:annotate ,@(rest whole)))
+	   #+clasp
+           (lambda (whole env)
+	    (declare (ignore env #-clasp-min whole)
 		     (core:lambda-name ext:optional-annotation))
-	      #+ecl-min `(ext:annotate ,@(rest whole)))
-	   )
+            #+clasp-min `(ext:annotate ,@(rest whole))))
 	  t)
 
 (defun default-annotation-logic (source-loc definition output-form

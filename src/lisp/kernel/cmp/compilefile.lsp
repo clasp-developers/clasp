@@ -79,8 +79,8 @@
 (defvar *compilation-messages* nil)
 (defvar *compilation-warnings-p* nil)
 (defvar *compilation-failures-p* nil)
-         #+ecl-min (progn ,@body)
-         #-ecl-min (handler-bind
+         #+clasp-min (progn ,@body)
+         #-clasp-min (handler-bind
                        ((error #'(lambda (c)
                                    (invoke-restart 'record-failure c)))
                         (warning #'(lambda (c)
