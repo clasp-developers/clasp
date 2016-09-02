@@ -94,7 +94,7 @@ CL_DEFUN bool cl__zerop(T_sp num) {
   return clasp_zerop(gc::As<Number_sp>(num));
 }
 
-CL_LAMBDA();
+CL_LAMBDA(z);
 CL_DECLARE();
 CL_DOCSTRING("convert_overflow_result_to_bignum");
 CL_DEFUN Integer_sp core__convert_overflow_result_to_bignum(Fixnum_sp z) {

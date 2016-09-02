@@ -18,13 +18,14 @@
 (in-package "SYSTEM")
 
 
-#-clasp(defun make-array (dimensions
-                         &key (element-type t)
-                           (initial-element nil initial-element-supplied-p)
-                           (initial-contents nil initial-contents-supplied-p)
-                           adjustable fill-pointer
-                           displaced-to (displaced-index-offset 0))
-        "Args: (dimensions &key (element-type t) initial-element (initial-contents nil)
+#-clasp
+(defun make-array (dimensions
+                   &key (element-type t)
+                     (initial-element nil initial-element-supplied-p)
+                     (initial-contents nil initial-contents-supplied-p)
+                     adjustable fill-pointer
+                     displaced-to (displaced-index-offset 0))
+  "Args: (dimensions &key (element-type t) initial-element (initial-contents nil)
 		    (adjustable nil) (fill-pointer nil) (displaced-to nil)
 		    (displaced-index-offset 0) (static nil))
 Creates an array of the specified DIMENSIONS.  DIMENSIONS is a list of
@@ -45,23 +46,71 @@ in raw-major indexing is actually the reference to the (I + DISPLACED-INDEX-
 OFFSET)th element of the given array.If the STATIC argument is supplied
 with a non-nil value, then the body of the array is allocated as a
 contiguous block."
-        (let ((x (sys:make-pure-array element-type dimensions adjustable
-                                      fill-pointer displaced-to displaced-index-offset)))
-          (declare (array x))
-          (cond (initial-element-supplied-p
-                 (when initial-contents-supplied-p
-                   (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
-                 (fill-array-with-elt x initial-element 0 nil))
-                (initial-contents-supplied-p
-                 (fill-array-with-seq x initial-contents))
-                (t
-                 x))))
+  (let ((x (sys:make-pure-array element-type dimensions adjustable
+                                fill-pointer displaced-to displaced-index-offset)))
+    (declare (array x))
+    (cond (initial-element-supplied-p
+           (when initial-contents-supplied-p
+             (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
+           (fill-array-with-elt x initial-element 0 nil))
+          (initial-contents-supplied-p
+           (fill-array-with-seq x initial-contents))
+          (t
+           x))))
 
-#-clasp(defun fill-array-with-seq (array initial-contents)
+#+clasp
+(defun make-array (dimensions &key (element-type t)
+                                (initial-element nil initial-element-supplied-p)
+                                (initial-contents nil initial-contents-supplied-p)
+                                adjustable
+                                fill-pointer
+                                displaced-to
+                                (displaced-index-offset 0))
+  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
+  (if (and (consp element-type)
+	   (null initial-element)
+	   (eq (car element-type) 'cl:unsigned-byte))
+      (setq initial-element 0))
+  (cond
+    ((null dimensions)
+     (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element adjustable))
+    ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
+     (let ((dim (if (fixnump dimensions)
+		    dimensions
+		    (car dimensions))))
+       (if displaced-to
+           (progn
+             (and adjustable (error "Displaced arrays don't support adjustable"))
+             (and fill-pointer (error "Displaced arrays don't support fill-pointer yet"))
+             (if (let ((array-element-type (array-element-type displaced-to)))
+                   (and (subtypep array-element-type element-type)
+                        (subtypep element-type array-element-type)))
+                 (make-vector-displaced dimensions element-type displaced-to displaced-index-offset)
+                 (error "Cannot displace the array, because the element types don't match")))
+           (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
+    ((consp dimensions)
+     (when (and initial-element-supplied-p initial-contents-supplied-p)
+       (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
+     (if displaced-to
+         (if (let ((array-element-type (array-element-type displaced-to)))
+               (and (subtypep array-element-type element-type)
+                    (subtypep element-type array-element-type)))
+             (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
+             (error "Cannot displace the array, because the element types don't match"))
+         (let ((x (make-array-objects dimensions
+                                      (upgraded-array-element-type element-type)
+                                      initial-element
+                                      adjustable)))
+           (when initial-contents-supplied-p
+             (fill-array-with-seq x initial-contents))
+           x)))
+    (t (error "Illegal dimensions ~a for make-array" dimensions ))))
+
+(defun fill-array-with-seq (array initial-contents)
   (declare (array array)
            (sequence initial-contents)
            (optimize (safety 0))
-	   (si::c-local))
+           (si::c-local))
   (labels ((iterate-over-contents (array contents dims written)
 	     (declare (fixnum written)
 		      (array array)
@@ -87,14 +136,16 @@ contiguous block."
   array)
 
 
-#-clasp(defun vector (&rest objects)
+#-clasp
+(defun vector (&rest objects)
   "Args: (&rest objects)
 Creates and returns a simple-vector, with the N-th OBJECT being the N-th
 element."
   (let ((a (si:make-vector t (length objects) nil nil nil 0)))
     (fill-array-with-seq a objects)))
 
-#-clasp(defun array-dimensions (array)
+#-clasp
+(defun array-dimensions (array)
   "Args: (array)
 Returns a list whose N-th element is the length of the N-th dimension of ARRAY."
   (do ((i (array-rank array))
@@ -103,7 +154,6 @@ Returns a list whose N-th element is the length of the N-th dimension of ARRAY."
     (declare (fixnum i)
 	     (optimize (safety 0)))
     (push (array-dimension array (decf i)) d)))
-
 
 (defun array-in-bounds-p (array &rest indices)
   "Args: (array &rest indexes)
@@ -321,7 +371,8 @@ pointer is 0 already."
 	               (or (array-dimensions orig) '(1))
 		       0 0)))
 
-#-clasp(defun adjust-array (array new-dimensions
+#-clasp
+(defun adjust-array (array new-dimensions
                      &rest r
 		     &key (element-type (array-element-type array))
 			  initial-element
@@ -355,6 +406,22 @@ adjustable array."
       (copy-array-contents x array))
     (sys:replace-array array x)
     ))
+
+#+clasp
+(defun adjust-array (array dimensions &key element-type initial-element initial-contents fill-pointer displaced-to displaced-index-offset)
+  (and fill-pointer (error "Add support for fill-pointers in arrays"))
+  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
+  (cond
+    ((vectorp array)
+     (let ((dim (cond
+		  ((fixnump dimensions) dimensions)
+		  ((and (consp dimensions) (eql 1 (length dimensions))) (car dimensions))
+		  (t (error "illegal dimensions for adjust-array: ~A" dimensions)))))
+       (adjust-vector array dim initial-element initial-contents)))
+    ((consp dimensions)
+     (and initial-contents (error "Handle initial-contents to adjust-array"))
+     (adjust-array-objects array dimensions element-type initial-element))
+    (t (error "Illegal dimensions ~a for adjust-array" dimensions ))))
 
 ;;; Copied from cmuci-compat.lisp of CLSQL by Kevin M. Rosenberg (LLGPL-licensed)
 (defun shrink-vector (vec len)
