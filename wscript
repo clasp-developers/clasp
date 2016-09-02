@@ -856,10 +856,14 @@ class compile_cclasp(Task.Task):
 class recompile_cclasp(Task.Task):
     def run(self):
         print("In recompile_cclasp -> %s" % self.outputs[0].abspath())
+        other_clasp = os.getenv("CLASP")
+        if (other_clasp == None):
+            print("To use 'dangerzone' you need to set the CLASP env variable to an installed clasp executable")
+            os.exit(1)
 #        cclasp_exe = self.bld.find_program("cclasp")
 #        print("cclasp_exe = %s"%cclasp_exe)
 #        cmd = 'cclasp -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
-        cmd = ["cclasp",
+        cmd = [other_clasp,
                "-N",
                "-f", "clasp-builder",
                "-f", "debug-run-clang",
