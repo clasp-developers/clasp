@@ -39,6 +39,9 @@ First you will need what is listed for OS X under the [dependencies](#external-d
 
 The compilation output will be in the `build/clasp` directory. To launch Clasp, run `build/clasp/MacOS/clasp_boehm_o`.
 
+Aug 30 2016 - you need Xcode8-beta6 to build on OS X.  Install it and then run "xcode-select --install".
+Hopefully soon with the next Xcode release and new LLVM release I'll be able to eliminate all of this.
+
 ### Building With Externals-Clasp
 If your system does not provide the [external dependencies](#external-dependencies) as required by Clasp, you can use this approach instead, which will compile them for you.
 
