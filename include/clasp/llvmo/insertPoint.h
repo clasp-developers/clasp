@@ -40,9 +40,8 @@ THE SOFTWARE.
 #include <clasp/llvmo/llvmoPackage.h>
 
 namespace llvmo {
-class InsertPoint_O : public core::T_O {
-  LISP_BASE1(core::T_O);
-  LISP_CLASS(llvmo, LlvmoPkg, InsertPoint_O, "InsertPoint");
+class InsertPoint_O : public core::General_O {
+  LISP_CLASS(llvmo, LlvmoPkg, InsertPoint_O, "InsertPoint",core::General_O);
 
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(InsertPoint_O);
@@ -58,6 +57,5 @@ public: // Functions here
 }; // InsertPoint class
 
 }; // llvmo namespace
-TRANSLATE(llvmo::InsertPoint_O);
 
 #endif /* _llvmo_insertPoint_H_ */

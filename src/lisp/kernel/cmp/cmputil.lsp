@@ -26,6 +26,7 @@
 
 (in-package :cmp)
 
+
 (defconstant +note-format+  "    %s\n")
 (defconstant +warn-format+  "!   %s\n")
 (defconstant +error-format+ "*   %s\n")
@@ -69,8 +70,6 @@
              (:include compiler-warning
                        (prefix "Style Warning")
                        (format +warn-format+))))
-
-
 
 (defun compiler-error (form message &rest args)
   (multiple-value-bind (source-dir source-file file-pos lineno column)

@@ -16,17 +16,20 @@
    #:invoke-multiple-value-call-instruction
    #:*debug-log*
    #:instruction-gid
+   #:unsafe-intrinsic-call
    #:datum-gid
    #:create-landing-pad
    #:translate-datum
    #:convert-funcalls
    #:finalize-unwind-and-landing-pad-instructions
+   #:optimize-stack-enclose
    #:cleavir-compile
    #:cleavir-compile-file
    #:cclasp-compile-in-env
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
+   #:alloca-i8
 ))
 
 (defpackage #:clasp-cleavir-generate-ast
@@ -42,6 +45,9 @@
    #:make-precalc-vector-function-ast
    #:named-function-ast
    #:debug-message-ast
+   #:intrinsic-call-ast
+   #:argument-asts
+   #:function-name
    #:make-throw-ast
    #:cleanup-ast
    #:make-setf-fdefinition-ast
@@ -74,6 +80,9 @@
    #:jump-id
    #:make-named-enter-instruction
    #:debug-message-instruction
+   #:intrinsic-call-instruction
+   #:function-name
+   #:make-intrinsic-call-instruction
    #:make-precalc-symbol-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction
@@ -110,7 +119,9 @@
 
 (defpackage #:cc-mir
   (:use #:common-lisp)
-  (:export 
+  (:export
+   #:stack-enclose-instruction
+   #:make-stack-enclose-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

@@ -13,12 +13,11 @@ namespace core {
 #define RECORD_LOG(abf)
 #endif
 
-T_sp record_circle_subst(T_sp repl_table, T_sp tree);
+  T_sp record_circle_subst(T_sp repl_table, T_sp tree);
 
 SMART(Record);
-class Record_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, Record_O, "Record");
+class Record_O : public General_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, Record_O, "Record",General_O);
 
 public:
   typedef enum { initializing,
@@ -39,19 +38,19 @@ public:       // Simple default ctor/dtor
 
 public:
   static Record_sp create_encoder() {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(saving, false, _Nil<T_O>());
+    GC_ALLOCATE_VARIADIC(Record_O, record, saving, false, _Nil<T_O>());
     return record;
   }
   static Record_sp create_initializer(List_sp data) {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(initializing, false, data);
+    GC_ALLOCATE_VARIADIC( Record_O, record, initializing, false, data);
     return record;
   }
   static Record_sp create_decoder(List_sp data) {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(loading, false, data);
+    GC_ALLOCATE_VARIADIC( Record_O, record, loading, false, data);
     return record;
   }
   static Record_sp create_patcher(HashTable_sp replacement_table) {
-    Record_sp record = gctools::GCObjectAllocator<Record_O>::allocate(patching, replacement_table);
+    GC_ALLOCATE_VARIADIC( Record_O, record, patching, replacement_table);
     return record;
   }
 
@@ -76,7 +75,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
         SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -102,7 +101,7 @@ public:
     } break;
     case initializing:
     case loading: {
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
         SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -130,7 +129,7 @@ public:
     RECORD_LOG(BF("field(Symbol_sp name, gctools::Vec0<gc::smart_ptr<OT>>& value ) name: %s") % _rep_(name));
     switch (this->stage()) {
     case saving: {
-      Vector_sp vec_value = core_make_vector(cl::_sym_T_O, value.size());
+      Vector_sp vec_value = core__make_vector(cl::_sym_T_O, value.size());
       size_t idx(0);
       for (auto it : value)
         vec_value->operator[](idx++) = it;
@@ -142,15 +141,15 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
         SIMPLE_ERROR(BF("Could not find field %s") % _rep_(name));
       Cons_sp apair = gc::As<Cons_sp>(oCar(find));
       RECORD_LOG(BF("loading find: %s") % _rep_(apair));
       Vector_sp vec_value = gc::As<Vector_sp>(oCdr(apair));
       RECORD_LOG(BF("vec_value: %s") % _rep_(vec_value));
-      value.resize(cl_length(vec_value));
-      for (size_t i(0), iEnd(cl_length(vec_value)); i < iEnd; ++i) {
+      value.resize(cl__length(vec_value));
+      for (size_t i(0), iEnd(cl__length(vec_value)); i < iEnd; ++i) {
         T_sp val = (*vec_value)[i];
         RECORD_LOG(BF("Loading vec0[%d] new@%p: %s\n") % i % (void *)(val.raw_()) % _rep_(val));
         value[i] = val;
@@ -183,7 +182,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.notnilp()) {
         this->field(name, value);
         Cons_sp apair = gc::As<Cons_sp>(oCar(find));
@@ -202,7 +201,7 @@ public:
   };
 
   template <typename OT>
-  void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT> &value) {
+    void field_if_not_nil(Symbol_sp name, gc::smart_ptr<OT> &value) {
     switch (this->stage()) {
     case saving: {
       if (value.notnilp()) {
@@ -210,18 +209,30 @@ public:
         this->_alist = Cons_O::create(apair, this->_alist);
       }
     } break;
-    case initializing:
-    case loading: {
+    case initializing: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
         value = _Nil<core::T_O>();
       else {
         Cons_sp apair = gc::As<Cons_sp>(oCar(find));
         value = gc::As<gc::smart_ptr<OT>>(oCdr(apair));
-        if (this->stage() == initializing)
-          this->flagSeen(apair);
+        this->flagSeen(apair);
+      }
+    } break;
+    case loading: {
+      // I could speed this up if I cache the entry after this find
+      // and search from there and reverse the alist once it's done
+      List_sp find = core__alist_get(this->_alist, name);
+      if (find.nilp())
+        value = _Nil<core::T_O>();
+      else {
+        Cons_sp apair = gc::As<Cons_sp>(oCar(find));
+        // When loading the object oCdr(apair) may not be of the
+        // same type as value - it may be a symbol - used for patching
+        // use As_unsafe for this.
+        value = gc::As_unsafe<gc::smart_ptr<OT>>(oCdr(apair));
       }
     } break;
     case patching: {
@@ -248,7 +259,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp())
         value = _Nil<core::T_O>();
       else {
@@ -283,7 +294,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp()) {
         value = default_value;
       } else {
@@ -313,7 +324,7 @@ public:
     case loading: {
       // I could speed this up if I cache the entry after this find
       // and search from there and reverse the alist once it's done
-      List_sp find = alist_get(this->_alist, name);
+      List_sp find = core__alist_get(this->_alist, name);
       if (find.nilp()) {
         defined = false;
       } else {

@@ -245,4 +245,3 @@
 	(when (null (generic-function-methods gf-object))
 	  (fmakunbound writer)))))))
 
-#+compare(print "MLOG ******* Done with change.lsp *******")

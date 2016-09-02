@@ -1,3 +1,12 @@
+/* NOTES:
+
+(1) _deleted is not being used or updated properly.
+(2) There is something wrong with WeakHashTable - weak pointers end up pointing to memory that is not the start of an object
+(3) The other weak objects (weak pointer, weak mapping) are doing allocations in their constructors.
+
+*/
+
+
 /*
     File: gcweak.cc
 */
@@ -40,7 +49,8 @@ namespace gctools {
     }
 #endif
 
-WeakHashTable::WeakHashTable(size_t length) {
+void WeakHashTable::initialize() {
+  int length = this->_Length;
   /* round up to next power of 2 */
   if (length == 0)
     length = 2;
@@ -148,6 +158,7 @@ int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_b
 		result = 0;
 		length = this->_Keys->length();
 		MyType newHashTable(newLength);
+                newHashTable.initialize();
 		//new_keys = make_buckets(newLength, this->key_ap);
 		//new_values = make_buckets(newLength, this->value_ap);
 		//new_keys->dependent = new_values;
@@ -217,7 +228,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     }
   }
 #endif
-#if USE_MPS
+#ifdef USE_MPS
   int result = WeakHashTable::find(this->_Keys, key, NULL, b
 #ifdef DEBUG_FIND
                                    ,
@@ -242,7 +253,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     }
 #endif
 
-#if USE_MPS
+#ifdef USE_MPS
     GCWEAK_LOG(BF("About to call mps_ld_isstale"));
     if (mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_())) {
       GCWEAK_LOG(BF("Key has gone stale"));
@@ -266,7 +277,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
           report << "The table was rehashed but rehash returned 0" << std::endl;
 #endif
 // At this point the key definitely is NOT in the hash-table
-#if USE_MPS
+#ifdef USE_MPS
         int result2 = WeakHashTable::find(this->_Keys, key, &this->_LocationDependency, b
 #ifdef DEBUG_FIND
                                           ,
@@ -298,7 +309,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
   } else {
     GCWEAK_LOG(BF("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].raw_());
     GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-#if USE_MPS
+#ifdef USE_MPS
     mps_ld_add(&this->_LocationDependency, gctools::_global_arena, key.raw_());
 #endif
   }
@@ -318,7 +329,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
     printf("%s:%d key was deletedp at %zu  deleted = %d\n", __FILE__, __LINE__, b, (*this->_Keys).deleted());
 #endif // DEBUG_GCWEAK
   }
-#if USE_MPS
+#ifdef USE_MPS
 DO_SET:
 #endif
   GCWEAK_LOG(BF("Setting value at b = %d") % b);
@@ -382,7 +393,7 @@ core::T_mv WeakHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 							  ,pos);
 		if (result) { // WeakHashTable::find(this->_Keys,key,false,pos)) { //buckets_find(tbl, this->keys, key, NULL, &b)) {
 		    value_type& k = (*this->_Keys)[pos];
-		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % k.NULLp() );
+		    GCWEAK_LOG(BF("gethash find successful pos = %d  k= %p k.unboundp()=%d k.base_ref().deletedp()=%d k.NULLp()=%d") % pos % k.raw_() % k.unboundp() % k.deletedp() % (bool)k );
 		    if ( !k.unboundp() && !k.deletedp() ) {
 			GCWEAK_LOG(BF("Returning success!"));
 			core::T_sp value = smart_ptr<core::T_O>((*this->_Values)[pos]);

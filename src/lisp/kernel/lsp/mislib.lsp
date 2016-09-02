@@ -50,10 +50,10 @@ successfully, T is returned, else error."
 	 (llvm-finalization-time-start llvm-sys:*accumulated-llvm-finalization-time*)
 	 (llvm-finalization-number-start llvm-sys:*number-of-llvm-finalizations*)
 	 gc-start
-         gc-bytes-start gc-bytes-end
          clasp-bytes-start clasp-bytes-end
 	 real-end
 	 run-end
+         interpreted-calls-start interpreted-calls-end
          llh-calls-begin llh-calls-end
 	 llvm-finalization-time-end
 	 llvm-finalization-number-end
@@ -61,18 +61,18 @@ successfully, T is returned, else error."
     ;; Garbage collection forces counters to be updated
     #-clasp(si::gc t)
     #-clasp(setf gc-start (si::gc-time))
-    (setf gc-bytes-start (gctools:bytes-allocated))
-    (multiple-value-setq (gc-bytes-start clasp-bytes-start)
+    (multiple-value-setq (clasp-bytes-start)
       (gctools:bytes-allocated))
+    (setq interpreted-calls-start (core:interpreted-closure-calls))
     (multiple-value-prog1
 	(funcall closure)
-      (multiple-value-setq (gc-bytes-end clasp-bytes-end)
+      (multiple-value-setq (clasp-bytes-end)
         (gctools:bytes-allocated))
       (setq run-end (get-internal-run-time)
 	    real-end (get-internal-real-time)
+            interpreted-calls-end (core:interpreted-closure-calls)
 	    llvm-finalization-time-end llvm-sys:*accumulated-llvm-finalization-time*
-	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*
-            llh-calls-begin (core:cxx-lambda-list-handler-create-bindings-calls))
+	    llvm-finalization-number-end llvm-sys:*number-of-llvm-finalizations*)
       #-clasp(format *trace-output*
 		     "real time     : ~,3F secs~%~
               run time      : ~,3F secs~%~
@@ -86,20 +86,18 @@ successfully, T is returned, else error."
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
 		     )
       #+clasp(format *trace-output*
-                     "real time          : ~,3F secs~%~
-              run time           : ~,3F secs~%~
-              GC bytes consed    : ~a bytes~%~
-              Clasp bytes consed : ~a bytes~%~
-              LLVM time          : ~,3F secs~%~
-              LLVM compiles      : ~A~%~
-              Cxx-calls          : ~A~%"
+                     "Real time           : ~,3F secs~%~
+              Run time            : ~,3F secs~%~
+              Bytes consed        : ~a bytes~%~
+              LLVM time           : ~,3F secs~%~
+              LLVM compiles       : ~A~%~
+              Interpreted closures: ~A~%"
 		     (/ (- real-end real-start) internal-time-units-per-second)
 		     (/ (- run-end run-start) internal-time-units-per-second)
-                     (- gc-bytes-end gc-bytes-start)
                      (- clasp-bytes-end clasp-bytes-start)
 		     (- llvm-finalization-time-end llvm-finalization-time-start)
 		     (- llvm-finalization-number-end llvm-finalization-number-start)
-                     (- (core:cxx-lambda-list-handler-create-bindings-calls) llh-calls-begin))))
+                     (- interpreted-calls-end interpreted-calls-start))))
   #+boehm-gc
   (let* ((*do-time-level* (1+ *do-time-level*))
          real-start
@@ -157,7 +155,7 @@ Evaluates FORM, outputs the realtime and runtime used for the evaluation to
 (defconstant month-startdays #(0 31 59 90 120 151 181 212 243 273 304 334 365))
 
 
-#-ecl-min
+#-(or ecl-min clasp-min)
 (defun get-local-time-zone ()
   "Returns the number of hours West of Greenwich for the local time zone."
   (declare (si::c-local))
@@ -270,7 +268,7 @@ Universal Time UT, which defaults to the current time."
 			#.(encode-universal-time 0 0 0 1 1 2032 0)
 			#.(encode-universal-time 0 0 0 1 1 2033 0))
 		    (- universal-time (encode-universal-time 0 0 0 1 1 year 0) utc-1-1-1970)))))
-    #-ecl-min
+    #-(or ecl-min clasp-min)
     (ffi::c-inline core:unix-daylight-saving-time (unix-time) (:unsigned-long) :bool "
 {
 	time_t when = (#0);

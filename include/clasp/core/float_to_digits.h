@@ -24,18 +24,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#ifndef _core_float_to_digits_H //[
-#define _core_float_to_digits_H
+#ifndef _core__float_to_digits_H //[
+#define _core__float_to_digits_H
 
 #include <clasp/core/clasp_gmpxx.h>
 #include <math.h>
 
 namespace core {
 
-T_mv core_float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
+T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<Real_sp> position,
                           T_sp relativep);
 
-void initialize_float_to_digits();
 };
 
 #endif

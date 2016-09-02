@@ -44,9 +44,8 @@ SMART(StringSet);
 
 SMART(StandardClass);
 class StandardClass_O : public StdClass_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(StdClass_O);
-  LISP_CLASS(core, ClPkg, StandardClass_O, "StandardClass");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, ClPkg, StandardClass_O, "StandardClass",StdClass_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -72,13 +71,13 @@ template <>
 struct gctools::GCInfo<core::StandardClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 
-class StandardClassInitializationFunctoid : public Functoid {
+#if 0
+  class StandardClassInitializationFunctoid : public Functoid {
 private:
   StandardClass_sp _StandardClass;
 
@@ -89,6 +88,6 @@ public:
   StandardClassInitializationFunctoid(T_sp name, StandardClass_sp c) : Functoid(name) { this->_StandardClass = c; };
   virtual ~StandardClassInitializationFunctoid(){};
 };
+#endif
 };
-TRANSLATE(core::StandardClass_O);
 #endif //]

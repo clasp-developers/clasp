@@ -1,0 +1,7 @@
+def build(bld):
+    for name in [
+	    'cffi',
+	    'cffiPackage']:
+        bld.clasp_source_files.append(bld.path.find_node(name+'.cc'))
+
+        

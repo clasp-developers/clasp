@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <clasp/core/activationFrame.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/sequence.h>
 #include <clasp/core/holder.h>
 
 // may need more later
@@ -48,38 +49,34 @@ namespace core {
 
 // TODO: ActivationFrame should adopt the _findValue behaviors of RuntimeVisibleEnvironment
 // TODO: and it should inherit from Environment_O not RuntimeVisibleEnvironment_O
-class ActivationFrame_O : public Environment_O // RuntimeVisibleEnvironment_O
-                          {
-  LISP_BASE1(Environment_O); // RuntimeVisibleEnvironment_O);
-  LISP_VIRTUAL_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame");
-
-protected:
+class ActivationFrame_O : public Environment_O {
+  LISP_ABSTRACT_CLASS(core, CorePkg, ActivationFrame_O, "ActivationFrame",Environment_O);
+ public:
+  T_sp _Parent;
 public:
   static string clasp_asString(T_sp af);
-
+  T_sp &parentFrameRef_() { return this->_Parent; };
+  T_sp parentFrame() const { return this->_Parent; };
 public:
-  ActivationFrame_O() : Base(){};
+ ActivationFrame_O() : Base(), _Parent(_Nil<T_O>()){};
+ ActivationFrame_O(T_sp p) : Base(), _Parent(p) {};
   virtual ~ActivationFrame_O(){};
 
   virtual T_sp *argArray() { SUBIMP(); };
 
-  virtual T_sp &operator[](int idx) { SUBIMP(); };
-  virtual const T_sp &operator[](int idx) const { SUBIMP(); };
 
-  virtual T_sp currentVisibleEnvironment() const;
+  virtual size_t length() const { SUBIMP(); };
+virtual T_sp currentVisibleEnvironment() const;
   virtual T_sp getActivationFrame() const;
 
-  virtual T_sp _lookupValue(int depth, int index);
-  virtual T_sp &lookupValueReference(int depth, int index);
-  virtual Function_sp _lookupFunction(int depth, int index) const;
-  virtual T_sp _lookupTagbodyId(int depth, int index) const;
+//  virtual T_sp _lookupValue(int depth, int index);
+//  virtual T_sp &lookupValueReference(int depth, int index);
+//  virtual Function_sp _lookupFunction(int depth, int index) const;
+//  virtual T_sp _lookupTagbodyId(int depth, int index) const;
 
   virtual bool _findTag(Symbol_sp tag, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const;
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
   virtual bool _findFunction(T_sp functionName, int &depth, int &index, Function_sp &value) const;
-
-  virtual T_sp &parentFrameRef() { SUBIMP(); };
-  virtual T_sp parentFrame() const { SUBIMP(); };
 
   /*! Methods for interogating ActivationFrames as Environments */
   T_sp getParentEnvironment() const { return this->parentFrame(); };
@@ -87,20 +84,22 @@ public:
   virtual string summaryOfContents() const;
 
   inline void setParentFrame(T_O *parent) {
-    this->parentFrameRef().rawRef_() = parent;
+    this->parentFrameRef_().rawRef_() = parent;
+#ifdef DEBUG_ASSERTS
+    T_sp p((gctools::Tagged)parent);
+    if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
+      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
+    }
+#endif
   }
-  inline void setParentFrame(T_sp parent) { this->parentFrameRef() = parent; };
-  /*! Return the number of arguments */
-  virtual uint length() const { SUBIMP(); };
-
-  virtual bool boundp_entry(uint idx) const { SUBIMP(); }
-
-  /*! Set one entry of the activation frame */
-  virtual void set_entry(uint idx, T_sp obj) { SUBIMP(); }
-
-  virtual T_sp entry(int idx) const { SUBIMP(); }
-  virtual const T_sp &entryReference(int idx) const { SUBIMP(); }
-
+  inline void setParentFrame(T_sp p) {
+    this->parentFrameRef_() = p;
+#ifdef DEBUG_ASSERTS
+    if (!(p.nilp() || p.asOrNull<Environment_O>()) ) {
+      SIMPLE_ERROR(BF("Activation frame is not an activation frame - it is a %s") % _rep_(p));
+    }
+#endif
+  };
 private:
   virtual string asString() const;
 
@@ -112,8 +111,9 @@ public:
   };
 
   /*! Access a function */
-  virtual Function_sp function(int idx) const { THROW_HARD_ERROR(BF("Subclass must implement function(idx)")); };
+  Function_sp function(int idx) const { THROW_HARD_ERROR(BF("Subclass must implement function(idx)")); };
 
+#if 0
   List_sp asCons(int start = 0) const {
     _G();
     Cons_sp dummy = Cons_O::create(_Nil<T_O>());
@@ -125,6 +125,7 @@ public:
     }
     return coerce_to_list(oCdr(dummy));
   }
+#endif
 
 }; // ActivationFrame class
 }; // core namespace
@@ -133,54 +134,38 @@ template <>
 struct gctools::GCInfo<core::ValueFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
   //  static bool const InlineScan = true;
   //  static bool const Roo
 };
-TRANSLATE(core::ActivationFrame_O);
 
 namespace core {
 class ValueFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame");
-GCPROTECTED:
-  T_sp _ParentFrame;
-  gctools::Frame0<T_sp> _Objects;
-  //IndirectObjectArray             _Objects;
-  core::T_sp _DebuggingInfo;
-
+  LISP_CLASS(core, CorePkg, ValueFrame_O, "ValueFrame",ActivationFrame_O);
 public:
-  static ValueFrame_sp createForMultipleValues(const T_sp &parent) {
-    _G();
-    GC_ALLOCATE(ValueFrame_O, vf);
-    MultipleValues &mv = core::lisp_callArgs();
-    vf->allocate(mv.getSize());
-    // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
-    for (int i(0); i < mv.getSize(); ++i) {
-      vf->_Objects[i].setRaw_(reinterpret_cast<gc::Tagged>(mv[i]));
-    }
-    vf->_ParentFrame = parent;
-#if 0
-	    vf->_OwnArgs = false;
-	    vf->_NumArgs = nargs;
-	    vf->_Args = argArray;
-#endif
-    return vf;
-  }
-  static ValueFrame_sp create(T_sp parent) {
-    _G();
-    GC_ALLOCATE(ValueFrame_O, vf);
-    vf->_ParentFrame = parent;
+  core::T_sp _DebuggingInfo;
+  typedef T_sp value_type;
+  gctools::GCArray_moveable<value_type> _Objects;
+public:
+  template <class... ARGS>
+  static ValueFrame_sp create_fill_capacity(int capacity, T_sp parent, ARGS &&... args) {
+    ASSERT(sizeof...(ARGS) <= capacity);
+    ValueFrame_sp vf = gc::GC<ValueFrame_O>::allocate_container(capacity,parent,std::forward<ARGS>(args)...);
     return vf;
   }
 
   static ValueFrame_sp create(int numArgs, const T_sp &parent) {
-    _G();
-    GC_ALLOCATE(ValueFrame_O, vf);
-    vf->_ParentFrame = parent;
-    vf->allocate(numArgs);
-    //	    vf->allocateStorage(numArgs);
+    ValueFrame_sp vf = create_fill_capacity(numArgs,parent);
+    return vf;
+  }
+
+    static ValueFrame_sp createForMultipleValues(const T_sp &parent) {
+    MultipleValues &mv = core::lisp_callArgs();
+    ValueFrame_sp vf = ValueFrame_O::create(mv.getSize(),parent);
+    // TODO: This is used for all generic function calls - is there a better way than copying the ValueFrame??????
+    for (int i(0); i < mv.getSize(); ++i) {
+      (*vf)[i].setRaw_(reinterpret_cast<gc::Tagged>(mv[i]));
+    }
     return vf;
   }
 
@@ -190,50 +175,25 @@ public:
 
   static ValueFrame_sp createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent);
 
-  template <class... ARGS>
-  static ValueFrame_sp create_fill_args(T_sp parent, ARGS &&... args) {
-    _G();
-    GC_ALLOCATE(ValueFrame_O, vf);
-    vf->_ParentFrame = parent;
-    vf->allocate(0, std::forward<ARGS>(args)...);
-    return vf;
-  }
 
-  template <class... ARGS>
-  static ValueFrame_sp create_fill_numExtraArgs(int numExtraArgs, T_sp parent, ARGS &&... args) {
-    _G();
-    GC_ALLOCATE(ValueFrame_O, vf);
-    vf->_ParentFrame = parent;
-    vf->allocate(numExtraArgs, std::forward<ARGS>(args)...);
-    return vf;
-  }
-
-  ValueFrame_O() : Base(), _Objects(), _DebuggingInfo(_Nil<T_O>()){};
-
-#if 0
-        /*! ValueFrames must always be initialized with _Unbound !!!!! */
-        template <class...ARGS>
-        ValueFrame_O(size_t numExtraArgs, ARGS&&...args) : _Objects(numExtraArgs,_Unbound<T_O>(),std::forward<ARGS>(args)...), _DebuggingInfo(_Nil<T_O>())
-        {
-//            printf("%s::%d ctor ValueFrame@%p\n", __FILE__, __LINE__, this);
-        };
-#endif
-
+ private:
+  ValueFrame_O() = delete;
+ public:
+  template <typename...ARGS>
+    ValueFrame_O(size_t capacity, /*const T_sp& initial_element,*/ T_sp parent, ARGS && ...args)
+    : Base(parent)
+    , _DebuggingInfo(_Nil<T_O>())
+    ,_Objects(_Unbound<T_O>(),capacity,std::forward<ARGS>(args)...) /*GCArray_moveable ctor*/ {
+    ASSERT(sizeof...(ARGS)<=capacity);
+  };
   virtual ~ValueFrame_O(){
       //            printf("%s::%d dtor ValueFrame@%p\n", __FILE__, __LINE__, this);
   };
-
-private:
-  template <class... ARGS>
-  void allocate(size_t numExtraArgs, ARGS &&... args) {
-    this->_Objects.allocate(numExtraArgs, _Unbound<T_O>(), std::forward<ARGS>(args)...);
-  };
-
 public:
-  virtual T_sp &parentFrameRef() { return this->_ParentFrame; };
-  virtual T_sp parentFrame() const { return this->_ParentFrame; };
-
   inline void attachDebuggingInfo(core::T_sp debuggingInfo) {
+    if (!debuggingInfo) {
+      printf("%s:%d attachDebuggingInfo being set to NULL!\n", __FILE__, __LINE__);
+    }
     this->_DebuggingInfo = debuggingInfo;
   }
 
@@ -242,41 +202,52 @@ public:
   }
 
 public:
-  virtual T_sp &operator[](int idx);
-  virtual const T_sp &operator[](int idx) const;
+  inline T_sp &operator[](int idx) {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
+  inline const T_sp &operator[](int idx) const {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
 
-  T_sp *argArray() { return this->_Objects.data(); };
+//  T_sp *argArray() { return this->_Objects.data(); };
 
   /*! Return the number of arguments */
-  virtual uint length() const { return this->_Objects.capacity(); };
+  size_t length() const { return this->_Objects.capacity(); };
 
-  T_sp _lookupValue(int depth, int index);
-  T_sp &lookupValueReference(int depth, int index);
+//  T_sp _lookupValue(int depth, int index);
+//  T_sp &lookupValueReference(int depth, int index);
 
   virtual bool _updateValue(Symbol_sp sym, T_sp obj);
   virtual bool _findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const;
 
-  bool boundp_entry(uint idx) const {
-    return !this->_Objects[idx].unboundp();
+  inline bool boundp_entry(uint idx) const {
+    return !(*this)[idx].unboundp();
   }
 
   /*! Set one entry of the activation frame */
   void set_entry(uint idx, T_sp obj) {
-    _G();
-    this->_Objects[idx] = obj;
+    (*this)[idx] = obj;
   }
 
-  T_sp entry(int idx) const {
-    _G();
-    return this->_Objects[idx];
+  inline T_sp entry(int idx) const {
+    return (*this)[idx];
   }
+  inline const T_sp &entryReference(int idx) const {
+    return (*this)[idx];
+  };
 
-#if 0
-	virtual T_sp& entryReference(int idx) const
-	{_G();
-            return this->_Objects.entryReference(idx);
-	}
-#endif
   /*! Fill the activation frame starting at entry istart with values.
 	  DO NOT OVERFLOW THE ValueFrame!!!! */
   void fillRestOfEntries(int istart, List_sp values);
@@ -292,54 +263,27 @@ template <>
 struct gctools::GCInfo<core::FunctionFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 class FunctionFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, FunctionFrame_O, "FunctionFrame");
+  LISP_CLASS(core, CorePkg, FunctionFrame_O, "FunctionFrame",ActivationFrame_O);
 GCPRIVATE:
-  T_sp _ParentFrame;
-  gctools::Frame0<T_sp> _Objects;
-  //        IndirectObjectArray     _Objects;
+  typedef T_sp value_type;
+  gctools::GCArray_moveable<value_type> _Objects;
 public:
-#if 0
-	inline void allocateStorage(int numArgs)
-	{_G();
-	    this->_Objects.allocateStorage(numArgs);
-	}
-#endif
-private:
-  template <class... ARGS>
-  void allocate(size_t numExtraArgs, ARGS &&... args) {
-    this->_Objects.allocate(numExtraArgs, _Unbound<T_O>(), std::forward<ARGS>(args)...);
-  };
-
-public:
-  static FunctionFrame_sp create(T_sp parent) {
-    _G();
-    GC_ALLOCATE(FunctionFrame_O, vf);
-    vf->_ParentFrame = parent;
-    return vf;
-  }
-
   static FunctionFrame_sp create(int numArgs, T_sp parent) {
-    _G();
-    GC_ALLOCATE(FunctionFrame_O, vf);
-    vf->_ParentFrame = parent;
-    vf->allocate(numArgs);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(numArgs,parent);
     return vf;
   }
 
   static FunctionFrame_sp create(List_sp args, T_sp parent) {
-    _G();
-    FunctionFrame_sp vf(FunctionFrame_O::create(cl_length(args), parent));
+    FunctionFrame_sp vf(FunctionFrame_O::create(cl__length(args), parent));
     //	    vf->allocateStorage(args->length());
     int idx = 0;
     for (auto cur : args) {
-      vf->operator[](idx) = oCar(cur); // n e w (&(vf->_Args[idx])) T_sp(oCar(cur));
+      (*vf)[idx] = oCar(cur);
       ++idx;
     }
     return vf;
@@ -347,70 +291,76 @@ public:
 
   template <class... ARGS>
   static FunctionFrame_sp create_fill(T_sp parent, ARGS &&... args) {
-    _G();
-    GC_ALLOCATE(FunctionFrame_O, vf);
-    vf->_ParentFrame = parent;
-    vf->allocate(0, std::forward<ARGS>(args)...);
+    FunctionFrame_sp vf = gc::GC<FunctionFrame_O>::allocate_container(sizeof...(ARGS),parent,std::forward<ARGS>(args)...);
     return vf;
   }
-
-  FunctionFrame_O() : Base(), _Objects(){};
-
-/*! FunctionFrames must always be initialized with _Unbound !!!!! */
-#if 0
-        template <typename...ARGS>
-	FunctionFrame_O(size_t numExtraArgs, ARGS...args)
-            : _Objects(numExtraArgs,_Unbound<T_O>(),args...), Base() {};
-#endif
+ private:
+  FunctionFrame_O() = delete;
+ public:
+  template <typename...ARGS>
+    FunctionFrame_O(size_t size, T_sp parent, ARGS && ...args) : Base(parent),_Objects(_Unbound<T_O>(),size,std::forward<ARGS>(args)...) {};
+  /*! FunctionFrames must always be initialized with _Unbound !!!!! */
   virtual ~FunctionFrame_O() {}
-
 public:
-  virtual T_sp &parentFrameRef() { return this->_ParentFrame; };
-  virtual T_sp parentFrame() const { return this->_ParentFrame; };
-
   /*! Return the number of arguments */
-  virtual uint length() const { return this->_Objects.capacity(); };
+  size_t length() const { return this->_Objects.capacity(); };
   //	T_sp* argArray() { return this->_Objects.argArray(); };
 
+
+  inline T_sp &operator[](int idx) {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
+  inline const T_sp &operator[](int idx) const {
+    ASSERT(idx>=0 && idx<this->_Objects._Capacity);
+#ifdef DEBUG_FRAME_BOUNDS
+    if ( idx<0 || idx >= this->_Objects._Capacity) {
+      printf("%s:%d Caught out of bounds access to ValueFrame_O idx=%d capacity=%d\n", __FILE__, __LINE__, idx, this->_Objects._Capacity );
+    }
+#endif
+    return this->_Objects[idx];
+  };
+
   bool boundp_entry(uint idx) const {
-    _G();
-    return !this->_Objects[idx].unboundp();
+    return !(*this)[idx].unboundp();
   }
 
   /*! Set one entry of the activation frame */
   void set_entry(uint idx, T_sp obj) {
-    _G();
-    this->_Objects[idx] = obj;
+    (*this)[idx] = obj;
   }
-  T_sp entry(int idx) const;                 // Return by reference for efficiency?
-  const T_sp &entryReference(int idx) const; // Return by reference for efficiency?
+  T_sp entry(int idx) const { return (*this)[idx];};
+  const T_sp &entryReference(int idx) const { return (*this)[idx];};
 
   string asString() const;
 
   /*! Method for interogating ActivationFrames as Environments */
   virtual string summaryOfContents() const;
 
-  virtual Function_sp _lookupFunction(int depth, int index) const;
+//  virtual Function_sp _lookupFunction(int depth, int index) const;
 };
 };
 
 namespace core {
 class TagbodyFrame_O : public ActivationFrame_O {
-  LISP_BASE1(ActivationFrame_O);
-  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame");
+  LISP_CLASS(core, CorePkg, TagbodyFrame_O, "TagbodyFrame",ActivationFrame_O);
 GCPRIVATE:
-  T_sp _ParentFrame;
-
 public:
-  static TagbodyFrame_sp create(T_sp parent);
-
-  virtual T_sp &parentFrameRef() { return this->_ParentFrame; };
-  virtual T_sp parentFrame() const { return this->_ParentFrame; };
+  static TagbodyFrame_sp create(T_sp parent) {
+    TagbodyFrame_sp tf = gc::GC<TagbodyFrame_O>::allocate(parent);
+    return tf;
+  }
   virtual string summaryOfContents() const;
 
-  T_sp _lookupTagbodyId(int depth, int index) const;
+//  T_sp _lookupTagbodyId(int depth, int index) const;
 
   TagbodyFrame_O() : Base(){};
+ TagbodyFrame_O(T_sp parent) : Base(parent){};
   virtual ~TagbodyFrame_O(){};
 
 public:
@@ -421,63 +371,67 @@ template <>
 struct gctools::GCInfo<core::TagbodyFrame_O> {
   static bool const NeedsInitialization = false;
   static bool const NeedsFinalization = false;
-  static bool const Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
-#if 0
-namespace frame {
-  typedef core::T_O *ElementType;
-  typedef gctools::smart_ptr<core::STACK_FRAME> FrameType_sp;
 
-  static const size_t IdxRegisterSaveArea = 0;
-  static const size_t IdxNumElements = IdxRegisterSaveArea; // Where the num arguments (RAW - do not fix!!!)
-  static const size_t IdxOverflowArgs = 6; // IdxOverflowArgs-IdxRegisterSaveArea == Number of arguments passed in registers
-  static const size_t IdxRegisterArgumentsStart = IdxOverflowArgs-LCC_ARGS_IN_REGISTERS; // Where the register arguments start
-  static const size_t IdxValuesArray = IdxRegisterArgumentsStart;            // where the stack based arguments start
+namespace core {
+  void error_frame_range(const char* type, int index, int capacity );
+  void error_end_of_frame_list(const char* message);
 
-  struct Frame {
-    ElementType* _frameImpl;
-    
-    static
-    /*! Calculate the number of elements required to represent the frame.
-     It's IdxValuesArray+#elements */
-    static inline size_t FrameSize(size_t elements) {
-      return (elements+IdxOverflowArgs) - LCC_ARGS_IN_REGISTERS;
-    }
-
-    Frame(size_t numArguments,core::T_sp parent = _Nil<core::T_O>()) {
-      size_t sz = FrameSize(numArguments)*sizeof(ElementType);
-      this->_frameImpl = reinterpret_cast<ElementType*>(core::lisp_threadLocalStack().pushFrame(sz));
-      this->_frameImpl[IdxNumElements] = reinterpret_cast<core::T_O*>(numArguments);
-      for (size_t i(IdxValuesArray), iEnd(IdxValuesArray + numArguments); i < iEnd; ++i) {
-        this->_frameImpl[i] = gctools::tag_unbound<core::T_O *>();
-      }
-    }
-
-    ~Frame() {
-      core::lisp_threadLocalStack().popFrame(reinterpret_cast<void*>(this->_frameImpl));
-    }
-
-    ElementType& operator[](size_t idx) {
-      return this->_frameImpl[IdxValuesArray+idx];
-    }
-
-    core::T_sp arg(size_t idx) { return core::T_sp((gc::Tagged)this->operator[](idx));}
-    
-    inline core::VaList_sp setupVaList(core::VaList_S& args) {
-      args._Args[0].gp_offset = (frame::IdxRegisterArgumentsStart-frame::IdxRegisterSaveArea)*sizeof(frame::ElementType);
-      args._Args[0].fp_offset = 304;
-      args._Args[0].reg_save_area = &this->_frameImpl[frame::IdxRegisterSaveArea];
-      args._Args[0].overflow_arg_area = &this->_frameImpl[frame::IdxOverflowArgs];
-      return core::VaList_sp(&args);
-    }
-    
-  };
-};
+  inline ALWAYS_INLINE T_sp& value_frame_lookup_reference(ActivationFrame_sp activationFrame, int depth, int index )
+  {
+    while (true) {
+      if ( depth == 0 ) {
+        if (activationFrame.isA<ValueFrame_O>()) {
+          ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
+#ifdef DEBUG_ASSERTS
+          if ( index >= vf->_Objects.capacity() )
+            error_frame_range("ValueFrame",index,vf->_Objects.capacity());
 #endif
+          return vf->_Objects[index];
+        }
+        error_end_of_frame_list("ValueFrame");
+      }
+      --depth;
+      activationFrame = activationFrame->_Parent;
+    }
+  };
 
-// Return the next argument of the frame
-//#define FRAME_ARG(frame) va_arg(frame.unsafe_frame()->args,ElementType)
-//#define FRAME_END(frame) 0 // use va_end!!!
+  inline ALWAYS_INLINE T_sp& function_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  {
+    while (true) {
+      if ( depth == 0 ) {
+        if (activationFrame.isA<FunctionFrame_O>()) {
+          FunctionFrame_sp ff = gc::reinterpret_cast_smart_ptr<FunctionFrame_O,T_O>(activationFrame);
+#ifdef DEBUG_ASSERTS
+          if ( index >= ff->_Objects.capacity() )
+            error_frame_range("ValueFrame",index,ff->_Objects.capacity());
+#endif
+          return ff->_Objects[index];
+        }
+        error_end_of_frame_list("FunctionFrame");
+      }
+      --depth;
+      activationFrame = activationFrame->_Parent;
+    }
+  };
+
+  inline ALWAYS_INLINE T_sp tagbody_frame_lookup(ActivationFrame_sp activationFrame, int depth, int index )
+  {
+    while (true) {
+      if ( depth == 0 ) {
+        if (activationFrame.isA<TagbodyFrame_O>()) {
+          TagbodyFrame_sp tf = gc::reinterpret_cast_smart_ptr<TagbodyFrame_O,T_O>(activationFrame);
+          return tf;
+        }
+        error_end_of_frame_list("TagbodyFrame");
+      }
+      --depth;
+      activationFrame = activationFrame->_Parent;
+    }
+  };
+
+};
+
 #endif

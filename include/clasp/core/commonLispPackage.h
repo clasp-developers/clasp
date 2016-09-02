@@ -33,7 +33,6 @@ THE SOFTWARE.
 
 namespace cl {
 
-core::Package_sp initialize_commonLispPackage();
 };
 
 #endif

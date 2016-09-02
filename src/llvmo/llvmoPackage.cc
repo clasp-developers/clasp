@@ -25,9 +25,10 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
 #include <stdint.h>
 
-#include <clasp/core/foundation.h>
+#include <llvm/Support/raw_ostream.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/builtInClass.h>
@@ -45,38 +46,19 @@ THE SOFTWARE.
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/loadTimeValues.h>
+#include <clasp/core/unixfsys.h>
 #include <clasp/core/environment.h>
+#include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
 
 using namespace core;
-#if 0
-namespace kw {
-#pragma GCC visibility push(default)
-#define KeywordPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef KeywordPkg_SYMBOLS
-#pragma GCC visibility pop
-};
-#endif
-namespace llvmo {
-
-#pragma GCC visibility push(default)
-#define LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef LlvmoPkg_SYMBOLS
-#pragma GCC visibility pop
-};
 
 namespace llvmo {
 #define EXPOSE_TO_CANDO
 #define Use_LlvmoPkg
 #define EXTERN_REGISTER
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef EXTERN_REGISTER
 #undef Use_LlvmoPkg
 #undef EXPOSE_TO_CANDO
@@ -97,11 +79,37 @@ void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
 }
 
-#define ARGS_af_mangleSymbolName "(arg)"
-#define DECL_af_mangleSymbolName ""
-#define DOCS_af_mangleSymbolName "Mangle the LLVM symbol name so that it will be a legal symbol for ld"
-Str_sp af_mangleSymbolName(Str_sp name) {
-  _G();
+CL_LAMBDA(filename &optional verbose print external_format);
+CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, bool print, core::T_sp externalFormat )
+{
+  core::DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
+  T_sp tn = cl__truename(filename);
+  if ( tn.nilp() ) {
+    SIMPLE_ERROR(BF("Could not get truename for %s") % _rep_(filename));
+  }
+  core::T_sp tnamestring = cl__namestring(filename);
+  if ( tnamestring.nilp() ) {
+    SIMPLE_ERROR(BF("Could not create namestring for %s") % _rep_(filename));
+  }
+  if (comp::_sym_STARllvm_contextSTAR->symbolValue().nilp()) {
+    SIMPLE_ERROR(BF("The cmp:*llvm-context* is NIL"));
+  }
+  core::Str_sp namestring = gctools::As<core::Str_sp>(tnamestring);
+  Module_sp m = llvm_sys__parseBitcodeFile(namestring,comp::_sym_STARllvm_contextSTAR->symbolValue());
+  EngineBuilder_sp engineBuilder = EngineBuilder_O::make(m);
+  TargetOptions_sp targetOptions = TargetOptions_O::make();
+  engineBuilder->setTargetOptions(targetOptions);
+  ExecutionEngine_sp executionEngine = engineBuilder->createExecutionEngine();
+  if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
+    SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
+  }
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,
+                                                     comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue(),
+                                                     namestring);
+  return true;
+}
+
+CL_DEFUN core::Str_sp llvm_sys__mangleSymbolName(core::Str_sp name) {
   stringstream sout;
   const char *cur = name->get().c_str();
   bool first = true;
@@ -119,16 +127,14 @@ Str_sp af_mangleSymbolName(Str_sp name) {
   return Str_O::create(sout.str());
 };
 
-#define ARGS_af_cxxDataStructuresInfo "()"
-#define DECL_af_cxxDataStructuresInfo ""
-#define DOCS_af_cxxDataStructuresInfo "cxxDataStructuresInfo: Return an alist of C++ data structure sizes ((name . size-of-in-bytes))"
-T_sp af_cxxDataStructuresInfo() {
+/*! Return an a-list containing lots of values that define C++ objects that Clasp needs to know about */
+CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   List_sp list = _Nil<T_O>();
   list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), _Nil<T_O>());
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
   list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
-  list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadInfo))), list);
+  list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
@@ -143,6 +149,10 @@ T_sp af_cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_t))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALIST_S-SIZE"), make_fixnum(sizeof(VaList_S))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name), code), list)
   LoadTimeValues_O tempLtv;
   ENTRY(list, LOAD - TIME - VALUES - OBJECTS - OFFSET, make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
@@ -156,11 +166,8 @@ T_sp af_cxxDataStructuresInfo() {
   return list;
 }
 
-#define ARGS_af_throwIfMismatchedStructureSizes "(&key tsp tmv ihf)"
-#define DECL_af_throwIfMismatchedStructureSizes ""
-#define DOCS_af_throwIfMismatchedStructureSizes "throwIfMismatchedStructureSizes"
-void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc::Nilable<Fixnum_sp> givenIhfSize) {
-  _G();
+CL_LAMBDA(&key tsp tmv ihf);
+CL_DEFUN void llvm_sys__throwIfMismatchedStructureSizes(core::Fixnum_sp tspSize, core::Fixnum_sp tmvSize, gc::Nilable<core::Fixnum_sp> givenIhfSize) {
   int T_sp_size = sizeof(core::T_sp);
   if (unbox_fixnum(tspSize) != T_sp_size) {
     SIMPLE_ERROR(BF("Mismatch between tsp size[%d] and core::T_sp size[%d]") % unbox_fixnum(tspSize) % T_sp_size);
@@ -178,11 +185,8 @@ void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc
 };
 
 #if 0
-#define ARGS_af_memoryLockedSymbolForLlvm "(symbol)"
-#define DECL_af_memoryLockedSymbolForLlvm ""
-#define DOCS_af_memoryLockedSymbolForLlvm "Lookup or create a boost::shared_ptr<Symbol_O> for a Symbol and return the pointer to it"
     core::Symbol_sp* getOrCreateMemoryLockedSymbolForLlvm(core::Symbol_sp sym)
-    {_G();
+    {
 	STATIC_ROOT_FRAME_BEGIN(MemoryLockedSymbols) {
 	    map<string,core::Symbol_sp*>	_Map;
 	    MemoryLockedSymbols() {this->attachToGCRoot();} // attach to MPS
@@ -212,11 +216,7 @@ void af_throwIfMismatchedStructureSizes(Fixnum_sp tspSize, Fixnum_sp tmvSize, gc
     };
 #endif
 
-#define ARGS_af_getOrCreateExternalGlobal "(symbol resname shared-ptr-type)"
-#define DECL_af_getOrCreateExternalGlobal ""
-#define DOCS_af_getOrCreateExternalGlobal "getOrCreateExternalGlobal"
-llvmo::GlobalVariable_sp af_getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type) {
-  _G();
+CL_DEFUN llvmo::GlobalVariable_sp llvm_sys__getOrCreateExternalGlobal(llvmo::Module_sp module, const string &name, llvmo::Type_sp data_type) {
   llvm::Module *llvm_module = module->wrappedPtr();
   llvm::Type *llvm_data_type = data_type->wrappedPtr();
   ASSERT(llvm_module != NULL);
@@ -236,43 +236,38 @@ llvmo::GlobalVariable_sp af_getOrCreateExternalGlobal(llvmo::Module_sp module, c
 }
 
 void dump_funcs(core::Function_sp compiledFunction) {
-  auto cb = compiledFunction->closure;
-  if (!cb->compiledP()) {
-    SIMPLE_ERROR(BF("You can only disassemble compiled functions"));
-  }
-  auto cc = cb.as<llvmo::CompiledClosure>();
-  core::T_sp funcs = cc->associatedFunctions;
-  if (cl_consp(funcs)) {
-    core::List_sp cfuncs = funcs;
-    for (auto cur : cfuncs) {
-      core::T_sp func = oCar(cur);
-      if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
-        f->dump();
-      } else {
-        printf("af_disassemble -> %s\n", _rep_(func).c_str());
+  core::T_sp funcs = compiledFunction->associatedFunctions();
+  if (funcs.notnilp()) {
+    string outstr;
+    llvm::raw_string_ostream sout(outstr);
+    if ((funcs).consp()) {
+      core::List_sp cfuncs = funcs;
+      for (auto cur : cfuncs) {
+        core::T_sp func = oCar(cur);
+        if (llvmo::Function_sp f = gc::As<llvmo::Function_sp>(func)) {
+          f->wrappedPtr()->print(sout);
+        } else {
+          printf("llvm_sys__disassemble -> %s\n", _rep_(func).c_str());
+        }
       }
+      core::clasp_write_string(outstr);
+      return;
     }
-    return;
+  } else {
+    STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
-  STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
 }
 
-#define ARGS_af_disassembleSTAR "(fn)"
-#define DECL_af_disassembleSTAR ""
-#define DOCS_af_disassembleSTAR "disassembleSTAR"
-void af_disassembleSTAR(core::Function_sp cf) {
-  _G();
+CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
   dump_funcs(cf);
 }
 
-#define ARGS_af_viewCFG "(fn &optional only)"
-#define DECL_af_viewCFG ""
-#define DOCS_af_viewCFG "viewCFG (view-cfg fn &optional only)"
-void af_viewCFG(core::T_sp funcDes, core::T_sp only) {
+CL_LAMBDA(fn &optional only);
+CL_DEFUN void llvm_sys__viewCFG(core::T_sp funcDes, core::T_sp only) {
   core::Function_sp compiledFunction = core::coerce::functionDesignator(funcDes);
-  if (auto cl = compiledFunction->closure.as<CompiledClosure>()) {
-    core::T_sp funcs = cl->associatedFunctions;
-    if (cl_consp(funcs)) {
+  if (auto cl = compiledFunction.asOrNull<core::CompiledClosure_O>()) {
+    core::T_sp funcs = cl->associatedFunctions();
+    if ((funcs).consp()) {
       core::List_sp cfuncs = funcs;
       for (auto cur : cfuncs) {
         core::T_sp func = oCar(cur);
@@ -284,51 +279,43 @@ void af_viewCFG(core::T_sp funcDes, core::T_sp only) {
           }
         }
       }
-      return;
     }
+  } else {
+    SIMPLE_ERROR(BF("The function is not a compiled function"));
   }
 }
 
 ;
 
-void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) const {
-  _G();
+void LlvmoExposer_O::expose(core::Lisp_sp lisp, core::Exposer_O::WhatToExpose what) const {
   //
   // Initialize the intrinsic functions in intrinsics.cc
   //
 
   switch (what) {
   case candoClasses: {
-#define LlvmoPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkg, lispname, exportp)          \
-  {                                                            \
-    cname = _lisp->internUniqueWithPackageName(pkg, lispname); \
-    cname->exportYourself(exportp);                            \
-  }
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef LlvmoPkg_SYMBOLS
-
+#if 0
 #define ALL_STAGES
 #define Use_LlvmoPkg
 #define INVOKE_REGISTER
 #define LOOKUP_SYMBOL(pkg, name) _lisp->internUniqueWithPackageName(pkg, name)
-#include INIT_CLASSES_INC_H
+//#include <clasp/core/initClasses.h>
 #undef LOOKUP_SYMBOL
 #undef INVOKE_REGISTER
 #undef Use_LlvmoPkg
 #undef ALL_STAGES
+#endif
   } break;
   case candoFunctions: {
     SYMBOL_EXPORT_SC_(LlvmoPkg, getOrCreateExternalGlobal);
-    Defun(getOrCreateExternalGlobal);
+//    Defun(getOrCreateExternalGlobal);
     SYMBOL_EXPORT_SC_(LlvmoPkg, disassembleSTAR);
-    Defun(disassembleSTAR);
+//    Defun(disassembleSTAR);
     SYMBOL_EXPORT_SC_(LlvmoPkg, throwIfMismatchedStructureSizes);
-    Defun(throwIfMismatchedStructureSizes);
-    Defun(cxxDataStructuresInfo);
-    Defun(mangleSymbolName);
-    Defun(viewCFG);
+//    Defun(throwIfMismatchedStructureSizes);
+//    Defun(cxxDataStructuresInfo);
+//    Defun(mangleSymbolName);
+//    Defun(viewCFG);
     //nothing
   };
       break;
@@ -338,16 +325,8 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
     initialize_llvmo_expose();
     initialize_clbind_llvm_expose();
     initialize_dwarf_constants();
-    initialize_claspLinkPass();
-    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_ClaspMainFunctionName_PLUS_);
     SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsName_PLUS_);
-    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalBootFunctionsNameSize_PLUS_);
-    _sym__PLUS_ClaspMainFunctionName_PLUS_->defconstant(core::Str_O::create(CLASP_MAIN_FUNCTION_NAME));
-
-    _sym__PLUS_globalBootFunctionsName_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_NAME));
-    _sym__PLUS_globalBootFunctionsNameSize_PLUS_->defconstant(core::Str_O::create(GLOBAL_BOOT_FUNCTIONS_SIZE_NAME));
-
-    //	initializeLlvmConstants(_lisp);
+    SYMBOL_EXPORT_SC_(LlvmoPkg, _PLUS_globalEpilogueName_PLUS_);
   };
       break;
   case pythonClasses:
@@ -365,22 +344,8 @@ void LlvmoExposer::expose(core::Lisp_sp lisp, core::Exposer::WhatToExpose what) 
 //
 #ifndef RUNNING_GC_BUILDER
 #define NAMESPACE_llvmo
-#include STATIC_ANALYZER_PRODUCT
+#include "clasp_gc.cc"
 #undef NAMESPACE_llvmo
 #endif
 #endif
 
-#if USE_INTRUSIVE_SMART_PTR == 1
-#define EXPAND_CLASS_MACROS
-#if defined(USE_MPS) // MPS doesn't need INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS
-#define _CLASS_MACRO(_U_) \
-  STATIC_CLASS_INFO(_U_);
-#else
-#define _CLASS_MACRO(_U_) \
-  STATIC_CLASS_INFO(_U_); \
-  INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(_U_)
-#endif
-#include INIT_CLASSES_INC_H
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS
-#endif

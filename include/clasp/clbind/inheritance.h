@@ -121,7 +121,6 @@ class class_map {
   FRIEND_GC_SCANNER(clbind::detail::class_map);
 
 public:
-  DECLARE_onHeapScanGCRoots();
   ClassRep_sp get(class_id id) const;
   void put(class_id id, ClassRep_sp cls);
 

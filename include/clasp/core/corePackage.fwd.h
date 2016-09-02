@@ -27,6 +27,10 @@ THE SOFTWARE.
 #ifndef corePackage_fwd_H
 #define corePackage_fwd_H
 
+PACKAGE_NICKNAME("SYS");
+PACKAGE_NICKNAME("SYSTEM");
+PACKAGE_NICKNAME("SI");
+PACKAGE_USE("EXT");
 NAMESPACE_PACKAGE_ASSOCIATION(core, CorePkg, "CORE")
 
 #endif

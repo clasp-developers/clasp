@@ -39,7 +39,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/environment.h>
 #include <clasp/core/designators.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/str.h>
 #include <clasp/core/wrappers.h>
@@ -55,11 +54,10 @@ List_sp coerce_to_list(T_sp o) {
   TYPE_ERROR(o, cl::_sym_list);
 }
 
-#define ARGS_core_put_f "(plist value indicator)"
-#define DECL_core_put_f ""
-#define DOCS_core_put_f "putF"
-List_sp core_put_f(List_sp place, T_sp value, T_sp indicator) {
-  _G();
+CL_LAMBDA(plist value indicator);
+CL_DECLARE();
+CL_DOCSTRING("putF");
+CL_DEFUN List_sp core__put_f(List_sp place, T_sp value, T_sp indicator) {
   auto it = place.begin();
   auto end = place.end();
   List_sp cur;
@@ -81,20 +79,19 @@ List_sp core_put_f(List_sp place, T_sp value, T_sp indicator) {
   return place;
 };
 
-#define ARGS_cl_getf "(plist indicator &optional default-value)"
-#define DECL_cl_getf ""
-#define DOCS_cl_getf "getf"
-T_sp cl_getf(List_sp plist, T_sp indicator, T_sp default_value) {
-  _G();
+CL_LAMBDA(plist indicator &optional default-value);
+CL_DECLARE();
+CL_DOCSTRING("getf");
+CL_DEFUN T_sp cl__getf(List_sp plist, T_sp indicator, T_sp default_value) {
   if (plist.nilp())
     return (default_value);
   return plist.asCons()->getf(indicator, default_value);
 };
 
-#define ARGS_core_rem_f "(plist indicator)"
-#define DECL_core_rem_f ""
-#define DOCS_core_rem_f "Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found"
-T_mv core_rem_f(List_sp plist, Symbol_sp indicator) {
+CL_LAMBDA(plist indicator);
+CL_DECLARE();
+CL_DOCSTRING("Removes the property with the indicator from the property list in place if present and returns MultipleValues with the new property list and T if the property was found");
+CL_DEFUN T_mv core__rem_f(List_sp plist, Symbol_sp indicator) {
   if (oCar(plist) == indicator) {
     plist = oCddr(plist);
     T_sp tplist = plist;
@@ -113,37 +110,33 @@ T_mv core_rem_f(List_sp plist, Symbol_sp indicator) {
   return (Values(tplist, _lisp->_false()));
 };
 
-#define DOCS_af_cons "cons"
-#define LOCK_af_cons 1
-#define ARGS_af_cons "(object1 object2)"
-#define DECL_af_cons ""
-Cons_sp af_cons(T_sp obj1, T_sp obj2) {
-  _G();
+CL_LAMBDA(object1 object2);
+CL_DECLARE();
+CL_DOCSTRING("cons");
+CL_DEFUN Cons_sp cl__cons(T_sp obj1, T_sp obj2) {
   ASSERTNOTNULL(obj1);
   ASSERTNOTNULL(obj2);
   return Cons_O::create(obj1, obj2);
 };
 
-#define ARGS_cl_rplaca "(c o)"
-#define DECL_cl_rplaca ""
-#define DOCS_cl_rplaca ""
-Cons_sp cl_rplaca(Cons_sp c, T_sp o) {
+CL_LAMBDA(c o);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN Cons_sp cl__rplaca(Cons_sp c, T_sp o) {
   return c->rplaca(o);
 };
 
-#define ARGS_cl_rplacd "(c o)"
-#define DECL_cl_rplacd ""
-#define DOCS_cl_rplacd ""
-Cons_sp cl_rplacd(Cons_sp c, T_sp o) {
+CL_LAMBDA(c o);
+CL_DECLARE();
+CL_DOCSTRING("");
+CL_DEFUN Cons_sp cl__rplacd(Cons_sp c, T_sp o) {
   return c->rplacd(o);
 };
 
-#define DOCS_af_make_list "make_list"
-#define LOCK_af_make_list 1
-#define ARGS_af_make_list "(osize &key initial_element)"
-#define DECL_af_make_list ""
-List_sp af_make_list(Integer_sp osize, T_sp initial_element) {
-  _G();
+CL_LAMBDA(osize &key initial-element);
+CL_DECLARE();
+CL_DOCSTRING("make_list");
+CL_DEFUN List_sp cl__make_list(Integer_sp osize, T_sp initial_element) {
   int size = clasp_to_int(osize);
   if (size < 0) {
     SIMPLE_ERROR(BF("Illegal size %d for list") % size);
@@ -217,7 +210,6 @@ bool isAllDigits(const string &s) {
 }
 
 T_sp stringToObject(Lisp_sp e, const string &s) {
-  _G();
   if (isAllDigits(s)) {
     return ((make_fixnum(atoi(s.c_str()))));
   }
@@ -238,11 +230,11 @@ void Cons_O::appendInto(T_sp head, T_sp *&tailP, T_sp l) {
     /* (APPEND '(1 . 2) 3) */
     TYPE_ERROR_PROPER_LIST(head);
   }
-  while (cl_consp(l)) {
-    Cons_sp cons = Cons_O::create(CONS_CAR(l));
+  while ((l).consp()) {
+    Cons_sp cons = Cons_O::create(cons_car(l));
     *tailP = cons;
     tailP = &(cons->_Cdr);
-    l = CONS_CDR(l);
+    l = cons_cdr(l);
   }
   *tailP = l;
 }
@@ -254,21 +246,20 @@ void Cons_O::appendInto(T_sp head, gctools::StackRootedPointerToSmartPtr<T_O> &t
     /* (APPEND '(1 . 2) 3) */
     TYPE_ERROR_PROPER_LIST(head);
   }
-  while (cl_consp(l)) {
-    Cons_sp cons = Cons_O::create(CONS_CAR(l));
+  while ((l).consp()) {
+    Cons_sp cons = Cons_O::create(cons_car(l));
     tail.setPointee(cons);
     tail.setPointer(&(cons->_Cdr)); // = &cons->_Cdr;
-    l = CONS_CDR(l);
+    l = cons_cdr(l);
   }
   tail.setPointee(l);
 }
 #endif
 
-#define ARGS_af_append2 "(l1 l2)"
-#define DECL_af_append2 ""
-#define DOCS_af_append2 "append2 - append l2 to l1 by copying l1 and pointing the end of it to l2"
-T_sp af_append2(List_sp x, List_sp y) {
-  _G();
+CL_LAMBDA(l1 l2);
+CL_DECLARE();
+CL_DOCSTRING("append2 - append l2 to l1 by copying l1 and pointing the end of it to l2");
+CL_DEFUN T_sp core__append2(List_sp x, List_sp y) {
   return Cons_O::append(x, y);
 };
 
@@ -302,29 +293,6 @@ T_sp Cons_O::append(List_sp x, List_sp y) {
     }
 #endif
 
-List_sp Cons_O::walkToFindParsePos() const {
-  _G();
-  //	if ( this->hasParsePos() ) return((this->asSmartPtr()));
-  if (this->_Cdr.notnilp() && cl_consp(this->_Cdr)) {
-    List_sp wcdr = gc::As<Cons_sp>(this->_Cdr)->walkToFindParsePos();
-    if (wcdr.notnilp())
-      return ((wcdr));
-  }
-  if (this->_Car.notnilp() && cl_consp(this->_Car)) {
-    List_sp wcar = gc::As<Cons_sp>(this->_Car)->walkToFindParsePos();
-    if (wcar.notnilp())
-      return ((wcar));
-  }
-  return ((_Nil<T_O>()));
-}
-
-void Cons_O::sxhash_(HashGenerator &hg) const {
-  _OF();
-  if (hg.isFilling())
-    hg.hashObject(this->_Car);
-  if (hg.isFilling())
-    hg.hashObject(this->_Cdr);
-}
 
 struct Tester {
   T_sp _item;
@@ -337,7 +305,6 @@ struct Tester {
   }
 
   void setup(T_sp item, T_sp key, T_sp test, T_sp testNot, bool apply_key_to_item) {
-    _G();
     this->_test_pass = true;
     if (testNot.notnilp()) {
       if (test.notnilp()) {
@@ -361,7 +328,6 @@ struct Tester {
     }
   }
   bool test(T_sp obj) {
-    _G();
     if (this->_use_key_func) {
       obj = eval::funcall(this->_key_func, obj);
     }
@@ -370,8 +336,8 @@ struct Tester {
   }
 };
 
-bool Cons_O::exactlyMatches(List_sp other) const {
-  _G();
+CL_LISPIFY_NAME("core:exactlyMatches");
+CL_DEFMETHOD bool Cons_O::exactlyMatches(List_sp other) const {
   List_sp me = this->asSmartPtr();
   while (me.notnilp()) {
     if (oCar(other) != oCar(me))
@@ -392,7 +358,7 @@ List_sp Cons_O::memberEq(T_sp item) const {
 
 List_sp Cons_O::memberEql(T_sp item) const {
   for (auto cur : (List_sp) this->asSmartPtr()) {
-    if (cl_eql(oCar(cur), item))
+    if (cl__eql(oCar(cur), item))
       return cur;
   }
   return _Nil<T_O>();
@@ -439,12 +405,11 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
 }
 
 List_sp Cons_O::subseq(int start, T_sp end) const {
-  _G();
   ql::list l(_lisp);
   int iend;
   if (end.nilp()) {
     iend = this->length();
-  } else if (af_fixnumP(end)) {
+  } else if (core__fixnump(end)) {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   } else {
     SIMPLE_ERROR(BF("Illegal end for subseq[%s]") % _rep_(end));
@@ -470,7 +435,7 @@ List_sp Cons_O::subseq(int start, T_sp end) const {
  * 	-> file: "xxx.yyy" entries: (: 1 2 3 4 5) to: "hello"
  */
     Vector_sp	Cons_O::createFromVectorStringsCommandLineArguments(const vector<string>& strings )
-    {_G();
+    {
 	vector<string>::const_iterator it;
 	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
 	Cons_sp args = first;
@@ -528,7 +493,7 @@ List_sp Cons_O::subseq(int start, T_sp end) const {
 //
 // Constructor
 //
-Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
+Cons_O::Cons_O() : _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0)
 {
   ASSERTNOTNULL(this->_Car);
   ASSERTNOTNULL(this->_Cdr);
@@ -537,17 +502,17 @@ Cons_O::Cons_O() : T_O(), _Car(_Nil<T_O>()), _Cdr(_Nil<T_O>()) // , _CdrLength(0
 /*! Write out all of the elements of this list as a list to
  * avoid excessive nesting
  */
+#if 0
 void Cons_O::archiveBase(ArchiveP node) {
-  _G();
 #if 1
   if (node->saving()) {
-    af_stackMonitor(); // make sure the stack isn't exhausted.
+    core__stack_monitor(); // make sure the stack isn't exhausted.
     // Convert the the list that this Cons points to into a vector of elements where
     // the last element is the very last CDR
     T_sp cur = this->asSmartPtr();
     // TODO: Fix this loop - it will go into an infinite loop
     for (; cur.notnilp(); cur = oCdr(cur)) {
-      if (cl_consp(cur)) {
+      if ((cur).consp()) {
         T_sp obj = oCar(cur);
         node->pushVector(obj); // A Cons - push the car
       } else {
@@ -572,6 +537,8 @@ void Cons_O::archiveBase(ArchiveP node) {
   node->attributeIfNotNil("D", this->_Cdr); // use attributeIfNotNil
 #endif
 }
+#endif
+
 
 SYMBOL_EXPORT_SC_(ClPkg, getf);
 T_sp Cons_O::getf(T_sp key, T_sp defVal) const {
@@ -594,33 +561,29 @@ void Cons_O::serialize(serialize::SNode node) {
 #endif
 
 bool Cons_O::equal(T_sp obj) const {
-  _OF();
-  if (this->eq(obj))
-    return ((true));
-  if (!obj.consp())
-    return false;
+  if (!obj.consp()) return false;
+  if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl_equal(this->_Car, oCar(other)))
+  if (!cl__equal(this->_Car, oCar(other)))
     return false;
   T_sp this_cdr = this->_Cdr;
   T_sp other_cdr = oCdr(other);
-  return cl_equal(this_cdr, other_cdr);
+  return cl__equal(this_cdr, other_cdr);
 }
 
 bool Cons_O::equalp(T_sp obj) const {
-  if (this->eq(obj))
-    return true;
-  if (!obj.consp())
-    return false;
+  if (!obj.consp()) return false;
+  if (this == obj.unsafe_cons()) return true;
   List_sp other = obj;
-  if (!cl_equalp(this->_Car, oCar(other)))
+  if (!cl__equalp(this->_Car, oCar(other)))
     return false;
   T_sp this_cdr = this->_Cdr;
   T_sp other_cdr = oCdr(other);
-  return cl_equalp(this_cdr, other_cdr);
+  return cl__equalp(this_cdr, other_cdr);
 }
 
-List_sp Cons_O::extend(List_sp rest) {
+CL_LISPIFY_NAME("core:extend");
+CL_DEFMETHOD List_sp Cons_O::extend(List_sp rest) {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   Cons_sp nc = first;
   Cons_sp next, newCur;
@@ -643,7 +606,6 @@ List_sp Cons_O::extend(List_sp rest) {
 }
 
 List_sp Cons_O::reverse() {
-  _G();
   List_sp reversed = _Nil<T_O>();
   List_sp cur = this->asSmartPtr();
   while (cur.notnilp()) {
@@ -654,7 +616,6 @@ List_sp Cons_O::reverse() {
 }
 
 List_sp Cons_O::revappend(T_sp tail) {
-  _G();
   List_sp reversed = _Nil<T_O>();
   List_sp cur = this->asSmartPtr();
   List_sp first_reversed;
@@ -727,8 +688,8 @@ T_sp Cons_O::setf_elt(int index, T_sp value) {
   return ((this->setf_nth(index, value)));
 }
 
-List_sp Cons_O::filterOutNil() {
-  _G();
+CL_LISPIFY_NAME("core:filterOutNil");
+CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
   Cons_sp first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
   List_sp newCur = first;
   for (auto cur : (List_sp) this->asSmartPtr()) {
@@ -743,7 +704,7 @@ List_sp Cons_O::filterOutNil() {
 
 #if 0
     void	Cons_O::setOwnerOfAllEntries(T_sp obj)
-    {_G();
+    {
 	Cons_sp cur;
 	for ( cur=this->asSmartPtr(); cur.notnilp(); cur = cCdr(cur) )
 	{
@@ -776,18 +737,18 @@ List_sp Cons_O::last(int n) const {
   ASSERT(n >= 0);
   List_sp l = this->asSmartPtr();
   T_sp r = l;
-  for (r = l; n && cl_consp(r); --n, r = oCdr(r))
+  for (r = l; n && (r).consp(); --n, r = oCdr(r))
     ;
   if (r == l) {
-    if (!cl_listp(r)) {
+    if (!cl__listp(r)) {
       SIMPLE_ERROR(BF("Type not list"));
     }
-    while (cl_consp(r)) {
+    while ((r).consp()) {
       r = oCdr(r);
     }
     return ((r));
   } else if (n == 0) {
-    while (cl_consp(r)) {
+    while ((r).consp()) {
       r = oCdr(r);
       l = oCdr(l);
     }
@@ -799,23 +760,20 @@ List_sp Cons_O::last(int n) const {
 List_sp Cons_O::copyList() const {
   _OF();
   List_sp first, cur;
-  first = Cons_O::create(_Nil<T_O>(), _Nil<T_O>());
-  cur = first;
   List_sp p = this->asSmartPtr();
-  while (p.consp()) {
-    List_sp carNode = p.asCons()->copyListCar();
-    cur.asCons()->setCdr(carNode);
-    cur = oCdr(cur);
-    T_sp cdr = oCdr(p);
-    if (cdr.nilp())
-      break;
-    if (!cdr.consp()) {
-      cur.asCons()->setCdr(cdr);
-      break;
-    }
+  T_sp cdr;
+  first = Cons_O::create(oCar(p), _Nil<T_O>());
+  cur = first;
+  cdr = oCdr(p);
+  while (cdr.consp()) {
     p = cdr;
+    List_sp newCar = Cons_O::create(oCar(p), _Nil<T_O>());
+    cur.asCons()->setCdr(newCar);
+    cur = newCar;
+    cdr = oCdr(p);
   }
-  return ((oCdr(first)));
+  cur.asCons()->setCdr(cdr);
+  return first;
 };
 
 Cons_sp Cons_O::copyListCar() const {
@@ -866,7 +824,6 @@ List_sp Cons_O::copyTreeCar() const {
 }
 
 uint Cons_O::length() const {
-  _G();
   int sz = 1;
 #pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
@@ -877,7 +834,6 @@ uint Cons_O::length() const {
 };
 
 T_sp Cons_O::olistref(int idx) {
-  _G();
   int i = 0;
   List_sp p;
   LOG(BF("Evaluating the length of list: %s") % this->__repr__());
@@ -898,7 +854,6 @@ T_sp Cons_O::olistref(int idx) {
 };
 
 T_sp Cons_O::olistrefArgument(int idx) {
-  _G();
   int i = 0;
   List_sp p;
   p = this->asSmartPtr();
@@ -917,55 +872,19 @@ T_sp Cons_O::olistrefArgument(int idx) {
   return ((oCar(p)));
 };
 
-#define WARN_CONS_LENGTH 1000000
 void Cons_O::setCdr(T_sp c) {
-  _G();
   this->_Cdr = c;
-//	this->_CdrLength = c->cdrLength()+1;
-#if 0
-	if ( this->_CdrLength > WARN_CONS_LENGTH )
-	{
-	    string sss = _rep_(this->_Car).substr(0,30);
-	    _lisp->print(BF("WARNING@%s:%d  Cons length is > %d - its cdr length is(%d) : trunated head: %s") % __FILE__ % __LINE__ % WARN_CONS_LENGTH % this->_CdrLength % sss );
-	    LOG(BF("WARNING: Cons length is > %d it is %d cdr cells : truncated head: %s") % WARN_CONS_LENGTH % this->_CdrLength % _rep_(this->_Car).substr(0,30));
-	    SIMPLE_ERROR(BF("Cons length was too long length=%d") % this->_CdrLength );
-	}
-#endif
 }
 
-#if 0
-    void	Cons_O::setOCdr(T_sp c)
-    {_G();
-	this->_Cdr = c;
-	if ( cl_consp(c) )
-	{
-	    List_sp cc = c;
-//	    this->_CdrLength = cc->cdrLength()+1;
-	} else
-	{
-//	    if ( c.nilp() ) this->_CdrLength = 0;
-//	    else              this->_CdrLength = 1;
-	}
-#if 0
-	if ( this->_CdrLength > WARN_CONS_LENGTH )
-	{
-	    string sss = _rep_(this->_Car).substr(0,30);
-	    _lisp->print(BF("WARNING@%s:%d  Cons length is > %d - its cdr length is(%d) : trunated head: %s") % __FILE__ % __LINE__ % WARN_CONS_LENGTH % this->_CdrLength % sss );
-	    LOG(BF("WARNING: Cons length is > %d it is %d cdr cells : truncated head: %s") % WARN_CONS_LENGTH % this->_CdrLength % _rep_(this->_Car).substr(0,30));
-	    SIMPLE_ERROR(BF("Cons length was too long length=%d") % this->_CdrLength );
-	}
-#endif
-    }
-#endif
-
-T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
+CL_LISPIFY_NAME("core:lookupDefault");
+CL_DEFMETHOD T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
   _OF();
   ASSERTP(keyword->isKeywordSymbol(), "You can only search for keyword symbols");
   LOG(BF("lookup %s in %s") % _rep_(keyword) % this->__repr__());
   List_sp lp = this->asSmartPtr();
   LOG(BF("Got start of list to search: %s") % _rep_(lp));
   for (auto p : lp) {
-    if (cl_symbolp(oCar(p))) {
+    if (cl__symbolp(oCar(p))) {
       Symbol_sp ps = gc::As<Symbol_sp>(oCar(p));
       if (ps->isKeywordSymbol()) {
         if (ps == keyword) {
@@ -978,19 +897,23 @@ T_sp Cons_O::olookupKeyObjectDefault(Symbol_sp keyword, T_sp dft) {
   return ((dft));
 }
 
-T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
-  _G();
+CL_LISPIFY_NAME("core:lookup");
+CL_DEFMETHOD T_sp Cons_O::olookupKeyObject(Symbol_sp key) {
   Cons_sp p;
   return ((this->olookupKeyObjectDefault(key, _Nil<T_O>())));
 }
 
+void Cons_O::describe(T_sp stream)
+{
+  clasp_write_string(this->__repr__(),stream);
+}
+
 string Cons_O::__repr__() const {
-  _G();
   Cons_sp start = this->asSmartPtr();
   T_sp cdr = start;
   stringstream sout;
   if (oCar(start) == cl::_sym_quote) {
-    if (cl_consp(oCdr(start))) {
+    if ((oCdr(start)).consp()) {
       sout << "'" << _rep_(oCadr(start)) << " ";
     } else {
       sout << "QUOTE ." << _rep_(oCdr(start)) << " ";
@@ -999,7 +922,7 @@ string Cons_O::__repr__() const {
   }
   sout << "(";
   while (cdr.notnilp()) {
-    if (cl_consp(cdr)) {
+    if ((cdr).consp()) {
       Cons_sp p = gc::As<Cons_sp>(cdr);
       T_sp po = p->_Car;
       sout << _rep_(po) << " ";
@@ -1019,282 +942,7 @@ string Cons_O::__repr__() const {
   return ((sout.str()));
 }
 
-#if 0
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return(SourceCodeCons_O::create(o1,SourceCodeCons_O::create(o2,_Nil<SourceCodeCons_O>(),ln,col,fileName),ln,col,fileName));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,ln,col,fileName),ln,col,fileName)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,o4,ln,col,fileName),ln,col,fileName)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,o4,o5,ln,col,fileName),ln,col,fileName)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6, uint ln, uint col, SourceFileInfo_sp fileName)
-    {
-	return((SourceCodeCons_O::create(o1,SourceCodeCons_O::createList(o2,o3,o4,o5,o6,ln,col,fileName),ln,col,fileName)));
-    }
-
-
-
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, const LispParserPos& pos, SourceFileInfo_sp fileName)
-    { return((SourceCodeCons_O::createList(o1,o2,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, const LispParserPos& pos, SourceFileInfo_sp fileName )
-    { return((SourceCodeCons_O::createList(o1,o2,o3,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, const LispParserPos& pos, SourceFileInfo_sp fileName )
-    { return((SourceCodeCons_O::createList(o1,o2,o3,o4,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, const LispParserPos& pos, SourceFileInfo_sp fileName )
-    { return((SourceCodeCons_O::createList(o1,o2,o3,o4,o5,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::createList(T_sp o1, T_sp o2, T_sp o3, T_sp o4, T_sp o5, T_sp o6,const LispParserPos& pos, SourceFileInfo_sp fileName)
-    { return((SourceCodeCons_O::createList(o1,o2,o3,o4,o5,o6,pos.first_line,pos.first_column,fileName)));    }
-    SourceCodeCons_sp SourceCodeCons_O::create(T_sp car, Cons_sp cdr, const LispParserPos& pos, SourceFileInfo_sp fileName,Lisp_sp lisp)
-    { return((SourceCodeCons_O::create(car,cdr,pos.first_line,pos.first_column,fileName)));}
-
-    SourceCodeCons_sp SourceCodeCons_O::create(T_sp car, T_sp cdr,
-					       int lineNumber,
-					       int column,
-					       SourceFileInfo_sp fileName, Lisp_sp e )
-    {
-
-        GC_ALLOCATE(SourceCodeCons_O,ll );
-	    ll->setCar(car);
-	    ll->setOCdr(cdr);
-	    ll->_ParsePosLineNumber = lineNumber;
-	    ll->_ParsePosColumn = column;
-	    ll->_SourceFileInfo = fileName;
-	return((ll));
-    };
-
-
-
-    SourceCodeCons_sp SourceCodeCons_O::create(	int lineNumber,	int column,
-						SourceFileInfo_sp fileName, Lisp_sp e )
-    {
-        GC_ALLOCATE(SourceCodeCons_O,ll );
-	    ll->_ParsePosLineNumber = lineNumber;
-	    ll->_ParsePosColumn = column;
-	    ll->_SourceFileInfo = fileName;
-	return((ll));
-    };
-
-
-    SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp cdr,
-									  List_sp parsed)
-    {
-	int lineNumber, col;
-	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
-	return((SourceCodeCons_O::create(car,cdr,lineNumber,col,fileName,env)));
-    }
-
-    SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(T_sp car, Cons_sp parsed, Lisp_sp lisp)
-    {
-	int lineNumber, col;
-	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
-	return((SourceCodeCons_O::create(car,_Nil<T_O>(),lineNumber,col,fileName,lisp)));
-    }
-
-
-    SourceCodeCons_sp SourceCodeCons_O::createWithDuplicateSourceCodeInfo(Cons_sp parsed, Lisp_sp env)
-    {
-	if ( parsed.nilp() ) return((_Nil<SourceCodeCons_O>()));
-	int lineNumber, col;
-	parsed->getParsePos(lineNumber,col);
-	SourceFileInfo_sp fileName = core_sourceFileInfo(parsed);
-	return((SourceCodeCons_O::create(lineNumber,col,fileName,env)));
-    }
-
-
-    SourceCodeCons_O::SourceCodeCons_O(): T_O(), Base(), _SourceFileInfo(_Nil<SourceFileInfo_O>()) {};
-
-    SourceCodeCons_O::~SourceCodeCons_O() {};
-
-    void SourceCodeCons_O::initialize()
-    {
-	this->Base::initialize();
-	this->_SourceFileInfo = _Nil<SourceFileInfo_O>();
-    }
-
-    void SourceCodeCons_O::duplicateSourceCodeInfo(Cons_sp c)
-    {
-	int lineNumber, col;
-	string fileName;
-	c->getParsePos(lineNumber,col);
-	this->_SourceFileInfo = core_sourceFileInfo(c);
-	this->_ParsePosLineNumber = lineNumber;
-	this->_ParsePosColumn = col;
-    }
-
-#if 0
-    bool SourceCodeCons_O::equal(T_sp obj) const
-    {_OF();
-	if ( this->eq(obj) ) return((true));
-	if ( !obj->sourceCodeConsP() ) return((false));
-	SourceCodeCons_sp other = obj.as<SourceCodeCons_O>();
-	if ( this->_FileName != other->_FileName ) return((false));
-	if ( this->_ParsePosLineNumber != other->_ParsePosLineNumber ) return((false));
-	if ( this->_ParsePosColumn != other->_ParsePosColumn ) return((false));
-	if ( !cl_equal(this->ocar(),other->ocar() ) ) return((false));
-	if ( !cl_equal(this->cdr(),other->cdr() ) ) return((false));
-	return((true));
-    }
-#endif
-
-
-    SourceFileInfo_sp SourceCodeCons_O::sourceFileInfo() const
-    {_G();
-	return((this->_SourceFileInfo));
-    }
-
-    string	SourceCodeCons_O::__repr__() const
-    {_G();
-	T_sp		op;
-	Cons_sp 	p;
-	stringstream	sout;
-//#define	DOT_NOTATION
-	sout << "( ";
-	p = this->asSmartPtr();
-	while ( p.notnilp() )
-	{
-	    T_sp obj = oCar(p);
-	    if ( !obj )
-	    {
-		sout << ">>>UNDEFINED OCAR<<<";
-	    } else if ( obj.nilp() )
-	    {
-		sout << "nil ";
-	    } else
-	    {
-		sout << _rep_(obj) << " ";
-	    }
-	    op = oCdr(p);
-	    if ( !op )
-	    {
-		sout << ">>>>> NULL CDR <<<<<<";
-		break;
-	    }
-	    if ( op.unboundp() )
-	    {
-		sout << ">>>>> UNBOUND CDR <<<<<<";
-		break;
-	    }
-	    if ( !cl_consp(op) )
-	    {
-		p = _Nil<T_O>();
-		if ( op.notnilp() )
-		{
-		    sout << " . " << _rep_(op);
-		}
-		break;
-	    }
-	    p = op;
-	}
-	if ( _sym_STARprint_source_code_consSTAR->symbolValue().isTrue() )
-	{
-	    sout << "#<@";
-	    if ( this->hasParsePos() )
-	    {
-		sout << "\"" << this->_SourceFileInfo->permanentFileName() << "\"";
-		sout << this->_ParsePosLineNumber;
-		sout << ":" << this->_ParsePosColumn;
-	    } else
-	    {
-		sout << "NO-POS";
-	    }
-	    sout << "@";
-	    sout << ">";
-	}
-	sout << ")";
-	return((sout.str()));
-    }
-
-
-    Cons_sp SourceCodeCons_O::walkToFindParsePos() const
-    {_G();
-	if ( this->hasParsePos() ) return((this->asSmartPtr()));
-	return((this->Base::walkToFindParsePos()));
-    }
-
-#if defined(XML_ARCHIVE)
-    void	SourceCodeCons_O::archiveBase(::core::ArchiveP node)
-    {_G();
-	this->Base::archiveBase(node);
-	node->attribute("ParsePosLineNumber",this->_ParsePosLineNumber);
-	node->attribute("ParsePosColumn",this->_ParsePosColumn);
-    }
-#endif // defined(XML_ARCHIVE)
-
-#if defined(OLD_SERIALIZE)
-    void SourceCodeCons_O::serialize(serialize::SNode node)
-    {_OF();
-	this->Base::serialize(node);
-	node->attribute("ParsePosLineNumber",this->_ParsePosLineNumber);
-	node->attribute("ParsePosColumn",this->_ParsePosColumn);
-    }
-#endif
-
-
-    Cons_sp SourceCodeCons_O::copyList() const
-    {_OF();
-	Cons_sp p = this->asSmartPtr();
-	ql::source_code_list list;
-	while ( p.notnilp() )
-	{
-	    T_sp obj = oCar(p);
-	    list << obj;
-	    list.set_tail_source_info(p);
-	    T_sp ocdr = oCdr(p);
-	    if ( !cl_consp(ocdr) )
-	    {
-		list.dot(ocdr);
-		break;
-	    }
-	    p = cCdr(p);
-	}
-	return((list.cons()));
-    }
-
-
-
-    Cons_sp SourceCodeCons_O::copyListCar() const
-    {_OF();
-	T_sp obj = this->_Car;
-	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<T_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
-	rootCopy->setCar(obj);
-	return((rootCopy));
-    }
-
-
-WORKING
-    List_sp SourceCodeCons_O::copyTreeCar() const
-    {_OF();
-	Cons_sp rootCopy = SourceCodeCons_O::create(_Nil<T_O>(),_Nil<T_O>(),this->lineNumber(),this->column(),this->sourceFileInfo());
-	T_sp obj = this->_Car;
-	if ( cl_consp(obj) )
-	{
-	    Cons_sp carTree = obj.as<Cons_O>()->copyTree().as<Cons_O>();
-	    rootCopy->setCar(carTree);
-	} else
-	{
-	    rootCopy->setCar(obj);
-	}
-	return((rootCopy));
-    }
-
-#endif
-
-List_sp alist_erase(List_sp alist, T_sp key) {
+CL_DEFUN List_sp core__alist_erase(List_sp alist, T_sp key) {
   if (alist.nilp())
     return alist;
   if (oCar(oCar(alist)) == key)
@@ -1312,13 +960,13 @@ List_sp alist_erase(List_sp alist, T_sp key) {
   return alist;
 }
 
-List_sp alist_push(List_sp alist, T_sp key, T_sp val) {
+CL_DEFUN List_sp core__alist_push(List_sp alist, T_sp key, T_sp val) {
   Cons_sp one = Cons_O::create(key, val);
   alist = Cons_O::create(one, alist);
   return alist;
 }
 
-List_sp alist_get(List_sp alist, T_sp key) {
+CL_DEFUN List_sp core__alist_get(List_sp alist, T_sp key) {
   while (alist.notnilp()) {
     if (oCar(oCar(alist)) == key) {
       return alist;
@@ -1328,7 +976,7 @@ List_sp alist_get(List_sp alist, T_sp key) {
   return _Nil<T_O>();
 }
 
-string alist_asString(List_sp alist) {
+CL_DEFUN string core__alist_asString(List_sp alist) {
   stringstream ss;
   while (alist.notnilp()) {
     ss << _rep_(oCar(oCar(alist))) << " ";
@@ -1337,90 +985,11 @@ string alist_asString(List_sp alist) {
   return ss.str();
 }
 
-void Cons_O::exposeCando(Lisp_sp lisp) {
-  _G();
-  class_<Cons_O>()
-      .def("core:exactlyMatches", &Cons_O::exactlyMatches)
-      .def("core:lookup", &Cons_O::olookupKeyObject)
-      .def("core:lookupDefault", &Cons_O::olookupKeyObjectDefault)
-      .def("core:filterOutNil", &Cons_O::filterOutNil)
-      .def("core:extend", &Cons_O::extend)
-      .def("core:cons-setf-car", &Cons_O::setf_car)
-      .def("core:cons-setf-cdr", &Cons_O::setf_cdr)
-      //	    .def("walkToFindParsePos",&Cons_O::walkToFindParsePos)
-      //	    .def("sourceFileInfo-lineno",&Cons_O::lineNumber)
-      //	    .def("sourceFileInfo-column",&Cons_O::column)
-      //	    .def("sourceFileInfo",&Cons_O::sourceFileInfo)
-      //        .def_raw("eval",&Cons_O::evaluateArgsAsExpression)
-      ;
+
   SYMBOL_EXPORT_SC_(ClPkg, make_list);
-  Defun(make_list);
-  Defun(append2);
   SYMBOL_EXPORT_SC_(ClPkg, cons);
-  Defun(cons);
   SYMBOL_EXPORT_SC_(ClPkg, getf);
-  ClDefun(getf);
   SYMBOL_EXPORT_SC_(CorePkg, rem_f);
-  CoreDefun(rem_f);
   SYMBOL_SC_(CorePkg, put_f);
-  CoreDefun(put_f);
-  af_def(ClPkg, "rplaca", &cl_rplaca);
-  af_def(ClPkg, "rplacd", &cl_rplacd);
-  af_def(ClPkg, "rest", &oCdr);
-  af_def(ClPkg, "car", &oCar);
-  af_def(ClPkg, "cdr", &oCdr);
-  af_def(ClPkg, "caar", &oCaar);
-  af_def(ClPkg, "cadr", &oCadr);
-  af_def(ClPkg, "cdar", &oCdar);
-  af_def(ClPkg, "cddr", &oCddr);
-  af_def(ClPkg, "caaar", &oCaaar);
-  af_def(ClPkg, "caadr", &oCaadr);
-  af_def(ClPkg, "cadar", &oCadar);
-  af_def(ClPkg, "caddr", &oCaddr);
-  af_def(ClPkg, "cdaar", &oCdaar);
-  af_def(ClPkg, "cdadr", &oCdadr);
-  af_def(ClPkg, "cddar", &oCddar);
-  af_def(ClPkg, "cdddr", &oCdddr);
-  af_def(ClPkg, "caaaar", &oCaaaar);
-  af_def(ClPkg, "caadar", &oCaadar);
-  af_def(ClPkg, "cadaar", &oCadaar);
-  af_def(ClPkg, "caddar", &oCaddar);
-  af_def(ClPkg, "cdaaar", &oCdaaar);
-  af_def(ClPkg, "cdadar", &oCdadar);
-  af_def(ClPkg, "cddaar", &oCddaar);
-  af_def(ClPkg, "cdddar", &oCdddar);
-  af_def(ClPkg, "caaadr", &oCaaadr);
-  af_def(ClPkg, "caaddr", &oCaaddr);
-  af_def(ClPkg, "cadadr", &oCadadr);
-  af_def(ClPkg, "cadddr", &oCadddr);
-  af_def(ClPkg, "cdaadr", &oCdaadr);
-  af_def(ClPkg, "cdaddr", &oCdaddr);
-  af_def(ClPkg, "cddadr", &oCddadr);
-  af_def(ClPkg, "cddddr", &oCddddr);
-  af_def(ClPkg, "First", &oFirst);
-  af_def(ClPkg, "Second", &oSecond);
-  af_def(ClPkg, "Third", &oThird);
-  af_def(ClPkg, "Fourth", &oFourth);
-  af_def(ClPkg, "Fifth", &oFifth);
-  af_def(ClPkg, "Sixth", &oSixth);
-  af_def(ClPkg, "Seventh", &oSeventh);
-  af_def(ClPkg, "Eighth", &oEighth);
-  af_def(ClPkg, "Ninth", &oNinth);
-  af_def(ClPkg, "Tenth", &oTenth);
 
-  af_def(CorePkg, "alist_erase", &alist_erase);
-  af_def(CorePkg, "alist_push", &alist_push);
-  af_def(CorePkg, "alist_get", &alist_get);
-  af_def(CorePkg, "alist_asString", &alist_asString);
-}
-
-void Cons_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON //[
-  PYTHON_CLASS(CorePkg, Cons, "", "", _lisp)
-      .def("__repr__", &Cons_O::__repr__);
-#endif
-}
-
-EXPOSE_CLASS(core, Cons_O);
 };

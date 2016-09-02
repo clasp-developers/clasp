@@ -76,21 +76,19 @@ Bignum profilerTimeNs() {
   return mpz_ns;
 }
 
-#define ARGS_af_clock_gettime_nanoseconds "()"
-#define DECL_af_clock_gettime_nanoseconds ""
-#define DOCS_af_clock_gettime_nanoseconds "clock_gettime_nanoseconds"
-core::Bignum_mv af_clock_gettime_nanoseconds() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("clock_gettime_nanoseconds");
+CL_DEFUN core::Bignum_mv core__clock_gettime_nanoseconds() {
   Bignum ns = profilerTimeNs();
   core::Bignum_sp bn = core::Bignum_O::create(ns);
   return (Values(bn));
 };
 
-#define ARGS_af_testProfileTimer "(delay)"
-#define DECL_af_testProfileTimer ""
-#define DOCS_af_testProfileTimer "testProfileTimer"
-core::Bignum_mv af_testProfileTimer(uint delay) {
-  _G();
+CL_LAMBDA(delay);
+CL_DECLARE();
+CL_DOCSTRING("testProfileTimer");
+CL_DEFUN core::Bignum_mv core__test_profile_timer(uint delay) {
   struct timespec start, stop;
   profilerReadClock(start);
   uint z = 0;
@@ -170,13 +168,9 @@ void profiler_print(boost::format &fmt) {
   printf("+CPROF+ %s", fmt_str.c_str());
 }
 
-void initialize_profile() {
-  _G();
   SYMBOL_SC_(CorePkg, clock_gettime_nanoseconds);
-  Defun(clock_gettime_nanoseconds);
   SYMBOL_SC_(CorePkg, testProfileTimer);
-  Defun(testProfileTimer);
-}
+
 
 void restart_profile() {
   _globalProfiler.start();
@@ -199,7 +193,7 @@ class DumpFindClassCount : public KeyValueMapper
 {
 public:
     virtual bool mapKeyValue(T_sp className, T_sp omc)
-    {_G();
+    {
 	Symbol_sp sym = className.as<Symbol_O>();
 	Class_sp mc = omc.as<Class_O>();
 	printf( "+PROFILE-FIND-CLASS-COUNT+ %6d %20s\n", mc->findClassCount(), sym->__repr__().c_str() );

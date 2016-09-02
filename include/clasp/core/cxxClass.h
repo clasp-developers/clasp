@@ -39,9 +39,8 @@ namespace core {
 
 SMART(CxxClass);
 class CxxClass_O : public Class_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(Class_O);
-  LISP_CLASS(core, CorePkg, CxxClass_O, "CxxClass");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, CorePkg, CxxClass_O, "CxxClass",Class_O);
 
 private:
   //	string			_InitializationArgumentString;
@@ -70,13 +69,11 @@ public:
   virtual ~CxxClass_O(){};
 };
 };
-TRANSLATE(core::CxxClass_O);
 template <>
 struct gctools::GCInfo<core::CxxClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 #endif //]

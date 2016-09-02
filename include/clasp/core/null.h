@@ -35,9 +35,7 @@ namespace core {
 
 FORWARD(Null);
 class Null_O : public Symbol_O {
-  LISP_BASE1(Symbol_O); // ,List_O);
-  LISP_CLASS(core, ClPkg, Null_O, "null");
-  DECLARE_INIT();
+  LISP_CLASS(core, ClPkg, Null_O, "null",Symbol_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif                              // defined(XML_ARCHIVE)
@@ -54,6 +52,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::Null_O);
 
 #endif /* _core_Null_H */

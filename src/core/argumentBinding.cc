@@ -33,7 +33,7 @@ THE SOFTWARE.
   PASS_FUNCTION_REST 		bind_rest_var_args
   PASS_FUNCTION_KEYWORD 	bind_keyword_var_args
   PASS_ARGS  			'int n_args, va_list ap'	'ActivationFrame_sp args'
-  PASS_ARGS_NUM 		'n_args'				'cl_length(args)'
+  PASS_ARGS_NUM 		'n_args'				'cl__length(args)'
   PASS_NEXT_ARG(arg_idx) 		'gctools::smart_ptr<T_O>(va_arg(ap,TAGGED_PTR))' 	'args->entry(arg_idx)'
 */
 
@@ -113,7 +113,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
                         int arg_idx,
                         DynamicScopeManager &scope) {
   if (restarg.VaRest) {
-    scope.valist().set(&*arglist, n_args - arg_idx);
+    scope.valist().set_from_other_VaList_S(&*arglist); // _change_nargs(&*arglist, n_args - arg_idx);
     scope.va_rest_binding(restarg);
   } else {
     Cons_O::CdrType_sp rest = _Nil<Cons_O::CdrType_O>();
@@ -130,6 +130,7 @@ void PASS_FUNCTION_REST(RestArgument const &restarg,
   }
 }
 
+#if 0
 void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
                            PASS_ARGS,
                            int arg_idx,
@@ -139,6 +140,7 @@ void PASS_FUNCTION_VA_REST(RestArgument const &va_restarg,
   scope.valist().set(&*arglist, n_args - arg_idx);
   scope.va_rest_binding(va_restarg);
 }
+#endif
 
 int PASS_FUNCTION_KEYWORD(gctools::Vec0<KeywordArgument> const &keyed_args,
                           T_sp allow_other_keys,

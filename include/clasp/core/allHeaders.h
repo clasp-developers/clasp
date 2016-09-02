@@ -74,8 +74,6 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.fwd.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/exceptions.h>
-#include <clasp/core/executables.fwd.h>
-#include <clasp/core/executables.h>
 #include <clasp/core/extensionPackage.fwd.h>
 #include <clasp/core/extensionPackage.h>
 #include <clasp/core/externalObject.fwd.h>
@@ -177,8 +175,6 @@ THE SOFTWARE.
 #include <clasp/core/readtable.h>
 #include <clasp/core/sequence.h>
 //#include "core/singleDispatch.fwd.h"
-#include <clasp/core/singleDispatchEffectiveMethodFunction.fwd.h>
-#include <clasp/core/singleDispatchEffectiveMethodFunction.h>
 #include <clasp/core/singleDispatchGenericFunction.fwd.h>
 #include <clasp/core/singleDispatchGenericFunction.h>
 #include <clasp/core/singleDispatchMethod.fwd.h>
@@ -221,7 +217,9 @@ THE SOFTWARE.
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/symbolVector.fwd.h>
 #include <core/symbolVector.h>
-#include SYMBOLS_SCRAPED_INC_H
+  #ifndef SCRAPING
+    #include SYMBOLS_SCRAPED_INC_H
+  #endif
 #include <clasp/core/sysprop.h>
 #include <core/tagged_intrusive_ptr.h>
 #include <clasp/core/tnc.h>

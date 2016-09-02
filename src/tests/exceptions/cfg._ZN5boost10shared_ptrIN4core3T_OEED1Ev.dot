@@ -1,5 +1,0 @@
-digraph "CFG for '_ZN5boost10shared_ptrIN4core3T_OEED1Ev' function" {
-	label="CFG for '_ZN5boost10shared_ptrIN4core3T_OEED1Ev' function";
-
-	Node0x7fd44176de50 [shape=record,label="{entry:\l  %this.addr = alloca %\"class.boost::shared_ptr\"*, align 8\l  store %\"class.boost::shared_ptr\"* %this, %\"class.boost::shared_ptr\"** %this.addr, align 8\l  call void @llvm.dbg.declare(metadata !\{%\"class.boost::shared_ptr\"** %this.addr\}, metadata !20515), !dbg !20516\l  %this1 = load %\"class.boost::shared_ptr\"** %this.addr\l  call void @_ZN5boost10shared_ptrIN4core3T_OEED2Ev(%\"class.boost::shared_ptr\"* %this1), !dbg !20516\l  ret void, !dbg !20516\l}"];
-}

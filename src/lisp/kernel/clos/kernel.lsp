@@ -64,13 +64,10 @@
 ;;; ----------------------------------------------------------------------
 ;;; Methods
 
-(defun install-method (name qualifiers specializers lambda-list fun wrap &rest options)
-  (declare (ignore doc)
-	   (notinline ensure-generic-function))
-  #+compare(print (list "MLOG entered install-method name: " name ))
+(defun install-method (name qualifiers specializers lambda-list fun &rest options)
+  (declare (notinline ensure-generic-function))
 ;  (record-definition 'method `(method ,name ,@qualifiers ,specializers))
   (let* ((gf (ensure-generic-function name))
-	 (fun (if wrap (wrapped-method-function fun) fun))
 	 (specializers (mapcar #'(lambda (x)
 				   (cond ((consp x) (intern-eql-specializer (second x)))
 					 ((typep x 'specializer) x)
@@ -84,18 +81,20 @@
     (add-method gf method)
     method))
 
-(defun wrapped-method-function (method-function)
-  #'(lambda (.combined-method-args. *next-methods*)
-      (declare (special .combined-method-args. *next-methods*))
-      (apply method-function .combined-method-args.)))
+(defun wrapped-method-function-from-defun (method-function)
+  "The function-to-method function in fixup.lsp converts regular functions
+into methods.   Methods have the lambda-list (.method-args. .next-methods. &rest args)
+but the defun functions just take args - so wrap it"
+  #'(lambda (.method-args. .next-methods. &rest args)
+      (declare (ignore .method-args. .next-methods.)
+               (core:lambda-name wrapped-method-function-from-defun.lambda))
+      (apply method-function args)))
 
 ;;; ----------------------------------------------------------------------
 ;;;                                                         early versions
 
 ;;; early version used during bootstrap
-#+compare(print "MLOG In kernel.lsp 94 About to ensure-generic-function")
 (defun ensure-generic-function (name &key (lambda-list (si::unbound) l-l-p))
-  #+compare(print "MLOG In kernel.lsp 97 - entered early version of ensure-generic-function")
   (if (and (fboundp name) (si::instancep (fdefinition name)))
       (fdefinition name)
       ;; create a fake standard-generic-function object:
@@ -114,11 +113,9 @@
 	      :declarations nil
 	      :dependents nil)
 	;; create a new gfun
-	#+compare(print (list "MLOG In ensure-generic-function: "  name))
 	(set-funcallable-instance-function gfun 'standard-generic-function)
 	(setf (fdefinition name) gfun)
 	gfun)))
-#+compare(print "MLOG Done ensure-generic-function kernel.lsp 118")
 
 
 (defun (setf generic-function-name) (new-name gf)
@@ -241,7 +238,6 @@
 
 (setf (fdefinition 'compute-applicable-methods) #'std-compute-applicable-methods)
 
-#+compare(defparameter *watch-applicable-method-p* nil)
 (defun applicable-method-list (gf args)
   (declare (optimize (speed 3))
 	   (si::c-local))
@@ -259,13 +255,9 @@
 	 when (applicable-method-p method args)
 	 collect method))))
 
-;;(defmacro kernel-log (&rest args) `(print (list "KERNEL-LOG" ,@args)))
-(defmacro kernel-log (&rest args) nil)
-
 (defun std-compute-applicable-methods-using-classes (gf classes)
   (declare (optimize (speed 3)))
 ;;  (print (list "HUNT entering std-compute-applicable-methods-using-classes gf:" gf))
-  (kernel-log "entering std-compute-applicable-methods-using-classes" gf classes)
   (with-early-accessors (+standard-method-slots+ +eql-specializer-slots+ +standard-generic-function-slots+)
     (flet ((applicable-method-p (method classes)
 ;;	     (when (eq (generic-function-name method) 'aux-compute-applicable-methods)
@@ -276,12 +268,10 @@
 			      ;; EQL specializer invalidate computation
 			      ;; we return NIL
 			      (when (si::of-class-p (eql-specializer-object spec) class)
-				(kernel-log "return-from std-compute-applicable-methods-using-classes")
 				(return-from std-compute-applicable-methods-using-classes
 				  (values nil nil)))
 			      nil)
 			     ((si::subclassp class spec))))))
-      (kernel-log "returning values of sort-applicable-methods")
       (values (sort-applicable-methods
 	       gf
 	       (loop for method in (generic-function-methods gf)
@@ -292,7 +282,6 @@
 
 (defun sort-applicable-methods (gf applicable-list args)
   (declare (optimize (safety 0) (speed 3)))
-  (kernel-log "entering sort-applicable-methods" gf applicable-list args)
   (with-early-accessors (+standard-method-slots+ +standard-generic-function-slots+)
     (let ((f (generic-function-a-p-o-function gf))
 	  (args-specializers (mapcar #'class-of args)))
@@ -310,7 +299,6 @@
 	      ;; at least one method
 	      (let ((result (nreverse
 			     (push most-specific ordered-list))))
-		(kernel-log "leaving sort-applicable-methods with: " result )
 		result)))
 	(dolist (meth (cdr scan))
 	  (when (eq (compare-methods most-specific
@@ -427,4 +415,3 @@
 (defun print-object (object stream)
   (print-unreadable-object (object stream)))
 
-#+compare(print "MLOG ******** Done with kernel.lsp **************")

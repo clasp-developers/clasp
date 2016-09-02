@@ -26,6 +26,8 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LEVEL_FULL
 
+#include <clasp/core/foundation.h>
+
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #include <sys/resource.h>
@@ -35,7 +37,6 @@ THE SOFTWARE.
 #include <boost/mpi.hpp>
 #endif
 #include <string>
-#include <clasp/core/foundation.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -45,50 +46,41 @@ THE SOFTWARE.
 #include <clasp/core/candoOpenMp.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/commandLineOptions.h>
-#include <clasp/cffi/cffiPackage.h>
+#include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/sockets/socketsPackage.h>
 #include <clasp/serveEvent/serveEventPackage.h>
 #include <clasp/asttooling/asttoolingPackage.h>
+#include <clasp/core/pathname.h>
 #ifdef USE_MPI
 #include <clasp/mpip/mpiPackage.h>
 #include <clasp/mpip/claspMpi.h>
 #endif
 
+std::string program_name()
+{
+  return "clasp";
+}
+
 int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize) {
   core::LispHolder lispHolder(mpiEnabled, mpiRank, mpiSize);
   int exitCode = 0;
   try {
-    // Set the ThreadInfo for the current master thread
-    //
-    core::ThreadInfo mainThreadInfo;
-    core::lisp_setThreadLocalInfoPtr(&mainThreadInfo);
-
+    gctools::GcToolsExposer_O GcToolsPkg(_lisp);
+    clbind::ClbindExposer_O ClbindPkg(_lisp);
+    llvmo::LlvmoExposer_O llvmopkg(_lisp);
+    sockets::SocketsExposer_O SocketsPkg(_lisp);
+    serveEvent::ServeEventExposer_O ServeEventPkg(_lisp);
+    asttooling::AsttoolingExposer_O AsttoolingPkg(_lisp);
     lispHolder.startup(argc, argv, "CLASP"); // was "CANDO_APP"
-
-    gctools::GcToolsExposer GcToolsPkg(_lisp);
     _lisp->installPackage(&GcToolsPkg);
-
-    clbind::ClbindExposer ClbindPkg(_lisp);
     _lisp->installPackage(&ClbindPkg);
-
-    llvmo::LlvmoExposer llvmopkg(_lisp);
     _lisp->installPackage(&llvmopkg);
-
-    cffi::CffiExposer cffipkg(_lisp);
-    _lisp->installPackage(&cffipkg);
-
-    sockets::SocketsExposer SocketsPkg(_lisp);
     _lisp->installPackage(&SocketsPkg);
-
-    serveEvent::ServeEventExposer ServeEventPkg(_lisp);
     _lisp->installPackage(&ServeEventPkg);
-
-    asttooling::AsttoolingExposer AsttoolingPkg(_lisp);
     _lisp->installPackage(&AsttoolingPkg);
-
 #ifdef USE_MPI
     mpip::MpiExposer TheMpiPkg(_lisp);
     _lisp->installPackage(&TheMpiPkg);
@@ -114,8 +106,31 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
   return exitCode;
 }
 
+
+class DummyClass { };
+
+class EmptyClass : public DummyClass { // : public gctools::GCObject {
+private:
+public:
+  static core::Symbol_sp static_classSymbol() { return UNDEFINED_SYMBOL; };
+  static void set_static_creator(gc::smart_ptr<core::Creator_O> cb){};
+
+public:
+  explicit EmptyClass();
+};
+
+
+
 int main(int argc, char *argv[]) { // Do not touch debug log until after MPI init
-                                   // Set the stack size
+  // debugging stuff - delete if not needed
+  if (std::getenv("NOASLR")!=NULL) {
+    srand(1);
+    printf("%s:%d setting srand(1)\n", __FILE__, __LINE__ );
+    printf("%s:%d sizeof(EmptyClass) = %zu\n", __FILE__, __LINE__, sizeof(EmptyClass)); 
+    printf("%s:%d sizeof(_RootDummyClass) = %zu\n", __FILE__, __LINE__, sizeof(_RootDummyClass));
+    printf("%s:%d sizeof(T_O) = %lu\n", __FILE__, __LINE__, sizeof(core::T_O));
+    printf("%s:%d sizeof(Cons_O) = %lu\n", __FILE__, __LINE__, sizeof(core::Cons_O));
+  }
   rlimit rl;
   rl.rlim_max = 16 * 1024 * 1024;
   rl.rlim_cur = 15 * 1024 * 1024;
@@ -141,7 +156,12 @@ int main(int argc, char *argv[]) { // Do not touch debug log until after MPI ini
   }
 
   core::CommandLineOptions options(argc, argv);
-  int exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
+  int exitCode = 0;
+  try {
+    exitCode = gctools::startupGarbageCollectorAndSystem(&startup, argc, argv, rl.rlim_max, mpiEnabled, mpiRank, mpiSize);
+  } catch (...) {
+    return 1; // something is wrong - exiting with non-zero error
+  }
 
 #ifdef USE_MPI
   mpip::Mpi_O::Finalize();

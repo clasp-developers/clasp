@@ -162,168 +162,163 @@ struct derivable_class_;
 
 namespace detail {
 
-struct derivable_class_registration;
+  struct derivable_class_registration;
 
-struct derivable_class_registration : registration {
-  derivable_class_registration(char const *name);
+  struct derivable_class_registration : registration {
+    derivable_class_registration(char const *name);
 
-  void register_() const;
+    void register_() const;
 
-  const char *m_name;
+    const char *m_name;
 
-  mutable std::map<const char *, int, detail::ltstr> m_static_constants;
+    mutable std::map<const char *, int, detail::ltstr> m_static_constants;
 
-  typedef std::pair<type_id, cast_function> base_desc;
-  mutable std::vector<base_desc> m_bases;
+    typedef std::pair<type_id, cast_function> base_desc;
+    mutable std::vector<base_desc> m_bases;
 
-  type_id m_type;
-  class_id m_id;
-  class_id m_wrapper_id;
-  type_id m_wrapper_type;
-  std::vector<cast_entry> m_casts;
+    type_id m_type;
+    class_id m_id;
+    class_id m_wrapper_id;
+    type_id m_wrapper_type;
+    std::vector<cast_entry> m_casts;
 
-  scope m_scope;
-  scope m_members;
-  detail::registration *m_default_constructor;
-  scope m_default_members;
-  bool m_derivable;
-};
-
-struct CLBIND_API derivable_class_base : scope {
-public:
-  derivable_class_base(char const *name);
-
-  struct base_desc {
-    type_id type;
-    int ptr_offset;
+    scope m_scope;
+    scope m_members;
+    detail::registration *m_default_constructor;
+    scope m_default_members;
+    bool m_derivable;
   };
 
-  void init(
-      type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
+  struct CLBIND_API derivable_class_base : scope {
+  public:
+    derivable_class_base(char const *name);
 
-  void add_base(type_id const &base, cast_function cast);
+    struct base_desc {
+      type_id type;
+      int ptr_offset;
+    };
 
-  void set_default_constructor(registration *member);
-  void add_member(registration *member);
-  void add_default_member(registration *member);
+    void init(
+              type_id const &type, class_id id, type_id const &wrapped_type, class_id wrapper_id, bool derivable);
 
-  const char *name() const;
+    void add_base(type_id const &base, cast_function cast);
 
-  void add_static_constant(const char *name, int val);
-  void add_inner_scope(scope &s);
+    void set_default_constructor(registration *member);
+    void add_member(registration *member);
+    void add_default_member(registration *member);
 
-  void add_cast(class_id src, class_id target, cast_function cast);
+    const char *name() const;
 
-private:
-  derivable_class_registration *m_registration;
-};
+    void add_static_constant(const char *name, int val);
+    void add_inner_scope(scope &s);
+
+    void add_cast(class_id src, class_id target, cast_function cast);
+
+  private:
+    derivable_class_registration *m_registration;
+  };
 
 #if 0
 
-        template <class Class, class Pointer, class Signature, class Policies>
-        struct constructor_registration_base : public registration
-        {
-            constructor_registration_base(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring)
-                : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring)
-            {}
+  template <class Class, class Pointer, class Signature, class Policies>
+    struct constructor_registration_base : public registration
+  {
+  constructor_registration_base(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring)
+    : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring)
+    {}
 
 
-            core::Functoid* makeConstructorFunctoid() const
-            {
-                string tname = m_name;
-                if (m_name == "") { tname = "default-ctor"; };
-                core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocateClass(tname);
-                return f;
-            }
+    core::Functoid* makeConstructorFunctoid() const
+    {
+      string tname = m_name;
+      if (m_name == "") { tname = "default-ctor"; };
+      core::Functoid* f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies,Pointer,Class,Signature>>::allocate_class(tname);
+      return f;
+    }
 
-            void register_() const
-            {
-                core::Functoid* f = this->makeConstructorFunctoid();
-                lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
-            }
-
-
-            Policies policies;
-            string m_name;
-            string m_arguments;
-            string m_declares;
-            string m_docstring;
-        };
+    void register_() const
+    {
+      core::Functoid* f = this->makeConstructorFunctoid();
+      lisp_defun_lispify_name(core::lisp_currentPackageName(),m_name,f,m_arguments,m_declares,m_docstring,true,true,CountConstructorArguments<Signature>::value);
+    }
 
 
-        template <class Class, class Pointer, class Signature, class Policies>
-        struct constructor_registration : public constructor_registration_base<Class,Pointer,Signature,Policies> {
-            constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,Pointer,Signature,Policies>(policies,name,arguments,declares,docstring) {};
-        };
+    Policies policies;
+    string m_name;
+    string m_arguments;
+    string m_declares;
+    string m_docstring;
+  };
+#endif
+
+/*! This is the constructor registration for default constructors of non derivable classes,
+         Specialized by making second template parameter reg::null_type
+        */
+template <class Class, class Policies>
+  struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_derivable_class> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
+ constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
+  core::Creator_sp registerDefaultConstructor_() const {
+    //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
+    return gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate();
+  }
+};
 
 
-        template <class Class, class Pointer, class Policies>
-        struct constructor_registration<Class,Pointer,constructor<>,Policies> : public constructor_registration_base<Class,Pointer,constructor<>,Policies> 
-        {
-            constructor_registration(Policies const& policies, string const& name, string const& arguments, string const& declares, string const& docstring) : constructor_registration_base<Class,Pointer,constructor<>,Policies>(policies,name,arguments,declares,docstring) {};
-            core::Creator* registerDefaultConstructor_() const {
-                core::Creator* allocator = gctools::ClassAllocator<DefaultConstructorAllocatorFunctor<Class,Pointer>>::allocateClass();
-                return allocator;
-            }
-        };
+#if 0
+  template <
+    class Class
+    , class Get, class GetPolicies
+    , class Set = reg::null_type, class SetPolicies = reg::null_type
+    >
+    struct property_registration : registration
+    {
+ property_registration(
+  char const* name
+    , Get const& get
+    , GetPolicies const& get_policies
+    , Set const& set = Set()
+    , SetPolicies const& set_policies = SetPolicies()
+    , string const& arguments =""
+    , string const& declares =""
+    , string const& docstring ="" )
+   : name(name)
+    , get(get)
+    , get_policies(get_policies)
+    , set(set)
+    , set_policies(set_policies)
+    , m_arguments(arguments)
+    , m_declares(declares)
+    , m_docstring(docstring)
+  {}
 
-
-
-
-        template <
-            class Class
-            , class Get, class GetPolicies
-            , class Set = reg::null_type, class SetPolicies = reg::null_type
-            >
-        struct property_registration : registration
-        {
-            property_registration(
-                char const* name
-                , Get const& get
-                , GetPolicies const& get_policies
-                , Set const& set = Set()
-                , SetPolicies const& set_policies = SetPolicies()
-                , string const& arguments =""
-                , string const& declares =""
-                , string const& docstring ="" )
-                : name(name)
-                , get(get)
-                , get_policies(get_policies)
-                , set(set)
-                , set_policies(set_policies)
-                , m_arguments(arguments)
-                , m_declares(declares)
-                , m_docstring(docstring)
-            {}
-
-            void register_() const
-            {
-                const string n(name);
-                core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocateClass(n,get);
+  void register_() const
+  {
+  const string n(name);
+  core::Functoid* getter = gctools::ClassAllocator<GetterMethoid<reg::null_type,Class,Get>>::allocate_class(n,get);
 //                int*** i = GetterMethoid<reg::null_type,Class,Get>(n,get);
 //                printf("%p\n", i);
-                core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
-                lisp_defineSingleDispatchMethod(name
-                                                , classSymbol
-                                                , getter
-                                                , 0
-                                                , m_arguments
-                                                , m_declares
-                                                , m_docstring
-                                                , true
-                                                , 1 );
+  core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
+  lisp_defineSingleDispatchMethod(name
+    , classSymbol
+    , getter
+    , 0
+    , m_arguments
+    , m_declares
+    , m_docstring
+    , true
+    , 1 );
 //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
                 // register the getter here
-            }
-            char const* name;
-            Get get;
-            GetPolicies get_policies;
-            Set set;
-            SetPolicies set_policies;
-            string m_arguments;
-            string m_declares;
-            string m_docstring;
-        };
+}
+  char const* name;
+  Get get;
+  GetPolicies get_policies;
+  Set set;
+  SetPolicies set_policies;
+  string m_arguments;
+  string m_declares;
+  string m_docstring;
+};
 #endif
 
 } // namespace detail
@@ -715,7 +710,7 @@ private:
     typedef T construct_type;
     this->set_default_constructor(
         new detail::constructor_registration<
-            construct_type, reg::null_type, default_constructor, Policies>(
+        construct_type, reg::null_type, default_constructor, Policies, detail::construct_derivable_class>(
             Policies(), name, arguments, declares, docstring));
     return *this;
   }
@@ -729,7 +724,7 @@ private:
 
     this->add_member(
         new detail::constructor_registration<
-            construct_type, HeldType, signature, Policies>(
+        construct_type, HeldType, signature, Policies, detail::construct_derivable_class>(
             Policies(), name, arguments, declares, docstring));
 
 #if 0

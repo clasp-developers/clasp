@@ -162,11 +162,11 @@ class shared_ptr;
 
 namespace clbind {
 
-class DummyCreator : public core::Creator {
+class DummyCreator_O : public core::Creator_O {
   string _name;
 
 public:
-  DummyCreator(const string &name) : _name(name){};
+  DummyCreator_O(const string &name) : _name(name){};
 
 public:
   DISABLE_NEW();
@@ -178,8 +178,8 @@ public:
   virtual core::T_sp allocate() {
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
-  gc::tagged_pointer<Creator> duplicateForClassName(core::Symbol_sp className) {
-    return gctools::ClassAllocator<DummyCreator>::allocateClass(core::lisp_symbolNameAsString(className));
+  core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
+    return gc::GC<DummyCreator_O>::allocate(core::lisp_symbolNameAsString(className));
   }
 };
 
@@ -392,7 +392,7 @@ struct memfun_registration : registration {
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocateClass(sym, methodPtr);
+    core::BuiltinClosure_sp methoid = gc::GC<IndirectVariadicMethoid<Policies, Class, MethodPointerType>>::allocate(sym, methodPtr);
     lisp_defineSingleDispatchMethod(sym, classSymbol, methoid, 0, m_arguments, m_declares, m_docstring, true, CountMethodArguments<MethodPointerType>::value + 1 // +1 for the self argument
                                     ,
                                     GatherPureOutValues<Policies, 0>::gather());
@@ -427,7 +427,7 @@ struct iterator_registration : registration {
   void register_() const {
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(name, symbol_packageName(classSymbol));
-    gctools::tagged_pointer<core::BuiltinClosure> methoid = gctools::ClassAllocator<IteratorMethoid<Policies, Class, Begin, End>>::allocateClass(sym, beginPtr, endPtr);
+    core::BuiltinClosure_sp methoid = gc::GC<IteratorMethoid<Policies, Class, Begin, End>>::allocate(sym, beginPtr, endPtr);
 
     //                int*** i = MethodPointerType(); printf("%p\n", i); // generate error to check type
     //                print_value_as_warning<CountMethodArguments<MethodPointerType>::value>()();
@@ -454,7 +454,7 @@ struct default_pointer {
 
 template <class T>
 struct default_pointer<reg::null_type, T> {
-  typedef std::auto_ptr<T> type;
+  typedef std::unique_ptr<T> type;
 };
 
 template <typename ConstructorType>
@@ -467,6 +467,7 @@ struct CountConstructorArguments<constructor<ARGS...>> {
   enum { value = sizeof...(ARGS) };
 };
 
+ 
 template <class Class, class Pointer, class Signature, class Policies>
 struct constructor_registration_base : public registration {
   constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring)
@@ -479,7 +480,7 @@ struct constructor_registration_base : public registration {
     };
     //                printf("%s:%d    constructor_registration_base::register_ called for %s\n", __FILE__, __LINE__, m_name.c_str());
     core::Symbol_sp sym = core::lispify_intern(tname, core::lisp_currentPackageName());
-    gctools::tagged_pointer<core::BuiltinClosure> f = gctools::ClassAllocator<VariadicConstructorFunctoid<Policies, Pointer, Class, Signature>>::allocateClass(sym);
+    core::BuiltinClosure_sp f = gc::GC<VariadicConstructorFunction_O<Policies, Pointer, Class, Signature>>::allocate(sym);
     lisp_defun(sym, core::lisp_currentPackageName(), f, m_arguments, m_declares, m_docstring, "=external=", 0, true, CountConstructorArguments<Signature>::value);
   }
 
@@ -490,17 +491,22 @@ struct constructor_registration_base : public registration {
   string m_docstring;
 };
 
-template <class Class, class Pointer, class Signature, class Policies>
+ /*! constructor_registration can construct either a derivable class or a non-derivable class */
+ 
+ class construct_non_derivable_class {};
+ class construct_derivable_class {};
+ 
+ template <class Class, class Pointer, class Signature, class Policies, class DerivableType>
 struct constructor_registration : public constructor_registration_base<Class, Pointer, Signature, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, Signature, Policies>(policies, name, arguments, declares, docstring){};
 };
 
 /*! This is the constructor registration for default constructors */
 template <class Class, class Pointer, class Policies>
-struct constructor_registration<Class, Pointer, default_constructor, Policies> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
+  struct constructor_registration<Class, Pointer, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, Pointer, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, Pointer, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
-  gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const {
-    gc::tagged_pointer<core::Creator> allocator = gctools::ClassAllocator<DefaultConstructorCreator<Class, Pointer>>::allocateClass();
+  core::Creator_sp registerDefaultConstructor_() const {
+    core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<Class, Pointer>>::allocate();
     return allocator;
   }
 };
@@ -511,7 +517,7 @@ struct constructor_registration<Class, Pointer, default_constructor, Policies> :
          * instantiates a constructor functoid that uses the garbage collector
          */
 template <class Class, class Policies>
-struct constructor_registration_base<Class, reg::null_type, default_constructor, Policies> : public registration {
+  struct constructor_registration_base<Class, reg::null_type, default_constructor, Policies> : public registration {
   constructor_registration_base(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring)
       : policies(policies), m_name(name), m_arguments(arguments), m_declares(declares), m_docstring(docstring) {}
 
@@ -533,15 +539,16 @@ struct constructor_registration_base<Class, reg::null_type, default_constructor,
   string m_docstring;
 };
 
-/*! This is the constructor registration for default constructors of derivable classes,
+/*! This is the constructor registration for default constructors of non derivable classes,
          Specialized by making second template parameter reg::null_type
         */
 template <class Class, class Policies>
-struct constructor_registration<Class, reg::null_type, default_constructor, Policies> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
+  struct constructor_registration<Class, reg::null_type, default_constructor, Policies, construct_non_derivable_class> : public constructor_registration_base<Class, reg::null_type, default_constructor, Policies> {
   constructor_registration(Policies const &policies, string const &name, string const &arguments, string const &declares, string const &docstring) : constructor_registration_base<Class, reg::null_type, default_constructor, Policies>(policies, name, arguments, declares, docstring){};
-  gc::tagged_pointer<core::Creator> registerDefaultConstructor_() const {
+  core::Creator_sp registerDefaultConstructor_() const {
     //                printf("%s:%d In constructor_registration::registerDefaultConstructor derivable_default_constructor<> ----- Make sure that I'm being called for derivable classes\n", __FILE__, __LINE__ );
-    return gctools::ClassAllocator<DerivableDefaultConstructorCreator<Class>>::allocateClass();
+//    return gctools::GC<DerivableDefaultConstructorCreator_O<Class>>::allocate();
+    return gctools::GC<DefaultConstructorCreator_O<Class,Class*>>::allocate();
   }
 };
 
@@ -587,7 +594,7 @@ struct property_registration : registration {
     //                printf("%p\n", i);
     core::Symbol_sp classSymbol = reg::lisp_classSymbol<Class>();
     core::Symbol_sp sym = core::lispify_intern(n, symbol_packageName(classSymbol));
-    gctools::tagged_pointer<core::BuiltinClosure> getter = gctools::ClassAllocator<GetterMethoid<reg::null_type, Class, Get>>::allocateClass(sym, get);
+    core::BuiltinClosure_sp getter = gc::GC<GetterMethoid<reg::null_type, Class, Get>>::allocate(sym, get);
     lisp_defineSingleDispatchMethod(sym, classSymbol, getter, 0, m_arguments, m_declares, m_docstring, true, 1);
     //                printf("%s:%d - allocated a getter@%p for %s\n", __FILE__, __LINE__, getter, name);
     // register the getter here
@@ -1026,7 +1033,7 @@ private:
 
     this->set_default_constructor(
         new detail::constructor_registration<
-            construct_type, HeldType, Signature, Policies>(
+        construct_type, HeldType, Signature, Policies,detail::construct_non_derivable_class>(
             Policies(), name, arguments, declares, docstring));
     return *this;
   }
@@ -1040,7 +1047,7 @@ private:
 
     this->add_member(
         new detail::constructor_registration<
-            construct_type, HeldType, signature, Policies>(
+        construct_type, HeldType, signature, Policies,detail::construct_non_derivable_class>(
             Policies(), name, arguments, declares, docstring));
 
 #if 0

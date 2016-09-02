@@ -34,11 +34,11 @@ NAMESPACE_PACKAGE_ASSOCIATION(sockets, SocketsPkg, "SOCKETS-INTERNAL");
 
 namespace sockets {
 
-class SocketsExposer : public core::Exposer {
-private:
-public:
+class SocketsExposer_O : public core::Exposer_O {
+ private:
+ public:
   DISABLE_NEW();
-  SocketsExposer(core::Lisp_sp lisp) : Exposer(lisp, SocketsPkg){};
+ SocketsExposer_O(core::Lisp_sp lisp) : Exposer_O(lisp, SocketsPkg){};
   virtual void expose(core::Lisp_sp lisp, WhatToExpose what) const;
 };
 };

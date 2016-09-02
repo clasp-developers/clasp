@@ -1,0 +1,25 @@
+import os
+
+def subdirectories():
+    dir = os.listdir("./extensions")
+    print("subdirectories dir = %s" % dir)
+    subdirs = []
+    for x in dir:
+        if os.path.isdir("./extensions/%s"%x):
+            subdirs.append(x)
+    print("extensions subdirs = %s" % subdirs)
+    return subdirs
+
+
+def configure(cfg):
+    subdirs = subdirectories()
+    cfg.extensions_names = cfg.extensions_names + subdirs
+    print("cfg.extensions_names = %s" % cfg.extensions_names)
+    subdirs_str = " ".join(subdirs)
+    print("About to recurse into %s" % subdirs_str)
+    cfg.recurse(subdirs_str)
+    print("After recurse cfg.extensions_names = %s" % cfg.extensions_names)
+
+def build(bld):
+    bld.recurse(" ".join(subdirectories()))
+

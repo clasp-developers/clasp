@@ -1,7 +1,0 @@
-
-
-
-(Cons_O::create_list(_lisp) % x % y % z )
-
-apply::apply(func,(apply::list(_lisp) % x % y % z % _lisp->symbol(_kw_rest) % stuff ).cons() )
-apply::apply(func,(apply::list(_lisp) % x % y % z % _lisp->symbol(_kw_rest) % stuff ).cons(tail) )

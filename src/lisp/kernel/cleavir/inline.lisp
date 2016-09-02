@@ -1,52 +1,5 @@
 (in-package :clasp-cleavir)
 
-
-;;; Stubs to keep the already compiled code working
-
-#+(or)
-(progn
-  (clasp-cleavir:cleavir-compile
-   'cleavir-primop:consp
-   '(lambda (x) (if (cleavir-primop:consp x) t nil )))
-  
-  (clasp-cleavir:cleavir-compile
-   'cleavir-primop:car
-   '(lambda (x)
-     (if (cleavir-primop:consp x)
-         (cleavir-primop:car x)
-         (if (null x)
-             nil
-             (error "Cannot get car of non list: ~s" x)))))
-  
-  (clasp-cleavir:cleavir-compile
-   'cleavir-primop:cdr
-   '(lambda (x)
-     (if (cleavir-primop:consp x)
-         (cleavir-primop:cdr x)
-         (if (null x)
-             nil
-             (error "Cannot get cdr of non list: ~s" x)))))
-  
-  (clasp-cleavir:cleavir-compile
-   'cleavir-primop:rplaca
-   '(lambda (p v)
-     (if (cleavir-primop:consp p)
-         (progn
-           (cleavir-primop:rplaca p v)
-           p)
-         (error "Cannot rplaca non-cons ~s" p))))
-
-  (clasp-cleavir:cleavir-compile
-   'cleavir-primop:rplacd
-   '(lambda (p v)
-     (if (cleavir-primop:consp p)
-         (progn
-           (cleavir-primop:rplacd p v)
-           p)
-         (error "Cannot rplacd non-cons ~s" p))))
-  )
-
-
 (progn
   (declaim (inline cl:consp))
   (defun cl:consp (x)

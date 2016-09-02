@@ -34,8 +34,8 @@ typedef enum { cloLoad,
 
 struct CommandLineOptions {
   CommandLineOptions(int argc, char *argv[]);
+  int _EndArg;
   std::string _ExecutableName;
-  std::string _TrapIntern;
   bool _DontLoadImage;
   bool _DontLoadInitLsp;
   std::vector<std::string> _Features;
@@ -49,6 +49,7 @@ struct CommandLineOptions {
   bool _SilentStartup;
   bool _NoRc;
   bool _PauseForDebugger;
+  std::string _ResourceDir;
   std::vector<std::string> _Args;
 };
 };

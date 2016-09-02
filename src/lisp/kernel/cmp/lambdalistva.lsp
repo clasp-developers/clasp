@@ -344,17 +344,29 @@ will put a value into target-ref."
 
 
 
-(defun compile-rest-arguments (rest-var old-env
+(defun compile-rest-arguments (rest-var
+                               varest
+                               old-env
 			       args     ; nargs va-list
 			       new-env entry-arg-idx)
   (irc-branch-to-and-begin-block (irc-basic-block-create "process-rest-arguments"))
-  (with-target-reference-do (rest-ref rest-var new-env)
-    (irc-intrinsic "copyTspTptr"
-                   rest-ref
-                   (irc-intrinsic "cc_gatherRestArguments"
-                                  (calling-convention-nargs args)
-                                  (calling-convention-va-list args)
-                                  entry-arg-idx *gv-current-function-name* ))))
+  (if varest
+      (with-target-reference-do (rest-ref rest-var new-env)
+        (let ((temp-valist (irc-alloca-VaList_S old-env)))
+          (irc-intrinsic "copyTspTptr"
+                         rest-ref
+                         (irc-intrinsic "cc_gatherVaRestArguments"
+                                        (calling-convention-nargs args)
+                                        (calling-convention-va-list args)
+                                        entry-arg-idx
+                                        temp-valist))))
+      (with-target-reference-do (rest-ref rest-var new-env)
+        (irc-intrinsic "copyTspTptr"
+                       rest-ref
+                       (irc-intrinsic "cc_gatherRestArguments"
+                                      (calling-convention-nargs args)
+                                      (calling-convention-va-list args)
+                                      entry-arg-idx *gv-current-function-name* )))))
 
 (defun compile-key-arguments-parse-arguments (keyargs
 					      lambda-list-allow-other-keys
@@ -593,7 +605,7 @@ will put a value into target-ref."
 lambda-list-handler/env/argument-activation-frame"
   ;; Declare the arg-idx i32 that stores the current index in the argument-activation-frame
   (dbg-set-current-debug-location-here)
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys auxargs varest-p)
       (process-lambda-list-handler lambda-list-handler)
     (let* ((arg-idx (jit-constant-size_t 0))
 	   (opt-arg-idx (compile-required-arguments reqargs
@@ -608,6 +620,7 @@ lambda-list-handler/env/argument-activation-frame"
 				 opt-arg-idx))
 	   (dummy (when rest-var
 		    (compile-rest-arguments rest-var
+                                            varest-p
 					    old-env
 					    args ; nargs va-list
 					    new-env

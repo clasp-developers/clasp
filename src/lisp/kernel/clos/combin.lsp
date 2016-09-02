@@ -47,30 +47,43 @@
 ;;;  5) Ordinary forms are turned into lambda forms, much like
 ;;;	what happens with the content of MAKE-METHOD.
 ;;;
-#+compare(print "combin.lsp 50")
+(defvar *avoid-compiling* nil)
 (defun effective-method-function (form &optional top-level &aux first)
-  (cond ((functionp form)
-	 form)
-	((method-p form)
-	 (method-function form))
-	((atom form)
-	 (error "Malformed effective method form:~%~A" form))
-	((eq (setf first (first form)) 'MAKE-METHOD)
-	 (coerce `(lambda (.combined-method-args. *next-methods*)
-		    (declare (special .combined-method-args. *next-methods*))
-		    ,(second form))
-		 'function))
-	((eq first 'CALL-METHOD)
-	 (combine-method-functions
-	  (effective-method-function (second form))
-	  (mapcar #'effective-method-function (third form))))
-	(top-level
-	 (coerce `(lambda (.combined-method-args. no-next-methods)
-		    (declare (ignorable no-next-methods))
-		    ,form)
-		 'function))
-	(t
-	 (error "Malformed effective method form:~%~A" form))))
+  (flet ((maybe-compile (form)
+           (if *avoid-compiling*
+               (coerce form 'function)
+               (let ((*avoid-compiling* t))
+                 (compile nil form)))))
+    (cond ((functionp form)
+           form)
+          ((method-p form)
+           (method-function form))
+          ((atom form)
+           (error "Malformed effective method form:~%~A" form))
+          ((eq (setf first (first form)) 'MAKE-METHOD)
+           (maybe-compile `(lambda (.method-args. .next-methods.)
+                             (declare (core:lambda-name effective-method-function.make-method))
+                             (flet ((call-next-method (&rest args)
+                                      (if (not .next-methods.)
+                                          (error "No next method")
+                                          (apply (car .next-methods.)
+                                                 (or args .method-args)
+                                                 (cdr .next-methods.)
+                                                 (or args .method-args.))))
+                                    (next-method-p ()
+                                      (and .next-methods. t)))
+                               ,(second form)))))
+          ((eq first 'CALL-METHOD)
+           (combine-method-functions
+            (effective-method-function (second form))
+            (mapcar #'effective-method-function (third form))))
+          (top-level
+           (maybe-compile `(lambda (.method-args. .next-methods. #|no-next-methods|#)
+                             (declare (ignorable .next-methods.)
+                                      (core:lambda-name effective-method-function.top-level))
+                             ,form)))
+          (t
+           (error "Malformed effective method form:~%~A" form)))))
 
 ;;;
 ;;; This function is a combinator of effective methods. It creates a
@@ -78,44 +91,21 @@
 ;;; of the remaining methods. The resulting closure (or effective method)
 ;;; is the equivalent of (CALL-METHOD method rest-methods)
 ;;;
-#+compare(print "combin.lsp 81")
 (defun combine-method-functions (method rest-methods)
   (declare (si::c-local))
-  #'(lambda (args no-next-methods)
-      (declare (ignorable no-next-methods))
-      (funcall method args rest-methods)))
+  #'(lambda (.method-args. .next-methods. #|no-next-methods|#)
+      (declare (ignorable .next-methods. #|no-next-methods|#)
+               (core:lambda-name combine-method-functions.lambda))
+      (apply method .method-args. rest-methods .method-args.))) 
 
-#+compare(print "combin.lsp 88")
 (defmacro call-method (method &optional rest-methods)
-  `(funcall ,(effective-method-function method)
-	    .combined-method-args.
-	    ',(and rest-methods (mapcar #'effective-method-function rest-methods))))
+  `(apply ,(effective-method-function method)
+          ;; This is a stab in the dark - I don't know if .method-args.
+          ;; will be defined in the lexical environment
+          .method-args.
+          ',(and rest-methods (mapcar #'effective-method-function rest-methods))
+          .method-args.))
 
-#+compare(print "combin.lsp 94")
-(defun call-next-method (&rest args)
-  (declare (special .combined-method-args. *next-methods*))
-  (unless *next-methods*
-    (error "No next method."))
-  (funcall (car *next-methods*) (or args .combined-method-args.) (rest *next-methods*)))
-
-#+compare(print "combin.lsp 104")
-(defun next-method-p ()
-  (declare (special *next-methods*))
-  *next-methods*)
-
-#+compare(print "combin.lsp 109")
-(define-compiler-macro call-next-method (&rest args)
-  `(if *next-methods*
-       (funcall (car *next-methods*)
-		,(if args `(list ,@args) '.combined-method-args.)
-		(rest *next-methods*))
-       (error "No next method.")))
-
-#+compare(print "combin.lsp 117")
-(define-compiler-macro next-method-p ()
-  'clos::*next-methods*)
-
-#+compare(print "combin.lsp 121")
 (defun error-qualifier (m qualifier)
   (declare (si::c-local))
   (error "Standard method combination allows only one qualifier ~
@@ -123,21 +113,21 @@
           a method with ~S was found."
 	 m qualifier))
 
-#+compare(print "combin.lsp 129")
 (defun standard-main-effective-method (before primary after)
   (declare (si::c-local))
-  #'(lambda (.combined-method-args. no-next-method)
-      (declare (ignorable no-next-method))
+  #'(lambda (.method-args. no-next-method &rest args)
+      (declare (ignore no-next-method)
+               (core:lambda-name standard-main-effective-method.lambda))
       (dolist (i before)
-	(funcall i .combined-method-args. nil))
+        (apply i .method-args. nil .method-args.))
       (if after
 	  (multiple-value-prog1
-	   (funcall (first primary) .combined-method-args. (rest primary))
-	   (dolist (i after)
-	     (funcall i .combined-method-args. nil)))
-	(funcall (first primary) .combined-method-args. (rest primary)))))
+              (apply (first primary) .method-args. (rest primary) .method-args.)
+            (dolist (i after)
+              (apply i .method-args. nil .method-args.)))
+          (apply (first primary) .method-args. (rest primary) .method-args.))))
 
-#+compare(print "combin.lsp 143")
+
 (defun standard-compute-effective-method (gf methods)
   (with-early-accessors (+standard-method-slots+)
     (let* ((before ())
@@ -175,8 +165,7 @@
 				      (nconc (rest around) main)))
 	  (if (or before after)
 	      (standard-main-effective-method before primary after)
-	      (combine-method-functions (first primary) (rest primary))))
-      )))
+	      (combine-method-functions (first primary) (rest primary)))))))
 
 ;; ----------------------------------------------------------------------
 ;; DEFINE-METHOD-COMBINATION
@@ -196,41 +185,22 @@
 ;; and it outputs an anonymous function which is the effective method.
 ;;
 
-#+compare(print "combin.lsp 202")
 
 #+threads
 (defparameter *method-combinations-lock* (mp:make-lock :name 'find-method-combination))
 (defparameter *method-combinations* (make-hash-table :size 32 :test 'eq))
 
 
-#-clasp
 (defun search-method-combination (name)
   (mp:with-lock (*method-combinations-lock*)
     (or (gethash name *method-combinations*)
 	(error "~A does not name a method combination" name))))
 
-
-#+compare(print "combin.lsp 216")
-
-#+clasp
-(defun search-method-combination (name)
-    (or (gethash name *method-combinations*)
-	(error "~A does not name a method combination" name)))
-
-#-clasp
 (defun install-method-combination (name function)
   (mp:with-lock (*method-combinations-lock*)
-    (setf (gethash name *method-combinations*) function))
+                (setf (gethash name *method-combinations*) function))
   name)
 
-#+compare(print "combin.lsp 229")
-
-#+clasp
-(defun install-method-combination (name function)
-  (setf (gethash name *method-combinations*) function)
-  name)
-
-#+compare(print "combin.lsp 236")
 (defun make-method-combination (name compiler options)
   (with-early-make-instance +method-combination-slots+
     (o (find-class 'method-combination)
@@ -239,14 +209,12 @@
        :options options)
     o))
 
-#+compare(print "combin.lsp 245")
 (defun find-method-combination (gf method-combination-type-name method-combination-options)
   (make-method-combination method-combination-type-name
 			   (search-method-combination method-combination-type-name)
 			   method-combination-options
 			   ))
 
-#+compare(print "combin.lsp 252")
 (defun define-simple-method-combination (name &key documentation
 					 identity-with-one-argument
 					 (operator name))
@@ -269,7 +237,6 @@
 	      main-effective-method)
 	     (t (second main-effective-method))))))
 
-#+compare(print "combin.lsp 275")
 (defun define-complex-method-combination (form)
   (declare (si::c-local))
   (flet ((syntax-error ()
@@ -347,46 +314,41 @@
 							  (t (invalid-method-error .method.
 										   "Method qualifiers ~S are not allowed in the method~
 			      combination ~S." .method-qualifiers. ,name)))))
-						,@group-after
-						(effective-method-function (progn ,@body) t))))
-				   )
-      )))
+                                                ,@group-after
+                                                (effective-method-function (progn ,@body) t))))))))
 
-#+compare(print "combin.lsp 345")
 (defmacro define-method-combination (name &body body)
   (if (and body (listp (first body)))
       (define-complex-method-combination (list* name body))
       (apply #'define-simple-method-combination name body)))
 
-#+compare(print "combin.lsp 351")
 (defun method-combination-error (format-control &rest args)
   ;; FIXME! We should emit a more detailed error!
   (error "Method-combination error:~%~S"
 	 (apply #'format nil format-control args)))
 
-#+compare(print "combin.lsp 357")
 (defun invalid-method-error (method format-control &rest args)
   (error "Invalid method error for ~A~%~S"
 	 method
 	 (apply #'format nil format-control args)))
 
+
+
 ;;; ----------------------------------------------------------------------
 ;;; COMPUTE-EFFECTIVE-METHOD
 ;;;
 
-#+compare(print "combin.lsp 367")
 ;; The following chokes in clasp because I don't have the method-combination class defined
 ;; during compilation of the full clasp source code.
 ;; I don't use compiler macros anyway so I'll feature this out
 #-clasp
-(eval-when (compile #+clasp-boot :load-toplevel)
+(eval-when (compile :load-toplevel)
   (let* ((class (find-class 'method-combination)))
     (define-compiler-macro method-combination-compiler (o)
       `(si::instance-ref ,o ,(slot-definition-location (gethash 'compiler (slot-table class)))))
     (define-compiler-macro method-combination-options (o)
       `(si::instance-ref ,o ,(slot-definition-location (gethash 'options (slot-table class)))))))
 
-#+compare(print "combin.lsp 376")
 (defun std-compute-effective-method (gf method-combination applicable-methods)
   (declare (type method-combination method-combination)
 	   (type generic-function gf)
@@ -398,7 +360,6 @@
 	  (apply compiler gf applicable-methods options)
 	  (funcall compiler gf applicable-methods)))))
 
-#+compare(print "combin.lsp 388")
 (defun compute-effective-method-function (gf method-combination applicable-methods)
   ;; Cannot be inlined because it will be a method
   (declare (notinline compute-effective-method))
@@ -407,20 +368,18 @@
       (if (and (listp aux)
 		 (eq (pop aux) 'funcall)
 		 (functionp (setf f (pop aux)))
-		 (eq (pop aux) '.combined-method-args.)
-		 (eq (pop aux) '*next-methods*))
+		 (eq (pop aux) '.method-args.)
+		 (eq (pop aux) '.next-methods.))
 	  f
 	  (effective-method-function form t)))))
 
-#+compare(print "combin.lsp 402")
 (defun compute-effective-method (gf method-combination applicable-methods)
   `(funcall ,(std-compute-effective-method gf method-combination applicable-methods)
-	    .combined-method-args. *next-methods*))
+	    .method-args. .next-methods.))
 
 ;;
 ;; These method combinations are bytecompiled, for simplicity.
 ;;
-#+compare(print "MLOG About to install-method-combination")
 (install-method-combination 'standard 'standard-compute-effective-method)
 #+ecl(eval '(progn
              (define-method-combination progn :identity-with-one-argument t)
@@ -444,4 +403,3 @@
          (define-method-combination min :identity-with-one-argument t)
          (define-method-combination or :identity-with-one-argument t))
 
-#+compare( print "MLOG ****** Done with combin.lsp ******")

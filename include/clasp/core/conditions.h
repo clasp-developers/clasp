@@ -38,10 +38,8 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 
 namespace core {
-class CandoException_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, CandoException_O, "CandoException");
-  DECLARE_INIT();
+class CandoException_O : public General_O {
+  LISP_CLASS(core, CorePkg, CandoException_O, "CandoException",General_O);
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   DEFAULT_CTOR_DTOR(CandoException_O);
@@ -63,7 +61,6 @@ public: // Functions here
 }; // CandoException class
 
 }; // core namespace
-TRANSLATE(core::CandoException_O);
 
 namespace core {
 
@@ -84,11 +81,10 @@ public:
 
 namespace core {
 
-T_sp af_makeCondition(T_sp datum, List_sp initializers);
+T_sp cl__make_condition(T_sp datum, List_sp initializers);
 
-string af_conditionMessage(T_sp condition);
+string core__condition_message(T_sp condition);
 
-void initialize_conditions();
 }
 
 #endif //]

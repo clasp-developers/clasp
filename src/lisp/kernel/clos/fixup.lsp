@@ -34,9 +34,14 @@
 |#
 
 
-#+compare(print "MLOG ******* Entering fixup.lsp *********")
-#+compare(print "MLOG About to do first defmethod in fixup.lsp")
-#+compare(print "")
+;;; This will print every form as its compiled
+#+(or)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (format t "Starting fixup.lsp")
+  (setq *echo-repl-tpl-read* t)
+  (setq *load-print* t)
+  (setq *echo-repl-read* t))
+
 
 (defmethod reader-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -49,7 +54,6 @@
 		  'standard-optimized-reader-method
 		  'standard-reader-method)))
 
-#+compare(print "MLOG About to do defmethod writer-method-class in fixup.lsp")
 
 (defmethod writer-method-class ((class std-class)
 				(direct-slot direct-slot-definition)
@@ -64,24 +68,16 @@
 
 ;;; ----------------------------------------------------------------------
 ;;; Fixup
-#+compare (print "MLOG About to defun register-method-with-specializers")
 (defun register-method-with-specializers (method)
   (declare (si::c-local))
   (loop for spec in (method-specializers method)
      do (add-direct-method spec method)))
 
-#+compare (progn
-	    (print "MLOG - working on *early-methods*")
-	    (dolist (method-info *early-methods*)
-	      (print (list "MLOG early method member: " (car method-info))))
-	    (print "MLOG - done -------------------- ")
-	    )
 
 (dolist (method-info *early-methods* (makunbound '*EARLY-METHODS*))
   (let* ((method-name (car method-info))
 	 (gfun (fdefinition method-name))
 	 (standard-method-class (find-class 'standard-method)))
-    #+compare (print (list "MLOG method-name " method-name))
     (when (eq 'T (class-id (si:instance-class gfun)))
       ;; complete the generic function object
       (si:instance-class-set gfun (find-class 'STANDARD-GENERIC-FUNCTION))
@@ -103,7 +99,6 @@
       (register-method-with-specializers method)
       )
     ))
-#+compare(print "MLOG fixup first loop done")
 
 
 
@@ -210,7 +205,7 @@ their lambda lists ~A and ~A are not congruent."
   (let* ((aux-name 'temp-method)
          (method (eval `(defmethod ,aux-name ,signature)))
          (generic-function (fdefinition aux-name)))
-    (setf (method-function method) (wrapped-method-function (fdefinition name)))
+    (setf (method-function method) (wrapped-method-function-from-defun (fdefinition name)))
     (setf (fdefinition name) generic-function)
     (setf (generic-function-name generic-function) name)
     (fmakunbound aux-name)))
@@ -227,35 +222,21 @@ their lambda lists ~A and ~A are not congruent."
   (update-dependents gf (list 'remove-method method))
   gf)
 
-#+compare (print "MLOG About to function-to-method add-method")
-
-;;#+clasp(defmacro fixup-log (&rest args) `(print (list "FIXUP-LOG" ,@args)))
-#+clasp(defmacro fixup-log (&rest args) nil)
 
 ;;(setq cmp:*debug-compiler* t)
-#+clasp(eval-when (compile) (fixup-log "function-to-method add-method"))
 (function-to-method 'add-method '((gf standard-generic-function)
                                   (method standard-method)))
 
-#+compare (print "MLOG About to function-to-method remove-method")
-#+clasp(eval-when (compile) (fixup-log "function-to-method remove-method"))
 (function-to-method 'remove-method '((gf standard-generic-function)
 				     (method standard-method)))
 
-#+compare (print "MLOG About to function-to-method find-method")
-#+clasp(eval-when (compile) (fixup-log "function-to-method find-method"))
 (function-to-method 'find-method '((gf standard-generic-function)
 				   qualifiers specializers &optional error))
-
-#+compare (print "MLOG Done with function-to-method for now")
 
 ;;; COMPUTE-APPLICABLE-METHODS is used by the core in various places,
 ;;; including instance initialization. This means we cannot just redefine it.
 ;;; Instead, we create an auxiliary function and move definitions from one to
 ;;; the other.
-
-#+clasp(eval-when (compile) (fixup-log "defgeneric aux-compute-applicable-methods"))
-
 
 #+(or)
 (defgeneric aux-compute-applicable-methods (gf args)
@@ -285,30 +266,23 @@ their lambda lists ~A and ~A are not congruent."
 	  (fdefinition 'compute-applicable-methods) aux))
 )  
 
-#+clasp(eval-when (compile) (fixup-log "defmethod compute-applicable-methods-using-classes"))
 (defmethod compute-applicable-methods-using-classes
     ((gf standard-generic-function) classes)
   ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
   (std-compute-applicable-methods-using-classes gf classes))
 
-  #+compare (print "MLOG About to function-to-method compute-effective-method")
-  #+clasp(eval-when (compile) (fixup-log "function-to-method compute-effective-method"))
   (function-to-method 'compute-effective-method
 		      '((gf standard-generic-function) method-combination applicable-methods))
 
 ;;; ----------------------------------------------------------------------
 ;;; Error messages
 
-#+compare (print "MLOG fixup line 266")
-#+clasp(eval-when (compile) (fixup-log "defmethod no-applicable-method"))
 (defmethod no-applicable-method (gf args)
   (error "No applicable method for ~S with arguments of types~{~& ~A~}" 
 	 (generic-function-name gf)
          (mapcar #'type-of args)))
 
-#+compare (print "MLOG fixup line 272")
 
-#+clasp(eval-when (compile) (fixup-log "defmethod no-next-method"))
 (defmethod no-next-method (gf method &rest args)
   (declare (ignore gf))
   (error "In method ~A~%No next method given arguments ~A" method args))
@@ -317,8 +291,6 @@ their lambda lists ~A and ~A are not congruent."
   (error "Generic function: ~A. No primary method given arguments: ~S"
 	 (generic-function-name gf) (core:maybe-expand-generic-function-arguments args)))
 
-#+compare (print "MLOG About to protect classes from redefinition")
-#+compare (print "MLOG fixup line 283")
 ;;; Now we protect classes from redefinition:
 (eval-when (compile load)
 (defun setf-find-class (new-value name &optional errorp env)
@@ -341,82 +313,66 @@ their lambda lists ~A and ~A are not congruent."
 ;;; DEPENDENT MAINTENANCE PROTOCOL
 ;;;
 
-#+compare (print "MLOG fixup line 306")
 (defmethod add-dependent ((c class) dep)
   (pushnew dep (class-dependents c)))
 
-#+compare (print "MLOG fixup line 310")
 (defmethod add-dependent ((c generic-function) dependent)
   (pushnew dependent (generic-function-dependents c)))
 
-#+compare (print "MLOG fixup line 314")
 (defmethod remove-dependent ((c class) dep)
   (setf (class-dependents c)
         (remove dep (class-dependents c))))
 
-#+compare (print "MLOG fixup line 319")
 (defmethod remove-dependent ((c standard-generic-function) dep)
   (setf (generic-function-dependents c)
         (remove dep (generic-function-dependents c))))
 
-#+compare (print "MLOG fixup line 324")
 (defmethod map-dependents ((c class) function)
   (dolist (d (class-dependents c))
     (funcall function d)))
 
-#+compare (print "MLOG fixup line 329")
 (defmethod map-dependents ((c standard-generic-function) function)
   (dolist (d (generic-function-dependents c))
     (funcall function d)))
 
-#+compare (print "MLOG fixup line 334")
 (defgeneric update-dependent (object dependent &rest initargs))
 
 ;; After this, update-dependents will work
 (setf *clos-booted* 'map-dependents)
 
 
-#+compare (print "MLOG about to defclass initargs-updater")
 (defclass initargs-updater ()
   ())
 
 
-#+compare(setq *watch-applicable-method-p* t)
 
 (defun recursively-update-classes (a-class)
   (slot-makunbound a-class 'valid-initargs)
   (mapc #'recursively-update-classes (class-direct-subclasses a-class)))
 
-#+compare (print "MLOG fixup line 352")
 (defmethod update-dependent ((object generic-function) (dep initargs-updater)
 			     &rest initargs)
   (declare (ignore dep initargs object))
   (recursively-update-classes +the-class+))
 
-#+compare (print "MLOG About to add-dependent's for initargs-updater")
 (let ((x (make-instance 'initargs-updater)))
   (add-dependent #'shared-initialize x)
   (add-dependent #'initialize-instance x)
   (add-dependent #'allocate-instance x))
 
-#+compare (print "MLOG Done add-dependent's for initargs-updater")
 
 (function-to-method 'make-method-lambda
   '((gf standard-generic-function) (method standard-method) lambda-form environment))
 
-#+compare (print "MLOG fixup line 369")
 (function-to-method 'compute-discriminating-function
   '((gf standard-generic-function)))
 
-#+compare (print "MLOG fixup line 373")
 (function-to-method 'generic-function-method-class
   '((gf standard-generic-function)))
 
-#+compare (print "MLOG fixup line 377")
 (function-to-method 'find-method-combination
   '((gf standard-generic-function) method-combination-type-name method-combination-options))
 
 
-#+compare (print "MLOG fixup DONE DONE DONE")
 
 

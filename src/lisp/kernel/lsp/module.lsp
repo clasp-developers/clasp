@@ -23,7 +23,7 @@
   "This is a list of module names that have been loaded into Lisp so far.
 It is used by PROVIDE and REQUIRE.")
 
-(defparameter *module-provider-functions* nil
+(defparameter ext:*module-provider-functions* nil
   "See function documentation for REQUIRE")
 
 ;;;; PROVIDE and REQUIRE
@@ -43,7 +43,7 @@ Module-name is a string designator"
   "Loads a module, unless it already has been loaded. PATHNAMES, if supplied,
 is a designator for a list of pathnames to be loaded if the module
 needs to be. If PATHNAMES is not supplied, functions from the list
-*MODULE-PROVIDER-FUNCTIONS* are called in order with MODULE-NAME
+ext:*MODULE-PROVIDER-FUNCTIONS* are called in order with MODULE-NAME
 as an argument, until one of them returns non-NIL.  User code is
 responsible for calling PROVIDE to indicate a successful load of the
 module."
@@ -62,33 +62,48 @@ module."
 		 (load ele)))
 	      (t
 	       (unless (some (lambda (p) (funcall p module-name))
-			     *module-provider-functions*)
+			     ext:*module-provider-functions*)
 		 (require-error "Don't know how to ~S ~A."
 				'require module-name)))))
       (set-difference *modules* saved-modules))))
 
-
+;;; Set up a MODULES host pathname that points to the precompiled modules for this stage/gc
+(setf (logical-pathname-translations "MODULES")
+      (list (list "**;*.*" (make-pathname :host "LIB"
+                                          :directory (list :absolute (default-target-backend) "src" "lisp" :wild-inferiors)
+                                          :name :wild
+                                          :type :wild))))
+(setf (logical-pathname-translations "MODULES-SOURCE")
+      (list (list "**;*.*" (make-pathname :host "SOURCE-DIR"
+                                          :directory (list :absolute "src" "lisp" :wild-inferiors)
+                                          :name :wild
+                                          :type :wild))))
 
 (pushnew #'(lambda (module)
 	     (let* ((module (string module))
-		    (dc-module (string-downcase module))
-		    (target-backend-pathname (make-pathname :host (default-target-backend))))
+		    (dc-module (string-downcase module)))
 	       (block require-block
 		 (dolist (name (list module dc-module))
-		   (dolist (type (list "fasl" "FASL" "bundle" "lsp" "lisp" "LSP" "LISP"))
-		     (dolist (directory (list
-					 (list :absolute)
-					 (list :absolute name)
-					 (list :absolute "kernel" name)
-					 (list :absolute "modules" name)))
-		       (if (let ((path (make-pathname :name name :type type :directory directory :defaults "SYS:")))
-			     #+(or)(format t "Require searching for ~a~%" path)
-			     (load path :if-does-not-exist nil))
-			   (return-from require-block t)
-			   (if (let ((path (make-pathname :name name :type type :directory directory :defaults target-backend-pathname)))
-				 #+(or)(format t "Require searching for ~a~%" path)
-				 (load path :if-does-not-exist nil))
-			       (return-from require-block t))
-			   )))))))
-	 *module-provider-functions*)
+                   (dolist (directory (list
+                                       (list :relative)
+                                       #+(or)(list :relative name)
+                                       #+(or)(list :relative "kernel" name)
+                                       (list :relative "modules" name)))
+		   (dolist (type (list "fasl" "FASL" "lsp" "lisp" "LSP" "LISP"))
+                       (if (let ((path (merge-pathnames
+                                        (translate-logical-pathname (make-pathname :name name :type type :directory directory))
+                                        (translate-logical-pathname (make-pathname :host "MODULES")))))
+                             (if (member :debug-require *features*)
+                                 (format t "Require searching in modules: ~a~%" path))
+                             (load path :if-does-not-exist nil))
+                           (return-from require-block t))
+                       (if (let ((path (merge-pathnames
+                                        (translate-logical-pathname (make-pathname :name name :type type :directory directory))
+                                        (translate-logical-pathname (make-pathname :host "MODULES-SOURCE")))))
+                             (if (member :debug-require *features*)
+                                 (format t "Require searching in modules: ~a~%" path))
+                             (load path :if-does-not-exist nil))
+                           (return-from require-block t))
+                       ))))))
+	 ext:*module-provider-functions*)
 

@@ -34,11 +34,35 @@ namespace core {
 
 T_sp varArgsList(int numArgs, ...);
 
-T_sp core_startupImagePathname();
-T_mv core_loadBundle(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
+T_sp core__startup_image_pathname();
+T_mv core__load_bundle(T_sp pathDesig, T_sp verbose = _Nil<T_O>(), T_sp print = _Nil<T_O>(), T_sp external_format = kw::_sym_default);
 
-T_mv af_implicit_compile_hook_default(T_sp form, T_sp env);
+T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env);
 
 void initialize_compiler_primitives(Lisp_sp lisp);
+};
+
+namespace core {
+  typedef void (*InitializerFunction)();
+  void register_initializer_function(InitializerFunction fptr);
+  size_t initializer_functions_are_waiting();
+  void initializer_functions_invoke();
+
+  /*! Register an void foo() function to be run once Clasp has initialized all of its core
+functionality but before any Common Lisp startup functions are invoked. */
+  struct Initializer {
+    inline Initializer(InitializerFunction fn) {
+      register_initializer_function(fn);
+    }
+  };
+
+  void register_startup_function(fnLispCallingConvention fptr);
+  size_t startup_functions_are_waiting();
+  void startup_functions_invoke();
+
+  std::tuple< void *, string > do_dlopen(const string& str_path, const int n_mode);
+  std::tuple< int, string > do_dlclose(void * p_handle);
+  std::tuple< void *, string > do_dlsym( void * p_handle, const char * pc_symbol );
+
 };
 #endif /* _compiler_H_ */

@@ -1,0 +1,6 @@
+#! /bin/bash
+# arguments:
+#    build-path
+#    main-path
+#    application.config path
+sbcl --noinform --lose-on-corruption --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp --eval "(progn (cscrape:generate-headers-from-all-sifs)(quit))" -- `pwd`/ $CLASP_HOME/ $*

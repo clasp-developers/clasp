@@ -59,7 +59,9 @@ string myReadLine(const string &prompt, bool &end_of_transmission) {
   if (prompt != "") {
     _lisp->print(BF("%s ") % prompt);
   }
+  ws(std::cin);
   getline(std::cin, res);
+  if ( res == "" ) end_of_transmission = true;
 #endif
   return res;
 }

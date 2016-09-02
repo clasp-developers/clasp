@@ -14,7 +14,7 @@
 
 (in-package "SYSTEM")
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'push
 	  (function 
 	   #+ecl(ext::lambda-block push (args env)
@@ -30,7 +30,7 @@
 	   )
 	  t)
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'pop
 	  (function 
 	   #+ecl(ext::lambda-block pop (args env)
@@ -50,7 +50,7 @@
 	   )
 	  t)
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'incf
 	  (function 
 	   #+ecl(ext::lambda-block incf (args env)
@@ -70,7 +70,7 @@
 	   )
 	  t)
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'decf
 	  (function 
 	   #+ecl(ext::lambda-block decf (args env)
@@ -126,8 +126,6 @@
 	       *current-form*))
       (error "Too few arguments supplied to a inlined lambda form.")))
 
-;;; Old destructure from ECL doesn't handle define-compiler-macro with (funcall (function foo)...) forms
-#+(or)
 (defun sys::destructure (vl macro &aux (basis-form (gensym)) (destructure-symbols (list basis-form)))
   (declare (si::c-local)
 	   (special *dl* *arg-check*))
@@ -139,114 +137,7 @@
 	     (multiple-value-bind (reqs opts rest key-flag keys allow-other-keys auxs)
 		 (si::process-lambda-list vl (if macro 'macro 'destructuring-bind))
 	       (let* ((pointer (tempsym))
-		      (cons-pointer `(truly-the cons ,pointer))
-		      (unsafe-car `(car ,cons-pointer))
-		      (unsafe-cdr `(cdr ,cons-pointer))
-		      (unsafe-pop `(setq ,pointer ,unsafe-cdr))
-		      (no-check nil)
-		      (ppn (+ (length reqs) (first opts)))
-		      all-keywords)
-		 ;; In macros, eliminate the name of the macro from the list
-		 (dm-v pointer (if macro `(cdr (truly-the cons ,whole)) whole))
-		 (dolist (v (cdr reqs))
-		   (dm-v v `(progn
-			      (if (null ,pointer)
-				  (dm-too-few-arguments ,basis-form))
-			      (prog1 ,unsafe-car ,unsafe-pop))))
-		 (dotimes (i (pop opts))
-		   (let* ((x (first opts))
-			  (init (second opts))
-			  (sv (third opts)))
-		     (setq opts (cdddr opts))
-		     (cond (sv
-			    (dm-v x `(if ,pointer ,unsafe-car ,init))
-			    (dm-v sv `(and ,pointer (progn ,unsafe-pop t))))
-			   (t
-			    (dm-v x `(if ,pointer
-					 (prog1 ,unsafe-car ,unsafe-pop)
-					 ,init))))))
-		 (when rest
-		   (dm-v rest pointer)
-		   (setq no-check t))
-		 (dotimes (i (pop keys))
-		   (let* ((temp (tempsym))
-			  (k (first keys))
-			  (v (second keys))
-			  (init (third keys))
-			  (sv (fourth keys)))
-		     (setq no-check t)
-		     (setq keys (cddddr keys))
-		     (dm-v temp `(search-keyword ,pointer ',k))
-		     (dm-v v `(if (eq ,temp 'missing-keyword) ,init ,temp))
-		     (when sv (dm-v sv `(not (eq ,temp 'missing-keyword))))
-		     (push k all-keywords)))
-		 (do ((l auxs (cddr l))) ((endp l))
-		   (let* ((v (first l))
-			  (init (second l)))
-		     (dm-v v init)))
-		 (cond (key-flag
-			(push `(check-keyword ,pointer ',all-keywords
-				,@(if allow-other-keys '(t) '()))
-			      *arg-check*))
-		       ((not no-check)
-			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
-			      *arg-check*)))
-		  ppn)))
-
-	   (dm-v (v init)
-	     (cond ((and v (symbolp v))
-		    (push (if init (list v init) v) *dl*))
-		   ((and v (atom v))
-		    (error "destructure: ~A is not a list nor a symbol" v))
-		   ((eq (first v) '&whole)
-		    (let ((whole-var (second v)))
-		      (if (listp whole-var)
-			  (let ((new-whole (tempsym)))
-			    (dm-v new-whole init)
-			    (dm-vl whole-var new-whole nil)
-			    (setq whole-var new-whole))
-			  (dm-v whole-var init))
-		      (dm-vl (cddr v) whole-var nil)))
-		   (t
-		    (let ((temp (tempsym)))
-		      (push (if init (list temp init) temp) *dl*)
-		      (dm-vl v temp nil))))))
-
-    (let* ((whole basis-form)
-	   (*dl* nil)
-	   (*arg-check* nil))
-      (declare (special *dl* *arg-check*))
-      (cond ((listp vl)
-	     (when (eq (first vl) '&whole)
-               (let ((named-whole (second vl)))
-                 (setq vl (cddr vl))
-                 (if (listp named-whole)
-                     (dm-vl named-whole whole nil)
-                     (setq *dl* (list (list named-whole whole)))))))
-	    ((symbolp vl)
-	     (setq vl (list '&rest vl)))
-	    (t (error "The destructuring-lambda-list ~s is not a list." vl)))
-      (values (dm-vl vl whole macro) whole
-	      (nreverse *dl*)
-              *arg-check*
-	      destructure-symbols))))
-
-
-
-
-
-(defun sys::destructure (vl macro &aux (basis-form (gensym)) (destructure-symbols (list basis-form)))
-  (declare (si::c-local)
-	   (special *dl* *arg-check*))
-  (labels ((tempsym ()
-	     (let ((x (gensym)))
-	       (push x destructure-symbols)
-	       x))
-	   (dm-vl (vl whole macro)
-	     (multiple-value-bind (reqs opts rest key-flag keys allow-other-keys auxs)
-		 (si::process-lambda-list vl (if macro 'macro 'destructuring-bind))
-	       (let* ((pointer (tempsym))
-		      (cons-pointer `(truly-the cons ,pointer))
+		      (cons-pointer `(ext:truly-the cons ,pointer))
 		      (unsafe-car `(car ,cons-pointer))
 		      (unsafe-cdr `(cdr ,cons-pointer))
 		      (unsafe-pop `(setq ,pointer ,unsafe-cdr))
@@ -259,9 +150,9 @@
                                    (if (eq macro 'define-compiler-macro)
                                        `(if (and (eq (car ,whole) 'cl:funcall)
                                                  (eq (caadr ,whole) 'cl:function))
-                                             (cddr (truly-the cons ,whole))
-                                             (cdr (truly-the cons ,whole)))
-                                       `(cdr (truly-the cons ,whole)))
+                                            (cddr (ext:truly-the cons ,whole))
+                                            (cdr (ext:truly-the cons ,whole)))
+                                       `(cdr (ext:truly-the cons ,whole)))
                                    whole))
 		 (dolist (v (cdr reqs))
 		   (dm-v v `(progn
@@ -301,12 +192,12 @@
 		     (dm-v v init)))
 		 (cond (key-flag
 			(push `(check-keyword ,pointer ',all-keywords
-				,@(if allow-other-keys '(t) '()))
+                                              ,@(if allow-other-keys '(t) '()))
 			      *arg-check*))
 		       ((not no-check)
 			(push `(if ,pointer (dm-too-many-arguments ,basis-form))
 			      *arg-check*)))
-		  ppn)))
+                 ppn)))
 
 	   (dm-v (v init)
 	     (cond ((and v (symbolp v))
@@ -328,7 +219,6 @@
                            (push-val (if init (list temp init) temp)))
 		      (push push-val *dl*)
 		      (dm-vl v temp nil))))))
-
     (let* ((whole basis-form)
 	   (*dl* nil)
 	   (*arg-check* nil))
@@ -402,16 +292,16 @@
         (setq vl (nconc (butlast vl 0) (list '&rest (rest cell))))))
     ;; If we find an &environment variable in the lambda list, we take not of the
     ;; name and remove it from the list so that DESTRUCTURE does not get confused
-    (let ((env (member '&environment vl :test #'eq)))
-      (if env
-          (setq vl (nconc (ldiff vl env) (cddr env))
-                env (second env))
-          (setq env (gensym)
-                decls (list* `(declare (ignore ,env)) decls)))
+    (let ((env-part (member '&environment vl :test #'eq)))
+      (if env-part
+          (setq vl (nconc (ldiff vl env-part) (cddr env-part))
+                env-part (second env-part))
+          (setq env-part (gensym)
+                decls (list* `(declare (ignore ,env-part)) decls)))
       (multiple-value-bind (ppn whole dl arg-check ignorables)
           (destructure vl context)
         #+ecl(values 
-              `(ext::lambda-block ,name (,whole ,env &aux ,@dl)
+              `(ext::lambda-block ,name (,whole ,env-part &aux ,@dl)
                                   (declare (ignorable ,@ignorables))
                                   ,@decls 
                                   ,@arg-check
@@ -419,17 +309,16 @@
               ppn
               doc)
         #+clasp(values 
-                `(lambda (,whole ,env &aux ,@dl)
+                `(lambda (,whole ,env-part &aux ,@dl)
                    (declare (ignorable ,@ignorables) (core:lambda-name ,name))
                    ,@decls
-                   (block ,name
+                   (block ,(si::function-block-name name)
                      ,@arg-check
                      ,@body))
                 ppn
-                doc)
-        ))))
+                doc)))))
 
-#+ecl-min
+#+(or ecl-min clasp-min)
 (si::fset 'defmacro
 	  (function 
 	   #+ecl(ext::lambda-block defmacro (def env)
@@ -460,8 +349,11 @@
 		  (when *dump-defmacro-definitions*
 		    (print function)
 		    (setq function `(si::bc-disassemble ,function)))
-		  (ext:register-with-pde def `(si::fset ',name ,function t ,pprint))))))
-	   )
+		  (ext:register-with-pde def `(si::fset ',name ,function
+                                                        t ; macro
+                                                        ,pprint ; ecl pprint
+                                                        ',vl ; lambda-list
+                                                        )))))))
 	  t)
 
 ;;; valid lambda-list to DESTRUCTURING-BIND is:
@@ -569,6 +461,6 @@ from the function in which it appears." name))))
     (dolist (record (macrolet-functions definitions old-env))
       (push (list (first record) 'si::macro (second record))
 	    macros))
-    (rplacd (truly-the cons old-env) macros)))
+    (rplacd (ext:truly-the cons old-env) macros)))
 
 

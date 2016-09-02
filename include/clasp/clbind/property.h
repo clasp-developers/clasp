@@ -45,9 +45,9 @@ struct memberpointertraits<M C::*> {
 };
 
 template <typename GetterPolicies, typename OT, typename VariablePtrType>
-class GetterMethoid : public core::BuiltinClosure {
+class GetterMethoid : public core::BuiltinClosure_O {
 public:
-  typedef core::BuiltinClosure TemplatedBase;
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
   typedef typename memberpointertraits<VariablePtrType>::member_type MemberType;
@@ -58,9 +58,11 @@ public:
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
 public:
-  GetterMethoid(core::T_sp name, VariablePtrType p) : core::BuiltinClosure(name), _MemberPtr(p){};
+  GetterMethoid(core::T_sp name, VariablePtrType p) : core::BuiltinClosure_O(name), _MemberPtr(p){};
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType &orig = (*objPtr).*(this->_MemberPtr);
     return Values(translate::to_object<MemberType, translate::dont_adopt_pointer>::convert(orig));
@@ -70,8 +72,8 @@ public:
 
 namespace clbind {
 template <typename GetterPolicies, typename OT, typename MemberType>
-class GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure {
-  typedef core::BuiltinClosure TemplatedBase;
+class GetterMethoid<GetterPolicies, OT, MemberType *const(OT::*)> : public core::BuiltinClosure_O {
+  typedef core::BuiltinClosure_O TemplatedBase;
 
 private:
   typedef clbind::Wrapper<MemberType> WrapperType;
@@ -80,9 +82,11 @@ private:
   VariablePtrType _MemberPtr;
 
 public:
-  GetterMethoid(core::T_sp name, VariablePtrType p) : BuiltinClosure(name), _MemberPtr(p){};
+  GetterMethoid(core::T_sp name, VariablePtrType p) : BuiltinClosure_O(name), _MemberPtr(p){};
   DISABLE_NEW();
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     OT *objPtr = gc::As<core::WrappedPointer_sp>((LCC_ARG0()))->cast<OT>();
     MemberType *ptr = (*objPtr).*(this->_MemberPtr);
     return translate::to_object<MemberType *, translate::dont_adopt_pointer>::convert(ptr);

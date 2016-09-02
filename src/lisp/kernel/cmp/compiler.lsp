@@ -51,10 +51,10 @@
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
 			  function-env
-			  closed-over-renv
+			  closure
 			  argument-holder
 			  new-env)
-  (cmp-log "compile-arguments closed-over-renv: %s\n" closed-over-renv)
+  (cmp-log "compile-arguments closure: %s\n" closure)
   ;; This is where we make the value frame for the passed arguments
   ;;
   ;; keywords:  ESCAPE ANALYSIS escape analysis TODO
@@ -63,7 +63,7 @@
   ;; There should be information in new-env??? that can tell us what
   ;; variables can go on the stack and what variables can go on the heap
   (irc-make-value-frame (irc-renv new-env) (number-of-lexical-variables lambda-list-handler))
-  (irc-intrinsic "setParentOfActivationFrameTPtr" (irc-renv new-env) closed-over-renv)
+  (irc-intrinsic "setParentOfActivationFrameFromClosure" (irc-renv new-env) closure)
   (cmp-log "lambda-list-handler for fn %s --> %s\n" fn-name lambda-list-handler)
   (cmp-log "Gathered lexical variables for fn %s --> %s\n" fn-name (names-of-lexical-variables lambda-list-handler))
   (compile-lambda-list-code lambda-list-handler
@@ -112,13 +112,13 @@ Could return more functions that provide lambda-list for swank for example"
   (setq *lambda-args-num* (1+ *lambda-args-num*))
   (let* ((name (core:extract-lambda-name-from-declares declares (or given-name 'cl:lambda)))
 	 (fn (with-new-function (fn fn-env result
-				    :function-name (bformat nil "%s" name)
+				    :function-name name
 				    :parent-env env-around-lambda
 				    :function-form code)
 	       (cmp-log "Starting new function name: %s\n" name)
 	       (let ((arguments (llvm-sys:get-argument-list fn))
                      traceid)
-                 (multiple-value-bind (closed-over-renv argument-holder)
+                 (multiple-value-bind (closure argument-holder)
                      (parse-function-arguments arguments)
                    (let ((new-env (progn
                                     (cmp-log "Creating new-value-environment for arguments\n")
@@ -130,7 +130,7 @@ Could return more functions that provide lambda-list for swank for example"
                                                           (compile-arguments name
                                                                              lambda-list-handler
                                                                              fn-env
-                                                                             closed-over-renv
+                                                                             closure
                                                                              argument-holder
                                                                              lambda-args-env
                                                                              ))))))
@@ -266,21 +266,21 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen-function (result rest env)
   "Return IR code for a function or closure"
   (let ((name-or-lambda (car rest)))
-  (assert-result-isa-llvm-value result)
-  (dbg-set-current-debug-location-here)
-  (cmp-log "About to codegen-function for: %s\n" name-or-lambda)
-  (cond
-    ((and name-or-lambda (symbolp name-or-lambda))
-     (codegen-function-symbol-lookup result name-or-lambda env))
-    ((and (consp name-or-lambda)
-	  (eq (car name-or-lambda) 'setf))
-     (codegen-function-setf-symbol-lookup result name-or-lambda env))
-    ((and (consp name-or-lambda)
-	  (or (eq (car name-or-lambda) 'lambda)
-	      (eq (car name-or-lambda) 'ext::lambda-block)))
-     (dbg-set-current-debug-location-here)
-     (codegen-closure result name-or-lambda env))
-    (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
+    (assert-result-isa-llvm-value result)
+    (dbg-set-current-debug-location-here)
+    (cmp-log "About to codegen-function for: %s\n" name-or-lambda)
+    (cond
+      ((and name-or-lambda (symbolp name-or-lambda))
+       (codegen-function-symbol-lookup result name-or-lambda env))
+      ((and (consp name-or-lambda)
+            (eq (car name-or-lambda) 'setf))
+       (codegen-function-setf-symbol-lookup result name-or-lambda env))
+      ((and (consp name-or-lambda)
+            (or (eq (car name-or-lambda) 'lambda)
+                (eq (car name-or-lambda) 'ext::lambda-block)))
+       (dbg-set-current-debug-location-here)
+       (codegen-closure result name-or-lambda env))
+      (t (error "FUNCTION special operator only supports symbol names or lambda expression - you gave: ~a" name-or-lambda)))))
 
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
@@ -338,19 +338,25 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 
 (defun codegen-multiple-value-prog1 (result rest env)
   (with-dbg-lexical-block (rest)
-    (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
-	  (saved-values (irc-alloca-tsp :label "multiple-value-prog1-saved-values"))
-	  (temp-val (irc-alloca-tsp :label "temp-val")))
-      ;; See the interpreter sp_multipleValueCall
-      (codegen temp-mv-result (car rest) env)
-      (irc-intrinsic "saveValues" saved-values temp-mv-result)
-      (do* ((cur (cdr rest) (cdr cur))
-	    (form (car cur) (car cur)))
-	   ((endp cur) nil)
-	(codegen temp-val form env)
-	)
-      (irc-intrinsic "loadValues" temp-mv-result saved-values)
-      (irc-intrinsic "copyTmvOrSlice" result temp-mv-result))))
+    (let ((first-form (car rest))
+          (forms (cdr rest)))
+      (codegen result `(funcall 'core::multiple-value-prog1-function
+                                (lambda () ,first-form)
+                                (lambda () (progn ,@forms))) env)))
+  #+(or)(with-dbg-lexical-block (rest)
+          (let ((temp-mv-result (irc-alloca-tmv env :label "temp-mv-result"))
+                (saved-values (irc-alloca-tsp :label "multiple-value-prog1-saved-values"))
+                (temp-val (irc-alloca-tsp :label "temp-val")))
+            ;; See the interpreter sp_multipleValueCall
+            (codegen temp-mv-result (car rest) env)
+            (irc-intrinsic "saveValues" saved-values temp-mv-result)
+            (do* ((cur (cdr rest) (cdr cur))
+                  (form (car cur) (car cur)))
+                 ((endp cur) nil)
+              (codegen temp-val form env)
+              )
+            (irc-intrinsic "loadValues" temp-mv-result saved-values)
+            (irc-intrinsic "copyTmvOrSlice" result temp-mv-result))))
 
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
@@ -746,6 +752,7 @@ jump to blocks within this tagbody."
   "codegen-block using the try macro"
   (let* ((block-symbol (car rest))
          (body (cdr rest)))
+    (or (symbolp block-symbol) (error "The block name ~a is not a symbol" block-symbol))
     (with-dbg-lexical-block (body)
       (let* ((block-env (irc-new-block-environment env :name block-symbol))
              traceid)
@@ -955,11 +962,6 @@ jump to blocks within this tagbody."
 	(codegen-progn result code new-env)
 	))))
 
-
-
-
-
-
 #+(or)(defun codegen-unwind-protect (result rest env)
   (with-dbg-lexical-block (rest)
     (let* ((protected-form (car rest))
@@ -1041,7 +1043,7 @@ jump to blocks within this tagbody."
 	 (read-only-p (cadr rest)))
     (if *generate-compile-file-load-time-values*
 	(multiple-value-bind (index fn)
-	    (compile-ltv-thunk "load-time-value-func" form nil)
+	    (compile-ltv-thunk 'load-time-value-func form nil)
 	  ;; Invoke the repl function here
           (multiple-value-bind (source-dir source-file file-pos lineno column)
               (walk-form-for-source-info form)
@@ -1123,6 +1125,38 @@ jump to blocks within this tagbody."
   )
 
 
+(defun codegen-intrinsic-call (result form evaluate-env)
+  "Evaluate each of the arguments into an alloca and invoke the function"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((intrinsic-name (car form))
+         (nargs (length (cdr form)))
+         args
+         (temp-result (irc-alloca-tsp)))
+    (dbg-set-invocation-history-stack-top-source-pos form)
+    ;; evaluate the arguments into the array
+    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+    (do* ((cur-exp (cdr form) (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp))
+          (i 0 (+ 1 i)))
+         ((endp cur-exp) nil)
+      (codegen temp-result exp evaluate-env)
+      (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+    (let ((func (llvm-sys:get-function cmp:*the-module* intrinsic-name)))
+      (unless func
+        (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+              (varargs nil))
+          (setq func (llvm-sys:function-create
+                      (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                      'llvm-sys::External-linkage
+                      intrinsic-name
+                      *the-module*)))
+        (let ((result-in-registers
+               (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "intrinsic")))
+          (irc-store-result result result-in-registers))))
+    (irc-low-level-trace :flow)))
+
+
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"
   (assert-result-isa-llvm-value result)
@@ -1181,12 +1215,14 @@ jump to blocks within this tagbody."
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
 (defun treat-as-special-operator-p (sym)
-  (cond
-    ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
-    ((eq sym 'cl:catch) nil)  ;; handled with macro
-    ((eq sym 'cl:throw) nil)  ;; handled with macro
-    ((eq sym 'core:debug-message) t)   ;; special operator
-    (t (special-operator-p sym))))
+  #+clc(clc-env:treat-as-special-operator-p sym)
+  #-clc(cond
+         ((eq sym 'cl:unwind-protect) nil)  ;; handled with macro
+         ((eq sym 'cl:catch) nil)           ;; handled with macro
+         ((eq sym 'cl:throw) nil)           ;; handled with macro
+         ((eq sym 'core:debug-message) t)   ;; special operator
+         ((eq sym 'core::intrinsic-call) t) ;; Call intrinsic functions
+         (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
 (defun codegen (result form env)
@@ -1232,7 +1268,6 @@ jump to blocks within this tagbody."
 (defun compile-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (or (stringp name) (error "Name must be a string"))
   (let ((fn (with-new-function (fn
                                 fn-env
                                 result
@@ -1276,8 +1311,8 @@ be wrapped with to make a closure"
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder 1)
       (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-pass))
       (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
-;;      (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
-      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm nil)
+;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
+      (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
       (llvm-sys:do-initialization fpm)
       (let ((funcs (llvm-sys:module-get-function-list module)))
         (dolist (func funcs)
@@ -1424,7 +1459,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	      (generate-lambda-expression-from-interpreted-function func)
 	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
 	    (compile-in-env name lambda-expression wrapped-env compile-hook)))
-	 (t (error "Could not compile func")))))
+         (t (warn "We have lost the original function definition for ~s. Compilation failed." func)
+            (values func t nil)))))
     (t (error "Illegal combination of arguments for compile: ~a ~a"
 	      name definition))))
 

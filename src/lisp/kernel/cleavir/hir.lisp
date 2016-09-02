@@ -22,6 +22,32 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Instruction INTRINSIC-CALL-INSTRUCTION
+;;;
+;;; This instruction is an INTRINSIC-CALL-INSTRUCTION that prints a message
+
+
+(defclass intrinsic-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%function-name :initarg :function-name :accessor function-name)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr intrinsic-call-instruction))
+  (with-output-to-string (s)
+    (format s "intrinsic-call(~a)" (function-name instr))))
+
+(defmethod make-intrinsic-call-instruction
+    (function-name inputs outputs &optional (successor nil successor-p))
+  (make-instance 'intrinsic-call-instruction
+                 :function-name function-name
+                 :inputs inputs
+                 :outputs outputs
+                 :successors (if successor-p (list successor) '())))
+
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Instruction NAMED-ENTER-INSTRUCTION
 ;;;
 ;;; This instruction is an ENTER-INSTRUCTION that keeps

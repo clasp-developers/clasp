@@ -107,7 +107,9 @@
 (defparameter *keep-documentation* t)
 
 #|
-
+;; In Clasp I implemented the following functions in documentation.cc
+;; in C++ so that they would be available during startup before
+;; the CL code is loaded.
 ;; The following functions are defined in documentation.cc
 
 (defun record-cons (record key sub-key)
@@ -201,7 +203,7 @@
     (when (and object (listp object) (si::valid-function-name-p object))
       (setq object (second object) key 'setf-documentation))
     (if string
-        (annotate object key doc-type string)
+        (ext:annotate object key doc-type string)
         (remove-annotation object key doc-type)))
   string)
 
@@ -248,23 +250,23 @@ strings."
               "EXT")
 (si::fset 'ext:optional-annotation
           (function 
-	   #+ecl(ext:lambda-block ext:optional-annotation (whole env)
-				  (declare (ignore env #-ecl-min whole))
-				  #+ecl-min
-				  `(ext:annotate ,@(rest whole)))
-	   #+clasp(lambda (whole env)
-	    (declare (ignore env #-ecl-min whole) 
+	   #+ecl
+           #'(ext:lambda-block ext:optional-annotation (whole env)
+              (declare (ignore env))
+              `(ext:annotate ,@(rest whole)))
+	   #+clasp
+           (lambda (whole env)
+	    (declare (ignore env #-clasp-min whole)
 		     (core:lambda-name ext:optional-annotation))
-	      #+ecl-min `(ext:annotate ,@(rest whole)))
-	   )
+            #+clasp-min `(ext:annotate ,@(rest whole))))
 	  t)
 
-(defun default-annotation-logic (source-location definition output-form
+(defun default-annotation-logic (source-loc definition output-form
                                  &optional (dspec (make-dspec definition)))
   (let* ((kind (first definition))
          (name (second definition)))
     `(progn
-       (ext:optional-annotation ',name 'location ',dspec ',source-location)
+       (ext:optional-annotation ',name 'location ',dspec ',source-loc)
        ,(when (member kind '(defun defmacro defgeneric))
           `(ext:optional-annotation ',name :lambda-list nil ',(third definition)))
        ,output-form)))

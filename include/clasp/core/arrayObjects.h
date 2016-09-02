@@ -35,8 +35,7 @@ namespace core {
 
 FORWARD(ArrayObjects);
 class ArrayObjects_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects");
+  LISP_CLASS(core, CorePkg, ArrayObjects_O, "ArrayObjects",Array_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -78,7 +77,7 @@ public:
 
   void setElementType(T_sp et) { this->_ElementType = et; };
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
 
   /*! Return the value at the indices */
   virtual T_sp setf_aref(List_sp indices_val);
@@ -90,7 +89,7 @@ public:
   virtual void arrayFill(T_sp val);
 
   /*! Return a deepCopy of the ArrayObjects */
-  virtual T_sp deepCopy() const;
+//  virtual T_sp deepCopy() const;
 
   virtual T_sp svref(int index) const;
   virtual T_sp setf_svref(int index, T_sp value);
@@ -98,6 +97,5 @@ public:
 
 }; /* core */
 
-TRANSLATE(core::ArrayObjects_O);
 
 #endif /* _core_ArrayObjects_H */

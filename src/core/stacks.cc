@@ -58,7 +58,7 @@ Vector_sp ExceptionStack::backtrace() {
     return _Nil<Vector_O>();
   }
   printf("%s:%d ExceptionStack::backtrace stack size = %lu\n", __FILE__, __LINE__, this->_Stack.size());
-  Vector_sp result = core_make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
+  Vector_sp result = core__make_vector(_Nil<T_O>(), this->_Stack.size(), false, make_fixnum((int)(this->_Stack.size())));
   for (int i(0), iEnd(this->_Stack.size()); i < iEnd; ++i) {
     Symbol_sp kind;
     SYMBOL_EXPORT_SC_(KeywordPkg, catchFrame);
@@ -87,80 +87,83 @@ Vector_sp ExceptionStack::backtrace() {
   return result;
 }
 
-InvocationHistoryFrame::InvocationHistoryFrame(gctools::tagged_pointer<Closure> c, core::T_O *valist_sptr, T_sp env)
-    : closure(c), environment(env), _NumberOfArguments(0), _RegisterArguments(NULL), _StackArguments(NULL) {
-  if (valist_sptr != NULL) {
-    VaList_sp arguments(reinterpret_cast<core::VaList_S *>(gc::untag_valist(valist_sptr)));
-    this->_NumberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(arguments);
-    this->_RegisterArguments = LCC_VA_LIST_REGISTER_SAVE_AREA(arguments);
-    this->_StackArguments = LCC_VA_LIST_OVERFLOW_ARG_AREA(arguments);
-  }
-  this->_Stack = &_lisp->invocationHistoryStack();
-  this->_Previous = this->_Stack->top();
-  if (this->_Previous == NULL) {
-    this->_Index = 0;
-  } else {
-    this->_Index = this->_Previous->_Index + 1;
-  }
-  this->_Stack->push(this);
-  this->_Bds = _lisp->bindings().size();
-}
 
-InvocationHistoryFrame::~InvocationHistoryFrame() {
-  this->_Stack->pop();
-}
+Function_sp InvocationHistoryFrame::function() const
+  {
+    VaList_sp args = this->valist_sp();
+    Function_sp res = LCC_VA_LIST_CLOSURE(args);
+    if ( !res ) {
+      printf("%s:%d Frame was found with no closure\n", __FILE__, __LINE__ );
+      abort();
+    }
+    return res;
+  }
 
 VectorObjects_sp InvocationHistoryFrame::arguments() const {
-  if (this->_NumberOfArguments == 0) {
-    VectorObjects_sp vnone = VectorObjects_O::create(_Nil<T_O>(), 0, cl::_sym_T_O->symbolValue());
-    return vnone;
-  }
-  size_t numberOfArguments = this->_NumberOfArguments;
+#if 0
+  VaList_sp orig_args = this->valist_sp();
+  VaList_S copy_args_s(*orig_args);
+  VaList_sp copy_args(&copy_args_s);
+  LCC_RESET_VA_LIST_TO_START(copy_args_s);
+  size_t numberOfArguments = LCC_VA_LIST_NUMBER_OF_ARGUMENTS(copy_args);
   VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
+  T_O* objRaw;
+#if 0
   for (size_t i(0); i < numberOfArguments; ++i) {
-    T_sp obj;
-    if (i < LCC_ARGS_IN_REGISTERS) {
-      obj = core::T_sp((gc::Tagged)(this->_RegisterArguments[LCC_ABI_ARGS_IN_REGISTERS - LCC_ARGS_IN_REGISTERS + i]));
-    } else {
-      obj = core::T_sp((gc::Tagged)(this->_StackArguments[i - LCC_ARGS_IN_REGISTERS]));
-    }
-    vargs->setf_elt(i, obj);
+    //objRaw = this->valist_sp().indexed_arg(i);
+    LCC_VA_LIST_INDEXED_ARG(objRaw,copy_args,i);
+    vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
+  }
+#endif
+  return vargs;
+#else
+  VaList_sp orig_args = this->valist_sp();
+  T_O** register_area = LCC_VA_LIST_REGISTER_SAVE_AREA(orig_args);
+  T_O** overflow_area = LCC_ORIGINAL_VA_LIST_OVERFLOW_ARG_AREA(orig_args);
+  size_t numberOfArguments = orig_args->total_nargs(); //    LCC_VA_LIST_NUMBER_OF_ARGUMENTS(orig_args);
+  VectorObjects_sp vargs = VectorObjects_O::create(_Nil<T_O>(), numberOfArguments, cl::_sym_T_O->symbolValue());
+  T_O* objRaw;
+  for (size_t i(0); i < numberOfArguments; ++i) {
+    //objRaw = this->valist_sp().indexed_arg(i);
+    objRaw = orig_args->absolute_indexed_arg(i);
+    vargs->setf_elt(i, T_sp((gc::Tagged)objRaw));
   }
   return vargs;
+#endif
 }
 
 string InvocationHistoryFrame::argumentsAsString(int maxWidth) const {
   VectorObjects_sp vargs = this->arguments();
   T_sp sout = clasp_make_string_output_stream();
-  int nargs = cl_length(vargs);
+  int nargs = cl__length(vargs);
   for (int i(0); i < nargs; ++i) {
     T_sp obj = vargs->elt(i);
     if (Instance_sp iobj = obj.asOrNull<Instance_O>()) {
       clasp_write_string("#<", sout);
-      write_ugly_object(af_classOf(obj), sout);
+      write_ugly_object(cl__class_of(obj), sout);
       clasp_write_string("> ", sout);
     } else {
       write_ugly_object(obj, sout);
       clasp_write_char(' ', sout);
     }
   }
-  Str_sp strres = gc::As<Str_sp>(cl_get_output_stream_string(sout));
-  if (cl_length(strres) > maxWidth) {
+  Str_sp strres = gc::As<Str_sp>(cl__get_output_stream_string(sout));
+  if (cl__length(strres) > maxWidth) {
     return strres->get().substr(0, maxWidth) + "...";
   }
   return strres->get();
 }
 
-string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure> closure) const {
+string InvocationHistoryFrame::asStringLowLevel(Closure_sp closure,int index) const {
   if (!closure) {
     return "InvocationHistoryFrame::asStringLowLevel NULL closure";
   };
-  T_sp funcNameObj = closure->name;
+  T_sp funcNameObj = closure->_name;
   string funcName = _rep_(funcNameObj);
   uint lineNumber = closure->lineNumber();
   uint column = closure->column();
   int sourceFileInfoHandle = closure->sourceFileInfoHandle();
-  SourceFileInfo_sp sfi = core_sourceFileInfo(make_fixnum(sourceFileInfoHandle));
+  SourceFileInfo_sp sfi = core__source_file_info(make_fixnum(sourceFileInfoHandle));
   string sourceFileName = sfi->fileName();
   stringstream ss;
   string closureType = "/?";
@@ -175,57 +178,62 @@ string InvocationHistoryFrame::asStringLowLevel(gctools::tagged_pointer<Closure>
   } else
     closureType = "toplevel";
   string sargs = this->argumentsAsString(256);
-  ss << (BF("#%3d%2s@%p %20s %5d/%-3d (%s %s)") % this->_Index % closureType % (void *)closure.raw_() % sourceFileName % lineNumber % column % funcName % sargs).str();
+  ss << (BF("#%3d%2s %20s %5d (%s %s)") % index % closureType % sourceFileName % lineNumber % funcName % sargs).str();
   //	ss << std::endl;
   //	ss << (BF("     activationFrame->%p") % this->activationFrame().get()).str();
   return ss.str();
 }
 
-string InvocationHistoryFrame::asString() const {
+string InvocationHistoryFrame::asString(int index) const {
   string name;
-  return this->asStringLowLevel(this->closure);
+  return this->asStringLowLevel(this->function(),index);
 }
 
-void InvocationHistoryFrame::dump() const {
-  string dump = this->asString();
+void InvocationHistoryFrame::dump(int index) const {
+  string dump = this->asString(index);
   printf("%s\n", dump.c_str());
 }
 
-vector<InvocationHistoryFrame *> InvocationHistoryStack::asVectorFrames() {
-  vector<InvocationHistoryFrame *> frames;
-  frames.resize(this->_Top->index() + 1);
-  for (InvocationHistoryFrame *cur = _lisp->invocationHistoryStack().top();
-       cur != NULL; cur = cur->previous()) {
-    frames[cur->index()] = cur;
+
+size_t backtrace_size() {
+  InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
+  size_t count = 0;
+  while (frame) {
+    frame = frame->_Previous;
+    ++count;
   }
-  return frames;
+  return count;
 }
 
-string InvocationHistoryStack::asString() const {
+string backtrace_as_string() {
   stringstream ss;
   ss.str("");
   ss << std::endl;
-  vector<InvocationHistoryFrame *> frames = _lisp->invocationHistoryStack().asVectorFrames();
+  InvocationHistoryFrame* frame = my_thread->_InvocationHistoryStack;
   ss << "--------STACK TRACE--------" << std::endl;
-  int ihsCur = af_ihsCurrentFrame();
-  for (int i = 0; i < frames.size(); ++i) {
-    InvocationHistoryFrame *cur = frames[i];
+  int ihsCur = core__ihs_current_frame();
+  InvocationHistoryFrame* cur = frame;
+  int i = 0;
+  while (cur) {
     if (i == ihsCur) {
       ss << "-->";
     } else {
       ss << "   ";
     }
     ss << "frame";
-    ss << cur->asString() << std::endl;
+    ss << cur->asString(i) << std::endl;
+    cur = cur->_Previous;
+    ++i;
   }
   return ss.str();
 }
+
 
 SYMBOL_EXPORT_SC_(CorePkg, STARwatchDynamicBindingStackSTAR);
 void DynamicBindingStack::push(Symbol_sp var) {
 #if 0 // debugging
   if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValueUnsafe().notnilp() ) {
-    List_sp assoc = cl_assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+    List_sp assoc = cl__assoc(var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
     if ( assoc.notnilp() ) {
       T_sp funcDesig = oCdr(assoc);
       if ( funcDesig.notnilp() ) {
@@ -251,7 +259,7 @@ void DynamicBindingStack::pop() {
   DynamicBinding &bind = this->_Bindings.back();
 #if 0 // debugging
   if ( _sym_STARwatchDynamicBindingStackSTAR->symbolValue().notnilp() ) {
-    List_sp assoc = cl_assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
+    List_sp assoc = cl__assoc(bind._Var,_sym_STARwatchDynamicBindingStackSTAR->symbolValue(),_Nil<T_O>());
     if ( assoc.notnilp() ) {
       T_sp funcDesig = oCdr(assoc);
       if ( funcDesig.notnilp() ) {
@@ -288,7 +296,7 @@ GC_RESULT DynamicBindingStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 
 #ifdef OLD_MPS
 GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
-  InvocationHistoryStack &ihs = _lisp->invocationHistoryStack(); // in multithreaded code there is one for every thread
+  InvocationHistoryStack &ihs = my_thread->invocationHistoryStack(); // in multithreaded code there is one for every thread
   InvocationHistoryFrame *cur = ihs.top();
   GC_SCANNER_BEGIN() {
     while (cur) {
@@ -333,9 +341,3 @@ GC_RESULT InvocationHistoryStack::scanGCRoots(GC_SCAN_ARGS_PROTOTYPE) {
 #endif
 }
 
-namespace core {
-
-void initialize_stacks() {
-  //	CoreDefun(dynamicBindingStackDump);
-}
-};

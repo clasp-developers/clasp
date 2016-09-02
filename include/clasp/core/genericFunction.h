@@ -44,6 +44,5 @@ LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs);
 
 LCC_RETURN userFunctionDispatch(Instance_sp gf, VaList_sp vargs);
 
-void initialize_genericFunction();
 };
 #endif /* _core_genericFunction_H_ */

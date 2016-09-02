@@ -18,10 +18,10 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)>
 // Type;
@@ -30,33 +30,34 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -64,7 +65,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -129,42 +130,43 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG14 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) ;
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -172,7 +174,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -233,41 +235,42 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -275,7 +278,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -333,47 +336,48 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -428,46 +432,47 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -519,45 +524,46 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -606,44 +612,45 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -689,43 +696,44 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -768,42 +776,43 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -843,41 +852,42 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -913,40 +923,41 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -979,39 +990,40 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1041,38 +1053,39 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1099,37 +1112,38 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1153,36 +1167,37 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1203,35 +1218,36 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( )  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,)> Type;
 typedef RT (OT::ExternalType::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
@@ -1252,10 +1268,10 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
 // ARG15)> Type;
@@ -1264,33 +1280,34 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -1298,7 +1315,7 @@ returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1362,49 +1379,50 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13,typename ARG14 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14) ;
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1465,48 +1483,49 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) ;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1564,47 +1583,48 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) ;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1659,46 +1679,47 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) ;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1750,45 +1771,46 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) ;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1837,44 +1859,45 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) ;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1920,43 +1943,44 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) ;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -1999,42 +2023,43 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) ;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2073,41 +2098,42 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) ;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2143,40 +2169,41 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) ;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2209,39 +2236,40 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) ;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2271,38 +2299,39 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) ;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2329,37 +2358,38 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2) ;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2383,36 +2413,37 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1)  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1) ;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2433,35 +2464,36 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( )  >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,)> Type;
 typedef void (OT::ExternalType::*Type)( ) ;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 
@@ -2482,10 +2514,10 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14, ARG15)>
 // Type;
@@ -2494,33 +2526,34 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v,a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2528,7 +2561,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2594,10 +2627,10 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -2605,32 +2638,33 @@ typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, 
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2638,7 +2672,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2699,41 +2733,42 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,
     a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -2741,7 +2776,7 @@ returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2799,47 +2834,48 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2894,46 +2930,47 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -2985,45 +3022,46 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3072,44 +3110,45 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3155,43 +3194,44 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3234,42 +3274,43 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6,typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3309,41 +3350,42 @@ template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2
     typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3379,40 +3421,41 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3445,39 +3488,40 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3507,38 +3551,39 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3565,37 +3610,38 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1, ARG2) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1, ARG2)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3619,36 +3665,37 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ARG1) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,ARG1)> Type;
 typedef RT (OT::ExternalType::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3669,35 +3716,36 @@ return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oi
 template <typename Pols,  typename RT,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,RT (OT::ExternalType::*)( ) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<RT (OT& ,)> Type;
 typedef RT (OT::ExternalType::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 RT retval =  ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 1;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(translate::to_object<RT>::convert(std::move(retval)).raw_(),oidx);
 }
 
@@ -3718,10 +3766,10 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
     ARG15) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14,
 // ARG15)> Type;
@@ -3730,33 +3778,34 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 16 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 16 ) core::wrongNumberOfArguments(lcc_nargs,16);
-STACK_FRAME(buff,frame,16);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),16);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-translate::from_object<ARG15> a15(frame.arg(15));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+translate::from_object<ARG15> a15(frame->arg(15));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v,
     a15._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
@@ -3764,7 +3813,7 @@ returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3829,10 +3878,10 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
     ARG14) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 // typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13, ARG14)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13,
@@ -3840,39 +3889,40 @@ typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7
 Type mptr;
 public:
 enum { NumParams = 15 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 15 ) core::wrongNumberOfArguments(lcc_nargs,15);
-STACK_FRAME(buff,frame,15);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),15);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-translate::from_object<ARG14> a14(frame.arg(14));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+translate::from_object<ARG14> a14(frame->arg(14));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v,a14._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -3933,48 +3983,49 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12,typename ARG13 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12, ARG13) const;
 Type mptr;
 public:
 enum { NumParams = 14 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 14 ) core::wrongNumberOfArguments(lcc_nargs,14);
-STACK_FRAME(buff,frame,14);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),14);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-translate::from_object<ARG13> a13(frame.arg(13));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+translate::from_object<ARG13> a13(frame->arg(13));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v,a13._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4032,47 +4083,48 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11,typename ARG12 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11, ARG12) const;
 Type mptr;
 public:
 enum { NumParams = 13 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 13 ) core::wrongNumberOfArguments(lcc_nargs,13);
-STACK_FRAME(buff,frame,13);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),13);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-translate::from_object<ARG12> a12(frame.arg(12));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+translate::from_object<ARG12> a12(frame->arg(12));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v,a12._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4127,46 +4179,47 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10,typename ARG11 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10, ARG11) const;
 Type mptr;
 public:
 enum { NumParams = 12 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 12 ) core::wrongNumberOfArguments(lcc_nargs,12);
-STACK_FRAME(buff,frame,12);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),12);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-translate::from_object<ARG11> a11(frame.arg(11));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+translate::from_object<ARG11> a11(frame->arg(11));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v,a11._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4218,45 +4271,46 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9,typename ARG10 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9, ARG10) const;
 Type mptr;
 public:
 enum { NumParams = 11 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 11 ) core::wrongNumberOfArguments(lcc_nargs,11);
-STACK_FRAME(buff,frame,11);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),11);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-translate::from_object<ARG10> a10(frame.arg(10));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+translate::from_object<ARG10> a10(frame->arg(10));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v,a10._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4305,44 +4359,45 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8,typename ARG9 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8, ARG9) const;
 Type mptr;
 public:
 enum { NumParams = 10 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 10 ) core::wrongNumberOfArguments(lcc_nargs,10);
-STACK_FRAME(buff,frame,10);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),10);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-translate::from_object<ARG9> a9(frame.arg(9));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+translate::from_object<ARG9> a9(frame->arg(9));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v,a9._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4388,43 +4443,44 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7,typename ARG8 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8) const;
 Type mptr;
 public:
 enum { NumParams = 9 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 9 ) core::wrongNumberOfArguments(lcc_nargs,9);
-STACK_FRAME(buff,frame,9);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),9);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-translate::from_object<ARG8> a8(frame.arg(8));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+translate::from_object<ARG8> a8(frame->arg(8));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v,a8._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4467,42 +4523,43 @@ template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3
     typename ARG7 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7) const;
 Type mptr;
 public:
 enum { NumParams = 8 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 8 ) core::wrongNumberOfArguments(lcc_nargs,8);
-STACK_FRAME(buff,frame,8);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),8);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-translate::from_object<ARG7> a7(frame.arg(7));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+translate::from_object<ARG7> a7(frame->arg(7));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v,a7._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4541,41 +4598,42 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5,typename ARG6 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5, ARG6)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5, ARG6) const;
 Type mptr;
 public:
 enum { NumParams = 7 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 7 ) core::wrongNumberOfArguments(lcc_nargs,7);
-STACK_FRAME(buff,frame,7);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),7);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-translate::from_object<ARG6> a6(frame.arg(6));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+translate::from_object<ARG6> a6(frame->arg(6));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v,a6._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4611,40 +4669,41 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4,typename ARG5 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4, ARG5) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4, ARG5)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4, ARG5) const;
 Type mptr;
 public:
 enum { NumParams = 6 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 6 ) core::wrongNumberOfArguments(lcc_nargs,6);
-STACK_FRAME(buff,frame,6);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),6);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-translate::from_object<ARG5> a5(frame.arg(5));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+translate::from_object<ARG5> a5(frame->arg(5));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v,a5._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4677,39 +4736,40 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3,typename ARG4 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3, ARG4) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3, ARG4)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3, ARG4) const;
 Type mptr;
 public:
 enum { NumParams = 5 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 5 ) core::wrongNumberOfArguments(lcc_nargs,5);
-STACK_FRAME(buff,frame,5);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),5);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-translate::from_object<ARG4> a4(frame.arg(4));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+translate::from_object<ARG4> a4(frame->arg(4));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v,a4._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4739,38 +4799,39 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2,typename ARG3 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2, ARG3) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2, ARG3)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2, ARG3) const;
 Type mptr;
 public:
 enum { NumParams = 4 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 4 ) core::wrongNumberOfArguments(lcc_nargs,4);
-STACK_FRAME(buff,frame,4);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),4);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-translate::from_object<ARG3> a3(frame.arg(3));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+translate::from_object<ARG3> a3(frame->arg(3));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v,a3._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4797,37 +4858,38 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1,typename ARG2 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1, ARG2) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1, ARG2)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1, ARG2) const;
 Type mptr;
 public:
 enum { NumParams = 3 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 3 ) core::wrongNumberOfArguments(lcc_nargs,3);
-STACK_FRAME(buff,frame,3);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),3);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-translate::from_object<ARG2> a2(frame.arg(2));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+translate::from_object<ARG2> a2(frame->arg(2));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v,a2._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4851,36 +4913,37 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT ,typename ARG1 >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ARG1) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,ARG1)> Type;
 typedef void (OT::ExternalType::*Type)( ARG1) const;
 Type mptr;
 public:
 enum { NumParams = 2 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 2 ) core::wrongNumberOfArguments(lcc_nargs,2);
-STACK_FRAME(buff,frame,2);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),2);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-translate::from_object<ARG1> a1(frame.arg(1));
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+translate::from_object<ARG1> a1(frame->arg(1));
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))(a1._v);
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<1> >::type,
 typename Contains_<Pols,    outValue_<1> >::type >::type(),a1._v);
@@ -4901,35 +4964,36 @@ return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 template <typename Pols,  typename OT  >
 class IndirectVariadicMethoid
 < Pols,OT ,void(OT::ExternalType::*)( ) const >
-: public BuiltinClosure {
+: public BuiltinClosure_O {
 public:
 virtual const char* describe() const {return "IndirectVariadicMethoid";};
-typedef BuiltinClosure TemplatedBase;
+typedef BuiltinClosure_O TemplatedBase;
 public:
 //        typedef std::function<void (OT& ,)> Type;
 typedef void (OT::ExternalType::*Type)( ) const;
 Type mptr;
 public:
 enum { NumParams = 1 };
-IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure(name), mptr(ptr) {};
+IndirectVariadicMethoid(core::T_sp name, Type ptr) : BuiltinClosure_O(name), mptr(ptr) {};
 DISABLE_NEW();
 virtual size_t templatedSizeof() const { return sizeof(*this); };
 inline LCC_RETURN LISP_CALLING_CONVENTION()
 {
+INCREMENT_FUNCTION_CALL_COUNTER(this);
 INVOCATION_HISTORY_FRAME();
 //int countPureOutValues = CountPureOutValues<Pols>::value;
 //if ( lcc_nargs != 1 ) core::wrongNumberOfArguments(lcc_nargs,1);
-STACK_FRAME(buff,frame,1);
+MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),1);
 core::StackFrameDynamicScopeManager scope(frame);
-lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
-gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame.arg(0)));
+lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+gctools::smart_ptr<OT> ot(gc::As<gc::smart_ptr<OT>>(frame->arg(0)));
 ((*(ot->wrappedPtr())).*(this->mptr))();
 core::MultipleValues& returnValues = core::lisp_multipleValues();
 returnValues.setSize(0);
 int oidx = 0;
 ReturnValueWhen(returnValues,oidx,
 typename or_<typename Contains_<Pols,pureOutValue_<0> >::type,
-typename Contains_<Pols,    outValue_<0> >::type >::type(),frame.arg(0));
+typename Contains_<Pols,    outValue_<0> >::type >::type(),frame->arg(0));
 return LCC_RETURN(returnValues.valueGet(0,oidx).raw_(),oidx);
 }
 

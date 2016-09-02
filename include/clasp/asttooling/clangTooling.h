@@ -46,7 +46,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/evaluator.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/clbind/clbind.h>
 
 namespace clang {
@@ -94,13 +94,15 @@ namespace asttooling {
     };
 #endif
 
+
 class DerivableASTFrontendAction : public clbind::Derivable<clang::ASTFrontendAction> {
   typedef clang::ASTFrontendAction Base;
 
 public:
-  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(
-      clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
-    core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(), translate::to_object<clang::CompilerInstance &>::convert(Compiler), translate::to_object<llvm::StringRef>::convert(InFile));
+  virtual std::unique_ptr<clang::ASTConsumer> CreateASTConsumer(clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
+    core::T_sp obj = core::eval::funcall(_sym_CreateASTConsumer, this->asSmartPtr(),
+                                         translate::to_object<clang::CompilerInstance &>::convert(Compiler),
+                                         translate::to_object<llvm::StringRef>::convert(InFile));
     // translate::from_object<std::unique_ptr<clang::ASTConsumer>> result(obj);
     // return result._v;
     return translate::from_object<std::unique_ptr<clang::ASTConsumer>>(obj)._v;
@@ -130,15 +132,16 @@ public:
 
   std::unique_ptr<clang::ASTConsumer> default_CreateASTConsumer(
       clang::CompilerInstance &Compiler, llvm::StringRef InFile) {
-    return this->Base::CreateASTConsumer(Compiler, InFile);
+    return this->CreateASTConsumer(Compiler, InFile);
   }
 
   virtual void ExecuteAction() {
     clang::CompilerInstance &CI = this->getCompilerInstance();
     CI.getFrontendOpts().DisableFree = true;
-    this->Base::ExecuteAction();
+    this->ExecuteAction();
   }
 };
+
 
 class DerivableFrontendActionFactory : public clbind::Derivable<clang::tooling::FrontendActionFactory> {
   typedef clang::tooling::FrontendActionFactory Base;
@@ -155,6 +158,20 @@ public:
   };
 };
 
+};
+
+namespace asttooling {
+  class DerivableMatchCallback;
+};
+
+template <>
+struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = unmanaged;
+};
+
+namespace asttooling {
 class DerivableMatchCallback
     : public clbind::Derivable<clang::ast_matchers::MatchFinder::MatchCallback> {
   typedef clang::ast_matchers::MatchFinder::MatchCallback AlienBase;
@@ -162,7 +179,8 @@ class DerivableMatchCallback
 public:
   virtual void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     const clang::ast_matchers::MatchFinderMatchResult conv(Result); //  = static_cast<const clang::ast_matchers::MatchFinderMatchResult&>(Result);
-    core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv));
+    core::T_sp val =  translate::to_object<const clang::ast_matchers::MatchFinderMatchResult &>::convert(conv);
+    core::eval::funcall(asttooling::_sym_run, this->asSmartPtr(), val);
   }
 
   void default_run(const clang::ast_matchers::MatchFinderMatchResult &Result) {
@@ -202,26 +220,17 @@ public:
       printf("_Slots[%d]: %s\n", i, _rep_(this->_Slots[i]).c_str());
     }
   }
+  virtual ~DerivableMatchCallback() {
+    printf("%s:%d ~DerivableMatchCallback dtor\n", __FILE__, __LINE__ );
+  }
 };
 };
 
-template <>
-struct gctools::GCInfo<asttooling::DerivableMatchCallback> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = false;
-  static bool constexpr Atomic = false;
-};
+
 
 namespace asttooling {
-
 void initialize_clangTooling();
 };
-//DERIVABLE_TRANSLATE(asttooling::DerivableArgumentsAdjuster);
-DERIVABLE_TRANSLATE(asttooling::DerivableMatchCallback);
-DERIVABLE_TRANSLATE(asttooling::DerivableASTFrontendAction);
-DERIVABLE_TRANSLATE(asttooling::DerivableSyntaxOnlyAction);
-DERIVABLE_TRANSLATE(asttooling::DerivableFrontendActionFactory);
 
 #if 0
 namespace translate {

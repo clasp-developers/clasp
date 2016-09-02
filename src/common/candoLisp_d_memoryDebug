@@ -1,4 +1,0 @@
-#! /bin/bash
-export DYLD_INSERT_LIBRARIES=/usr/lib/libgmalloc.dylib
-echo Evaluating candoLisp_d $*
-candoLisp_d $*

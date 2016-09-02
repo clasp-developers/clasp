@@ -21,6 +21,8 @@ last FORM.  If not, simply returns NIL."
 
 (defmacro defmacro (&whole whole name vl &body body &aux doc-string)
   ;; Documentation in help.lsp
+  (unless (symbolp name)
+    (error "Macro name ~s is not a symbol." name))
   (multiple-value-bind (function pprint doc-string)
       (sys::expand-defmacro name vl body)
     (setq function `(function ,function))
@@ -28,11 +30,13 @@ last FORM.  If not, simply returns NIL."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(eval-when (:compile-toplevel :load-toplevel :execute)
-       ,(ext:register-with-pde whole `(si::fset ',name ,function t ,pprint))
+       ,(ext:register-with-pde whole `(si::fset ',name ,function
+                                                t  ; macro
+                                                ,pprint ; ecl pprint
+                                                ',vl ; lambda-list lambda-list-p
+                                                ))
        ,@(si::expand-set-documentation name 'function doc-string)
        ',name)))
-
-
 
 (defun si::register-global (name)
   "This should augment a global environment object that the compiler uses
@@ -140,12 +144,14 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                                                ,@doclist (block ,(si::function-block-name name) ,@body))))
                     ;;(bformat t "DEFUN global-function --> %s\n" global-function )
                     `(progn
-                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function))
+                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function nil t ',vl))
                        ,@(si::expand-set-documentation name 'function doc-string)
                        ,(and *defun-inline-hook*
                              (funcall *defun-inline-hook* name global-function))
                        ',name)))))
-          t)
+          t
+          nil
+          '(name lambda-list &body body))
 
 
 ;;;
@@ -161,14 +167,15 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
       (print function)
       (setq function `(si::bc-disassemble ,function)))
     `(progn
-       (put-sysprop ',name 'sys::compiler-macro ,function)
+       (core:setf-compiler-macro-function ',name ,function) ;;(put-sysprop ',name 'sys::compiler-macro ,function)
        ,@(si::expand-set-documentation name 'function doc-string)
        ,(ext:register-with-pde whole)
        ',name)))
 
 (defun compiler-macro-function (name &optional env)
   ;;  (declare (ignorable env))
-  (values (get-sysprop name 'sys::compiler-macro)))
+  (core:get-compiler-macro-function name env))
+;;  (values (get-sysprop name 'sys::compiler-macro)))
 
 (defun compiler-macroexpand-1 (form &optional env)
   (if (atom form)
@@ -214,20 +221,16 @@ terminated by a non-local exit."
   `(BLOCK NIL (TAGBODY ,tag (PROGN ,@body) (GO ,tag))))
 )
 
-(defmacro lambda (&rest body)
-  `(function (lambda ,@body)))
+(defmacro lambda (&rest body) `(function (lambda ,@body)))
 
 #+ecl(defmacro ext::lambda-block (name lambda-list &rest lambda-body)
        (multiple-value-bind (decls body doc)
 	   (si::process-declarations lambda-body t)
 	 `(lambda ,lambda-list (declare (core:lambda-block ,name) ,@decls) ,@doc
 		  (block ,(si::function-block-name name) ,@body))))
-
-
-
 ; assignment
 
-#-ecl-min
+#-clasp-min
 (defmacro psetq (&rest args)
   "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
@@ -340,7 +343,7 @@ FORM returns no value, NIL."
   (do ((vl vars (cdr vl))
        (sym (gensym))
        (forms nil)
-       (n 0 (truly-the fixnum (1+ n))))
+       (n 0 (ext:truly-the fixnum (1+ n))))
       ((endp vl) `(LET ((,sym (MULTIPLE-VALUE-LIST ,form))) ,@forms))
     (declare (fixnum n))
     (push `(SETQ ,(car vl) (NTH ,n ,sym)) forms)))
@@ -453,7 +456,7 @@ values of the last FORM.  If no FORM is given, returns NIL."
       (second form)
       form))
 
-(defun maybe-quote (form)
+#-clasp(defun maybe-quote (form)
   ;; Quotes a form only if strictly required. This happens only when FORM is
   ;; either a symbol and not a keyword
   (if (if (atom form)
@@ -463,18 +466,8 @@ values of the last FORM.  If no FORM is given, returns NIL."
       form))
 
 ;; CLOS needs this in the ext package and I can't find it anywhere but here - meister 2013
-#+clasp (progn
+#| #+clasp |#
+#+(or)(progn
 	  (import 'maybe-quote :ext)
 	  (export 'maybe-quote :ext))
 
-(in-package :ext)
-(defmacro truly-the (&rest args)
-  `(the ,@args))
-
-
-(defmacro checked-value (&rest args)
-  `(the ,@args))
-
-(in-package :core)
-(import 'ext:truly-the)
-(export 'truly-the)

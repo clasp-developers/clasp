@@ -42,78 +42,75 @@ namespace core {
   In Cando-Script class names like ``Hit'' or ``Real'' return objects that are of the class ``Class''.  These objects respond to the following methods.
   __END_DOC
 */
-    BuiltInClass_sp BuiltInClass_O::create(Lisp_sp lisp,const string name, int instanceClassId;
-    {
-  _G();
+BuiltInClass_sp BuiltInClass_O::create(Lisp_sp lisp,const string name, int instanceClassId )
+{
   LOG(BF("Creating BuiltInClass_O name(%s) instanceClassId=%d") % name.c_str() % instanceClassId);
   GC_ALLOCATE(BuiltInClass_O, oclass);
   oclass->_Name = lisp->intern(name);
   oclass->_InstanceClassId = instanceClassId;
   return oclass;
-    }
+}
 
 
 
-    BuiltInClass_O::~BuiltInClass_O()
-    {
+BuiltInClass_O::~BuiltInClass_O()
+{
 
-    }
+}
 
 
-    void	BuiltInClass_O::archive(ArchiveP node)
-    {
+void	BuiltInClass_O::archive(ArchiveP node)
+{
   IMPLEMENT_ME();
-    }
+}
 
 #if 0
-    T_sp BuiltInClass_O::allocateAndInitialize()
-    {
-	T_sp o = this->allocate_newNil();
-	o->initialize();
-	return o;
-    }
+T_sp BuiltInClass_O::allocateAndInitialize()
+{
+  T_sp o = this->allocate_newNil();
+  o->initialize();
+  return o;
+}
 #endif
 
-    void	BuiltInClass_O::initialize()
-    {
+void	BuiltInClass_O::initialize()
+{
   this->Base::initialize();
 //    this->_InitializationArguments = _Nil<LambdaListHandler_O>();
 //    LOG(BF("For class(%s)@%p handler@%p") % this->static_className() % ((void*)(this)) % this->_InitializationArguments.get() );
-    }
+}
 
 
 
-    BuiltInClass_sp BuiltInClass_O::getInstanceCoreClass() const
-    {
+BuiltInClass_sp BuiltInClass_O::getInstanceCoreClass() const
+{
   _OF();
   return this->sharedThis<BuiltInClass_O>();
-    }
+}
 
 
 
 
 /* See the description in object.cc Class_O::describe
  */
-    void	BuiltInClass_O::describe()
-    {
-  _G();
+void	BuiltInClass_O::describe()
+{
   _lisp->print(BF("-------------  Class name: %s    instanceClassId: %s") % this->_Name->__repr__() % this->_InstanceClassId->__repr__());
   for (Class_O::baseClassIterator it = this->_DirectSuperClasses.begin();
        it != this->_DirectSuperClasses.end(); it++) {
     _lisp->print(BF("Base class: %s") % (*it)->className());
   }
   _lisp->print(BF("%s") % this->dumpInfo());
-    }
+}
 
 
-    void	StandardClass_O::archive(ArchiveP node)
-    {
+void	StandardClass_O::archive(ArchiveP node)
+{
   IMPLEMENT_ME();
-    }
+}
 
-    void	StandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
-    {
-  _G();
+void	StandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
+{
   if (node == NULL)
     return;
   this->_SlotSpecifiers.clear();
@@ -123,35 +120,34 @@ namespace core {
     LOG(BF("Adding slot(%s)") % sym->fullName());
     this->_SlotSpecifiers.push_back(SlotSpecifier_O::create(sym, _lisp));
   }
-    }
+}
 
 
 
-    void	StandardClass_O::initialize()
-    {
+void	StandardClass_O::initialize()
+{
   this->Base::initialize();
   //    this->_InstanceVariableNames = _Nil<T_O>();
   this->_SlotSpecifiers.clear();
   this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
-    }
+}
 
-    StandardClass_sp StandardClass_O::create(Lisp_sp lisp,Symbol_sp name, uint instanceClassId)
-    {
+StandardClass_sp StandardClass_O::create(Lisp_sp lisp,Symbol_sp name, uint instanceClassId)
+{
   GC_ALLOCATE(StandardClass_O, oclass);
   oclass->_Name = name;
   oclass->_InstanceClassId = instanceClassId;
   oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
   return oclass;
-    }
+}
 
     /*! Return a list of classes from a classListDesignator which can be...
       nil - return a Cons containing StandardObject.
       [a metaclass] - return a Cons containing that metaclass.
       [Cons of metaclasses] - return the cons of metaclasses.
     */
-    Cons_sp StandardClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp)
-    {
-  _G();
+Cons_sp StandardClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp)
+{
   Cons_sp baseClasses;
   if (baseClassesDesignator.nilp()) {
     baseClasses = Cons_O::create(lisp->classFromClassId(StandardObject_O::static_classId()), lisp);
@@ -166,7 +162,7 @@ namespace core {
     }
   }
   return baseClasses;
-    }
+}
 
 
 
@@ -175,21 +171,20 @@ namespace core {
 
 
 
-    BuiltInClass_sp StandardClass_O::getInstanceCoreClass() const
-    {
+BuiltInClass_sp StandardClass_O::getInstanceCoreClass() const
+{
   _OF();
   return this->_InstanceCoreClass;
-    }
+}
 
-    void StandardClass_O::setInstanceCoreClass(BuiltInClass_sp mc)
-    {
+void StandardClass_O::setInstanceCoreClass(BuiltInClass_sp mc)
+{
   _OF();
   this->_InstanceCoreClass = mc;
-    }
+}
 
-    void	StandardClass_O::describe()
-    {
-  _G();
+void	StandardClass_O::describe()
+{
   _lisp->print(BF("------------  StandardClass name: %s    instanceClassId: %d") % this->_Name->__repr__() % this->_InstanceClassId);
   //    _lisp->print(BF("Instance variables: %s") % this->_InstanceVariableNames->__repr__().c_str() );
   _lisp->print(BF("%s") % this->dumpInfo());
@@ -202,32 +197,30 @@ namespace core {
   if (!sawBaseClasses) {
     _lisp->print(BF("Did not see any base classes"));
   }
-    }
+}
 
-    string StandardClass_O::dumpInfo()
-    {
-  _G();
+string StandardClass_O::dumpInfo()
+{
   stringstream ss;
   ss << this->Base::dumpInfo();
   ss << "CoreBuiltInClass: " << this->_InstanceCoreClass->getPackagedName() << std::endl;
   return ss.str();
-    }
+}
 
-    string StandardClass_O::dumpMethods()
-    {
+string StandardClass_O::dumpMethods()
+{
   return this->Base::dumpMethods();
-    }
+}
 
 
-    uint StandardClass_O::numberOfSlots()
-    {
+uint StandardClass_O::numberOfSlots()
+{
   return this->_SlotSpecifiers.size();
-    }
+}
 
 
-    StandardClass_O::slotIterator StandardClass_O::find(Symbol_sp sym)
-    {
-  _G();
+StandardClass_O::slotIterator StandardClass_O::find(Symbol_sp sym)
+{
   ASSERTNOTNULL(sym);
   LOG(BF("Looking in StandardClass for slot for symbol: %s") % sym->fullName());
   slotIterator it;
@@ -243,77 +236,61 @@ namespace core {
   }
 #endif
   return it;
-    }
+}
 
 #if 0
-    T_sp StandardClass_O::allocate_newNil()
-    {_G();
-	DEPRECIATED(); // Is this really?
-	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
-							  _Nil<T_O>(),
-							  _Nil<T_O>(), _lisp );
-	StandardClass_sp thisClass = this->sharedThis<StandardClass_O>();
-	obj->__setClass(thisClass);
-	return obj;
-    }
+T_sp StandardClass_O::allocate_newNil()
+{
+  DEPRECIATED(); // Is this really?
+  T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
+                                                    _Nil<T_O>(),
+                                                    _Nil<T_O>(), _lisp );
+  StandardClass_sp thisClass = this->sharedThis<StandardClass_O>();
+  obj->__setClass(thisClass);
+  return obj;
+}
 #endif
 
 
-    void StandardClass_O::resetSlots()
-    {
-  _G();
+void StandardClass_O::resetSlots()
+{
   this->_SlotSpecifiers.clear();
-    }
+}
 
 
 
-    void StandardClass_O::setupAccessors(List_sp slotNames)
-    {
-  _G();
+void StandardClass_O::setupAccessors(List_sp slotNames)
+{
   IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
-	this->_InstanceVariableNames = slotNames;
-	while ( slotNames.notnilp() )
-	{
-	    Symbol_sp slotName = slotNames->ocar().as<Symbol_O>();
-	    string setterName = "set_"+slotName->symbolNameAsString();
-	    Symbol_sp setterSymbol = _lisp->internKeyword(setterName);
-	    SlotSetter_sp setterForm = SlotSetter_O::create(setterSymbol,_lisp);
-	    this->addMethod(setterSymbol,setterForm);
-	    string getterName = "get_"+slotName->symbolNameAsString();
-	    Symbol_sp getterSymbol = _lisp->internKeyword(getterName);
-	    SlotGetter_sp getterForm = SlotGetter_O::create(getterSymbol,_lisp);
-	    this->addMethod(getterSymbol,getterForm);
-	    slotNames = slotNames->cdr();
-	}
+  this->_InstanceVariableNames = slotNames;
+  while ( slotNames.notnilp() )
+  {
+    Symbol_sp slotName = slotNames->ocar().as<Symbol_O>();
+    string setterName = "set_"+slotName->symbolNameAsString();
+    Symbol_sp setterSymbol = _lisp->internKeyword(setterName);
+    SlotSetter_sp setterForm = SlotSetter_O::create(setterSymbol,_lisp);
+    this->addMethod(setterSymbol,setterForm);
+    string getterName = "get_"+slotName->symbolNameAsString();
+    Symbol_sp getterSymbol = _lisp->internKeyword(getterName);
+    SlotGetter_sp getterForm = SlotGetter_O::create(getterSymbol,_lisp);
+    this->addMethod(getterSymbol,getterForm);
+    slotNames = slotNames->cdr();
+  }
 #endif
-    }
+}
 
 
-    void BuiltInClass_O::exposeCando(Lisp_sp lisp)
-    {
-  class_<BuiltInClass_O>();
-    }
-    void BuiltInClass_O::exposePython(Lisp_sp lisp)
-    {
-  _G();
-  PYTHON_CLASS(CorePkg, BuiltInClass, "", "", _lisp);
-    }
+
+void BuiltInClass_O::exposePython(Lisp_sp lisp)
 
 
 
 
-    void StandardClass_O::exposeCando(Lisp_sp lisp)
-    {
-  class_<StandardClass_O>();
-    }
-    void StandardClass_O::exposePython(Lisp_sp lisp)
-    {
-  _G();
-  PYTHON_CLASS(CorePkg, StandardClass, "", "", _lisp);
-    }
+
+void StandardClass_O::exposePython(Lisp_sp lisp)
 
 
-    EXPOSE_CLASS(core,BuiltInClass_O);
-    EXPOSE_CLASS(core,StandardClass_O);
+
+
 };

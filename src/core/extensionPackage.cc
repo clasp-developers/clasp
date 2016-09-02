@@ -38,32 +38,22 @@ THE SOFTWARE.
 namespace ext {
 using namespace core;
 
-#pragma GCC visibility push(default)
-#define ExtPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef ExtPkg_SYMBOLS
-#pragma GCC visibility pop
 
-SYMBOL_EXPORT_SC_(ExtPkg, STARloadHooksSTAR);
 SYMBOL_SC_(ExtPkg, aSingleExtSymbol);
-SYMBOL_SC_(ExtPkg, lambda_block);
-SYMBOL_EXPORT_SC_(ExtPkg, STARinvokeDebuggerHookSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, compiledFunctionName);
+SYMBOL_EXPORT_SC_(ExtPkg, ansi_stream);
 
 #define ARGS_af_maybeQuote "(form)"
 #define DECL_af_maybeQuote ""
 #define DOCS_af_maybeQuote "Quotes a form only if strictly required. This happens when FORM is either a symbol and not a keyword"
-T_sp af_maybeQuote(T_sp form) {
-  _G();
-  if (cl_atom(form)) {
+CL_DEFUN core::T_sp ext__maybeQuote(core::T_sp form) {
+  if (cl__atom(form)) {
     if (form.nilp())
       goto DONTQUOTEIT; // nil
     if (form == _lisp->_true())
       goto DONTQUOTEIT; // t
-    if (cl_symbolp(form)) {
-      if (af_keywordP(form)) {
+    if (cl__symbolp(form)) {
+      if (cl__keywordp(form)) {
         goto DONTQUOTEIT; // symbol keyword
       } else
         goto QUOTEIT; // symbol not keyword
@@ -79,15 +69,6 @@ DONTQUOTEIT:
   return form;
 }
 
-void initialize_extension_functions() {
-  SYMBOL_EXPORT_SC_(ExtPkg, maybeQuote);
-  Defun(maybeQuote);
-};
+SYMBOL_EXPORT_SC_(ExtPkg, maybeQuote);
 
-void initialize_extensionPackage() {
-  list<string> lnicknames;
-  list<string> luse = {"COMMON-LISP"};
-  _lisp->makePackage("EXT", lnicknames, luse);
-  // We don't have to create the EXTENSION symbols here - it's done in bootStrapCoreSymbolMap
-}
 };

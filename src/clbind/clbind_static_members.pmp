@@ -30,28 +30,29 @@ $var ConstTypeCount = 1
                         template <typename Pols, typename OT $if ret==RetVoid [[]] $else [[, typename RT ]] $if numArgs>1 [[,]] $for Args_ ,[[typename ARG$Args_]] >
                         class IndirectVariadicMethoid
                         < Pols,OT $if ret==RetVoid [[,void]] $else [[,RT ]](*)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]] >
-                        : public core::Functoid {
+                        : public core::NamedFunction_O {
                         public:
 			    virtual const char* describe() const { return "IndirectVariadicMethoid"; };
                         typedef $if ret==RetVoid [[void]] $else [[RT]] (*Type)( $for Args_ , [[ARG$Args_]]) $if isConst [[const]];
                         Type mptr;
                         public:
                         enum { NumParams = $numArgs };
-                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::Functoid(name), mptr(ptr) {};
+                        IndirectVariadicMethoid(core::T_sp name, Type ptr) : core::NamedFunction_O(name), mptr(ptr) {};
                     DISABLE_NEW();
 
                     inline LCC_RETURN LISP_CALLING_CONVENTION()
                     {
+                      INCREMENT_FUNCTION_CALL_COUNTER(this);
                       INVOCATION_HISTORY_FRAME();
                       $if numArgs>0 [[
-                        STACK_FRAME(buff,frame,$numArgs);
+                        MAKE_STACK_FRAME(frame,this->asSmartPtr().raw_(),$numArgs);
                         core::StackFrameDynamicScopeManager scope(frame);
-                        lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure>(this),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
+                        lambdaListHandler_createBindings(this->asSmartPtr(),this->_lambdaListHandler,scope,LCC_PASS_ARGS);
                       ]]
-                      // translate::from_object<OT*> objPtr(frame.arg(0));
-                      OT* objPtr = gc::As<core::WrappedPointer_sp>(frame.arg(0))->cast<OT>();
+                      // translate::from_object<OT*> objPtr(frame->arg(0));
+                      OT* objPtr = gc::As<core::WrappedPointer_sp>(frame->arg(0))->cast<OT>();
                       $for Args_ [[
-                              translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type > a$Args_(frame.arg($Args_));
+                              translate::from_object<ARG$Args_,typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type > a$Args_(frame->arg($Args_));
                               // IncWhen<typename DoesNotContain_<Pols,pureOutValue<$Args_> >::type >::go(args);
                               ]]
                       $if ret==RetVoid [[]] $else [[ RT retval = ]] ((*objPtr).*(this->mptr))($for Args_ ,[[a$Args_._v]]);

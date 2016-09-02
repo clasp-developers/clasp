@@ -35,17 +35,9 @@ THE SOFTWARE.
 
 namespace cluser {
 
-#pragma GCC visibility push(default)
-#define CommonLispUserPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef CommonLispUserPkg_SYMBOLS
-#pragma GCC visibility pop
-
 void initialize_commonLispUserPackage() {
   list<string> lnicknames = {"USER", "CL-USER"};
-  list<string> luse = {"COMMON-LISP", "CORE"};
+  list<string> luse = {"COMMON-LISP"};
   _lisp->makePackage("COMMON-LISP-USER", lnicknames, luse);
   // We don't have to create the COMMONLISPUSER symbols here - it's done in bootStrapCoreSymbolMap
 }

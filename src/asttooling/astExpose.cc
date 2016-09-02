@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <clasp/core/foundation.h>
+
 #include <clang/AST/Comment.h>
 #include <clang/AST/DeclTemplate.h>
 #include <clang/AST/DeclFriend.h>
@@ -41,15 +43,16 @@ THE SOFTWARE.
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Frontend/FrontendActions.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/str.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/package.h>
 
+#include <clasp/asttooling/astExpose.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/asttooling/translators.h>
-#include <clasp/asttooling/symbolTable.h>
+#include <clasp/core/symbolTable.h>
+#include <clasp/asttooling/asttoolingPackage.h>
 
 //
 // This needs to be before clbind is included
@@ -371,307 +374,14 @@ TYPE(Atomic, Type);
 using namespace clbind;
 using namespace clang;
 
-SYMBOL_EXPORT_SC_(ClangAstPkg, type);
 
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Decl const>);
 
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Stmt>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Stmt const>);
-
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Type>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::Type const>);
 
 typedef clbind::Wrapper<clang::QualType, std::unique_ptr<clang::QualType>> QualType_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(QualType_wrapper);
 
 typedef clbind::Wrapper<clang::TypeLoc, std::unique_ptr<clang::TypeLoc>> TypeLoc_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(TypeLoc_wrapper);
 
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<const clang::ASTContext>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::ASTContext>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::TemplateArgument const>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::TemplateName const>);
 typedef clbind::Wrapper<clang::TemplateName, std::unique_ptr<clang::TemplateName>> TemplateName_wrapper;
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(TemplateName_wrapper);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::TypeSourceInfo>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::TemplateArgumentList>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::IdentifierInfo>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::TemplateArgumentList const>);
-
-#define DECL(_C_, _B_) INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::_C_##Decl>)
-DECL(AccessSpec, Decl);
-DECL(Block, Decl);
-DECL(Captured, Decl);
-DECL(ClassScopeFunctionSpecialization, Decl);
-DECL(Empty, Decl);
-DECL(FileScopeAsm, Decl);
-DECL(Friend, Decl);
-DECL(FriendTemplate, Decl);
-DECL(Import, Decl);
-DECL(LinkageSpec, Decl);
-DECL(Named, Decl);
-DECL(Label, NamedDecl);
-DECL(Namespace, NamedDecl);
-DECL(NamespaceAlias, NamedDecl);
-DECL(ObjCCompatibleAlias, NamedDecl);
-DECL(ObjCContainer, NamedDecl);
-DECL(ObjCCategory, ObjCContainerDecl);
-DECL(ObjCImpl, ObjCContainerDecl);
-DECL(ObjCCategoryImpl, ObjCImplDecl);
-DECL(ObjCImplementation, ObjCImplDecl);
-DECL(ObjCInterface, ObjCContainerDecl);
-DECL(ObjCProtocol, ObjCContainerDecl);
-DECL(ObjCMethod, NamedDecl);
-DECL(ObjCProperty, NamedDecl);
-DECL(Template, NamedDecl);
-DECL(RedeclarableTemplate, TemplateDecl);
-DECL(ClassTemplate, RedeclarableTemplateDecl);
-DECL(FunctionTemplate, RedeclarableTemplateDecl);
-DECL(TypeAliasTemplate, RedeclarableTemplateDecl);
-DECL(VarTemplate, RedeclarableTemplateDecl);
-DECL(TemplateTemplateParm, TemplateDecl);
-DECL(Type, NamedDecl);
-DECL(Tag, TypeDecl);
-DECL(Enum, TagDecl);
-DECL(Record, TagDecl);
-DECL(CXXRecord, RecordDecl);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Iterator<clang::CXXBaseSpecifier *>);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::CXXBaseSpecifier>);
-DECL(ClassTemplateSpecialization, CXXRecordDecl);
-DECL(ClassTemplatePartialSpecialization, ClassTemplateSpecializationDecl);
-DECL(TemplateTypeParm, TypeDecl);
-DECL(TypedefName, TypeDecl);
-DECL(TypeAlias, TypedefNameDecl);
-DECL(Typedef, TypedefNameDecl);
-DECL(UnresolvedUsingTypename, TypeDecl);
-DECL(Using, NamedDecl);
-DECL(UsingDirective, NamedDecl);
-DECL(UsingShadow, NamedDecl);
-DECL(Value, NamedDecl);
-DECL(Declarator, ValueDecl);
-DECL(Field, DeclaratorDecl);
-DECL(ObjCAtDefsField, FieldDecl);
-DECL(ObjCIvar, FieldDecl);
-DECL(Function, DeclaratorDecl);
-DECL(CXXMethod, FunctionDecl);
-DECL(CXXConstructor, CXXMethodDecl);
-DECL(CXXConversion, CXXMethodDecl);
-DECL(CXXDestructor, CXXMethodDecl);
-DECL(MSProperty, DeclaratorDecl);
-DECL(NonTypeTemplateParm, DeclaratorDecl);
-DECL(Var, DeclaratorDecl);
-DECL(ImplicitParam, VarDecl);
-DECL(ParmVar, VarDecl);
-DECL(VarTemplateSpecialization, VarDecl);
-DECL(VarTemplatePartialSpecialization, VarTemplateSpecializationDecl);
-DECL(EnumConstant, ValueDecl);
-DECL(IndirectField, ValueDecl);
-DECL(UnresolvedUsingValue, ValueDecl);
-DECL(OMPThreadPrivate, Decl);
-DECL(ObjCPropertyImpl, Decl);
-DECL(StaticAssert, Decl);
-DECL(TranslationUnit, Decl);
-#undef DECL
-
-#define STMT_REF_COUNT_ACCESSORS(_C_) INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::_C_>)
-STMT_REF_COUNT_ACCESSORS(Expr);
-STMT_REF_COUNT_ACCESSORS(GCCAsmStmt);
-STMT_REF_COUNT_ACCESSORS(MSAsmStmt);
-// firstAsmStmtConstant= GCCAsmStmtClass, lastAsmStmtConstant= MSAsmStmtClass,
-STMT_REF_COUNT_ACCESSORS(AttributedStmt);
-STMT_REF_COUNT_ACCESSORS(BreakStmt);
-STMT_REF_COUNT_ACCESSORS(CXXCatchStmt);
-STMT_REF_COUNT_ACCESSORS(CXXForRangeStmt);
-STMT_REF_COUNT_ACCESSORS(CXXTryStmt);
-STMT_REF_COUNT_ACCESSORS(CapturedStmt);
-STMT_REF_COUNT_ACCESSORS(CompoundStmt);
-STMT_REF_COUNT_ACCESSORS(ContinueStmt);
-STMT_REF_COUNT_ACCESSORS(DeclStmt);
-STMT_REF_COUNT_ACCESSORS(DoStmt);
-STMT_REF_COUNT_ACCESSORS(BinaryConditionalOperator);
-STMT_REF_COUNT_ACCESSORS(ConditionalOperator);
-// firstAbstractConditionalOperatorConstant= BinaryConditionalOperatorClass, lastAbstractConditionalOperatorConstant= ConditionalOperatorClass,
-STMT_REF_COUNT_ACCESSORS(AddrLabelExpr);
-STMT_REF_COUNT_ACCESSORS(ArraySubscriptExpr);
-STMT_REF_COUNT_ACCESSORS(ArrayTypeTraitExpr);
-STMT_REF_COUNT_ACCESSORS(AsTypeExpr);
-STMT_REF_COUNT_ACCESSORS(AtomicExpr);
-STMT_REF_COUNT_ACCESSORS(BinaryOperator);
-STMT_REF_COUNT_ACCESSORS(CompoundAssignOperator);
-// firstBinaryOperatorConstant= BinaryOperatorClass, lastBinaryOperatorConstant= CompoundAssignOperatorClass,
-STMT_REF_COUNT_ACCESSORS(BlockExpr);
-STMT_REF_COUNT_ACCESSORS(CXXBindTemporaryExpr);
-STMT_REF_COUNT_ACCESSORS(CXXBoolLiteralExpr);
-STMT_REF_COUNT_ACCESSORS(CXXConstructExpr);
-STMT_REF_COUNT_ACCESSORS(CXXTemporaryObjectExpr);
-// firstCXXConstructExprConstant= CXXConstructExprClass, lastCXXConstructExprConstant= CXXTemporaryObjectExprClass,
-STMT_REF_COUNT_ACCESSORS(CXXDefaultArgExpr);
-STMT_REF_COUNT_ACCESSORS(CXXDefaultInitExpr);
-STMT_REF_COUNT_ACCESSORS(CXXDeleteExpr);
-STMT_REF_COUNT_ACCESSORS(CXXDependentScopeMemberExpr);
-STMT_REF_COUNT_ACCESSORS(CXXNewExpr);
-STMT_REF_COUNT_ACCESSORS(CXXNoexceptExpr);
-STMT_REF_COUNT_ACCESSORS(CXXNullPtrLiteralExpr);
-STMT_REF_COUNT_ACCESSORS(CXXPseudoDestructorExpr);
-STMT_REF_COUNT_ACCESSORS(CXXScalarValueInitExpr);
-STMT_REF_COUNT_ACCESSORS(CXXStdInitializerListExpr);
-STMT_REF_COUNT_ACCESSORS(CXXThisExpr);
-STMT_REF_COUNT_ACCESSORS(CXXThrowExpr);
-STMT_REF_COUNT_ACCESSORS(CXXTypeidExpr);
-STMT_REF_COUNT_ACCESSORS(CXXUnresolvedConstructExpr);
-STMT_REF_COUNT_ACCESSORS(CXXUuidofExpr);
-STMT_REF_COUNT_ACCESSORS(CallExpr);
-STMT_REF_COUNT_ACCESSORS(CUDAKernelCallExpr);
-STMT_REF_COUNT_ACCESSORS(CXXMemberCallExpr);
-STMT_REF_COUNT_ACCESSORS(CXXOperatorCallExpr);
-STMT_REF_COUNT_ACCESSORS(UserDefinedLiteral);
-// firstCallExprConstant= CallExprClass, lastCallExprConstant= UserDefinedLiteralClass,
-STMT_REF_COUNT_ACCESSORS(CStyleCastExpr);
-STMT_REF_COUNT_ACCESSORS(CXXFunctionalCastExpr);
-STMT_REF_COUNT_ACCESSORS(CXXConstCastExpr);
-STMT_REF_COUNT_ACCESSORS(CXXDynamicCastExpr);
-STMT_REF_COUNT_ACCESSORS(CXXReinterpretCastExpr);
-STMT_REF_COUNT_ACCESSORS(CXXStaticCastExpr);
-// firstCXXNamedCastExprConstant= CXXConstCastExprClass, lastCXXNamedCastExprConstant= CXXStaticCastExprClass,
-STMT_REF_COUNT_ACCESSORS(ObjCBridgedCastExpr);
-// firstExplicitCastExprConstant= CStyleCastExprClass, lastExplicitCastExprConstant= ObjCBridgedCastExprClass,
-STMT_REF_COUNT_ACCESSORS(ImplicitCastExpr);
-// firstCastExprConstant= CStyleCastExprClass, lastCastExprConstant= ImplicitCastExprClass,
-STMT_REF_COUNT_ACCESSORS(CharacterLiteral);
-STMT_REF_COUNT_ACCESSORS(ChooseExpr);
-STMT_REF_COUNT_ACCESSORS(CompoundLiteralExpr);
-STMT_REF_COUNT_ACCESSORS(ConvertVectorExpr);
-STMT_REF_COUNT_ACCESSORS(DeclRefExpr);
-STMT_REF_COUNT_ACCESSORS(DependentScopeDeclRefExpr);
-STMT_REF_COUNT_ACCESSORS(DesignatedInitExpr);
-STMT_REF_COUNT_ACCESSORS(ExprWithCleanups);
-STMT_REF_COUNT_ACCESSORS(ExpressionTraitExpr);
-STMT_REF_COUNT_ACCESSORS(ExtVectorElementExpr);
-STMT_REF_COUNT_ACCESSORS(FloatingLiteral);
-STMT_REF_COUNT_ACCESSORS(FunctionParmPackExpr);
-STMT_REF_COUNT_ACCESSORS(GNUNullExpr);
-STMT_REF_COUNT_ACCESSORS(GenericSelectionExpr);
-STMT_REF_COUNT_ACCESSORS(ImaginaryLiteral);
-STMT_REF_COUNT_ACCESSORS(ImplicitValueInitExpr);
-STMT_REF_COUNT_ACCESSORS(InitListExpr);
-STMT_REF_COUNT_ACCESSORS(IntegerLiteral);
-STMT_REF_COUNT_ACCESSORS(LambdaExpr);
-STMT_REF_COUNT_ACCESSORS(MSPropertyRefExpr);
-STMT_REF_COUNT_ACCESSORS(MaterializeTemporaryExpr);
-STMT_REF_COUNT_ACCESSORS(MemberExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCArrayLiteral);
-STMT_REF_COUNT_ACCESSORS(ObjCBoolLiteralExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCBoxedExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCDictionaryLiteral);
-STMT_REF_COUNT_ACCESSORS(ObjCEncodeExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCIndirectCopyRestoreExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCIsaExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCIvarRefExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCMessageExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCPropertyRefExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCProtocolExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCSelectorExpr);
-STMT_REF_COUNT_ACCESSORS(ObjCStringLiteral);
-STMT_REF_COUNT_ACCESSORS(ObjCSubscriptRefExpr);
-STMT_REF_COUNT_ACCESSORS(OffsetOfExpr);
-STMT_REF_COUNT_ACCESSORS(OpaqueValueExpr);
-STMT_REF_COUNT_ACCESSORS(UnresolvedLookupExpr);
-STMT_REF_COUNT_ACCESSORS(UnresolvedMemberExpr);
-// firstOverloadExprConstant= UnresolvedLookupExprClass, lastOverloadExprConstant= UnresolvedMemberExprClass,
-STMT_REF_COUNT_ACCESSORS(PackExpansionExpr);
-STMT_REF_COUNT_ACCESSORS(ParenExpr);
-STMT_REF_COUNT_ACCESSORS(ParenListExpr);
-STMT_REF_COUNT_ACCESSORS(PredefinedExpr);
-STMT_REF_COUNT_ACCESSORS(PseudoObjectExpr);
-STMT_REF_COUNT_ACCESSORS(ShuffleVectorExpr);
-STMT_REF_COUNT_ACCESSORS(SizeOfPackExpr);
-STMT_REF_COUNT_ACCESSORS(StmtExpr);
-STMT_REF_COUNT_ACCESSORS(StringLiteral);
-STMT_REF_COUNT_ACCESSORS(SubstNonTypeTemplateParmExpr);
-STMT_REF_COUNT_ACCESSORS(SubstNonTypeTemplateParmPackExpr);
-STMT_REF_COUNT_ACCESSORS(TypeTraitExpr);
-STMT_REF_COUNT_ACCESSORS(UnaryExprOrTypeTraitExpr);
-STMT_REF_COUNT_ACCESSORS(UnaryOperator);
-STMT_REF_COUNT_ACCESSORS(VAArgExpr);
-// firstExprConstant= BinaryConditionalOperatorClass, lastExprConstant= VAArgExprClass,
-STMT_REF_COUNT_ACCESSORS(ForStmt);
-STMT_REF_COUNT_ACCESSORS(GotoStmt);
-STMT_REF_COUNT_ACCESSORS(IfStmt);
-STMT_REF_COUNT_ACCESSORS(IndirectGotoStmt);
-STMT_REF_COUNT_ACCESSORS(LabelStmt);
-STMT_REF_COUNT_ACCESSORS(MSDependentExistsStmt);
-STMT_REF_COUNT_ACCESSORS(NullStmt);
-STMT_REF_COUNT_ACCESSORS(OMPSimdDirective);
-STMT_REF_COUNT_ACCESSORS(OMPForDirective);
-STMT_REF_COUNT_ACCESSORS(OMPParallelDirective);
-// firstOMPExecutableDirectiveConstant= OMPParallelDirectiveClass, lastOMPExecutableDirectiveConstant= OMPParallelDirectiveClass,
-STMT_REF_COUNT_ACCESSORS(ObjCAtCatchStmt);
-STMT_REF_COUNT_ACCESSORS(ObjCAtFinallyStmt);
-STMT_REF_COUNT_ACCESSORS(ObjCAtSynchronizedStmt);
-STMT_REF_COUNT_ACCESSORS(ObjCAtThrowStmt);
-STMT_REF_COUNT_ACCESSORS(ObjCAtTryStmt);
-STMT_REF_COUNT_ACCESSORS(ObjCAutoreleasePoolStmt);
-STMT_REF_COUNT_ACCESSORS(ObjCForCollectionStmt);
-STMT_REF_COUNT_ACCESSORS(ReturnStmt);
-STMT_REF_COUNT_ACCESSORS(SEHExceptStmt);
-STMT_REF_COUNT_ACCESSORS(SEHFinallyStmt);
-STMT_REF_COUNT_ACCESSORS(SEHTryStmt);
-STMT_REF_COUNT_ACCESSORS(CaseStmt);
-STMT_REF_COUNT_ACCESSORS(DefaultStmt);
-// firstSwitchCaseConstant= CaseStmtClass, lastSwitchCaseConstant= DefaultStmtClass,
-STMT_REF_COUNT_ACCESSORS(SwitchStmt);
-STMT_REF_COUNT_ACCESSORS(WhileStmt);
-
-#define TYPE_REF_COUNT_ACCESSORS(_C_, _B_) INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::_C_##Type>)
-TYPE_REF_COUNT_ACCESSORS(Builtin, Type);
-TYPE_REF_COUNT_ACCESSORS(Complex, Type);
-TYPE_REF_COUNT_ACCESSORS(Pointer, Type);
-TYPE_REF_COUNT_ACCESSORS(BlockPointer, Type);
-TYPE_REF_COUNT_ACCESSORS(Reference, Type);
-TYPE_REF_COUNT_ACCESSORS(LValueReference, ReferenceType);
-TYPE_REF_COUNT_ACCESSORS(RValueReference, ReferenceType);
-TYPE_REF_COUNT_ACCESSORS(MemberPointer, Type);
-TYPE_REF_COUNT_ACCESSORS(Array, Type);
-TYPE_REF_COUNT_ACCESSORS(ConstantArray, ArrayType);
-TYPE_REF_COUNT_ACCESSORS(IncompleteArray, ArrayType);
-TYPE_REF_COUNT_ACCESSORS(VariableArray, ArrayType);
-TYPE_REF_COUNT_ACCESSORS(DependentSizedArray, ArrayType);
-TYPE_REF_COUNT_ACCESSORS(DependentSizedExtVector, Type);
-TYPE_REF_COUNT_ACCESSORS(Vector, Type);
-TYPE_REF_COUNT_ACCESSORS(ExtVector, VectorType);
-TYPE_REF_COUNT_ACCESSORS(Function, Type);
-TYPE_REF_COUNT_ACCESSORS(FunctionProto, FunctionType);
-TYPE_REF_COUNT_ACCESSORS(FunctionNoProto, FunctionType);
-TYPE_REF_COUNT_ACCESSORS(UnresolvedUsing, Type);
-TYPE_REF_COUNT_ACCESSORS(Paren, Type);
-TYPE_REF_COUNT_ACCESSORS(Typedef, Type);
-TYPE_REF_COUNT_ACCESSORS(Adjusted, Type);
-TYPE_REF_COUNT_ACCESSORS(Decayed, AdjustedType);
-TYPE_REF_COUNT_ACCESSORS(TypeOfExpr, Type);
-TYPE_REF_COUNT_ACCESSORS(TypeOf, Type);
-TYPE_REF_COUNT_ACCESSORS(Decltype, Type);
-TYPE_REF_COUNT_ACCESSORS(UnaryTransform, Type);
-TYPE_REF_COUNT_ACCESSORS(Tag, Type);
-TYPE_REF_COUNT_ACCESSORS(Record, TagType);
-TYPE_REF_COUNT_ACCESSORS(Enum, TagType);
-TYPE_REF_COUNT_ACCESSORS(Elaborated, Type);
-TYPE_REF_COUNT_ACCESSORS(Attributed, Type);
-TYPE_REF_COUNT_ACCESSORS(TemplateTypeParm, Type);
-TYPE_REF_COUNT_ACCESSORS(SubstTemplateTypeParm, Type);
-TYPE_REF_COUNT_ACCESSORS(SubstTemplateTypeParmPack, Type);
-TYPE_REF_COUNT_ACCESSORS(TemplateSpecialization, Type);
-INTRUSIVE_POINTER_REFERENCE_COUNT_ACCESSORS(Wrapper<clang::TemplateSpecializationType const>)
-
-TYPE_REF_COUNT_ACCESSORS(Auto, Type);
-TYPE_REF_COUNT_ACCESSORS(InjectedClassName, Type);
-TYPE_REF_COUNT_ACCESSORS(DependentName, Type);
-TYPE_REF_COUNT_ACCESSORS(DependentTemplateSpecialization, Type);
-TYPE_REF_COUNT_ACCESSORS(PackExpansion, Type);
-TYPE_REF_COUNT_ACCESSORS(ObjCObject, Type);
-TYPE_REF_COUNT_ACCESSORS(ObjCInterface, ObjCObjectType);
-TYPE_REF_COUNT_ACCESSORS(ObjCObjectPointer, Type);
-TYPE_REF_COUNT_ACCESSORS(Atomic, Type);
 
 namespace asttooling {
 
@@ -1020,11 +730,21 @@ core::T_sp mostDerivedType(const clang::Type *x) {
   SIMPLE_ERROR(BF("astExpose.cc>mostDerivedType | Could not cast clang::Type s->getTypeClass()-> %d") % s->getTypeClass());
 }
 
+
+#define ARGS_af_constant_array_get_size "(constant-array)"
+#define DECL_af_constant_array_get_size ""
+#define DOCS_af_constant_array_get_size "constant_array_get_size - returns the size of the constant array"
+core::T_sp af_constant_array_get_size(clang::ConstantArrayType *cat) {
+    llvm::APInt size = cat->getSize();
+  string s = size.toString(10,true);
+  return core::Integer_O::create(s);
+}
+
+
 #define ARGS_af_getTypePtrOrNull "(arg)"
 #define DECL_af_getTypePtrOrNull ""
 #define DOCS_af_getTypePtrOrNull "getTypePtrOrNull - returns the most derived Type* ptr or NIL"
 core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
-  _G();
   const clang::Type *tp = qt.getTypePtrOrNull();
   if (tp) {
     return mostDerivedType(tp);
@@ -1036,7 +756,6 @@ core::T_sp af_getTypePtrOrNull(clang::QualType qt) {
 #define DECL_af_getAsCXXRecordDecl ""
 #define DOCS_af_getAsCXXRecordDecl "getAsCXXRecordDecl - returns the most derived CXXRecordDecl* ptr or NIL"
 core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
-  _G();
   const clang::CXXRecordDecl *declp = tp->getAsCXXRecordDecl();
   if (declp) {
     return mostDerivedDecl(declp);
@@ -1048,7 +767,6 @@ core::T_sp af_getAsCXXRecordDecl(clang::Type *tp) {
 #define DECL_af_getNameForDiagnostic ""
 #define DOCS_af_getNameForDiagnostic "getNameForDiagnostic"
 void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core::T_sp stream, LangOptions &langOps, bool qualified) {
-  _G();
   string str;
   llvm::raw_string_ostream ostr(str);
   decl->getNameForDiagnostic(ostr, langOps, qualified);
@@ -1060,23 +778,21 @@ void af_getNameForDiagnostic(clang::ClassTemplateSpecializationDecl *decl, core:
 #define DECL_af_makeQualType ""
 #define DOCS_af_makeQualType "makeQualType"
 clang::QualType af_makeQualType(clang::Type *ty) {
-  _G();
   clang::QualType qt(ty, 0);
   return qt;
 };
 };
 
+SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
+SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
+SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangAccessSpecifierSTAR);
 CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateArgument::ArgKind, asttooling::_sym_STARclangTemplateArgumentArgKindSTAR);
 CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::TemplateSpecializationKind, asttooling::_sym_STARclangTemplateSpecializationKindSTAR);
+CLBIND_TRANSLATE_SYMBOL_TO_ENUM(clang::AccessSpecifier, asttooling::_sym_STARclangAccessSpecifierSTAR);
 
 namespace asttooling {
-
-#define ClangAstPkg "CLANG-AST"
-
 void initialize_astExpose() {
-  SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateSpecializationKindSTAR);
-  SYMBOL_EXPORT_SC_(AstToolingPkg, STARclangTemplateArgumentArgKindSTAR);
-  core::Package_sp pkg = _lisp->makePackage(ClangAstPkg, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
+  core::Package_sp pkg = _lisp->findPackage(ClangAstPkg); //, {"CAST"}, {}); //{"CAST"},{"CL","CORE","AST_TOOLING"});
   pkg->shadow(core::Str_O::create("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)
@@ -1086,6 +802,13 @@ void initialize_astExpose() {
         .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
         .def("getLocStart", &clang::Decl::getLocStart)
         .def("getLocEnd", &clang::Decl::getLocEnd)
+    .def("getAccess",&clang::Decl::getAccess)
+    .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
+      value("AS_public", clang::AS_public),
+      value("AS_protected", clang::AS_protected),
+      value("AS_private", clang::AS_private),
+      value("AS_none", clang::AS_none)
+      ]
 #define CLASS_DECL(_Class_, _Base_) class_<_Class_##Decl, _Base_>(#_Class_ "Decl", no_default_constructor)
     ,
     CLASS_DECL(AccessSpec, Decl),
@@ -1167,9 +890,10 @@ void initialize_astExpose() {
     CLASS_DECL(Value, NamedDecl)
         .def("getType", &clang::ValueDecl::getType),
     CLASS_DECL(Declarator, ValueDecl),
-    CLASS_DECL(Field, DeclaratorDecl),
+    CLASS_DECL(Field, DeclaratorDecl)
+    .def("getFieldIndex",&clang::FieldDecl::getFieldIndex) ,
     CLASS_DECL(ObjCAtDefsField, FieldDecl),
-    CLASS_DECL(ObjCIvar, FieldDecl),
+    CLASS_DECL(ObjCIvar, FieldDecl) ,
     CLASS_DECL(Function, DeclaratorDecl)
         .def("hasBody", (bool (clang::FunctionDecl::*)() const) & clang::FunctionDecl::hasBody)
         .def("isThisDeclarationADefinition", &clang::FunctionDecl::isThisDeclarationADefinition)
@@ -1318,7 +1042,9 @@ void initialize_astExpose() {
     CLASS_STMT(ShuffleVectorExpr, Expr),
     CLASS_STMT(SizeOfPackExpr, Expr),
     CLASS_STMT(StmtExpr, Expr),
-    CLASS_STMT(StringLiteral, Expr),
+    CLASS_STMT(StringLiteral, Expr)
+    .def("getString",&clang::StringLiteral::getString)
+    ,
     CLASS_STMT(SubstNonTypeTemplateParmExpr, Expr),
     CLASS_STMT(SubstNonTypeTemplateParmPackExpr, Expr),
     CLASS_STMT(TypeTraitExpr, Expr),
@@ -1386,7 +1112,8 @@ void initialize_astExpose() {
     CLASS_TYPE(Array, Type)
         .def("getElementType", &clang::ArrayType::getElementType),
     CLASS_TYPE(ConstantArray, ArrayType)
-        .def("desugar", &clang::ConstantArrayType::desugar),
+    .def("desugar", &clang::ConstantArrayType::desugar),
+    def("constant-array-get-size", &af_constant_array_get_size, policies<>(), ARGS_af_constant_array_get_size, DECL_af_constant_array_get_size, DOCS_af_constant_array_get_size),
     CLASS_TYPE(IncompleteArray, ArrayType)
         .def("desugar", &clang::IncompleteArrayType::desugar),
     CLASS_TYPE(VariableArray, ArrayType),
@@ -1474,15 +1201,15 @@ void initialize_astExpose() {
         .def("getAsExpr", &clang::TemplateArgument::getAsExpr)
         //            .  iterator("pack",&clang::TemplateArgument::pack_begin, &clang::TemplateArgument::pack_end)
         .enum_<clang::TemplateArgument::ArgKind>(asttooling::_sym_STARclangTemplateArgumentArgKindSTAR)[
-      value("Type", clang::TemplateArgument::ArgKind::Type),
-      value("Null", clang::TemplateArgument::ArgKind::Null),
-      value("Declaration", clang::TemplateArgument::ArgKind::Declaration),
-      value("NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
-      value("Integral", clang::TemplateArgument::ArgKind::Integral),
-      value("Template", clang::TemplateArgument::ArgKind::Template),
-      value("TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
-      value("Expression", clang::TemplateArgument::ArgKind::Expression),
-      value("Pack", clang::TemplateArgument::ArgKind::Pack)
+      value("argkind-Type", clang::TemplateArgument::ArgKind::Type),
+      value("argkind-Null", clang::TemplateArgument::ArgKind::Null),
+      value("argkind-Declaration", clang::TemplateArgument::ArgKind::Declaration),
+      value("argkind-NullPtr", clang::TemplateArgument::ArgKind::NullPtr),
+      value("argkind-Integral", clang::TemplateArgument::ArgKind::Integral),
+      value("argkind-Template", clang::TemplateArgument::ArgKind::Template),
+      value("argkind-TemplateExpansion", clang::TemplateArgument::ArgKind::TemplateExpansion),
+      value("argkind-Expression", clang::TemplateArgument::ArgKind::Expression),
+      value("argkind-Pack", clang::TemplateArgument::ArgKind::Pack)
     ],
     class_<clang::TemplateName>("TemplateName", no_default_constructor)
         .def("getAsTemplateDecl", &clang::TemplateName::getAsTemplateDecl),
@@ -1491,7 +1218,8 @@ void initialize_astExpose() {
         .def("getTypeLoc", &clang::TypeSourceInfo::getTypeLoc),
     class_<clang::TemplateArgumentList>("TemplateArgumentList", no_default_constructor)
         .def("size", &clang::TemplateArgumentList::size)
-        .def("TemplateArgumentList-get", &clang::TemplateArgumentList::get),
+        .def("TemplateArgumentList-get", &clang::TemplateArgumentList::get)
+    ,
     class_<clang::IdentifierInfo>("IdentifierInfo", no_default_constructor)
   ];
 }

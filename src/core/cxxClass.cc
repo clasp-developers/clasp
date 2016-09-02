@@ -38,7 +38,6 @@ THE SOFTWARE.
 namespace core {
 
 CxxClass_sp CxxClass_O::create(Symbol_sp instanceClassSymbol) {
-  _G();
   LOG(BF("Creating CxxClass_O instanceClassSymbol=%d") % instanceClassSymbol);
   GC_ALLOCATE(CxxClass_O, oclass);
   oclass->setName(instanceClassSymbol);
@@ -46,7 +45,6 @@ CxxClass_sp CxxClass_O::create(Symbol_sp instanceClassSymbol) {
 }
 
 CxxClass_sp CxxClass_O::createUncollectable() {
-  _G();
   GC_ALLOCATE_UNCOLLECTABLE(CxxClass_O, oclass);
   return ((oclass));
 }
@@ -88,15 +86,7 @@ void CxxClass_O::describe(T_sp stream) {
   clasp_write_string(sr.str(), stream);
 }
 
-void CxxClass_O::exposeCando(Lisp_sp lisp) {
-  class_<CxxClass_O>();
-}
-void CxxClass_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, CxxClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, CxxClass_O);
+
+
 };

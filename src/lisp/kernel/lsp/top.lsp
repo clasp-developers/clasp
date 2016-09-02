@@ -49,7 +49,9 @@
 (defparameter *step-level* 0)			; repeated from trace.lsp
 
 (defparameter *break-hidden-functions* '(error cerror apply funcall invoke-debugger))
-(defparameter *break-hidden-packages* (list #-ecl-min (find-package 'system)))
+(defparameter *break-hidden-packages*
+  (list
+   #-(or ecl-min clasp-min) (find-package 'system)))
 
 (defconstant tpl-commands
    '(("Top level commands"
@@ -556,7 +558,8 @@ Use special code 0 to cancel this operation.")
 	      ((:prompt-hook *tpl-prompt-hook*) *tpl-prompt-hook*)
 	      (broken-at nil)
 	      (quiet nil))
-  ;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
+  #-(or ecl-min clasp)
+  (declare (c::policy-debug-ihs-frame))
   (let* ((*ihs-base* *ihs-top*)
 	 (*ihs-top* (if broken-at (ihs-search t broken-at) (ihs-top)))
 	 (*ihs-current* (if broken-at (ihs-prev *ihs-top*) *ihs-top*))
@@ -896,7 +899,7 @@ Use special code 0 to cancel this operation.")
 
 #-(or ecl-min clasp)
 (defun decode-env-elt (env ndx)
-  (ffi:c-inline (env ndx) (:object :fixnum) :object  ;; I'm turning off this c-inline because I don't know what it does meister 2013
+  (ffi:c-inline (env ndx) (:object :fixnum) :object
                 "
 	cl_object v = #0;
 	cl_index ndx = #1;
@@ -953,9 +956,9 @@ Use special code 0 to cancel this operation.")
 (defun decode-ihs-env (*break-env*)
   (let ((env *break-env*))
     (if (vectorp env)
-      #+ecl-min
+      #+(or ecl-min clasp)
       nil
-      #-(or ecl-min clasp) ;; I'm turning off this c-inline for clasp because I don't know what it does meister 2013
+      #-(or ecl-min clasp)
       (let* ((next (decode-ihs-env
                     (ffi:c-inline (env) (:object) :object
                                   "(#0)->vector.self.t[0]" :one-liner t))))
@@ -1102,32 +1105,39 @@ Use special code 0 to cancel this operation.")
 	      bi (bds-var bi)
 	      (let ((val (bds-val bi)))
 		(if (eq val si::unbound) "<unbound value>" val))))))
+#+(and clasp (not use-expensive-backtrace))
+(defun clasp-backtrace (&optional (n 99999999))
+  (core:clib-backtrace n))
 
-#+clasp
+#+(and clasp use-expensive-backtrace)
 (defun clasp-backtrace (&optional (n 99999999))
   (unless n (setq n 99999999))
-  (let (backtrace)
-    (do* ((icur (core:ihs-top) (core:ihs-prev icur))
+  (let (backtrace
+        (top (or *stack-top-hint* (core::ihs-top))))
+    (do* ((icur top (core:ihs-prev icur))
           (fun (core:ihs-fun icur) (core:ihs-fun icur))
           (args (core::ihs-arguments icur) (core:ihs-arguments icur))
           (i 0 (1+ i)))
          ((or (= icur 0) (>= i n)))
-      (let ((arg-str (with-output-to-string (sout)
-                       (dotimes (i (length args))
-                         (handler-case (format sout "~s " (elt args i))
-                           (error (c)
-                             (format sout "#<UNPRINTABLE> ")))))))
-        (let* ((fun (core:ihs-fun icur))
-               (source-file (source-file-info-pathname (function-source-pos fun)))
-               (filename (if source-file (format nil "~a.~a" (pathname-name source-file) (pathname-type source-file))))
-               (source-pos-info (core:function-source-pos-info fun))
-               (lineno (if source-pos-info (core:source-pos-info-lineno source-pos-info))))
-          (push (if (eq (function-name fun) 'cl:lambda)
-                    (format nil "~4a ~20a ~5d LAMBDA(~a)" icur filename lineno (subseq arg-str 0 160))
-                    (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 160)))
-                backtrace))))
+      (let* ((arg-str (with-output-to-string (sout)
+                        (dotimes (i (length args))
+                          (handler-case (let ((arg (elt args i)))
+                                          (if (symbolp arg)
+                                              (format sout "'~s " arg)
+                                              (format sout "~s " arg)))
+                            (error (c)
+                              (format sout "#<UNPRINTABLE> "))))))
+             (source-file (source-file-info-pathname (function-source-pos fun)))
+             (filename (if source-file (format nil "~a.~a" (pathname-name source-file) (pathname-type source-file))))
+             (source-pos-info (core:function-source-pos-info fun))
+             (lineno (if source-pos-info (core:source-pos-info-lineno source-pos-info))))
+        (push (if (eq (function-name fun) 'cl:lambda)
+                  (format nil "~4a ~20a ~5d LAMBDA(~a)" icur filename lineno (subseq arg-str 0 256))
+                  (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 256)))
+              backtrace)))
     (dolist (bl backtrace)
-      (format t "~a~%" bl))))
+      (format t "~a~%" bl))
+    (format t "Backtrace done~%")))
 
 (defun tpl-backtrace (&optional n)
   #+clasp
@@ -1539,10 +1549,11 @@ package."
   ;; call *INVOKE-DEBUGGER-HOOK* first, so that *DEBUGGER-HOOK* is not
   ;; called when the debugger is disabled. We adopt this mechanism
   ;; from SBCL.
-;;  #-ecl-min (declare (c::policy-debug-ihs-frame))
-  (let ((old-hook *invoke-debugger-hook*))
+  #-(or ecl-min clasp)
+  (declare (c::policy-debug-ihs-frame))
+  (let ((old-hook ext:*invoke-debugger-hook*))
     (when old-hook
-      (let ((*invoke-debugger-hook* nil))
+      (let ((ext:*invoke-debugger-hook* nil))
         (funcall old-hook condition old-hook))))
   (let* ((old-hook *debugger-hook*))
     (when old-hook
@@ -1554,7 +1565,7 @@ package."
         (default-debugger condition)
         (let* (;; We do not have a si::top-level invocation above us
                ;; so we have to provide the environment for interactive use.
-               (*invoke-debugger-hook* *invoke-debugger-hook*)
+               (ext:*invoke-debugger-hook* ext:*invoke-debugger-hook*)
                (*debugger-hook* *debugger-hook*)
                (*ihs-top* *ihs-top*) ;; Or should it be 1?
                (*tpl-level* *tpl-level*) ;; Or should we simply say 0.

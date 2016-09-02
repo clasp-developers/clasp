@@ -33,6 +33,8 @@ void cc_call_with_variable_bound(core::T_mv *result, core::T_O *symbol, core::T_
 void cc_funwind_protect(core::T_mv *result, core::T_O *protected_fn, core::T_O *cleanup_fn);
 void cc_catch(core::T_mv *result, core::T_O *tag, core::T_O *func);
 void cc_throw(core::T_O *tag, core::T_O *resultP);
+
+void cc_invoke_startup_functions();
 };
 
 namespace llvmo {

@@ -1,0 +1,10 @@
+#+cclasp(eval-when (:load-toplevel)
+          (cl:in-package :cl-user)
+          (core:process-extension-loads)
+          (core:load-clasprc)
+          (core:process-command-line-load-eval-sequence)
+          (let ((core:*use-interpreter-for-eval* nil))
+            (if (member :interactive *features*)
+                (core:top-level)
+                (format t "In non-interactive mode - control fell through to epilogue-cclasp.lisp~%"))))
+

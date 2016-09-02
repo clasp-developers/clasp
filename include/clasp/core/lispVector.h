@@ -37,10 +37,8 @@ namespace core {
 FORWARD(Vector);
 
 /*! A one dimensional vector of objects */
-// class Vector_O : public Array_O, public T_O
 class Vector_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, ClPkg, Vector_O, "vector");
+  LISP_CLASS(core, ClPkg, Vector_O, "vector",Array_O);
 
 public:
   void archiveBase(core::ArchiveP node);
@@ -55,7 +53,8 @@ public:
 private: // instance variables here
 public:  // Functions here
   bool equalp(T_sp o) const;
-  bool adjustableArrayP() const { return false; };
+CL_LISPIFY_NAME("adjustableArrayP");
+CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   gc::Fixnum vector_length() const { return this->dimension(); };
   virtual gc::Fixnum dimension() const { SUBIMP(); };
 
@@ -80,11 +79,17 @@ public:  // Functions here
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
 
   virtual cl_index fillPointer() const { SUBIMP(); };
-  virtual void setFillPointer(size_t idx) { SUBIMP(); };
+
+  CL_NAME("FILL-POINTER-SET");
+  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { ERROR(cl::_sym_simpleTypeError,
+                                                               core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not an array with a fill pointer."),
+                                                                                     kw::_sym_formatArguments, core::lisp_createList(this->asSmartPtr()),
+                                                                                     kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+                                                                                     kw::_sym_datum, this->asSmartPtr())); }
 
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
   virtual T_sp setf_aref(List_sp indices_val);
 
   virtual T_sp rowMajorAref(cl_index idx) const { return this->elt(idx); };
@@ -102,13 +107,16 @@ public:  // Functions here
 
 }; /* core */
 };
-TRANSLATE(core::Vector_O);
+
+namespace cl {
+  extern core::Symbol_sp& _sym_General_O;
+};
 
 namespace core {
-// Like ecl_vector_start_end
+// Like ecl__vector_start_end
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
-Vector_sp core_make_vector(T_sp element_type,
+Vector_sp core__make_vector(T_sp element_type,
                            int dimension,
                            bool adjustable = false,
                            T_sp fill_pointer = cl::_sym_T_O,

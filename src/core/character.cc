@@ -61,7 +61,6 @@ int clasp_string_case(Str_sp s) {
       +1 if a > b
     */
 int char_basic_compare(int na, int nb) {
-  _G();
   if (na < nb)
     return -1;
   if (na == nb)
@@ -70,7 +69,6 @@ int char_basic_compare(int na, int nb) {
 }
 
 T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
-  _G();
   char c = clasp_as_char(gc::As<Character_sp>(oCar(args)));
   if (!preserve_case)
     c = toupper(c);
@@ -90,34 +88,34 @@ T_sp monotonic(int s, int t, List_sp args, bool preserve_case = true) {
   return _lisp->_true();
 };
 
-#define ARGS_cl_lower_case_p "(arg)"
-#define DECL_cl_lower_case_p ""
-#define DOCS_cl_lower_case_p "lower_case_p"
-bool cl_lower_case_p(Character_sp c) {
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("lower_case_p");
+CL_DEFUN bool cl__lower_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
   return islower(x);
 };
 
-#define ARGS_cl_upper_case_p "(arg)"
-#define DECL_cl_upper_case_p ""
-#define DOCS_cl_upper_case_p "upper_case_p"
-bool cl_upper_case_p(Character_sp c) {
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("upper_case_p");
+CL_DEFUN bool cl__upper_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
   return isupper(x);
 };
 
-#define ARGS_cl_both_case_p "(arg)"
-#define DECL_cl_both_case_p ""
-#define DOCS_cl_both_case_p "both_case_p"
-bool cl_both_case_p(Character_sp c) {
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("both_case_p");
+CL_DEFUN bool cl__both_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
   return isupper(x) || islower(x);
 };
 
-#define ARGS_cl_alphanumericp "(char)"
-#define DECL_cl_alphanumericp ""
-#define DOCS_cl_alphanumericp "alphanumericp"
-bool cl_alphanumericp(Character_sp ch) {
+CL_LAMBDA(char);
+CL_DECLARE();
+CL_DOCSTRING("alphanumericp");
+CL_DEFUN bool cl__alphanumericp(Character_sp ch) {
   claspCharacter x = clasp_char_code(ch);
   if (x < 128) {
     return isalpha(x) || isdigit(x);
@@ -125,100 +123,80 @@ bool cl_alphanumericp(Character_sp ch) {
   return false;
 };
 
-#define ARGS_af_charUpcase "(char)"
-#define DECL_af_charUpcase ""
-#define DOCS_af_charUpcase "charUpcase"
-char af_charUpcase(Character_sp ch) {
-  _G();
+CL_LAMBDA(char);
+CL_DECLARE();
+CL_DOCSTRING("charUpcase");
+CL_DEFUN char cl__char_upcase(Character_sp ch) {
   return toupper(clasp_as_char(ch));
 };
 
-#define ARGS_af_charDowncase "(char)"
-#define DECL_af_charDowncase ""
-#define DOCS_af_charDowncase "charDowncase"
-char af_charDowncase(Character_sp ch) {
-  _G();
+CL_LAMBDA(char);
+CL_DECLARE();
+CL_DOCSTRING("charDowncase");
+CL_DEFUN char cl__char_downcase(Character_sp ch) {
   return tolower(clasp_as_char(ch));
 };
 
-#define DOCS_af_char_LT_ "Return true if characters are monotonically increasing"
-#define LOCK_af_char_LT_ 1
-#define ARGS_af_char_LT_ "(&rest args)"
-#define DECL_af_char_LT_ ""
-T_sp af_char_LT_(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically increasing");
+CL_DEFUN T_sp cl__char_LT_(List_sp args) {
   return ((monotonic(-1, 1, args)));
 };
 
-#define DOCS_af_char_GT_ "Return true if characters are monotonically decreasing"
-#define LOCK_af_char_GT_ 1
-#define ARGS_af_char_GT_ "(&rest args)"
-#define DECL_af_char_GT_ ""
-T_sp af_char_GT_(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically decreasing");
+CL_DEFUN T_sp cl__char_GT_(List_sp args) {
   return ((monotonic(1, 1, args)));
 };
 
-#define DOCS_af_char_LE_ "Return true if characters are monotonically non-decreasing"
-#define LOCK_af_char_LE_ 1
-#define ARGS_af_char_LE_ "(&rest args)"
-#define DECL_af_char_LE_ ""
-T_sp af_char_LE_(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-decreasing");
+CL_DEFUN T_sp cl__char_LE_(List_sp args) {
   return (Values(monotonic(-1, 0, args)));
 };
 
-#define DOCS_af_char_GE_ "Return true if characters are monotonically non-increasing"
-#define LOCK_af_char_GE_ 1
-#define ARGS_af_char_GE_ "(&rest args)"
-#define DECL_af_char_GE_ ""
-T_mv af_char_GE_(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-increasing");
+CL_DEFUN T_mv cl__char_GE_(List_sp args) {
   return (Values(monotonic(1, 0, args)));
 };
 
-#define DOCS_af_charLessp "Return true if characters are monotonically increasing, ignore case"
-#define LOCK_af_charLessp 1
-#define ARGS_af_charLessp "(&rest args)"
-#define DECL_af_charLessp ""
-T_mv af_charLessp(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically increasing, ignore case");
+CL_DEFUN T_mv cl__char_lessp(List_sp args) {
   return (Values(monotonic(-1, 1, args, false)));
 };
 
-#define DOCS_af_charGreaterp "Return true if characters are monotonically decreasing, ignore case"
-#define LOCK_af_charGreaterp 1
-#define ARGS_af_charGreaterp "(&rest args)"
-#define DECL_af_charGreaterp ""
-T_mv af_charGreaterp(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically decreasing, ignore case");
+CL_DEFUN T_mv cl__char_greaterp(List_sp args) {
   return (Values(monotonic(1, 1, args, false)));
 };
 
-#define DOCS_af_charNotGreaterp "Return true if characters are monotonically non-increasing, ignore case"
-#define LOCK_af_charNotGreaterp 1
-#define ARGS_af_charNotGreaterp "(&rest args)"
-#define DECL_af_charNotGreaterp ""
-T_mv af_charNotGreaterp(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-increasing, ignore case");
+CL_DEFUN T_mv cl__char_not_greaterp(List_sp args) {
   return (Values(monotonic(-1, 0, args, false)));
 };
 
-#define DOCS_af_charNotLessp "Return true if characters are monotonically non-decreasing, ignore case"
-#define LOCK_af_charNotLessp 1
-#define ARGS_af_charNotLessp "(&rest args)"
-#define DECL_af_charNotLessp ""
-T_sp af_charNotLessp(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Return true if characters are monotonically non-decreasing, ignore case");
+CL_DEFUN T_sp cl__char_not_lessp(List_sp args) {
   return ((monotonic(1, 0, args, false)));
 };
 
-#define DOCS_af_char_NE_ "NE_"
-#define LOCK_af_char_NE_ 1
-#define ARGS_af_char_NE_ "(&rest args)"
-#define DECL_af_char_NE_ ""
-T_sp af_char_NE_(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("NE_");
+CL_DEFUN T_sp cl__char_NE_(List_sp args) {
   while (args.notnilp()) {
     int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
     for (List_sp cur = oCdr(args); cur.notnilp(); cur = oCdr(cur)) {
@@ -231,12 +209,10 @@ T_sp af_char_NE_(List_sp args) {
   return ((_lisp->_true()));
 }
 
-#define DOCS_af_char_EQ_ "EQ_"
-#define LOCK_af_char_EQ_ 1
-#define ARGS_af_char_EQ_ "(&rest args)"
-#define DECL_af_char_EQ_ ""
-T_sp af_char_EQ_(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("EQ_");
+CL_DEFUN T_sp cl__char_EQ_(List_sp args) {
   if (args.nilp())
     return ((_lisp->_true()));
   int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
@@ -250,12 +226,10 @@ T_sp af_char_EQ_(List_sp args) {
   return ((_lisp->_true()));
 };
 
-#define DOCS_af_charNotEqual "Like char_NE_ but ignore case"
-#define LOCK_af_charNotEqual 1
-#define ARGS_af_charNotEqual "(&rest args)"
-#define DECL_af_charNotEqual ""
-T_mv af_charNotEqual(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like char_NE_ but ignore case");
+CL_DEFUN T_mv cl__char_not_equal(List_sp args) {
   while (args.notnilp()) {
     int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
     a = toupper(a);
@@ -282,12 +256,10 @@ bool clasp_charEqual2(T_sp x, T_sp y) {
   return icx == icy;
 }
 
-#define DOCS_af_charEqual "Like char_EQ_, ignore case"
-#define LOCK_af_charEqual 1
-#define ARGS_af_charEqual "(&rest args)"
-#define DECL_af_charEqual ""
-bool af_charEqual(List_sp args) {
-  _G();
+CL_LAMBDA(&rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like char_EQ_, ignore case");
+CL_DEFUN bool cl__char_equal(List_sp args) {
   if (args.nilp())
     return true;
   int a = clasp_as_character(gc::As<Character_sp>(oCar(args)));
@@ -308,7 +280,6 @@ bool af_charEqual(List_sp args) {
 #define RETURN_CHAR 13
 
 Character_sp clasp_character_create_from_name(string const &name) {
-  _G();
   Character_sp ch;
   string ssup = boost::to_upper_copy(name);
   if (ssup == "TAB")
@@ -333,155 +304,62 @@ Character_sp clasp_character_create_from_name(string const &name) {
 };
 namespace core {
 
-CharacterInfo::CharacterInfo() {
-  this->gCharacterNames.resize(256, _Nil<T_O>());
-  this->gIndexedCharacters.resize(256, _Nil<T_O>());
-#define ADD_CHAR(name, char_index)                                      \
-  {                                                                     \
-    string upcase_name = stringUpper(name);                             \
-    int fci = char_index;                                               \
-    gNamesToCharacterIndex[upcase_name] = fci;                          \
-    gIndexedCharacters[fci] = clasp_make_standard_character((char)fci); \
-    gCharacterNames[fci] = Str_O::create(upcase_name);                  \
+
+const char* OrderedCharacterNames[] = {
+    "NUL",
+    "SOH", "STX", "ETX", "EOT",
+    "ENQ", "ACK", "BEL", "BACKSPACE",
+    "TAB", "NEWLINE", "VT",
+    "PAGE", "RETURN", "SO", "SI",
+    "DLE", "DC1", "DC2", "DC3",
+    "DC4", "NAK", "SYN", "ETB",
+    "CAN", "EM", "SUB", "ESC",
+    "FS", "GS", "RS", "US",
+    "SPACE", "EXCLAMATION_MARK", "QUOTATION_MARK", "NUMBER_SIGN",
+    "DOLLAR_SIGN", "PERCENT_SIGN", "AMPERSAND", "APOSTROPHE",
+    "LEFT_PARENTHESIS", "RIGHT_PARENTHESIS", "ASTERISK", "PLUS_SIGN",
+    "COMMA", "HYPHEN-MINUS", "FULL_STOP", "SOLIDUS",
+    "DIGIT_ZERO", "DIGIT_ONE", "DIGIT_TWO", "DIGIT_THREE",
+    "DIGIT_FOUR", "DIGIT_FIVE", "DIGIT_SIX", "DIGIT_SEVEN",
+    "DIGIT_EIGHT", "DIGIT_NINE", "COLON", "SEMICOLON",
+    "LESS-THAN_SIGN", "EQUALS_SIGN", "GREATER-THAN_SIGN", "QUESTION_MARK",
+    "COMMERCIAL_AT", "LATIN_CAPITAL_LETTER_A", "LATIN_CAPITAL_LETTER_B", "LATIN_CAPITAL_LETTER_C",
+    "LATIN_CAPITAL_LETTER_D", "LATIN_CAPITAL_LETTER_E", "LATIN_CAPITAL_LETTER_F", "LATIN_CAPITAL_LETTER_G",
+    "LATIN_CAPITAL_LETTER_H", "LATIN_CAPITAL_LETTER_I", "LATIN_CAPITAL_LETTER_J", "LATIN_CAPITAL_LETTER_K",
+    "LATIN_CAPITAL_LETTER_L", "LATIN_CAPITAL_LETTER_M", "LATIN_CAPITAL_LETTER_N", "LATIN_CAPITAL_LETTER_O",
+    "LATIN_CAPITAL_LETTER_P", "LATIN_CAPITAL_LETTER_Q", "LATIN_CAPITAL_LETTER_R", "LATIN_CAPITAL_LETTER_S",
+    "LATIN_CAPITAL_LETTER_T", "LATIN_CAPITAL_LETTER_U", "LATIN_CAPITAL_LETTER_V", "LATIN_CAPITAL_LETTER_W",
+    "LATIN_CAPITAL_LETTER_X", "LATIN_CAPITAL_LETTER_Y", "LATIN_CAPITAL_LETTER_Z", "LEFT_SQUARE_BRACKET",
+    "REVERSE_SOLIDUS", "RIGHT_SQUARE_BRACKET", "CIRCUMFLEX_ACCENT", "LOW_LINE",
+    "GRAVE_ACCENT", "LATIN_SMALL_LETTER_A", "LATIN_SMALL_LETTER_B", "LATIN_SMALL_LETTER_C",
+    "LATIN_SMALL_LETTER_D", "LATIN_SMALL_LETTER_E", "LATIN_SMALL_LETTER_F", "LATIN_SMALL_LETTER_G",
+    "LATIN_SMALL_LETTER_H", "LATIN_SMALL_LETTER_I", "LATIN_SMALL_LETTER_J", "LATIN_SMALL_LETTER_K",
+    "LATIN_SMALL_LETTER_L", "LATIN_SMALL_LETTER_M", "LATIN_SMALL_LETTER_N", "LATIN_SMALL_LETTER_O",
+    "LATIN_SMALL_LETTER_P", "LATIN_SMALL_LETTER_Q", "LATIN_SMALL_LETTER_R", "LATIN_SMALL_LETTER_S",
+    "LATIN_SMALL_LETTER_T", "LATIN_SMALL_LETTER_U", "LATIN_SMALL_LETTER_V", "LATIN_SMALL_LETTER_W",
+    "LATIN_SMALL_LETTER_X", "LATIN_SMALL_LETTER_Y", "LATIN_SMALL_LETTER_Z", "LEFT_CURLY_BRACKET",
+    "VERTICAL_LINE", "RIGHT_CURLY_BRACKET", "TILDE", "RUBOUT"
+};
+
+void CharacterInfo::initialize() {
+  int num_chars = sizeof(OrderedCharacterNames)/sizeof(OrderedCharacterNames[0]);
+  this->gCharacterNames.resize(num_chars, _Nil<T_O>());
+  this->gIndexedCharacters.resize(num_chars, _Nil<T_O>());
+  for ( size_t fci=0; fci<num_chars; ++fci) {
+    const char* name = OrderedCharacterNames[fci];
+//    printf("%s:%d Adding char: %s  at: %d\n", __FILE__, __LINE__, name, fci);
+    this->gNamesToCharacterIndex[name] = fci;
+    this->gIndexedCharacters[fci] = clasp_make_standard_character((char)fci);
+    this->gCharacterNames[fci] = Str_O::create(name);
   }
-  int ci = 0;
   gNamesToCharacterIndex["NULL"] = 0;
-  ADD_CHAR("Nul", ci++);
-  ADD_CHAR("Soh", ci++);       //1
-  ADD_CHAR("Stx", ci++);       //2
-  ADD_CHAR("Etx", ci++);       //3
-  ADD_CHAR("Eot", ci++);       //4
-  ADD_CHAR("Enq", ci++);       //5
-  ADD_CHAR("Ack", ci++);       //6
-  ADD_CHAR("Bel", ci++);       //7
-  ADD_CHAR("Backspace", ci++); //8
-  ADD_CHAR("Tab", ci++);       //9
-  ADD_CHAR("Newline", ci++);   //10
-  ADD_CHAR("Linefeed", 10);    //10
-  ADD_CHAR("Vt", ci++);        //11
-  ADD_CHAR("Page", ci++);      //12
-  ADD_CHAR("Return", ci++);    //13
-  ADD_CHAR("So", ci++);
-  ADD_CHAR("Si", ci++);
-  ADD_CHAR("Dle", ci++);
-  ADD_CHAR("Dc1", ci++);
-  ADD_CHAR("Dc2", ci++);
-  ADD_CHAR("Dc3", ci++);
-  ADD_CHAR("Dc4", ci++);
-  ADD_CHAR("Nak", ci++);
-  ADD_CHAR("Syn", ci++);
-  ADD_CHAR("Etb", ci++);
-  ADD_CHAR("Can", ci++);
-  ADD_CHAR("Em", ci++);
-  ADD_CHAR("Sub", ci++);
-  ADD_CHAR("Esc", ci++);
-  ADD_CHAR("Fs", ci++);
-  ADD_CHAR("Gs", ci++);
-  ADD_CHAR("Rs", ci++);
-  ADD_CHAR("Us", ci++);
-  ADD_CHAR("Space", ci++);
-  ADD_CHAR("EXCLAMATION_MARK", ci++);
-  ADD_CHAR("QUOTATION_MARK", ci++);
-  ADD_CHAR("NUMBER_SIGN", ci++);
-  ADD_CHAR("DOLLAR_SIGN", ci++);
-  ADD_CHAR("PERCENT_SIGN", ci++);
-  ADD_CHAR("AMPERSAND", ci++);
-  ADD_CHAR("APOSTROPHE", ci++);
-  ADD_CHAR("LEFT_PARENTHESIS", ci++);
-  ADD_CHAR("RIGHT_PARENTHESIS", ci++);
-  ADD_CHAR("ASTERISK", ci++);
-  ADD_CHAR("PLUS_SIGN", ci++);
-  ADD_CHAR("COMMA", ci++);
-  ADD_CHAR("HYPHEN-MINUS", ci++);
-  ADD_CHAR("FULL_STOP", ci++);
-  ADD_CHAR("SOLIDUS", ci++);
-  ADD_CHAR("DIGIT_ZERO", ci++);
-  ADD_CHAR("DIGIT_ONE", ci++);
-  ADD_CHAR("DIGIT_TWO", ci++);
-  ADD_CHAR("DIGIT_THREE", ci++);
-  ADD_CHAR("DIGIT_FOUR", ci++);
-  ADD_CHAR("DIGIT_FIVE", ci++);
-  ADD_CHAR("DIGIT_SIX", ci++);
-  ADD_CHAR("DIGIT_SEVEN", ci++);
-  ADD_CHAR("DIGIT_EIGHT", ci++);
-  ADD_CHAR("DIGIT_NINE", ci++);
-  ADD_CHAR("COLON", ci++);
-  ADD_CHAR("SEMICOLON", ci++);
-  ADD_CHAR("LESS-THAN_SIGN", ci++);
-  ADD_CHAR("EQUALS_SIGN", ci++);
-  ADD_CHAR("GREATER-THAN_SIGN", ci++);
-  ADD_CHAR("QUESTION_MARK", ci++);
-  ADD_CHAR("COMMERCIAL_AT", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_A", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_B", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_C", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_D", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_E", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_F", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_G", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_H", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_I", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_J", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_K", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_L", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_M", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_N", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_O", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_P", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_Q", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_R", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_S", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_T", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_U", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_V", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_W", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_X", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_Y", ci++);
-  ADD_CHAR("LATIN_CAPITAL_LETTER_Z", ci++);
-  ADD_CHAR("LEFT_SQUARE_BRACKET", ci++);
-  ADD_CHAR("REVERSE_SOLIDUS", ci++);
-  ADD_CHAR("RIGHT_SQUARE_BRACKET", ci++);
-  ADD_CHAR("CIRCUMFLEX_ACCENT", ci++);
-  ADD_CHAR("LOW_LINE", ci++);
-  ADD_CHAR("GRAVE_ACCENT", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_A", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_B", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_C", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_D", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_E", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_F", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_G", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_H", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_I", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_J", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_K", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_L", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_M", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_N", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_O", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_P", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_Q", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_R", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_S", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_T", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_U", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_V", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_W", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_X", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_Y", ci++);
-  ADD_CHAR("LATIN_SMALL_LETTER_Z", ci++);
-  ADD_CHAR("LEFT_CURLY_BRACKET", ci++);
-  ADD_CHAR("VERTICAL_LINE", ci++);
-  ADD_CHAR("RIGHT_CURLY_BRACKET", ci++);
-  ADD_CHAR("TILDE", ci++);
-  ADD_CHAR("Rubout", ci++);
+  gNamesToCharacterIndex["LINEFEED"] = 10;
 }
 
-#define ARGS_af_standard_char_p "(ch)"
-#define DECL_af_standard_char_p ""
-#define DOCS_af_standard_char_p "See CLHS: standard_char_p"
-bool af_standard_char_p(Character_sp ch) {
-  _G();
+CL_LAMBDA(ch);
+CL_DECLARE();
+CL_DOCSTRING("See CLHS: standard_char_p");
+CL_DEFUN bool cl__standard_char_p(Character_sp ch) {
   char c = clasp_as_char(ch);
   if (c == 10)
     return true; // NEWLINE
@@ -526,11 +404,10 @@ bool af_standard_char_p(Character_sp ch) {
   return false;
 };
 
-#define ARGS_af_alpha_char_p "(ch)"
-#define DECL_af_alpha_char_p ""
-#define DOCS_af_alpha_char_p "alpha_char_p"
-bool af_alpha_char_p(Character_sp ch) {
-  _G();
+CL_LAMBDA(ch);
+CL_DECLARE();
+CL_DOCSTRING("alpha_char_p");
+CL_DEFUN bool cl__alpha_char_p(Character_sp ch) {
   return isalpha(clasp_as_char(ch));
 };
 
@@ -547,11 +424,10 @@ Fixnum clasp_digitp(int ch, int basis) {
   return -1;
 }
 
-#define ARGS_cl_digitCharP "(c &optional (radix 10))"
-#define DECL_cl_digitCharP ""
-#define DOCS_cl_digitCharP "digitCharP"
-T_sp cl_digitCharP(Character_sp c, Fixnum_sp radix) {
-  _G();
+CL_LAMBDA(c &optional (radix 10));
+CL_DECLARE();
+CL_DOCSTRING("digitCharP");
+CL_DEFUN T_sp cl__digit_char_p(Character_sp c, Fixnum_sp radix) {
   Fixnum basis = unbox_fixnum(radix);
   if (basis < 2 || basis > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(2, radix, Integer_O::makeIntegerType(2, 36));
@@ -563,12 +439,10 @@ T_sp cl_digitCharP(Character_sp c, Fixnum_sp radix) {
   return make_fixnum(value);
 };
 
-#define DOCS_af_name_char "name_char"
-#define LOCK_af_name_char 1
-#define ARGS_af_name_char "(sname)"
-#define DECL_af_name_char ""
-T_mv af_name_char(Str_sp sname) {
-  _G();
+CL_LAMBDA(sname);
+CL_DECLARE();
+CL_DOCSTRING("name_char");
+CL_DEFUN T_mv cl__name_char(Str_sp sname) {
   Str_sp name = coerce::stringDesignator(sname);
   string upname = stringUpper(name->get());
   map<string, int>::const_iterator it = _lisp->characterInfo().gNamesToCharacterIndex.find(upname);
@@ -578,21 +452,18 @@ T_mv af_name_char(Str_sp sname) {
   return (Values(_Nil<T_O>()));
 };
 
-#define DOCS_cl_char_name "char_name"
-#define LOCK_cl_char_name 1
-#define ARGS_cl_char_name "(och)"
-#define DECL_cl_char_name ""
-Str_sp cl_char_name(Character_sp och) {
-  _G();
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("char_name");
+CL_DEFUN Str_sp cl__char_name(Character_sp och) {
   char ch = clasp_as_char(och);
   return (_lisp->characterInfo().gCharacterNames[ch]);
 };
 
-#define DOCS_cl_char_code "char_code"
-#define ARGS_cl_char_code "(och)"
-#define DECL_cl_char_code ""
-Fixnum_sp cl_char_code(Character_sp och) {
-  _G();
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("char_code");
+CL_DEFUN Fixnum_sp cl__char_code(Character_sp och) {
   int ch = clasp_as_char(och);
   if (ch < CHAR_CODE_LIMIT) {
     return make_fixnum((int)ch);
@@ -600,20 +471,18 @@ Fixnum_sp cl_char_code(Character_sp och) {
   SIMPLE_ERROR(BF("Character is beyon CHAR_CODE_LIMIT: %d") % CHAR_CODE_LIMIT);
 };
 
-#define DOCS_cl_char_int "char_int"
-#define ARGS_cl_char_int "(och)"
-#define DECL_cl_char_int ""
-Fixnum_sp cl_char_int(Character_sp och) {
-  _G();
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("char_int");
+CL_DEFUN Fixnum_sp cl__char_int(Character_sp och) {
   char ch = clasp_as_char(och);
   return make_fixnum((int)ch);
 };
 
-#define DOCS_cl_code_char "code_char"
-#define ARGS_cl_code_char "(och)"
-#define DECL_cl_code_char ""
-Character_sp cl_code_char(Integer_sp ich) {
-  _G();
+CL_LAMBDA(och);
+CL_DECLARE();
+CL_DOCSTRING("code_char");
+CL_DEFUN Character_sp cl__code_char(Integer_sp ich) {
   int ii = clasp_to_int(ich);
   if (ii >= 0 && ii < CHAR_CODE_LIMIT) {
     return clasp_make_character(ii);
@@ -629,81 +498,46 @@ claspChar clasp_charCode(T_sp c) {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, Character_dummy_O);
 
-void Character_dummy_O::exposeCando(::core::Lisp_sp lisp) {
-  _G();
-  ::core::class_<Character_dummy_O>();
-  ClDefun(alphanumericp);
+
   SYMBOL_EXPORT_SC_(ClPkg, char_code);
-  ClDefun(char_code);
   SYMBOL_EXPORT_SC_(ClPkg, code_char);
-  ClDefun(code_char);
   SYMBOL_EXPORT_SC_(ClPkg, char_int);
-  ClDefun(char_int);
 
   SYMBOL_EXPORT_SC_(ClPkg, name_char);
-  Defun(name_char);
   SYMBOL_EXPORT_SC_(ClPkg, char_name);
-  ClDefun(char_name);
   SYMBOL_EXPORT_SC_(ClPkg, alpha_char_p);
-  Defun(alpha_char_p);
   SYMBOL_EXPORT_SC_(ClPkg, standard_char_p);
-  Defun(standard_char_p);
   SYMBOL_EXPORT_SC_(ClPkg, charUpcase);
-  Defun(charUpcase);
   SYMBOL_EXPORT_SC_(ClPkg, charDowncase);
-  Defun(charDowncase);
   SYMBOL_EXPORT_SC_(ClPkg, char_LT_);
-  Defun(char_LT_);
   SYMBOL_EXPORT_SC_(ClPkg, char_GT_);
-  Defun(char_GT_);
   SYMBOL_EXPORT_SC_(ClPkg, char_LE_);
-  Defun(char_LE_);
   SYMBOL_EXPORT_SC_(ClPkg, char_GE_);
-  Defun(char_GE_);
   SYMBOL_EXPORT_SC_(ClPkg, char_NE_);
-  Defun(char_NE_);
   SYMBOL_EXPORT_SC_(ClPkg, char_EQ_);
-  Defun(char_EQ_);
 
   SYMBOL_EXPORT_SC_(ClPkg, charLessp);
-  Defun(charLessp);
   SYMBOL_EXPORT_SC_(ClPkg, charGreaterp);
-  Defun(charGreaterp);
   SYMBOL_EXPORT_SC_(ClPkg, charNotGreaterp);
-  Defun(charNotGreaterp);
   SYMBOL_EXPORT_SC_(ClPkg, charNotLessp);
-  Defun(charNotLessp);
   SYMBOL_EXPORT_SC_(ClPkg, charNotEqual);
-  Defun(charNotEqual);
   SYMBOL_EXPORT_SC_(ClPkg, charEqual);
-  Defun(charEqual);
   SYMBOL_EXPORT_SC_(ClPkg, digitCharP);
-  ClDefun(digitCharP);
-  ClDefun(lower_case_p);
-  ClDefun(upper_case_p);
-  ClDefun(both_case_p);
-}
 
-void Character_dummy_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(Pkg(), Character, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 #if 0
     Character_sp Character_O::create(gctools::Fixnum c)
-    {_G();
+    {
 	StandardChar_sp sc = clasp_make_standard_character(CLASP_CHAR(c));
 	return sc;
     }
 
     Character_sp Character_O::create(T_sp val)
-    {_G();
-	if ( af_fixnumP(val) )
+    {
+	if ( core__fixnump(val) )
 	{
 	    int v = unbox_fixnum(gc::As<Fixnum_sp>(val));
 	    return clasp_make_character(v);
@@ -756,23 +590,11 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
 
 
-    EXPOSE_CLASS(core,BaseChar_O);
 
-    void BaseChar_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<BaseChar_O>()
-//	.initArgs("(self)")
-	;
-    }
+
+
 
     void BaseChar_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),BaseChar,"","",_LISP)
-//	.initArgs("(self)")
-	;
-#endif
-    }
 
 
 
@@ -785,24 +607,14 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
 
 
-    EXPOSE_CLASS(core,StandardChar_O);
 
 
 
 
-    void StandardChar_O::exposeCando(Lisp_sp lisp)
-    {
-	class_<StandardChar_O>()
-	    ;
-    }
+
+
 
     void StandardChar_O::exposePython(Lisp_sp lisp)
-    {_G();
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(CorePkg,StandardChar,"","",_lisp)
-	    ;
-#endif
-    }
 
 
 
@@ -817,7 +629,7 @@ void Character_O::archiveBase(::core::ArchiveP node)
 
 #if defined(OLD_SERIALIZE)
     void StandardChar_O::serialize(serialize::SNode node)
-    {_G();
+    {
 	if ( node->saving() )
 	{
 //	    node.setObject(this->sharedThis<StandardChar_O>());
@@ -845,7 +657,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 	    ss << this->_Value;
 	} else
 	{
-	    ss << _rep_(cl_char_name(this->const_sharedThis<StandardChar_O>()));
+	    ss << _rep_(cl__char_name(this->const_sharedThis<StandardChar_O>()));
 	}
 	return ss.str();
     }
@@ -879,7 +691,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator>=(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -892,7 +704,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator<=(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -904,7 +716,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator<(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -917,7 +729,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     {_OF();
 	if ( obj.nilp() ) return false;
 	if ( obj.get() == this ) return true;
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -939,7 +751,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
     bool StandardChar_O::operator>(T_sp obj) const
     {_OF();
-	if ( af_characterP(obj) )
+	if ( cl__characterp(obj) )
 	{
 	    Character_sp wn = gc::As<Character_sp>(obj);
 	    char v = clasp_as_char(wn);
@@ -989,7 +801,7 @@ void StandardChar_O::archiveBase(ArchiveP node)
     }
 
     bool StandardChar_O::graphicCharP() const
-    {_G();
+    {
 	return this->_Value!='\n';
     }
 
@@ -1009,23 +821,11 @@ void StandardChar_O::archiveBase(ArchiveP node)
 
 
 
-    EXPOSE_CLASS(core,ExtendedChar_O);
 
-    void ExtendedChar_O::exposeCando(::core::Lisp_sp lisp)
-    {
-	::core::class_<ExtendedChar_O>()
-//	.initArgs("(self)")
-	;
-    }
+
+
 
     void ExtendedChar_O::exposePython(::core::Lisp_sp lisp)
-    {
-#ifdef USEBOOSTPYTHON
-	PYTHON_CLASS(Pkg(),ExtendedChar,"","",_LISP)
-//	.initArgs("(self)")
-	;
-#endif
-    }
 
 #if 0
 #if defined(OLD_SERIALIZE)

@@ -37,18 +37,21 @@ THE SOFTWARE.
 namespace core {
 
 template <typename FN>
-class VariadicFunctoid : public BuiltinClosure {
+class VariadicFunctor : public BuiltinClosure_O {
 public:
-  typedef BuiltinClosure TemplatedBase;
-  virtual size_t templatedSizeof() const { return sizeof(VariadicFunctoid<FN>); };
+  typedef BuiltinClosure_O TemplatedBase;
+  virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
 };
 };
 
+
+/*! Make every templated VariadicFunctor KIND the same as the VariadicFunctor<T>::TemplatedBase */
 template <typename T>
-class gctools::GCKind<core::VariadicFunctoid<T>> {
+class gctools::GCKind<core::VariadicFunctor<T>> {
 public:
-  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctoid<T>::TemplatedBase>::Kind;
+  static gctools::GCKindEnum const Kind = gctools::GCKind<typename core::VariadicFunctor<T>::TemplatedBase>::Kind;
 };
+
 
 #include <clasp/core/arguments.h>
 #include <clasp/core/lambdaListHandler.fwd.h>
@@ -58,9 +61,9 @@ namespace core {
 
 namespace core {
 template <int DispatchOn, typename FN>
-class VariadicMethoid : public BuiltinClosure {
+class VariadicMethoid : public BuiltinClosure_O {
 public:
-  typedef BuiltinClosure TemplatedBase;
+  typedef BuiltinClosure_O TemplatedBase;
   size_t templatedSizeof() const { return sizeof(VariadicMethoid<DispatchOn, FN>); };
 };
 
@@ -74,9 +77,20 @@ void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), co
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  gc::tagged_pointer<BuiltinClosure> f = gctools::ClassAllocator<VariadicFunctoid<RT(ARGS...)>>::allocateClass(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
 }
+
+ template <typename RT, typename... ARGS>
+void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+  _G();
+  Symbol_sp symbol = _lisp->intern(name, packageName);
+  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
+  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
+}
+
+
 };
 
 template <int DispatchOn, typename T>
@@ -98,22 +112,22 @@ class Function_O;
 //
 //
 // Wrapper for ActivationFrameMacroPtr
-class MacroClosure : public BuiltinClosure {
+class MacroClosure_O : public BuiltinClosure_O {
 private:
   typedef T_mv (*MacroPtr)(List_sp, T_sp);
   MacroPtr mptr;
-
 public:
   virtual const char *describe() const { return "MacroClosure"; };
   // constructor
-  MacroClosure(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure(name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
-  DISABLE_NEW();
-  size_t templatedSizeof() const { return sizeof(MacroClosure); };
+  MacroClosure_O(Symbol_sp name, MacroPtr ptr, SOURCE_INFO) : BuiltinClosure_O(name, kw::_sym_macro, SOURCE_INFO_PASS), mptr(ptr) {}
+  size_t templatedSizeof() const { return sizeof(MacroClosure_O); };
   virtual Symbol_sp getKind() const { return kw::_sym_macro; };
   LCC_RETURN LISP_CALLING_CONVENTION() {
+    INCREMENT_FUNCTION_CALL_COUNTER(this);
+    ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
     List_sp form = gc::As<Cons_sp>(LCC_ARG0());
     T_sp env = gc::As<T_sp>(LCC_ARG1());
-    InvocationHistoryFrame _frame(gctools::tagged_pointer<Closure>(this), lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
+    InvocationHistoryFrame _frame(lcc_arglist); // The environment could be a Non-Clasp Environment (Cleavir)
     return ((this->mptr)(form, env)).as_return_type();
   };
 };
@@ -122,7 +136,7 @@ inline void defmacro(const string &packageName, const string &name, T_mv (*mp)(L
   _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFileName, 0, lineno);
-  gc::tagged_pointer<BuiltinClosure> f = gc::tagged_pointer<BuiltinClosure>(gctools::ClassAllocator<MacroClosure>::allocateClass(symbol, mp, SOURCE_POS_INFO_FIELDS(spi)));
+  BuiltinClosure_sp f = gc::GC<MacroClosure_O>::allocate(symbol, mp, SOURCE_POS_INFO_FIELDS(spi));
   lisp_defmacro(symbol, packageName, f, arguments, declares, docstring, autoExport);
 }
 
@@ -136,15 +150,17 @@ struct DispatchOn {
 // ----------------------------------------
 // ----------------------------------------
 
-struct MethodDefinition {
+#if 0
+ struct MethodDefinition {
   string _Name;
   int _ClassSymbol;
-  Functoid *_Methoid;
+  Function_sp _Methoid;
 };
-
+#endif
 //    typedef	enum { no_init,class_name_init, make_class_name_init } maker_enum;
 
-extern Symbol_sp _sym_STARallCxxClassesSTAR;
+extern Symbol_sp& _sym_STARallCxxClassesSTAR;
+
 
 template <typename OT>
 class class_ {
@@ -214,25 +230,25 @@ public:
     _G();
     this->setup_class(makerName);
   }
-
+ 
   // non-const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...),
               string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocateClass(symbol, mp);
+    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(symbol, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
-
+ 
   // const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...) const,
               string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
     _G();
     Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
-    gc::tagged_pointer<BuiltinClosure> m = gctools::ClassAllocator<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocateClass(symbol, mp);
+    BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(symbol, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
   }
@@ -267,7 +283,7 @@ public:
 
   enum_ &value(Symbol_sp const &sym, X value) {
     _G();
-    lisp_extendSymbolToEnumConverter(this->_Converter, sym, sym, value);
+    lisp_extendSymbolToEnumConverter(this->_Converter, sym, sym, static_cast<int>(value));
     return *this;
   }
   enum_ &value(Symbol_sp const &name, Symbol_sp const &archiveName, X value) {

@@ -45,7 +45,9 @@ Set this to other IRBuilders to make code go where you want")
   "Maintains an IRBuilder for function alloca instructions")
 (defvar *irbuilder-function-body* nil
   "Maintains an IRBuilder for function body IR code")
-
+(defvar *compilation-unit-module-index* 0
+  "Incremented for each module build within a compilation-unit.
+   It's used to get the proper order for ctor initialization.")
 
 
 
@@ -75,6 +77,19 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
 
 
+
+(defvar +fn-ctor+
+  (llvm-sys:function-type-get +void+ nil)
+  "A ctor void ()* function prototype")
+(defvar +fn-ctor-argument-names+ nil)
+(defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
+  "A pointer to the ctor function prototype")
+
+
+(defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
+(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
+  "An array of pointers to the global-ctors-struct")
+
 (defvar +size_t+
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
@@ -85,10 +100,6 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
-;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
-(defvar +va_list+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+ +i8*+ +i8*+) nil))
-(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
-(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
@@ -104,9 +115,12 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
 (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
 (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
+(defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
+(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
+(defvar +alignment+ (get-cxx-data-structure-info :alignment))
 (export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
           +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
-          +general-tag+))
+          +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
@@ -121,9 +135,20 @@ Set this to other IRBuilders to make code go where you want")
     ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
     ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
     (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-  
 
+;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
 
+(defun build-list-of-pointers (size type)
+  (multiple-value-bind (num-pointers remainder)
+      (floor size +void*-size+)
+    (unless (= remainder 0)
+      (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
+             type size +void*-size+))
+    (make-list num-pointers :initial-element +i8*+)))
+
+(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
+;;;(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
+(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
 (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
 (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
@@ -291,20 +316,24 @@ Boehm and MPS use a single pointer"
   ;; va-list arg
   (setf *register-arg-types* (nreverse arg-types)
 	*register-arg-names* (nreverse arg-names)))
-(defvar +fn-registers-prototype-argument-names+                    (list* "closed-af-ptr" "va-list"    "nargs" *register-arg-names*))
-(defvar +fn-registers-prototype+ (llvm-sys:function-type-get +tmv+ (list* +t*+            +VaList_S*+ +size_t+ *register-arg-types*))
-  "The general function prototypes pass the following pass:
-1) An sret pointer for where to put the result
-2) A closed over runtime environment (linked list of activation frames)
-3) The number of arguments +i32+
-4) core::+number-of-fixed-arguments+ T_O* pointers, the first arguments passed in registers,
-      If no argument is passed then pass NULL.
-5) If additional arguments are needed then they must be put in the multiple-values array on the stack")
+(defvar +fn-registers-prototype-argument-names+
+  (list* "closure-ptr" "va-list" "nargs" *register-arg-names*))
+(defvar +fn-registers-prototype+
+  (llvm-sys:function-type-get
+   +tmv+
+   (list* +t*+ +VaList_S*+ +size_t+ *register-arg-types*))
+  "X86_64 calling convention The general function prototypes pass the following pass:
+1) A closed over runtime environment a pointer to a closure.
+2) A valist of remaining arguments
+3) The number of arguments +size_t+
+4) core::+number-of-fixed-arguments+ T_O* pointers, 
+   the first arguments passed in registers,
+5) The remaining arguments are on the stack
+      If no argument is passed then pass NULL.")
 
 (progn
   (defvar +fn-prototype+ +fn-registers-prototype+)
   (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
-
 
 (defvar +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
   "A pointer to the function prototype")
@@ -316,6 +345,8 @@ Boehm and MPS use a single pointer"
   "An array of pointers to the function prototype")
 
 (defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
+  "An array of pointers to the function prototype")
+(defvar +fn-prototype*[2]+ (llvm-sys:array-type-get +fn-prototype*+ 2)
   "An array of pointers to the function prototype")
 
 ;;
@@ -341,82 +372,74 @@ Boehm and MPS use a single pointer"
                                  "source-file-info-handle"))
 
 
-(defun make-boot-function-global-variable (module func-ptr)
-  (llvm-sys:make-global-variable module
-                                 +fn-prototype*[1]+ ; type
-                                 t ; is constant
-                                 'llvm-sys:appending-linkage
-                                 (llvm-sys:constant-array-get +fn-prototype*[1]+ (list func-ptr))
-                                 llvm-sys:+global-boot-functions-name+)
-  (llvm-sys:make-global-variable module
-                                 +i32+ ; type
-                                 t ; is constant
-                                 'llvm-sys:internal-linkage
-                                 (jit-constant-i32 1)
-                                 llvm-sys:+global-boot-functions-name-size+)
-  )
-
-
-
-(defun reset-global-boot-functions-name-size (module)
-  (remove-main-function-if-exists module)
-  (let* ((funcs (llvm-sys:get-named-global module llvm-sys:+global-boot-functions-name+))
-         (ptype (llvm-sys:get-type funcs))
-         (atype (llvm-sys:get-sequential-element-type ptype))
-         (num-elements (llvm-sys:get-array-num-elements atype))
-         (var (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t)))
-    (if var (llvm-sys:erase-from-parent var))
-    (llvm-sys:make-global-variable module
-                                   +i32+ ; type
-                                   t     ; is constant
-                                   'llvm-sys:internal-linkage
-                                   (jit-constant-i32 num-elements)
-                                   llvm-sys:+global-boot-functions-name-size+)))
-
-
-(defun remove-main-function-if-exists (module)
-  (let ((fn (llvm-sys:get-function module llvm-sys:+clasp-main-function-name+)))
-    (if fn
-      (llvm-sys:erase-from-parent fn))))
-
-
-(defun add-main-function (module)
+(defun add-global-ctor-function (module main-function)
+  "Create a function with the name core:+clasp-ctor-function-name+ and
+have it call the main-function"
   (let ((*the-module* module))
-    (remove-main-function-if-exists module)
     (let ((fn (with-new-function
-                  (main-func func-env result
-                             :function-name llvm-sys:+clasp-main-function-name+
+                  (ctor-func func-env result
+                             :function-name core:+clasp-ctor-function-name+
                              :parent-env nil
-                             :linkage 'llvm-sys:external-linkage
-                             :function-type +fn-prototype+
-                             :argument-names +fn-prototype-argument-names+)
-                (let* ((boot-functions (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name+ t))
-                       (boot-functions-size (llvm-sys:get-global-variable module llvm-sys:+global-boot-functions-name-size+ t))
-                       (bc-bf (llvm-sys:create-bit-cast *irbuilder* boot-functions +fn-prototype**+ "fnptr-pointer"))
-                       )
-                  (irc-intrinsic "invokeMainFunctions" result bc-bf boot-functions-size)))))
+                             :linkage 'llvm-sys:internal-linkage
+                             :function-type +fn-ctor+
+                             :return-void t
+                             :argument-names +fn-ctor-argument-names+ )
+                (let* ((bc-bf (llvm-sys:create-bit-cast *irbuilder* main-function +fn-prototype*+ "fnptr-pointer")))
+                  (irc-intrinsic "cc_register_startup_function" bc-bf)))))
       fn)))
 
+(defun find-global-ctor-function (module)
+  (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
+    (or ctor (error "Couldn't find the ctor-function: ~a" core:+clasp-ctor-function-name+))
+    ctor))
 
+(defun remove-llvm.global_ctors-if-exists (module)
+  (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
+    (if global
+      (llvm-sys:erase-from-parent global))))
 
+(defun add-llvm.global_ctors (module priority global-ctor-function)
+  (or global-ctor-function (error "global-ctor-function must not be NIL"))
+  (llvm-sys:make-global-variable module
+                                 +global-ctors-struct[1]+
+                                 nil
+                                 'llvm-sys:appending-linkage
+                                 (llvm-sys:constant-array-get
+                                  +global-ctors-struct[1]+
+                                  (list
+                                   (llvm-sys:constant-struct-get +global-ctors-struct+
+                                                                 (list
+                                                                  (jit-constant-i32 priority)
+                                                                  global-ctor-function
+                                                                  (llvm-sys:constant-pointer-null-get +i8*+)))))
+                                 "llvm.global_ctors")))
 
-
-
-
-
-
-
-
+(defun make-boot-function-global-variable (module func-ptr)
+  "* Arguments
+- module :: An llvm module
+- func-ptr :: An llvm function
+* Description
+Add the global variable llvm.global_ctors to the Module (linkage appending)
+and initialize it with an array consisting of one function pointer."
+  (let* ((global-ctor (add-global-ctor-function module func-ptr)))
+    (incf *compilation-unit-module-index*)
+    (add-llvm.global_ctors module *compilation-unit-module-index* global-ctor)))
 
 ;;
 ;; Ensure that the LLVM model of
 ;;   tsp matches shared_ptr<xxx> and
 ;;   tmv matches multiple_values<xxx>
 ;;
-(let ((tsp-size (llvm-sys:data-layout-get-type-alloc-size *data-layout* +tsp+))
-      (tmv-size (llvm-sys:data-layout-get-type-alloc-size *data-layout* +tmv+)))
-  (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size))
-
+(let* ((module (llvm-create-module (next-run-time-module-name)))
+       (engine-builder (llvm-sys:make-engine-builder module))
+       (target-options (llvm-sys:make-target-options)))
+  ;; module is invalid after make-engine-builder call
+  (llvm-sys:set-target-options engine-builder target-options)
+  (let* ((execution-engine (llvm-sys:create engine-builder))
+         (data-layout (llvm-sys:get-data-layout execution-engine))
+         (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tsp+))
+         (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout +tmv+)))
+    (llvm-sys:throw-if-mismatched-structure-sizes :tsp tsp-size :tmv tmv-size)))
 
 ;;
 ;; Define exception types in the module
@@ -447,15 +470,6 @@ Boehm and MPS use a single pointer"
   (let* ((cname (gethash name *exception-types-hash-table*))
 	 (i8* (llvm-sys:get-or-create-external-global *the-module* cname +i8+)))
     i8*))
-
-
-
-
-
-
-
-
-
 
 ;;
 ;; Define functions within the module
@@ -509,10 +523,6 @@ Boehm and MPS use a single pointer"
 	    ""))))
     (bformat nil "%s%s" name-dispatch-prefix name)))
 
-
-
-
-
 (defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
   (let ((fn (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
 				      'llvm-sys::External-linkage
@@ -520,7 +530,6 @@ Boehm and MPS use a single pointer"
 				      module)))
     (when does-not-throw (llvm-sys:set-does-not-throw fn))
     (when does-not-return (llvm-sys:set-does-not-return fn))))
-
 
 (defun primitive (module name return-ty args-ty &key varargs does-not-throw does-not-return )
   (mapc #'(lambda (x)
@@ -550,31 +559,16 @@ Boehm and MPS use a single pointer"
   (primitive module name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return))
 
 (defun define-primitives-in-module (module)
-;;;  (primitive module "lccGlobalFunction" +lisp-calling-convention-ptr+ (list +symsp+))
   (primitive-nounwind module "newFunction_sp" +void+ (list +Function_sp*+))
-;;  (primitive-nounwind module "destructFunction_sp" +void+ (list +Function_sp*+))
   (primitive-nounwind module "newTsp" +void+ (list +tsp*+))
-;;  (primitive-nounwind module "resetTsp" +void+ (list +tsp*+))
-;;  (primitive-nounwind module "makeUnboundTsp" +void+ (list +tsp*+))
   (primitive-nounwind module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
   (primitive-nounwind module "copyTspTptr" +void+ (list +tsp*-or-tmv*+ +t*+))
-;;  (primitive-nounwind module "destructTsp" +void+ (list +tsp*+))
-;;  (primitive-nounwind module "compareTsp" +i32+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "compareTspTptr" +i32+ (list +tsp*+ +t*+))
 
   (primitive-nounwind module "newTmv" +void+ (list +tmv*+))
   (primitive-nounwind module "resetTmv" +void+ (list +tmv*+))
   (primitive-nounwind module "copyTmv" +void+ (list +tmv*+ +tmv*+))
   (primitive-nounwind module "copyTmvOrSlice" +void+ (list +tsp*-or-tmv*+ +tmv*+))
-;;  (primitive-nounwind module "destructTmv" +void+ (list +tmv*+))
-
-;;  (primitive-nounwind module "newAFsp" +void+ (list +afsp*+))
-;;  (primitive-nounwind module "newAFsp_ValueFrameOfSize" +void+ (list +afsp*+ +i32+))
-;;  (primitive-nounwind module "resetAFsp" +void+ (list +afsp*+))
-;;  (primitive-nounwind module "copyAFsp" +void+ (list +afsp*+ +afsp*+))
-;;  (primitive-nounwind module "destructAFsp" +void+ (list +afsp*+))
-
-;;  (primitive-nounwind module "getMultipleValues" +t*[0]*+ (list +i32+))
 
   (primitive-nounwind module "isNilTsp" +i32+ (list +tsp*+))
   (primitive-nounwind module "isTrue" +i32+ (list +tsp*+))
@@ -612,9 +606,8 @@ Boehm and MPS use a single pointer"
 
 
   (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
-  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i32+ +i32+))
-;;  (primitive-nounwind module "makeValueFrameFromReversedCons" +void+ (list +afsp*+ +tsp*+ +i32+ ))
-  (primitive-nounwind module "setParentOfActivationFrameTPtr" +void+ (list +tsp*+ +t*+))
+  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i64+))
+  (primitive-nounwind module "setParentOfActivationFrameFromClosure" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
   (primitive-nounwind module "attachDebuggingInfoToValueFrame" +void+ (list +afsp*+ +tsp*+))
@@ -626,10 +619,8 @@ Boehm and MPS use a single pointer"
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
-  (primitive module "invokeMainFunctions" +void+ (list +tmv*+ +fn-prototype**+ +i32*+))
   (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
-  (primitive module "invokeMainFunction" +void+ (list +i8*+ +fn-prototype*+))
-;;  (primitive module "invokeLlvmFunctionVoid" +void+ (list +i8*+ +fn-prototype*+))
+  (primitive module "cc_register_startup_function" +void+ (list +fn-prototype*+))
 
   (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
 
@@ -637,7 +628,6 @@ Boehm and MPS use a single pointer"
   (primitive          module "throwTooManyArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive          module "throwNotEnoughArgumentsException" +void+ (list +i8*+ +afsp*+ +i32+ +i32+))
   (primitive          module "throwIfExcessKeywordArguments" +void+ (list +i8*+ +afsp*+ +i32+))
-;;  (primitive-nounwind module "kw_allowOtherKeywords" +i32+ (list +i32+ +afsp*+ +i32+))
   (primitive-nounwind module "cc_trackFirstUnexpectedKeyword" +size_t+ (list +size_t+ +size_t+))
   (primitive        module "gdb" +void+ nil)
   (primitive        module "debugInvoke" +void+ nil)
@@ -660,34 +650,16 @@ Boehm and MPS use a single pointer"
   (primitive          module "singleStepCallback" +void+ nil)
 
 
-  (primitive module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
-  (primitive module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
-;;  (primitive module "va_fillActivationFrameWithRequiredVarargs" +void+ (list +afsp*+ +i32+ +tsp*+))
-;;  (primitive module "va_coerceToClosure" +closure*+ (list +tsp*+))
+  (primitive-nounwind module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-nounwind module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
+  (primitive-nounwind module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
   (primitive module "va_symbolFunction" +t*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +t*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-;;  (primitive module "FUNCALL_argsInReversedList" +void+ (list +tsp*-or-tmv*+ +closure*+ +tsp*+))
-;;  (primitive module "FUNCALL_argsMultipleValueReturn" +void+ (list +tsp*-or-tmv*+ +closure*+))
-
 
   (primitive module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
-;;  (primitive-nounwind module "va_allowOtherKeywords" +i32+ (list +i32+ +t*+))
-  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
-
-;;  (primitive-nounwind module "trace_setActivationFrameForIHSTop" +void+ (list +afsp*+))
-;;  (primitive-nounwind module "trace_setLineNumberColumnForIHSTop" +void+ (list +i8*+ +i32*+ +i64+ +i32+ +i32+))
-
-  (primitive-nounwind module "trace_exitFunctionScope" +void+ (list +i32+) )
-  (primitive-nounwind module "trace_exitBlockScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitLetScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitLetSTARScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitFletScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitLabelsScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitCallScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitCatchScope" +void+ (list +i32+ ) )
-  (primitive-nounwind module "trace_exitUnwindProtectScope" +void+ (list +i32+ ) )
+  (primitive module "cc_gatherVaRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +VaList_S*+))
+  (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
   (primitive-nounwind module "pushCatchFrame" +size_t+ (list +tsp*+))
   (primitive-nounwind module "pushBlockFrame" +size_t+ (list +symsp*+))
@@ -713,7 +685,6 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "__cxa_end_catch" +void+ nil) ;; This was a PRIMITIVE
   (primitive module "__cxa_rethrow" +void+ nil)
   (primitive-nounwind module "llvm.eh.typeid.for" +i32+ (list +i8*+))
-  ;;  (primitive-nounwind module "_Unwind_Resume" +void+ (list +i8*+))
 
   (primitive-nounwind module "llvm.sadd.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
   (primitive-nounwind module "llvm.sadd.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
@@ -775,6 +746,7 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
+  (primitive-nounwind module "cc_stack_enclose" +t*+ (list +i8*+ +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive          module "cc_call_multipleValueOneFormCall" +return_type+ (list +t*+))
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
@@ -785,12 +757,12 @@ Boehm and MPS use a single pointer"
   (primitive-nounwind module "cc_unsafe_symbol_value" +t*+ (list +t*+))
   (primitive-nounwind module "cc_safe_symbol_value" +t*+ (list +t*+))
   (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
-  (primitive module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
-;;  (primitive module "cc_invoke" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
+  (primitive module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+
+                                                     (map 'list (lambda (x) x)
+                                                          (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
   (primitive-nounwind module "cc_allowOtherKeywords" +i64+ (list +i64+ +t*+))
-;;  (primitive module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +size_t+ +t*[0]*+))
   (primitive-nounwind module "cc_matchKeywordOnce" +size_t+ (list +t*+ +t*+ +t*+))
-  (primitive          module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
+  (primitive-nounwind module "cc_ifNotKeywordException" +void+ (list +t*+ +size_t+ +VaList_S*+))
   (primitive-nounwind module "cc_multipleValuesArrayAddress" +t*[0]*+ nil)
   (primitive          module "cc_unwind" +void+ (list +t*+ +size_t+))
   (primitive          module "cc_throw" +void+ (list +t*+) :does-not-return t)

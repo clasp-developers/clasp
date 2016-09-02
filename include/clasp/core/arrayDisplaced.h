@@ -35,8 +35,7 @@ namespace core {
 
 FORWARD(ArrayDisplaced);
 class ArrayDisplaced_O : public Array_O {
-  LISP_BASE1(Array_O);
-  LISP_CLASS(core, CorePkg, ArrayDisplaced_O, "ArrayDisplaced");
+  LISP_CLASS(core, CorePkg, ArrayDisplaced_O, "ArrayDisplaced",Array_O);
 #if defined(XML_ARCHIVE)
   DECLARE_ARCHIVE();
 #endif // defined(XML_ARCHIVE)
@@ -76,7 +75,7 @@ public:
 
   void setElementType(T_sp et) { this->_ElementType = et; };
   /*! Return the value at the indices */
-  virtual T_sp aref(List_sp indices) const;
+  virtual T_sp aref(VaList_sp indices) const;
 
   /*! Return the value at the indices */
   virtual T_sp setf_aref(List_sp indices_val);
@@ -96,6 +95,5 @@ public:
 
 }; /* core */
 
-TRANSLATE(core::ArrayDisplaced_O);
 
 #endif /* _core_ArrayDisplaced_H */

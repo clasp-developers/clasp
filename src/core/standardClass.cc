@@ -70,7 +70,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 
 #if 0 // All functions
     void	StandardClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP node)
-    {_G();
+    {
 	IMPLEMENT_ME(); // Create a forward-referenced-class
 	if ( node==NULL ) return;
 	this->_SlotSpecifiers.clear();
@@ -107,7 +107,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
       [Cons of metaclasses] - return the cons of metaclasses.
     */
     Cons_sp StandardClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp lisp)
-    {_G();
+    {
 	Cons_sp baseClasses;
 	if ( baseClassesDesignator.nilp() )
 	{
@@ -145,7 +145,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
     }
 
     void	StandardClass_O::describe()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	_lisp->print(BF("------------  StandardClass name: %s    instanceClassSymbol: %d") % this->_Name->__repr__() % this->_InstanceClassSymbol );
@@ -166,7 +166,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
     }
 
     string StandardClass_O::dumpInfo()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	stringstream ss;
@@ -203,7 +203,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     StandardClass_O::slotIterator StandardClass_O::find(Symbol_sp sym)
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	ASSERTNOTNULL(sym);
@@ -229,7 +229,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 
 #if 0
     T_sp StandardClass_O::allocate_newNil()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	T_sp obj = this->_InstanceCoreClass->new_instance(_Nil<Function_O>(), 
@@ -243,7 +243,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 #endif
 
     void StandardClass_O::resetSlots()
-    {_G();
+    {
 	IMPLEMENT_ME();
 #if 0
 	this->_SlotSpecifiers.clear();
@@ -253,7 +253,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 
 
     void StandardClass_O::setupAccessors(List_sp slotNames)
-    {_G();
+    {
 	IMPLEMENT_ME(); // Dont pass the slot names, use the slots already defined
 #if 0
 	this->_InstanceVariableNames = slotNames;
@@ -275,15 +275,7 @@ void StandardClass_O::archiveBase(ArchiveP node) {
 
 #endif
 
-void StandardClass_O::exposeCando(Lisp_sp lisp) {
-  class_<StandardClass_O>();
-}
-void StandardClass_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StandardClass, "", "", _lisp);
-#endif
-}
 
-EXPOSE_CLASS(core, StandardClass_O);
+
+
 };

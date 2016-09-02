@@ -45,7 +45,6 @@ THE SOFTWARE.
 namespace core {
 
 Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digits) {
-  _G();
   Bignum index;
   vector<int>::const_iterator bi, di;
   ASSERT(bases.size() == digits.size());
@@ -62,7 +61,6 @@ Bignum mixedBaseDigitsToBignum(const vector<int> &bases, const vector<int> &digi
 }
 
 Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
-  _G();
   vector<int>::const_iterator bi;
   Bignum numSeq;
   ASSERT(bases.size() >= 1);
@@ -79,7 +77,6 @@ Bignum numberOfIndicesForMixedBase(const vector<int> &bases) {
  * If the index can not be stored in a LongLongInt then return -1
  */
 vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &bases) {
-  _G();
   Bignum curIndex;
   vector<int> digits;
   vector<int>::const_reverse_iterator bi;
@@ -100,11 +97,10 @@ vector<int> bignumToMixedBaseDigits(const Bignum &index, const vector<int> &base
   return digits;
 }
 
-#define ARGS_af_getUniversalTime "()"
-#define DECL_af_getUniversalTime ""
-#define DOCS_af_getUniversalTime "getUniversalTime"
-Integer_sp af_getUniversalTime() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getUniversalTime");
+CL_DEFUN Integer_sp cl__get_universal_time() {
   time_t current_time;
   time(&current_time);
   Integer_sp offset = Integer_O::create(2208988800);
@@ -123,14 +119,14 @@ boost::normal_distribution<double> globalNormal01Distribution(0, 1);
 boost::variate_generator<boost::mt11213b &, boost::normal_distribution<double>>
     globalRandomRealNormal01Generator(globalRealRandomNormal01Producer, globalNormal01Distribution);
 
-void seedRandomNumberGenerators(uint i) {
-  _G();
+CL_LISPIFY_NAME(seedRandomNumberGenerators);
+CL_DEFUN void seedRandomNumberGenerators(uint i) {
   globalRealRandom01Producer.seed(static_cast<uint>(i));
   globalRealRandomNormal01Producer.seed(static_cast<uint>(i));
 }
 
-void seedRandomNumberGeneratorsUsingTime() {
-  _G();
+CL_LISPIFY_NAME(seedRandomNumberGeneratorsUsingTime);
+CL_DEFUN void seedRandomNumberGeneratorsUsingTime() {
   clock_t currentTime;
   int tt;
 #ifdef darwin
@@ -143,11 +139,13 @@ void seedRandomNumberGeneratorsUsingTime() {
   seedRandomNumberGenerators(tt);
 }
 
-double randomNumber01() {
+CL_LISPIFY_NAME(randomNumber01);
+CL_DEFUN double randomNumber01() {
   return globalRandomReal01Generator();
 }
 
-double randomNumberNormal01() {
+CL_LISPIFY_NAME(randomNumberNormal01);
+CL_DEFUN double randomNumberNormal01() {
   return globalRandomRealNormal01Generator();
 }
 
@@ -168,11 +166,11 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 #if 0
 
-#define ARGS_af_ceiling1 "(x)"
-#define DECL_af_ceiling1 ""
-#define DOCS_af_ceiling1 "ceiling1"
-    Number_sp af_ceiling1(Number_sp x)
-    {_G();
+CL_LAMBDA(x);
+CL_DECLARE();
+CL_DOCSTRING("ceiling1");
+CL_DEFUN     Number_sp cl__ceiling1(Number_sp x)
+    {
 	Number_sp v0, v1;
 	Number_mv mv_v1;
 	switch (clasp_t_of(x)) {
@@ -184,7 +182,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 	case number_Ratio: {
 //		const cl_env_ptr the_env = ecl_process_env();
 	    Ratio_sp ratio_x = x.as<Ratio_O>();
-	    mv_v1 = af_ceiling2(ratio_x->numerator(),ratio_x->denominator());
+	    mv_v1 = cl__ceiling2(ratio_x->numerator(),ratio_x->denominator());
 	    v1 = Ratio_O::create(mv_v1.getValue(1).as<Integer_O>(), ratio_x->denominator());
 	    break;
 	}
@@ -255,13 +253,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             }
             case number_Ratio:		/* FIX / RAT */
                 v0 = ecl_ceiling2(ecl_times(x, y->ratio.den), y->ratio.num);
-                v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), y->ratio.den);
+                v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), y->ratio.den);
                 break;
             case number_SingleFloat: {	/* FIX / SF */
-                float n = ecl_single_float(y);
+                float n = ecl__single_float(y);
                 float p = ecl_fixnum(x)/n;
                 float q = ceilf(p);
-                v0 = _ecl_float_to_integer(q);
+                v0 = _ecl__float_to_integer(q);
                 v1 = ecl_make_single_float(p*n - q*n);
                 break;
             }
@@ -301,13 +299,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             }
             case number_Ratio:		/* BIG / RAT */
                 v0 = ecl_ceiling2(ecl_times(x, y->ratio.den), y->ratio.num);
-                v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), y->ratio.den);
+                v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), y->ratio.den);
                 break;
             case number_SingleFloat: {	/* BIG / SF */
-                float n = ecl_single_float(y);
+                float n = ecl__single_float(y);
                 float p = _ecl_big_to_double(x)/n;
                 float q = ceilf(p);
-                v0 = _ecl_float_to_integer(q);
+                v0 = _ecl__float_to_integer(q);
                 v1 = ecl_make_single_float(p*n - q*n);
                 break;
             }
@@ -338,18 +336,18 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             case number_Ratio:		/* RAT / RAT */
                 v0 = ecl_ceiling2(ecl_times(x->ratio.num, y->ratio.den),
                                   ecl_times(x->ratio.den, y->ratio.num));
-                v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), ecl_times(x->ratio.den, y->ratio.den));
+                v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), ecl_times(x->ratio.den, y->ratio.den));
                 break;
             default:		/* RAT / ANY */
                 v0 = ecl_ceiling2(x->ratio.num, ecl_times(x->ratio.den, y));
-                v1 = ecl_divide(ecl_nth_value(the_env, 1), x->ratio.den);
+                v1 = ecl_divide(ecl__nth_value(the_env, 1), x->ratio.den);
             }
             break;
 	case number_SingleFloat: {		/* SF / ANY */
             float n = ecl_to_double(y);
-            float p = ecl_single_float(x)/n;
+            float p = ecl__single_float(x)/n;
             float q = ceilf(p);
-            v0 = _ecl_float_to_integer(q);
+            v0 = _ecl__float_to_integer(q);
             v1 = ecl_make_single_float(p*n - q*n);
             break;
 	}
@@ -377,13 +375,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 	ecl_return2(the_env, v0, v1);
     }
 
-#define ARGS_af_ceiling "(x &optional y)"
-#define DECL_af_ceiling ""
-#define DOCS_af_ceiling "ceiling"
-    Number_sp af_ceiling(Number_sp x, Number_sp y)
-    {_G();
-	if ( y.nilp() ) return af_ceiling1(x);
-	return af_ceiling2(x,y);
+CL_LAMBDA(x &optional y);
+CL_DECLARE();
+CL_DOCSTRING("ceiling");
+CL_DEFUN     Number_sp cl__ceiling(Number_sp x, Number_sp y)
+    {
+	if ( y.nilp() ) return cl__ceiling1(x);
+	return cl__ceiling2(x,y);
     }
 
 #endif
@@ -442,7 +440,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
       @)
 
     cl_object
-    cl_numerator(cl_object x)
+    cl__numerator(cl_object x)
     {
         switch (clasp_t_of(x)) {
 	case number_Ratio:
@@ -458,7 +456,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             }
 
     cl_object
-    cl_denominator(cl_object x)
+    cl__denominator(cl_object x)
     {
         switch (clasp_t_of(x)) {
 	case number_Ratio:
@@ -487,12 +485,12 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             break;
 	case number_Ratio:
             v0 = ecl_floor2(x->ratio.num, x->ratio.den);
-            v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), x->ratio.den);
+            v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), x->ratio.den);
             break;
 	case number_SingleFloat: {
-            float d = ecl_single_float(x);
+            float d = ecl__single_float(x);
             float y = floorf(d);
-            v0 = _ecl_float_to_integer(y);
+            v0 = _ecl__float_to_integer(y);
             v1 = ecl_make_single_float(d - y);
             break;
 	}
@@ -556,13 +554,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             }
             case number_Ratio:		/* FIX / RAT */
                 v0 = ecl_floor2(ecl_times(x, y->ratio.den), y->ratio.num);
-                v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), y->ratio.den);
+                v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), y->ratio.den);
                 break;
             case number_SingleFloat: {	/* FIX / SF */
-                float n = ecl_single_float(y);
+                float n = ecl__single_float(y);
                 float p = ecl_fixnum(x) / n;
                 float q = floorf(p);
-                v0 = _ecl_float_to_integer(q);
+                v0 = _ecl__float_to_integer(q);
                 v1 = ecl_make_single_float((p - q)*n);
                 break;
             }
@@ -602,13 +600,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             }
             case number_Ratio:		/* BIG / RAT */
                 v0 = ecl_floor2(ecl_times(x, y->ratio.den), y->ratio.num);
-                v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), y->ratio.den);
+                v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), y->ratio.den);
                 break;
             case number_SingleFloat: {	/* BIG / SF */
-                float n = ecl_single_float(y);
+                float n = ecl__single_float(y);
                 float p = _ecl_big_to_double(x) / n;
                 float q = floorf(p);
-                v0 = _ecl_float_to_integer(q);
+                v0 = _ecl__float_to_integer(q);
                 v1 = ecl_make_single_float((p - q)*n);
                 break;
             }
@@ -639,18 +637,18 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             case number_Ratio:		/* RAT / RAT */
                 v0 = ecl_floor2(ecl_times(x->ratio.num, y->ratio.den),
                                 ecl_times(x->ratio.den, y->ratio.num));
-                v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), ecl_times(x->ratio.den, y->ratio.den));
+                v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), ecl_times(x->ratio.den, y->ratio.den));
                 break;
             default:		/* RAT / ANY */
                 v0 = ecl_floor2(x->ratio.num, ecl_times(x->ratio.den, y));
-                v1 = ecl_divide(ecl_nth_value(the_env, 1), x->ratio.den);
+                v1 = ecl_divide(ecl__nth_value(the_env, 1), x->ratio.den);
             }
             break;
 	case number_SingleFloat: {		/* SF / ANY */
             float n = ecl_to_double(y);
-            float p = ecl_single_float(x)/n;
+            float p = ecl__single_float(x)/n;
             float q = floorf(p);
-            v0 = _ecl_float_to_integer(q);
+            v0 = _ecl__float_to_integer(q);
             /* We cannot factor these two multiplications because
              * if we have signed zeros (1 - 1) * (-1) = -0 while
              * 1*(-1) - 1*(-1) = +0 */
@@ -703,12 +701,12 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             break;
 	case number_Ratio:
             v0 = ecl_truncate2(x->ratio.num, x->ratio.den);
-            v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), x->ratio.den);
+            v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), x->ratio.den);
             break;
 	case number_SingleFloat: {
-            float d = ecl_single_float(x);
+            float d = ecl__single_float(x);
             float y = d > 0? floorf(d) : ceilf(d);
-            v0 = _ecl_float_to_integer(y);
+            v0 = _ecl__float_to_integer(y);
             v1 = ecl_make_single_float(d - y);
             break;
 	}
@@ -788,7 +786,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 #endif
 
     cl_object
-    ecl_round1(cl_object x)
+    ecl__round1(cl_object x)
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	cl_object v0, v1;
@@ -799,13 +797,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             v1 = make_fixnum(0);
             break;
 	case number_Ratio:
-            v0 = ecl_round2(x->ratio.num, x->ratio.den);
-            v1 = ecl_make_ratio(ecl_nth_value(the_env, 1), x->ratio.den);
+            v0 = ecl__round2(x->ratio.num, x->ratio.den);
+            v1 = ecl_make_ratio(ecl__nth_value(the_env, 1), x->ratio.den);
             break;
 	case number_SingleFloat: {
-            float d = ecl_single_float(x);
+            float d = ecl__single_float(x);
             float q = round_double(d);
-            v0 = _ecl_float_to_integer(q);
+            v0 = _ecl__float_to_integer(q);
             v1 = ecl_make_single_float(d - q);
             break;
 	}
@@ -832,7 +830,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
     }
 
     cl_object
-    ecl_round2(cl_object x, cl_object y)
+    ecl__round2(cl_object x, cl_object y)
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	cl_object v0, v1;
@@ -864,7 +862,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             break;
 	}
 	default:
-            v0 = q = ecl_round1(q);
+            v0 = q = ecl__round1(q);
             v1 = number_remainder(x, y, q);
 	}
 	ecl_return2(the_env, v0, v1);
@@ -873,9 +871,9 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
     @(defun round (x &optional (y OBJNULL))
       @
       if (narg == 1)
-      return ecl_round1(x);
+      return ecl__round1(x);
       else
-          return ecl_round2(x, y);
+          return ecl__round2(x, y);
       @)
 
 
@@ -906,7 +904,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 	switch (tx) {
 	case number_SingleFloat: {
-            f = ecl_single_float(x);
+            f = ecl__single_float(x);
             if (f >= 0.0) {
                 s = 1;
             } else {
@@ -962,7 +960,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 	}
 	switch (clasp_t_of(x)) {
 	case number_SingleFloat:
-            x = ecl_make_single_float(ldexpf(ecl_single_float(x), k));
+            x = ecl_make_single_float(ldexpf(ecl__single_float(x), k));
             break;
 	case number_DoubleFloat:
             x = ecl_make_double_float(ldexp(ecl_double_float(x), k));
@@ -979,10 +977,10 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
     }
 
     cl_object
-    cl_float_radix(cl_object x)
+    cl__float_radix(cl_object x)
     {
 	const cl_env_ptr the_env = ecl_process_env();
-	if (ecl_unlikely(cl_floatp(x) != ECL_T)) {
+	if (ecl_unlikely(cl__floatp(x) != ECL_T)) {
             FEwrong_type_nth_arg(@[float-radix],1,x,@[float]);
 	}
 	ecl_return1(the_env, make_fixnum(FLT_RADIX));
@@ -993,7 +991,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
     {
         switch (clasp_t_of(x)) {
 	case number_SingleFloat:
-            return signbit(ecl_single_float(x));
+            return signbit(ecl__single_float(x));
 	case number_DoubleFloat:
             return signbit(ecl_double_float(x));
 #ifdef CLASP_LONG_FLOAT
@@ -1009,12 +1007,12 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
       int negativep;
       @
       if (!yp) {
-          y = cl_float(2, make_fixnum(1), x);
+          y = cl__float(2, make_fixnum(1), x);
       }
       negativep = ecl_signbit(x);
       switch (clasp_t_of(y)) {
       case number_SingleFloat: {
-          float f = ecl_single_float(y);
+          float f = ecl__single_float(y);
           if (signbit(f) != negativep) y = ecl_make_single_float(-f);
           break;
       }
@@ -1037,7 +1035,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
       @)
 
     cl_object
-    cl_float_digits(cl_object x)
+    cl__float_digits(cl_object x)
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	switch (clasp_t_of(x)) {
@@ -1059,13 +1057,13 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
     }
 
     cl_object
-    cl_float_precision(cl_object x)
+    cl__float_precision(cl_object x)
     {
 	const cl_env_ptr the_env = ecl_process_env();
 	int precision;
 	switch (clasp_t_of(x)) {
 	case number_SingleFloat: {
-            float f = ecl_single_float(x);
+            float f = ecl__single_float(x);
             if (f == 0.0) {
                 precision = 0;
             } else {
@@ -1125,7 +1123,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
       @)
 
     cl_object
-    cl_realpart(cl_object x)
+    cl__realpart(cl_object x)
     {
         switch (clasp_t_of(x)) {
 	case number_Fixnum:
@@ -1147,7 +1145,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             }
 
     cl_object
-    cl_imagpart(cl_object x)
+    cl__imagpart(cl_object x)
     {
         switch (clasp_t_of(x)) {
 	case number_Fixnum:
@@ -1156,7 +1154,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
             x = make_fixnum(0);
             break;
 	case number_SingleFloat:
-            if (signbit(ecl_single_float(x)))
+            if (signbit(ecl__single_float(x)))
                 x = cl_core.singlefloat_minus_zero;
             else
                 x = cl_core.singlefloat_zero;
@@ -1188,7 +1186,7 @@ bool almostEqualAbsoluteOrRelative(double va, double vb,
 
 #if 0
 T_sp
-cl_integer_decode_float(T_sp x)
+cl__integer_decode_float(T_sp x)
 {
   const cl_env_ptr the_env = ecl_process_env();
   int e, s = 1;
@@ -1251,119 +1249,96 @@ cl_integer_decode_float(T_sp x)
 }
 #endif
 
-#define ARGS_core_asin "(arg)"
-#define DECL_core_asin ""
-#define DOCS_core_asin "asinh"
-double core_asin(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("asin");
+CL_DEFUN double core__num_op_asin(double x) {
   return asin(x);
 }
 
-#define ARGS_core_acos "(arg)"
-#define DECL_core_acos ""
-#define DOCS_core_acos "acosh"
-double core_acos(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("num-op-acos");
+CL_DEFUN double core__num_op_acos(double x) {
   return acos(x);
 }
 
-#define ARGS_core_asinh "(arg)"
-#define DECL_core_asinh ""
-#define DOCS_core_asinh "asinh"
-double core_asinh(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("asinh");
+CL_DEFUN double core__num_op_asinh(double x) {
   return log(x + sqrt(1.0 + x * x));
 }
 
-#define ARGS_core_acosh "(arg)"
-#define DECL_core_acosh ""
-#define DOCS_core_acosh "acosh"
-double core_acosh(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("num_op_acosh");
+CL_DEFUN double core__num_op_acosh(double x) {
   return log(x + sqrt((x - 1) * (x + 1)));
 }
 
-#define ARGS_core_atanh "(arg)"
-#define DECL_core_atanh ""
-#define DOCS_core_atanh "atanh"
-double core_atanh(double x) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("atanh");
+CL_DEFUN double core__num_op_atanh(double x) {
   return log((1 + x) / (1 - x)) / 2;
 }
 };
 
 namespace core {
 
-void exposeCando_Numerics() {
-  _G();
-  LOG(BF("Initializing numerics random"));
-  af_def(CorePkg, "seedRandomNumberGenerators", &seedRandomNumberGenerators);
-  af_def(CorePkg, "seedRandomNumberGeneratorsUsingTime", &seedRandomNumberGeneratorsUsingTime);
-  af_def(CorePkg, "randomNumber01", &randomNumber01);
-  af_def(CorePkg, "randomNumberNormal01", &randomNumberNormal01);
-  SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
-  Defun(getUniversalTime);
-  CoreDefun(asin);
-  CoreDefun(acos);
-  CoreDefun(asinh);
-  CoreDefun(acosh);
-  CoreDefun(atanh);
+SYMBOL_EXPORT_SC_(ClPkg, getUniversalTime);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostPositiveLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, mostNegativeLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
+SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
+SYMBOL_EXPORT_SC_(ClPkg, pi);
 
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeSingleFloat);
+void exposeCando_Numerics() {
   cl::_sym_mostPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MAX));
   cl::_sym_mostNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MAX));
   cl::_sym_leastPositiveSingleFloat->defconstant(clasp_make_single_float(FLT_MIN));
   cl::_sym_leastNegativeSingleFloat->defconstant(clasp_make_single_float(-FLT_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeShortFloat);
   cl::_sym_mostPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MAX));
   cl::_sym_mostNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MAX));
   cl::_sym_leastPositiveShortFloat->defconstant(ShortFloat_O::create(FLT_MIN));
   cl::_sym_leastNegativeShortFloat->defconstant(ShortFloat_O::create(-FLT_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeDoubleFloat);
   cl::_sym_mostPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
   cl::_sym_mostNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
   cl::_sym_leastPositiveDoubleFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
   cl::_sym_leastNegativeDoubleFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveLongFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeLongFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostPositiveLongFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, mostNegativeLongFloat);
   cl::_sym_mostPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MAX));
   cl::_sym_mostNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MAX));
   cl::_sym_leastPositiveLongFloat->defconstant(DoubleFloat_O::create(DBL_MIN));
   cl::_sym_leastNegativeLongFloat->defconstant(DoubleFloat_O::create(-DBL_MIN));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastNegativeNormalizedLongFloat);
   cl::_sym_leastNegativeNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastNegativeNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
   cl::_sym_leastNegativeNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedSingleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedShortFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedDoubleFloat);
-  SYMBOL_EXPORT_SC_(ClPkg, leastPositiveNormalizedLongFloat);
   cl::_sym_leastPositiveNormalizedSingleFloat->defconstant(clasp_make_single_float(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedShortFloat->defconstant(ShortFloat_O::create(-std::numeric_limits<float>::denorm_min()));
   cl::_sym_leastPositiveNormalizedDoubleFloat->defconstant(DoubleFloat_O::create(-std::numeric_limits<double>::denorm_min()));
   cl::_sym_leastPositiveNormalizedLongFloat->defconstant(LongFloat_O::create(-std::numeric_limits<LongFloat>::denorm_min()));
-
-  SYMBOL_EXPORT_SC_(ClPkg, pi);
   cl::_sym_pi->defconstant(DoubleFloat_O::create(3.14159265358979323846264338));
 }
 

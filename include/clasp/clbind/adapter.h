@@ -71,7 +71,6 @@ namespace clbind {
     public:
         Adapter(const string& name) { this->_Name = name;};
         virtual ~Adapter() {};
-        DECLARE_onHeapScanGCRoots();
     public:
         bool cxxAdapterClassP() const { return true;};
 

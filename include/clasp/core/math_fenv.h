@@ -75,7 +75,7 @@ namespace core {
 #ifdef HAVE_FENV_H
 #include <fenv.h>
 #endif
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 #include <ecl/impl/math_fenv_msvc.h>
 #endif
 

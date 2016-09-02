@@ -223,7 +223,7 @@
 	      (complex number)
 	    (symbol)
 	      (null symbol list)
-	      (keyword symbol)
+              #-clasp(keyword symbol)   ;; Clasp doesn't use a keyword class
 	    (package)
 	    (function)
 	    (pathname)

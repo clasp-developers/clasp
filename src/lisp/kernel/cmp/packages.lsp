@@ -34,6 +34,7 @@
           +i32+
           +i64+
           +i8*+
+          +i8+
           +mv-struct+
           +size_t+
           +t*+
@@ -58,6 +59,7 @@
           compiler-message-file
           compiler-message-file-position
           create-run-time-execution-engine
+          safe-system
           dbg-set-current-debug-location-here
           irc-add
           irc-add-clause
@@ -84,6 +86,7 @@
           irc-load
           irc-low-level-trace
           irc-phi
+          irc-personality-function
           irc-phi-add-incoming
           irc-preserve-exception-info
           irc-renv
@@ -100,7 +103,7 @@
           jit-constant-unique-string-ptr
           jit-function-name
           jit-make-global-string-ptr
-          link-system-lto
+          llvm-link
           load-bitcode
           parse-function-arguments
           set-associated-funcs
@@ -124,6 +127,7 @@
           +cons-cdr-offset+
           +uintptr_t+
           +return_type+
+          +VaList_S+
           null-t-ptr
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments

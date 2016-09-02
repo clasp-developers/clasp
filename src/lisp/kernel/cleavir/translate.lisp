@@ -3,7 +3,7 @@
 
 (defvar *debug-cleavir* nil)
 (export '*debug-cleavir*)
-
+;;;
 ;;; The first argument to this function is an instruction that has a
 ;;; single successor.  Whether a GO is required at the end of this
 ;;; function is determined by the code layout algorithm.  
@@ -138,13 +138,13 @@
 	 (lambda-name (get-or-create-lambda-name initial-instruction)))
     ;; HYPOTHESIS: This builds a function with no arguments
     ;; that will enclose and set up other functions with arguments
-    (let* ((main-fn-name (format nil "cl->~a" lambda-name))
-	   (cmp:*current-function-name* main-fn-name)
+    (let* ((main-fn-name lambda-name) ;;(format nil "cl->~a" lambda-name))
+	   (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string-ptr cmp:*current-function-name* "fn-name"))
 	   (fn (llvm-sys:function-create
 		cmp:+fn-prototype+
 		'llvm-sys:internal-linkage
-		(cmp:jit-function-name cmp:*current-function-name*)
+		(cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
 		cmp:*the-module*))
 	   (cmp:*current-function* fn)
 	   (entry-block (cmp:irc-basic-block-create "entry" fn))
@@ -153,6 +153,7 @@
 	   (*entry-irbuilder* (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-irbuilder (llvm-sys:make-irbuilder cmp:*llvm-context*))
 	   (body-block (cmp:irc-basic-block-create "body")))
+      (llvm-sys:set-personality-fn fn (cmp:irc-personality-function))
       (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
       (push fn cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*
@@ -383,6 +384,13 @@
 	  (cmp:irc-br final-block)))
       (cmp:irc-begin-block final-block))))
 
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:intrinsic-call-instruction) return-value inputs outputs (abi abi-x86-64))
+  (cmp:irc-low-level-trace :flow)
+  (let ((call (clasp-cleavir:unsafe-intrinsic-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
+    (cc-dbg-when *debug-log*
+		 (format *debug-log* "    translate-simple-instruction intrinsic-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
@@ -395,6 +403,7 @@
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
+
 
 
 (defmethod translate-simple-instruction
@@ -501,13 +510,6 @@
   (let* ((enter-instruction (cleavir-ir:code instruction)))
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
-      #+(or)(push enclosed-function *functions-to-finalize*)
-      #+(or)(progn
-	      (warn "------- Implement enclose-instruction: ~a~%" instruction)
-	      (format t "   enter-instruction: ~a~%" enter-instruction)
-	      (format t "   enclosed-function: ~a~%" enclosed-function)
-	      (format t "    inputs: ~a~%" inputs)
-	      (format t "    outputs: ~a~%" outputs))
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
 	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
@@ -527,6 +529,50 @@
 		     (format *debug-log* "    inputs: ~a~%" inputs))
 	(%store result (first outputs) nil)))))
 
+(defmethod translate-simple-instruction
+    ((instruction cc-mir:stack-enclose-instruction) return-value inputs outputs abi)
+  (declare (ignore inputs))
+  (cmp:irc-low-level-trace :flow)
+  (let* ((enter-instruction (cleavir-ir:code instruction)))
+    (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
+        (layout-procedure enter-instruction abi)
+      (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
+             (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
+             (ptr-to-sacs
+              (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
+             (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
+             (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+             (result
+              (progn
+                (cmp:irc-intrinsic-args
+                 "cc_stack_enclose"
+                 (list* ptr-to-sacs
+                        ltv-lambda-name
+                        enclosed-function
+                        cmp:*gv-source-file-info-handle*
+                        (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                        (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                        (cmp:irc-size_t-*current-source-pos-info*-column)
+                        (%size_t (length inputs))
+                        loaded-inputs)
+                 :label (format nil "closure->~a" lambda-name)))
+               #+(or) (progn
+                        (cmp:irc-intrinsic-args
+                         "cc_enclose"
+                         (list* ltv-lambda-name
+                                enclosed-function
+                                cmp:*gv-source-file-info-handle*
+                                (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                                (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                                (cmp:irc-size_t-*current-source-pos-info*-column)
+                                (%size_t (length inputs))
+                                loaded-inputs)
+                         :label (format nil "closure->~a" lambda-name)))
+               ))
+        (cc-dbg-when *debug-log*
+                     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
+                     (format *debug-log* "    inputs: ~a~%" inputs))
+        (%store result (first outputs) nil)))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
@@ -850,9 +896,7 @@
   (let ((engine-builder (llvm-sys:make-engine-builder module))
 	;; After make-engine-builder MODULE becomes invalid!!!!!
 	(target-options (llvm-sys:make-target-options)))
-    (llvm-sys:setf-no-frame-pointer-elim target-options t)
-    (llvm-sys:setf-jitemit-debug-info target-options t)
-    (llvm-sys:setf-jitemit-debug-info-to-disk target-options t)
+;;    (llvm-sys:setf-no-frame-pointer-elim target-options t)
     (llvm-sys:set-target-options engine-builder target-options)
 ;;;	 (llvm-sys:set-use-mcjit engine-builder t)
     (let*((execution-engine (llvm-sys:create engine-builder))
@@ -880,7 +924,7 @@ nil)
 (defun describe-form (form)
   (when (consp form)
     (cond
-      ((eq 'core:*fset (car form))
+      ((eq 'core:fset (car form))
        (let* ((name (cadr (cadr form)))
 	      (is-macro (cadddr form))
 	      (header (if is-macro
@@ -937,12 +981,12 @@ nil)
           ((cleavir-env:no-variable-info
             (lambda (condition)
 ;;;	  (declare (ignore condition))
-              #+silence-cclasp-compile-warnings(warn "Condition: ~a" condition)
+              #+verbose-compiler(warn "Condition: ~a" condition)
               (invoke-restart 'cleavir-generate-ast::consider-special)))
            (cleavir-env:no-function-info
             (lambda (condition)
 ;;;	  (declare (ignore condition))
-              #+silence-cclasp-compile-warnings(warn "Condition: ~a" condition)
+              #+verbose-compiler(warn "Condition: ~a" condition)
               (invoke-restart 'cleavir-generate-ast::consider-global))))
         (when *compile-print* (describe-form form))
         (cc-dbg-when *debug-log*
@@ -950,19 +994,18 @@ nil)
                      (format *debug-log* "cleavir-generate-ast::*current-form-is-top-level-p* --> ~a~%" 
                              (if (boundp 'cleavir-generate-ast::*current-form-is-top-level-p*) 
                                  cleavir-generate-ast::*current-form-is-top-level-p* 
-                                 "UNBOUND" ))
-                     (format *debug-log* "cleavir-generate-ast::*subforms-are-top-level-p* --> ~a~%" 
-                             cleavir-generate-ast::*subforms-are-top-level-p*))
+                                 "UNBOUND" )))
         (let* ((clasp-system *clasp-system*)
                (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
                       (when *debug-cleavir* (draw-ast a))
                       a))
                (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
                (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-          ;;(warn "Turn on CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-          (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-          (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
+          ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+          ;; Beach says remove-useless-instructions is a bad idea right now - removing
+          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
+          ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
+          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
           (cc-dbg-when *debug-log*
                        (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
                                                           :type "dot" 
@@ -975,6 +1018,7 @@ nil)
           (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
           (cleavir-ir:hir-to-mir hir clasp-system nil nil)
           (when *debug-cleavir* (draw-mir hir)) ;; comment out
+          (clasp-cleavir:optimize-stack-enclose hir)
           (cc-mir:assign-mir-instruction-datum-ids hir)
           (setf *ast* hoisted-ast
                 *hir* hir)
@@ -983,8 +1027,7 @@ nil)
             (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
             (translate hir abi))))
     (cc-dbg-when *debug-log*
-                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))
-    ))
+                 (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))))
 
 ;; Set this to T to watch cleavir-compile-t1expr run
 (defvar *cleavir-compile-verbose* nil)
@@ -999,12 +1042,12 @@ nil)
         ((cleavir-env:no-variable-info
           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            (warn "Condition: ~a" condition)
+            #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-special)))
          (cleavir-env:no-function-info
           (lambda (condition)
 ;;;	  (declare (ignore condition))
-            (warn "Condition: ~a" condition)
+            #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-global))))
       (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
           ;; The following test and true form should be removed`
@@ -1015,14 +1058,16 @@ nil)
                    (hir (progn
                           (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
                           (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
-              ;;(warn "Turn on run CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS HIR - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-              (CLEAVIR-REMOVE-USELESS-INSTRUCTIONS:REMOVE-USELESS-INSTRUCTIONS hir)
-              (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
+              ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
+              ;; Beach says remove-useless-instructions is a bad idea right now - removing
+              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
+              ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
+              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
               (clasp-cleavir:convert-funcalls hir)
               (my-hir-transformations hir clasp-system nil nil)
               #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
-              (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+              (cleavir-ir:hir-to-mir hir clasp-system nil nil) 
+              (clasp-cleavir:optimize-stack-enclose hir)
               (cc-mir:assign-mir-instruction-datum-ids hir)
               #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
               (setf *ast* hoisted-ast

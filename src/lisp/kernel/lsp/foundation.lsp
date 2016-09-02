@@ -8,6 +8,7 @@
 (defconstant lambda-list-keywords '( &ALLOW-OTHER-KEYS
 				    &AUX &BODY &ENVIRONMENT &KEY
 				    &OPTIONAL &REST
+                                    &VA-REST
 				    &WHOLE) )
 
 
@@ -69,7 +70,7 @@
       t)
 
 #| --- loose this - its in evalmacros where ecl had it |#
-#+ecl-min
+#+clasp-min
 (si::fset 'psetq #'(lambda (whole env)
 		     "Syntax: (psetq {var form}*)
 Similar to SETQ, but evaluates all FORMs first, and then assigns each value to
@@ -127,16 +128,24 @@ the corresponding VAR.  Returns NIL."
 
 (fset 'cons-cdr #'(lambda (def env) `(cdr ,(cadr def))) t)
 
-#|
-;; truly-the is now a special operator
-(si::fset 'truly-the
-	  #'(lambda-block truly-the (args env)
-			  (let ((ty (cadr args))
-				(obj (caddr args)))
-			    (list 'the ty obj)))
-	  t)
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (select-package :ext))
 
-|#
+(core:fset 'truly-the
+      #'(lambda (whole env)
+          `(the ,@(cdr whole)))
+      t)
+
+(core:fset 'checked-value
+      #'(lambda (whole env)
+          `(the ,@(cdr whole)))
+      t)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (core:select-package :core))
+(import 'ext:truly-the :core)
+(export 'truly-the)
+
 
 (si::fset 'prog1 #'(lambda (whole env)
 		     (let ((sym (gensym))
@@ -242,7 +251,8 @@ the corresponding VAR.  Returns NIL."
 
 
 (defun hash-table-iterator (hash-table)
-  (let ((number-of-hashes (hash-table-number-of-hashes hash-table))
+  (let ((number-of-buckets (hash-table-number-of-hashes hash-table))
+        (buckets (core:hash-table-buckets hash-table))
 	(hash 0)
 	(cur-alist))
     (labels ((advance-hash-table-iterator ()
@@ -256,9 +266,9 @@ the corresponding VAR.  Returns NIL."
                          (progn
                            (setq hash (1+ hash))
                            (advance-hash-table-iterator))))
-		   (if (< hash number-of-hashes)
+		   (if (< hash number-of-buckets)
 		       (progn
-			 (setq cur-alist (hash-table-alist-at-hash hash-table hash))
+			 (setq cur-alist (elt buckets hash))
                          (if cur-alist
                              (progn
                                (when (core:hash-table-entry-deleted-p (car cur-alist))
@@ -267,11 +277,11 @@ the corresponding VAR.  Returns NIL."
                                (setq hash (1+ hash))
                                (advance-hash-table-iterator))))))))
       (function (lambda ()
-	(if (>= hash number-of-hashes)
+	(if (>= hash number-of-buckets)
 	    nil
 	    (progn
 	      (advance-hash-table-iterator)
-	      (when (< hash number-of-hashes)
+	      (when (< hash number-of-buckets)
 		(values t (caar cur-alist) (cdar cur-alist))))))))))
 
 ;   "Substitute data of ALIST for subtrees matching keys of ALIST."
@@ -350,28 +360,8 @@ the corresponding VAR.  Returns NIL."
 (defun invoke-debugger (cond)
   (core:invoke-internal-debugger cond))
 
-
 (export 'class-name)
 
-
-(in-package :ext)
-(defun compiled-function-name (x)
-  (core:function-name x))
-
-(defun compiled-function-file (x)
-  (multiple-value-bind (sfi pos)
-      (core:function-source-pos x)
-    (let* ((source-file (core:source-file-info-source-debug-namestring sfi)))
-      (if source-file
-          (let* ((source-pathname (pathname source-file))
-                 (source-directory (pathname-directory source-pathname))
-                 (pn (if (eq (car source-directory) :relative)
-                         (merge-pathnames source-pathname (translate-logical-pathname "SYS:"))
-                         source-pathname))
-                 (filepos (+ (core:source-file-info-source-debug-offset sfi) pos)))
-            (values pn filepos))
-          (values nil 0)))))
-(export '(compiled-function-name compiled-function-file))
 
 (defun warn-or-ignore (x &rest args)
   nil)

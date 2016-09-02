@@ -143,9 +143,8 @@ typedef enum {
 } Token;
 
 SMART(Reader);
-class Reader_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Reader_O, "Reader");
+class Reader_O : public General_O {
+  LISP_CLASS(core, CorePkg, Reader_O, "Reader",General_O);
 
 public: // ctors-dtors
   explicit Reader_O();
@@ -206,5 +205,4 @@ public:
   T_sp primitive_read(bool eofErrorP, T_sp eofValue, bool recursiveP = false);
 };
 };
-TRANSLATE(core::Reader_O);
 #endif //]

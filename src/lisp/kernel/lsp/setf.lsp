@@ -130,14 +130,14 @@ expanded into
 	  storing-form)
 The doc-string DOC, if supplied, is saved as a SETF doc and can be retrieved
 by (DOCUMENTATION 'SYMBOL 'SETF)."
-  (let ((env (member '&environment args :test #'eq)))
-    (if env
-	(setq args (cons (second env)
-			 (nconc (ldiff args env) (cddr env))))
+  (let ((env-part (member '&environment args :test #'eq)))
+    (if env-part
+	(setq args (cons (second env-part)
+			 (nconc (ldiff args env-part) (cddr env-part))))
 	(progn
-	  (setq env (gensym "env-define-setf-expander"))
-	  (setq args (cons env args))
-	  (push `(declare (ignore ,env)) lambda-body)))
+	  (setq env-part (gensym "env-define-setf-expander"))
+	  (setq args (cons env-part args))
+	  (push `(declare (ignore ,env-part)) lambda-body)))
     (multiple-value-bind (decls body doc)
 	(si::process-declarations lambda-body t)
       #+ecl(when decls (setq decls (list (cons 'declare decls))))
@@ -236,6 +236,7 @@ Does not check if the third gang is a single-element list."
 (defsetf sbit sys:aset)
 (defsetf elt elt-set)
 (defsetf symbol-value set)
+#+clasp(defsetf core:sharp-equal-wrapper-value core:setf-sharp-equal-wrapper-value)
 (defsetf symbol-function sys:fset)
 (defsetf fdefinition sys:fset)
 (defsetf macro-function (s &optional env) (v) (declare (ignore env)) `(sys:fset ,s ,v t))

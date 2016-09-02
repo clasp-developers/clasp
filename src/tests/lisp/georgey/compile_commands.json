@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/Users/meister/Development/clasp/src/tests/lisp/georgey",
-	"command": "clang -Wall -Wextra -pedantic --std=c++11 -fcolor-diagnostics test.cpp",
-  "file": "test.cpp"
-}
-]

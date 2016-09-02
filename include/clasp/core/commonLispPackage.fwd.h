@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #ifndef commonLispPackage_fwd_H
 #define commonLispPackage_fwd_H
-
-NAMESPACE_PACKAGE_ASSOCIATION(cl, ClPkg, "CL")
+PACKAGE_NICKNAME("CL");
+NAMESPACE_PACKAGE_ASSOCIATION(cl, ClPkg, "COMMON-LISP")
 
 #endif

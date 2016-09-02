@@ -34,25 +34,19 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 namespace core {
-//#define DEBUG_HASH_TABLE
+T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
 
-T_sp cl_make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold, Symbol_sp weakness = _Nil<T_O>(), T_sp debug = _Nil<T_O>());
+ 
 
 FORWARD(HashTable);
-class HashTable_O : public T_O {
+class HashTable_O : public General_O {
   struct metadata_bootstrap_class {};
-
-  LISP_BASE1(T_O);
-  LISP_VIRTUAL_CLASS(core, ClPkg, HashTable_O, "HashTable");
+  LISP_CLASS(core, ClPkg, HashTable_O, "HashTable",core::General_O);
   bool fieldsp() const { return true; };
   void fields(Record_sp node);
 
-  friend T_mv cl_maphash(T_sp function_desig, T_sp hash_table);
+  friend T_mv cl__maphash(T_sp function_desig, T_sp hash_table);
   HashTable_O() : _InitialSize(4), _RehashSize(_Nil<Number_O>()), _RehashThreshold(1.2), _HashTable(_Nil<VectorObjects_O>()), _HashTableCount(0)
-#ifdef DEBUG_HASH_TABLE
-                  ,
-                  _DebugHashTable(false)
-#endif
                   {};
   virtual ~HashTable_O(){};
   //	DEFAULT_CTOR_DTOR(HashTable_O);
@@ -60,8 +54,8 @@ class HashTable_O : public T_O {
   friend class HashTableEql_O;
   friend class HashTableEqual_O;
   friend class HashTableEqualp_O;
-  friend T_mv cl_maphash(T_sp function_desig, HashTable_sp hash_table);
-  friend T_mv cl_clrhash(HashTable_sp hash_table);
+  friend T_mv cl__maphash(T_sp function_desig, HashTable_sp hash_table);
+  friend T_sp cl__clrhash(HashTable_sp hash_table);
 
 protected: // instance variables here
   uint _InitialSize;
@@ -70,11 +64,9 @@ protected: // instance variables here
   VectorObjects_sp _HashTable;
   uint _HashTableCount;
 #ifdef USE_MPS
-  mps_ld_s _LocationDependencyTracker;
-#endif
-#ifdef DEBUG_HASH_TABLE
-public: // Turn on to debug a particular hash table
-  bool _DebugHashTable;
+  mps_ld_s _LocationDependency;
+#else
+  gctools::BogusBoehmLocationDependencyTracker _LocationDependency; // Need to have a field here to match MPS  
 #endif
 public:
   static HashTable_sp create(T_sp test); // set everything up with defaults
@@ -93,24 +85,31 @@ private:
 public:
   /*! If findKey is defined then search it as you rehash and return resulting keyValuePair CONS */
   List_sp rehash(bool expandTable, T_sp findKey);
-
+  CL_LISPIFY_NAME("hash-table-buckets");
+  CL_DEFMETHOD VectorObjects_sp hash_table_buckets() const { return this->_HashTable; };
 public: // Functions here
   virtual bool equalp(T_sp other) const;
 
   /*! See CLHS */
-  virtual T_sp hashTableTest() const { SUBIMP(); };
+CL_LISPIFY_NAME("hash-table-test");
+CL_DEFMETHOD   virtual T_sp hashTableTest() const { SUBIMP(); };
 
   /*! Return a count of the number of keys */
   uint hashTableCount() const;
   size_t size() { return this->hashTableCount(); };
 
-  virtual Number_sp hashTableRehashSize() const { return this->_RehashSize; };
+CL_LISPIFY_NAME("hash-table-rehash-size");
+CL_DEFMETHOD   virtual Number_sp hashTableRehashSize() const { return this->_RehashSize; };
 
-  double hashTableRehashThreshold() const { return this->_RehashThreshold; };
+CL_LISPIFY_NAME("hash-table-rehash-threshold");
+CL_DEFMETHOD   double hashTableRehashThreshold() const { return this->_RehashThreshold; };
 
   uint hashTableSize() const;
 
   virtual gc::Fixnum sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey) const;
+  gc::Fixnum safe_sxhashKey(T_sp key, gc::Fixnum bound, bool willAddKey ) const {
+    return this->sxhashKey(key,bound,willAddKey);
+  }
   virtual bool keyTest(T_sp entryKey, T_sp searchKey) const;
 
   /*! I'm not sure I need this and tableRef */
@@ -164,6 +163,5 @@ public: // Functions here
 
 }; /* core */
 
-TRANSLATE(core::HashTable_O);
 
 #endif /* _core_HashTable_H */

@@ -2,7 +2,7 @@
 (make-package "CLASP-CLEAVIR-AST")
 (core::add-cleavir-to-*system-files*)
 (setq *features* (list* :cclasp :clos *features*))
-(setq *features* (core::recursive-remove-from-list :ecl-min *features*))
+(setq *features* (core::recursive-remove-from-list :clasp-min *features*))
 (setq *target-backend* (core::default-target-backend))
 (load-system :start :pre-inline :system *system-files* :load-bitcode t)
 

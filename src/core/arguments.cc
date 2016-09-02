@@ -33,7 +33,7 @@ THE SOFTWARE.
 
 namespace core {
 
-List_sp Argument::lambdaList() const {
+List_sp Argument::lambda_list() const {
   return ((this->_ArgTarget));
 };
 
@@ -42,7 +42,6 @@ Symbol_sp Argument::symbol() const {
 };
 
 List_sp Argument::classified() const {
-  _G();
   if (this->_ArgTargetFrameIndex == SPECIAL_TARGET) {
     return coerce_to_list(Cons_O::create(ext::_sym_specialVar, this->_ArgTarget));
   } else if (this->_ArgTargetFrameIndex >= 0) {
@@ -141,13 +140,13 @@ string AuxArgument::asString() const {
 
 #if 0 // moved to header
 DynamicScopeManager::DynamicScopeManager() {
-  int top = _lisp->bindings().top();
+  int top = my_thread->bindings().top();
   this->_beginTop = top;
   this->_endTop = top;
 }
 
 DynamicScopeManager::DynamicScopeManager(Symbol_sp sym, T_sp val) {
-  int top = _lisp->bindings().top();
+  int top = my_thread->bindings().top();
   this->_beginTop = top;
   this->_endTop = top;
   this->pushSpecialVariableAndSet(sym, val);
@@ -158,19 +157,20 @@ void DynamicScopeManager::dump() const {
   stringstream ss;
   ss << "DynamicScopeManager  _beginTop[" << this->_beginTop << "] _endTop[" << this->_endTop << "]" << std::endl;
   for (int i = this->_endTop - 1; i >= this->_beginTop; --i) {
-    ss << (BF("Dynamic[%d] var[%s] val-->%s") % i % _rep_(_lisp->bindings().var(i)) % _rep_(_lisp->bindings().val(i))).str() << std::endl;
+    ss << (BF("Dynamic[%d] var[%s] val-->%s") % i % _rep_(my_thread->bindings().var(i)) % _rep_(my_thread->bindings().val(i))).str() << std::endl;
   }
   printf("%s", ss.str().c_str());
 }
 
+#if 0
 void DynamicScopeManager::pushSpecialVariableAndSet(Symbol_sp sym, T_sp val) {
-  _lisp->bindings().push(sym);
-  this->_endTop = _lisp->bindings().top();
+  thread->bindings().push(sym);
+  this->_endTop = my_thread->bindings().top();
   //	SymbolSaveValue sv(sym,sym->symbolValueUnsafe());
   //	this->_SavedValues.push_back(sv);
   sym->setf_symbolValue(val);
 }
-
+#endif
 /*! The frame_index is not used here - it is only used by ActivationFrameDynamicLexicalScopeManager */
 void DynamicScopeManager::new_binding(const Argument &arg, T_sp val) {
   if (arg._ArgTargetFrameIndex == SPECIAL_TARGET) {
@@ -187,7 +187,7 @@ T_sp DynamicScopeManager::lexenv() const {
 
 #if 0
 DynamicScopeManager::~DynamicScopeManager() {
-  DynamicBindingStack &bindings = _lisp->bindings();
+  DynamicBindingStack &bindings = my_thread->bindings();
   int numBindings = this->_endTop - this->_beginTop;
   for (int i = 0; i < numBindings; ++i) {
     bindings.pop();
@@ -209,17 +209,27 @@ void ValueEnvironmentDynamicScopeManager::new_binding(const Argument &argument, 
   this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, val);
 }
 
+void ValueEnvironmentDynamicScopeManager::va_rest_binding(const Argument &argument) {
+  if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
+    SIMPLE_ERROR(BF("You cannot bind &VA-REST argument to a special"));
+  }
+  ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
+  VaList_sp valist(&this->valist());
+  T_sp argTarget = argument._ArgTarget;
+  this->_Environment->new_binding(gc::As<Symbol_sp>(argTarget), argument._ArgTargetFrameIndex, valist);
+}
+
 void ValueEnvironmentDynamicScopeManager::new_variable(List_sp classified, T_sp val) {
   Symbol_sp type = gc::As<Symbol_sp>(oCar(classified));
-  if (type == ext::_sym_specialVar) {
-    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
-    this->DynamicScopeManager::pushSpecialVariableAndSet(sym, val);
-    return;
-  } else if (type == ext::_sym_lexicalVar) {
+  if (type == ext::_sym_lexicalVar) {
     Symbol_sp sym = gc::As<Symbol_sp>(oCadr(classified));
     int idx = unbox_fixnum(gc::As<Fixnum_sp>(oCddr(classified)));
     ASSERTF(idx >= 0, BF("Illegal target index[%d] for lexical variable[%s]") % idx % _rep_(sym));
     this->_Environment->new_binding(sym, idx, val);
+    return;
+  } else if (type == ext::_sym_specialVar) {
+    Symbol_sp sym = gc::As<Symbol_sp>(oCdr(classified));
+    this->DynamicScopeManager::pushSpecialVariableAndSet(sym, val);
     return;
   }
   SIMPLE_ERROR(BF("Illegal classified type: %s\n") % _rep_(classified));
@@ -231,17 +241,25 @@ void ValueEnvironmentDynamicScopeManager::new_special(List_sp classified) {
   this->_Environment->defineSpecialBinding(sym);
 }
 
+
+
+
+
+
+
 void ActivationFrameDynamicScopeManager::new_binding(const Argument &argument, T_sp val) {
   if (argument._ArgTargetFrameIndex == SPECIAL_TARGET) {
     this->DynamicScopeManager::new_binding(argument, val);
     return;
   }
   ASSERTF(argument._ArgTargetFrameIndex >= 0, BF("Illegal ArgTargetIndex[%d] for lexical variable[%s]") % argument._ArgTargetFrameIndex % _rep_(argument._ArgTarget));
-  this->_Frame->set_entry(argument._ArgTargetFrameIndex, val);
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_Frame);
+  vframe->set_entry(argument._ArgTargetFrameIndex, val);
 }
 
 bool ActivationFrameDynamicScopeManager::lexicalElementBoundP(const Argument &argument) {
-  return ((this->_Frame->boundp_entry(argument._ArgTargetFrameIndex)));
+  ValueFrame_sp vframe = gctools::As_unsafe<ValueFrame_sp>(this->_Frame);
+  return ((vframe->boundp_entry(argument._ArgTargetFrameIndex)));
 }
 
 T_sp ActivationFrameDynamicScopeManager::lexenv() const {

@@ -59,10 +59,12 @@ struct ClaspLinkPass : public ModulePass {
     errs() << "Number of elements: " << num << '\n';
     funcs->dump();
     llvm::ConstantInt *ci = llvm::ConstantInt::get(M.getContext(), llvm::APInt(/*nbits*/ 32, num, true));
+#if 0
 #pragma clang diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
     llvm::GlobalVariable *gv = new llvm::GlobalVariable(M, llvm::IntegerType::get(M.getContext(), 32), true, llvm::GlobalValue::InternalLinkage, ci, GLOBAL_BOOT_FUNCTIONS_SIZE_NAME);
 #pragma clang diagnostic pop
+#endif
     return true; // Change this to true once we modify the module
   }
 };
@@ -73,15 +75,17 @@ namespace llvmo {
 #define ARGS_af_addGlobalBootFunctionsSizePass "(pass-manager)"
 #define DECL_af_addGlobalBootFunctionsSizePass ""
 #define DOCS_af_addGlobalBootFunctionsSizePass "addGlobalBootFunctionsSizePass"
-void af_addGlobalBootFunctionsSizePass(llvmo::PassManager_sp passManager) {
+CL_DEFUN void llvm_sys__addGlobalBootFunctionsSizePass(llvmo::PassManager_sp passManager) {
   ModulePass *claspLinkPass = new ClaspLinkPass();
   passManager->wrappedPtr()->add(claspLinkPass);
 }
 
 void initialize_claspLinkPass() {
-  core::af_def(LlvmoPkg, "addGlobalBootFunctionsSizePass", &af_addGlobalBootFunctionsSizePass);
+//  core::af_def(LlvmoPkg, "addGlobalBootFunctionsSizePass", &af_addGlobalBootFunctionsSizePass);
 }
 };
 
+#if 0
 char ClaspLinkPass::ID = 0;
 static RegisterPass<ClaspLinkPass> X(CLASP_LINK_PASS_NAME, "ClaspLinkPass", false, false);
+#endif

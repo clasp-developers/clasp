@@ -36,19 +36,10 @@ namespace core {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, Null_O);
 
-void Null_O::exposeCando(::core::Lisp_sp lisp) {
-  ::core::class_<Null_O>();
-}
 
-void Null_O::exposePython(::core::Lisp_sp lisp) {
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS_2BASES(Pkg(), Null, "", "", _LISP)
-      //	.initArgs("(self)")
-      ;
-#endif
-}
+
+
 
 #if 0
     void Null_O::serialize(::serialize::SNodeP node)

@@ -36,29 +36,6 @@ namespace core {
 //#define	FLOAT	float
 //#define	DOUBLE	double
 
-#ifdef WIN32
-#include <limits>
-typedef __int64 LongLongInt;
-#define LongLongMax LLONG_MAX
-
-#define myMAXFLOAT FLT_MAX
-#define atoll(x) (_atoi64(x))
-
-#elif __PGI
-#include <math.h>
-#include <limits.h>
-typedef long long int LongLongInt;
-#define LongLongMax LONGLONG_MAX
-#define myMAXFLOAT HUGE
-#else
-#include <math.h>
-typedef long long int LongLongInt;
-#define LongLongMax LLONG_MAX
-#define myMAXFLOAT HUGE
-#endif
-
-#define LongLongMaxScale 4096 // was 256
-#define LongLongIntBoundary LongLongMax / LongLongMaxScale
 
 namespace numerics {
 

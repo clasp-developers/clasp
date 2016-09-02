@@ -16,7 +16,8 @@
                  :sicl-additional-conditions)
     :serial t
     :components ((:file "packages")
-;;                 (:file "compile-cclasp")
+                 ;;                 (:file "compile-cclasp")
+                 (:file "cleavir-fixups-and-hacks")
 		 (:file "system")
 		 (:file "ast")
 		 (:file "convert-form")
@@ -32,6 +33,7 @@
 		 (:file "gml-drawing")
 		 (:file "landing-pad")
 		 (:file "arguments")
+                 (:file "closure-optimize")
 		 (:file "translate")
                  (:file "inline-prep")
 		 ))

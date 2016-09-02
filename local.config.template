@@ -8,8 +8,10 @@
 ### Most of the options are detected and determined
 ### automatically and don't have to be specified
 ### manually.
-### 
-### On Linux, no options should currently be necessary
+###
+### Set PREFIX to define where clasp will be installed
+###
+### On Linux, no other options should currently be necessary
 ### if you have installed the required packages.
 ### 
 ### On Darwin/OS X, you have to build externals-clasp
@@ -17,6 +19,8 @@
 ### tell the build system where it is located. No
 ### further options should be necessary.
 ### 
+## Where to install Clasp
+#export PREFIX
 
 ## Where Clasp is located. Defaults to the cwd.
 #export CLASP_HOME
@@ -27,10 +31,17 @@
 ## Path to the python2 binary.
 #export PYTHON2
 
+## Path to the sbcl 
+#export CLASP_SBCL
+
 ## Where the llvm-config file resides
 #export LLVM_CONFIG
 #export LLVM_CONFIG_DEBUG = $(LLVM_CONFIG)
 #export LLVM_CONFIG_RELEASE = $(LLVM_CONFIG)
+
+## The path to the clang executable
+#export CLASP_CLANG_PATH
+#export CLASP_CLANGXX_PATH
 
 ## Which OS to build for -- Darwin or Linux
 #export TARGET_OS

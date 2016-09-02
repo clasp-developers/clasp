@@ -34,6 +34,16 @@ THE SOFTWARE.
 
 namespace core {
 
+
+  void error_frame_range(const char* type, int index, int capacity )
+  {
+    SIMPLE_ERROR(BF("Index %d out of range for %s with capacity %d") % type % index % capacity );
+  }
+  void error_end_of_frame_list(const char* message)
+  {
+    SIMPLE_ERROR(BF("Reached end of ActivationFrame list for %s") % message);
+  }
+
 void watchTriggered(T_sp *ptr) {
   printf("%s:%d Watch-pointer@%p triggered on:", __FILE__, __LINE__, ptr);
   if ((*ptr)) {
@@ -44,7 +54,6 @@ void watchTriggered(T_sp *ptr) {
 }
 
 T_sp ActivationFrame_O::currentVisibleEnvironment() const {
-  _G();
   return this->const_sharedThis<ActivationFrame_O>();
 }
 
@@ -55,7 +64,8 @@ T_sp ActivationFrame_O::getActivationFrame() const {
 string ActivationFrame_O::clasp_asString(T_sp af) {
   if (af.nilp()) {
     stringstream ss;
-    ss << "#<" << af->_instanceClass()->classNameAsString() << " NIL>";
+    General_sp gaf(af.unsafe_general());
+    ss << "#<" << gaf->_instanceClass()->classNameAsString() << " NIL>";
     return ((ss.str()));
   }
   return gc::As<ActivationFrame_sp>(af)->asString();
@@ -66,14 +76,12 @@ string ActivationFrame_O::asString() const {
 }
 
 bool ActivationFrame_O::_findTag(Symbol_sp sym, int &depth, int &index, bool &interFunction, T_sp &tagbodyEnv) const {
-  _G();
   T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
   ++depth;
   return clasp_findTag(parent, sym, depth, index, interFunction, tagbodyEnv);
 }
 
 bool ActivationFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const {
-  _G();
   T_sp parent = clasp_currentVisibleEnvironment(this->getParentEnvironment());
   ++depth;
   return clasp_findValue(parent, sym, depth, index, valueKind, value);
@@ -89,63 +97,59 @@ string ActivationFrame_O::summaryOfContents() const {
   SUBCLASS_MUST_IMPLEMENT();
 }
 
+#if 0
 T_sp ActivationFrame_O::_lookupTagbodyId(int depth, int index) const {
-  _G();
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__());
   }
   --depth;
   return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
 }
+#endif
 
+#if 0
 T_sp &ActivationFrame_O::lookupValueReference(int depth, int index) {
-  _G();
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find value - this activation frame: %s") % this->__repr__());
   }
   --depth;
   return Environment_O::clasp_lookupValueReference(this->parentFrame(), depth, index);
 }
+#endif
 
+
+#if 0
 T_sp ActivationFrame_O::_lookupValue(int depth, int index) {
-  _G();
   return this->lookupValueReference(depth, index);
 }
+#endif
 
+#if 0
 Function_sp ActivationFrame_O::_lookupFunction(int depth, int index) const {
-  _G();
   if (depth == 0) {
     SIMPLE_ERROR(BF("Hit depth=0 and did not find function - this activation frame: %s") % this->__repr__());
   }
   --depth;
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
 }
-
-EXPOSE_CLASS(core, ActivationFrame_O);
-
-void ActivationFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ActivationFrame_O>();
-}
-
-void ActivationFrame_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ActivationFrame, "", "", _lisp);
 #endif
-}
+
+
+
+
 };
 
 namespace core {
 
 string ValueFrame_O::summaryOfContents() const {
   stringstream ss;
-  ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << " :len " << this->length() << std::endl;
+  ss << "---" << this->_instanceClass()->classNameAsString() << " :len " << this->length() << std::endl;
   T_sp debuggingInfo = _Nil<T_O>();
   if (this->_DebuggingInfo.notnilp()) {
     debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   }
   for (int i = 0; i < this->_Objects.capacity(); ++i) {
-    if (debuggingInfo.notnilp() && (i < cl_length(gc::As<Vector_sp>(debuggingInfo)))) {
+    if (debuggingInfo.notnilp() && (i < cl__length(gc::As<Vector_sp>(debuggingInfo)))) {
       ss << _rep_(gc::As<Vector_sp>(debuggingInfo)->elt(i)) << " ";
     } else {
       ss << ":arg" << i << "@" << (void *)(&(this->operator[](i))) << " ";
@@ -155,7 +159,7 @@ string ValueFrame_O::summaryOfContents() const {
     } else if (!this->boundp_entry(i)) {
       ss << "!!UNBOUND!! ";
     } else {
-      if (af_activation_frame_p(this->operator[](i))) {
+      if (core__activation_frame_p(this->operator[](i))) {
         ss << "ActivationFrame@" << (void *)(&(this->operator[](i)));
       } else {
         ss << "-->" << _rep_(this->operator[](i)) << "  ";
@@ -170,20 +174,8 @@ string ValueFrame_O::asString() const {
   return this->summaryOfContents();
 }
 
-T_sp &ValueFrame_O::operator[](int index) {
-  _G();
-  ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
-  return ((this->_Objects[index]));
-}
-
-const T_sp &ValueFrame_O::operator[](int index) const {
-  _G();
-  ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
-  return ((this->_Objects[index]));
-}
-
+#if 0
 T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
-  _G();
   if (depth == 0) {
     ASSERTF(index < this->_Objects.capacity(), BF("Out of range index %d for ValueFrame with %d entries") % index % this->_Objects.capacity());
     return ((this->_Objects[index]));
@@ -191,10 +183,10 @@ T_sp &ValueFrame_O::lookupValueReference(int depth, int index) {
   --depth;
   return Environment_O::clasp_lookupValueReference(this->parentFrame(), depth, index);
 }
+#endif
 
 void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
-  _G();
-  ASSERTF((istart + cl_length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl_length(values)));
+  ASSERTF((istart + cl__length(values)) == this->length(), BF("Mismatch between size of ValueFrame[%d] and the number of entries[%d] that are about to fill it") % this->length() % (istart + cl__length(values)));
   int iend = this->length();
   ASSERT(values.consp());
   List_sp cur = values;
@@ -205,21 +197,19 @@ void ValueFrame_O::fillRestOfEntries(int istart, List_sp values) {
   }
 }
 
+#if 0
 T_sp ValueFrame_O::_lookupValue(int depth, int index) {
-  _G();
   return this->lookupValueReference(depth, index);
 }
-
+#endif
 ValueFrame_sp ValueFrame_O::createForLambdaListHandler(LambdaListHandler_sp llh, T_sp parent) {
-  _G();
   ValueFrame_sp vf(ValueFrame_O::create(llh->numberOfLexicalVariables(), parent));
   return ((vf));
 }
 
 ValueFrame_sp ValueFrame_O::create(List_sp values, T_sp parent) {
-  _G();
-  ValueFrame_sp vf = ValueFrame_O::create(cl_length(values), parent);
-  //	vf->allocateStorage(cl_length(values));
+  ValueFrame_sp vf = ValueFrame_O::create(cl__length(values), parent);
+  //	vf->allocateStorage(cl__length(values));
   int idx = 0;
   for (auto cur : values) {
     vf->_Objects[idx] = oCar(cur);
@@ -229,9 +219,8 @@ ValueFrame_sp ValueFrame_O::create(List_sp values, T_sp parent) {
 }
 
 ValueFrame_sp ValueFrame_O::createFromReversedCons(List_sp values, T_sp parent) {
-  _G();
-  ValueFrame_sp vf = ValueFrame_O::create(cl_length(values), parent);
-  int len = cl_length(values);
+  ValueFrame_sp vf = ValueFrame_O::create(cl__length(values), parent);
+  int len = cl__length(values);
   //	vf->allocateStorage(len);
   int idx = len - 1;
   for (auto cur : values) {
@@ -266,13 +255,13 @@ bool ValueFrame_O::_updateValue(Symbol_sp sym, T_sp obj) {
        This is only used by the interpreter and shouldn't be expected to be fast.
     */
 bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &valueKind, T_sp &value) const {
-  _G();
   //	printf("%s:%d ValueFrame_O::_findValue - switch to DWARF debugging to look up values\n", __FILE__, __LINE__ );
   if (this->_DebuggingInfo.nilp()) {
     return ((this->Base::_findValue(sym, depth, index, valueKind, value)));
   }
   if (!this->_DebuggingInfo) {
-    THROW_HARD_ERROR(BF("The debugging info was NULL!!!!! Why is this happening?"));
+    printf("%s:%d The debugging info was NULL!!!!! Why is this happening?\n",__FILE__,__LINE__);
+    return ((this->Base::_findValue(sym, depth, index, valueKind, value)));
   }
   Vector_sp debuggingInfo = gc::As<Vector_sp>(this->_DebuggingInfo);
   int i = 0;
@@ -288,18 +277,10 @@ bool ValueFrame_O::_findValue(T_sp sym, int &depth, int &index, ValueKind &value
   return Environment_O::clasp_findValue(this->parentFrame(), sym, depth, index, valueKind, value);
 }
 
-EXPOSE_CLASS(core, ValueFrame_O);
 
-void ValueFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<ValueFrame_O>();
-}
 
-void ValueFrame_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, ValueFrame, "", "", _lisp);
-#endif
-}
+
+
 
 string FunctionFrame_O::summaryOfContents() const {
   return (this->asString());
@@ -315,8 +296,8 @@ string FunctionFrame_O::asString() const {
   return ((ss.str()));
 }
 
+#if 0
 Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
-  _G();
   if (depth == 0) {
     if (index >= this->_Objects.capacity()) {
       SIMPLE_ERROR(BF("Out of range index[%d] for FunctionFrame with %d entries") % index % this->_Objects.capacity());
@@ -326,47 +307,27 @@ Function_sp FunctionFrame_O::_lookupFunction(int depth, int index) const {
   --depth;
   return Environment_O::clasp_lookupFunction(this->parentFrame(), depth, index);
 }
-
-T_sp FunctionFrame_O::entry(int idx) const {
-  _G();
-  ASSERTF(idx < this->_Objects.capacity(), BF("index[%d] out of range for writing to activation frame with %d slots") % idx % this->_Objects.capacity());
-  return (this->_Objects[idx]);
-}
-
-const T_sp &FunctionFrame_O::entryReference(int idx) const {
-  _G();
-  ASSERTF(idx < this->_Objects.capacity(), BF("index[%d] out of range for writing to activation frame with %d slots") % idx % this->_Objects.capacity());
-  return (this->_Objects[idx]);
-}
-
-EXPOSE_CLASS(core, FunctionFrame_O);
-
-void FunctionFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<FunctionFrame_O>();
-}
-
-void FunctionFrame_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, FunctionFrame, "", "", _lisp);
 #endif
-}
+
 };
 
 namespace core {
 
+#if 0
 T_sp TagbodyFrame_O::_lookupTagbodyId(int depth, int index) const {
-  _G();
   if (depth == 0) {
     return this->asSmartPtr();
   }
   --depth;
   return Environment_O::clasp_lookupTagbodyId(this->parentFrame(), depth, index);
 }
+#endif
+
 
 string TagbodyFrame_O::summaryOfContents() const {
   stringstream ss;
-  ss << "---" << this->_instanceClass()->classNameAsString() << "#" << this->environmentId() << std::endl;
+  ss << "---" << this->_instanceClass()->classNameAsString()
+     << std::endl;
   return (ss.str());
 }
 
@@ -374,23 +335,5 @@ string TagbodyFrame_O::asString() const {
   return this->summaryOfContents();
 }
 
-TagbodyFrame_sp TagbodyFrame_O::create(T_sp parent) {
-  _G();
-  GC_ALLOCATE(TagbodyFrame_O, vf);
-  vf->_ParentFrame = parent;
-  return (vf);
-}
 
-EXPOSE_CLASS(core, TagbodyFrame_O);
-
-void TagbodyFrame_O::exposeCando(core::Lisp_sp lisp) {
-  core::class_<TagbodyFrame_O>();
-}
-
-void TagbodyFrame_O::exposePython(core::Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, TagbodyFrame, "", "", _lisp);
-#endif
-}
 };

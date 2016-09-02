@@ -1,0 +1,3 @@
+#! /bin/bash
+
+python waf-light --tools=clang_compilation_database

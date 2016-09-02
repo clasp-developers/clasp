@@ -90,11 +90,11 @@ void class_registration::register_() const {
     core::_sym_STARallCxxClassesSTAR->setf_symbolValue(
         core::Cons_O::create(className, core::_sym_STARallCxxClassesSTAR->symbolValue()));
   }
-  gctools::tagged_pointer<core::Creator> allocator;
+  gctools::smart_ptr<core::Creator_O> allocator;
   if (m_default_constructor != NULL) {
     allocator = m_default_constructor->registerDefaultConstructor_();
   } else {
-    allocator = gctools::ClassAllocator<DummyCreator>::allocateClass(classNameString);
+    allocator = gctools::GC<DummyCreator_O>::allocate(classNameString);
   }
   _lisp->addClass(className, crep, allocator);
   registry->add_class(m_type, crep);
@@ -147,7 +147,7 @@ void class_registration::register_() const {
 // -- interface ---------------------------------------------------------
 
 class_base::class_base(const string &name)
-    : scope(std::auto_ptr<registration>(
+    : scope(std::unique_ptr<registration>(
           m_registration = new class_registration(name))) {
 }
 
@@ -170,13 +170,13 @@ void class_base::set_default_constructor(registration *member) {
 }
 
 void class_base::add_member(registration *member) {
-  std::auto_ptr<registration> ptr(member);
-  m_registration->m_members.operator, (scope(ptr));
+  std::unique_ptr<registration> ptr(member);
+  m_registration->m_members.operator, (scope(std::move(ptr)));
 }
 
 void class_base::add_default_member(registration *member) {
-  std::auto_ptr<registration> ptr(member);
-  m_registration->m_default_members.operator, (scope(ptr));
+  std::unique_ptr<registration> ptr(member);
+  m_registration->m_default_members.operator, (scope(std::move(ptr)));
 }
 
 string class_base::name() const {

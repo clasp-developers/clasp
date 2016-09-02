@@ -34,10 +34,9 @@ namespace core {
 
 // set this class up by hand
 SMART(CxxObject);
-class CxxObject_O : public T_O // StandardObject_O
-                    {
-  LISP_BASE1(T_O); // LISP_BASE1(StandardObject_O);
-  LISP_CLASS(core, CorePkg, CxxObject_O, "CxxObject");
+class CxxObject_O : public General_O // StandardObject_O
+{
+  LISP_CLASS(core, CorePkg, CxxObject_O, "CxxObject",General_O);
 
 public:
 public:
@@ -45,6 +44,5 @@ public:
   virtual ~CxxObject_O(){};
 };
 };
-TRANSLATE(core::CxxObject_O);
 
 #endif

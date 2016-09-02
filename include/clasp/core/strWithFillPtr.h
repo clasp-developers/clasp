@@ -37,8 +37,7 @@ namespace core {
 class StrWithFillPtr_O : public Str_O {
   friend Fixnum &StringFillp(StrWithFillPtr_sp);
   friend T_sp str_out_get_position(T_sp strm);
-  LISP_BASE1(Str_O);
-  LISP_CLASS(core, CorePkg, StrWithFillPtr_O, "base-string-with-fill-ptr");
+  LISP_CLASS(core, CorePkg, StrWithFillPtr_O, "base-string-with-fill-ptr",Str_O);
 
 protected:
   cl_index _FillPointer;
@@ -110,7 +109,7 @@ public:
   void pushString(T_sp str);
 
   /*! Push the entire contents of the string in (str) */
-  void pushString(const char *str);
+  void pushStringCharStar(const char *str);
 
   string __repr__() const;
 
@@ -127,10 +126,8 @@ template <>
 struct gctools::GCInfo<core::StrWithFillPtr_O> {
   static bool constexpr NeedsInitialization = false;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
-TRANSLATE(core::StrWithFillPtr_O);
 
 #endif

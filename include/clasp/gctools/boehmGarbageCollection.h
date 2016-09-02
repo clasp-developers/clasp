@@ -53,14 +53,16 @@ THE SOFTWARE.
 #define STL_VECTOR_KEYWORD_ARGUMENT_FIX(_vec_)
 #define STL_VECTOR_AUX_ARGUMENT_FIX(_vec_)
 
-namespace gctools {
-class GCObject;
-class GCLinkedList;
 
-class GCObject {
-public:
-  GCObject &operator=(const GCObject &) { return *this; };
-};
+
+
+
+
+namespace gctools {
+  class GCObject;
+  class GCLinkedList;
+
+  class GCObject {};
 
 /*! GCKindEnum has one integer value for each type allocated by the GC.
 This value is written into the Header_s of every allocated object.
@@ -72,150 +74,80 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 */
 
 #ifdef USE_CXX_DYNAMIC_CAST
-typedef enum { KIND_null = 0,
-               KIND_max } GCKindEnum; // minimally define this GCKind
+  typedef enum { KIND_null = 0,
+                 KIND_max } GCKindEnum; // minimally define this GCKind
 #else
-typedef
+  typedef
 #define GC_ENUM
-#include STATIC_ANALYZER_PRODUCT
+#include CLASP_GC_FILENAME
     GCKindEnum;
 #undef GC_ENUM
-#endif
+#endif // #else USE_CXX_DYNAMIC_CAST
 
 //#define BIG_BOEHM_HEADER
 
 #ifdef USE_BOEHM_MEMORY_MARKER
-extern int globalBoehmMarker;
+  extern int globalBoehmMarker;
 #endif
-class Header_s {
-public:
-  Header_s(GCKindEnum k) : Kind(k)
+  class Header_s {
+  public:
+  Header_s(kind_t k) : Kind(k)
 #ifdef BIG_BOEHM_HEADER
-                           ,
-                           ValidStamp(0xDEADBEEF), TypeidName(name)
+      , ValidStamp(0xBEEFDEADDEADBEEF)
 #endif
 #ifdef USE_BOEHM_MEMORY_MARKER
-                           ,
-                           Marker(globalBoehmMarker)
+      , Marker(globalBoehmMarker)
 #endif
-  {
+      {
 #ifdef _DEBUG_BUILD
-    if (k > KIND_max) {
-      printf("%s:%d Allocating object of kind: %zu - this is beyond KIND_max: %d\n", __FILE__, __LINE__, k, KIND_max);
-    }
-    if (k == 0) {
-      printf("%s:%d Allocating object of kind: %zu - this is not allowed except for maybe in boehmdc\n", __FILE__, __LINE__, k);
-    }
+        if (k > KIND_max) {
+          printf("%s:%d Allocating object of kind: %zu - this is beyond KIND_max: %d\n", __FILE__, __LINE__, k, KIND_max);
+        }
+#if defined(USE_BOEHM)&&defined(USE_CXX_DYNAMIC_CAST)
+    // nothing
+#else
+        if (k == 0) {
+          printf("%s:%d Allocating object of kind: %zu - this is not allowed except for maybe in boehmdc\n", __FILE__, __LINE__, k);
+        }
 #endif
-  };
+#endif
+      };
 
-private:
-#ifdef _ADDRESS_MODEL_64
-  uint64_t Kind;
-#endif
-#ifdef _ADDRESS_MODEL_32
-  uint32_t Kind;
-#endif
+  public:
+    kind_t Kind;
 #ifdef BIG_BOEHM_HEADER
-  uintptr_t ValidStamp;
-  const char *TypeidName;
+    uintptr_t ValidStamp;
 #endif
 #ifdef USE_BOEHM_MEMORY_MARKER // defined in foundation.h
-  int Marker;
+    int Marker;
 #endif
-public:
-  bool isValid() const {
+  public:
+    bool isValid() const {
 #ifdef BIG_BOEHM_HEADER
-    return this->ValidStamp == 0xDEADBEEF;
+      return this->ValidStamp == 0xDEADBEEF;
 #else
-    return true;
-#endif
-  };
-  const char *name() const {
-#ifdef BIG_BOEHM_HEADER
-    return this->TypeidName;
-#else
-    return "TypeIdUnavailable";
-#endif
-  };
-  bool kindP() const { return true; };
-  GCKindEnum kind() const { return (GCKindEnum) this->Kind; };
-  bool markerMatches(int m) const {
-#ifdef USE_BOEHM_MEMORY_MARKER
-    if (m) {
-      return this->Marker == m;
-    } else
       return true;
+#endif
+    };
+    bool invalidP() const { return false; };
+      bool kindP() const { return true; };
+    GCKindEnum kind() const { return (GCKindEnum) this->Kind; };
+    bool markerMatches(int m) const {
+#ifdef USE_BOEHM_MEMORY_MARKER
+      if (m) {
+        return this->Marker == m;
+      } else
+        return true;
 #else
-    return true;
+      return true;
 #endif
-  }
-  static size_t HeaderSize() { return sizeof(Header_s); };
+    }
+    static size_t HeaderSize() { return sizeof(Header_s); };
+  };
 };
 
-#if 0
-class TemplatedHeader_s : public Header_s {
-public:
-  TemplatedHeader_s(const char *name, BoehmKind k) : Header_s(name, k){};
-};
-#endif
-constexpr size_t Alignment() {
-  //            return sizeof(Header_s);
-  return alignof(Header_s);
-};
-constexpr size_t AlignUp(size_t size) { return (size + Alignment() - 1) & ~(Alignment() - 1); };
 
-template <class T>
-inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(Header_s)); };
 
-#if 0
-template <class T>
-inline size_t sizeof_with_templated_header() { return AlignUp(sizeof(T)) + AlignUp(sizeof(TemplatedHeader_s)); };
-#endif
-
-void headerDescribe(core::T_O *taggedClient);
-};
-
-namespace gctools {
-
-inline void *ClientPtrToBasePtr(void *mostDerived) {
-  size_t headerSize = AlignUp(sizeof(Header_s));
-  void *ptr = reinterpret_cast<char *>(mostDerived) - headerSize;
-  return ptr;
-}
-
-template <typename T>
-inline T *BasePtrToMostDerivedPtr(void *base) {
-  size_t headerSize = AlignUp(sizeof(Header_s));
-  T *ptr = reinterpret_cast<T *>(reinterpret_cast<char *>(base) + headerSize);
-  return ptr;
-}
-};
-
-namespace core {
-class T_O;
-class WrappedPointer_O;
-class Functoid;
-class Creator;
-class Iterator_O;
-};
-namespace clbind {
-class ConstructorCreator;
-};
-
-#ifndef USE_CXX_DYNAMIC_CAST
-#define DECLARE_FORWARDS
-#include STATIC_ANALYZER_PRODUCT
-#undef DECLARE_FORWARDS
-#endif
-
-namespace gctools {
-#ifndef USE_CXX_DYNAMIC_CAST
-#define GC_DYNAMIC_CAST
-#include STATIC_ANALYZER_PRODUCT // "main/clasp_gc.cc"
-#undef GC_DYNAMIC_CAST
-#endif
-};
 
 namespace gctools {
 /*! Initialize the memory pool system and call the startup function which
@@ -225,4 +157,14 @@ namespace gctools {
 int initializeMemoryManagement(MainFunctionType startup, int argc, char *argv[], void *dummy);
 };
 
+namespace gctools {
+  // Looks like an MPS mps_ld_s structure
+  // So that field_offset table for MPS can be used by boehm
+  // Instance variable must be called _LocationDependency
+ struct BogusBoehmLocationDependencyTracker {
+    unsigned long _epoch;
+    unsigned long _rs;
+  };
+
+};
 #endif // _clasp_boehmGarbageCollection_H

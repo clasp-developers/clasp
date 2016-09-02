@@ -12,7 +12,7 @@
 
 ;;;; clasp - changes approved May1 2013
 
-;;#-clasp
+#-clasp
 (defpackage "CLOS"
   (:use "CL" "EXT")
   (:import-from "SI" "UNBOUND" "GET-SYSPROP" "PUT-SYSPROP" "REM-SYSPROP"
@@ -30,11 +30,6 @@
 
 
 
-
-#+compare (print "MLOG ********* Starting package.lsp **********")
-#+clasp
-(defmacro clos-log (fmt &rest args)
-  `(bformat t ,fmt ,@args))
 
 #+clasp
 (export '(WITH-SLOTS WITH-ACCESSORS UPDATE-INSTANCE-FOR-REDEFINED-CLASS
@@ -106,7 +101,6 @@
           GENERIC-FUNCTION-METHODS 
           *OPTIMIZE-SLOT-ACCESS* 
           SLOT-MAKUNBOUND-USING-CLASS 
-          *NEXT-METHODS* 
           STANDARD-ACCESSOR-METHOD 
           SLOT-DEFINITION-WRITERS 
           METHOD-LAMBDA-LIST 
@@ -121,7 +115,6 @@
           FINALIZE-INHERITANCE 
           UPDATE-INSTANCE 
           CLASS-FINALIZED-P 
-          .COMBINED-METHOD-ARGS. 
           COMPUTE-DISCRIMINATING-FUNCTION 
           SLOT-DEFINITION-READERS 
           ADD-DEPENDENT 
@@ -158,3 +151,4 @@
         )
 
 (export '*environment-contains-closure-hook*)
+

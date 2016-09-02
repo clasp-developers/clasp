@@ -40,11 +40,10 @@ namespace core {
 
 /*! Boost-format interface - works like CL:format but uses boost format strings
  */
-#define ARGS_af_bformat "(destination control &rest args)"
-#define DECL_af_bformat ""
-#define DOCS_af_bformat "Like CL format but uses C/boost format strings"
-T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
-  _G();
+CL_LAMBDA(destination control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Like CL format but uses C/boost format strings");
+CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp args) {
   T_sp output;
   if (destination.nilp()) {
     output = _lisp->bformatStringOutputStream();
@@ -67,15 +66,15 @@ T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
       } else if (fobj.single_floatp()) {
         SingleFloat_sp ff = gc::As<SingleFloat_sp>(fobj);
         fmter % unbox_single_float(ff);
-      } else if (af_bignumP(fobj)) {
+      } else if (core__bignump(fobj)) {
         Bignum_sp flli = gc::As<Bignum_sp>(fobj);
         stringstream ss;
         ss << clasp_to_mpz(flli);
         fmter % ss.str();
-      } else if (af_strP(fobj)) {
+      } else if (core__simple_string_p(fobj)) {
         Str_sp ftext = gc::As<Str_sp>(fobj);
         fmter % ftext->get();
-      } else if (af_doubleFloatP(fobj)) {
+      } else if (core__double_float_p(fobj)) {
         DoubleFloat_sp freal = gc::As<DoubleFloat_sp>(fobj);
         fmter % freal->get();
       } else {
@@ -111,16 +110,15 @@ T_sp af_bformat(T_sp destination, const string &control, List_sp args) {
   return _Nil<T_O>();
 }
 
-#define ARGS_af_format "(destination control &rest args)"
-#define DECL_af_format ""
-#define DOCS_af_format "Subset of CL format - this does the job until the real format is installed"
-T_sp af_format(T_sp destination, T_sp control, List_sp args) {
-  _G();
+CL_LAMBDA(destination control &rest args);
+CL_DECLARE();
+CL_DOCSTRING("Subset of CL format - this does the job until the real format is installed");
+CL_DEFUN T_sp cl__format(T_sp destination, T_sp control, List_sp args) {
   stringstream tf;
-  if (cl_functionp(control)) {
+  if (cl__functionp(control)) {
     SIMPLE_ERROR(BF("Add support for functions as FORMAT controls"));
   }
-  if (!af_stringP(control)) {
+  if (!cl__stringp(control)) {
     SIMPLE_ERROR(BF("FORMAT control must be a string or a function - you gave: %s") % _rep_(control));
   }
   string ts = gc::As<Str_sp>(control)->get();
@@ -151,7 +149,7 @@ T_sp af_format(T_sp destination, T_sp control, List_sp args) {
         break;
       default: {
         stringstream serr;
-        serr << "Add support to BFORMAT to translate FORMAT control <tilde>" << *cur;
+        serr << "Add support to BFORMAT to translate FORMAT control <tilde>" << *cur << " format control: " << ts ;
         SIMPLE_ERROR(BF("%s") % (serr.str()));
       } break;
       }
@@ -164,15 +162,11 @@ T_sp af_format(T_sp destination, T_sp control, List_sp args) {
       ++cur;
     }
   }
-  return af_bformat(destination, tf.str(), args);
+  return core__bformat(destination, tf.str(), args);
 };
 
-void initialize_bformat(Lisp_sp lisp) {
-  _G();
   SYMBOL_SC_(CorePkg, bformat);
-  Defun(bformat);
   SYMBOL_EXPORT_SC_(ClPkg, format);
-  Defun(format);
-}
+
 
 }; /* (>>>namespace<<<) */

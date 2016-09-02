@@ -73,6 +73,7 @@
 	 systems)
     *all-systems*))
 
+
 (defun determine-complete-set-of-asdf-source-files (systems)
   (let ((*all-source-files* nil))
     (map nil #'(lambda (system)
@@ -84,11 +85,11 @@
               (let* ((part-name
                       (enough-namestring
                        (asdf/component:component-pathname x)
-                       (translate-logical-pathname #P"SYS:")))
+                       (translate-logical-pathname #P"SOURCE-DIR:")))
                      (no-type
                       (make-pathname :directory (pathname-directory part-name)
                                      :name (pathname-name part-name))))
-                (core::maybe-relative-pathname-to-sys (pathname (namestring no-type)))))
+                (enough-namestring (pathname (namestring no-type)) (translate-logical-pathname "source-dir:"))))
             *all-source-files*)))
       (nreverse source))))
 

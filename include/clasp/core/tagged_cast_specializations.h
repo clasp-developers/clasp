@@ -3,7 +3,7 @@
 
 #ifdef USE_BOEHM
 namespace gctools {
-#if 1
+#if 0
 template <>
 struct TaggedCast<core::Environment_O *, core::T_O *> {
   typedef core::Environment_O *ToType;
@@ -21,5 +21,10 @@ struct TaggedCast<core::Environment_O *, core::T_O *> {
 };
 
 #endif
+
+
+
+
+
 
 #endif

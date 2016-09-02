@@ -3,6 +3,8 @@
 #
 project internals/main : requirements
 	<define>EXPAT
+        <cxxflags>-std=c++11
+        <include>.
 	<toolset>darwin:<define>READLINE
 	<toolset>darwin:<define>darwin
 	<toolset>darwin,<variant>debug:<cxxflags>"-g3"
@@ -59,21 +61,46 @@ exe clasp : main.cc $(sources)
 
 
 
-stripped-bitcode intrinsics_bitcode : /internals/llvmo//intrinsics.cc
+stripped-bitcode clasp-intrinsics : /internals/llvmo//intrinsics.cc
 	:
 	<cxxflags>"-flto -emit-llvm" ;
 
-explicit intrinsics_bitcode ;
+linked-bitcode linked_clasp : $(sources) ;
 
+explicit clasp-intrinsics ;
+
+#explicit linked_clasp ;
 
 
 import package ;
 
 package.install clasp_install :
-                : clasp intrinsics_bitcode
+                : clasp clasp-intrinsics
                 : /externals//boostAndExpatLibs
                 : 
                 ;
 
 
 #                /internals/clbind//clasp-clbind/<link>shared
+
+
+lib clasp-clbind : 
+		/internals/gctools//gctools
+    	    	/internals/core//core
+    	    	/internals/cffi//cffi
+                /internals/clbind//clbind
+                /internals/llvmo//llvmo
+                /internals/asttooling//asttooling
+                /internals/sockets//sockets
+                /internals/serveEvent//serveEvent
+                /internals/main//main
+                /externals//boostAndExpatLibs
+#       		/externals//llvm_lib_globbed
+#                /internals/gctools//gclib
+                ;
+
+package.install clasp-clbind-install :
+                :
+                : clasp-clbind
+                :
+                ;

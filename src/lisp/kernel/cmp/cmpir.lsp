@@ -32,10 +32,6 @@
 (in-package :compiler)
 
 
-(defun irc-next-environment-id ()
-    (prog1 *next-environment-id*
-      (incf *next-environment-id*)))
-
 (defun irc-single-step-callback (env)
   (irc-intrinsic "singleStepCallback" ))
 
@@ -74,13 +70,13 @@
 
 
 (defun irc-create-landing-pad (num-clauses &optional (name ""))
-    (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ (irc-personality-function) num-clauses name))
+    (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ num-clauses name))
 
 (defun irc-add-clause (landpad type)
   (llvm-sys:add-clause landpad type))
 
 (defun irc-switch (go-value default-block num-cases)
-  (llvm-sys:create-switch *irbuilder* go-value default-block num-cases nil))
+  (llvm-sys:create-switch *irbuilder* go-value default-block num-cases nil nil))
 
 
 (defun irc-gep (array indices &optional (name "gep"))
@@ -386,8 +382,7 @@
 
 
 (defun irc-generate-terminate-code ()
-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
-	     (landpad (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ personality-function 1 "")))
+      (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -400,8 +395,7 @@
 
 
 (defun irc-generate-unwind-protect-landing-pad-code (env)
-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
-	     (landpad (llvm-sys:create-landing-pad *irbuilder* +exception-struct+ personality-function 1 "")))
+      (let* ((landpad (irc-create-landing-pad 1)))
 	(llvm-sys:add-clause landpad (llvm-sys:constant-pointer-null-get +i8*+))
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -520,7 +514,7 @@
   (if (member where *features*)
       (progn
         (let ((llt (get-function-or-error *the-module* "lowLevelTrace")))
-          (llvm-sys:create-call1 *irbuilder* llt (jit-constant-i32 *next-low-level-trace-index*) ""))
+          (llvm-sys:create-call-array-ref *irbuilder* llt (list (jit-constant-i32 *next-low-level-trace-index*)) ""))
         (setq *next-low-level-trace-index* (+ 1 *next-low-level-trace-index*)))
       nil))
 
@@ -653,6 +647,8 @@
 			      ;; pretty subtle bugs with exception handling (I think) when I did that.
 			      ;; I currently use llvm-sys:internal-linkage or llvm-sys:external-linkage
 			      (linkage ''llvm-sys:internal-linkage)
+                              ;; If the generated function returns void then indicate with this keyword
+                              return-void
 			      )
 			     &rest body)
   "Create a new function with {function-name} and {parent-env} - return the function"
@@ -677,12 +673,8 @@
                              :function-type ,function-type
                              :form ,function-form )
            (with-dbg-lexical-block (,function-form)
-;;             (format t "cmpir.lsp 670   Setting current-source-pos~%")
              (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-alloca)
-;;             (format t "cmpir.lsp 673   Done setting alloca current-source-pos~%")
              (dbg-set-current-source-pos-for-irbuilder ,function-form ,irbuilder-body)
-;;             (format t "cmpir.lsp 676   Done setting body current-source-pos~%")
-;;             (format t "cmpir.lsp 678   Done setting current-source-pos~%")
              (with-irbuilder (*irbuilder-function-body*)
 	       (or *the-module* (error "with-new-function *the-module* is NIL"))
 	       (let* ((*gv-current-function-name* (jit-make-global-string-ptr *current-function-name* "fn-name"))
@@ -693,8 +685,11 @@
 		   ,@body)
                  (cmp-log "with-landing-pad around irc-function-cleanup-and-return\n")
 		 (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env)
-		   (irc-function-cleanup-and-return ,fn-env ,result))
+		   (irc-function-cleanup-and-return ,fn-env ,result :return-void ,return-void))
 		 ,fn))))))))
+
+
+
 
 (defun irc-function-create (lisp-function-name body env
 			    &key (function-type +fn-prototype+ function-type-p)
@@ -718,6 +713,7 @@ and then the irbuilder-alloca, irbuilder-body."
 	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
 	 (irbuilder-alloca (llvm-sys:make-irbuilder *llvm-context*))
 	 (irbuilder-body (llvm-sys:make-irbuilder *llvm-context*)))
+    (llvm-sys:set-personality-fn fn (irc-personality-function))
     (let ((args (llvm-sys:get-argument-list fn)))
       (mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 	      (llvm-sys:get-argument-list fn) argument-names))
@@ -748,16 +744,13 @@ and then the irbuilder-alloca, irbuilder-body."
       (setf-metadata func-env :ehselector.slot ehselector.slot)
       (values fn func-env cleanup-block irbuilder-alloca irbuilder-body result))))
 
-(defun irc-function-cleanup-and-return (env result)
+(defun irc-function-cleanup-and-return (env result &key return-void)
   (when env
     (let ((return-block (irc-basic-block-create "return-block")))
       (irc-br return-block)
       (irc-begin-landing-pad-block (irc-get-cleanup-landing-pad-block env)
 				   (irc-get-function-for-environment env))
-      (let* ((personality-function (get-function-or-error *the-module* "__gxx_personality_v0"))
-	     (landpad (llvm-sys:create-landing-pad *irbuilder*
-						   +exception-struct+
-						   personality-function 0 "")))
+      (let* ((landpad (irc-create-landing-pad 0)))
 	(llvm-sys:set-cleanup landpad t)
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
@@ -775,11 +768,11 @@ and then the irbuilder-alloca, irbuilder-body."
 	  (irc-begin-block return-block)
 	  (irc-cleanup-function-environment env #| invocation-history-frame |# ) ;; Why the hell was this commented out?
 #|	  (irc-cleanup-function-environment env invocation-history-frame )  |#
-	  (llvm-sys:create-ret *irbuilder* (irc-load result)))
+	  (if return-void
+              (llvm-sys:create-ret-void *irbuilder*)
+              (llvm-sys:create-ret *irbuilder* (irc-load result))))
 	(cmp-log "About to verify the function in irc-function-cleanup-and-return\n")
-	(irc-verify-function *current-function*)
-        ))))
-
+	(irc-verify-function *current-function*))))) 
 
 (defun irc-cleanup-function-environment (env #||invocation-history-frame||#)
   "Generate the code to cleanup the environment"
@@ -860,8 +853,7 @@ Within the _irbuilder_ dynamic environment...
 	 (when ,init (funcall ,init ,alloca-sym))
 	 (when ,cleanup
 	   (multiple-value-bind (,cleanup-gs ,found-gs ,metadata-env-gs) (lookup-metadata env :cleanup)
-	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))
-	     ))
+	     (push-metadata ,metadata-env-gs :cleanup (list ,cleanup ,alloca-sym))))
 	 ,alloca-sym))
     ))
 
@@ -918,7 +910,7 @@ Within the _irbuilder_ dynamic environment...
     :cleanup (lambda (a)))); (irc-dtor "destructAFsp" a))))
 
 (defun irc-make-value-frame (result-af size)
-  (irc-intrinsic "makeValueFrame" result-af (jit-constant-i32 size) (jit-constant-i32 (irc-next-environment-id))))
+  (irc-intrinsic "makeValueFrame" result-af (jit-constant-size_t size)))
 
 (defun irc-make-tagbody-frame (env result-af)
   (irc-intrinsic "makeTagbodyFrame" result-af))
@@ -949,6 +941,11 @@ Within the _irbuilder_ dynamic environment...
     :alloca (llvm-sys::create-alloca *irbuilder* +size_t+ (jit-constant-size_t 1) label)
     :init (lambda (a) (irc-store (jit-constant-size_t init-val) a))))
 
+(defun irc-alloca-VaList_S (env &key (irbuilder *irbuilder-function-alloca*) (label "VaList_S-"))
+  "Alloca space for an VaList_S"
+  (with-alloca-insert-point env irbuilder
+    :alloca (llvm-sys::create-alloca *irbuilder* +VaList_S+ (jit-constant-size_t 1) label)
+    :init nil))
 
 (defun irc-alloca-i8* (env &key (irbuilder *irbuilder-function-alloca*) (label "i8*-"))
   "Allocate space for an i8*"
@@ -1063,18 +1060,10 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
-;;  (check-debug-info-setup *irbuilder*)
+  ;;  (check-debug-info-setup *irbuilder*)
   (let* ((func (get-function-or-error *the-module* function-name (car args)))
 	 (ra args)
-         (code (case (length args)
-                 (0 (llvm-sys:create-call-array-ref *irbuilder* func nil label ))
-                 (1 (llvm-sys:create-call1 *irbuilder* func (pop ra) label))
-                 (2 (llvm-sys:create-call2 *irbuilder* func (pop ra) (pop ra) label))
-                 (3 (llvm-sys:create-call3 *irbuilder* func (pop ra) (pop ra) (pop ra) label))
-                 (4 (llvm-sys:create-call4 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) label))
-                 (5 (llvm-sys:create-call5 *irbuilder* func (pop ra) (pop ra) (pop ra) (pop ra) (pop ra) label))
-                 (otherwise
-		  (llvm-sys:create-call-array-ref *irbuilder* func ra label)))))
+         (code (llvm-sys:create-call-array-ref *irbuilder* func ra label nil)))
     (unless code (error "irc-create-call returning nil"))
     code))
 

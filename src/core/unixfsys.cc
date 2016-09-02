@@ -36,6 +36,8 @@ THE SOFTWARE.
     See file '../Copyright' for full details.
 */
 
+#include <clasp/core/foundation.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
@@ -71,14 +73,13 @@ typedef int mode_t;
 #include <sys/dir.h>
 #endif
 #endif
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 #include <windows.h>
 #undef ERROR
 #endif
 #include <fcntl.h>
 #include <errno.h>
 
-#include <clasp/core/foundation.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/str.h>
 #include <clasp/core/fileSystem.h>
@@ -87,6 +88,7 @@ typedef int mode_t;
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/lispList.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/wrappers.h>
 
@@ -123,8 +125,8 @@ coerce_to_posix_filename(T_sp pathname) {
 	 * this is not supported on all POSIX platforms (most notably Windows)
 	 */
   ASSERT(pathname);
-  Str_sp sfilename = gc::As<Str_sp>(af_coerceToFilename(pathname));
-  return cl_stringRightTrim(Str_O::create(DIR_SEPARATOR), sfilename);
+  Str_sp sfilename = gc::As<Str_sp>(core__coerce_to_filename(pathname));
+  return cl__string_right_trim(Str_O::create(DIR_SEPARATOR), sfilename);
 }
 
 static int
@@ -142,20 +144,18 @@ safe_chdir(const char *path, T_sp tprefix) {
   }
 }
 
-#define ARGS_af_fork "()"
-#define DECL_af_fork ""
-#define DOCS_af_fork "fork"
-T_sp af_fork() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("fork");
+CL_DEFUN T_sp core__fork() {
   Fixnum_sp pid = make_fixnum(fork());
   return pid;
 };
 
-#define ARGS_af_waitpid "(pid options)"
-#define DECL_af_waitpid ""
-#define DOCS_af_waitpid "waitpid - see unix waitpid - returns status"
-int af_waitpid(Fixnum_sp pid, Fixnum_sp options) {
-  _G();
+CL_LAMBDA(pid options);
+CL_DECLARE();
+CL_DOCSTRING("waitpid - see unix waitpid - returns status");
+CL_DEFUN int core__waitpid(Fixnum_sp pid, Fixnum_sp options) {
   pid_t p = unbox_fixnum(pid);
   int status(0);
   int iopts = unbox_fixnum(options);
@@ -163,29 +163,26 @@ int af_waitpid(Fixnum_sp pid, Fixnum_sp options) {
   return status;
 };
 
-#define ARGS_af_getpid "()"
-#define DECL_af_getpid ""
-#define DOCS_af_getpid "getpid"
-T_sp af_getpid() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getpid");
+CL_DEFUN T_sp core__getpid() {
   Fixnum_sp pid = make_fixnum(getpid());
   return pid;
 };
 
-#define ARGS_af_getppid "()"
-#define DECL_af_getppid ""
-#define DOCS_af_getppid "getppid"
-T_sp af_getppid() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("getppid");
+CL_DEFUN T_sp core__getppid() {
   Fixnum_sp pid = make_fixnum(getppid());
   return pid;
 };
 
-#define ARGS_ext_chdir "(pathname)"
-#define DECL_ext_chdir ""
-#define DOCS_ext_chdir "chdir"
-T_sp ext_chdir(Pathname_sp dir) {
-  _G();
+CL_LAMBDA(pathname);
+CL_DECLARE();
+CL_DOCSTRING("chdir");
+CL_DEFUN T_sp ext__chdir(Pathname_sp dir) {
   Str_sp sdir = clasp_namestring(dir, true);
   return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
 };
@@ -222,19 +219,20 @@ ecl_cstring_to_pathname(char *s)
 }
 #endif
 
+
+};
+
+namespace ext {
 /*
  * Finds current directory by using getcwd() with an adjustable
  * string which grows until it can host the whole path.
  */
 
-#define ARGS_af_currentDir "()"
-#define DECL_af_currentDir ""
-#define DOCS_af_currentDir "currentDir"
-Str_sp af_currentDir() {
-  _G();
+CL_DOCSTRING("Return the unix current working directory");
+CL_DEFUN core::Str_sp ext__getcwd() {
   const char *ok;
   size_t size = 128;
-  StrWithFillPtr_sp output(StrWithFillPtr_O::create(' ', 1, 0, true));
+  core::StrWithFillPtr_sp output(core::StrWithFillPtr_O::create(' ', 1, 0, true));
   do {
     output->setSize(size);
     clasp_disable_interrupts();
@@ -259,7 +257,9 @@ Str_sp af_currentDir() {
   output->setFillPointer(size);
   return output;
 }
+};
 
+namespace core {
 /*
  * Using a certain path, guess the type of the object it points to.
  */
@@ -332,21 +332,21 @@ smart_file_kind(Str_sp sfilename, bool follow_links) {
   }
 }
 
-#define ARGS_af_file_kind "(filename follow-links)"
-#define DECL_af_file_kind ""
-#define DOCS_af_file_kind "file_kind (values kind found) - if found but kind==nil then its a broken symlink"
-Symbol_sp af_file_kind(T_sp filename, bool follow_links) {
-  _G();
+CL_LAMBDA(filename follow-links);
+CL_DECLARE();
+CL_DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a broken symlink");
+CL_DEFUN Symbol_sp core__file_kind(T_sp filename, bool follow_links) {
   ASSERT(filename);
   Str_sp sfilename = coerce_to_posix_filename(filename);
   return smart_file_kind(sfilename, follow_links);
 }
 
-#if defined(HAVE_LSTAT) && !defined(ECL_MS_WINDOWS_HOST)
-#define ARGS_core_readlink "(filename)"
-#define DECL_core_readlink ""
-#define DOCS_core_readlink "file_kind (values kind found) - if found but kind==nil then its a br"
-static T_sp core_readlink(Str_sp filename) {
+#if defined(HAVE_LSTAT) && !defined(CLASP_MS_WINDOWS_HOST)
+
+CL_LAMBDA(filename);
+CL_DECLARE();
+CL_DOCSTRING("file_kind (values kind found) - if found but kind==nil then its a br");
+CL_DEFUN T_sp core__readlink(Str_sp filename) {
   /* Given a filename which is a symlink, this routine returns
 	 * the value of this link in the form of a pathname. */
   size_t size = 128, written;
@@ -389,7 +389,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
     return base_dir;
   } else if (subdir == kw::_sym_up) {
     aux = Str_O::create("..");
-  } else if (!af_stringP(subdir)) {
+  } else if (!cl__stringp(subdir)) {
     SIMPLE_ERROR(BF("Directory component %s found in pathname %s"
                     "is not allowed in TRUENAME or DIRECTORY") %
                  _rep_(subdir) % _rep_(base_dir));
@@ -414,7 +414,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 //	FEcannot_open(aux);
 #ifdef HAVE_LSTAT
   } else if (kind == kw::_sym_link) {
-    output = cl_truename(af_mergePathnames(core_readlink(aux),
+    output = cl__truename(cl__merge_pathnames(core__readlink(aux),
                                            base_dir, kw::_sym_default));
     if (output->_Name.notnilp() ||
         output->_Type.notnilp())
@@ -429,7 +429,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
   }
   if (subdir == kw::_sym_up) {
     T_sp newdir = output->_Directory;
-    newdir = cl_nbutlast(newdir, make_fixnum(2));
+    newdir = cl__nbutlast(newdir, make_fixnum(2));
     if (newdir.nilp()) {
       if (ignore_if_failure)
         return _Nil<Pathname_O>();
@@ -446,7 +446,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
 static Pathname_sp
 make_absolute_pathname(T_sp orig_pathname) {
   Pathname_sp base_dir = getcwd(false);
-  Pathname_sp pathname = af_coerceToFilePathname(orig_pathname);
+  Pathname_sp pathname = core__coerce_to_file_pathname(orig_pathname);
   Pathname_sp result = clasp_mergePathnames(pathname, base_dir, kw::_sym_default);
   return result;
 }
@@ -475,7 +475,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       INTERNAL_ERROR(BF("file_truename:"
                         " both FILENAME and PATHNAME are null!"));
     }
-    pathname = cl_pathname(filename);
+    pathname = cl__pathname(filename);
   } else if (filename.nilp()) {
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
     if (filename.nilp()) {
@@ -499,7 +499,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
       return Values(pathname, kind);
     /* The link might be a relative pathname. In that case we have
 	 * to merge with the original pathname */
-    filename = core_readlink(filename);
+    filename = core__readlink(filename);
     Pathname_sp pn = gc::As<Pathname_sp>(pathname);
     pathname = Pathname_O::makePathname(pn->_Host,
                                         pn->_Device,
@@ -510,7 +510,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
                                         kw::_sym_local);
     pathname = clasp_mergePathnames(filename, pathname, kw::_sym_default);
     filename = clasp_namestring(pathname, CLASP_NAMESTRING_FORCE_BASE_STRING);
-    Pathname_sp truename = cl_truename(pathname);
+    Pathname_sp truename = cl__truename(pathname);
     return Values(truename, kind);
 #endif
   } else if (kind == kw::_sym_directory) {
@@ -520,7 +520,7 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
       Str_sp spathname = (*(gc::As<Str_sp>(filename))) + DIR_SEPARATOR;
-      pathname = cl_truename(spathname);
+      pathname = cl__truename(spathname);
     }
   }
   /* ECL does not contemplate version numbers
@@ -539,10 +539,10 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
   return Values(gc::As<Pathname_sp>(pathname), kind);
 }
 
-#define ARGS_core_file_truename "(pathname filename follow-links)"
-#define DECL_core_file_truename ""
-#define DOCS_core_file_truename "truename"
-Pathname_mv core_file_truename(T_sp pathname, T_sp filename, bool follow_links) {
+CL_LAMBDA(pathname filename follow-links);
+CL_DECLARE();
+CL_DOCSTRING("truename");
+CL_DEFUN Pathname_mv core__file_truename(T_sp pathname, T_sp filename, bool follow_links) {
   return file_truename(pathname, filename, follow_links);
 }
 
@@ -552,10 +552,10 @@ Pathname_mv core_file_truename(T_sp pathname, T_sp filename, bool follow_links) 
  * current directory
  */
 
-#define ARGS_cl_truename "(orig-pathname)"
-#define DECL_cl_truename ""
-#define DOCS_cl_truename "truename"
-Pathname_sp cl_truename(T_sp orig_pathname) {
+CL_LAMBDA(orig-pathname);
+CL_DECLARE();
+CL_DOCSTRING("truename");
+CL_DEFUN Pathname_sp cl__truename(T_sp orig_pathname) {
   Pathname_sp pathname = make_absolute_pathname(orig_pathname);
   Pathname_sp base_dir = make_base_pathname(pathname);
   Cons_sp dir;
@@ -566,12 +566,13 @@ Pathname_sp cl_truename(T_sp orig_pathname) {
      * then we resolve the value of the symlink and continue traversing
      * the filesystem.
      */
-  for (auto dir : coerce_to_list(pathname->_Directory)) {
+  List_sp directory_parts = coerce_to_list(pathname->_Directory);
+  for (auto dir : directory_parts ) {
     base_dir = enter_directory(base_dir, oCar(dir), false);
   }
   pathname = clasp_mergePathnames(base_dir, pathname, kw::_sym_default);
 #ifdef DEBUG_FILE_KIND
-  printf("%s:%d cl_truename pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
+  printf("%s:%d cl__truename pathname: %s\n", __FILE__, __LINE__, _rep_(pathname).c_str());
 #endif
   Pathname_mv truename = file_truename(pathname, _Nil<T_O>(), FOLLOW_SYMLINKS);
   return truename;
@@ -582,7 +583,7 @@ int clasp_backup_open(const char *filename, int option, int mode) {
   sbackup << filename << ".BAK";
   string backupfilename = sbackup.str();
   clasp_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   /* Windows' rename doesn't replace an existing file */
   if (access(backupfilename, F_OK) == 0 && unlink(backupfilename)) {
     clasp_enable_interrupts();
@@ -607,11 +608,10 @@ clasp_file_len(int f) {
   return Integer_O::create((gc::Fixnum)(filestatus.st_size));
 }
 
-#define ARGS_cl_renameFile "(oldn newn &key (if-exists :error))"
-#define DECL_cl_renameFile ""
-#define DOCS_cl_renameFile "renameFile"
-T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists) {
-  _G();
+CL_LAMBDA(oldn newn &key (if-exists :error));
+CL_DECLARE();
+CL_DOCSTRING("renameFile");
+CL_DEFUN T_mv cl__rename_file(T_sp oldn, T_sp newn, T_sp if_exists) {
   Str_sp old_filename, new_filename;
   Pathname_sp old_truename, new_truename;
 
@@ -619,15 +619,15 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists) {
  *    or if it does not exist. Notice that the filename to be renamed
  *    is not the truename, because we might be renaming a symbolic link.
  */
-  old_truename = cl_truename(oldn);
+  old_truename = cl__truename(oldn);
   old_filename = coerce_to_posix_filename(old_truename);
 
   /* 2) Create the new file name. */
   Pathname_sp pnewn = clasp_mergePathnames(newn, oldn, kw::_sym_newest);
-  new_filename = af_coerceToFilename(pnewn);
+  new_filename = core__coerce_to_filename(pnewn);
 
   while (if_exists == kw::_sym_error || if_exists.nilp()) {
-    if (cl_probe_file(new_filename).nilp()) {
+    if (cl__probe_file(new_filename).nilp()) {
       if_exists = _lisp->_true();
       break;
     }
@@ -655,7 +655,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists) {
   }
   {
     clasp_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
     int error = SetErrorMode(0);
     if (MoveFile((char *)old_filename->base_string.self,
                  (char *)new_filename->base_string.self)) {
@@ -702,7 +702,7 @@ T_mv cl_renameFile(T_sp oldn, T_sp newn, T_sp if_exists) {
     }
 #endif
   }
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 FAILURE_CLOBBER:
 #endif
   clasp_enable_interrupts();
@@ -720,7 +720,7 @@ FAILURE_CLOBBER:
 
 SUCCESS:
   clasp_enable_interrupts();
-  new_truename = cl_truename(newn);
+  new_truename = cl__truename(newn);
   return Values(newn, old_truename, new_truename);
 }
 
@@ -730,12 +730,11 @@ directory_pathname_p(Pathname_sp path) {
          (path->_Type.nilp());
 }
 
-#define ARGS_af_deleteFile "(file)"
-#define DECL_af_deleteFile ""
-#define DOCS_af_deleteFile "deleteFile"
-T_sp af_deleteFile(T_sp file) {
-  _G();
-  Pathname_sp path = cl_pathname(file);
+CL_LAMBDA(file);
+CL_DECLARE();
+CL_DOCSTRING("deleteFile");
+CL_DEFUN T_sp cl__delete_file(T_sp file) {
+  Pathname_sp path = cl__pathname(file);
   int isdir = directory_pathname_p(path);
   Str_sp filename = coerce_to_posix_filename(path);
   int ok;
@@ -759,23 +758,21 @@ T_sp af_deleteFile(T_sp file) {
   return _lisp->_true();
 }
 
-#define ARGS_cl_probe_file "(filespec)"
-#define DECL_cl_probe_file ""
-#define DOCS_cl_probe_file "probe_file"
-T_sp cl_probe_file(T_sp filespec) {
-  _G();
-  Pathname_sp pfile = cl_pathname(filespec);
+CL_LAMBDA(filespec);
+CL_DECLARE();
+CL_DOCSTRING("probe_file");
+CL_DEFUN T_sp cl__probe_file(T_sp filespec) {
+  Pathname_sp pfile = cl__pathname(filespec);
   /* INV: Both SI:FILE-KIND and TRUENAME complain if "file" has wildcards */
-  return (af_file_kind(pfile, true).notnilp() ? cl_truename(pfile) : _Nil<Pathname_O>());
+  return (core__file_kind(pfile, true).notnilp() ? cl__truename(pfile) : _Nil<Pathname_O>());
 }
 
-#define ARGS_af_file_write_date "(pathspec)"
-#define DECL_af_file_write_date ""
-#define DOCS_af_file_write_date "file_write_date"
-Number_sp af_file_write_date(T_sp pathspec) {
-  _G();
+CL_LAMBDA(pathspec);
+CL_DECLARE();
+CL_DOCSTRING("file_write_date");
+CL_DEFUN Number_sp cl__file_write_date(T_sp pathspec) {
   Number_sp time;
-  Pathname_sp pathname = cl_pathname(pathspec);
+  Pathname_sp pathname = cl__pathname(pathspec);
   Str_sp filename = coerce_to_posix_filename(pathname);
   struct stat filestatus;
   time = _Nil<Number_O>();
@@ -788,13 +785,12 @@ Number_sp af_file_write_date(T_sp pathspec) {
   return time;
 }
 
-#define ARGS_cl_fileAuthor "(file)"
-#define DECL_cl_fileAuthor ""
-#define DOCS_cl_fileAuthor "file_author"
-T_sp cl_fileAuthor(T_sp file) {
-  _G();
+CL_LAMBDA(file);
+CL_DECLARE();
+CL_DOCSTRING("file_author");
+CL_DEFUN T_sp cl__file_author(T_sp file) {
   T_sp output;
-  Pathname_sp pn = cl_pathname(file);
+  Pathname_sp pn = cl__pathname(file);
   Str_sp filename = coerce_to_posix_filename(pn);
   struct stat filestatus;
   if (safe_stat((char *)filename->c_str(), &filestatus) < 0) {
@@ -827,7 +823,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   size_t i;
   Str_sp namestring;
   const char *h;
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   const char *d;
 #endif
   if (Str_sp user = tuser.asOrNull<Str_O>()) {
@@ -856,7 +852,7 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
     SIMPLE_ERROR(BF("Unknown user %s.") % p);
   } else if ((h = getenv("HOME"))) {
     namestring = Str_O::create(h);
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   } else if ((h = getenv("HOMEPATH")) && (d = getenv("HOMEDRIVE"))) {
     namestring =
         si_base_string_concatenate(2,
@@ -872,14 +868,13 @@ Pathname_sp clasp_homedir_pathname(T_sp tuser) {
   i = namestring->length();
   if (!IS_DIR_SEPARATOR(namestring->c_str()[i - 1]))
     namestring = Str_O::create(namestring->get() + DIR_SEPARATOR);
-  return af_parseNamestring(namestring);
+  return cl__parse_namestring(namestring);
 }
 
-#define ARGS_af_userHomedirPathname "(&optional host)"
-#define DECL_af_userHomedirPathname ""
-#define DOCS_af_userHomedirPathname "userHomedirPathname"
-Pathname_sp af_userHomedirPathname(T_sp host) {
-  _G();
+CL_LAMBDA(&optional host);
+CL_DECLARE();
+CL_DOCSTRING("userHomedirPathname");
+CL_DEFUN Pathname_sp cl__user_homedir_pathname(T_sp host) {
   /* Ignore optional host argument. */
   return clasp_homedir_pathname(_Nil<T_O>());
 }
@@ -892,7 +887,7 @@ string_match(const char *s, T_sp pattern) {
     int ls = strlen(s);
     Str_sp strng = Str_O::create(s, strlen(s));
     return clasp_stringMatch(strng, 0, ls,
-                             pattern, 0, cl_length(pattern));
+                             pattern, 0, cl__length(pattern));
   }
 }
 
@@ -903,8 +898,7 @@ string_match(const char *s, T_sp pattern) {
  * by following the symlinks.
  */
 static T_sp
-list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
-               int flags) {
+list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask, int flags) {
   T_sp out = _Nil<T_O>();
   T_sp prefix = clasp_namestring(base_dir, CLASP_NAMESTRING_FORCE_BASE_STRING);
   T_sp component, component_path, kind;
@@ -923,7 +917,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
   while ((entry = readdir(dir))) {
     text = entry->d_name;
 #else
-#ifdef ECL_MS_WINDOWS_HOST
+#ifdef CLASP_MS_WINDOWS_HOST
   WIN32_FIND_DATA fd;
   HANDLE hFind = NULL;
   BOOL found = false;
@@ -932,7 +926,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
   for (;;) {
     if (hFind == NULL) {
       T_sp aux = make_constant_base_string(".\\*");
-      T_sp mask = af_base_string_concatenate(2, prefix, aux);
+      T_sp mask = base_string_concatenate(2, prefix, aux);
       hFind = FindFirstFile((char *)mask->c_str(), &fd);
       if (hFind == INVALID_HANDLE_VALUE) {
         out = _Nil<T_O>();
@@ -963,7 +957,7 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     if (dir.d_ino == 0)
       continue;
     text = dir.d_name;
-#endif /* !ECL_MS_WINDOWS_HOST */
+#endif /* !CLASP_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
     if (text[0] == '.' &&
         (text[1] == '\0' ||
@@ -972,39 +966,48 @@ list_directory(T_sp base_dir, T_sp text_mask, T_sp pathname_mask,
     if (!string_match(text, text_mask))
       continue;
     component = Str_O::create(text);
-    component = af_base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
-    component_path = cl_pathname(component);
+#if 1
+    stringstream concat;
+    Str_sp str_prefix = coerce::stringDesignator(prefix);
+    concat << str_prefix->c_str();
+    Str_sp str_component = coerce::stringDesignator(component);
+    concat << str_component->c_str();
+    component = Str_O::create(concat.str());
+#else
+    component = base_string_concatenate(LCC_PASS_ARGS2_ELLIPSIS(prefix.raw_(), component.raw_()));
+#endif
+    component_path = cl__pathname(component);
     if (!pathname_mask.nilp()) {
-      if (!af_pathnameMatchP(component, pathname_mask)) // should this not be inverted?
+      if (!cl__pathname_match_p(component, pathname_mask)) // should this not be inverted?
         continue;
     }
     T_mv component_path_mv = file_truename(component_path, component, flags);
     component_path = component_path_mv;
-    kind = component_path_mv.valueGet(1);
+    kind = component_path_mv.valueGet_(1);
     out = Cons_O::create(Cons_O::create(component_path, kind), out);
   }
 #ifdef HAVE_DIRENT_H
   closedir(dir);
 #else
-#ifdef ECL_MS_WINDOWS_HOST
+#ifdef CLASP_MS_WINDOWS_HOST
   FindClose(hFind);
 #else
   fclose(fp);
-#endif /* !ECL_MS_WINDOWS_HOST */
+#endif /* !CLASP_MS_WINDOWS_HOST */
 #endif /* !HAVE_DIRENT_H */
   clasp_enable_interrupts();
 OUTPUT:
-  return cl_nreverse(out);
+  return cl__nreverse(out);
 }
 
-#define ARGS_core_mkstemp "(template)"
-#define DECL_core_mkstemp ""
-#define DOCS_core_mkstemp "mkstemp"
-T_sp core_mkstemp(Str_sp thetemplate) {
+CL_LAMBDA(template);
+CL_DECLARE();
+CL_DOCSTRING("mkstemp");
+CL_DEFUN T_sp core__mkstemp(Str_sp thetemplate) {
   //  cl_index l;
   int fd;
 
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   T_sp phys, dir, file;
   char strTempDir[MAX_PATH];
   char strTempFileName[MAX_PATH];
@@ -1012,12 +1015,12 @@ T_sp core_mkstemp(Str_sp thetemplate) {
   int ok;
 
   phys = cl_translate_logical_pathname(1, thetemplate);
-  dir = cl_make_pathname(8,
+  dir = cl__make_pathname(8,
                          kw::_sym_type, _Nil<T_O>(),
                          kw::_sym_name, _Nil<T_O>(),
                          kw::_sym_version, _Nil<T_O>(),
                          kw::_sym_defaults, phys);
-  dir = af_coerceToFilename(dir);
+  dir = core__coerce_to_filename(dir);
   file = cl_file_namestring(phys);
 
   l = dir->base_string.fillp;
@@ -1039,7 +1042,7 @@ T_sp core_mkstemp(Str_sp thetemplate) {
     memcpy(output->c_str(), strTempFileName, l);
   }
 #else
-  thetemplate = af_coerceToFilename(thetemplate);
+  thetemplate = core__coerce_to_filename(thetemplate);
   stringstream outss;
   outss << thetemplate->get();
   outss << "XXXXXX";
@@ -1064,7 +1067,7 @@ T_sp core_mkstemp(Str_sp thetemplate) {
     output = _Nil<T_O>();
   } else {
     close(fd);
-    output = cl_truename(Str_O::create(outname));
+    output = cl__truename(Str_O::create(outname));
   }
 #endif
   return output;
@@ -1093,7 +1096,7 @@ si_get_library_pathname(void)
                         goto OUTPUT;
                 }
         }
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
 	{
         char *buffer;
 	HMODULE hnd;
@@ -1111,22 +1114,22 @@ si_get_library_pathname(void)
 	s->base_string.fillp = len;
         /* GetModuleFileName returns a file name. We have to strip
          * the directory component. */
-        s = cl_make_pathname(8, kw::_sym_name, _Nil<T_O>(), kw::_sym_type, _Nil<T_O>(),
+        s = cl__make_pathname(8, kw::_sym_name, _Nil<T_O>(), kw::_sym_type, _Nil<T_O>(),
 			     kw::_sym_version, _Nil<T_O>(),
                              kw::_sym_defaults, s);
-        s = ecl_namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
+        s = ecl__namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
 	}
 #else
         s = make_constant_base_string(ECLDIR "/");
 #endif
  OUTPUT:
         {
-                T_sp true_pathname = cl_probe_file(s);
+                T_sp true_pathname = cl__probe_file(s);
                 if (Null(true_pathname)) {
                         s = current_dir();
                 } else {
                         /* Produce a string */
-                        s = ecl_namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
+                        s = ecl__namestring(s, CLASP_NAMESTRING_FORCE_BASE_STRING);
                 }
         }
         cl_core.library_pathname = s;
@@ -1138,11 +1141,11 @@ si_get_library_pathname(void)
 	T_sp namestring;
 @
 	/* This will fail if the new directory does not exist */
-	directory = cl_truename(directory);
+	directory = cl__truename(directory);
 	if (directory->_Name.notnilp() ||
 	    directory->_Type.notnilp())
 		FEerror("~A is not a directory pathname.", 1, directory);
-	namestring = ecl_namestring(directory,
+	namestring = ecl__namestring(directory,
                                     CLASP_NAMESTRING_TRUNCATE_IF_ERROR |
                                     CLASP_NAMESTRING_FORCE_BASE_STRING);
 	if (safe_chdir((char*)namestring->c_str(), _Nil<T_O>()) < 0) {
@@ -1162,24 +1165,24 @@ si_get_library_pathname(void)
 	}
 	@(return previous)
 @)
-T_sp core_mkstemp(T_sp template)
+T_sp core__mkstemp(T_sp template)
 {
     T_sp output;
     cl_index l;
     int fd;
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
     T_sp phys, dir, file;
     char strTempDir[MAX_PATH];
     char strTempFileName[MAX_PATH];
     char *s;
     int ok;
     phys = cl_translate_logical_pathname(1, template);
-    dir = cl_make_pathname(8,
+    dir = cl__make_pathname(8,
 			   kw::_sym_type, _Nil<T_O>(),
 			   kw::_sym_name, _Nil<T_O>(),
 			   kw::_sym_version, _Nil<T_O>(),
 			   kw::_sym_defaults, phys);
-    dir = af_coerceToFilename(dir);
+    dir = core__coerce_to_filename(dir);
     file = cl_file_namestring(phys);
     l = dir->base_string.fillp;
     memcpy(strTempDir, dir->c_str(), l);
@@ -1199,7 +1202,7 @@ T_sp core_mkstemp(T_sp template)
 	memcpy(output->c_str(), strTempFileName, l);
     }
 #else
-    template = af_coerceToFilename(template);
+    template = core__coerce_to_filename(template);
     l = template->base_string.fillp;
     output = ecl_alloc_simple_base_string(l + 6);
     memcpy(output->c_str(), template->c_str(), l);
@@ -1221,24 +1224,24 @@ T_sp core_mkstemp(T_sp template)
 	close(fd);
     }
 #endif
-    @(return (Null(output)? output : cl_truename(output)))
+    @(return (Null(output)? output : cl__truename(output)))
 	}
 #endif // working
 
-#define ARGS_core_rmdir "(directory)"
-#define DECL_core_rmdir ""
-#define DOCS_core_rmdir "Like unix rmdir"
-T_sp core_rmdir(T_sp directory) {
-  return af_deleteFile(eval::funcall(cl::_sym_makePathname,
+CL_LAMBDA(directory);
+CL_DECLARE();
+CL_DOCSTRING("Like unix rmdir");
+CL_DEFUN T_sp core__rmdir(T_sp directory) {
+  return cl__delete_file(eval::funcall(cl::_sym_makePathname,
                                      kw::_sym_name, _Nil<T_O>(),
                                      kw::_sym_type, _Nil<T_O>(),
                                      kw::_sym_defaults, directory));
 }
 
-#define ARGS_core_chmod "(file mode)"
-#define DECL_core_chmod ""
-#define DOCS_core_chmod "chmod - use octal values for mode for convenience (eg #o777)"
-void core_chmod(T_sp file, T_sp mode) {
+CL_LAMBDA(file mode);
+CL_DECLARE();
+CL_DOCSTRING("chmod - use octal values for mode for convenience (eg #o777)");
+CL_DEFUN void core__chmod(T_sp file, T_sp mode) {
   mode_t code = clasp_to_uint32_t(mode);
   T_sp filename = coerce_to_posix_filename(file);
   unlikely_if(chmod((char *)gc::As<Str_sp>(filename)->c_str(), code)) {
@@ -1256,14 +1259,14 @@ void core_chmod(T_sp file, T_sp mode) {
   }
 }
 
-#define ARGS_core_copy_file "(orig dest)"
-#define DECL_core_copy_file ""
-#define DOCS_core_copy_file "copy_file"
-T_sp core_copy_file(T_sp orig, T_sp dest) {
+CL_LAMBDA(orig dest);
+CL_DECLARE();
+CL_DOCSTRING("copy_file");
+CL_DEFUN T_sp core__copy_file(T_sp orig, T_sp dest) {
   FILE *in, *out;
   int ok = 0;
-  Str_sp sorig = af_coerceToFilename(orig);
-  Str_sp sdest = af_coerceToFilename(dest);
+  Str_sp sorig = core__coerce_to_filename(orig);
+  Str_sp sdest = core__coerce_to_filename(dest);
   clasp_disable_interrupts();
   in = fopen(sorig->c_str(), "r");
   if (in) {
@@ -1304,7 +1307,7 @@ dir_files(T_sp base_dir, T_sp tpathname, int flags) {
   if (name.nilp() && type.nilp()) {
     return Cons_O::create(base_dir);
   }
-  mask = af_makePathname(_Nil<T_O>(), false,
+  mask = cl__make_pathname(_Nil<T_O>(), false,
                          _Nil<T_O>(), false,
                          _Nil<T_O>(), false,
                          name, true,
@@ -1363,7 +1366,7 @@ AGAIN:
       T_sp kind = oCdr(record);
       if (kind != kw::_sym_directory)
         continue;
-      item = dir_recursive(cl_pathname(component),
+      item = dir_recursive(cl__pathname(component),
                            oCdr(directory),
                            filemask, flags);
       output = clasp_nconc(item, output);
@@ -1381,7 +1384,7 @@ AGAIN:
       T_sp kind = oCdr(record);
       if (kind != kw::_sym_directory)
         continue;
-      item = dir_recursive(cl_pathname(component),
+      item = dir_recursive(cl__pathname(component),
                            directory, filemask, flags);
       output = clasp_nconc(item, output);
     }
@@ -1406,36 +1409,33 @@ AGAIN:
   return output;
 }
 
-#define ARGS_cl_directory "(mask &key (resolve-symlinks t) &allow-other-keys)"
-#define DECL_cl_directory ""
-#define DOCS_cl_directory "directory"
-T_sp cl_directory(T_sp mask, T_sp resolveSymlinks) {
-  _G();
+CL_LAMBDA(mask &key (resolve-symlinks t) &allow-other-keys);
+CL_DECLARE();
+CL_DOCSTRING("directory");
+CL_DEFUN T_sp cl__directory(T_sp mask, T_sp resolveSymlinks) {
   T_sp base_dir;
   T_sp output;
-  mask = af_coerceToFilePathname(mask);
+  mask = core__coerce_to_file_pathname(mask);
   mask = make_absolute_pathname(mask); // in this file
   base_dir = make_base_pathname(mask);
-  output = dir_recursive(base_dir, af_pathnameDirectory(mask), mask,
+  output = dir_recursive(base_dir, cl__pathname_directory(mask), mask,
                          resolveSymlinks.nilp() ? 0 : FOLLOW_SYMLINKS);
   return output;
 };
 
-#define ARGS_af_unixDaylightSavingTime "(unix-time)"
-#define DECL_af_unixDaylightSavingTime ""
-#define DOCS_af_unixDaylightSavingTime "unixDaylightSavingTime return true if in daylight saving time"
-bool af_unixDaylightSavingTime(Integer_sp unix_time) {
-  _G();
+CL_LAMBDA(unix-time);
+CL_DECLARE();
+CL_DOCSTRING("unixDaylightSavingTime return true if in daylight saving time");
+CL_DEFUN bool core__unix_daylight_saving_time(Integer_sp unix_time) {
   time_t when = clasp_to_uint64(unix_time);
   struct tm *ltm = localtime(&when);
   return ltm->tm_isdst;
 }
 
-#define ARGS_af_unixGetLocalTimeZone "()"
-#define DECL_af_unixGetLocalTimeZone ""
-#define DOCS_af_unixGetLocalTimeZone "unixGetLocalTimeZone"
-Ratio_sp af_unixGetLocalTimeZone() {
-  _G();
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING("unixGetLocalTimeZone");
+CL_DEFUN Ratio_sp core__unix_get_local_time_zone() {
   gctools::Fixnum mw;
 #if 0 && defined(HAVE_TZSET)
   tzset();
@@ -1457,10 +1457,10 @@ Ratio_sp af_unixGetLocalTimeZone() {
   return Ratio_O::create(make_fixnum(mw), make_fixnum(60));
 }
 
-#define ARGS_core_mkdir "(dir mode)"
-#define DECL_core_mkdir ""
-#define DOCS_core_mkdir "mkdir"
-T_sp core_mkdir(T_sp directory, T_sp mode) {
+CL_LAMBDA(dir mode);
+CL_DECLARE();
+CL_DOCSTRING("mkdir");
+CL_DEFUN T_sp core__mkdir(T_sp directory, T_sp mode) {
   int modeint = 0;
   int ok;
   Str_sp filename = coerce::stringDesignator(directory);
@@ -1474,7 +1474,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode) {
   {
     /* Ensure a clean string, without trailing slashes,
          * and null terminated. */
-    int last = cl_length(filename);
+    int last = cl__length(filename);
     if (last > 1) {
       claspChar c = filename->schar(last - 1);
       if (IS_DIR_SEPARATOR(c))
@@ -1483,7 +1483,7 @@ T_sp core_mkdir(T_sp directory, T_sp mode) {
     filename = filename->subseq(0, make_fixnum(last));
   }
 //    clasp_disable_interrupts();
-#if defined(ECL_MS_WINDOWS_HOST)
+#if defined(CLASP_MS_WINDOWS_HOST)
   ok = mkdir((char *)filename->c_str());
 #else
   ok = mkdir((char *)filename->c_str(), modeint);
@@ -1506,37 +1506,12 @@ T_sp core_mkdir(T_sp directory, T_sp mode) {
   return filename;
 }
 
-void initialize_unixfsys() {
-  ExtDefun(chdir);
-  Defun(unixGetLocalTimeZone);
-  Defun(unixDaylightSavingTime);
-  SYMBOL_EXPORT_SC_(CorePkg, currentDir);
-  Defun(currentDir);
+   SYMBOL_EXPORT_SC_(CorePkg, currentDir);
   SYMBOL_EXPORT_SC_(CorePkg, file_kind);
-  Defun(file_kind);
   SYMBOL_EXPORT_SC_(ClPkg, truename);
-  ClDefun(truename);
   SYMBOL_EXPORT_SC_(ClPkg, probe_file);
-  ClDefun(probe_file);
   SYMBOL_EXPORT_SC_(ClPkg, deleteFile);
-  Defun(deleteFile);
   SYMBOL_EXPORT_SC_(ClPkg, file_write_date);
-  Defun(file_write_date);
   SYMBOL_EXPORT_SC_(ClPkg, userHomedirPathname);
-  Defun(userHomedirPathname);
-  Defun(fork);
-  Defun(getpid);
-  Defun(getppid);
-  Defun(waitpid);
-  ClDefun(fileAuthor);
-  CoreDefun(mkdir);
-  ClDefun(directory);
-  ClDefun(renameFile);
-  CoreDefun(file_truename);
-  CoreDefun(mkstemp);
-  CoreDefun(copy_file);
-  CoreDefun(rmdir);
-  CoreDefun(chmod);
-  CoreDefun(readlink);
-};
+
 };

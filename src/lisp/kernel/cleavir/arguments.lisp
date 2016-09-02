@@ -64,17 +64,25 @@
 
 
 (defun compile-rest-argument (rest-var
+                              varest-p
 			      args ;; nargs va-list
 			      arg-idx-alloca)
   (cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create "process-rest-argument"))
   (when rest-var
-  ;; Copy argument values or evaluate init forms
+    ;; Copy argument values or evaluate init forms
     (let* ((arg-idx (cmp:irc-load arg-idx-alloca))
-	   (rest (cmp:irc-intrinsic "cc_gatherRestArguments" 
-				    (cmp:calling-convention-nargs args)
-				    (cmp:calling-convention-va-list args)
-				    arg-idx cmp:*gv-current-function-name*))
-	   (rest-alloca (translate-datum rest-var)))
+	   (rest (if varest-p
+                     (let ((temp-valist (alloca-VaList_S)))
+                       (cmp:irc-intrinsic "cc_gatherVaRestArguments" 
+                                          (cmp:calling-convention-nargs args)
+                                          (cmp:calling-convention-va-list args)
+                                          arg-idx
+                                          temp-valist))
+                     (cmp:irc-intrinsic "cc_gatherRestArguments" 
+                                        (cmp:calling-convention-nargs args)
+                                        (cmp:calling-convention-va-list args)
+                                        arg-idx cmp:*gv-current-function-name*)))
+           (rest-alloca (translate-datum rest-var)))
       (%store rest rest-alloca)
       rest-alloca)))
 
@@ -200,7 +208,8 @@
 
 (defun compile-general-lambda-list-code (reqargs 
 					 optargs 
-					 rest-var 
+					 rest-var
+                                         varest-p
 					 key-flag 
 					 keyargs 
 					 allow-other-keys
@@ -232,7 +241,7 @@
 	  (%store (cmp:irc-load target-alloca) target-out-alloca)
 	  (%store (cmp:irc-load supplied-alloca) supplied-out-alloca))))
     (when rest-var
-      (compile-rest-argument rest-var calling-conv arg-idx-alloca)
+      (compile-rest-argument rest-var varest-p calling-conv arg-idx-alloca)
       (%store (cmp:irc-load (translate-datum rest-var)) (translate-datum (pop outputs))))
     (when key-flag
       (compile-key-arguments keyargs allow-other-keys calling-conv arg-idx-alloca true-val)
@@ -265,7 +274,7 @@
 	(llvm-sys:create-store cmp:*irbuilder* arg dest nil)))))
 
 (defun compile-lambda-list-code (lambda-list outputs calling-conv)
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys)
+  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs allow-other-keys unused-auxs varest-p)
       (core:process-lambda-list lambda-list 'core::function)
     (let ((req-opt-only (and (not rest-var)
                              (not key-flag)
@@ -291,7 +300,8 @@
         (t
          (compile-general-lambda-list-code reqargs 
 					   optargs 
-					   rest-var 
+					   rest-var
+                                           varest-p
 					   key-flag 
 					   keyargs 
 					   allow-other-keys
@@ -337,7 +347,10 @@
           ;; (x &optional y)
           ;; (x y &optional z)
           (t
-           (compile-general-lambda-list-code lambda-list-handler old-env args new-env))))
+           (compile-general-lambda-list-code lambda-list-handler
+                                             old-env
+                                             args
+                                             new-env))))
       ;; Now copy outputs into the targets and generate code for initializers if opt-p or key-p is not defined
       )))
 

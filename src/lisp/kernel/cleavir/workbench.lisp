@@ -5,6 +5,8 @@
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
 
+(require :clasp-cleavir)
+
 (progn
   (progn ;; Set up everything for building cclasp from bclasp with auto-compile
     (format t "Loading ASDF system~%")
@@ -16,16 +18,23 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+(defun zzz (x y z) (+ x y z))
+(fdefinition 'zzz)
+
+
 (progn
   (load "sys:kernel;cleavir;auto-compile.lisp")
   (format t "Loading inline.lisp~%")
   (load "sys:kernel;cleavir;inline.lisp")
   (format t "Done loading inline.lisp~%"))
 
-(apropos "cleavir-compile-file")
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (+ x y)))
+(clasp-cleavir:cleavir-compile-file "sys:tests;ta.lsp")
+(load "sys:tests;ta.fasl")
+(baz 1 2)
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x &va-rest y) (apply #'list x y)))
 
-(clasp-cleavir::cleavir-compile-file "sys:tests;targs.lsp")
-(load "sys:tests;targs.fasl")
+
 
 
 
@@ -103,7 +112,11 @@ clasp-cleavir:*my-env*
 (print "Hello")
 (clasp-cleavir:cleavir-compile-file "sys:tests;tgf.lsp")
 (load "sys:tests;tgf.fasl")
-(time (baz 1))
+(time (bar 1))
+
+:r1
+
+
 (+ 48 32)
 (getpid)91639
 
@@ -1246,7 +1259,7 @@ core:*pi*
 
 (defun link-clasp (start end &key (target-backend "CLEAVIR-BOEHM"))
   (let ((bitcode-files (select-bitcode-files start end :target-backend target-backend)))
-    (cmp:link-system-lto (core::target-backend-pathname core::+image-pathname+ 
+    (cmp:llvm-link (core::target-backend-pathname core::+image-pathname+ 
 							:target-backend target-backend)
 			 :lisp-bitcode-files bitcode-files
 			 :prologue-form '(progn

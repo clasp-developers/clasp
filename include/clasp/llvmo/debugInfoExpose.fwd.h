@@ -28,8 +28,7 @@ THE SOFTWARE.
 #define _debugInfoExpose_fwd_H
 
 namespace llvmo {
-FORWARD(DebugInfo);
-FORWARD(DIDescriptor);
+FORWARD(DINode);
 FORWARD(DIScope);
 FORWARD(DIFile);
 FORWARD(DISubprogram);

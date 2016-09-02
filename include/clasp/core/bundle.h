@@ -39,6 +39,8 @@ THE SOFTWARE.
 
 namespace core {
 
+  struct BundleDirectories;
+  
 /*! Maintains the file paths to the different directories of the Cando bundle
  */
 class Bundle {
@@ -48,43 +50,32 @@ class Bundle {
 
 private:
   bool _Initialized;
-  boost_filesystem::path _RootDir;
-  boost_filesystem::path _AppDir;
-  boost_filesystem::path _ResourcesDir;
-  boost_filesystem::path _DatabasesDir;
-  boost_filesystem::path _ScriptsDir;
-  boost_filesystem::path _LispDir;
-  boost_filesystem::path _LibDir;
-  boost_filesystem::path _StartupWorkingDir;
+  BundleDirectories* _Directories;
 
 public:
   /*! Initialize the bundle and set up all the paths
      */
 private:
-  boost_filesystem::path findAppDir(const string &argv0, const string &cwd, const string &env);
-  void findSubDirectories(boost_filesystem::path p);
+  boost_filesystem::path findAppDir(const string &argv0, const string &cwd);
+  void findContentSubDirectories(boost_filesystem::path p, bool verbose=false);
+  void fillInMissingPaths(bool verbose=false);
 
 public:
-  void initializeStartupWorkingDirectory();
-  void initialize(const string &argv0, const string &appPathEnvironmentVariable);
-
-  boost_filesystem::path getRootDir();
-  boost_filesystem::path getAppDir();
-  boost_filesystem::path getResourcesDir();
-  boost_filesystem::path getDatabasesDir();
-  boost_filesystem::path getScriptsDir();
-  boost_filesystem::path getLispDir();
-  boost_filesystem::path getLibDir();
-  boost_filesystem::path getStartupWorkingDir();
+  void initializeStartupWorkingDirectory(bool verbose=false);
 
   Pathname_sp getRootPathname();
+  Pathname_sp getExecutablePathname();
   Pathname_sp getSysPathname();
+  Pathname_sp getIncludePathname();
+  Pathname_sp getSourcePathname();
   Pathname_sp getAppContentsPathname();
   Pathname_sp getAppContentsResourcesPathname();
 
   string describe();
-  Bundle();
+  Bundle(const string &argv0, const string &appPath);
 
+  void setup_pathname_translations();
+  
   virtual ~Bundle(){};
 };
 

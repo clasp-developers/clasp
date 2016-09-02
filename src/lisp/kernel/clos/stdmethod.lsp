@@ -107,4 +107,3 @@
       (remhash spec *eql-specializer-hash*))
   (values))
 
-#+compare(print "MLOG ****** Done with stdmethod.lsp *******")

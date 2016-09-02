@@ -20,7 +20,7 @@ project internals/llvmo : requirements
 	;
 
 local sources = 
-      claspLinkPass.cc
+#      claspLinkPass.cc
 	debugInfoExpose.cc
 	debugLoc.cc
 	llvmoDwarf.cc

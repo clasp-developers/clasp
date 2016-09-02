@@ -88,9 +88,8 @@ struct class_registration;
 struct conversion_storage;
 
 class ClassRep_O : public core::BuiltInClass_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(core::BuiltInClass_O);
-  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(clbind, ClbindPkg, ClassRep_O, "ClassRep",core::BuiltInClass_O);
 
   friend struct class_registration;
 
@@ -196,8 +195,7 @@ template <>
 struct gctools::GCInfo<clbind::ClassRep_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 //#include <clasp/clbind/detail/overload_rep_impl.hpp>

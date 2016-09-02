@@ -40,10 +40,9 @@ THE SOFTWARE.
 namespace core {
 
 SMART(Path);
-class Path_O : public T_O {
+class Path_O : public General_O {
   friend class XmlSaveArchive_O;
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, Path_O, "path");
+  LISP_CLASS(core, CorePkg, Path_O, "path",General_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -66,7 +65,8 @@ public:
   /*! Comparison of paths */
   virtual bool lt(T_sp obj) const;
 
-  bool isAbsolute() const { return this->_Path.is_absolute(); };
+CL_LISPIFY_NAME("isAbsolute");
+CL_DEFMETHOD   bool isAbsolute() const { return this->_Path.is_absolute(); };
 
   Path_sp copyPath() const;
 
@@ -126,9 +126,7 @@ public:
 
 SMART(DirectoryIterator);
 class DirectoryIterator_O : public Iterator_O {
-  LISP_BASE1(Iterator_O);
-  LISP_CLASS(core, CorePkg, DirectoryIterator_O, "DirectoryIterator");
-  DECLARE_MAKE_INIT();
+  LISP_CLASS(core, CorePkg, DirectoryIterator_O, "DirectoryIterator",Iterator_O);
 
 public:
   void initialize();
@@ -161,16 +159,13 @@ template <>
 struct gctools::GCInfo<core::DirectoryIterator_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 SMART(RecursiveDirectoryIterator);
 class RecursiveDirectoryIterator_O : public Iterator_O {
-  LISP_BASE1(Iterator_O);
-  LISP_CLASS(core, CorePkg, RecursiveDirectoryIterator_O, "RecursiveDirectoryIterator");
-  DECLARE_MAKE_INIT();
+  LISP_CLASS(core, CorePkg, RecursiveDirectoryIterator_O, "RecursiveDirectoryIterator",Iterator_O);
 
 public:
   void initialize();
@@ -204,17 +199,15 @@ template <>
 struct gctools::GCInfo<core::RecursiveDirectoryIterator_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 SMART(FileStatus);
 
 SMART(DirectoryEntry);
-class DirectoryEntry_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, DirectoryEntry_O, "DirectoryEntry");
+class DirectoryEntry_O : public General_O {
+  LISP_CLASS(core, CorePkg, DirectoryEntry_O, "DirectoryEntry",General_O);
 
 public:
   void initialize();
@@ -237,15 +230,13 @@ template <>
 struct gctools::GCInfo<core::DirectoryEntry_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
-  static bool constexpr Moveable = true;
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 SMART(FileStatus);
-class FileStatus_O : public T_O {
-  LISP_BASE1(T_O);
-  LISP_CLASS(core, CorePkg, FileStatus_O, "FileStatus");
+class FileStatus_O : public General_O {
+  LISP_CLASS(core, CorePkg, FileStatus_O, "FileStatus",General_O);
 
 public:
   void initialize();
@@ -269,11 +260,6 @@ public:
 //    extern bool delete_file(Path_sp dest);
 };
 
-TRANSLATE(core::Path_O);
-TRANSLATE(core::DirectoryIterator_O);
-TRANSLATE(core::RecursiveDirectoryIterator_O);
-TRANSLATE(core::DirectoryEntry_O);
-TRANSLATE(core::FileStatus_O);
 
 namespace core {
 Pathname_sp homedirPathname(T_sp head); // See ecl_homedir_pathname

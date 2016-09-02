@@ -35,14 +35,6 @@ THE SOFTWARE.
 
 namespace clos {
 
-#pragma GCC visibility push(default)
-#define ClosPkg_SYMBOLS
-#define DO_SYMBOL(cname, idx, pkgName, lispName, export) core::Symbol_sp cname;
-#include SYMBOLS_SCRAPED_INC_H
-#undef DO_SYMBOL
-#undef ClosPkg_SYMBOLS
-#pragma GCC visibility pop
-
 SYMBOL_SC_(ClosPkg, aSingleClosSymbol);
 SYMBOL_EXPORT_SC_(ClosPkg, class_precedence_list);
 

@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/Users/meister/Development/clasp/examples/cxxast",
-	"command": "clang -Wall -Wextra -pedantic --std=c++11 -fcolor-diagnostics test.cpp",
-  "file": "test.cpp"
-}
-]

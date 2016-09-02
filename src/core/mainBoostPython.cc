@@ -198,7 +198,6 @@ using namespace core;
 
 __INITIALIZE_PYTHON(InitPython_BoostStuff);
 void InitPython_BoostStuff() {
-  _G();
   boost::python::def("environment", environment);
   boost::python::def("cPrint", cPrint);
   boost::python::def("dbgPython", &dbgPython);
@@ -215,7 +214,6 @@ void InitPython_BoostStuff() {
 }
 
 BOOST_PYTHON_MODULE(initmbbCxx) {
-  _G();
 
   ios::sync_with_stdio();
 #ifdef EMBEDED_IN_PYTHON

@@ -35,8 +35,8 @@
 // (C) 2004 Christian E. Schafmeister
 //
 
-#ifndef _core_pointer_tagging_H
-#define _core_pointer_tagging_H
+#ifndef _core__pointer_tagging_H
+#define _core__pointer_tagging_H
 
 #include <boost/utility/binary.hpp>
 
@@ -65,6 +65,7 @@ extern void lisp_errorDereferencedNonPointer(core::T_O *objP);
 
 namespace core {
 class VaList_S;
+ class Code_S;
 };
 
 namespace gctools {
@@ -79,14 +80,20 @@ void initialize_smart_pointers();
 #ifdef _ADDRESS_MODEL_64
 static const uintptr_t alignment = 8;    // 16 byte alignment for all pointers
 static const uintptr_t pointer_size = 8; // 8 byte words 64-bits
-                                         //! Fixnum definition for 64 bit system
-typedef long int Fixnum;
+#if defined (CLASP_MS_WINDOWS_HOST)
+ #error "Define a 64bit Fixnum for windows"
+#else
+                                        //! Fixnum definition for 64 bit system
+ typedef intptr_t Fixnum;
+#endif
+ 
 typedef Fixnum cl_fixnum;
 /*! A pointer that is already tagged can be passed to smart_ptr constructors
       by first reinterpret_casting it to Tagged */
 typedef uintptr_t Tagged;
-static const int fixnum_bits = 63;
-static const int fixnum_shift = 1;
+static const int tag_shift = 3;
+static const int fixnum_bits = 61;
+static const int fixnum_shift = 3;
 static const size_t thread_local_cl_stack_min_size = THREAD_LOCAL_CL_STACK_MIN_SIZE;
 static const int most_positive_int = std::numeric_limits<int>::max();
 static const int most_negative_int = std::numeric_limits<int>::min();
@@ -94,8 +101,8 @@ static const uint most_positive_uint = std::numeric_limits<unsigned int>::max();
 static const uint64_t most_positive_uint32 = std::numeric_limits<uint32_t>::max();
 static const uint64_t most_positive_uint64 = std::numeric_limits<uint64_t>::max();
 static const unsigned long long most_positive_unsigned_long_long = std::numeric_limits<unsigned long long>::max();
-static const long int most_positive_fixnum = 4611686018427387903;
-static const long int most_negative_fixnum = -4611686018427387904;
+ static const long int most_positive_fixnum = 1152921504606846975;
+ static const long int most_negative_fixnum = -1152921504606846976;
 #define MOST_POSITIVE_FIXNUM gctools::most_positive_fixnum
 #define MOST_NEGATIVE_FIXNUM gctools::most_negative_fixnum
 #define FIXNUM_BITS gctools::fixnum_bits
@@ -106,18 +113,27 @@ static const long int most_negative_fixnum = -4611686018427387904;
 /*! Pointer and immediate value tagging is set up here */
 /* FIXNUM's have the lsb set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
-static const uintptr_t tag_mask = BOOST_BINARY(111);
-static const uintptr_t fixnum_tag = BOOST_BINARY(0); // xxx0 means fixnum
-static const uintptr_t fixnum_mask = BOOST_BINARY(1);
+static const uintptr_t tag_mask    = BOOST_BINARY(111);
+static const uintptr_t fixnum_tag  = BOOST_BINARY(000); // x000 means fixnum
+static const uintptr_t fixnum_mask = BOOST_BINARY(111);
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
 for a CONS cell*/
-static const uintptr_t ptr_mask = ~BOOST_BINARY(111);
-static const uintptr_t general_tag = BOOST_BINARY(001); // means a GENERAL pointer
-static const uintptr_t cons_tag = BOOST_BINARY(011);    // means a CONS cell pointer
-                                                        /*! A test for pointers has the form (potential_ptr&pointer_and)==pointer_eq */
+static const uintptr_t ptr_mask    = ~BOOST_BINARY(111);
+static const uintptr_t general_tag =  BOOST_BINARY(001); // means a GENERAL pointer
+static const uintptr_t cons_tag    =  BOOST_BINARY(011);    // means a CONS cell pointer
+                                                        /*! A test for pointers has the form (potential_ptr&pointer_tag_mask)==pointer_tag_eq */
 static const uintptr_t pointer_tag_mask = BOOST_BINARY(101);
-static const uintptr_t pointer_tag_eq = BOOST_BINARY(001);
+static const uintptr_t pointer_tag_eq   = BOOST_BINARY(001);
+ /*! code_tag is a tag for a raw code in memory - remove the tag and call the resulting pointer
+*/
+ static const uintptr_t unused0_tag = BOOST_BINARY(010);
+ static const uintptr_t unused1_tag = BOOST_BINARY(100);
+
+ /*! gc_tag is used for headerless objects to indicate that this word is
+used by the garbage collector */
+ static const uintptr_t gc_tag = BOOST_BINARY(111);
+ 
 /*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to 
 iterate over variable numbers of arguments passed to functions.
 Pointers with this tag are NOT moved in memory, the objects valist_tag'd pointers
@@ -126,18 +142,29 @@ I hack the va_list structure in X86_64 ABI dependent ways and I will abstract al
 ABI dependent behavior into a single header file so that it can be implemented for other
 ABI's  */
 static const uintptr_t valist_tag = BOOST_BINARY(101); // means a valist
+
+ 
                                                        /*! Immediate value tags */
-static const uintptr_t immediate_mask = BOOST_BINARY(11111);
-static const uintptr_t character_tag = BOOST_BINARY(00111); // Character
-static const uintptr_t character_shift = 5;
-static const uintptr_t single_float_tag = BOOST_BINARY(01111); // single-float
+static const uintptr_t immediate_mask   = BOOST_BINARY(11111);
+static const uintptr_t character_tag    = BOOST_BINARY(00110); // Character
+static const uintptr_t character_shift  = 5;
+static const uintptr_t single_float_tag = BOOST_BINARY(01110); // single-float
 static const uintptr_t single_float_shift = 5;
 static const uintptr_t single_float_mask = 0x1FFFFFFFFF; // single-floats are in these 32+5bits
 
+ struct Immediate_info {
+   uintptr_t _kind;
+   const char* _name;
+ Immediate_info(uintptr_t k, const char* n) : _kind(k), _name(n) {};
+ };
+
+ std::vector<Immediate_info> get_immediate_info();
+ 
 static const uintptr_t kind_fixnum = 1;
 static const uintptr_t kind_single_float = 2;
 static const uintptr_t kind_character = 3;
-static const uintptr_t kind_first_general = 4;
+ static const uintptr_t kind_cons = 4;
+static const uintptr_t kind_first_general = 5;
 static const uintptr_t kind_first_alien = 65536;
 static const uintptr_t kind_last_alien = 2 * 65536 - 1;
 static const uintptr_t kind_first_instance = 2 * 65536;
@@ -220,6 +247,7 @@ inline T tag_valist(core::VaList_S *p) {
   return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + valist_tag);
 }
 
+
 template <class T>
 inline T untag_general(T ptr) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == general_tag);
@@ -228,8 +256,9 @@ inline T untag_general(T ptr) {
 template <class T>
 inline void *untag_valist(T ptr) {
   GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
-  return reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
+  return reinterpret_cast<core::VaList_S*>(reinterpret_cast<uintptr_t>(ptr) - valist_tag);
 }
+
 
 template <class T>
 inline T tag_fixnum(Fixnum fn) {
@@ -299,16 +328,12 @@ inline bool tagged_objectp(T ptr) {
   return (reinterpret_cast<uintptr_t>(ptr) & pointer_tag_mask) == pointer_tag_eq;
 }
 
+   
 template <class Type>
 inline Type untag_object(Type tagged_obj) {
-  if (gctools::tagged_generalp<Type>(tagged_obj)) {
-    return gctools::untag_general<Type>(tagged_obj);
-  } else if (gctools::tagged_consp<Type>(tagged_obj)) {
-    return gctools::untag_cons<Type>(tagged_obj);
-  } else {
-    THROW_HARD_ERROR(BF("Trying to untag non-other or non-cons: %p") % (void *)(tagged_obj));
-  }
-};
+  GCTOOLS_ASSERT(tagged_objectp(tagged_obj));
+  return reinterpret_cast<Type>((uintptr_t)tagged_obj & ptr_mask);
+ }
 };
 
 #endif // pointer_tagging

@@ -34,7 +34,7 @@ Clasp has been successfully built on
 * **Debian Wheezy**
 * **OpenSuse 13.1**
 * **Gentoo**
-* **Arch**, currently requires downgrading Clang and LLVM to 3.6 .
+* **Arch**
 
 ### Building on OS X
 First you will need what is listed for OS X under the [dependencies](#external-dependencies). Next you need an additional step that is documented [on the wiki](https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang). The rest of the procedure is the same as for [building with externals-clasp](#building-with-externals-clasp).
@@ -44,9 +44,9 @@ The compilation output will be in the `build/clasp` directory. To launch Clasp, 
 ### Building With Externals-Clasp
 If your system does not provide the [external dependencies](#external-dependencies) as required by Clasp, you can use this approach instead, which will compile them for you.
 
-Clone [externals-clasp](https://github.com/drmeister/externals-clasp) to a directory on your system. Next, create a `local.config` containing `export GCC_TOOLCHAIN = /usr` if you are on Linux and `export TOOLSET = clang` if you are on OS X. Next, simply run `make` from the root of it. This will take some time to complete; maybe play a round of pinball or [chat on IRC for a bit](#irc).
+Clone [externals-clasp](https://github.com/drmeister/externals-clasp) to a directory on your system. Follow the directions to build it.
 
-The next step is building Clasp itself. For this, clone it to a different folder and copy the `local.config.template` file within it to `local.config`. Next, open it up and make sure to uncomment and adapt the `EXTERNALS_CLASP_DIR` line to point to the location where you compiled externals-clasp. Something like `export EXTERNALS_CLASP_DIR = /opt/externals-clasp`. Finally it's time to kick off the build process. Simply run `make` from the Clasp root.
+Next, copy `clasp/local.config.template` to `clasp/local.config` and uncomment the line containing ` ##export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp` and change it to the directory where your externals-clasp is situated. Next, simply run `make` from the clasp top directory. This will take some time to complete; maybe play a round of pinball or [chat on IRC for a bit](#irc).
 
 ### External Dependencies
 #### Linux

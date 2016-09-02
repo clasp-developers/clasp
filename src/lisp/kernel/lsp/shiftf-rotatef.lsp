@@ -58,7 +58,6 @@
 			       storing-form
 			       accessing-form)
 	      (first setf-expansions)
-	    (print 'hi)
 	    `(let* ,(make-let*-bindings temporary-variables value-forms)
 	       (prog1 ,accessing-form
 		 (multiple-value-bind ,store-variables ,new-value-form

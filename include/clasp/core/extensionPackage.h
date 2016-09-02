@@ -33,9 +33,6 @@ THE SOFTWARE.
 
 namespace ext {
 
-void initialize_extension_functions();
-
-void initialize_extensionPackage();
 };
 
 #endif

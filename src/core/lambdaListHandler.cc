@@ -42,20 +42,170 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 namespace core {
 
-void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
-  ++(threadLocalInfoPtr->_lambda_list_handler_create_bindings_count);
+
+SYMBOL_EXPORT_SC_(KeywordPkg, calledFunction);
+SYMBOL_EXPORT_SC_(KeywordPkg, givenNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, requiredNumberOfArguments);
+SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeyword);
+
+void handleArgumentHandlingExceptions(Closure_sp closure) {
+  Function_sp func = closure;
+  try {
+    throw;
+  } catch (TooManyArgumentsError &error) {
+    lisp_error(core::_sym_tooManyArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
+  } catch (TooFewArgumentsError &error) {
+    lisp_error(core::_sym_tooFewArgumentsError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_givenNumberOfArguments, make_fixnum(error.givenNumberOfArguments), kw::_sym_requiredNumberOfArguments, make_fixnum(error.requiredNumberOfArguments)));
+  } catch (UnrecognizedKeywordArgumentError &error) {
+    lisp_error(core::_sym_unrecognizedKeywordArgumentError, lisp_createList(kw::_sym_calledFunction, func, kw::_sym_unrecognizedKeyword, error.argument));
+  }
+}
+
+
+/*! Return true if the form represents a type
+*/
+CL_DEFUN bool core__is_a_type(T_sp form)
+{
+  if ( form == _lisp->_true() ) return true;
+  if ( form.nilp() ) return true;
+  if ( form == cl::_sym_sequence ) return true;
+  if ( form == cl::_sym_simple_base_string ) return true;
+  if ( cl__symbolp(form) ) {
+    if ( core::_sym__PLUS_known_typep_predicates_PLUS_.notnilp() ) {
+      List_sp type_predicates = core::_sym__PLUS_known_typep_predicates_PLUS_->symbolValue();
+      if ( type_predicates.notnilp() ) {
+        T_sp predicate = oCdr(gc::As<Cons_sp>(type_predicates)->assoc(form,_Nil<core::T_O>(),cl::_sym_eq,_Nil<core::T_O>()));
+        if ( predicate.notnilp() ) { return true; };
+      }
+    }
+  }
+  if ( form.consp() && core__proper_list_p(form) && oCar(form) == cl::_sym_member ) { return true; };
+  if ( form.consp() && CONS_CAR(form) == cl::_sym_eql ) { return true; };
+  if ( cl__symbolp(form) ) {
+    if ( cl__find_class(form,false,_Nil<core::T_O>()).notnilp() ) return true;
+  }
+  return false;
+}
+  
+/*! Canonicalize one declare.
+* Arguments
+- decl :: A list.
+- canon :: A list.
+* Description
+Prepend the canonicalized_declarations from decl to canon - return the result. */
+List_sp maybe_canonicalize_declaration(List_sp decl, List_sp canon)
+{
+  Symbol_sp sym = oCar(decl);
+  T_sp too_many = oCddr(decl);
+  if (too_many.notnilp()) {
+    for ( auto sp : static_cast<List_sp>(oCdr(decl)) ) {
+      canon = Cons_O::create(Cons_O::createList(sym,oCar(sp)),canon);
+    }
+  } else {
+    canon = Cons_O::create(decl,canon);
+  }
+  return canon;
+}
+
+List_sp maybe_canonicalize_optimize_declaration( List_sp decl, List_sp canon )
+{
+  for ( auto cur : (List_sp)(oCdr(decl)) ) {
+    T_sp d = oCar(cur);
+    if ( cl__symbolp(d) ) {
+      canon = Cons_O::create(Cons_O::createList(cl::_sym_optimize,Cons_O::createList(d,core::clasp_make_fixnum(3))),canon);
+    } else {
+      canon = Cons_O::create(Cons_O::createList(cl::_sym_optimize,d),canon);
+    }
+  }
+  return canon;
+}
+
+/*! Canonicalize the following declarations
+dynamic-extent  ignore     optimize  
+ftype           inline     special   
+ignorable       notinline  type      
+And my own special one:    core:_sym_lambda_name
+*/
+CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
+{
+  List_sp canon = _Nil<T_O>();
+  for ( auto decl : decls ) {
+    Cons_sp d = gc::As<Cons_sp>(oCar(decl));
+    Symbol_sp head = gc::As<Symbol_sp>(oCar(d));
+    if (head == cl::_sym_dynamic_extent
+        || head == cl::_sym_ignore
+        || head == cl::_sym_inline
+        || head == cl::_sym_special
+        || head == cl::_sym_ignorable
+        || head == cl::_sym_notinline) {
+      canon = maybe_canonicalize_declaration(d,canon);
+    } else if ( head == cl::_sym_ftype ) {
+      T_sp more_than_one = oCdddr(d);
+      if (more_than_one.nilp()) {
+        canon = Cons_O::create(d,canon);
+      } else {
+        T_sp ftype = oCadr(d);
+        for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+        }
+      }
+    } else if ( head == cl::_sym_optimize ) {
+      canon = maybe_canonicalize_optimize_declaration(d,canon);
+    } else if ( head == core::_sym_lambdaName ) {
+      canon = Cons_O::create(d,canon);
+    } else if ( head == cl::_sym_type ) {
+      T_sp more_than_one = oCdddr(d);
+      if (more_than_one.nilp()) {
+        canon = Cons_O::create(d,canon);
+      } else {
+        T_sp ftype = oCadr(d);
+        for ( auto fp : static_cast<List_sp>(oCddr(d)) ) {
+          canon = Cons_O::create(Cons_O::createList(cl::_sym_ftype,ftype,oCar(fp)),canon);
+        }
+      }
+    } else if ( head == core::_sym_c_local ) {
+      // Ignore
+    } else if ( head == core::_sym_type_assertions ) {
+      // Ignore
+    } else if ( head == kw::_sym_read_only ) {
+      // Ignore
+    } else if ( head == ext::_sym_array_index ) {
+      // Ignore
+    } else if ( head == core::_sym_index ) {
+      // Ignore
+    } else if ( head == ext::_sym_check_arguments_type ) {
+      // Ignore
+    } else if ( head == ext::_sym_assume_no_errors ) {
+      // Ignore
+    } else if ( core__is_a_type(head) ) {
+      for ( auto fp : static_cast<List_sp>(oCdr(d)) ) {
+        canon = Cons_O::create(Cons_O::createList(cl::_sym_type,head,oCar(fp)),canon);
+      }
+    } else {
+      canon = Cons_O::create(d,canon);
+    }
+  }
+  return canon;
+}
+    
+
+void lambdaListHandler_createBindings(Closure_sp closure, core::LambdaListHandler_sp llh, core::DynamicScopeManager &scope, LCC_ARGS_VA_LIST) {
   if (llh->requiredLexicalArgumentsOnlyP()) {
     size_t numReq = llh->numberOfRequiredArguments();
-    if (numReq <= 3 && numReq == lcc_nargs) {
+    if (numReq <= LCC_ARGS_IN_REGISTERS && numReq == lcc_nargs) {
       switch (numReq) {
       case 3:
         scope.new_binding(llh->_RequiredArguments[2], T_sp((gc::Tagged)lcc_fixed_arg2));
+        scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 2:
         scope.new_binding(llh->_RequiredArguments[1], T_sp((gc::Tagged)lcc_fixed_arg1));
+        scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
+        return;
       case 1:
         scope.new_binding(llh->_RequiredArguments[0], T_sp((gc::Tagged)lcc_fixed_arg0));
-      case 0:
-        break;
+        return;
       }
       return;
     }
@@ -70,12 +220,11 @@ void lambdaListHandler_createBindings(gctools::tagged_pointer<core::Closure> clo
 
 T_sp evaluate_lambda_list_form(T_sp form, T_sp env) {
   // TODO:: The code should be compiled and not interpreted
-  //	TopLevelIHF stackFrame(_lisp->invocationHistoryStack(),form);
+  //	TopLevelIHF stackFrame(my_thread->invocationHistoryStack(),form);
   return eval::evaluate(form, env);
 }
 
 TargetClassifier::TargetClassifier(const std::set<int> &skip) : lexicalIndex(-1), skipLexicalIndices(skip) {
-  _G();
   this->_SpecialSymbols = _Nil<T_O>();
   this->_LambdaListSpecials = HashTableEq_O::create_default();
   this->advanceLexicalIndex();
@@ -108,13 +257,13 @@ List_sp TargetClassifier::finalClassifiedSymbols() {
 }
 
 void throw_if_not_destructuring_context(T_sp context) {
-  _G();
   if (context == _sym_macro || context == cl::_sym_destructuring_bind)
     return;
   SIMPLE_ERROR(BF("Lambda list is destructuring_bind but context does not support it context[%s]") % _rep_(context));
 }
 
-T_sp LambdaListHandler_O::lambdaList() {
+CL_LISPIFY_NAME("LambdaListHandler-lambdaList");
+CL_DEFMETHOD T_sp LambdaListHandler_O::lambdaList() {
   ql::list ll(_lisp);
   { // required arguments  req = ( num req1 req2 ...)
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
@@ -178,15 +327,36 @@ T_sp LambdaListHandler_O::lambdaList() {
   return ll.cons();
 }
 
+
+CL_LISPIFY_NAME("add-missing-sensors");
+CL_DOCSTRING(R"doc(Any optional or keyword parameters that are missing their sensors have them set to gensyms)doc");
+CL_DEFMETHOD void LambdaListHandler_O::add_missing_sensors() {
+  if (this->_OptionalArguments.size() > 0) {
+    for (gctools::Vec0<OptionalArgument>::iterator it = this->_OptionalArguments.begin();
+         it != this->_OptionalArguments.end(); it++) {
+      if (it->_Sensor._ArgTarget.nilp()) {
+        it->_Sensor._ArgTarget = cl__gensym();
+      }
+    }
+  }
+  if (this->_KeyFlag.notnilp() || this->_KeywordArguments.size() > 0) {
+    for (gctools::Vec0<KeywordArgument>::iterator it = this->_KeywordArguments.begin();
+         it != this->_KeywordArguments.end(); it++) {
+      if (it->_Sensor._ArgTarget.nilp()) {
+        it->_Sensor._ArgTarget = cl__gensym();
+      }
+    }
+  }
+}
+
 HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecifierList) {
-  _G();
   HashTableEq_sp specials(HashTableEq_O::create_default());
   LOG(BF("Processing declareSpecifierList: %s") % declareSpecifierList->__repr__());
   if (declareSpecifierList.notnilp()) {
     ASSERTF(oCar(declareSpecifierList) != cl::_sym_declare, BF("The declareSpecifierList were not processed properly coming into this function - only declare specifiers should be passed - I got: %s") % _rep_(declareSpecifierList));
     for (auto cur : declareSpecifierList) {
       T_sp entry = oCar(cur);
-      if (cl_consp(entry) && oCar(entry) == cl::_sym_special) {
+      if ((entry).consp() && oCar(entry) == cl::_sym_special) {
         for (auto spcur : coerce_to_list(oCdr(entry))) {
           specials->insert(gc::As<Symbol_sp>(oCar(spcur)));
         }
@@ -212,7 +382,7 @@ HashTableEq_sp LambdaListHandler_O::identifySpecialSymbols(List_sp declareSpecif
     other than zero but I'll let the caller decide.*/
 
 T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
-  List_sp llprocessed = cl_copyList(llraw);
+  List_sp llprocessed = cl__copy_list(llraw);
   Symbol_sp sd_symbol = _Nil<Symbol_O>();
   Symbol_sp sd_class = _Nil<Symbol_O>();
   bool saw_amp = false;
@@ -220,16 +390,16 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
   int idx = 0;
   for (auto cur : llprocessed) {
     T_sp arg = oCar(cur);
-    if (cl_symbolp(arg)) {
+    if (cl__symbolp(arg)) {
       if (gc::As<Symbol_sp>(arg)->amp_symbol_p()) {
         saw_amp = true;
         break;
       }
-    } else if (cl_consp(arg)) {
+    } else if ((arg).consp()) {
       List_sp carg = arg;
-      if (cl_length(carg) != 2) {
+      if (cl__length(carg) != 2) {
         SYMBOL_SC_(CorePkg, singleDispatchWrongNumberArgumentsError);
-        SYMBOL_SC_(KeywordPkg, arguments);
+        SYMBOL_EXPORT_SC_(KeywordPkg, arguments);
         ERROR(_sym_singleDispatchWrongNumberArgumentsError,
               Cons_O::createList(kw::_sym_arguments, carg));
       }
@@ -267,8 +437,7 @@ T_mv LambdaListHandler_O::process_single_dispatch_lambda_list(List_sp llraw, boo
       prefix them as required arguments.  If they weren't present then use gensym to
       generate temporary symbols */
 List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
-  _G();
-  List_sp new_lambda_list = cl_copyList(lambda_list);
+  List_sp new_lambda_list = cl__copy_list(lambda_list);
   Symbol_sp whole_symbol = _Nil<Symbol_O>();
   Symbol_sp environment_symbol = _Nil<Symbol_O>();
   if (oCar(new_lambda_list) == cl::_sym_AMPwhole) {
@@ -291,13 +460,13 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
     }
   }
   if (whole_symbol.nilp())
-    whole_symbol = af_gensym(Str_O::create("whole"));
+    whole_symbol = cl__gensym(Str_O::create("whole"));
   if (environment_symbol.nilp())
-    environment_symbol = af_gensym(Str_O::create("environment"));
+    environment_symbol = cl__gensym(Str_O::create("environment"));
 
-  Symbol_sp name_symbol = af_gensym(Str_O::create("macro-name"));
+  Symbol_sp name_symbol = cl__gensym(Str_O::create("macro-name"));
   //	SourceCodeList_sp new_name_ll = SourceCodeCons_O::createWithDuplicateSourceCodeInfo(name_symbol,new_lambda_list,lambda_list,_lisp);
-  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core_sourceFileInfo(lambda_list));
+  ql::list sclist; // (af_lineNumber(lambda_list),af_column(lambda_list),core__source_file_info(lambda_list));
   sclist << whole_symbol << environment_symbol << Cons_O::create(name_symbol, new_lambda_list);
   List_sp macro_ll = sclist.cons();
   if (_lisp->sourceDatabase().notnilp()) {
@@ -306,28 +475,22 @@ List_sp LambdaListHandler_O::process_macro_lambda_list(List_sp lambda_list) {
   return macro_ll;
 }
 
-#define DOCS_af_process_macro_lambda_list "process_macro_lambda_list"
-#define LOCK_af_process_macro_lambda_list 1
-#define ARGS_af_process_macro_lambda_list "(lambda-list)"
-#define DECL_af_process_macro_lambda_list ""
-T_sp af_process_macro_lambda_list(List_sp lambda_list) {
-  _G();
+CL_LAMBDA(lambda-list);
+CL_DECLARE();
+CL_DOCSTRING("process_macro_lambda_list");
+CL_DEFUN T_sp core__process_macro_lambda_list(List_sp lambda_list) {
   List_sp new_ll = LambdaListHandler_O::process_macro_lambda_list(lambda_list);
   return new_ll;
 }
 
-#define DOCS_af_process_single_dispatch_lambda_list "process_single_dispatch_lambda_list"
-#define LOCK_af_process_single_dispatch_lambda_list 1
-#define ARGS_af_process_single_dispatch_lambda_list "(lambda-list)"
-#define DECL_af_process_single_dispatch_lambda_list ""
-T_mv af_process_single_dispatch_lambda_list(List_sp lambda_list) {
-  _G();
+CL_LAMBDA(lambda-list);
+CL_DECLARE();
+CL_DOCSTRING("process_single_dispatch_lambda_list");
+CL_DEFUN T_mv core__process_single_dispatch_lambda_list(List_sp lambda_list) {
   return LambdaListHandler_O::process_single_dispatch_lambda_list(lambda_list);
 }
 
 void LambdaListHandler_O::initialize() {
-  _OF();
-  this->Base::initialize();
   this->_CreatesBindings = true;
   this->_DeclareSpecifierList = _Nil<T_O>();
   this->_RequiredArguments.clear();
@@ -359,13 +522,12 @@ void TargetClassifier::classifyTarget(Argument &target) {
 }
 
 void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp declares, T_sp context, TargetClassifier &classifier) {
-  _G();
   { // required arguments
     for (gctools::Vec0<RequiredArgument>::iterator it = this->_RequiredArguments.begin();
          it != this->_RequiredArguments.end(); it++) {
       if (it->_lambdaListP()) {
-        DEPRECIATED();
-        List_sp sub_lambda_list = it->lambdaList();
+        SIMPLE_ERROR(BF("A nested lambda list was discovered while building handler for %s") % this->__repr__());
+        List_sp sub_lambda_list = it->lambda_list();
         //		    throw_if_not_destructuring_context(context);
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
@@ -380,7 +542,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
       if (it->_lambdaListP()) {
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
@@ -399,7 +561,7 @@ void LambdaListHandler_O::recursively_build_handlers_count_arguments(List_sp dec
       if (it->_lambdaListP()) {
         DEPRECIATED();
         //		    throw_if_not_destructuring_context(context);
-        List_sp sub_lambda_list = it->lambdaList();
+        List_sp sub_lambda_list = it->lambda_list();
         LambdaListHandler_sp sub_handler = LambdaListHandler_O::createRecursive_(sub_lambda_list, declares, context, classifier);
         classifier.targetIsSubLambdaList(*it, sub_handler);
       } else {
@@ -426,7 +588,7 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #define PASS_FUNCTION_KEYWORD bind_keyword_va_list
 #define PASS_ARGS size_t n_args, VaList_sp arglist
 #define PASS_ARGS_NUM n_args
-#define PASS_NEXT_ARG(_ai) LCC_NEXT_ARG(arglist, _ai)
+#define PASS_NEXT_ARG(_ai) arglist->next_arg()
 #include "argumentBinding.cc"
 #undef PASS_FUNCTION_REQUIRED
 #undef PASS_FUNCTION_OPTIONAL
@@ -437,7 +599,6 @@ SYMBOL_SC_(CorePkg, tooFewArguments);
 #undef PASS_NEXT_ARG
 
 void bind_aux(gctools::Vec0<AuxArgument> const &auxs, DynamicScopeManager &scope) {
-  _G();
   LOG(BF("There are %d aux variables") % auxs.size());
   gctools::Vec0<AuxArgument>::iterator ci;
   {
@@ -479,6 +640,13 @@ void LambdaListHandler_O::createBindingsInScopeVaList(size_t nargs, VaList_sp va
     bind_aux(this->_AuxArguments, scope);
 }
 
+void LambdaListHandler_O::dump_keywords()
+{
+  for ( int i = 0; i< this->_KeywordArguments.size(); ++i ) {
+    printf("%s:%d Keyword: %s@%p\n", __FILE__, __LINE__, _rep_(this->_KeywordArguments[i]._Keyword).c_str(), this->_KeywordArguments[i]._Keyword.raw_());
+  }
+}
+
 string argument_mode_as_string(ArgumentMode mode) {
   switch (mode) {
   case required:
@@ -489,6 +657,8 @@ string argument_mode_as_string(ArgumentMode mode) {
     return ".rest";
   case rest:
     return "rest";
+  case va_rest:
+    return "va-rest";
   case keyword:
     return "keyword";
   case aux:
@@ -500,7 +670,6 @@ string argument_mode_as_string(ArgumentMode mode) {
 }
 
 bool switch_add_argument_mode(T_sp context, T_sp symbol, ArgumentMode &mode, T_sp &key_flag) {
-  _G();
   LOG(BF("In switch_add_argument_mode argument is a symbol: %s %X") % _rep_(symbol) % symbol.get());
   bool isAmpSymbol = false;
   if (symbol.notnilp()) {
@@ -645,7 +814,6 @@ ILLEGAL_MODE:
 }
 
 void throw_if_invalid_context(T_sp context) {
-  _G();
   if (context == _sym_macro || context == cl::_sym_function || context == cl::_sym_method || context == cl::_sym_destructuring_bind || context == _lisp->_true())
     return;
   printf("%s:%d context.raw_= %p     cl::_sym_destructuring_bind.raw_=%p\n",
@@ -654,7 +822,6 @@ void throw_if_invalid_context(T_sp context) {
 }
 
 bool contextSupportsWhole(T_sp context) {
-  _G();
   if (context == _sym_macro || context == cl::_sym_destructuring_bind || context == cl::_sym_deftype || context == cl::_sym_define_method_combination) {
     return true;
   }
@@ -662,7 +829,6 @@ bool contextSupportsWhole(T_sp context) {
 }
 
 bool contextSupportsEnvironment(T_sp context) {
-  _G();
   if (context == _sym_macro || context == cl::_sym_defsetf || context == cl::_sym_deftype) {
     return true;
   }
@@ -707,7 +873,6 @@ bool parse_lambda_list(List_sp original_lambda_list,
                        gctools::Vec0<KeywordArgument> &keys,
                        T_sp &allow_other_keys,
                        gctools::Vec0<AuxArgument> &auxs) {
-  _G();
   reqs.clear();
   optionals.clear();
   keys.clear();
@@ -717,7 +882,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
   if (original_lambda_list.nilp())
     return false;
   throw_if_invalid_context(context);
-  List_sp arguments = cl_copyList(original_lambda_list);
+  List_sp arguments = cl__copy_list(original_lambda_list);
   LOG(BF("Argument handling mode starts in (required) - interpreting: %s") % arguments->__repr__());
   ArgumentMode add_argument_mode = required;
   restarg.clear();
@@ -725,7 +890,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
   while (cur.notnilp()) {
     LOG(BF("Handing argument: %s") % _rep_(oCar(cur)));
     T_sp oarg = oCar(cur);
-    if (cl_symbolp(oarg)) {
+    if (cl__symbolp(oarg)) {
       T_sp sym = oarg;
       if (switch_add_argument_mode(context, sym, add_argument_mode, key_flag)) {
         if (add_argument_mode == allowOtherKeys) {
@@ -748,7 +913,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp sarg = _Nil<T_O>();
       T_sp defaultValue = _Nil<T_O>();
       T_sp supplied = _Nil<T_O>();
-      if (cl_consp(oarg)) {
+      if ((oarg).consp()) {
         List_sp carg = oarg;
         LOG(BF("Optional argument is a Cons: %s") % carg->__repr__());
         sarg = oCar(carg);
@@ -796,17 +961,17 @@ bool parse_lambda_list(List_sp original_lambda_list,
       T_sp localTarget = _Nil<T_O>();
       T_sp defaultValue = _Nil<T_O>();
       T_sp sensorSymbol = _Nil<T_O>();
-      if (cl_symbolp(oarg)) {
+      if (cl__symbolp(oarg)) {
         localTarget = oarg;
         keySymbol = gc::As<Symbol_sp>(localTarget)->asKeywordSymbol();
-      } else if (cl_consp(oarg)) {
+      } else if ((oarg).consp()) {
         List_sp carg = oarg;
         T_sp head = oCar(carg);
-        if (cl_consp(head)) {
+        if ((head).consp()) {
           List_sp namePart = head;
           keySymbol = gc::As<Symbol_sp>(oCar(namePart)); // This is the keyword name
           if (!keySymbol->isKeywordSymbol()) {
-            SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: ") % _rep_(keySymbol));
+            SIMPLE_ERROR(BF("With key arguments of the form ((:x y) ...) the first argument must be a keyword symbol - you gave: %s") % _rep_(keySymbol));
           }
           localTarget = oCadr(namePart); // this is the symbol to rename it to
         } else {
@@ -837,7 +1002,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     case aux: {
       T_sp localSymbol = _Nil<T_O>();
       T_sp expression = _Nil<T_O>();
-      if (cl_consp(oarg)) {
+      if ((oarg).consp()) {
         List_sp carg = oarg;
         localSymbol = gc::As<Symbol_sp>(oCar(carg));
         //
@@ -855,7 +1020,7 @@ bool parse_lambda_list(List_sp original_lambda_list,
     }
   NEXT:
     T_sp ocur = oCdr(cur);
-    if (ocur.nilp() || cl_consp(ocur)) {
+    if (ocur.nilp() || (ocur).consp()) {
       // Advance to next element of the list
       cur = ocur;
       continue;
@@ -870,11 +1035,10 @@ DONE:
   return true;
 }
 
-#define ARGS_af_processLambdaList "(vl context)"
-#define DECL_af_processLambdaList ""
-#define DOCS_af_processLambdaList "processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!"
-T_mv af_processLambdaList(List_sp lambdaList, T_sp context) {
-  _G();
+CL_LAMBDA(vl context);
+CL_DECLARE();
+CL_DOCSTRING("processLambdaList - this is like ECL::process-lambda-list except auxs are returned as nil or a list of 2*n elements of the form (sym1 init1 sym2 init2 ...) In ECL they say you need to prepend the number of auxs - that breaks the destructure macro. ECL process-lambda-list says context may be MACRO, FTYPE, FUNCTION, METHOD or DESTRUCTURING-BIND but in ECL>>clos/method.lsp they pass T!!!");
+CL_DEFUN T_mv core__process_lambda_list(List_sp lambdaList, T_sp context) {
   gctools::Vec0<RequiredArgument> reqs;
   gctools::Vec0<OptionalArgument> optionals;
   gctools::Vec0<KeywordArgument> keys;
@@ -927,7 +1091,9 @@ T_mv af_processLambdaList(List_sp lambdaList, T_sp context) {
                  key_flag,
                  lkeys.cons(),
                  allow_other_keys,
-                 lauxs.cons()));
+                 lauxs.cons(),
+                 _lisp->_boolean(restarg.VaRest)
+                 ));
 };
 
 /*
@@ -942,15 +1108,12 @@ T_mv af_processLambdaList(List_sp lambdaList, T_sp context) {
  */
 
 LambdaListHandler_sp LambdaListHandler_O::createRecursive_(List_sp lambda_list, List_sp declares, T_sp context, TargetClassifier &classifier) {
-  _G();
   GC_ALLOCATE(LambdaListHandler_O, llh);
   llh->parse_lambda_list_declares(lambda_list, declares, context, classifier);
   return llh;
 }
 
 LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp declares, T_sp context, const std::set<int> &skipFrameIndices) {
-  _G();
-  ql::list all_arguments_list;
   HashTableEq_sp specialSymbols(LambdaListHandler_O::identifySpecialSymbols(declares));
   TargetClassifier classifier(specialSymbols, skipFrameIndices);
   LambdaListHandler_sp ollh = LambdaListHandler_O::createRecursive_(lambda_list, declares, context, classifier);
@@ -960,17 +1123,14 @@ LambdaListHandler_sp LambdaListHandler_O::create(List_sp lambda_list, List_sp de
 }
 
 LambdaListHandler_sp LambdaListHandler_O::create(int numArgs, const std::set<int> &skipIndices) {
-  _G();
   GC_ALLOCATE(LambdaListHandler_O, ollh);
   ollh->create_required_arguments(numArgs, skipIndices);
   return ollh;
 }
 
-#define ARGS_LambdaListHandler_O_makeLambdaListHandler "(lambda-list &optional declares (context 'core::function))"
-#define DECL_LambdaListHandler_O_makeLambdaListHandler ""
-#define DOCS_LambdaListHandler_O_makeLambdaListHandler "makeLambdaListHandler"
-LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
-  _G();
+CL_LAMBDA("lambda-list &optional declares (context 'core::function)");
+CL_LISPIFY_NAME(makeLambdaListHandler);
+CL_DEFUN LambdaListHandler_sp LambdaListHandler_O::makeLambdaListHandler(List_sp lambda_list, List_sp declares, T_sp context) {
   LambdaListHandler_sp llh = LambdaListHandler_O::create(lambda_list, declares, context);
   return llh;
 }
@@ -979,13 +1139,13 @@ void LambdaListHandler_O::create_required_arguments(int num, const std::set<int>
   _OF();
   TargetClassifier classifier(skipIndices);
   for (int i = 0, iEnd(num - skipIndices.size()); i < iEnd; ++i) {
-    Symbol_sp name = af_gensym(Str_O::create("arg"));
+    Symbol_sp name = cl__gensym(Str_O::create("arg"));
     RequiredArgument req(name, i);
     this->_RequiredArguments.push_back(req);
     classifier.classifyTarget(req);
   }
   this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-  ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+  ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   this->_NumberOfLexicalVariables = classifier.totalLexicalVariables();
   this->_RequiredLexicalArgumentsOnly = this->requiredLexicalArgumentsOnlyP_();
 }
@@ -1007,14 +1167,14 @@ void LambdaListHandler_O::parse_lambda_list_declares(List_sp lambda_list, List_s
   if (this->_CreatesBindings) {
     this->recursively_build_handlers_count_arguments(declareSpecifierList, context, classifier);
     this->_ClassifiedSymbolList = classifier.finalClassifiedSymbols();
-    ASSERTF(this->_ClassifiedSymbolList.nilp() || cl_consp(oCar(this->_ClassifiedSymbolList)), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
+    ASSERTF(this->_ClassifiedSymbolList.nilp() || (oCar(this->_ClassifiedSymbolList)).consp(), BF("LambdaListHandler _classifiedSymbols must contain only conses - it contains %s") % _rep_(this->_ClassifiedSymbolList));
   } else {
     this->_ClassifiedSymbolList = _Nil<T_O>();
   }
 }
 
-int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target) {
-  _G();
+CL_LISPIFY_NAME("single-dispatch-on-argument");
+CL_DEFMETHOD int LambdaListHandler_O::single_dispatch_on_argument(Symbol_sp target) {
   for (auto &ri : this->_RequiredArguments) {
     if (ri._symbolP()) {
       if (ri.symbol() == target)
@@ -1083,7 +1243,7 @@ string LambdaListHandler_O::partsAsString() const {
 string LambdaListHandler_O::__repr__() const {
   _OF();
   stringstream ss;
-  ss << "#<" << this->_instanceClass()->classNameAsString();
+  ss << "#<" << cl__class_of(this->asSmartPtr())->classNameAsString();
   {
     ss << this->partsAsString();
   }
@@ -1092,8 +1252,8 @@ string LambdaListHandler_O::__repr__() const {
   return ss.str();
 }
 
-T_mv LambdaListHandler_O::processLambdaListHandler() const {
-  _G();
+CL_LISPIFY_NAME("processLambdaListHandler");
+CL_DEFMETHOD T_mv LambdaListHandler_O::processLambdaListHandler() const {
 
   ql::list reqs(_lisp);
   { // required arguments  req = ( num req1 req2 ...)
@@ -1136,11 +1296,12 @@ T_mv LambdaListHandler_O::processLambdaListHandler() const {
                  _lisp->_boolean(keyFlag),
                  keys.cons(),
                  this->_AllowOtherKeys,
-                 auxs.cons()));
+                 auxs.cons(),
+                 _lisp->_boolean(this->_RestArgument.VaRest)
+                 ));
 }
 
 bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
-  _G();
   bool requiredArgumentsOnlyP = (this->_OptionalArguments.size() == 0) && (!this->_RestArgument.isDefined()) && (this->_KeywordArguments.size() == 0) && (!this->_AllowOtherKeys.isTrue()) && (this->_AuxArguments.size() == 0);
   if (requiredArgumentsOnlyP) {
     for (gctools::Vec0<RequiredArgument>::const_iterator it = this->_RequiredArguments.begin();
@@ -1153,24 +1314,24 @@ bool LambdaListHandler_O::requiredLexicalArgumentsOnlyP_() const {
   return false;
 }
 
-List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
-  _G();
+CL_LISPIFY_NAME("namesOfLexicalVariables");
+CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
   List_sp namesRev = _Nil<T_O>();
   for (auto cur : this->_ClassifiedSymbolList) {
     if (oCar(oCar(cur)) == ext::_sym_lexicalVar) {
       namesRev = Cons_O::create(oCadr(oCar(cur)), namesRev);
     }
   }
-  return cl_nreverse(namesRev);
+  return cl__nreverse(namesRev);
 }
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl_length(names), false, cl::_sym_T_O);
+  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl__length(names), false, cl::_sym_T_O);
 }
 
-VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
-  _G();
+CL_LISPIFY_NAME("namesOfLexicalVariablesForDebugging");
+CL_DEFMETHOD VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
   if (this->_LexicalVariableNamesForDebugging.nilp()) {
     this->calculateNamesOfLexicalVariablesForDebugging();
   }
@@ -1180,41 +1341,16 @@ VectorObjects_sp LambdaListHandler_O::namesOfLexicalVariablesForDebugging() {
 // ----------------------------------------------------------------------
 //
 
-EXPOSE_CLASS(core, LambdaListHandler_O);
+
 LambdaListHandler_O::LambdaListHandler_O() : _SpecialSymbolSet(_Nil<T_O>()), _LexicalVariableNamesForDebugging(_Nil<VectorObjects_O>()), _RequiredLexicalArgumentsOnly(false){};
 
-void LambdaListHandler_O::exposeCando(Lisp_sp lisp) {
-  _G();
-  class_<LambdaListHandler_O>()
-      .def("single-dispatch-on-argument", &LambdaListHandler_O::single_dispatch_on_argument)
-      .def("classifiedSymbols", &LambdaListHandler_O::classifiedSymbols)
-      .def("processLambdaListHandler", &LambdaListHandler_O::processLambdaListHandler)
-      .def("lambdaListHandlerRequiredLexicalArgumentsOnlyP", &LambdaListHandler_O::requiredLexicalArgumentsOnlyP)
-      .def("numberOfRequiredArguments", &LambdaListHandler_O::numberOfRequiredArguments)
-      .def("numberOfOptionalArguments", &LambdaListHandler_O::numberOfOptionalArguments)
-      .def("numberOfRestArguments", &LambdaListHandler_O::numberOfRestArguments)
-      .def("numberOfKeyArguments", &LambdaListHandler_O::numberOfKeyArguments)
-      .def("numberOfAuxArguments", &LambdaListHandler_O::numberOfAuxArguments)
-      .def("allowOtherKeys", &LambdaListHandler_O::allowOtherKeys)
-      .def("numberOfLexicalVariables", &LambdaListHandler_O::numberOfLexicalVariables)
-      .def("namesOfLexicalVariables", &LambdaListHandler_O::namesOfLexicalVariables)
-      .def("namesOfLexicalVariablesForDebugging", &LambdaListHandler_O::namesOfLexicalVariablesForDebugging)
-      .def("LambdaListHandler-lambdaList", &LambdaListHandler_O::lambdaList);
+
+
   SYMBOL_SC_(CorePkg, process_macro_lambda_list);
-  Defun(process_macro_lambda_list);
   SYMBOL_SC_(CorePkg, process_single_dispatch_lambda_list);
-  Defun(process_single_dispatch_lambda_list);
-  af_def(CorePkg, "makeLambdaListHandler", &LambdaListHandler_O::makeLambdaListHandler, ARGS_LambdaListHandler_O_makeLambdaListHandler, DECL_LambdaListHandler_O_makeLambdaListHandler, DOCS_LambdaListHandler_O_makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, makeLambdaListHandler);
   SYMBOL_SC_(CorePkg, processLambdaList);
-  Defun(processLambdaList);
-}
 
-void LambdaListHandler_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, LambdaListHandler, "", "", _lisp);
-#endif
-}
 
 }; /* core */
+

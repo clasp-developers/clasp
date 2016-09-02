@@ -44,9 +44,8 @@ SMART(StringSet);
 
 SMART(FuncallableStandardClass);
 class FuncallableStandardClass_O : public StdClass_O {
-  LISP_META_CLASS(StandardClass);
-  LISP_BASE1(StdClass_O);
-  LISP_CLASS(core, ClosPkg, FuncallableStandardClass_O, "FuncallableStandardClass");
+  LISP_META_CLASS(core::StandardClass_O);
+  LISP_CLASS(core, ClosPkg, FuncallableStandardClass_O, "FuncallableStandardClass",StdClass_O);
 
 public:
 #if defined(XML_ARCHIVE)
@@ -97,12 +96,12 @@ template <>
 struct gctools::GCInfo<core::FuncallableStandardClass_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = false;
-  static bool constexpr Moveable = true; // old=false
-  static bool constexpr Atomic = false;
+  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
 
+#if 0
 class FuncallableStandardClassInitializationFunctoid : public Functoid {
 private:
   FuncallableStandardClass_sp _FuncallableStandardClass;
@@ -114,6 +113,6 @@ public:
   FuncallableStandardClassInitializationFunctoid(T_sp name, FuncallableStandardClass_sp c) : Functoid(name) { this->_FuncallableStandardClass = c; };
   virtual ~FuncallableStandardClassInitializationFunctoid(){};
 };
+#endif
 };
-TRANSLATE(core::FuncallableStandardClass_O);
 #endif //]

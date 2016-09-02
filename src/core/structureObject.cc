@@ -43,20 +43,19 @@ namespace core {
 
 #define USE_INSTANCES_FOR_STRUCTURES
 
-#define ARGS_af_makeStructure "(type &rest slot_values)"
-#define DECL_af_makeStructure ""
-#define DOCS_af_makeStructure "makeStructure"
-T_sp af_makeStructure(T_sp type, List_sp slot_values) {
-  _G();
+CL_LAMBDA(type &rest slot-values);
+CL_DECLARE();
+CL_DOCSTRING("makeStructure");
+CL_DEFUN T_sp core__make_structure(T_sp type, List_sp slot_values) {
   if (type.nilp()) {
     SIMPLE_ERROR(BF("You cannot makeStructure of type nil"));
   }
 #ifdef CLOS
   if (Class_sp ctype = type.asOrNull<Class_O>()) {
     ASSERTF(!type.nilp(), BF("Tried to make-structure with type = nil"));
-    //	printf("%s:%d  af_makeStructure of %s  slot_values: %s\n",
+    //	printf("%s:%d  core__make_structure of %s  slot_values: %s\n",
     //	       __FILE__, __LINE__, _rep_(type).c_str(), _rep_(slot_values).c_str());
-    Instance_sp so = gc::As<Instance_sp>(Instance_O::allocateInstance(ctype, cl_length(slot_values)));
+    Instance_sp so = gc::As<Instance_sp>(Instance_O::allocateInstance(ctype, cl__length(slot_values)));
     int idx = 0;
     for (auto slot : slot_values) {
       so->instanceSet(idx, oCar(slot));
@@ -69,11 +68,10 @@ T_sp af_makeStructure(T_sp type, List_sp slot_values) {
   return so;
 };
 
-#define ARGS_af_copyStructure "(arg)"
-#define DECL_af_copyStructure ""
-#define DOCS_af_copyStructure "copyStructure"
-T_sp af_copyStructure(T_sp arg) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("copyStructure");
+CL_DEFUN T_sp cl__copy_structure(T_sp arg) {
   if (arg.nilp()) {
     SIMPLE_ERROR(BF("You cannot copyStructure nil"));
   }
@@ -88,25 +86,24 @@ T_sp af_copyStructure(T_sp arg) {
   SIMPLE_ERROR(BF("You cannot copy-structure a %s") % _rep_(arg));
 };
 
-#define ARGS_af_structureRef "(obj name idx)"
-#define DECL_af_structureRef ""
-#define DOCS_af_structureRef "structureRef"
-T_sp af_structureRef(T_sp obj, Symbol_sp type, int idx) {
-  _G();
+CL_LAMBDA(obj name idx);
+CL_DECLARE();
+CL_DOCSTRING("structureRef");
+CL_DEFUN T_sp core__structure_ref(T_sp obj, Symbol_sp type, int idx) {
   if (obj.nilp()) {
     TYPE_ERROR(obj, type);
   }
 #ifdef CLOS
   if (Instance_sp so = obj.asOrNull<Instance_O>()) {
-    if (!af_structureSubtypep(af_classOf(so), type)) {
+    if (!core__structure_subtypep(cl__class_of(so), type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
     return so->instanceRef(idx);
   }
 #endif
   if (StructureObject_sp so = obj.asOrNull<StructureObject_O>()) {
-    T_sp soclass = af_type_of(so);
-    if (!af_structureSubtypep(soclass, type)) {
+    T_sp soclass = cl__type_of(so);
+    if (!core__structure_subtypep(soclass, type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
     return so->structureRef(idx);
@@ -114,25 +111,24 @@ T_sp af_structureRef(T_sp obj, Symbol_sp type, int idx) {
   TYPE_ERROR(obj, type);
 };
 
-#define ARGS_af_structureSet "(struct type idx val)"
-#define DECL_af_structureSet ""
-#define DOCS_af_structureSet "structureSet"
-T_sp af_structureSet(T_sp obj, Symbol_sp type, int idx, T_sp val) {
-  _G();
+CL_LAMBDA(struct type idx val);
+CL_DECLARE();
+CL_DOCSTRING("structureSet");
+CL_DEFUN T_sp core__structure_set(T_sp obj, Symbol_sp type, int idx, T_sp val) {
   if (obj.nilp()) {
     TYPE_ERROR(obj, type);
   }
 #ifdef CLOS
   if (Instance_sp so = obj.asOrNull<Instance_O>()) {
-    if (!af_structureSubtypep(af_classOf(so), type)) {
+    if (!core__structure_subtypep(cl__class_of(so), type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
     return so->instanceSet(idx, val);
   }
 #endif
   if (StructureObject_sp so = obj.asOrNull<StructureObject_O>()) {
-    T_sp sotype = af_type_of(so);
-    if (!af_structureSubtypep(sotype, type)) {
+    T_sp sotype = cl__type_of(so);
+    if (!core__structure_subtypep(sotype, type)) {
       QERROR_WRONG_TYPE_NTH_ARG(1, obj, type);
     }
     return so->structureSet(idx, val);
@@ -140,17 +136,16 @@ T_sp af_structureSet(T_sp obj, Symbol_sp type, int idx, T_sp val) {
   TYPE_ERROR(obj, type);
 };
 
-#define ARGS_af_structurep "(arg)"
-#define DECL_af_structurep ""
-#define DOCS_af_structurep "structurep"
-bool af_structurep(T_sp arg) {
-  _G();
+CL_LAMBDA(arg);
+CL_DECLARE();
+CL_DOCSTRING("structurep");
+CL_DEFUN bool core__structurep(T_sp arg) {
   if (arg.nilp()) {
     return false;
   }
 #ifdef CLOS
   if (Instance_sp io = arg.asOrNull<Instance_O>()) {
-    if (af_structureSubtypep(io->_instanceClass(), cl::_sym_StructureObject_O))
+    if (core__structure_subtypep(io->_instanceClass(), cl::_sym_StructureObject_O))
       return true;
   }
 #endif
@@ -161,11 +156,10 @@ bool af_structurep(T_sp arg) {
   return false;
 };
 
-#define ARGS_af_structureSubtypep "(x y)"
-#define DECL_af_structureSubtypep ""
-#define DOCS_af_structureSubtypep "structureSubtypep checks if the structure type Y is a subtype of X"
-bool af_structureSubtypep(T_sp x, Symbol_sp y) {
-  _G();
+CL_LAMBDA(x y);
+CL_DECLARE();
+CL_DOCSTRING("structureSubtypep checks if the structure type Y is a subtype of X");
+CL_DEFUN bool core__structure_subtypep(T_sp x, Symbol_sp y) {
   if (x.nilp())
     return false;
 #ifdef CLOS
@@ -174,7 +168,7 @@ bool af_structureSubtypep(T_sp x, Symbol_sp y) {
       return true;
     } else {
       for (auto sup : cx->directSuperclasses()) {
-        if (af_structureSubtypep(gc::As<Class_sp>(oCar(sup)), y))
+        if (core__structure_subtypep(gc::As<Class_sp>(oCar(sup)), y))
           return true;
       }
       return false;
@@ -186,7 +180,7 @@ bool af_structureSubtypep(T_sp x, Symbol_sp y) {
       if (sx == y)
         return true;
       SYMBOL_EXPORT_SC_(CorePkg, structure_include);
-      sx = gc::As<Symbol_sp>(af_get_sysprop(sx, _sym_structure_include));
+      sx = gc::As<Symbol_sp>(core__get_sysprop(sx, _sym_structure_include));
     } while (!sx.nilp());
     return false;
   }
@@ -194,23 +188,21 @@ bool af_structureSubtypep(T_sp x, Symbol_sp y) {
 }
 
 StructureObject_sp StructureObject_O::create(T_sp type, List_sp slot_values) {
-  _G();
   StructureObject_sp co = StructureObject_O::create();
-  co->_Type = type;
-  co->_Slots.resize(cl_length(slot_values));
+  // This better work or there will be trouble
+  co->_Type = gctools::As<Class_sp>(eval::funcall(cl::_sym_findClass,type));
+  co->_Slots.resize(cl__length(slot_values));
   int i = 0;
   for (auto cur : slot_values) {
     T_sp val = oCar(cur);
-    co->_Slots[i] = val;
+    co->_Slots[i++] = val;
   }
   return co;
 }
 
 void StructureObject_O::initialize() {
-  _G();
   LOG(BF("Initializing StructureObject"));
   this->Base::initialize();
-  this->_Type = _Nil<T_O>();
   this->_Slots.clear();
 }
 
@@ -236,7 +228,7 @@ T_sp StructureObject_O::structureAsList() const {
   *curP = head;          // cur.setPointee(head); // *cur = head;
   curP = head->cdrPtr(); // cur.setPointer(head->cdrPtr()); // cur = head->cdrPtr();
   SYMBOL_EXPORT_SC_(CorePkg, structure_slot_descriptions);
-  List_sp slots = af_get_sysprop(this->_Type, _sym_structure_slot_descriptions);
+  List_sp slots = core__get_sysprop(this->_Type->name(), _sym_structure_slot_descriptions);
   for (; slots.notnilp(); slots = oCdr(slots)) {
     List_sp slotDesc = oCar(slots);
     //    printf("%s:%d slots: %s\n", __FILE__, __LINE__, _rep_(slots).c_str());
@@ -271,8 +263,7 @@ void StructureObject_O::archiveBase(ArchiveP node) {
 }
 
 T_sp StructureObject_O::copyStructure() const {
-  _G();
-  StructureObject_sp copy = gctools::GCObjectAllocator<StructureObject_O>::copy(*this);
+  StructureObject_sp copy = gctools::GC<StructureObject_O>::copy(*this);
   //GC_COPY(StructureObject_O,copy,*this);
   return copy;
 }
@@ -282,11 +273,7 @@ string StructureObject_O::__repr__() const {
   ss << "#< ";
   ss << this->_instanceClass()->classNameAsString() << " ";
   ASSERT(this->_Type);
-  if (this->_Type.unboundp()) {
-    ss << ":type - UNBOUND -" << std::endl;
-  } else {
-    ss << ":type " << _rep_(this->_Type) << std::endl;
-  }
+  ss << ":type " << _rep_(this->_Type) << std::endl;
   ss << "[slots ";
   for (int i = 0; i < this->_Slots.size(); i++) {
     if (this->_Slots[i].nilp()) {
@@ -319,42 +306,15 @@ string StructureObject_O::__repr__() const {
 
 #if 0
     void StructureObject_O::allocate_slot_storage(uint numSlots, T_sp initialValue )
-    {_G();
+    {
 	this->_Slots.resize(numSlots,initialValue);
     }
 #endif
 
-void StructureObject_O::exposeCando(Lisp_sp lisp) {
-  class_<StructureObject_O>()
-      //		.def("copy-structure",&StructureObject_O::copyStructure) // moved to primitives.cc
-      ;
-#if 0
-	    SYMBOL_SC_(CorePkg,make_structure);
-	    Defun(make_structure);
-#endif
   SYMBOL_EXPORT_SC_(CorePkg, structureRef);
-  Defun(structureRef);
   SYMBOL_EXPORT_SC_(CorePkg, structureSet);
-  Defun(structureSet);
   SYMBOL_EXPORT_SC_(CorePkg, makeStructure);
-  Defun(makeStructure);
-
   SYMBOL_EXPORT_SC_(ClPkg, copyStructure);
-  Defun(copyStructure);
-
   SYMBOL_EXPORT_SC_(CorePkg, structurep);
-  Defun(structurep);
-
   SYMBOL_EXPORT_SC_(CorePkg, structureSubtypep);
-  Defun(structureSubtypep);
-}
-
-void StructureObject_O::exposePython(Lisp_sp lisp) {
-  _G();
-#ifdef USEBOOSTPYTHON
-  PYTHON_CLASS(CorePkg, StructureObject, "", "", _lisp);
-#endif
-}
-
-EXPOSE_CLASS(core, StructureObject_O);
 };

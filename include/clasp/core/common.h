@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/cons.h>
-#include <clasp/core/lisp.h>
 #include <clasp/core/cxxObject.h>
 #include <clasp/core/record.h>
+#include <clasp/core/lisp.h>
 #endif

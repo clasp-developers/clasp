@@ -33,7 +33,8 @@
 
 
 
-(defun compile-main-function (name ltv-manager-fn  )
+#+(or)
+(defun compile-main-function (name ltv-manager-fn)
   (cmp-log "In compile-main-function\n")
   (let ((main-fn (with-new-function (main-fn fn-env fn-result
 					     :function-name name
@@ -46,8 +47,7 @@
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
 		     (irc-intrinsic "invokeMainFunction" *gv-source-namestring* ltv-manager-fn)
-                     (irc-intrinsic "cc_setTmvToNil" fn-result)
-		     ))))
+                     (irc-intrinsic "cc_setTmvToNil" fn-result)))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")
     main-fn))
@@ -61,6 +61,7 @@
 	((null *active-protection*)
 	 (let* ((*active-protection* t)
 		(*pending-actions* nil)
+                (*compilation-unit-module-index* 0)
                 (*all-functions-for-one-compile* nil))
 	   (unwind-protect (do-compilation-unit closure)
              (dolist (action *pending-actions*)
@@ -78,8 +79,8 @@
 (defvar *compilation-messages* nil)
 (defvar *compilation-warnings-p* nil)
 (defvar *compilation-failures-p* nil)
-         #+ecl-min (progn ,@body)
-         #-ecl-min (handler-bind
+         #+clasp-min (progn ,@body)
+         #-clasp-min (handler-bind
                        ((error #'(lambda (c)
                                    (invoke-restart 'record-failure c)))
                         (warning #'(lambda (c)
@@ -91,7 +92,7 @@
 
 (defun describe-form (form)
   (cond
-    ((and (consp form) (eq 'core:*fset (car form)))
+    ((and (consp form) (eq 'core:fset (car form)))
      (let* ((name (cadr (cadr form)))
 	    (is-macro (cadddr form))
 	    (header (if is-macro
@@ -109,7 +110,7 @@
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (let ((fn (compile-thunk "repl" form nil)))
+  (let ((fn (compile-thunk 'repl form nil)))
     (with-ltv-function-codegen (result ltv-env)
       (irc-intrinsic "invokeTopLevelFunction" 
 		     result 
@@ -237,9 +238,17 @@
       (funcall compile-file-hook form)
       (t1expr form)))
 
-(defun compile-form-into-module (form name)
-  "This is used to generate a module from a single form - specifically
-to compile prologue and epilogue code when linking modules"
+#+(or)
+(defun compile-form-into-module (form name &key epilogue-module-p)
+  "* Arguments
+- form :: A form.
+- name :: The name of the module
+- epilogue-module-p :: T or NIL
+* Description
+This is used to generate a module from a single form - specifically
+to compile prologue and epilogue code when linking modules.
+If epilogue-module-p is T then tell make-boot-function-global-variable
+to append a NULL function to the list of main functions."
   (let* ((module (create-llvm-module-for-compile-file name))
          conditions
 	 (*compile-file-pathname* nil)
@@ -248,30 +257,33 @@ to compile prologue and epilogue code when linking modules"
 	 (*compile-verbose* nil)	 )
     (with-compiler-env (conditions)
       (with-module (:module module
-                            :source-namestring (namestring name))
+                            :source-namestring (namestring (string name)))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-top-level form)
-            (let ((main-fn (compile-main-function name ltv-init-fn )))
-              (make-boot-function-global-variable *the-module* main-fn)
-              (add-main-function *the-module*)))
+            (make-boot-function-global-variable *the-module* ltv-init-fn)
+            #+(or)(let ((main-fn (compile-main-function name ltv-init-fn )))
+                    (make-boot-function-global-variable *the-module* main-fn)
+                    #+(or)(add-main-function *the-module*)))
           )))
     module))
 
 
+(defun cfp-output-extension (output-type)
+  (cond
+    ((eq output-type :bitcode) "bc")
+    ((eq output-type :object) "o")
+    ((eq output-type :fasl) "fasl")
+    ((eq output-type :executable) #-windows "" #+windows "exe")
+    (t (error "unsupported output-type ~a" output-type))))
 
 (defun cfp-output-file-default (input-file output-type &key target-backend)
   (let* ((defaults (merge-pathnames input-file *default-pathname-defaults*)))
     (when target-backend
       (setq defaults (make-pathname :host target-backend :defaults defaults)))
-    (make-pathname :type (cond
-			   ((eq output-type :bitcode) "bc")
-			   ((eq output-type :linked-bitcode) "lbc")
-			   ((eq output-type :object) "o")
-			   ((eq output-type :fasl) "fasl")
-			   (t (error "unsupported output-type ~a" output-type)))
-		   :defaults defaults)))
+    (make-pathname :type (cfp-output-extension output-type)
+                   :defaults defaults)))
 
 
 ;;; Copied from sbcl sb!xc:compile-file-pathname
@@ -289,14 +301,9 @@ to compile prologue and epilogue code when linking modules"
                                            &allow-other-keys)
   (when type (error "Clasp compile-file-pathname uses :output-type rather than :type"))
   (let* ((pn (if output-file-p
-		 (merge-pathnames output-file (cfp-output-file-default input-file output-type :target-backend target-backend))
+		 (merge-pathnames output-file (translate-logical-pathname (cfp-output-file-default input-file output-type :target-backend target-backend)))
 		 (cfp-output-file-default input-file output-type :target-backend target-backend)))
-         (ext (cond
-		((eq output-type :bitcode) "bc")
-		((eq output-type :linked-bitcode) "lbc")
-		((eq output-type :object) "o")
-		((eq output-type :fasl) "fasl")
-		(t (error "unsupported output-type ~a" output-type)))))
+         (ext (cfp-output-extension output-type)))
     (make-pathname :type ext :defaults pn)))
 
 
@@ -323,10 +330,18 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) )
-  "Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
+(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) epilogue-module-p )
+  "* Arguments
+- given-input-pathname :: A pathname.
+- output-path :: A pathname.
+- compile-file-hook :: A function that will do the compile-file
+- type :: :kernel or :user (I'm not sure this is useful anymore
+- source-debug-namestring :: A namestring.
+- source-debug-offset :: An integer.
+- epilogue-module-p :: T if this is an epilogue module.
+Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
-  (let* ((clasp-source-root (translate-logical-pathname "SYS:"))
+  (let* ((clasp-source-root (translate-logical-pathname "source-dir:"))
          (clasp-source (merge-pathnames (make-pathname :directory '(:relative :wild-inferiors) :name :wild :type :wild) clasp-source-root))
          (source-location
           (if (pathname-match-p given-input-pathname clasp-source)
@@ -372,10 +387,10 @@ and the pathname of the source file - this will also be used as the module initi
 			     (let ((core:*current-source-pos-info* 
 				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
 			       (compile-file-t1expr form compile-file-hook))))))
-		  (let ((main-fn (compile-main-function output-path ltv-init-fn )))
-		    (make-boot-function-global-variable *the-module* main-fn)
-		    (add-main-function *the-module*)))
-		)
+                  (make-boot-function-global-variable *the-module* ltv-init-fn)
+		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
+                          (make-boot-function-global-variable *the-module* main-fn)
+                          #+(or)(add-main-function *the-module*))))
 	      (cmp-log "About to verify the module\n")
 	      (cmp-log-dump *the-module*)
 	      (if *dump-module-on-completion*
@@ -409,9 +424,11 @@ and the pathname of the source file - this will also be used as the module initi
                         (output-type :fasl)
 ;;; type can be either :kernel or :user
                         (type :user)
+                        epilogue-module-p
                       &aux conditions
                         )
-  "See CLHS compile-file"
+  "See CLHS compile-file. If epilogue-module-p is T then compile-file an 
+epilogue module - one that terminates a series of linked modules. "
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
   (with-compiler-env (conditions)
@@ -423,7 +440,8 @@ and the pathname of the source file - this will also be used as the module initi
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 
 					     :source-debug-offset source-debug-offset
-                                             :compile-file-hook compile-file-hook )))
+                                             :compile-file-hook compile-file-hook
+                                             :epilogue-module-p epilogue-module-p)))
 	(cond
 	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
@@ -431,7 +449,7 @@ and the pathname of the source file - this will also be used as the module initi
 	   (with-open-file (fout output-path :direction :output)
 	     (let ((reloc-model (cond
 				  ((member :target-os-linux *features*) 'llvm-sys:reloc-model-pic-)
-				  (t 'llvm-sys:reloc-model-default))))
+				  (t 'llvm-sys:reloc-model-undefined))))
 	       (generate-obj-asm module fout :file-type 'llvm-sys:code-gen-file-type-object-file :reloc-model reloc-model))))
 	  ((eq output-type :bitcode)
 	   (when verbose (bformat t "Writing bitcode to %s\n" (core:coerce-to-filename output-path)))
@@ -443,7 +461,8 @@ and the pathname of the source file - this will also be used as the module initi
 	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (ensure-directories-exist temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (cmp:link-system-lto output-file :lisp-bitcode-files (list temp-bitcode-file))))
+	     (cmp:llvm-link output-file
+                            :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
 	(dolist (c conditions)
