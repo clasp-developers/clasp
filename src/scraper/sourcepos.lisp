@@ -17,7 +17,7 @@
 
 
 (defun calculate-character-offsets-one-file (source-file tags)
-;;;  (declare (optimize debug))
+  (declare (optimize debug))
   (let ((cur-line 0)
         (char-offset 0)
         (prev-char-offset 0))
