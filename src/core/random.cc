@@ -56,7 +56,7 @@ CL_DECLARE();
 CL_DOCSTRING("random");
 CL_DEFUN T_sp cl__random(T_sp olimit, RandomState_sp random_state) {
   if (olimit.fixnump()) {
-    boost::random::uniform_int_distribution<> range(0, olimit.unsafe_fixnum() - 1);
+    boost::random::uniform_int_distribution<uint64_t> range(0, olimit.unsafe_fixnum() - 1);
     return make_fixnum(range(random_state->_Producer));
   } else if (gc::IsA<Bignum_sp>(olimit)) {
     IMPLEMENT_MEF(BF("Implement generating Bignum random numbers"));
