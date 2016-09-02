@@ -56,6 +56,7 @@ public:
 
 public:
   List_sp data() const { return this->_alist; };
+  T_sp seen() const { return this->_Seen; };
   RecordStage stage() const { return this->_stage; };
 
   void flagSeen(Cons_sp apair);

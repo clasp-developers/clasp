@@ -414,7 +414,7 @@ namespace core {
     virtual void decode(core::List_sp);
     virtual void initialize(core::List_sp alist);
     virtual bool fieldsp() const { return false; };
-    virtual void fields(Record_sp record) { SUBIMP(); };
+    virtual void fields(Record_sp record);
   /*! Return true if the two objects are the same object.
 	 * If they aren't the same object for numbers and values
 	 * the values are compared.

@@ -338,6 +338,18 @@ void General_O::initialize(core::List_sp alist) {
   record->errorIfInvalidArguments();
 }
 
+void General_O::fields(Record_sp record) {
+  if (record->stage() == Record_O::saving && record->data().nilp()) {
+    // Signal that the subclass should implement fields
+    // if nothing has been saved yet
+    SUBIMP();
+  } else if ( record->stage() == Record_O::loading && record->seen().nilp() ) {
+    // Signal that the subclass should implement fields
+    // if nothing has been seen
+    SUBIMP();
+  }
+}
+
 List_sp General_O::encode() {
   Record_sp record = Record_O::create_encoder();
   this->fields(record);
