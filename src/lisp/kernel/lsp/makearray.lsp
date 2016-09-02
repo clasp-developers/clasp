@@ -1,7 +1,8 @@
 (in-package "SYSTEM")
+
 (defun make-array (dimensions &key (element-type t)
-                                initial-element 
-                                initial-contents 
+                                (initial-element nil initial-element-supplied-p)
+                                (initial-contents nil initial-contents-supplied-p)
                                 adjustable 
                                 fill-pointer 
                                 displaced-to
@@ -29,20 +30,22 @@
                  (error "Cannot displace the array, because the element types don't match")))
            (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
     ((consp dimensions)
-     (when (and initial-element initial-contents)
+     (when (and initial-element-supplied-p initial-contents-supplied-p)
        (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
-
-     ;; FIXME: #282
-     (when initial-contents (error "You passed :INITIAL-CONTENTS to MAKE-ARRAY (fixme)"))
      (if displaced-to
          (if (let ((array-element-type (array-element-type displaced-to)))
                (and (subtypep array-element-type element-type)
                     (subtypep element-type array-element-type)))
              (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
              (error "Cannot displace the array, because the element types don't match"))
-         (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element adjustable)))
+         (let ((x (make-array-objects dimensions
+                                      (upgraded-array-element-type element-type)
+                                      initial-element
+                                      adjustable)))
+           (when initial-contents-supplied-p
+             (fill-array-with-seq x initial-contents))
+           x)))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
-
 
 (defun adjust-array (array dimensions &key element-type initial-element initial-contents fill-pointer displaced-to displaced-index-offset)
   (and fill-pointer (error "Add support for fill-pointers in arrays"))

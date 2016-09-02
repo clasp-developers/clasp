@@ -57,7 +57,7 @@ contiguous block."
                 (t
                  x))))
 
-#-clasp(defun fill-array-with-seq (array initial-contents)
+(defun fill-array-with-seq (array initial-contents)
   (declare (array array)
            (sequence initial-contents)
            (optimize (safety 0))
