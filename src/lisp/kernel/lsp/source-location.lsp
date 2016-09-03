@@ -74,6 +74,8 @@ Return the source-location for the name/kind pair"
 
 (defparameter *source-location-kinds* '(:class :method :function))
 
+(defparameter *source-location-kinds* '(:class :method :function))
+
 (defun source-location (obj kind)
   "* Arguments
 - obj : A symbol or object.
