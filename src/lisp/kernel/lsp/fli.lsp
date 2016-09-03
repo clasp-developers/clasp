@@ -52,86 +52,48 @@
 
 ;;; === M E M - R E F ===
 
-(defgeneric clasp-ffi::%mem-ref (ptr type &optional (offset 0)))
+(defmacro def-mem-ref-accessor (type-kw)
+  `(defmethod %mem-ref (ptr (type (eql ,type-kw)) &optional (offset 0))
+     (funcall (intern (string-upcase
+                        (concatenate 'string "%MEM-REF-" ,type-kw)))
+              (%offset-address-as-integer ptr offset))))
 
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :char)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-character (clasp-ffi::%offset-address-as-integer ptr offset)))
 
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :short)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-short (clasp-ffi::%offset-address-as-integer ptr offset)))
+(defgeneric %mem-ref (ptr type &optional (offset 0)))
 
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :unsigned-short)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-unsigned-short (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :int)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-int (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :unsigned-int)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-unsigned-int (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :int8)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-int8 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :uint8)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-uint8 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :int16)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-int16 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :uint16)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-uint16 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :int32)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-int16 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :uint32)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-uint16 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :int64)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-int64 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :uint64)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-uint64 (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :long)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-long (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :unsigned-long)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-unsigned-long (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :long-long)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-long-long (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :unsigned-long-long)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-unsigned-long-long (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :double)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-double-float (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :float)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-float (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :long-double)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-long-double (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :time)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-time (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :pointer)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-pointer (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :size)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-size (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :ssize)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-ssize (clasp-ffi::%offset-address-as-integer ptr offset)))
-
-(defmethod clasp-ffi::%mem-ref (ptr (type (eql :ptrdiff)) &optional (offset 0))
-  (clasp-ffi::%mem-ref-ptrdiff (clasp-ffi::%offset-address-as-integer ptr offset)))
+(defun generate-mem-ref-accessor-functions ()
+  (loop for type-spec in core::*foreign-type-spec-table*
+     do
+       (when type-spec
+         (def-mem-ref-accessor (%lisp-symbol type-spec)))))
 
 ;;; === M E M - S E T ===
 
-;; (defgeneric clasp-ffi::%mem-set (ptr type value &optional (offset 0)))
+#+memset
+(defmacro def-mem-set-accessor (type-kw)
+  `(defmethod %mem-ref (ptr (type (eql ,type-kw)) &optional (offset 0))
+     (funcall (intern (string-upcase
+                        (concatenate 'string "%MEM-REF-" ,type-kw)))
+              (%offset-address-as-integer ptr offset))))
+
+#+memset
+(defgeneric clasp-ffi::%mem-set (ptr type value &optional (offset 0)))
+
+(defun generate-mem-set-accessor-functions ()
+  (loop for type-spec in core::*foreign-type-spec-table*
+    do
+      (when type-spec
+        (def-mem-set-accessor (%lisp-symbol type-spec)))))
+
+;;;----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
+;;;
+;;; F L I   I N I T I A L I Z A T I O N
+
+(eval-when (:load-toplevel :execute :compile-toplevel)
+  (generate-mem-ref-accessor-functions)
+  (generate-mem-set-accessor-functions)
+  (values))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -139,4 +101,5 @@
 
 (export '(with-foreign-object
           with-foreign-objects
-          %mem-ref))
+          %mem-ref
+          %mem-set))
