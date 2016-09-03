@@ -244,6 +244,41 @@ namespace clasp_ffi {
   core::Integer_sp mk_ptrdiff( ptrdiff_t value );
   core::Character_sp mk_character( char value );
 
+  // FOREIGN MEMORY DIRECT ACCESS - MEM REF
+  template <typename T>
+    T mem_ref(cl_intptr_t address);
+
+  // MEM-REF
+  CL_DEFUN core::T_sp PERCENTmem_ref_short( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_int( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_int8( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_int16( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_int32( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_int64( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_long( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_double( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_float( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_time( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_size( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address );
+  CL_DEFUN core::T_sp PERCENTmem_ref_char( core::Integer_sp address );
+
+  // FOREIGN MEMORY DIRECT ACCESS - MEM SET
+  template <typename T>
+    T mem_set(cl_intptr_t address, T& value);
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
   // CLASS ForeignTypeSpec_O
@@ -272,8 +307,7 @@ namespace clasp_ffi {
                                       core::Str_sp      lisp_name,
                                       core::Integer_sp  size,
                                       core::Fixnum_sp   alignment,
-                                      core::Str_sp      cxx_name,
-                                      void             *mem_ref_fn );
+                                      core::Str_sp      cxx_name );
 
     // SLOT ACCESS
     CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; };
@@ -281,7 +315,6 @@ namespace clasp_ffi {
     CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; };
     CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; };
     CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; };
-    CL_DEFMETHOD ForeignData_sp       PERCENTmem_ref_fn();
 
     // SLOTS
     core::Symbol_sp   m_lisp_symbol;
@@ -289,7 +322,6 @@ namespace clasp_ffi {
     core::Integer_sp  m_size;
     core::Fixnum_sp   m_alignment;
     core::Str_sp      m_cxx_name;
-    void             *m_mem_ref_fn;
 
   }; // ForeignTypeSpec_O
 
