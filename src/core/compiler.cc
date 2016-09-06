@@ -1146,14 +1146,23 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 
   core::T_O* from_object_int(core::T_O* obj) {
     int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
-    printf("%s:%d from_object_int obj = %p   x = %d\n", __FILE__, __LINE__, obj, x);
     return reinterpret_cast<core::T_O*>(x);
   }
 
   core::T_O* to_object_int(core::T_O* obj) {
     int x = static_cast<int>(reinterpret_cast<intptr_t>(obj));
-    printf("%s:%d to_object_int obj = %p   x = %d\n", __FILE__, __LINE__, obj, x);
     return translate::to_object<int>::convert(x).raw_();
+  }
+
+  core::T_O* from_object_short_int(core::T_O* obj) {
+      short int x = translate::from_object<short int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+      return reinterpret_cast<core::T_O*>(static_cast<intptr_t>(x));
+  }
+
+
+  core::T_O* to_object_short_int(core::T_O* obj) {
+      short int x = static_cast<short int>(reinterpret_cast<intptr_t>(obj));
+      return translate::to_object<short int>::convert(x).raw_();
   }
 
   
@@ -1164,6 +1173,8 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   wrap_translator("CORE","FROM-OBJECT<INT>", &from_object_int);
   wrap_translator("CORE","TO-OBJECT<INT>", &to_object_int);
+  wrap_translator("CORE","FROM-OBJECT<SHORT-INT>", &from_object_short_int);
+  wrap_translator("CORE","TO-OBJECT<SHORT-INT>", &to_object_short_int);
 }
 
 }; /* namespace */
