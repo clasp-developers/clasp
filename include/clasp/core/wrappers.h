@@ -36,12 +36,27 @@ THE SOFTWARE.
 
 namespace core {
 
-template <typename FN>
-class VariadicFunctor : public BuiltinClosure_O {
-public:
-  typedef BuiltinClosure_O TemplatedBase;
-  virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
-};
+  class TranslationFunctor : public BuiltinClosure_O {
+  public:
+    typedef core::T_O* (*Type)(core::T_O* arg);
+    Type fptr;
+  public:
+  TranslationFunctor(T_sp name, Symbol_sp funcType, Type ptr, SOURCE_INFO) : BuiltinClosure_O(name,funcType,SOURCE_INFO_PASS), fptr(ptr) {};
+  public:
+    typedef BuiltinClosure_O TemplatedBase;
+    virtual size_t templatedSizeof() const { return sizeof(TranslationFunctor); };
+    inline LCC_RETURN LISP_CALLING_CONVENTION() {
+      return gctools::return_type((this->fptr)(lcc_fixed_arg0),1);
+    }
+  };
+
+
+  template <typename FN>
+    class VariadicFunctor : public BuiltinClosure_O {
+  public:
+    typedef BuiltinClosure_O TemplatedBase;
+    virtual size_t templatedSizeof() const { return sizeof(VariadicFunctor<FN>); };
+  };
 };
 
 
@@ -72,9 +87,15 @@ public:
 
 namespace core {
 
+  inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+  Symbol_sp symbol = lispify_intern(name, packageName);
+  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
+  BuiltinClosure_sp f = gctools::GC<TranslationFunctor>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
+}
+
 template <typename RT, typename... ARGS>
 void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  _G();
   Symbol_sp symbol = lispify_intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
@@ -83,7 +104,6 @@ void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), co
 
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  _G();
   Symbol_sp symbol = _lisp->intern(name, packageName);
   SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
