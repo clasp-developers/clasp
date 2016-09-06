@@ -1110,7 +1110,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
-        
+
 CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
@@ -1142,36 +1142,369 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  SYMBOL_SC_(CorePkg, dlopen);
  SYMBOL_SC_(CorePkg, dlsym);
  SYMBOL_SC_(CorePkg, dladdr);
-  SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
+ SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
-  core::T_O* from_object_int(core::T_O* obj) {
-    int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
-    printf("%s:%d from_object_int obj = %p   x = %d\n", __FILE__, __LINE__, obj, x);
-    return reinterpret_cast<core::T_O*>(x);
-  }
+// === CORE TRANSLATORS FROM OBJECT / TO OBJECT ===
 
-  core::T_O* to_object_int(core::T_O* obj) {
-    int x = static_cast<int>(reinterpret_cast<intptr_t>(obj));
-    printf("%s:%d to_object_int obj = %p   x = %d\n", __FILE__, __LINE__, obj, x);
-    return translate::to_object<int>::convert(x).raw_();
-  }
+template< typename T >
+inline core::T_O* from_object_raw(core::T_O* obj) {
+  T x = translate::from_object< T >(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  printf("%s:%d core::from_object<>(): obj = %p, x = %d\n", __FILE__, __LINE__, obj, x);
+  return reinterpret_cast<core::T_O*>(x);
+}
 
-  
-                             
+template< typename T >
+inline core::T_O* to_object_raw(core::T_O* obj) {
+  T x = static_cast< T >(reinterpret_cast<cl_intptr_t>(obj));
+  printf("%s:%d to_object<>(): obj = %p, x = %d\n", __FILE__, __LINE__, obj, x);
+  return translate::to_object< T >::convert(x).raw_();
+}
+
+#define DEF_CORE_TRANSLATOR(TYPE,NAME) \
+static const int source_line_from_object_##NAME = __LINE__; \
+core::T_O* from_object_##NAME(core::T_O* obj) \
+{ \
+  return from_object_raw< TYPE >( obj ); \
+} \
+\
+static const int source_line_to_object_##NAME = __LINE__; \
+core::T_O* to_object_##NAME(core::T_O* obj) \
+{ \
+  return to_object_raw< TYPE >( obj ); \
+}
+
+DEF_CORE_TRANSLATOR(short,short);
+DEF_CORE_TRANSLATOR(unsigned short,ushort);
+DEF_CORE_TRANSLATOR(int,int);
+DEF_CORE_TRANSLATOR(unsigned int,uint);
+DEF_CORE_TRANSLATOR(long,long);
+DEF_CORE_TRANSLATOR(unsigned long,ulong);
+DEF_CORE_TRANSLATOR(long long,longlong);
+DEF_CORE_TRANSLATOR(unsigned long long,ulonglong);
+DEF_CORE_TRANSLATOR(int8_t,int8);
+DEF_CORE_TRANSLATOR(uint8_t,uint8);
+DEF_CORE_TRANSLATOR(int16_t,int16);
+DEF_CORE_TRANSLATOR(uint16_t,uint16);
+DEF_CORE_TRANSLATOR(int32_t,int32);
+DEF_CORE_TRANSLATOR(uint32_t,uint32);
+DEF_CORE_TRANSLATOR(int64_t,int64);
+DEF_CORE_TRANSLATOR(uint64_t,uint64);
+DEF_CORE_TRANSLATOR(size_t,size);
+DEF_CORE_TRANSLATOR(ssize_t,ssize);
+DEF_CORE_TRANSLATOR(ptrdiff_t,ptrdiff);
+DEF_CORE_TRANSLATOR(time_t,time);
+DEF_CORE_TRANSLATOR(char,char);
+
+// === END OF CORE TRANSLATORS ===
+
 void initialize_compiler_primitives(Lisp_sp lisp) {
+
   //	SYMBOL_SC_(CorePkg,processDeclarations);
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
-  wrap_translator("CORE","FROM-OBJECT<INT>", &from_object_int);
-  wrap_translator("CORE","TO-OBJECT<INT>", &to_object_int);
+
+  // TRANSLATOR WRAPPERS
+
+  // -- SHORT --
+
+  wrap_translator( "CORE","FROM-OBJECT<SHORT>", &from_object_short,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_short );
+
+  wrap_translator( "CORE","TO-OBJECT<SHORT>", &to_object_short,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_short );
+
+  wrap_translator( "CORE","FROM-OBJECT<USHORT>", &from_object_ushort,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ushort );
+
+  wrap_translator( "CORE","TO-OBJECT<INT>", &to_object_ushort,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ushort );
+
+  // -- INT --
+
+  wrap_translator( "CORE","FROM-OBJECT<INT>", &from_object_int,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int );
+
+  wrap_translator( "CORE","TO-OBJECT<INT>", &to_object_int,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int );
+
+  wrap_translator( "CORE","FROM-OBJECT<UINT>", &from_object_uint,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint );
+
+  wrap_translator( "CORE","TO-OBJECT<UINT>", &to_object_uint,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint );
+
+  // -- LONG --
+
+  wrap_translator( "CORE","FROM-OBJECT<LONG>", &from_object_long,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_long );
+
+  wrap_translator( "CORE","TO-OBJECT<LONG>", &to_object_long,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_long );
+
+  wrap_translator( "CORE","FROM-OBJECT<ULONG>", &from_object_ulong,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ulong );
+
+  wrap_translator( "CORE","TO-OBJECT<ULONG>", &to_object_ulong,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ulong );
+
+  // -- INT8 --
+
+  wrap_translator( "CORE","FROM-OBJECT<INT8>", &from_object_int8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int8 );
+
+  wrap_translator( "CORE","TO-OBJECT<INT8>", &to_object_int8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int8 );
+
+  wrap_translator( "CORE","FROM-OBJECT<UINT8>", &from_object_uint8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint8 );
+
+  wrap_translator( "CORE","TO-OBJECT<UINT8>", &to_object_uint8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint8 );
+
+  // -- INT16 --
+
+  wrap_translator( "CORE","FROM-OBJECT<INT16>", &from_object_int16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int16 );
+
+  wrap_translator( "CORE","TO-OBJECT<INT16>", &to_object_int16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int16 );
+
+  wrap_translator( "CORE","FROM-OBJECT<UINT16>", &from_object_uint16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint16 );
+
+  wrap_translator( "CORE","TO-OBJECT<UINT16>", &to_object_uint16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint16 );
+
+  // -- INT32 --
+
+  wrap_translator( "CORE","FROM-OBJECT<INT32>", &from_object_int32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int32 );
+
+  wrap_translator( "CORE","TO-OBJECT<INT32>", &to_object_int32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int32 );
+
+  wrap_translator( "CORE","FROM-OBJECT<UINT32>", &from_object_uint32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint32 );
+
+  wrap_translator( "CORE","TO-OBJECT<UINT32>", &to_object_uint32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint32 );
+
+  // -- INT64 --
+
+  wrap_translator( "CORE","FROM-OBJECT<INT64>", &from_object_int64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int64 );
+
+  wrap_translator( "CORE","TO-OBJECT<INT64>", &to_object_int64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int64 );
+
+  wrap_translator( "CORE","FROM-OBJECT<UINT64>", &from_object_uint64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint64 );
+
+  wrap_translator( "CORE","TO-OBJECT<UINT64>", &to_object_uint64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint64 );
+
+  // -- PTRDIFF --
+
+  wrap_translator( "CORE","FROM-OBJECT<PTRDIFF>", &from_object_ptrdiff,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ptrdiff );
+
+  wrap_translator( "CORE","TO-OBJECT<PTRDIFF>", &to_object_ptrdiff,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ptrdiff );
+
+  // -- TIME --
+
+  wrap_translator( "CORE","FROM-OBJECT<TIME>", &from_object_time,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_time );
+
+  wrap_translator( "CORE","TO-OBJECT<TIME>", &to_object_time,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_time );
+
+  // -- SIZE --
+
+  wrap_translator( "CORE","FROM-OBJECT<SIZE>", &from_object_size,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_size );
+
+  wrap_translator( "CORE","TO-OBJECT<SIZE>", &to_object_size,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_size );
+
+  // -- SSIZE --
+
+  wrap_translator( "CORE","FROM-OBJECT<SSIZE>", &from_object_ssize,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ssize );
+
+  wrap_translator( "CORE","TO-OBJECT<SSIZE>", &to_object_ssize,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ssize );
+
+  // -- CHAR --
+
+  wrap_translator( "CORE","FROM-OBJECT<CHAR>", &from_object_char,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_size );
+
+  wrap_translator( "CORE","TO-OBJECT<CHAR>", &to_object_char,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_char );
+
+  // END OF TRANSLATOR WRAPPERS
+
 }
 
 }; /* namespace */
 
+// === T E S T I N G ===
 
 extern "C" {
 int mul2(int x) {
   return 2*x;
 }
 };
-        
