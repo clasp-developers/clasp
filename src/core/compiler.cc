@@ -1110,7 +1110,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
-        }
+        
 CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
