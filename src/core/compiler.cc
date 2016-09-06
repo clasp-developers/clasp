@@ -1154,6 +1154,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
     return translate::to_object<int>::convert(x).raw_();
   }
 
+#if 0
   core::T_O* from_object_short_int(core::T_O* obj) {
       short int x = translate::from_object<short int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
       return reinterpret_cast<core::T_O*>(static_cast<intptr_t>(x));
@@ -1164,7 +1165,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
       short int x = static_cast<short int>(reinterpret_cast<intptr_t>(obj));
       return translate::to_object<short int>::convert(x).raw_();
   }
-
+#endif
   
                              
 void initialize_compiler_primitives(Lisp_sp lisp) {
@@ -1173,8 +1174,8 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
   wrap_translator("CORE","FROM-OBJECT<INT>", &from_object_int);
   wrap_translator("CORE","TO-OBJECT<INT>", &to_object_int);
-  wrap_translator("CORE","FROM-OBJECT<SHORT-INT>", &from_object_short_int);
-  wrap_translator("CORE","TO-OBJECT<SHORT-INT>", &to_object_short_int);
+//  wrap_translator("CORE","FROM-OBJECT<SHORT-INT>", &from_object_short_int);
+//  wrap_translator("CORE","TO-OBJECT<SHORT-INT>", &to_object_short_int);
 }
 
 }; /* namespace */
