@@ -660,147 +660,6 @@ __attribute__((noinline)) int callByConstRef(const core::T_sp &v1, const core::T
 
 namespace core {
 
-
-
-#if 0
-CL_LAMBDA(stage fn &rest args);
-CL_DECLARE();
-CL_DOCSTRING("globalFuncallCyclesPerSecond");
-CL_DEFUN     T_sp core__global_funcall_cycles_per_second(int stage, Symbol_sp fn, List_sp args )
-    {
-        LightTimer timer;
-        int nargs = cl__length(args);
-        T_sp v1, v2, v3;
-        T_O* rawArgs[64];
-        int nargs = af_length(args);
-        Cons_sp cur = args;
-        for ( int i=0; i<nargs; ++i ) {
-            rawArgs[i] = oCar(cur).raw_();
-            cur=cCdr(cur);
-        }
-        ALLOC_STACK_VALUE_FRAME(frameImpl,frame,nargs);
-        for ( int pow=0; pow<16; ++pow ) {
-            int times = 1 << pow*2;  // the number of times to run the inner loop
-            timer.reset();
-            timer.start();   // Wrap a timer around the repeated inner loop
-            T_sp cur = args;
-            // Fill frame here
-            for ( int i(0); i<times; ++i ) {
-                // Compare to call by value
-                callByValue(v1,v2,v3,v4);
-                if ( stage>=1 ) {
-                    closure = va_symbolFunction(&fn);
-                    if ( stage>=2 ) {
-                        switch (nargs) {
-                        case 0:
-                            mv_FUNCALL(&result_mv,closure,NULL,NULL,NULL);
-                            break;
-                        case 1:
-                            mv_FUNCALL(&result_mv,closure,rawArg[0],NULL,NULL);
-                            break;
-                        case 2:
-                            mv_FUNCALL(&result_mv,closure,rawArg[0],rawArg[1],NULL);
-                            break;
-                        case 3:
-                            mv_FUNCALL(&result_mv,closure,rawArg[0],rawArg[1],rawArg[2]);
-                            break;
-
-                        mv_FUNCALL(&result_mv,closure,
-                        int nargs = cl__length(args);
-                        if ( stage>=3 ) { // This is expensive
-                            ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs,_Nil<ActivationFrame_O>()));
-                            if ( stage>=4 ) {
-                                Cons_sp cur = args;
-                                for ( int i=nargs; i<nargs; ++i ) {
-                                    frame->operator[](i) = oCar(cur);
-                                    cur=cCdr(cur);
-                                }
-                                if ( stage >= 5) {
-                                    Closure* closureP = func->closure;
-                                    ASSERTF(closureP,BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-                                    eval::applyClosureToActivationFrame(closureP,frame);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            timer.stop();
-            if ( timer.getAccumulatedTime() > 0.1 ) {
-                return DoubleFloat_O::create(((double)times)/timer.getAccumulatedTime());
-            }
-        }
-        printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
-        return _Nil<T_O>();
-    }
-#endif
-
-#if 0
-CL_LAMBDA(stage fn args);
-CL_DECLARE();
-CL_DOCSTRING("partialApplysPerSecond");
-CL_DEFUN T_sp core__partial_applys_per_second(int stage, T_sp fn, List_sp args) {
-  LightTimer timer;
-  int nargs = cl__length(args);
-  T_sp v1, v2, v3, v4;
-  ALLOC_STACK_VALUE_FRAME(frameImpl, frame, nargs);
-  for (int pow = 0; pow < 16; ++pow) {
-    int times = 1 << pow * 2; // the number of times to run the inner loop
-    timer.reset();
-    timer.start(); // Wrap a timer around the repeated inner loop
-    // Fill frame here
-    for (int i(0); i < times; ++i) {
-      // Compare to call by value
-      callByValue(v1, v2, v3, v4);
-      if (stage >= 1) {
-#if 0
-                    Function_O* func = reinterpret_cast<NamedFunction_O*>(fn.px_ref());
-#else
-
-        Function_sp func;
-        func = eval::lookupFunction(fn, _Nil<T_O>());
-#endif
-        if (stage >= 2) {
-#if 0 // This is the fastest alternative I can think of relative to cl__length()
-                        int nargs;
-                        if ( args.nilp() ) {
-                            nargs = 0;
-                        } else {
-                            nargs = args->fastUnsafeLength();
-                        }
-#else
-          int nargs = cl__length(args);
-#endif
-          if (stage >= 3) { // This is expensive
-#if 1 // heap based frame
-            ValueFrame_sp frame(ValueFrame_O::create_fill_numExtraArgs(nargs, _Nil<ActivationFrame_O>()));
-            if (stage >= 4) {
-              List_sp cur = args;
-              for (int i = 0; i < nargs; ++i) {
-                frame->operator[](i) = oCar(cur);
-                cur = oCdr(cur);
-              }
-#endif
-              if (stage >= 5) {
-                Closure_sp closureP = func->closure;
-                ASSERTF(closureP, BF("In applyToActivationFrame the closure for %s is NULL") % _rep_(fn));
-                eval::applyClosureToActivationFrame(closureP, frame);
-              }
-            }
-          }
-        }
-      }
-    }
-    timer.stop();
-    if (timer.getAccumulatedTime() > 0.1) {
-      return DoubleFloat_O::create(((double)times) / timer.getAccumulatedTime());
-    }
-  }
-  printf("%s:%d The function %s is too fast\n", __FILE__, __LINE__, _rep_(fn).c_str());
-  return _Nil<T_O>();
-}
-#endif
-
 T_sp allocFixnum() {
   Fixnum_sp fn = make_fixnum(3);
   return fn;
@@ -1251,7 +1110,7 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
   result.saveToMultipleValue0();
   throw CatchThrow(frame);
 }
-
+        
 CL_LAMBDA(symbols values func);
 CL_DECLARE();
 CL_DOCSTRING("progvFunction");
@@ -1285,10 +1144,34 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
  SYMBOL_SC_(CorePkg, dladdr);
   SYMBOL_EXPORT_SC_(CorePkg, callWithVariableBound);
 
+  core::T_O* from_object_int(core::T_O* obj) {
+    int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+    printf("%s:%d from_object_int obj = %p   x = %d\n", __FILE__, __LINE__, obj, x);
+    return reinterpret_cast<core::T_O*>(x);
+  }
+
+  core::T_O* to_object_int(core::T_O* obj) {
+    int x = static_cast<int>(reinterpret_cast<intptr_t>(obj));
+    printf("%s:%d to_object_int obj = %p   x = %d\n", __FILE__, __LINE__, obj, x);
+    return translate::to_object<int>::convert(x).raw_();
+  }
+
+  
+                             
 void initialize_compiler_primitives(Lisp_sp lisp) {
   //	SYMBOL_SC_(CorePkg,processDeclarations);
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
+  wrap_translator("CORE","FROM-OBJECT<INT>", &from_object_int);
+  wrap_translator("CORE","TO-OBJECT<INT>", &to_object_int);
 }
 
 }; /* namespace */
+
+
+extern "C" {
+int mul2(int x) {
+  return 2*x;
+}
+};
+        

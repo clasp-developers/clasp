@@ -143,7 +143,7 @@ endef
 
 all:
 	make configure
-	make build_cboehmdc
+	make build_cboehm
 
 configure:
 	make submodules
