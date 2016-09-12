@@ -376,7 +376,7 @@ not_binary_read_byte(T_sp strm) {
 static claspCharacter
 not_input_read_char(T_sp strm) {
   not_an_input_stream(strm);
-  return -1;
+  return EOF;
 }
 
 static claspCharacter
@@ -570,7 +570,8 @@ generic_write_byte_le(T_sp c, T_sp strm) {
   bs = StreamByteSize(strm);
   do {
     T_sp b = cl__logand(Cons_O::createList(c, make_fixnum(0xFF)));
-    unsigned char aux = (unsigned char)(unbox_fixnum(gc::As<Fixnum_sp>(b)));
+    ASSERT(b.fixnump());
+    unsigned char aux = (unsigned char)(unbox_fixnum(b));
     if (write_byte8(strm, &aux, 1) < 1)
       break;
     c = clasp_ash(c, -8);
@@ -730,9 +731,8 @@ generic_read_vector(T_sp strm, T_sp data, cl_index start, cl_index end) {
   if (expected_type == cl::_sym_base_char || expected_type == cl::_sym_character) {
     claspCharacter (*read_char)(T_sp) = ops.read_char;
     for (; start < end; start++) {
-      gctools::Fixnum c = read_char(strm);
-      if (c == EOF)
-        break;
+      claspCharacter c = read_char(strm);
+      if (c == EOF) break;
       vec->setf_elt(start, clasp_make_character(c)); //clasp_charCode(c));
     }
   } else {
@@ -4827,7 +4827,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_start, s,
                              Integer_O::makeIntegerType(0, limit - 1));
   }
-  if (e == _Nil<T_O>()) {
+  if (e.nilp()) {
     end = limit;
   } else if (!e.fixnump()) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e,
@@ -4839,7 +4839,6 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
     ERROR_WRONG_TYPE_KEY_ARG(cl::_sym_read_sequence, kw::_sym_end, e,
                              Integer_O::makeIntegerType(0, limit));
   }
-
   if (start < end) {
     const FileOps &ops = stream_dispatch_table(stream);
     if (cl__listp(seq)) {
@@ -4860,7 +4859,7 @@ T_sp si_do_read_sequence(T_sp seq, T_sp stream, T_sp s, T_sp e) {
             c = clasp_make_character(i);
           } else {
             c = ops.read_byte(stream);
-            if (c == _Nil<T_O>()) {
+            if (c.nilp()) {
               return make_fixnum(start);
             }
           }
@@ -4943,7 +4942,7 @@ CL_DEFUN T_sp cl__interactive_stream_p(T_sp strm) {
   return (stream_dispatch_table(strm).interactive_p(strm) ? _lisp->_true() : _Nil<T_O>());
 }
 
-T_sp cl__open_stream_p(T_sp strm) {
+CL_DEFUN T_sp cl__open_stream_p(T_sp strm) {
   /* ANSI and Cltl2 specify that open-stream-p should work
 	   on closed streams, and that a stream is only closed
 	   when #'close has been applied on it */
