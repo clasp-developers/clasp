@@ -45,7 +45,7 @@
         (do-one-source-database closure))
       (unwind-protect
            (funcall closure)
-        (source-manager-empty core:*source-database*))))
+        (core:source-manager-empty core:*source-database*))))
 (defmacro with-one-source-database (&rest body)
   `(do-one-source-database #'(lambda () ,@body)))
 
