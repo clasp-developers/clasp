@@ -586,6 +586,7 @@ def build(bld):
     bld.clasp_aclasp = []
     bld.clasp_bclasp = []
     bld.clasp_cclasp = []
+    bld.clasp_cclasp_no_wrappers = []
     bld.recurse('src')
     bld.extensions_include_dirs = []
     bld.extensions_include_files = []
@@ -682,7 +683,7 @@ def build(bld):
         print("!------------------------------------------------------------")
         # Build cclasp
         recmp_cclasp = recompile_cclasp(env=bld.env)
-        recmp_cclasp.set_inputs(fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp))
+        recmp_cclasp.set_inputs(fix_lisp_paths(bld.path,out,variant,bld.clasp_cclasp_no_wrappers))
         cclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='c'))
         recmp_cclasp.set_outputs([cclasp_common_lisp_bitcode])
         bld.add_to_group(recmp_cclasp)
@@ -871,7 +872,7 @@ class recompile_cclasp(Task.Task):
                "-R", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                "-e", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                "-e", "(quit)",
-               "--" ] + self.bld.clasp_cclasp
+               "--" ] + self.bld.clasp_cclasp_no_wrappers
         print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -1003,6 +1004,7 @@ def scrape_task_generator(self):
             for node in task.outputs:
                 all_o_files.append(node)
     generated_headers = [ 'generated/c-wrappers.h',
+                          'generated/cl-wrappers.lisp',
                           'generated/enum_inc.h',
                           'generated/initClassesAndMethods_inc.h',
                           'generated/initFunctions_inc.h',
