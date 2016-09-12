@@ -141,7 +141,7 @@ Split a string like \"const string &b\" into (values \"const string &\" \"b\") p
 Trim whitespace from each member of the pair."
   (declare (optimize (speed 3)))
   (let* ((name-start (position-if #'(lambda (c)
-                                      (not (alphanumericp c)))
+                                      (not (or (alphanumericp c) (char= c #\_))))
                                   type-name
                                   :from-end t))
          (first (subseq type-name 0 (1+ name-start)))
