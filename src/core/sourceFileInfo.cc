@@ -253,6 +253,16 @@ CL_DEFUN void core__walk_to_assign_source_pos_info(T_sp obj, SourcePosInfo_sp to
   }
 }
 
+CL_DOCSTRING("Lookup the form in the source manager and return its source position or NIL if not known");
+CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
+  if (source_manager.notnilp() && form.consp()) {
+    SourceManager_sp sm = gctools::As<SourceManager_sp>(source_manager);
+    return sm->lookupSourcePosInfo(form);
+  }
+  return _Nil<T_O>();
+}
+
+    
 CL_LAMBDA(arg &optional default-spi);
 CL_DECLARE();
 CL_DOCSTRING("Walk down the tree and find the first source info you can");

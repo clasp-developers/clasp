@@ -43,7 +43,9 @@
       (let ((*active-compilation-source-database* t)
             (core:*source-database* (core:make-source-manager)))
         (do-one-source-database closure))
-      (funcall closure)))
+      (unwind-protect
+           (funcall closure)
+        (source-manager-empty core:*source-database*))))
 (defmacro with-one-source-database (&rest body)
   `(do-one-source-database #'(lambda () ,@body)))
 

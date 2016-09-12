@@ -191,8 +191,13 @@ public: // Functions here
 
   T_sp lookupSourcePosInfo(T_sp obj);
 
+  CL_DEFMETHOD void core__source_mananger_empty() {
+    this->_SourcePosInfo->clrhash();
+  }
 }; // SourceManager class
 
+ T_sp core__source_manager_lookup(T_sp source_manager, T_sp form);
+ 
 T_mv core__walk_to_find_source_info(T_sp obj);
 T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);

@@ -155,6 +155,7 @@ const char *CorePkg_nicknames[] = {
 };
 
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
@@ -1080,6 +1081,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);

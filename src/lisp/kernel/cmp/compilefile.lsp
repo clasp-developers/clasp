@@ -207,13 +207,9 @@
       (t1progn body (augment-environment-with-declares macro-env declares)))))
 
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defvar *top-level-form-stack* nil
-    "Keep track of a stack of top-level forms for source tracking"))
-
 (defun t1expr (form &optional env)
   (cmp-log "t1expr-> %s\n" form)
-  (push form *top-level-form-stack*)
+  (push form core:*top-level-form-stack*)
   (unwind-protect
        (let ((head (if (atom form) form (car form))))
          (cond
@@ -237,7 +233,7 @@
             (let ((expanded (macroexpand form env)))
               (t1expr expanded env)))
            (t (compile-top-level form))))
-    (pop *top-level-form-stack*)))
+    (pop core:*top-level-form-stack*)))
 
 (defun compile-file-t1expr (form compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that

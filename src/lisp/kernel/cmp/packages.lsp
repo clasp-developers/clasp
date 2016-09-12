@@ -1,7 +1,6 @@
 (in-package :cmp)
 
 (export '(
-          *top-level-form-stack*
           *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
           *cleavir-compile-hook*

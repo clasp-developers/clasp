@@ -6,10 +6,10 @@
 
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)
-  (push form cmp:*top-level-form-stack)
+  (push form core:*top-level-form-stack*)
   (unwind-protect
        (call-next-method)
-    (pop cmp:*top-level-form-stack)))
+    (pop core:*top-level-form-stack*)))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment clasp)
   ;; convert fixnum into immediate but bignums return nil
