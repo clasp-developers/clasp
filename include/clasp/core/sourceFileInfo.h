@@ -99,13 +99,14 @@ public:                                                                         
 
 public:
   static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol) {
-#if 0
-            if ( filepos==UNDEF_UINT ) {
-                printf("%s:%d Caught filepos=UNDEF_UINT\n", __FILE__, __LINE__ );
-            }
-#endif
     GC_ALLOCATE_VARIADIC(SourcePosInfo_O, me, spf, filepos, spln, spcol); // ,filepos,fn);
     return me;
+  }
+  CL_LISPIFY_NAME(make_source_pos_info);
+  CL_DEF_CLASS_METHOD static SourcePosInfo_sp make(const string& filename, size_t filepos, size_t lineno, size_t column) {
+    SourceFileInfo_mv sfi = _lisp->getOrRegisterSourceFileInfo(filename);
+    uint sfi_handle = sfi->fileHandle();
+    return SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
   }
   string __repr__() const;
   int fileHandle() const { return this->_FileId; };
@@ -191,7 +192,7 @@ public: // Functions here
 
   T_sp lookupSourcePosInfo(T_sp obj);
 
-  CL_DEFMETHOD void core__source_mananger_empty() {
+  CL_DEFMETHOD void core__source_manager_empty() {
     this->_SourcePosInfo->clrhash();
   }
 }; // SourceManager class

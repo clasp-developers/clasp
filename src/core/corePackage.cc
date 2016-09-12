@@ -155,6 +155,7 @@ const char *CorePkg_nicknames[] = {
 };
 
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);

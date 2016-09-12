@@ -257,7 +257,14 @@ CL_DOCSTRING("Lookup the form in the source manager and return its source positi
 CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
   if (source_manager.notnilp() && form.consp()) {
     SourceManager_sp sm = gctools::As<SourceManager_sp>(source_manager);
-    return sm->lookupSourcePosInfo(form);
+    SourcePosInfo_sp spi = sm->lookupSourcePosInfo(form);
+    string name = _lisp->_Roots._SourceFiles[spi->_FileId]->namestring();
+    List_sp result = Cons_O::createList(_sym_make_source_pos_info,
+                                        Str_O::create(name),  // Is this relative for clasp source????
+                                        clasp_make_fixnum(spi->_Filepos),
+                                        clasp_make_fixnum(spi->_Lineno),
+                                        clasp_make_fixnum(spi->_Column));
+    return result;
   }
   return _Nil<T_O>();
 }
