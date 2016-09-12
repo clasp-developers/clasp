@@ -461,17 +461,13 @@ string General_O::descriptionOfContents() const {
 };
 
 string General_O::description() const {
-  _OF();
   stringstream ss;
   if (this == _lisp->_true().get()) {
     ss << "t";
   } else {
     General_O *me_gc_safe = const_cast<General_O *>(this);
     ss << "#<" << me_gc_safe->_instanceClass()->classNameAsString() << " ";
-
-//    ss << "@" << std::hex << this << std::dec;
-    ss << ")";
-    ss << this->descriptionOfContents() << " > ";
+    ss << this->descriptionOfContents() << ">";
   }
   return ss.str();
 };

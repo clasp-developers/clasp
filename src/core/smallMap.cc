@@ -50,6 +50,39 @@ CL_DEFUN SmallMap_sp core__make_small_map() {
   return sm;
 };
 
+void SmallMap_O::fields(Record_sp node) {
+  // this->Base::fields(node);
+  switch (node->stage()) {
+  case Record_O::initializing:
+  case Record_O::loading: {
+    Vector_sp keyValueVec;
+    node->field(INTERN_(core, data), keyValueVec);
+    this->map.clear();
+    for (size_t i(0), iEnd(this->size()); i < iEnd; ++++i) {
+      T_sp key = (*keyValueVec)[i + 0];
+      T_sp val = (*keyValueVec)[i + 1];
+      this->setf(key, val);
+    };
+  } break;
+  case Record_O::saving: {
+    Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->size());
+    size_t idx = 0;
+    for ( auto it : this->map ) {
+      T_sp key = it.first;
+      T_sp val = it.second;
+      (*keyValueVec)[idx++] = key;
+      (*keyValueVec)[idx++] = val;
+    }
+    node->field(INTERN_(core, data), keyValueVec);
+  } break;
+  case Record_O::patching: {
+    IMPLEMENT_MEF(BF("Add support to patch SmallMap"));
+  } break;
+  }
+}
+
+
+
 CL_LISPIFY_NAME("map_find");
 CL_DEFMETHOD T_sp SmallMap_O::find(T_sp key, T_sp defval) {
   map_type::iterator it = this->map.find(key);
