@@ -229,13 +229,10 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_list_allow_consing_dot");
 CL_DEFUN T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch) {
-#ifdef SOURCE_TRACKING
+  // I'm turning on SOURCE_TRACKING for reading conses
   SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
-#endif
   List_sp list = read_list(sin, ')', true);
-#ifdef SOURCE_TRACKING
   lisp_registerSourcePosInfo(list, info);
-#endif
   return list;
 };
 
