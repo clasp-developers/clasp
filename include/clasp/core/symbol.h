@@ -229,6 +229,7 @@ public: // ctor/dtor for classes with shared virtual base
     return this->symbolNameAsString() < other.symbolNameAsString();
   }
 
+  void remove_package(Package_sp pkg);
 public:
   explicit Symbol_O();
   virtual ~Symbol_O(){};

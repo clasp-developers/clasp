@@ -933,6 +933,16 @@ T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
   return getPackage;
 }
 
+
+void Lisp_O::remove_package(const string& name ) {
+  //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
+  map<string, int>::const_iterator fi = this->_PackageNameIndexMap.find(name);
+  if (fi == this->_PackageNameIndexMap.end()) {
+    PACKAGE_ERROR(Str_O::create(name));
+  }
+  this->_PackageNameIndexMap.erase(name);
+}
+
 T_sp Lisp_O::sourceDatabase() const {
   _OF();
   // At startup the *package* symbol may not yet

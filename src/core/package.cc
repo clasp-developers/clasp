@@ -165,17 +165,15 @@ CL_DEFUN T_sp cl__unuse_package(T_sp packages_to_unuse_desig, T_sp package_desig
   return _lisp->_true();
 }
 
-CL_LAMBDA(packages-to-unuse-desig &optional (package-desig *package*));
-CL_DECLARE();
-CL_DOCSTRING("SeeCLHS unuse-package");
-CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
-  T_sp hash, l;
-  cl_index i;
+
+CL_LAMBDA(pkg);
+CL_DOCSTRING("SeeCLHS delete-package");
+CL_DEFUN T_sp cl__delete_package(T_sp pobj)
+{
   Package_sp pkg = coerce::packageDesignator(pobj);
   if (pkg == _lisp->commonLispPackage() || pkg == _lisp->keywordPackage()) {
     FEpackage_error("Cannot delete the package ~S", pkg, 0);
   }
-
   /* 2) Now remove the package from the other packages that use it
 	 *    and empty the package.
 	 */
@@ -191,29 +189,21 @@ CL_DEFUN T_sp cl__delete_package(T_sp pobj) {
       cl__unuse_package(pkg, pi);
   }
 
-  IMPLEMENT_MEF(BF("Finish implementing delete-package"));
-#if 0
-
-  ECL_WITH_GLOBAL_ENV_WRLOCK_BEGIN(ecl_process_env()) {
-    for (hash = p->pack.internal, i = 0; i < hash->hash.size; i++)
-      if (hash->hash.data[i].key != OBJNULL) {
-        T_sp s = hash->hash.data[i].value;
-        symbol_remove_package(s, p);
-      }
-    cl__clrhash(p->pack.internal);
-    for (hash = p->pack.external, i = 0; i < hash->hash.size; i++)
-      if (hash->hash.data[i].key != OBJNULL) {
-        T_sp s = hash->hash.data[i].value;
-        symbol_remove_package(s, p);
-      }
-    cl__clrhash(p->pack.external);
-    p->pack.shadowings = ECL_NIL;
-    p->pack.name = ECL_NIL;
-                /* 2) Only at the end, remove the package from the list of packages. */
-    cl_core.packages = ecl_remove_eq(p, cl_core.packages);
-  } ECL_WITH_GLOBAL_ENV_WRLOCK_END;
-  @(return ECL_T);
-#endif
+  pkg->_InternalSymbols->mapHash([pkg](T_sp key, T_sp tsym) {
+      Symbol_sp sym = gc::As<Symbol_sp>(tsym);
+      sym->remove_package(pkg);
+    } );
+  pkg->_InternalSymbols->clrhash();
+  pkg->_ExternalSymbols->mapHash([pkg](T_sp key, T_sp tsym) {
+      Symbol_sp sym = gc::As<Symbol_sp>(tsym);
+      sym->remove_package(pkg);
+    } );
+  pkg->_ExternalSymbols->clrhash();
+  pkg->_Shadowing->clrhash();
+  string package_name = pkg->packageName();
+  pkg->_Name = "";
+  _lisp->remove_package(package_name);
+  return _lisp->_true();
 }
 
 CL_LAMBDA(package-desig);
@@ -617,6 +607,9 @@ void Package_O::_export2(Symbol_sp sym) {
   }
 }
 
+
+
+
 bool Package_O::shadow(Str_sp symbolName) {
   Symbol_sp shadowSym, status;
   Symbol_mv values = this->_findSymbol(symbolName);
@@ -639,6 +632,27 @@ bool Package_O::shadow(List_sp symbolNames) {
     this->shadow(name);
   }
   return true;
+}
+
+CL_LAMBDA("sym &optional (package *package*)");
+CL_DEFUN T_sp cl__unexport(Symbol_sp sym, Package_sp package) {
+  Str_sp nameKey = sym->_Name;
+  T_mv values = package->_findSymbol(nameKey);
+  Symbol_sp foundSym = gc::As<Symbol_sp>(values);
+  Symbol_sp status = gc::As<Symbol_sp>(values.second());
+  Export_errors error = no_problem;
+  if (status.nilp()) {
+    error = not_accessible_in_this_package;
+  } else if (status == kw::_sym_external) {
+    package->_ExternalSymbols->remhash(nameKey);
+    package->_InternalSymbols->setf_gethash(nameKey,sym);
+  }
+  if (error == not_accessible_in_this_package) {
+    FEpackage_error("The symbol ~S is not accessible from ~S "
+                    "and cannot be unexported.",
+                    package, 2, sym.raw_(), package.raw_());
+  }
+  return _lisp->_true();
 }
 
 void trapSymbol(Package_O *pkg, Symbol_sp sym, const string &name) {

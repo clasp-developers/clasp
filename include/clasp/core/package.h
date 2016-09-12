@@ -43,7 +43,8 @@ namespace core {
 SMART(Package);
 class Package_O : public General_O {
   LISP_CLASS(core, ClPkg, Package_O, "Package",General_O);
-
+  friend void cl__unexport(Symbol_sp sym, Package_sp package);
+  friend T_sp cl__delete_package(T_sp pobj);
 public: // virtual functions inherited from Object
   void initialize();
 #if defined(XML_ARCHIVE)
