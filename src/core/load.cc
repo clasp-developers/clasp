@@ -89,11 +89,9 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
       DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
     //    printf("%s:%d  Pushing stream source pos for strm@%p   tagged-ptr: %p\n", __FILE__, __LINE__, &strm, strm.raw_());
-    innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core__input_stream_source_pos_info(strm));
     T_sp x = cl__read(strm, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
     if (x.unboundp())
       break;
-    _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core__walk_to_find_source_pos_info(x, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
     if (echoReplRead) {
       _lisp->print(BF("Read: %s\n") % _rep_(x));
     }

@@ -1807,7 +1807,7 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
 }
 #endif
 
-void clasp_terminate(const char *file, int line, int column, const char *func) {
+void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
   printf("Terminating file: %s  func: %s\n", file, func);
   abort();
 }

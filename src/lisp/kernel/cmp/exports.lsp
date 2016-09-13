@@ -151,9 +151,6 @@ irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
 *gv-source-file-info-handle*
-irc-i64-*current-source-pos-info*-filepos
-irc-i32-*current-source-pos-info*-lineno
-irc-i32-*current-source-pos-info*-column
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
 *cleavir-compile-file-hook*
@@ -394,9 +391,6 @@ irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
 *gv-source-file-info-handle*
-irc-i64-*current-source-pos-info*-filepos
-irc-i32-*current-source-pos-info*-lineno
-irc-i32-*current-source-pos-info*-column
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
 *dump-module-on-completion*

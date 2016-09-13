@@ -257,15 +257,15 @@ CL_DOCSTRING("Lookup the form in the source manager and return its source positi
 CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
   if (source_manager.notnilp() && form.consp()) {
     SourceManager_sp sm = gctools::As<SourceManager_sp>(source_manager);
-    SourcePosInfo_sp spi = sm->lookupSourcePosInfo(form);
-    string name = _lisp->_Roots._SourceFiles[spi->_FileId]->namestring();
-    List_sp result = Cons_O::createList(_sym_make_source_pos_info,
-                                        Str_O::create(name),  // Is this relative for clasp source????
-                                        clasp_make_fixnum(spi->_Filepos),
-                                        clasp_make_fixnum(spi->_Lineno),
-                                        clasp_make_fixnum(spi->_Column));
-    return result;
+    T_sp tspi = sm->lookupSourcePosInfo(form);
+    if (SourcePosInfo_sp spi = tspi.asOrNull<SourcePosInfo_O>() ) {
+      // The file_id won't be used
+      return spi;
+    }
+    return _Nil<T_O>();
   }
+  printf("%s:%d  source_manager.nilp() --> %d\n", __FILE__, __LINE__, source_manager.nilp());
+  printf("%s:%d  form --> %s\n", __FILE__,__LINE__, _rep_(form).c_str());
   return _Nil<T_O>();
 }
 
@@ -393,6 +393,12 @@ const char *SourceFileInfo_O::permanentFileName() {
 
 
 
+SourcePosInfo_sp SourcePosInfo_O::make(const string& filename, size_t filepos, size_t lineno, size_t column)
+{
+  SourceFileInfo_mv sfi = _lisp->getOrRegisterSourceFileInfo(filename);
+  uint sfi_handle = sfi->fileHandle();
+  return SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
+}
 
 
 string SourcePosInfo_O::__repr__() const {
@@ -426,16 +432,21 @@ CL_DEFUN void core__dump_source_manager(T_sp dumpAll) {
 
 
 
+CL_DEFUN void core__source_manager_empty(T_sp obj)
+{
+  if (SourceManager_sp sm = obj.asOrNull<SourceManager_O>() ) {
+    sm->empty();
+  }
+}
+
+
+
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("makeSourceManager");
 CL_DEFUN T_sp core__make_source_manager() {
-#ifdef USE_SOURCE_DATABASE
   SourceManager_sp sm = SourceManager_O::create();
   return sm;
-#else
-  return _Nil<T_O>();
-#endif
 };
 
   SYMBOL_EXPORT_SC_(CorePkg, lookupSourceFileInfo);

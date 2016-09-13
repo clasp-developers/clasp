@@ -364,19 +364,15 @@
 	  nil-renv))))
 
 
-(defun irc-i64-*current-source-pos-info*-filepos ()
-  (jit-constant-i64 (core:source-pos-info-filepos *current-source-pos-info*)))
-(defun irc-i32-*current-source-pos-info*-lineno ()
-  (jit-constant-i32 (core:source-pos-info-lineno *current-source-pos-info*)))
-(defun irc-i32-*current-source-pos-info*-column ()
-  (jit-constant-i32 (core:source-pos-info-column *current-source-pos-info*)))
-
 (defun irc-size_t-*current-source-pos-info*-filepos ()
-  (jit-constant-size_t (core:source-pos-info-filepos *current-source-pos-info*)))
+  (let ((csp (ext:current-source-location)))
+    (jit-constant-size_t (core:source-pos-info-filepos csp))))
 (defun irc-size_t-*current-source-pos-info*-lineno ()
-  (jit-constant-size_t (core:source-pos-info-lineno *current-source-pos-info*)))
+  (let ((csp (ext:current-source-location)))
+    (jit-constant-size_t (core:source-pos-info-lineno csp))))
 (defun irc-size_t-*current-source-pos-info*-column ()
-  (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*)))
+  (let ((csp (ext:current-source-location)))
+    (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*))))
 
 
 
@@ -387,8 +383,8 @@
 	(dbg-set-current-debug-location-here)
 	(irc-low-level-trace)
 	(irc-intrinsic "clasp_terminate" *gv-source-namestring* 
-		       (irc-i32-*current-source-pos-info*-lineno) 
-		       (irc-i32-*current-source-pos-info*-column) 
+		       (irc-size_t-*current-source-pos-info*-lineno) 
+		       (irc-size_t-*current-source-pos-info*-column) 
 		       *gv-current-function-name* )
 	(irc-unreachable)
 	))

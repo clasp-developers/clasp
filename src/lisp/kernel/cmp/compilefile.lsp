@@ -385,11 +385,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 			   (return nil)
 			   (progn
 			     (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
-			     ;; If the form contains source-pos-info then use that
-			     ;; otherwise fall back to using *current-source-pos-info*
-			     (let ((core:*current-source-pos-info* 
-				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
-			       (compile-file-t1expr form compile-file-hook))))))
+                             (compile-file-t1expr form compile-file-hook)))))
                   (make-boot-function-global-variable *the-module* ltv-init-fn)
 		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
                           (make-boot-function-global-variable *the-module* main-fn)

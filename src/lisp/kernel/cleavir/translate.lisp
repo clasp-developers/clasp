@@ -543,7 +543,7 @@
              (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
              (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
              (result
-              (progn
+              (let ()
                 (cmp:irc-intrinsic-args
                  "cc_stack_enclose"
                  (list* ptr-to-sacs

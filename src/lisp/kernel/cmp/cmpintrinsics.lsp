@@ -679,7 +679,7 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive module "throwIllegalSwitchValue" +void+ (list +size_t+ +size_t+) :does-not-return t)
 
-  (primitive-nounwind module "clasp_terminate" +void+ (list +i8*+ +i32+ +i32+ +i8*+) )
+  (primitive-nounwind module "clasp_terminate" +void+ (list +i8*+ +size_t+ +size_t+ +i8*+) )
   (primitive-nounwind module "__gxx_personality_v0" +i32+ nil :varargs t) ;; varargs
   (primitive-nounwind module "__cxa_begin_catch" +i8*+ (list +i8*+) )
   (primitive-nounwind module "__cxa_end_catch" +void+ nil) ;; This was a PRIMITIVE

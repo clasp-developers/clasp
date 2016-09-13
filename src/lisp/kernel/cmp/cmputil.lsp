@@ -72,8 +72,10 @@
                        (format +warn-format+))))
 
 (defun compiler-error (form message &rest args)
-  (multiple-value-bind (source-dir source-file file-pos lineno column)
-      (walk-form-for-source-info form)
+  (let* ((cspi (ext:current-source-location))
+         (source-path (source-file-info-pathname (source-file-info cspi)))
+         (source-dir (directory-namestring source-path))
+         (source-file (file-namestring source-path)))
     (let ((err (make-compiler-error :message (apply #'core:bformat nil message args)
                                     :lineno lineno
                                     :source-dir source-dir

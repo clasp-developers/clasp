@@ -601,23 +601,19 @@ Use special code 0 to cancel this operation.")
                    (unless quiet
                      (break-where)
                      (setf quiet t))
-		 (let ((core:*current-source-pos-info* (core:input-stream-source-pos-info nil)))
-		   (setq - (locally (declare (notinline tpl-read))
-			     (tpl-prompt)
-			     #-clasp(tpl-read)
-			     #+clasp(let ((expr (tpl-read)))
-				      (when sys:*echo-repl-tpl-read*
-					(format t "#|REPL echo|# ~s~%" expr))
-				      expr)
-			     ))
-		   ;; update *current-source-pos-info* if we can extract it from the source
-		   (setq core:*current-source-pos-info* (core:walk-to-find-source-pos-info - core:*current-source-pos-info*))
-		   (setq values (multiple-value-list
-				 #+ecl(core:eval-with-env - *break-env*)
-                                 #+clasp(funcall core:*eval-with-env-hook* - *break-env*)
-                                 )
-			 /// // // / / values *** ** ** * * (car /))
-		   (tpl-print values))))))
+                 (setq - (locally (declare (notinline tpl-read))
+                           (tpl-prompt)
+                           #-clasp(tpl-read)
+                           #+clasp(let ((expr (tpl-read)))
+                                    (when sys:*echo-repl-tpl-read*
+                                      (format t "#|REPL echo|# ~s~%" expr))
+                                    expr)))
+                 (setq values (multiple-value-list
+                               #+ecl(core:eval-with-env - *break-env*)
+                               #+clasp(funcall core:*eval-with-env-hook* - *break-env*)
+                               )
+                       /// // // / / values *** ** ** * * (car /))
+                 (tpl-print values)))))
       (loop
 	 (setq +++ ++ ++ + + -)
 	 (when

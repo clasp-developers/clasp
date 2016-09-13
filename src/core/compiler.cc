@@ -345,7 +345,6 @@ CL_DEFUN T_mv core__load_bundle(T_sp pathDesig, T_sp verbose, T_sp print, T_sp e
 #else
   scope.pushSpecialVariableAndSet(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
-  scope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, SourcePosInfo_O::create(0, 0, 0, 0));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl::_sym_STARreadtableSTAR->symbolValue());
   scope.pushSpecialVariableAndSet(cl::_sym_STARpackageSTAR, cl::_sym_STARpackageSTAR->symbolValue());
   Pathname_sp path = cl__pathname(pathDesig);
@@ -603,9 +602,11 @@ CL_DEFUN T_mv compiler__implicit_compile_hook_default(T_sp form, T_sp env) {
   Cons_sp code = Cons_O::create(form, _Nil<T_O>());
   T_sp source_manager = _lisp->sourceDatabase();
   T_sp sourcePosInfo = _Nil<T_O>();
+#if 0
   if ( SourceManager_sp db = source_manager.asOrNull<SourceManager_O>() ) {
     sourcePosInfo = db->duplicateSourcePosInfo(form, code);
   }
+#endif
   stringstream ss;
   ss << "repl" << _lisp->nextReplCounter();
   Symbol_sp name = _lisp->intern(ss.str());

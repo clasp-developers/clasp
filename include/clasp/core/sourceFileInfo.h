@@ -103,11 +103,7 @@ public:
     return me;
   }
   CL_LISPIFY_NAME(make_source_pos_info);
-  CL_DEF_CLASS_METHOD static SourcePosInfo_sp make(const string& filename, size_t filepos, size_t lineno, size_t column) {
-    SourceFileInfo_mv sfi = _lisp->getOrRegisterSourceFileInfo(filename);
-    uint sfi_handle = sfi->fileHandle();
-    return SourcePosInfo_O::create(sfi_handle,filepos,lineno,column);
-  }
+  CL_DEF_CLASS_METHOD static SourcePosInfo_sp make(const string& filename, size_t filepos, size_t lineno, size_t column);
   string __repr__() const;
   int fileHandle() const { return this->_FileId; };
   size_t filepos() const { return this->_Filepos; };
@@ -192,10 +188,12 @@ public: // Functions here
 
   T_sp lookupSourcePosInfo(T_sp obj);
 
-  CL_DEFMETHOD void core__source_manager_empty() {
+  void empty() {
     this->_SourcePosInfo->clrhash();
   }
+
 }; // SourceManager class
+
 
  T_sp core__source_manager_lookup(T_sp source_manager, T_sp form);
  

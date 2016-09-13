@@ -73,9 +73,6 @@
           irc-create-landing-pad
           irc-exception-typeid*
           irc-generate-terminate-code
-          irc-i64-*current-source-pos-info*-filepos
-          irc-i32-*current-source-pos-info*-column
-          irc-i32-*current-source-pos-info*-lineno
           irc-size_t-*current-source-pos-info*-filepos
           irc-size_t-*current-source-pos-info*-column
           irc-size_t-*current-source-pos-info*-lineno
