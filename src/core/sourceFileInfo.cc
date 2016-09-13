@@ -264,8 +264,8 @@ CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
     }
     return _Nil<T_O>();
   }
-  printf("%s:%d  source_manager.nilp() --> %d\n", __FILE__, __LINE__, source_manager.nilp());
-  printf("%s:%d  form --> %s\n", __FILE__,__LINE__, _rep_(form).c_str());
+//  printf("%s:%d  source_manager.nilp() --> %d\n", __FILE__, __LINE__, source_manager.nilp());
+//  printf("%s:%d  form --> %s\n", __FILE__,__LINE__, _rep_(form).c_str());
   return _Nil<T_O>();
 }
 
