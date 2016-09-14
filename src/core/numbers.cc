@@ -1463,7 +1463,7 @@ Integer_sp Integer_O::create(uint64_t v) {
 }
 
 Integer_sp Integer_O::create(int64_t v) {
-  if (v <= gc::most_positive_fixnum) {
+  if(( v >= gc::most_negative_fixnum) && (v <= gc::most_positive_fixnum )) {
     return Integer_O::create((Fixnum)v);
   }
   Bignum z;
@@ -1484,16 +1484,7 @@ Integer_sp Integer_O::create(cl_intptr_t v) {
   return Bignum_O::create(z);
 }
 
-uint64_t Integer_O::as_uint64_() const {
-  SUBIMP();
-}
-
-cl_intptr_t Integer_O::as_cl_intptr_t_() const {
-  SUBIMP();
-}
-
 }; // namespace core
-
 
 SYMBOL_EXPORT_SC_(ClPkg, logand);
 SYMBOL_EXPORT_SC_(ClPkg, logior);
@@ -1506,10 +1497,6 @@ SYMBOL_EXPORT_SC_(ClPkg, lognot);
 SYMBOL_EXPORT_SC_(ClPkg, logorc1);
 SYMBOL_EXPORT_SC_(ClPkg, logorc2);
 SYMBOL_EXPORT_SC_(ClPkg, logxor);
-
-
-
-
 
 namespace core {
 
@@ -2810,6 +2797,8 @@ SYMBOL_EXPORT_SC_(ClPkg, log);
 SYMBOL_EXPORT_SC_(CorePkg, log1p);
 SYMBOL_EXPORT_SC_(ClPkg, expt);
 SYMBOL_EXPORT_SC_(ClPkg, exp);
+
+
 #if 0
 CL_LISPIFY_NAME(general-two-arg-_PLUS_);
 CL_EXTERN_DEFUN(&core::contagen_add);
@@ -2830,4 +2819,414 @@ CL_EXTERN_DEFUN(&core::two_arg__GE_);
 CL_LISPIFY_NAME(general-two-arg-_EQ_);
 CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 #endif
+
+  // === CLASP_TO- TRANSLATORS ===
+
+  // --- SHORT ---
+
+  inline short clasp_to_short(  core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_short || farg > gc::most_positive_short)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_short), make_fixnum(gc::most_positive_short)));
+      }
+      return (short) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_short();
+  }
+
+inline unsigned short clasp_to_ushort( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_ushort)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_ushort)));
+      }
+      return (unsigned short) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_ushort();
+  }
+
+  // --- INT ---
+
+inline int clasp_to_int( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_int || farg > gc::most_positive_int)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
+      }
+      return (int) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_int();
+  }
+
+  inline unsigned int clasp_to_uint( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_uint)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint)));
+      }
+      return (unsigned int) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_uint();
+  }
+
+  // --- LONG ---
+
+inline long clasp_to_long( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_long || farg > gc::most_positive_long)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_long), make_fixnum(gc::most_positive_long)));
+      }
+      return (long) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_long();
+  }
+
+  inline unsigned long clasp_to_ulong( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_ulong)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_ulong)));
+      }
+      return (unsigned long) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_ulong();
+  }
+
+  // --- LONG ---
+
+  inline long long clasp_to_longlong( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_long_long || farg > gc::most_positive_long_long)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_long_long), make_fixnum(gc::most_positive_long_long)));
+      }
+      return (long long) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_longlong();
+  }
+
+  inline unsigned long long clasp_to_ulonglong( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_unsigned_long_long)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_unsigned_long_long)));
+      }
+      return (unsigned long long) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_ulonglong();
+  }
+
+  // --- INT8 ---
+
+  inline int8_t clasp_to_int8( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_int8 || farg > gc::most_positive_int8)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int8), make_fixnum(gc::most_positive_int8)));
+      }
+      return (int8_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_int8_t();
+  }
+
+  inline uint8_t clasp_to_uint8( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_uint8)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint8)));
+      }
+      return (uint8_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_uint8_t();
+  }
+
+  // --- INT16 ---
+
+  inline int16_t clasp_to_int16( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_int16 || farg > gc::most_positive_int16)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int16), make_fixnum(gc::most_positive_int16)));
+      }
+      return (int16_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_int16_t();
+  }
+
+  inline uint16_t clasp_to_uint16( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_uint16)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint16)));
+      }
+      return (uint16_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_uint16_t();
+  }
+
+  // --- INT32 ---
+
+  inline int32_t clasp_to_int32( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_int32 || farg > gc::most_positive_int32)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int32), make_fixnum(gc::most_positive_int32)));
+      }
+      return (int32_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_int32_t();
+  }
+
+  inline uint32_t clasp_to_uint32( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg >=gc::most_positive_uint32)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
+      }
+      return (uint32_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_uint32_t();
+  }
+
+  // --- INT64 ---
+
+  inline int64_t clasp_to_int64( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_int64 || farg > gc::most_positive_int64)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int64), make_fixnum(gc::most_positive_int64)));
+      }
+      return (int64_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_int64_t();
+  }
+
+  inline uint64_t clasp_to_uint64( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < 0 || farg > gc::most_positive_uint64)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint64)));
+      }
+      return (uint64_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_uint64_t();
+  }
+
+  // --- CL_INTPTR_T ---
+
+  inline cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_cl_intptr || farg > gc::most_positive_cl_intptr)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_cl_intptr), make_fixnum(gc::most_positive_cl_intptr)));
+      }
+      return (cl_intptr_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_cl_intptr_t();
+  }
+
+  // --- PTRDIFF_T ---
+
+  inline ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_ptrdiff), make_fixnum(gc::most_positive_ptrdiff)));
+      }
+      return (ptrdiff_t) farg;
+    }
+    return (gc::As< Integer_sp >(x))->as_ptrdiff_t();
+  }
+
+  // --- MPZ ---
+
+  inline mpz_class clasp_to_mpz(Integer_sp x) {
+    if (x.fixnump()) {
+      Fixnum fn = x.unsafe_fixnum();
+      mpz_class z = fn;
+      return z;
+    }
+    return x->as_mpz_();
+  }
+
+  // --- LONG LONG ---
+
+  inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
+    if (i.fixnump()) {
+      gc::Fixnum f = i.unsafe_fixnum();
+      if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
+        return (unsigned long long)f;
+      }
+    // unsigned long int must == unsigned long long int
+      mpz_class z = clasp_create_mpz_class(gc::most_positive_unsigned_long_long);
+      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
+                                       Integer_O::create(z)));
+    }
+    return i->as_ulonglong();
+  };
+
+  // --- FIXNUM ---
+
+  inline Fixnum clasp_to_fixnum(Integer_sp i) {
+    if (i.fixnump()) {
+      gc::Fixnum f = i.unsafe_fixnum();
+      if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum) {
+        return f;
+      }
+      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
+    }
+    return i->as_int_();
+  };
+
+  // --- SIZE ---
+
+  inline size_t clasp_to_size_t( cl_intptr_t x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_size || farg > gc::most_positive_size)
+      {
+        SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char. Value out of range  for size_t"));
+      }
+      return (size_t) farg;
+    }
+
+    SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to size_t"));
+  }
+
+  // --- SSIZE ---
+
+  inline ssize_t clasp_to_ssize_t( cl_intptr_t x )
+  {
+    if ( gctools::tagged_fixnump( x ) )
+    {
+      gctools::Fixnum farg = gctools::untag_fixnum( x );
+
+      if (farg < gc::most_negative_ssize|| farg > gc::most_positive_ssize)
+      {
+        SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char. Value out of range  for ssize_t"));
+      }
+      return (ssize_t) farg;
+    }
+
+    Integer_sp sp_i = gc::AsOrNull< Integer_sp >( x );
+    if( sp_i )
+      return sp_i->as_size_t();
+    else
+      SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char."));
+  }
+
+
+  // --- FLOAT ---
+
+  inline float clasp_to_float(Number_sp x) {
+    if (x.fixnump()) {
+      float d = x.unsafe_fixnum();
+      return d;
+    } else if (x.single_floatp()) {
+      float d = x.unsafe_single_float();
+      return d;
+    }
+    return x->as_float_();
+  };
+
+  // --- DOUBLE ---
+
+  inline double clasp_to_double(Number_sp x) {
+    if (x.fixnump()) {
+      double d = x.unsafe_fixnum();
+      return d;
+    } else if (x.single_floatp()) {
+      double d = x.unsafe_single_float();
+      return d;
+    }
+    return x->as_double_();
+  };
+
+  inline LongFloat clasp_to_long_float(Number_sp x) {
+    return x->as_long_float_();
+  };
+
+  inline LongFloat clasp_to_long_double(Number_sp x) {
+    return x->as_long_float_();
+  };
+
+  // --- END OF TRANSLATORS ---
+
 };

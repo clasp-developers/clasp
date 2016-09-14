@@ -129,15 +129,54 @@ public:
   };
   virtual void setFromString(const string &strVal);
 
+  // --- TRANSLATION METHODS ---
+
+  virtual short as_short() const;
+  virtual unsigned short as_ushort() const;
+
+  virtual int as_int() const;
+  virtual unsigned int as_uint() const;
+
+  virtual long as_long() const;
+  virtual unsigned long as_ulong() const;
+
+  virtual long long as_longlong() const;
+  virtual unsigned long long as_ulonglong() const;
+
+  virtual int8_t as_int8_t() const;
+  virtual uint8_t as_uint8_t() const;
+
+  virtual int16_t as_int16_t() const;
+  virtual uint16_t as_uint16_t() const;
+
+  virtual int32_t as_int32_t() const;
+  virtual uint32_t as_uint32_t() const;
+
+  virtual int64_t as_int64_t() const;
+  virtual uint64_t as_uint64_t() const;
+
+  virtual cl_intptr_t as_cl_intptr_t() const;
+  virtual ptrdiff_t as_ptrdiff_t() const;
+  virtual size_t as_size_t() const;
+  virtual ssize_t as_ssize_t() const;
+
+  // --- THESE FUNCTIONS RETAINED FOR COMPATIBILITY ---
+  // TODO: Code Cleanup: Replace with newer translation functions above
+  // frgo, 2016-09-06
+
   virtual gc::Fixnum as_int_() const;
+  virtual uint64_t as_int64_() const;
   virtual uint64_t as_uint64_() const;
   string as_uint64_string() const;
+
   virtual Bignum as_mpz_() const;
   virtual LongLongInt as_LongLongInt_() const;
   virtual unsigned long long as_unsigned_long_long_() const;
   virtual float as_float_() const;
   virtual double as_double_() const;
   virtual LongFloat as_long_float_() const;
+
+  // --- END OF TRANSLATION METHODS ---
 
   void sxhash_(HashGenerator &hg) const;
 
@@ -151,58 +190,58 @@ public:
 }; // core namespace
 
 namespace translate {
-template <>
-struct from_object<const Bignum &, std::true_type> {
-  typedef Bignum DeclareType;
-  DeclareType _v;
-  from_object(core::T_sp o) {
-    _G();
-    if (core::Bignum_sp bn = o.asOrNull<core::Bignum_O>()) {
-      _v = bn->ref();
-      ;
-      return;
+  template <>
+    struct from_object<const Bignum &, std::true_type> {
+    typedef Bignum DeclareType;
+    DeclareType _v;
+    from_object(core::T_sp o) {
+      _G();
+      if (core::Bignum_sp bn = o.asOrNull<core::Bignum_O>()) {
+        _v = bn->ref();
+        ;
+        return;
+      }
+      SIMPLE_ERROR(BF("Handle conversions of %s to Bignum") % _rep_(o));
     }
-    SIMPLE_ERROR(BF("Handle conversions of %s to Bignum") % _rep_(o));
-  }
-};
+  };
 };
 
 namespace core {
 
-Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b);
-Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
+  Integer_mv big_ceiling(Bignum_sp a, Bignum_sp b);
+  Integer_mv big_floor(Bignum_sp a, Bignum_sp b);
 
-inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
-  return Integer_O::create(x->get());
-}
+  inline Integer_sp _clasp_big_register_normalize(Bignum_sp x) {
+    return Integer_O::create(x->get());
+  }
 
-inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
-  Integer_mv res_mv = big_floor(a, b);
-  *rP = Real_sp(res_mv.valueGet_(1));
-  return res_mv;
-};
+  inline Integer_sp _clasp_big_floor(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
+    Integer_mv res_mv = big_floor(a, b);
+    *rP = Real_sp(res_mv.valueGet_(1));
+    return res_mv;
+  };
 
-inline Integer_sp _clasp_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
-  Integer_mv res_mv = big_ceiling(a, b);
-  *rP = Real_sp(res_mv.valueGet_(1));
-  return res_mv;
-}
+  inline Integer_sp _clasp_big_ceiling(Bignum_sp a, Bignum_sp b, Real_sp *rP) {
+    Integer_mv res_mv = big_ceiling(a, b);
+    *rP = Real_sp(res_mv.valueGet_(1));
+    return res_mv;
+  }
 
-inline double _clasp_big_to_double(Bignum_sp a) {
-  return a->as_double_();
-}
+  inline double _clasp_big_to_double(Bignum_sp a) {
+    return a->as_double_();
+  }
 
-void clasp_big_register_free(Bignum_sp x);
+  void clasp_big_register_free(Bignum_sp x);
 
-Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y);
-Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y);
-Integer_sp _clasp_big_divided_by_big(const Bignum &x, const Bignum &y);
+  Integer_sp _clasp_fix_divided_by_big(const Fixnum &x, const Bignum &y);
+  Integer_sp _clasp_big_divided_by_fix(const Bignum &x, const Fixnum &y);
+  Integer_sp _clasp_big_divided_by_big(const Bignum &x, const Bignum &y);
 
-Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
+  Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
 
 #define CLASP_BIGNUM_SIZE(x) ((x)->_mp_size)
 #define CLASP_BIGNUM_ABS_SIZE(x) \
   (CLASP_BIGNUM_SIZE(x) < 0 ? -CLASP_BIGNUM_SIZE(x) : CLASP_BIGNUM_SIZE(x))
-};
+ };
 
 #endif /* _bignum_H_ */

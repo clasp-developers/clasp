@@ -218,31 +218,31 @@ namespace clasp_ffi {
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
   // HELPER FUNCTIONS FOR MAKING CLASP LISP OBJECTS
-  gc::Fixnum mk_fixum_short( short value );
-  gc::Fixnum mk_fixum_ushort( unsigned short value );
-  gc::Fixnum mk_fixum_int( int value );
-  gc::Fixnum mk_fixum_uint( unsigned int value );
-  gc::Fixnum mk_fixum_int8( int8_t value );
-  gc::Fixnum mk_fixum_uint8( uint8_t value );
-  gc::Fixnum mk_fixum_int16( int16_t value );
-  gc::Fixnum mk_fixum_uint16( uint16_t value );
-  gc::Fixnum mk_fixum_int32( int32_t value );
-  gc::Fixnum mk_fixum_uint32( uint32_t value );
-  core::Integer_sp mk_integer_int64( int64_t value );
-  core::Integer_sp mk_integer_uint64( uint64_t value );
-  core::Integer_sp mk_integer_long( long value );
-  core::Integer_sp mk_integer_ulong( unsigned long value );
-  core::Integer_sp mk_integer_longlong( long long value );
-  core::Integer_sp mk_integer_ulonglong( unsigned long long value );
-  core::DoubleFloat_sp mk_double_float( double value );
-  core::SingleFloat_sp mk_single_float( float value );
-  core::LongFloat_sp mk_long_double( long double value );
-  ForeignData_sp mk_time( time_t value );
-  ForeignData_sp mk_pointer( void * value );
-  core::Integer_sp mk_size( size_t value );
-  core::Integer_sp mk_ssize( ssize_t value );
-  core::Integer_sp mk_ptrdiff( ptrdiff_t value );
-  core::Character_sp mk_character( char value );
+  core::T_sp mk_fixum_short( short value );
+  core::T_sp mk_fixum_ushort( unsigned short value );
+  core::T_sp mk_fixum_int( int value );
+  core::T_sp mk_fixum_uint( unsigned int value );
+  core::T_sp mk_fixum_int8( int8_t value );
+  core::T_sp mk_fixum_uint8( uint8_t value );
+  core::T_sp mk_fixum_int16( int16_t value );
+  core::T_sp mk_fixum_uint16( uint16_t value );
+  core::T_sp mk_fixum_int32( int32_t value );
+  core::T_sp mk_fixum_uint32( uint32_t value );
+  core::T_sp mk_integer_int64( int64_t value );
+  core::T_sp mk_integer_uint64( uint64_t value );
+  core::T_sp mk_integer_long( long value );
+  core::T_sp mk_integer_ulong( unsigned long value );
+  core::T_sp mk_integer_longlong( long long value );
+  core::T_sp mk_integer_ulonglong( unsigned long long value );
+  core::T_sp mk_double_float( double value );
+  core::T_sp mk_single_float( float value );
+  core::T_sp mk_long_double( long double value );
+  core::T_sp mk_time( time_t value );
+  core::T_sp mk_pointer( void * value );
+  core::T_sp mk_size( size_t value );
+  core::T_sp mk_ssize( ssize_t value );
+  core::T_sp mk_ptrdiff( ptrdiff_t value );
+  core::T_sp mk_char( char value );
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM REF
   template <typename T>
@@ -277,7 +277,43 @@ namespace clasp_ffi {
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
   template <typename T>
-    T mem_set(cl_intptr_t address, T& value);
+    T mem_set(cl_intptr_t address, T value);
+
+  // HELPER FUNCTIONS FOR MAKING C++ VALUES FROM CLASP LISP OBJECTS
+  ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value );
+  char clasp_to_char( core::T_sp sp_lisp_value );
+
+  // FOREIGN MEMORY DIRECT ACCESS - MEM SET
+  template<typename T>
+    T mem_set( cl_intptr_t address, T value );
+
+  // MEM-SET
+
+  CL_DEFUN core::T_sp PERCENTmem_set_short( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_int( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_int64( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_uint64( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_long( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value ) ;
+  CL_DEFUN core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_long_double( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value );
+  CL_DEFUN core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value );
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------

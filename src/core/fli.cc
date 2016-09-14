@@ -49,9 +49,10 @@ THE SOFTWARE.
 //   SYSTEM INCLUDES
 // ---------------------------------------------------------------------------
 
-#include <cstdint>
 #include <map>
 #include <type_traits>
+#include <cstdint>
+// #include <climits> - Not needed as safety checks not done for translations
 
 #include <dlfcn.h>
 #include <arpa/inet.h> // for htonl
@@ -403,7 +404,7 @@ ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind) {
     n_size = PERCENTforeign_type_size( kind );
   }
   else {
-    // Get the size out of kind's value of form (:array n)
+    // Get the size out of kind's v of form (:array n)
     core::Cons_sp ckind = gc::As<core::Cons_sp>(kind);
     if ( ! (oCar(ckind)==cl::_sym_array || oCar(ckind)==kw::_sym_array ) ) {
       SIMPLE_ERROR(BF("The first element of a foreign-data type must be ARRAY or :ARRAY"));
@@ -718,13 +719,13 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
     return _Nil<core::T_O>();
   }
 
-  // If offset is not NIL then get value
+  // If offset is not NIL then get v
   if( offset.notnilp() ) {
     if( offset.fixnump() ) {
       n_offset = unbox_fixnum( offset );
     }
     else {
-      n_offset = offset->as_cl_intptr_t_();
+      n_offset = clasp_to_cl_intptr_t( offset );
     }
   }
 
@@ -744,7 +745,7 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
         n_address = unbox_fixnum( sp_address );
       }
       else {
-        n_address = sp_address->as_cl_intptr_t_();
+        n_address = clasp_to_cl_intptr_t( sp_address );
       }
     }
     else {
@@ -762,110 +763,110 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
 //  HELPER FUNCTIONS FOR HANDLING FOREIGN TYPES
 // ---------------------------------------------------------------------------
 
-inline core::T_sp mk_fixnum_short( short value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_short( short v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_ushort( unsigned short value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_ushort( unsigned short v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_int( int value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_int( int v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_uint( unsigned int value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_uint( unsigned int v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_int8( int8_t value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_int8( int8_t v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_uint8( uint8_t value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_uint8( uint8_t v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_int16( int16_t value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_int16( int16_t v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_uint16( uint16_t value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_uint16( uint16_t v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_int32( int32_t value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_int32( int32_t v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_fixnum_uint32( uint32_t value ) {
-  return core::make_fixnum( value );
+inline core::T_sp mk_fixnum_uint32( uint32_t v ) {
+  return core::make_fixnum( v );
 }
 
-inline core::T_sp mk_integer_int64( int64_t value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_integer_int64( int64_t v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_integer_uint64( uint64_t value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_integer_uint64( uint64_t v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_integer_long( long value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_integer_long( long v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_integer_ulong( unsigned long value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_integer_ulong( unsigned long v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_integer_longlong( long long value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_integer_longlong( long long v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_integer_ulonglong( unsigned long long value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_integer_ulonglong( unsigned long long v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_double_float( double value ) {
-  return core::DoubleFloat_O::create( value );
+inline core::T_sp mk_double_float( double v ) {
+  return core::DoubleFloat_O::create( v );
 }
 
-inline core::T_sp mk_single_float( float value ) {
-  return core::make_single_float( value );
+inline core::T_sp mk_single_float( float v ) {
+  return core::make_single_float( v );
 }
 
-inline core::T_sp mk_long_double( long double value ) {
-  return core::LongFloat_O::create( value );
+inline core::T_sp mk_long_double( long double v ) {
+  return core::LongFloat_O::create( v );
 }
 
-inline core::T_sp mk_time( time_t value ) {
+inline core::T_sp mk_time( time_t v ) {
   size_t size = sizeof( time_t );
   GC_ALLOCATE(ForeignData_O, self);
   self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
-  memmove( self->raw_data(), &value, size );
+  memmove( self->raw_data(), &v, size );
   return self;
 }
 
-inline core::T_sp mk_pointer( void * value ) {
-  ForeignData_sp ptr = ForeignData_O::create( reinterpret_cast<cl_intptr_t>( value ) );
+inline core::T_sp mk_pointer( void * v ) {
+  ForeignData_sp ptr = ForeignData_O::create( reinterpret_cast<cl_intptr_t>( v ) );
   ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
   return ptr;
 }
 
-inline core::T_sp mk_size( size_t value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_size( size_t v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_ssize( ssize_t value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_ssize( ssize_t v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_ptrdiff( ptrdiff_t value ) {
-  return core::Integer_O::create( value );
+inline core::T_sp mk_ptrdiff( ptrdiff_t v ) {
+  return core::Integer_O::create( v );
 }
 
-inline core::T_sp mk_character( char value ) {
-  return core::clasp_make_character( value );
+inline core::T_sp mk_char( char v ) {
+  return core::clasp_make_character( v );
 }
 
 // ---------------------------------------------------------------------------
@@ -881,103 +882,103 @@ inline T mem_ref( cl_intptr_t address ) {
 // MEM-REF
 
 core::T_sp PERCENTmem_ref_short( core::Integer_sp address ) {
-  short value = mem_ref<short>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_short( value );
+  short v = mem_ref<short>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_short( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address ) {
-  unsigned short value = mem_ref<unsigned short>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_ushort( value );
+  unsigned short v = mem_ref<unsigned short>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_ushort( v );
 }
 
 core::T_sp PERCENTmem_ref_int( core::Integer_sp address ) {
-  int value = mem_ref<int>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_int( value );
+  int v = mem_ref<int>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_int( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address ) {
-  unsigned int value = mem_ref<unsigned int>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_uint( value );
+  unsigned int v = mem_ref<unsigned int>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_uint( v );
 }
 
 core::T_sp PERCENTmem_ref_int8( core::Integer_sp address ) {
-  int8_t value = mem_ref<int8_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_int8( value );
+  int8_t v = mem_ref<int8_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_int8( v );
 }
 
 core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address ) {
-  int8_t value = mem_ref<int8_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_uint8( value );
+  int8_t v = mem_ref<int8_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_uint8( v );
 }
 
 core::T_sp PERCENTmem_ref_int16( core::Integer_sp address ) {
-  int16_t value = mem_ref<int16_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_int16( value );
+  int16_t v = mem_ref<int16_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_int16( v );
 }
 
 core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address ) {
-  uint16_t value = mem_ref<uint16_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_uint16( value );
+  uint16_t v = mem_ref<uint16_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_uint16( v );
 }
 
 core::T_sp PERCENTmem_ref_int32( core::Integer_sp address ) {
-  int32_t value = mem_ref<int32_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_int32( value );
+  int32_t v = mem_ref<int32_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_int32( v );
 }
 
 core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address ) {
-  uint32_t value = mem_ref<uint32_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_fixnum_uint32( value );
+  uint32_t v = mem_ref<uint32_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_fixnum_uint32( v );
 }
 
 core::T_sp PERCENTmem_ref_int64( core::Integer_sp address ) {
-  int64_t value = mem_ref<int64_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_integer_int64( value );
+  int64_t v = mem_ref<int64_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_integer_int64( v );
 }
 
 core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address ) {
-  uint64_t value = mem_ref<uint64_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_integer_uint64( value );
+  uint64_t v = mem_ref<uint64_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_integer_uint64( v );
 }
 
 core::T_sp PERCENTmem_ref_long( core::Integer_sp address ) {
-  long value = mem_ref<long>( clasp_to_cl_intptr_t( address ) );
-  return mk_integer_long( value );
+  long v = mem_ref<long>( clasp_to_cl_intptr_t( address ) );
+  return mk_integer_long( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address ) {
-  unsigned long value = mem_ref<unsigned long>( clasp_to_cl_intptr_t( address ) );
-  return mk_integer_ulong( value );
+  unsigned long v = mem_ref<unsigned long>( clasp_to_cl_intptr_t( address ) );
+  return mk_integer_ulong( v );
 }
 
 core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address ) {
-  long long value = mem_ref<long long>( clasp_to_cl_intptr_t( address ) );
-  return mk_integer_longlong( value );
+  long long v = mem_ref<long long>( clasp_to_cl_intptr_t( address ) );
+  return mk_integer_longlong( v );
 }
 
 core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address ) {
-  unsigned long long value = mem_ref<unsigned long long>( clasp_to_cl_intptr_t( address ) );
-  return mk_integer_ulonglong( value );
+  unsigned long long v = mem_ref<unsigned long long>( clasp_to_cl_intptr_t( address ) );
+  return mk_integer_ulonglong( v );
 }
 
 core::T_sp PERCENTmem_ref_double( core::Integer_sp address ) {
-  double value = mem_ref<double>( clasp_to_cl_intptr_t( address ) );
-  return mk_double_float( value );
+  double v = mem_ref<double>( clasp_to_cl_intptr_t( address ) );
+  return mk_double_float( v );
 }
 
 core::T_sp PERCENTmem_ref_float( core::Integer_sp address ) {
-  float value = mem_ref<float>( clasp_to_cl_intptr_t( address ) );
-  return mk_single_float( value );
+  float v = mem_ref<float>( clasp_to_cl_intptr_t( address ) );
+  return mk_single_float( v );
 }
 
 core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address ) {
-  long double value = mem_ref<long double>( clasp_to_cl_intptr_t( address ) );
-  return mk_long_double( value );
+  long double v = mem_ref<long double>( clasp_to_cl_intptr_t( address ) );
+  return mk_long_double( v );
 }
 
 core::T_sp PERCENTmem_ref_time( core::Integer_sp address ) {
-  time_t value = mem_ref<time_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_time( value );
+  time_t v = mem_ref<time_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_time( v );
 }
 
 core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address ) {
@@ -986,23 +987,23 @@ core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address ) {
 }
 
 core::T_sp PERCENTmem_ref_size( core::Integer_sp address ) {
-  size_t value = mem_ref<size_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_size( value );
+  size_t v = mem_ref<size_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_size( v );
 }
 
 core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address ) {
-  ssize_t value = mem_ref<ssize_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_ssize( value );
+  ssize_t v = mem_ref<ssize_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_ssize( v );
 }
 
 core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address ) {
-  ptrdiff_t value = mem_ref<ptrdiff_t>( clasp_to_cl_intptr_t( address ) );
-  return mk_ptrdiff( value );
+  ptrdiff_t v = mem_ref<ptrdiff_t>( clasp_to_cl_intptr_t( address ) );
+  return mk_ptrdiff( v );
 }
 
 core::T_sp PERCENTmem_ref_char( core::Integer_sp address ) {
-  char value = mem_ref<char>( clasp_to_cl_intptr_t( address ) );
-  return mk_character( value );
+  char v = mem_ref<char>( clasp_to_cl_intptr_t( address ) );
+  return mk_char( v );
 }
 
 // ---------------------------------------------------------------------------
@@ -1041,286 +1042,208 @@ RETURN_FROM_CORE__PERCENT_MEM_REF:
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+
 // Lisp to C++ translation, used by mem_set()
 
-inline short clasp_to_short( core::T_sp sp_lisp_value ) {
-  return translate::from_object< short >( sp_lisp_value );
+inline ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value ) {
+  translate::from_object< ptrdiff_t > v( sp_lisp_value );
+  return v._v;
 }
 
-inline unsigned short clasp_to_ushort( core::T_sp sp_lisp_value ) {
-  return translate::from_object< unsigned short >( sp_lisp_value );
+inline char clasp_to_char( core::T_sp sp_lisp_value ) {
+  translate::from_object< char > v( sp_lisp_value );
+  return v._v;
 }
-
-inline int clasp_to_int( core::T_sp sp_lisp_value ) {
-  return translate::from_object< int >( sp_lisp_value );
-}
-
-#if 0
-inline unsigned int clasp_to_uint( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< unsigned int >( sp_lisp_value );
-}
-
-inline int8_t clasp_to_int8( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< int8_t >( sp_lisp_value );
-}
-
-inline uint8_t clasp_to_uint8( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< uint8_t >( sp_lisp_value );
-}
-
-inline int16_t clasp_to_int16( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< int16_t >( sp_lisp_value );
-}
-
-inline uint16_t clasp_to_uint16( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< uint16_t >( sp_lisp_value );
-}
-
-inline int32_t clasp_to_int32( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< int32_t >( sp_lisp_value );
-}
-
-inline uint32_t clasp_to_uint32( core::T_sp sp_lisp_value ) {
-  return to_cxx_fixnum_value< uint32_t >( sp_lisp_value );
-}
-
-inline core::T_sp clasp_to_int64( int64_t value ) {
-  return to_cxx_integer_value< int64_t >( sp_lisp_value );
-}
-
-inline core::T_sp clasp_to_uint64( uint64_t value ) {
-  return to_cxx_integer_value< uint64_t >( sp_lisp_value );
-}
-
-inline core::T_sp clasp_to_long( long value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_ulong( unsigned long value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_longlong( long long value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_ulonglong( unsigned long long value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_double_float( double value ) {
-  return core::DoubleFloat_O::create( value );
-}
-
-inline core::T_sp clasp_to_single_float( float value ) {
-  return core::make_single_float( value );
-}
-
-inline core::T_sp clasp_to_long_double( long double value ) {
-  return core::LongFloat_O::create( value );
-}
-
-inline core::T_sp clasp_to_time( time_t value ) {
-  size_t size = sizeof( time_t );
-  GC_ALLOCATE(ForeignData_O, self);
-  self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
-  memmove( self->raw_data(), &value, size );
-  return self;
-}
-
-inline core::T_sp clasp_to_pointer( void * value ) {
-  ForeignData_sp ptr = ForeignData_O::create( reinterpret_cast<cl_intptr_t>( value ) );
-  ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
-  return ptr;
-}
-
-inline core::T_sp clasp_to_size( size_t value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_ssize( ssize_t value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_ptrdiff( ptrdiff_t value ) {
-  return core::Integer_O::create( value );
-}
-
-inline core::T_sp clasp_to_character( char value ) {
-  return core::clasp_make_character( value );
-}
-
-#endif
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-template<class T>
-inline T mem_set( cl_intptr_t address, T& value ) {
+template<typename T>
+inline T mem_set( cl_intptr_t address, T value ) {
   * (reinterpret_cast< T * >( address )) = value;
-  return value;
+  return * (reinterpret_cast< T * >( address ));
 }
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 // MEM-SET
 
-core::Fixnum PERCENTmem_set_short( core::Integer_sp address, core::T_sp value ) {
-  short value = clasp_to_short( value );
-  value = mem_set<short>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_short( value );
+core::T_sp PERCENTmem_set_short( core::Integer_sp address, core::T_sp value ) {
+  short tmp;
+  translate::from_object< short > v( value );
+  tmp = mem_set< short >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_short( tmp );
 }
 
-core::Fixnum PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value ) {
-  unsigned short value = clasp_to_unsigned_short( value );
-  value = mem_set<unsigned short>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_ushort( value );
+core::T_sp PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value ) {
+  unsigned short tmp;
+  translate::from_object< unsigned short > v( value );
+  tmp = mem_set< unsigned short >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_ushort( tmp );
 }
 
-core::Fixnum PERCENTmem_set_int( core::Integer_sp address, core::T_sp value ) {
-  int value = clasp_to_int( value );
-  value = mem_set<int>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_int( value );
+core::T_sp PERCENTmem_set_int( core::Integer_sp address, core::T_sp value ) {
+  int tmp;
+  translate::from_object< int > v( value );
+  tmp = mem_set< int >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_int( tmp );
 }
 
-#if 0 // THIS DOESN'T WORK YET !
-core::Fixnum PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value ) {
-  unsigned int value = clasp_to_int( value );
-  value = mem_set<unsigned int>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_uint( value );
+core::T_sp PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value ) {
+  unsigned int tmp;
+  translate::from_object< unsigned int > v( value );
+  tmp = mem_set< int >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_uint( tmp );
 }
 
-core::Fixnum PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value ) {
-  int8_t value = clasp_to_int8( value );
-  value = mem_set<int8_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_int8( value );
+core::T_sp PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value ) {
+  int8_t tmp;
+  translate::from_object< int8_t > v( value );
+  tmp = mem_set< int8_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_int8( tmp );
 }
 
-core::Fixnum PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value ) {
-  uint8_t value = clasp_to_uint8( value );
-  value = mem_set<uint8_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_uint8( value );
+core::T_sp PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value ) {
+  uint8_t tmp;
+  translate::from_object< uint8_t > v( value );
+  tmp = mem_set< uint8_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_uint8( tmp );
 }
 
-core::Fixnum PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value ) {
-  int16_t value = clasp_to_int16( value );
-  value =  mem_set<int16_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_int16( value );
+core::T_sp PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value ) {
+  int16_t tmp;
+  translate::from_object< int16_t > v( value );
+  tmp = mem_set< int16_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_int16( tmp );
 }
 
-core::Fixnum PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value ) {
-  uint16_t value = clasp_to_uint16( value );
-  value =  mem_set<uint16_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_uint16( value );
+core::T_sp PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value ) {
+  uint16_t tmp;
+  translate::from_object< uint16_t > v( value );
+  tmp = mem_set< uint16_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_uint16( tmp );
 }
 
-core::Fixnum PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value ) {
-  int32_t value = clasp_to_int32( value );
-  value =  mem_set<int32_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_int32( value );
+core::T_sp PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value ) {
+  int32_t tmp;
+  translate::from_object< int32_t > v( value );
+  tmp = mem_set< int32_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_int32( tmp );
 }
 
-core::Fixnum PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value ) {
-  uint32_t value = clasp_to_uint32( value );
-  value =  mem_set<uint32_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_fixnum_uint32( value );
+core::T_sp PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value ) {
+  uint32_t tmp;
+  translate::from_object< uint32_t > v( value );
+  tmp = mem_set< uint32_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_fixnum_uint32( tmp );
 }
 
 core::T_sp PERCENTmem_set_int64( core::Integer_sp address, core::T_sp value ) {
-  int64_t value = clasp_to_int64( value );
-  value =  mem_set<int64_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_integer_int64( value );
+  int64_t tmp;
+  translate::from_object< int64_t > v( value );
+  tmp = mem_set< int64_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_integer_int64( tmp );
 }
 
 core::T_sp PERCENTmem_set_uint64( core::Integer_sp address, core::T_sp value ) {
-  uint64_t value = clasp_to_uint64( value );
-  value =  mem_set<uint64_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_integer_uint64( value );
+  uint64_t tmp;
+  translate::from_object< uint64_t > v( value );
+  tmp = mem_set< uint64_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_integer_uint64( tmp );
 }
 
 core::T_sp PERCENTmem_set_long( core::Integer_sp address, core::T_sp value ) {
-  long value = clasp_to_long( value );
-  value =  mem_set<long>( clasp_to_cl_intptr_t( address ), value );
-  return mk_integer_long( value );
+  long tmp;
+  translate::from_object< long > v( value );
+  tmp = mem_set< long >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_integer_long( tmp );
 }
 
 core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp value ) {
-  unsigned long value = clasp_to_ulong( value );
-  value =  mem_set<unsigned long>( clasp_to_cl_intptr_t( address ), value );
-  return mk_integer_ulong( value );
+  unsigned long tmp;
+  translate::from_object< unsigned long > v( value );
+  tmp = mem_set< unsigned long >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_integer_ulong( tmp );
 }
 
 core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value ) {
-  long long value = clasp_to_longlong( value );
-  value =  mem_set<long long>( clasp_to_cl_intptr_t( address ), value );
-  return mk_integer_longlong( value );
+  long long tmp;
+  translate::from_object< long long > v( value );
+  tmp = mem_set< long long >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_integer_longlong( tmp );
 }
 
 core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value ) {
-  unsigned long long value = clasp_to_ulonglong( value );
-  value =  mem_set<unsigned long long>( clasp_to_cl_intptr_t( address ), value );
-  return mk_integer_ulonglong( value );
+  unsigned long long tmp;
+  translate::from_object< unsigned long long > v( value );
+  tmp = mem_set< unsigned long long >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_integer_ulonglong( tmp );
 }
 
 core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value ) {
-  double value = clasp_to_double_float( value );
-  value =  mem_set<double>( clasp_to_cl_intptr_t( address ), value );
-  return mk_double_float( value );
+  double tmp;
+  translate::from_object< double > v( value );
+  tmp = mem_set< double >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_double_float( tmp );
 }
 
 core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value ) {
-  float value = clasp_to_single_float( value );
-  value =  mem_set<float>( clasp_to_cl_intptr_t( address ), value );
-  return mk_single_float( value );
+  float tmp;
+  translate::from_object< float > v( value );
+  tmp = mem_set< float >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_single_float( tmp );
 }
 
 core::T_sp PERCENTmem_set_long_double( core::Integer_sp address, core::T_sp value ) {
-  long double value = clasp_to_long_double( value );
-  value =  mem_set<long double>( clasp_to_cl_intptr_t( address ), value );
-  return mk_long_double( value );
+  long double tmp;
+  translate::from_object< long double > v( value );
+  tmp = mem_set< long double >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_long_double( tmp );
 }
 
 core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value ) {
-  time_t value = clasp_to_time( value );
-  value =  mem_set<time_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_time( value );
+  time_t tmp;
+  translate::from_object< time_t > v( value );
+  tmp = mem_set< time_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_time( tmp );
 }
 
 core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value ) {
-  ForeignData_sp ptr = gc::asOrNull<ForeignData_sp>( value );
-  ptr =  PERCENTmake_pointer( ptr->raw_data() );
-  return ptr;
+  IMPLEMENT_ME();
 }
 
 core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value ) {
-  size_t value = clasp_to_size( value );
-  value =  mem_set<size_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_size( value );
+  size_t tmp;
+  translate::from_object< size_t > v( value );
+  tmp = mem_set< size_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_size( tmp );
 }
 
 core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value ) {
-  ssize_t value = clasp_to_ssize( value );
-  value =  mem_set<ssize_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_ssize( value );
+  ssize_t tmp;
+  translate::from_object< ssize_t > v( value );
+  tmp = mem_set< ssize_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_ssize( tmp );
 }
 
 core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value ) {
-  ptrdiff_t value = clasp_to_ptrdiff( value );
-  value =  mem_set<ptrdiff_t>( clasp_to_cl_intptr_t( address ), value );
-  return mk_ptrdiff( value );
+  ptrdiff_t tmp;
+  translate::from_object< ptrdiff_t > v( value );
+  tmp = mem_set< ptrdiff_t >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_ptrdiff( tmp );
 }
 
 core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value ) {
-  char value = clasp_to_char( value );
-  value =  mem_set<char>( clasp_to_cl_intptr_t( address ), value );
-  return mk_character( value );
+  char tmp;
+  translate::from_object< char > v( value );
+  tmp = mem_set< char >( clasp_to_cl_intptr_t( address ), v._v );
+  return mk_char( tmp );
 }
-#endif // DISABLED CODE SECTIO
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void PERCENTmem_set_generic( core::T_sp address_or_foreign_data_ptr,
-                             core::T_sp atype,
-                             core::Integer_sp offset,
-                             core::T_sp value) {
+core::T_sp PERCENTmem_set_generic( core::T_sp address_or_foreign_data_ptr,
+                                   core::T_sp atype,
+                                   core::Integer_sp offset,
+                                   core::T_sp value) {
   IMPLEMENT_ME();
 }
 

@@ -306,10 +306,39 @@ public:
 	  If BITS < 0 shift right, if BITS >0 shift left. */
   virtual Integer_sp shift_(gc::Fixnum bits) const { SUBIMP(); };
 
-  virtual uint64_t as_uint64_() const;
-  virtual cl_intptr_t as_cl_intptr_t_() const; // ADDED, frgo 2016-08-08
-  virtual unsigned long long as_unsigned_long_long_() const { SUBIMP(); };
+    // --- TRANSLATION METHODS ---
+
+  virtual short as_short() const { SUBIMP(); };
+  virtual unsigned short as_ushort() const { SUBIMP(); };
+
+  virtual int as_int() const;
+  virtual unsigned int as_uint() const;
+
+  virtual long as_long() const ;
+  virtual unsigned long as_ulong() const;
+
+  virtual long long as_longlong() const { SUBIMP(); };
+  virtual unsigned long long as_ulonglong() const { SUBIMP(); };
+
+  virtual int8_t as_int8_t() const;
+  virtual uint8_t as_uint8_t() const;
+
+  virtual int16_t as_int16_t() const;
+  virtual uint16_t as_uint16_t() const;
+
+  virtual int32_t as_int32_t() const;
+  virtual uint32_t as_uint32_t() const;
+
+  virtual int64_t as_int64_t() const { SUBIMP(); };
+  virtual uint64_t as_uint64_t() const { SUBIMP(); };
+
+  virtual cl_intptr_t as_cl_intptr_t() const;
+  virtual ptrdiff_t as_ptrdiff_t() const;
+  virtual size_t as_size_t() const;
+  virtual ssize_t as_ssize_t() const;
+
   virtual void __write__(T_sp strm) const;
+
   Integer_O(){};
   virtual ~Integer_O(){};
 };

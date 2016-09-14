@@ -1147,16 +1147,14 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 // === CORE TRANSLATORS FROM OBJECT / TO OBJECT ===
 
 template< typename T >
-inline core::T_O* from_object_raw(core::T_O* obj) {
+core::T_O* from_object_raw(core::T_O* obj) {
   T x = translate::from_object< T >(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
-  printf("%s:%d core::from_object<>(): obj = %p, x = %d\n", __FILE__, __LINE__, obj, x);
   return reinterpret_cast<core::T_O*>(x);
 }
 
 template< typename T >
-inline core::T_O* to_object_raw(core::T_O* obj) {
+core::T_O* to_object_raw(core::T_O* obj) {
   T x = static_cast< T >(reinterpret_cast<cl_intptr_t>(obj));
-  printf("%s:%d to_object<>(): obj = %p, x = %d\n", __FILE__, __LINE__, obj, x);
   return translate::to_object< T >::convert(x).raw_();
 }
 
@@ -1193,7 +1191,24 @@ DEF_CORE_TRANSLATOR(size_t,size);
 DEF_CORE_TRANSLATOR(ssize_t,ssize);
 DEF_CORE_TRANSLATOR(ptrdiff_t,ptrdiff);
 DEF_CORE_TRANSLATOR(time_t,time);
-DEF_CORE_TRANSLATOR(char,char);
+
+// DEF_CORE_TRANSLATOR(char,char); - requires special handling
+// (don't know why, though) - frgo
+
+static const int source_line_from_object_char = __LINE__;
+core::T_O* from_object_char(core::T_O* obj)
+{
+  char x = translate::from_object< char >(obj)._v;
+  return reinterpret_cast<core::T_O*>( (cl_intptr_t) x );
+}
+
+static const int source_line_to_object_char = __LINE__;
+core::T_O* to_object_char(core::T_O* obj)
+{
+  char x = static_cast< char >(reinterpret_cast<cl_intptr_t>(obj));
+  return translate::to_object< char, std::true_type >::convert(x).raw_();
+}
+
 
 // === END OF CORE TRANSLATORS ===
 

@@ -1,0 +1,179 @@
+;;; IMPLEMENTATIOM DISCUSSION FOR %FOREIGN-FUNCALL
+
+#|
+
+19:34 <drmeister> frgo: So I'm thinking about examples like: (%foreign-call
+                  "foo" :int x)
+19:34 <stassats> i've seen that
+19:34 <drmeister> and how it will turn into the call:      foo(x)
+19:35 <drmeister> And where (CORE:INTRINSIC-CALL "foo" <something>) fits in
+                  there.
+19:36 <drmeister> There may need to be one more element of compiler magic
+                  that needs to be implemented.  Something like
+                  translate::from_object<int>(T_sp x) but on the Common
+                  Lisp side.
+19:37 <drmeister> Because "foo" expects an 'int' and 'x' in this case can
+                  be anything.
+19:37 <drmeister> But we don't know that "foo" expects an 'int' - right?
+19:37 <drmeister> We have to say it explicitly with (%foreign-call "foo"
+                  :int x)
+19:40 <drmeister> I'm still working through the thought process but it
+                  feels like we need something in Common Lisp that takes a
+                  tagged pointer and returns a 64-bit value that is not a
+                  tagged pointer to pass to INTRINSIC-CALL.
+19:40 <drmeister> INTRINSIC-CALL may be very close to what we need but
+                  maybe not quite.   Must think more.
+19:40 <drmeister> Look at these files:
+19:40 <frgo> We have type info on the lisp side:
+19:40 <frgo> (%foreign-funcall "gethostname" :pointer buf :size buf-size
+             :int)
+19:40 <drmeister> Right
+19:41 <drmeister> Look at these files:
+19:41 <drmeister> clasp/build/boehmdc/generated/c-wrappers.h
+19:41 <drmeister> clasp/build/boehmdc/generated/cl-wrappers.lisp
+19:42 <drmeister> You also need clasp/src/lisp/kernel/lsp/direct-calls.lsp
+                  for the 'generate-direct-call-defun' macro.
+19:42 <drmeister> It expands to an INTRINSIC-CALL invocation.
+19:43 <drmeister> %foreign-call  is a CL macro that has to do everything
+                  that is in c-wrappers.h and cl-wrappers.lisp
+19:44 <drmeister> The good news is - most of the conceptual problem of
+                  implementing %foreign-call is worked out in
+                  INTRINSIC-CALL   -  the last piece of the puzzle is how
+                  to deal with the argument conversions.
+19:44 <drmeister> There is also return value conversion - right?
+19:45 <frgo> Yes.
+19:45 <drmeister> How is that specified in %foreign-call?
+19:45 <drmeister> That's the last argument.
+19:45 <drmeister> It's not a simple keyword/value pair list.
+19:46 <drmeister> It's: [keyword argument]* keyword
+19:46 <drmeister> Not a problem.
+19:46 <drmeister> The %foreign-call macro will deal with that.
+19:47 <frgo> Right.
+19:48 <drmeister> Maybe all this needs is a bunch of translation functions
+                  like from_object<T> and to_object<T>  that return and
+                  take 64-bit values that can only be used with
+                  INTRINSIC-CALL
+19:49 <drmeister> INTRINSIC-CALL doesn't care what it gets as arguments.
+                  It sees them as 64-bit values
+19:49 <frgo> I followed you up to now - except for that last statement
+19:50 <drmeister> If there is a CL accessible function
+                  (CORE:FROM-OBJECT-INT x) that returns a 64-bit value that
+                  ISN'T a tagged pointer.  It can't be used in any way
+                  other than to pass it straight to CORE:INTRINSIC-CALL
+19:50 <drmeister> Let's call it:       (CORE:FROM-OBJECT<INT>  x)
+19:51 <drmeister> It takes a CL value 'x' as argument and returns a raw
+                  64-bit value where the lower 32 bits are a C int.
+19:51 <drmeister> It's not tagged.
+19:51 <drmeister> It passes that value straight into INTRINSICS-CALL
+19:51 <drmeister> Bam - you are done.
+19:52 <drmeister> Oh, the INTRINSICS-CALL returns a single 64-bit value
+                  that is not necessarily a tagged pointer but it may be.
+19:52 <stassats> and bob's your pointer
+19:52 <drmeister> In this case lets say it returns another 'int'
+19:52 <drmeister> You then pass that immediately into the function
+                  (CORE:TO-OBJECT<INT> ...)
+19:53 <drmeister> Then Bob's your pointer - you are done.
+19:53 <drmeister> The round trip CL->C->CL is done.
+19:53 <drmeister> So the call really looks like this:
+19:53 <drmeister> (CORE:TO-OBJECT<INT> (CORE:INTRINSIC-CALL "foo"
+                  (CORE:FROM-OBJECT<INT> x)))
+19:54 <stassats> do you already handle untagged word-sized arithmetic
+                 operations?
+19:54 <drmeister> Don't use TO-OBJECT<xxx> and FROM-OBJECT<xxx> anywhere
+                  but here.
+19:54 <drmeister> stassats: I don't - that is stuff I need to do with
+                  Cleavir - but it's in Cleavir waiting for me.
+19:54 <stassats> so, this is similar stuff
+19:55 <drmeister> I'm starting to realize this.   It takes me a while
+                  sometimes.
+19:55 <drmeister> This is a journey
+19:55 <drmeister> I kind of have to sidle up to things sometimes.
+19:55 <drmeister> frgo: Are you following?  I can try and make things
+                  clear.
+19:56 <frgo> Yes, thinking ...
+19:56 <drmeister> So INTRINSIC-CALL is the big part of the solution.   We
+                  need FROM-OBJECT<xxx> and TO-OBJECT<xxx> functions on the
+                  CL side - we can almost certainly use the ones that are
+                  on the C++ side.
+19:57 <drmeister> Write once - use many times...
+19:57 <drmeister> It's almost like it's planned.
+19:57 <drmeister> Ok, guys - this is all planned.  We don't every let this
+                  get out that this wasn't the plan from the beginning.
+19:58 <drmeister> I'm going to look like a prescient genius in my memoirs.
+19:58 <frgo> Hehe
+19:58 <drmeister> Shinmera: Please destroy the logs from the last five
+                  minutes.
+19:59 <stassats> i won't make slime backwards compatible with older clasps,
+                 too much hassle
+19:59 <drmeister> Let the historians argue about the "missing five minutes"
+                  of #clasp
+19:59 <drmeister> Great!  Onward and forward.
+19:59 <drmeister> Older clasps don't exist.
+20:01 <drmeister> frgo: Ok, I think we have the shape of the solution.
+                  I'll think some more about how FROM-OBJECT<xxx> and
+                  TO-OBJECT<xxx> will work and make sure there are no
+                  safety checks that would get in the way of their
+                  operation with INTRINSIC-CALL
+20:01 <Shinmera> drmeister: You're gonna have to talk to the ministry of
+                 truth for that. This is the ministry of love.
+20:02 <drmeister> Dangnabbit - all this bureaucracy!
+20:03 <drmeister> Fine, I'm still holding out that subconsciously I knew
+                  what I was doing.
+20:04 <drmeister> Anyway, the proof will be in the pudding.  (%foreign-call
+                  ...)  will need to turn into (CORE:TO-OBJECT<...>
+                  (CORE:INTRINSIC-CALL "foo" (CORE:FROM-OBJECT<...> ...)))
+20:05 <drmeister> And dangerous, untagged 64-bit values will be slung
+                  between these calls with all the safeties disabled.
+20:05 <stassats> autocompletion is noticeably slower
+20:06 <frgo> Why not introduce another tag code?
+20:06 <drmeister> frgo: Raw values can't be tagged
+20:06 <stassats> tags don't grow on threes
+20:06 <drmeister> stassats: It's because we are running the boehmdc
+                  variant.
+20:07 <drmeister> I need to merge the dev-cffi branch into dev and then we
+                  can switch back to the 'boehm' variant of clasp.   That
+                  will speed things up a lot.
+20:07 <drmeister> dynamic_cast is slowing things down right now.
+20:08 <frgo> Raw values still need to be "recognized", no?
+20:08 <drmeister> No.  Not here.
+20:08 <drmeister> The safeties have to be off to get speed.
+20:08 <frgo> (We'd break stability of the lisp system otherwise ... I can't
+             see why we would want this to happen).
+20:08 <drmeister> That's why TO-OBJECT and FROM-OBJECT can't be used
+                  anywhere but here.
+20:09 <drmeister> No, nothing will break any worse than it could break in
+                  any other CFFI in any other Lisp.
+20:09 <frgo> I had a bit of security in mind ...
+20:09 <drmeister> CFFI is inherently dangerous.  You can pass an int to a
+                  function that expects a double - right.
+20:09 <frgo> (being better than others)
+20:10 <drmeister> I'm all for being better than others.   But there isn't a
+                  way to do this safely unless you know the type that the
+                  receiving C/C++ function expects.
+20:11 <drmeister> Oh - wait - I do that already.   That's clbind
+20:11 <drmeister> clbind is inherently safe.
+20:11 <drmeister> But CFFI isn't
+20:12 <drmeister> With clbind you can't pass an int to a function that
+                  expects a double.   It will signal a runtime error - no
+                  problem.
+20:13 <drmeister> But with CFFI you have to trust that the function you are
+                  calling will take the :XXX type that you tell
+                  (%foreign-call "foo" :XXX y)
+20:13 <drmeister> You don't use the C header file to validate it like
+                  clbind does.
+20:14 <drmeister> frgo: Does that make sense?    I'm convincing myself at
+                  the same time.
+20:16 <frgo> Well, the call side may even be derived from the header file
+             (or equivalent source) - both  (%foreign-funcall "gethostname"
+             :pointer buf :size buf-size :int) typed manually and the
+             header file typed manually are, well, manually created sources
+             of information.
+20:17 <drmeister> stassats: If you have made changes to the code could you
+                  post them?   Otherwise I'll hack at it.
+20:18 <drmeister> I'll have to look at it later.  I'm working on a grant
+                  application at the moment.
+20:19 <drmeister> frgo: Right - but fundamentally, the call that gets made
+                  trusts that the types indicated in the %foreign-call are
+                  correct.
+
+|#
