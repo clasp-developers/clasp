@@ -259,7 +259,6 @@ CL_DEFUN T_sp core__source_manager_lookup(T_sp source_manager, T_sp form) {
     SourceManager_sp sm = gctools::As<SourceManager_sp>(source_manager);
     T_sp tspi = sm->lookupSourcePosInfo(form);
     if (SourcePosInfo_sp spi = tspi.asOrNull<SourcePosInfo_O>() ) {
-      // The file_id won't be used
       return spi;
     }
     return _Nil<T_O>();

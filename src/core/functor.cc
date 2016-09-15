@@ -117,11 +117,23 @@ List_sp FunctionClosure_O::source_info() const {
 
 void FunctionClosure_O::set_source_info(List_sp source_info)
 {
-  T_sp sourceFileInfoHandle = oCar(source_info);
+  T_sp sourceFileInfo = oCar(source_info);
   T_sp filePos = oCadr(source_info);
   T_sp lineno = oCaddr(source_info);
   T_sp column = oCadddr(source_info);
-  this->_sourceFileInfoHandle = sourceFileInfoHandle.fixnump() ? sourceFileInfoHandle.unsafe_fixnum() : 0;
+  if (sourceFileInfo.fixnump()) {
+    this->_sourceFileInfoHandle = sourceFileInfo.unsafe_fixnum();
+  } else if (Symbol_sp sym = sourceFileInfo.asOrNull<Symbol_O>()) {
+    // do nothing - leave the sourceFileInfoHandle alone
+    if ( sym == _sym_current_source_file ) {
+      // Do nothing, leave the sourceFileInfo alone
+    } else {
+      printf("%s:%d Illegal source file name designator: %s\n", __FILE__, __LINE__, _rep_(sym).c_str());
+    }
+  } else if (Str_sp str = sourceFileInfo.asOrNull<Str_O>() ) {
+    this->_sourceFileInfoHandle = _lisp->getOrRegisterSourceFileInfo(str->get());
+    printf("%s:%d  Function is having its source-info file set after the fact to: %s  filePos: %s\n", __FILE__,__LINE__,str->get().c_str(), _rep_(filePos).c_str());
+  }
   this->_filePos = filePos.fixnump() ? filePos.unsafe_fixnum() : 0;
   this->_lineno = lineno.fixnump() ? lineno.unsafe_fixnum() : 0;
   this->_column = column.fixnump() ? column.unsafe_fixnum() : 0;

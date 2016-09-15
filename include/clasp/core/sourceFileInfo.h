@@ -116,6 +116,9 @@ public:
   uint _Lineno;
   uint _Column;
   //	Function_sp 	_Expander;
+  CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos;}
+  CL_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno;}
+  CL_DEFMETHOD size_t source_file_pos_column() const { return this->_Column;}
 };
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())

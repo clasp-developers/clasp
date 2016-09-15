@@ -365,13 +365,13 @@
 
 
 (defun irc-size_t-*current-source-pos-info*-filepos ()
-  (let ((csp (ext:current-source-location)))
+  (let ((csp core:*current-source-pos-info*))
     (jit-constant-size_t (core:source-pos-info-filepos csp))))
 (defun irc-size_t-*current-source-pos-info*-lineno ()
-  (let ((csp (ext:current-source-location)))
+  (let ((csp core:*current-source-pos-info*))
     (jit-constant-size_t (core:source-pos-info-lineno csp))))
 (defun irc-size_t-*current-source-pos-info*-column ()
-  (let ((csp (ext:current-source-location)))
+  (let ((csp core:*current-source-pos-info*))
     (jit-constant-size_t (core:source-pos-info-column *current-source-pos-info*))))
 
 
