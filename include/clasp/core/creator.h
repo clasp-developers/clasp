@@ -39,6 +39,7 @@ namespace core {
     };
     virtual void describe() const = 0;
     virtual core::T_sp allocate() = 0;
+    virtual ~Creator_O() {};
   };
 
 
