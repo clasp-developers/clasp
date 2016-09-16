@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/glue.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/str.fwd.h>
+#include <clasp/core/numbers.h>
 #include <clasp/core/fli.h>
 
 namespace translate {
@@ -60,70 +61,70 @@ namespace translate {
     struct from_object< short, std::true_type > {
     typedef short DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_short( o )){};
+    from_object(core::T_sp o) : _v( core::clasp_to_short( o )){};
   };
 
   template <>
     struct from_object< unsigned short, std::true_type > {
     typedef unsigned short DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_ushort( gc::As<core::Integer_sp>( o ) )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_ushort( gc::As<core::Integer_sp>( o ) )){};
   };
 
   template <>
     struct from_object< int, std::true_type > {
     typedef int DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_int( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_int( o )){};
   };
 
   template <>
     struct from_object< unsigned int, std::true_type > {
     typedef unsigned int DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_uint( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_uint( o )){};
   };
 
   template <>
     struct from_object< gc::Fixnum, std::true_type > {
     typedef gc::Fixnum DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v(clasp_to_fixnum(core::Fixnum_sp(o))){};
+  from_object(core::T_sp o) : _v( core::clasp_to_fixnum(core::Fixnum_sp(o))){};
   };
 
   template <>
     struct from_object< unsigned long, std::true_type > {
     typedef unsigned long DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_ulong( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_ulong( o )){};
   };
 
   template <>
     struct from_object< long long, std::true_type > {
     typedef long long DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_longlong( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_longlong( o )){};
   };
 
   template <>
     struct from_object< unsigned long long, std::true_type > {
     typedef unsigned long long DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_ulonglong( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_ulonglong( o )){};
   };
 
   template <>
     struct from_object< int8_t, std::true_type > {
     typedef int8_t DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_int8( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_int8( o )){};
   };
 
   template <>
     struct from_object< uint8_t, std::true_type > {
     typedef uint8_t DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( clasp_to_uint8( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_uint8( o )){};
   };
 
   // template <>
@@ -172,21 +173,21 @@ namespace translate {
     struct from_object<float, std::true_type> {
     typedef float DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v(clasp_to_float(gc::As<core::Number_sp>(o))){};
+  from_object(core::T_sp o) : _v( core::clasp_to_float(gc::As<core::Number_sp>(o))){};
   };
 
   template <>
     struct from_object<double, std::true_type> {
     typedef double DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v(clasp_to_double(gc::As<core::Number_sp>(o))){};
+  from_object(core::T_sp o) : _v( core::clasp_to_double(gc::As<core::Number_sp>(o))){};
   };
 
   template <>
     struct from_object<long double, std::true_type> {
     typedef long double DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v(clasp_to_long_double(gc::As<core::Number_sp>(o))){};
+  from_object(core::T_sp o) : _v( core::clasp_to_long_double(gc::As<core::Number_sp>(o))){};
   };
 
   template <>

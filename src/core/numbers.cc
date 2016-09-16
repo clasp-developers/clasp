@@ -2826,7 +2826,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   inline short clasp_to_short(  core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2839,9 +2839,9 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_short();
   }
 
-inline unsigned short clasp_to_ushort( core::T_sp x )
+  inline unsigned short clasp_to_ushort( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2856,9 +2856,9 @@ inline unsigned short clasp_to_ushort( core::T_sp x )
 
   // --- INT ---
 
-inline int clasp_to_int( core::T_sp x )
+  inline int clasp_to_int( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2873,7 +2873,7 @@ inline int clasp_to_int( core::T_sp x )
 
   inline unsigned int clasp_to_uint( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2888,9 +2888,9 @@ inline int clasp_to_int( core::T_sp x )
 
   // --- LONG ---
 
-inline long clasp_to_long( core::T_sp x )
+  inline long clasp_to_long( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2905,7 +2905,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline unsigned long clasp_to_ulong( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2922,7 +2922,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline long long clasp_to_longlong( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2937,7 +2937,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline unsigned long long clasp_to_ulonglong( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2954,7 +2954,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline int8_t clasp_to_int8( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2969,7 +2969,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline uint8_t clasp_to_uint8( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -2986,7 +2986,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline int16_t clasp_to_int16( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3001,7 +3001,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline uint16_t clasp_to_uint16( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3018,7 +3018,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline int32_t clasp_to_int32( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3033,7 +3033,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline uint32_t clasp_to_uint32( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3050,7 +3050,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline int64_t clasp_to_int64( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3065,7 +3065,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline uint64_t clasp_to_uint64( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3082,7 +3082,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3099,7 +3099,7 @@ inline long clasp_to_long( core::T_sp x )
 
   inline ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
       gctools::Fixnum farg = gctools::untag_fixnum( x );
 
@@ -3114,8 +3114,10 @@ inline long clasp_to_long( core::T_sp x )
 
   // --- MPZ ---
 
-  inline mpz_class clasp_to_mpz(Integer_sp x) {
-    if (x.fixnump()) {
+  inline mpz_class clasp_to_mpz(Integer_sp x)
+  {
+    if (x.fixnump())
+    {
       Fixnum fn = x.unsafe_fixnum();
       mpz_class z = fn;
       return z;

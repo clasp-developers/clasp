@@ -127,12 +127,24 @@ NumberType clasp_t_of(Number_sp num);
 Integer_sp clasp_shift(Integer_sp num, int bits);
 gc::Fixnum clasp_integer_length(Integer_sp x);
 mpz_class clasp_to_mpz(Integer_sp x);
-cl_index clasp_to_size(Integer_sp x);
-uint32_t clasp_to_uint32_t(Integer_sp x);
-Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
-SingleFloat_sp clasp_make_single_float(float d);
-DoubleFloat_sp clasp_make_double_float(double d);
-Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+
+ size_t clasp_to_size(Integer_sp x);
+ uint32_t clasp_to_uint32_t(Integer_sp x);
+
+ short clasp_to_short(T_sp x);
+ unsigned short clasp_to_ushort(T_sp x);
+ unsigned long clasp_to_ulong(T_sp x);
+ long long clasp_to_longlong(T_sp x);
+ unsigned long long clasp_to_ulonglong(T_sp x);
+
+ int8_t clasp_to_int8(T_sp x);
+ uint8_t clasp_to_uint8(T_sp x);
+
+ Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
+ SingleFloat_sp clasp_make_single_float(float d);
+ DoubleFloat_sp clasp_make_double_float(double d);
+ Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+
 };
 
 namespace core {
@@ -1262,7 +1274,7 @@ namespace core {
       mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
       TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
     }
-    return x->as_uint64_();
+    return x->as_uint64_t();
   }
 
   inline cl_intptr_t clasp_to_cl_intptr_t(Integer_sp x) {
@@ -1274,7 +1286,7 @@ namespace core {
       mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
       TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
     }
-    return x->as_cl_intptr_t_();
+    return x->as_cl_intptr_t();
   }
 
   inline mpz_class clasp_to_mpz(Integer_sp x) {
@@ -1285,6 +1297,7 @@ namespace core {
     }
     return x->as_mpz_();
   }
+
   inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
@@ -1296,7 +1309,7 @@ namespace core {
       TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
                                        Integer_O::create(z)));
     }
-    return i->as_unsigned_long_long_();
+    return i->as_ulonglong();
   };
 
   inline Fixnum clasp_to_fixnum(Integer_sp i) {
@@ -1310,7 +1323,7 @@ namespace core {
     return i->as_int_();
   };
 
-  inline cl_index clasp_to_size(Integer_sp i) {
+  inline size_t clasp_to_size(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
       if (f >= 0 && f <= gc::most_positive_fixnum) {

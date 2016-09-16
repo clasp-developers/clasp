@@ -1198,15 +1198,15 @@ DEF_CORE_TRANSLATOR(time_t,time);
 static const int source_line_from_object_char = __LINE__;
 core::T_O* from_object_char(core::T_O* obj)
 {
-  char x = translate::from_object< char >(obj)._v;
+  char x = (translate::from_object< char >( obj ))._v;
   return reinterpret_cast<core::T_O*>( (cl_intptr_t) x );
 }
 
 static const int source_line_to_object_char = __LINE__;
 core::T_O* to_object_char(core::T_O* obj)
 {
-  char x = static_cast< char >(reinterpret_cast<cl_intptr_t>(obj));
-  return translate::to_object< char, std::true_type >::convert(x).raw_();
+  char x = static_cast< char >( (cl_intptr_t)obj );
+  return translate::to_object< char >::convert(x).raw_();
 }
 
 
