@@ -86,6 +86,48 @@ struct from_object<int, std::true_type> {
 };
 
 template <>
+struct from_object<uchar, std::true_type> {
+  typedef uchar DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    int v = clasp_to_int(gc::As<core::Integer_sp>(o));
+    if (v >= 0 && v < 255) {
+      this->_v = v;
+      return;
+    }
+    SIMPLE_ERROR(BF("Could not convert %d to uchar") % v);
+  }
+};
+
+ template <>
+struct from_object<short, std::true_type> {
+  typedef short DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    int v = clasp_to_int(gc::As<core::Integer_sp>(o));
+    if (v >= std::numeric_limits<short int>::min() && v <= std::numeric_limits<short int>::max() ) {
+      this->_v = v;
+      return;
+    }
+    SIMPLE_ERROR(BF("Could not convert %d to short") % v);
+  }
+};
+
+template <>
+struct from_object<ushort, std::true_type> {
+  typedef ushort DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    int v = clasp_to_int(gc::As<core::Integer_sp>(o));
+    if (v >= 0 && v <= std::numeric_limits<unsigned short int>::max() ) {
+      this->_v = v;
+      return;
+    }
+    SIMPLE_ERROR(BF("Could not convert %d to ushort") % v);
+  }
+};
+
+template <>
 struct from_object<gc::Fixnum, std::true_type> {
   typedef gc::Fixnum DeclareType;
   DeclareType _v;
@@ -297,6 +339,33 @@ struct to_object<int> {
   typedef int GivenType;
   static core::T_sp convert(GivenType v) {
     _G();
+    core::Fixnum_sp oi = core::make_fixnum(v);
+    return oi;
+  }
+};
+
+ template <>
+struct to_object<uchar> {
+  typedef uchar GivenType;
+  static core::T_sp convert(GivenType v) {
+    core::Fixnum_sp oi = core::make_fixnum(v);
+    return oi;
+  }
+};
+
+  template <>
+struct to_object<short> {
+  typedef short GivenType;
+  static core::T_sp convert(GivenType v) {
+    core::Fixnum_sp oi = core::make_fixnum(v);
+    return oi;
+  }
+};
+
+    template <>
+struct to_object<ushort> {
+  typedef ushort GivenType;
+  static core::T_sp convert(GivenType v) {
     core::Fixnum_sp oi = core::make_fixnum(v);
     return oi;
   }

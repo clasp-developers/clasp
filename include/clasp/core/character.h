@@ -212,7 +212,9 @@ inline bool clasp_alphanumericp(claspCharacter i) {
 }
 
 inline claspChar clasp_as_char(Character_sp c) {
-  return c.unsafe_character();
+  claspCharacter cc = c.unsafe_character();
+  ASSERT(cc <= 255);
+  return cc;
 }
 
 inline claspCharacter clasp_as_character(Character_sp c) {
