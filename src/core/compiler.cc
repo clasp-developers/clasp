@@ -1148,7 +1148,7 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 
 template< typename T >
 core::T_O* from_object_raw(core::T_O* obj) {
-  T x = translate::from_object< T >(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  T x =(translate::from_object< T >(gctools::smart_ptr<core::T_O>(obj)))._v;
   return reinterpret_cast<core::T_O*>(x);
 }
 
@@ -1191,24 +1191,7 @@ DEF_CORE_TRANSLATOR(size_t,size);
 DEF_CORE_TRANSLATOR(ssize_t,ssize);
 DEF_CORE_TRANSLATOR(ptrdiff_t,ptrdiff);
 DEF_CORE_TRANSLATOR(time_t,time);
-
-// DEF_CORE_TRANSLATOR(char,char); - requires special handling
-// (don't know why, though) - frgo
-
-static const int source_line_from_object_char = __LINE__;
-core::T_O* from_object_char(core::T_O* obj)
-{
-  char x = (translate::from_object< char >( obj ))._v;
-  return reinterpret_cast<core::T_O*>( (cl_intptr_t) x );
-}
-
-static const int source_line_to_object_char = __LINE__;
-core::T_O* to_object_char(core::T_O* obj)
-{
-  char x = static_cast< char >( (cl_intptr_t)obj );
-  return translate::to_object< char >::convert(x).raw_();
-}
-
+DEF_CORE_TRANSLATOR(char,char);
 
 // === END OF CORE TRANSLATORS ===
 

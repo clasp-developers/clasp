@@ -111,6 +111,8 @@ inline LongFloat _log1p<LongFloat>(LongFloat x) {
 }
 #endif
 
+typedef double LongFloat;
+
 bool clasp_zerop(Number_sp num);
 bool clasp_plusp(Real_sp num);
 bool clasp_minusp(Real_sp num);
@@ -128,28 +130,54 @@ Integer_sp clasp_shift(Integer_sp num, int bits);
 gc::Fixnum clasp_integer_length(Integer_sp x);
 mpz_class clasp_to_mpz(Integer_sp x);
 
- size_t clasp_to_size(Integer_sp x);
- uint32_t clasp_to_uint32_t(Integer_sp x);
+gc::Fixnum clasp_to_fixnum( core::T_sp x );
 
- short clasp_to_short(T_sp x);
- unsigned short clasp_to_ushort(T_sp x);
- unsigned long clasp_to_ulong(T_sp x);
- long long clasp_to_longlong(T_sp x);
- unsigned long long clasp_to_ulonglong(T_sp x);
+short clasp_to_short(T_sp x);
+unsigned short clasp_to_ushort(T_sp x);
 
- int8_t clasp_to_int8(T_sp x);
- uint8_t clasp_to_uint8(T_sp x);
+int clasp_to_int(T_sp x);
+unsigned int clasp_to_uint(T_sp x);
 
- Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
- SingleFloat_sp clasp_make_single_float(float d);
- DoubleFloat_sp clasp_make_double_float(double d);
- Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+long clasp_to_long(T_sp x);
+unsigned long clasp_to_ulong(T_sp x);
+
+long long clasp_to_longlong(T_sp x);
+unsigned long long clasp_to_ulonglong(T_sp x);
+
+int8_t clasp_to_int8(T_sp x);
+uint8_t clasp_to_uint8(T_sp x);
+
+int16_t clasp_to_int16(T_sp x);
+uint16_t clasp_to_uint16(T_sp x);
+
+int32_t clasp_to_int32(T_sp x);
+uint32_t clasp_to_uint32(T_sp x);
+uint32_t clasp_to_uint32_t(T_sp x);
+
+int64_t clasp_to_int64(T_sp x);
+uint64_t clasp_to_uint64(T_sp x);
+
+cl_intptr_t clasp_to_cl_intptr_t(T_sp x);
+ptrdiff_t clasp_to_ptrdiff_t(T_sp x);
+
+cl_index clasp_to_size(T_sp x);
+size_t clasp_to_size_t(T_sp x);
+ssize_t clasp_to_ssize_t(T_sp x);
+
+float clasp_to_float(T_sp x);
+double clasp_to_double(T_sp x);
+LongFloat clasp_to_long_float(Number_sp x);
+LongFloat clasp_to_long_double(Number_sp x);
+
+Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
+SingleFloat_sp clasp_make_single_float(float d);
+DoubleFloat_sp clasp_make_double_float(double d);
+
+Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
 
 };
 
 namespace core {
-
-typedef double LongFloat;
 
 Number_sp contagen_add(Number_sp na, Number_sp nb);
 Number_sp contagen_sub(Number_sp na, Number_sp nb);
@@ -1242,134 +1270,6 @@ namespace core {
     }
     return x->bit_length_();
   }
-
-  inline int clasp_to_int(Integer_sp x) {
-    if (x.fixnump()) {
-      Fixnum fn = x.unsafe_fixnum();
-      if (fn < gc::most_negative_int || fn >= gc::most_positive_int) {
-        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
-      }
-      return (uint)fn;
-    }
-    return x->as_uint_();
-  }
-
-  inline uint clasp_to_uint(Integer_sp x) {
-    if (x.fixnump()) {
-      Fixnum fn = x.unsafe_fixnum();
-      if (fn < 0 || fn >= gc::most_positive_uint) {
-        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint)));
-      }
-      return (uint)fn;
-    }
-    return x->as_uint_();
-  }
-
-  inline uint64_t clasp_to_uint64(Integer_sp x) {
-    if (x.fixnump()) {
-      Fixnum fn = x.unsafe_fixnum();
-      if (fn >= 0 & fn <= gc::most_positive_uint64) {
-        return (uint64_t)fn;
-      }
-      mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
-    }
-    return x->as_uint64_t();
-  }
-
-  inline cl_intptr_t clasp_to_cl_intptr_t(Integer_sp x) {
-    if (x.fixnump()) {
-      Fixnum fn = x.unsafe_fixnum();
-      if (fn >= 0 & fn <= gc::most_positive_uint64) {
-        return (cl_intptr_t)fn;
-      }
-      mpz_class z = clasp_create_mpz_class(gc::most_positive_uint64);
-      TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), Integer_O::create(z)));
-    }
-    return x->as_cl_intptr_t();
-  }
-
-  inline mpz_class clasp_to_mpz(Integer_sp x) {
-    if (x.fixnump()) {
-      Fixnum fn = x.unsafe_fixnum();
-      mpz_class z = fn;
-      return z;
-    }
-    return x->as_mpz_();
-  }
-
-  inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
-    if (i.fixnump()) {
-      gc::Fixnum f = i.unsafe_fixnum();
-      if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
-        return (unsigned long long)f;
-      }
-    // unsigned long int must == unsigned long long int
-      mpz_class z = clasp_create_mpz_class(gc::most_positive_unsigned_long_long);
-      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0),
-                                       Integer_O::create(z)));
-    }
-    return i->as_ulonglong();
-  };
-
-  inline Fixnum clasp_to_fixnum(Integer_sp i) {
-    if (i.fixnump()) {
-      gc::Fixnum f = i.unsafe_fixnum();
-      if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum) {
-        return f;
-      }
-      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
-    }
-    return i->as_int_();
-  };
-
-  inline size_t clasp_to_size(Integer_sp i) {
-    if (i.fixnump()) {
-      gc::Fixnum f = i.unsafe_fixnum();
-      if (f >= 0 && f <= gc::most_positive_fixnum) {
-        return f;
-      }
-      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
-    }
-    gc::Fixnum f = i->as_int_();
-    if (f >= 0)
-      return f;
-    TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_fixnum)));
-  };
-
-  inline uint32_t clasp_to_uint32_t(Integer_sp i) {
-    if (i.fixnump()) {
-      gc::Fixnum f = i.unsafe_fixnum();
-      if (f >= 0 && f <= gc::most_positive_uint32) {
-        return f;
-      }
-      TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
-    }
-    TYPE_ERROR(i, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(0), make_fixnum(gc::most_positive_uint32)));
-  };
-
-  inline float clasp_to_float(Number_sp x) {
-    if (x.fixnump()) {
-      float d = x.unsafe_fixnum();
-      return d;
-    } else if (x.single_floatp()) {
-      float d = x.unsafe_single_float();
-      return d;
-    }
-    return x->as_float_();
-  };
-  inline double clasp_to_double(Number_sp x) {
-    if (x.fixnump()) {
-      double d = x.unsafe_fixnum();
-      return d;
-    } else if (x.single_floatp()) {
-      double d = x.unsafe_single_float();
-      return d;
-    }
-    return x->as_double_();
-  };
-  inline LongFloat clasp_to_long_float(Number_sp x) { return x->as_long_float_(); };
-  inline LongFloat clasp_to_long_double(Number_sp x) { return x->as_long_float_(); };
 
   inline Number_sp clasp_sqrt(Number_sp z) {
     if (z.fixnump()) {

@@ -2822,13 +2822,29 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // === CLASP_TO- TRANSLATORS ===
 
-  // --- SHORT ---
 
-  inline short clasp_to_short(  core::T_sp x )
+  inline gc::Fixnum clasp_to_fixnum( core::T_sp x )
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
+
+      if (farg < gc::most_negative_fixnum || farg > gc::most_positive_fixnum)
+      {
+        TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
+      }
+      return farg;
+    }
+    TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_fixnum), make_fixnum(gc::most_positive_fixnum)));
+  }
+
+  // --- SHORT ---
+
+  inline short clasp_to_short( core::T_sp x )
+  {
+    if ( x.fixnump() )
+    {
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_short || farg > gc::most_positive_short)
       {
@@ -2843,7 +2859,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_ushort)
       {
@@ -2860,7 +2876,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_int || farg > gc::most_positive_int)
       {
@@ -2875,7 +2891,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_uint)
       {
@@ -2892,7 +2908,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_long || farg > gc::most_positive_long)
       {
@@ -2907,7 +2923,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_ulong)
       {
@@ -2924,7 +2940,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_long_long || farg > gc::most_positive_long_long)
       {
@@ -2939,7 +2955,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_unsigned_long_long)
       {
@@ -2956,7 +2972,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_int8 || farg > gc::most_positive_int8)
       {
@@ -2971,7 +2987,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_uint8)
       {
@@ -2988,7 +3004,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_int16 || farg > gc::most_positive_int16)
       {
@@ -3003,7 +3019,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_uint16)
       {
@@ -3020,7 +3036,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_int32 || farg > gc::most_positive_int32)
       {
@@ -3035,7 +3051,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg >=gc::most_positive_uint32)
       {
@@ -3046,13 +3062,18 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_uint32_t();
   }
 
+  inline uint32_t clasp_to_uint32_t( core::T_sp x )
+  {
+    return clasp_to_uint32( x );
+  }
+
   // --- INT64 ---
 
   inline int64_t clasp_to_int64( core::T_sp x )
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_int64 || farg > gc::most_positive_int64)
       {
@@ -3067,7 +3088,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < 0 || farg > gc::most_positive_uint64)
       {
@@ -3084,7 +3105,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_cl_intptr || farg > gc::most_positive_cl_intptr)
       {
@@ -3101,7 +3122,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   {
     if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_ptrdiff || farg > gc::most_positive_ptrdiff)
       {
@@ -3156,11 +3177,11 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- SIZE ---
 
-  inline size_t clasp_to_size_t( cl_intptr_t x )
+  inline size_t clasp_to_size_t( T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_size || farg > gc::most_positive_size)
       {
@@ -3172,13 +3193,18 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to size_t"));
   }
 
+  inline cl_index clasp_to_size( T_sp x )
+  {
+    return clasp_to_size_t( x );
+  }
+
   // --- SSIZE ---
 
-  inline ssize_t clasp_to_ssize_t( cl_intptr_t x )
+  inline ssize_t clasp_to_ssize_t( T_sp x )
   {
-    if ( gctools::tagged_fixnump( x ) )
+    if ( x.fixnump() )
     {
-      gctools::Fixnum farg = gctools::untag_fixnum( x );
+      gctools::Fixnum farg = x.unsafe_fixnum();
 
       if (farg < gc::most_negative_ssize|| farg > gc::most_positive_ssize)
       {
@@ -3197,7 +3223,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- FLOAT ---
 
-  inline float clasp_to_float(Number_sp x) {
+  inline float clasp_to_float( Number_sp x) {
     if (x.fixnump()) {
       float d = x.unsafe_fixnum();
       return d;
@@ -3210,7 +3236,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- DOUBLE ---
 
-  inline double clasp_to_double(Number_sp x) {
+  inline double clasp_to_double( Number_sp x) {
     if (x.fixnump()) {
       double d = x.unsafe_fixnum();
       return d;
