@@ -412,6 +412,7 @@ def options(cfg):
 
 def configure(cfg):
     global LLVM_LIBRARIES
+    cfg.load("why")
     cfg.check_waf_version(mini='1.7.5')
     path = os.getenv("PATH").split(":")
     externals_clasp_dir = os.getenv("EXTERNALS_CLASP_DIR")
