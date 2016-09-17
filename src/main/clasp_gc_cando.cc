@@ -5373,7 +5373,7 @@ template <> class gctools::GCKind<core::Instance_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Instance_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___ ;
 };
@@ -5465,7 +5465,7 @@ template <> class gctools::GCKind<core::Real_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Real_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___ ;
 };
@@ -5725,7 +5725,7 @@ template <> class gctools::GCKind<core::WeakPointer_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__WeakPointer_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___ ;
 };
@@ -5741,7 +5741,7 @@ template <> class gctools::GCKind<core::Archive_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Archive_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___ ;
 };
@@ -5757,7 +5757,7 @@ template <> class gctools::GCKind<core::Fixnum_dummy_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Fixnum_dummy_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___ ;
 };
@@ -5773,11 +5773,11 @@ template <> class gctools::GCKind<chem::FFItor_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__FFItor_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___ ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___ ;
 };
@@ -5865,7 +5865,7 @@ template <> class gctools::GCKind<llvmo::PointerType_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PointerType_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ ;
 };
@@ -6001,7 +6001,7 @@ template <> class gctools::GCKind<chem::MacroModelFile_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__MacroModelFile_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFItor_O___ ;
 };
@@ -6049,7 +6049,7 @@ template <> class gctools::GCKind<core::CxxMethodFunction_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__CxxMethodFunction_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___ ;
 };
@@ -6153,7 +6153,7 @@ template <> class gctools::GCKind<core::Character_dummy_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Character_dummy_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFAngle_O___ ;
 };
@@ -6249,7 +6249,7 @@ template <> class gctools::GCKind<chem::StructureComparer_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__StructureComparer_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__ ;
 };
@@ -6277,7 +6277,7 @@ template <> class gctools::GCKind<llvmo::MDNode_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__MDNode_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___ ;
 };
@@ -6369,7 +6369,7 @@ template <> class gctools::GCKind<chem::Logical_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Logical_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___ ;
 };
@@ -6417,7 +6417,7 @@ template <> class gctools::GCKind<llvmo::Function_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__Function_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__ ;
 };
@@ -6425,7 +6425,7 @@ template <> class gctools::GCKind<chem::SpanningLoop_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__SpanningLoop_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__Residue_O___ ;
 };
@@ -6521,7 +6521,7 @@ template <> class gctools::GCKind<core::StringStream_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__StringStream_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Str_O___ ;
 };
@@ -6541,7 +6541,7 @@ template <> class gctools::GCKind<core::StandardClass_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_BOOTSTRAP_core__StandardClass_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFPtor_O___ ;
 };
@@ -6629,7 +6629,7 @@ template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___ ;
 };
@@ -6701,7 +6701,7 @@ template <> class gctools::GCKind<chem::Root_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__Root_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___ ;
 };
@@ -6729,7 +6729,7 @@ template <> class gctools::GCKind<chem::TagSet_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__TagSet_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___ ;
 };
@@ -6813,7 +6813,7 @@ template <> class gctools::GCKind<core::SymbolMacroletEnvironment_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__SymbolMacroletEnvironment_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___ ;
 };
@@ -6901,7 +6901,7 @@ template <> class gctools::GCKind<core::UnwindProtectEnvironment_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__UnwindProtectEnvironment_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ ;
 };
@@ -7057,7 +7057,7 @@ template <> class gctools::GCKind<core::Rational_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Rational_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__CDNode_O___ ;
 };
@@ -7085,7 +7085,7 @@ template <> class gctools::GCKind<clbind::ClassRegistry_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clbind__ClassRegistry_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___ ;
 };
@@ -7097,7 +7097,7 @@ template <> class gctools::GCKind<chem::ConformationExplorerEntry_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_chem__ConformationExplorerEntry_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___ ;
 };
@@ -7269,7 +7269,7 @@ template <> class gctools::GCKind<geom::OVector2_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_geom__OVector2_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___ ;
 };
@@ -7665,7 +7665,7 @@ template <> class gctools::GCKind<gctools::GCVector_moveable<core::ExceptionEntr
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___ ;
 };
@@ -7717,7 +7717,7 @@ template <> class gctools::GCKind<gctools::GCVector_moveable<gctools::smart_ptr<
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__AGEdge_O__ ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__int__ ;
 };
@@ -7781,7 +7781,7 @@ template <> class gctools::GCKind<core::VectorObjectsWithFillPtr_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O ;
 };
-template <> class gctools::GCKind<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>> {
+template <> class gctools::GCKind<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFStretch_O___ ;
 };
@@ -8069,7 +8069,7 @@ public:
 { class_kind, KIND_LISPALLOC_core__PosixTimeDuration_O, sizeof(core::PosixTimeDuration_O), 0, "core::PosixTimeDuration_O" },
 // not-exposing {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),_Duration.ticks_.value_), "_Duration.ticks_.value_" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__SmallMultimap_O, sizeof(core::SmallMultimap_O), 0, "core::SmallMultimap_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), "map._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMultimap_O),map._Contents), "map._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { templated_kind, KIND_TEMPLATED_LISPALLOC_core__Creator_O, sizeof(core::Creator_O), 0, "core::Creator_O" },
 { class_kind, KIND_LISPALLOC_clbind__DummyCreator_O, sizeof(clbind::DummyCreator_O), 0, "clbind::DummyCreator_O" },
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::DummyCreator_O),_name.__r_.__first_.NO-NAME.__l.__cap_), "_name.__r_.__first_.NO-NAME.__l.__cap_" }, // public: (NIL NIL NIL T T T) fixable: NIL good-name: T
@@ -8537,7 +8537,7 @@ public:
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_Match.m_last_closed_paren), "_Match.m_last_closed_paren" }, // public: (NIL NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_Match.m_is_singular), "_Match.m_is_singular" }, // public: (NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__SmallMap_O, sizeof(core::SmallMap_O), 0, "core::SmallMap_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>>), offsetof(SAFE_TYPE_MACRO(core::SmallMap_O),map._Contents), "map._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__Function_O, sizeof(core::Function_O), 0, "core::Function_O" },
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Function_O),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__NamedFunction_O, sizeof(core::NamedFunction_O), 0, "core::NamedFunction_O" },
@@ -9289,7 +9289,7 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_char, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__size_), "_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__size_" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__lx), "_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__lx" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_SequenceNumber), "_SequenceNumber" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_Couplings._Contents), "_Couplings._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_Couplings._Contents), "_Couplings._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_TempResidue), "_TempResidue" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_TemporaryInt), "_TemporaryInt" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<adapt::SymbolSet_O>), offsetof(SAFE_TYPE_MACRO(chem::Monomer_O),_Aliases), "_Aliases" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -9304,7 +9304,7 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_char, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__size_), "_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__size_" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__lx), "_Comment.__r_.__first_.NO-NAME.__s.NO-NAME.__lx" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_SequenceNumber), "_SequenceNumber" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_Couplings._Contents), "_Couplings._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_Couplings._Contents), "_Couplings._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_TempResidue), "_TempResidue" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_TemporaryInt), "_TemporaryInt" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<adapt::SymbolSet_O>), offsetof(SAFE_TYPE_MACRO(chem::MultiMonomer_O),_Aliases), "_Aliases" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -9323,8 +9323,8 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_Name), "_Name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::String_O>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_Comment), "_Comment" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ConstitutionAtoms_O>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_ConstitutionAtoms), "_ConstitutionAtoms" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_PlugsByName._Contents), "_PlugsByName._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_Topologies._Contents), "_Topologies._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_PlugsByName._Contents), "_PlugsByName._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_Topologies._Contents), "_Topologies._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::StereoInformation_O>), offsetof(SAFE_TYPE_MACRO(chem::Constitution_O),_StereoInformation), "_StereoInformation" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__StereoisomerAtom_O, sizeof(chem::StereoisomerAtom_O), 0, "chem::StereoisomerAtom_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::StereoisomerAtom_O),_AtomName), "_AtomName" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -9360,14 +9360,14 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Alias_O),_MonomerId), "_MonomerId" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Alias_O),_AtomId), "_AtomId" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__MapOfMonomerNamesToAtomIndexers_O, sizeof(chem::MapOfMonomerNamesToAtomIndexers_O), 0, "chem::MapOfMonomerNamesToAtomIndexers_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::MapOfMonomerNamesToAtomIndexers_O),_AtomIndexers._Contents), "_AtomIndexers._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::MapOfMonomerNamesToAtomIndexers_O),_AtomIndexers._Contents), "_AtomIndexers._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__TwisterDriver_O, sizeof(chem::TwisterDriver_O), 0, "chem::TwisterDriver_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Aggregate_O>), offsetof(SAFE_TYPE_MACRO(chem::TwisterDriver_O),_Aggregate), "_Aggregate" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>>), offsetof(SAFE_TYPE_MACRO(chem::TwisterDriver_O),_Twisters._Vector._Contents), "_Twisters._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__ResidueList_O, sizeof(chem::ResidueList_O), 0, "chem::ResidueList_O" },
 { class_kind, KIND_LISPALLOC_chem__MonomerContext_O, sizeof(chem::MonomerContext_O), 0, "chem::MonomerContext_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EntityNameSetBase_O>), offsetof(SAFE_TYPE_MACRO(chem::MonomerContext_O),_Self), "_Self" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::MonomerContext_O),_Neighbors._Contents), "_Neighbors._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::MonomerContext_O),_Neighbors._Contents), "_Neighbors._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__CoordinateSystem_O, sizeof(chem::CoordinateSystem_O), 0, "chem::CoordinateSystem_O" },
 { class_kind, KIND_LISPALLOC_llvmo__DINodeArray_O, sizeof(llvmo::DINodeArray_O), 0, "llvmo::DINodeArray_O" },
 { class_kind, KIND_LISPALLOC_chem__Command_O, sizeof(chem::Command_O), 0, "chem::Command_O" },
@@ -9524,26 +9524,20 @@ public:
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ReportBase_O>>>), offsetof(SAFE_TYPE_MACRO(chem::MinimizerLog_O),_Reports._Vector._Contents), "_Reports._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__ChemDraw_O, sizeof(chem::ChemDraw_O), 0, "chem::ChemDraw_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDFragment_O>>>), offsetof(SAFE_TYPE_MACRO(chem::ChemDraw_O),_AllFragments._Vector._Contents), "_AllFragments._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::ChemDraw_O),_NamedFragments._Contents), "_NamedFragments._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::ChemDraw_O),_NamedFragments._Contents), "_NamedFragments._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__PdbMonomerConnectivity_O, sizeof(chem::PdbMonomerConnectivity_O), 0, "chem::PdbMonomerConnectivity_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::PdbMonomerConnectivity_O),_PdbName), "_PdbName" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::VectorObjectsWithFillPtr_O>), offsetof(SAFE_TYPE_MACRO(chem::PdbMonomerConnectivity_O),_LongNames), "_LongNames" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::PdbMonomerConnectivity_O),_BondAtomPairs._Vector._Contents), "_BondAtomPairs._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::PdbMonomerConnectivity_O),_BondAtomPairs._Vector._Contents), "_BondAtomPairs._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Matter_O, sizeof(chem::Matter_O), 0, "chem::Matter_O" },
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),_NextContentId), "_NextContentId" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),_Id), "_Id" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),_TempFileId), "_TempFileId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),name), "name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),containerContainedBy.theObject), "containerContainedBy.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),containerContainedBy), "containerContainedBy" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>>), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),_contents._Vector._Contents), "_contents._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Matter_O),_Restraints.theObject), "_Restraints.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Residue_O, sizeof(chem::Residue_O), 0, "chem::Residue_O" },
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_NextContentId), "_NextContentId" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_Id), "_Id" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_TempFileId), "_TempFileId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),name), "name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),containerContainedBy.theObject), "containerContainedBy.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),containerContainedBy), "containerContainedBy" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>>), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_contents._Vector._Contents), "_contents._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_Restraints.theObject), "_Restraints.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
@@ -9555,95 +9549,67 @@ public:
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_UniqueLabel.theObject), "_UniqueLabel.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Residue_O),_MonomerAliases.theObject), "_MonomerAliases.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Atom_O, sizeof(chem::Atom_O), 0, "chem::Atom_O" },
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_NextContentId), "_NextContentId" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Id), "_Id" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_TempFileId), "_TempFileId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),name), "name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),containerContainedBy.theObject), "containerContainedBy.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),containerContainedBy), "containerContainedBy" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_contents._Vector._Contents), "_contents._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Restraints.theObject), "_Restraints.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_UniqueAtomOrder), "_UniqueAtomOrder" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Alias), "_Alias" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),flags), "flags" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),type), "type" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_HintLP), "_HintLP" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),flags), "flags" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_RelativePriority), "_RelativePriority" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),bonds._Vector._Contents), "bonds._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Ionization), "_Ionization" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),charge), "charge" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),occupancy), "occupancy" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),tempFactor), "tempFactor" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),vdwRadius), "vdwRadius" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),covalentRadius), "covalentRadius" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Mask), "_Mask" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),copyAtom), "copyAtom" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_RingMembershipCount), "_RingMembershipCount" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_MembershipAr1), "_MembershipAr1" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_MembershipAr2), "_MembershipAr2" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_MembershipAr3), "_MembershipAr3" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_MembershipAr4), "_MembershipAr4" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_MembershipAr5), "_MembershipAr5" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),seenId), "seenId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_BackSpan.theObject), "_BackSpan.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_NextSpan.theObject), "_NextSpan.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),backCount), "backCount" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),tempInt), "tempInt" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),moeIndex), "moeIndex" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),moeType), "moeType" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),seenId), "seenId" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),occupancy), "occupancy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),tempFactor), "tempFactor" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),vdwRadius), "vdwRadius" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),covalentRadius), "covalentRadius" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_RelativePriority), "_RelativePriority" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Mask), "_Mask" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_short, sizeof(unsigned short), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_RingMembershipCount), "_RingMembershipCount" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_short, sizeof(short), offsetof(SAFE_TYPE_MACRO(chem::Atom_O),_Ionization), "_Ionization" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__VirtualAtom_O, sizeof(chem::VirtualAtom_O), 0, "chem::VirtualAtom_O" },
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_NextContentId), "_NextContentId" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Id), "_Id" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_TempFileId), "_TempFileId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),name), "name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),containerContainedBy.theObject), "containerContainedBy.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),containerContainedBy), "containerContainedBy" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_contents._Vector._Contents), "_contents._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Restraints.theObject), "_Restraints.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_UniqueAtomOrder), "_UniqueAtomOrder" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Alias), "_Alias" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),flags), "flags" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),type), "type" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_HintLP), "_HintLP" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),flags), "flags" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_RelativePriority), "_RelativePriority" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Bond_O>>>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),bonds._Vector._Contents), "bonds._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Ionization), "_Ionization" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),charge), "charge" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),occupancy), "occupancy" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),tempFactor), "tempFactor" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),vdwRadius), "vdwRadius" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),covalentRadius), "covalentRadius" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Mask), "_Mask" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),copyAtom), "copyAtom" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_RingMembershipCount), "_RingMembershipCount" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_MembershipAr1), "_MembershipAr1" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_MembershipAr2), "_MembershipAr2" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_MembershipAr3), "_MembershipAr3" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_MembershipAr4), "_MembershipAr4" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_MembershipAr5), "_MembershipAr5" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),seenId), "seenId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_BackSpan.theObject), "_BackSpan.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_NextSpan.theObject), "_NextSpan.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),backCount), "backCount" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),tempInt), "tempInt" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),moeIndex), "moeIndex" }, // public: (NIL) fixable: NIL good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),moeType), "moeType" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),seenId), "seenId" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),occupancy), "occupancy" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),tempFactor), "tempFactor" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),vdwRadius), "vdwRadius" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_float, sizeof(float), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),covalentRadius), "covalentRadius" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_RelativePriority), "_RelativePriority" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Mask), "_Mask" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_unsigned_short, sizeof(unsigned short), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_RingMembershipCount), "_RingMembershipCount" }, // public: (NIL) fixable: NIL good-name: T
+// not-exposing {  fixed_field, ctype_short, sizeof(short), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_Ionization), "_Ionization" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CalculatePosition_O>), offsetof(SAFE_TYPE_MACRO(chem::VirtualAtom_O),_CalculatePosition), "_CalculatePosition" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Aggregate_O, sizeof(chem::Aggregate_O), 0, "chem::Aggregate_O" },
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),_NextContentId), "_NextContentId" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),_Id), "_Id" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),_TempFileId), "_TempFileId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),name), "name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),containerContainedBy.theObject), "containerContainedBy.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),containerContainedBy), "containerContainedBy" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>>), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),_contents._Vector._Contents), "_contents._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Aggregate_O),_Restraints.theObject), "_Restraints.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__Molecule_O, sizeof(chem::Molecule_O), 0, "chem::Molecule_O" },
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),_NextContentId), "_NextContentId" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),_Id), "_Id" }, // public: (NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),_TempFileId), "_TempFileId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),name), "name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),containerContainedBy.theObject), "containerContainedBy.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),containerContainedBy), "containerContainedBy" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Matter_O>>>), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),_contents._Vector._Contents), "_contents._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::List_V>), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::Molecule_O),_Restraints.theObject), "_Restraints.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
@@ -9711,12 +9677,12 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Constitution_O>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_Constitution), "_Constitution" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_SuppressTrainers), "_SuppressTrainers" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Vector_O>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_AtomInfo), "_AtomInfo" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_StereoisomerAtomProperties._Contents), "_StereoisomerAtomProperties._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_StereoisomerAtomProperties._Contents), "_StereoisomerAtomProperties._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_Properties), "_Properties" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_DefaultOutPlugName), "_DefaultOutPlugName" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_Plugs._Contents), "_Plugs._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::Topology_O),_Plugs._Contents), "_Plugs._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__PdbMonomerDatabase_O, sizeof(chem::PdbMonomerDatabase_O), 0, "chem::PdbMonomerDatabase_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::PdbMonomerDatabase_O),_Database._Contents), "_Database._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::PdbMonomerDatabase_O),_Database._Contents), "_Database._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__FrameRecognizer_O, sizeof(chem::FrameRecognizer_O), 0, "chem::FrameRecognizer_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::FrameRecognizer_O),_Name), "_Name" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::FrameRecognizer_O),_GroupName), "_GroupName" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -9740,9 +9706,9 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_DateUpdated.__r_.__first_.NO-NAME.__l.__size_), "_DateUpdated.__r_.__first_.NO-NAME.__l.__size_" }, // public: (NIL NIL NIL T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_char, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_DateUpdated.__r_.__first_.NO-NAME.__s.NO-NAME.__size_), "_DateUpdated.__r_.__first_.NO-NAME.__s.NO-NAME.__size_" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_DateUpdated.__r_.__first_.NO-NAME.__s.NO-NAME.__lx), "_DateUpdated.__r_.__first_.NO-NAME.__s.NO-NAME.__lx" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_frameRecognizers._Contents), "_frameRecognizers._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_MonomerCoordinates._Contents), "_MonomerCoordinates._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_Entities._Contents), "_Entities._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_frameRecognizers._Contents), "_frameRecognizers._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_MonomerCoordinates._Contents), "_MonomerCoordinates._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CandoDatabase_O),_Entities._Contents), "_Entities._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__VirtualSphere_O, sizeof(chem::VirtualSphere_O), 0, "chem::VirtualSphere_O" },
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualSphere_O),_WindowWidth), "_WindowWidth" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::VirtualSphere_O),_WindowHeight), "_WindowHeight" }, // public: (NIL) fixable: NIL good-name: T
@@ -10639,7 +10605,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::PdbWriter_O),_Out), "_Out" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__StereoInformation_O, sizeof(chem::StereoInformation_O), 0, "chem::StereoInformation_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>>), offsetof(SAFE_TYPE_MACRO(chem::StereoInformation_O),_Stereoisomers._Vector._Contents), "_Stereoisomers._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::StereoInformation_O),_NameOrPdbToStereoisomer._Contents), "_NameOrPdbToStereoisomer._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::StereoInformation_O),_NameOrPdbToStereoisomer._Contents), "_NameOrPdbToStereoisomer._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>>), offsetof(SAFE_TYPE_MACRO(chem::StereoInformation_O),_ComplexRestraints._Vector._Contents), "_ComplexRestraints._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__StructureComparer_O, sizeof(chem::StructureComparer_O), 0, "chem::StructureComparer_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Matter_O>), offsetof(SAFE_TYPE_MACRO(chem::StructureComparer_O),_Matter), "_Matter" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10717,8 +10683,8 @@ public:
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(adapt::StringSet_O),rest), "rest" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__CDFragment_O, sizeof(chem::CDFragment_O), 0, "chem::CDFragment_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_ConstitutionName), "_ConstitutionName" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_Nodes._Contents), "_Nodes._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_AtomsToNodes._Contents), "_AtomsToNodes._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_Nodes._Contents), "_Nodes._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_AtomsToNodes._Contents), "_AtomsToNodes._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::CDBond_O>>>), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_Bonds._Vector._Contents), "_Bonds._Vector._Contents" }, // public: (NIL T T) fixable: TAGGED-POINTER-FIX good-name: T
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_LargestId), "_LargestId" }, // public: (NIL) fixable: NIL good-name: T
  {  fixed_field, POINTER_OFFSET, sizeof(UnknownType), offsetof(SAFE_TYPE_MACRO(chem::CDFragment_O),_Molecule.theObject), "_Molecule.theObject" }, // public: (NIL T) fixable: RAW-TAGGED-POINTER-FIX good-name: T
@@ -10729,7 +10695,7 @@ public:
 { class_kind, KIND_LISPALLOC_chem__FFPtorDb_O, sizeof(chem::FFPtorDb_O), 0, "chem::FFPtorDb_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::FFPtorDb_O),_ForceField), "_ForceField" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFPtor_O>>>), offsetof(SAFE_TYPE_MACRO(chem::FFPtorDb_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFPtorDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFPtorDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__FFVdwDb_O, sizeof(chem::FFVdwDb_O), 0, "chem::FFVdwDb_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::FFVdwDb_O),_ForceField), "_ForceField" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>>), offsetof(SAFE_TYPE_MACRO(chem::FFVdwDb_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
@@ -10743,14 +10709,14 @@ public:
 // not-exposing {  fixed_field, ctype_unsigned_char, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_AngleFunction.__r_.__first_.NO-NAME.__s.NO-NAME.__size_), "_AngleFunction.__r_.__first_.NO-NAME.__s.NO-NAME.__size_" }, // public: (T NIL NIL T T T T) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_AngleFunction.__r_.__first_.NO-NAME.__s.NO-NAME.__lx), "_AngleFunction.__r_.__first_.NO-NAME.__s.NO-NAME.__lx" }, // public: (T NIL NIL T T T T) fixable: NIL good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_ZConstants._Contents), "_ZConstants._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_CConstants._Contents), "_CConstants._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_ZConstants._Contents), "_ZConstants._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFAngleDb_O),_CConstants._Contents), "_CConstants._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__FFStretchDb_O, sizeof(chem::FFStretchDb_O), 0, "chem::FFStretchDb_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::FFStretchDb_O),_ForceField), "_ForceField" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFStretch_O>>>), offsetof(SAFE_TYPE_MACRO(chem::FFStretchDb_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFStretchDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>>), offsetof(SAFE_TYPE_MACRO(chem::FFStretchDb_O),_EstimateStretch._Contents), "_EstimateStretch._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFStretchDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>>), offsetof(SAFE_TYPE_MACRO(chem::FFStretchDb_O),_EstimateStretch._Contents), "_EstimateStretch._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__FFNonbondDb_O, sizeof(chem::FFNonbondDb_O), 0, "chem::FFNonbondDb_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::FFNonbondDb_O),_ForceField), "_ForceField" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::FFNonbondDb_O),_EleDielectricValue), "_EleDielectricValue" }, // public: (T) fixable: NIL good-name: T
@@ -10765,7 +10731,7 @@ public:
 { class_kind, KIND_LISPALLOC_chem__FFItorDb_O, sizeof(chem::FFItorDb_O), 0, "chem::FFItorDb_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(chem::FFItorDb_O),_ForceField), "_ForceField" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::FFItor_O>>>), offsetof(SAFE_TYPE_MACRO(chem::FFItorDb_O),_Terms._Vector._Contents), "_Terms._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFItorDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::FFItorDb_O),_Lookup._Contents), "_Lookup._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__AGVertex_O, sizeof(chem::AGVertex_O), 0, "chem::AGVertex_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::RingFinder_O>), offsetof(SAFE_TYPE_MACRO(chem::AGVertex_O),_graph), "_graph" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(chem::AGVertex_O),_atom), "_atom" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -10781,7 +10747,7 @@ public:
 { class_kind, KIND_LISPALLOC_geom__BoundingBox_O, sizeof(geom::BoundingBox_O), 0, "geom::BoundingBox_O" },
 // not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(geom::BoundingBox_O),_Defined), "_Defined" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__SpecificContextSet_O, sizeof(chem::SpecificContextSet_O), 0, "chem::SpecificContextSet_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::SpecificContextSet_O),_KeySets._Contents), "_KeySets._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::SpecificContextSet_O),_KeySets._Contents), "_KeySets._Contents" }, // public: (NIL T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__ZMatrixInternal_O, sizeof(chem::ZMatrixInternal_O), 0, "chem::ZMatrixInternal_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ZMatrix_O>), offsetof(SAFE_TYPE_MACRO(chem::ZMatrixInternal_O),_WeakZMatrix), "_WeakZMatrix" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 // not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(chem::ZMatrixInternal_O),_InternalName.__r_.__first_.NO-NAME.__l.__cap_), "_InternalName.__r_.__first_.NO-NAME.__l.__cap_" }, // public: (NIL NIL NIL T T T) fixable: NIL good-name: T
@@ -10996,7 +10962,7 @@ public:
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::CalculatePositionUsingInternals_O),_AngleDegrees), "_AngleDegrees" }, // public: (NIL) fixable: NIL good-name: T
 // not-exposing {  fixed_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::CalculatePositionUsingInternals_O),_DihedralDegrees), "_DihedralDegrees" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__InfoDb_O, sizeof(chem::InfoDb_O), 0, "chem::InfoDb_O" },
- {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::InfoDb_O),_database._Contents), "_database._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
+ {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>>), offsetof(SAFE_TYPE_MACRO(chem::InfoDb_O),_database._Contents), "_database._Contents" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_chem__ReportBase_O, sizeof(chem::ReportBase_O), 0, "chem::ReportBase_O" },
  {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::ReportBase_O),_Time), "_Time" }, // public: (T) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_chem__MessageReport_O, sizeof(chem::MessageReport_O), 0, "chem::MessageReport_O" },
@@ -11624,11 +11590,11 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Reader_O),_Input), "_Input" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_ROOTCLASSALLOC_clbind__detail__class_map, sizeof(clbind::detail::class_map), 0, "clbind::detail::class_map" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::detail::class_map),m_classes._Vector._Contents), "m_classes._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AtomIndexer_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AtomIndexer_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_, sizeof(gctools::GCVector_moveable<chem::EnergyAngle>), 0, "gctools::GCVector_moveable<chem::EnergyAngle>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAngle>),_Data), "_Data" },
 {  variable_capacity, sizeof(chem::EnergyAngle), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAngle>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAngle>),_Capacity), NULL },
@@ -11657,11 +11623,11 @@ public:
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Keyword), "_Keyword" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTarget), "_Sensor._ArgTarget" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::KeywordArgument),_Sensor._ArgTargetFrameIndex), "_Sensor._ArgTargetFrameIndex" }, // public: (T T) fixable: NIL good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EntityNameSetBase_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::EntityNameSetBase_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_, sizeof(gctools::GCVector_moveable<chem::EnergyImproperRestraint>), 0, "gctools::GCVector_moveable<chem::EnergyImproperRestraint>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyImproperRestraint>),_Data), "_Data" },
 {  variable_capacity, sizeof(chem::EnergyImproperRestraint), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyImproperRestraint>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyImproperRestraint>),_Capacity), NULL },
@@ -11698,8 +11664,8 @@ public:
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),_Charge1), "_Charge1" }, // public: (T) fixable: NIL good-name: T
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),_Charge2), "_Charge2" }, // public: (T) fixable: NIL good-name: T
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),_RStar), "_RStar" }, // public: (T) fixable: NIL good-name: T
-// {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iAtom), "term.iAtom" }, // public: (T T) fixable: NIL good-name: T
-// {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iBondOrder), "term.iBondOrder" }, // public: (T T) fixable: NIL good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iAtom), "term.iAtom" }, // public: (T T) fixable: NIL good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iBondOrder), "term.iBondOrder" }, // public: (T T) fixable: NIL good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_, sizeof(gctools::GCVector_moveable<core::OptionalArgument>), 0, "gctools::GCVector_moveable<core::OptionalArgument>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::OptionalArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Capacity), NULL },
@@ -11747,35 +11713,35 @@ public:
  {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyAtom),_AtomsAtRemove[0]._Contents), "_AtomsAtRemove[0]._Contents" }, // public: (T NIL T) fixable: TAGGED-POINTER-FIX good-name: T
  {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyAtom),_AtomsAtRemove[1]._Contents), "_AtomsAtRemove[1]._Contents" }, // public: (T NIL T) fixable: TAGGED-POINTER-FIX good-name: T
  {    variable_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<chem::Atom_O>>>), offsetof(SAFE_TYPE_MACRO(chem::EnergyAtom),_AtomsAtRemove[2]._Contents), "_AtomsAtRemove[2]._Contents" }, // public: (T NIL T) fixable: TAGGED-POINTER-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Molecule_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Coupling_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Molecule_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Coupling_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::MonomerCoordinates_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::MonomerCoordinates_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDNode_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::PdbMonomerConnectivity_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDNode_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::PdbMonomerConnectivity_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_, sizeof(gctools::GCVector_moveable<core::RequiredArgument>), 0, "gctools::GCVector_moveable<core::RequiredArgument>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::RequiredArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::RequiredArgument>),_Capacity), NULL },
@@ -11799,11 +11765,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::Twister_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>),_Capacity), NULL },
@@ -11827,20 +11793,20 @@ public:
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_key), "_key" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_value), "_value" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::CacheRecord),_generation), "_generation" }, // public: (T) fixable: NIL good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFItor_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFItor_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFItor_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFItor_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::ChemInfo_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ChemInfo_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::SpecificContext_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::SpecificContext_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::Package_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>),_Capacity), NULL },
@@ -11861,11 +11827,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::Mate_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Mate_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFAngle_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFAngle_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFAngle_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFAngle_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::TrajectoryFrame_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>),_Capacity), NULL },
@@ -11874,16 +11840,16 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>),second), "second" }, // public: (T) fixable: NIL good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>),second), "second" }, // public: (T) fixable: NIL good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::DoubleFloat_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConformationCollectionEntry_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>),_Capacity), NULL },
@@ -11892,11 +11858,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::SingleDispatchMethod_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SingleDispatchMethod_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Entity_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Entity_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_, sizeof(gctools::GCVector_moveable<chem::EnergyChiralRestraint>), 0, "gctools::GCVector_moveable<chem::EnergyChiralRestraint>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyChiralRestraint>),_Data), "_Data" },
 {  variable_capacity, sizeof(chem::EnergyChiralRestraint), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyChiralRestraint>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyChiralRestraint>),_Capacity), NULL },
@@ -11910,19 +11876,19 @@ public:
  {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyChiralRestraint),term.I2), "term.I2" }, // public: (T T) fixable: NIL good-name: T
  {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyChiralRestraint),term.I3), "term.I3" }, // public: (T T) fixable: NIL good-name: T
  {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyChiralRestraint),term.I4), "term.I4" }, // public: (T T) fixable: NIL good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._ti), "second._ti" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._tj), "second._tj" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._rij), "second._rij" }, // public: (T T) fixable: NIL good-name: T
- {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._lnKij), "second._lnKij" }, // public: (T T) fixable: NIL good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__Residue_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>),_Capacity), NULL },
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>),first), "first" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._ti), "second._ti" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._tj), "second._tj" }, // public: (T T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._rij), "second._rij" }, // public: (T T) fixable: NIL good-name: T
+ {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>),second._lnKij), "second._lnKij" }, // public: (T T) fixable: NIL good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__Residue_O___, sizeof(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>), 0, "gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<int,gctools::smart_ptr<chem::Residue_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>),_Capacity), NULL },
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(std::pair<int,gctools::smart_ptr<chem::Residue_O>>),first), "first" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(std::pair<int,gctools::smart_ptr<chem::Residue_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConformationExplorerEntry_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>),_Capacity), NULL },
@@ -11934,16 +11900,16 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_lambda_list), "_lambda_list" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Slots._Vector._Contents), "_Slots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableFrontendActionFactory),_Sig), "_Sig" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Str_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Str_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFPtor_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFPtor_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Str_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Str_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFPtor_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFPtor_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction, sizeof(asttooling::DerivableSyntaxOnlyAction), 0, "asttooling::DerivableSyntaxOnlyAction" },
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableSyntaxOnlyAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -11972,11 +11938,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<clbind::ClassRep_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Topology_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Topology_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_, sizeof(gctools::GCVector_moveable<core::SymbolStorage>), 0, "gctools::GCVector_moveable<core::SymbolStorage>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::SymbolStorage), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::SymbolStorage>),_Capacity), NULL },
@@ -11996,20 +11962,20 @@ public:
 {  variable_capacity, sizeof(chem::KeyEntry), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::KeyEntry>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::KeyEntry>),_Capacity), NULL },
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::KeyEntry),_Coupling), "_Coupling" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(chem::KeyEntry),_Monomer), "_Monomer" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_Capacity), NULL },
- {    variable_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>),first), "first" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___, sizeof(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>), 0, "gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>),_Capacity), NULL },
+ {    variable_field, ctype_unsigned_int, sizeof(unsigned int), offsetof(SAFE_TYPE_MACRO(std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>),first), "first" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Residue_O>), offsetof(SAFE_TYPE_MACRO(std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::ComplexRestraint_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::ComplexRestraint_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDFragment_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDFragment_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFAngle_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::FFAngle_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>),_Capacity), NULL },
@@ -12026,20 +11992,20 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FrameRecognizer_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FrameRecognizer_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCSTRING_gctools__GCString_moveable_char_, sizeof(gctools::GCString_moveable<char>), 0, "gctools::GCString_moveable<char>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCString_moveable<char>),_Data), "_Data" },
 {  variable_capacity, sizeof(char), offsetof(SAFE_TYPE_MACRO(gctools::GCString_moveable<char>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCString_moveable<char>),_Capacity), NULL },
 {    variable_field, ctype_char, sizeof(char), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_, sizeof(gctools::GCVector_moveable<chem::EnergyAnchorRestraint>), 0, "gctools::GCVector_moveable<chem::EnergyAnchorRestraint>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAnchorRestraint>),_Data), "_Data" },
 {  variable_capacity, sizeof(chem::EnergyAnchorRestraint), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAnchorRestraint>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::EnergyAnchorRestraint>),_Capacity), NULL },
@@ -12100,21 +12066,21 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::T_O*), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::T_O *>),_Capacity), NULL },
 {    variable_field, POINTER_OFFSET, sizeof(core::T_O*), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__CDNode_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_Capacity), NULL },
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>),first), "first" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDNode_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::StereoisomerAtoms_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__CDNode_O___, sizeof(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>), 0, "gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<int,gctools::smart_ptr<chem::CDNode_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>),_Capacity), NULL },
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(std::pair<int,gctools::smart_ptr<chem::CDNode_O>>),first), "first" }, // public: (T) fixable: NIL good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::CDNode_O>), offsetof(SAFE_TYPE_MACRO(std::pair<int,gctools::smart_ptr<chem::CDNode_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::StereoisomerAtoms_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Stereoisomer_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_asttooling__DerivableASTFrontendAction, sizeof(asttooling::DerivableASTFrontendAction), 0, "asttooling::DerivableASTFrontendAction" },
  {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_TimesCalled), "_TimesCalled" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(asttooling::DerivableASTFrontendAction),_Class), "_Class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -12166,11 +12132,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<core::SimpleBitVector_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::SimpleBitVector_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::MonomerCoordinates_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::MonomerCoordinates_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::Coupling_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>),_Capacity), NULL },
@@ -12214,11 +12180,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::ExceptionEntry), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::ExceptionEntry>),_Capacity), NULL },
  {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ExceptionEntry),_Key), "_Key" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Plug_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Plug_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_, sizeof(gctools::GCVector_moveable<chem::AtomInfo>), 0, "gctools::GCVector_moveable<chem::AtomInfo>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomInfo>),_Data), "_Data" },
 {  variable_capacity, sizeof(chem::AtomInfo), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomInfo>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<chem::AtomInfo>),_Capacity), NULL },
@@ -12232,11 +12198,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::AGEdge_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::AGEdge_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__int__, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>),second), "second" }, // public: (T) fixable: NIL good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__int__, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<chem::Atom_O>,int>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::Atom_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,int>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<chem::Atom_O>,int>),second), "second" }, // public: (T) fixable: NIL good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>),_Capacity), NULL },
@@ -12260,11 +12226,11 @@ public:
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::FFVdw_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>),_Capacity), NULL },
 {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFVdw_O>), 0, "only" },
-{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFStretch_O___, sizeof(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>), 0, "gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>" },
-{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>),_Data), "_Data" },
-{  variable_capacity, sizeof(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>),_Capacity), NULL },
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
- {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFStretch_O>), offsetof(SAFE_TYPE_MACRO(std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+{ container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFStretch_O___, sizeof(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>), 0, "gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>" },
+{  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>),_Data), "_Data" },
+{  variable_capacity, sizeof(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>),_Capacity), NULL },
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>),first), "first" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {    variable_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<chem::FFStretch_O>), offsetof(SAFE_TYPE_MACRO(std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>),second), "second" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__, sizeof(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>), 0, "gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>),_Data), "_Data" },
 {  variable_capacity, sizeof(gctools::smart_ptr<chem::StereoisomerAtom_O>), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>),_Capacity), NULL },
@@ -15358,7 +15324,7 @@ obj_finalize_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAngle>"));}
@@ -15373,7 +15339,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::KeywordArgument>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyImproperRestraint>"));}
@@ -15415,22 +15381,22 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAtom_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAtom>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::RequiredArgument>"));}
@@ -15448,7 +15414,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__S
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>"));}
@@ -15466,13 +15432,13 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::CacheRecord>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFItor_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
@@ -15490,7 +15456,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__M
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFAngle_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>"));}
@@ -15499,10 +15465,10 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__R
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>"));}
@@ -15511,16 +15477,16 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__S
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyChiralRestraint>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__Residue_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>"));}
@@ -15532,10 +15498,10 @@ obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Str_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFPtor_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>"));}
 obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
@@ -15556,7 +15522,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind_
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::SymbolStorage>"));}
@@ -15565,13 +15531,13 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__KeyEntry_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::KeyEntry>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFAngle_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>"));}
@@ -15586,13 +15552,13 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__S
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
 obj_finalize_KIND_GCSTRING_gctools__GCString_moveable_char_:
 {
     THROW_HARD_ERROR(BF("Should never finalize gcstrings gctools::GCString_moveable<char>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::EnergyAnchorRestraint>"));}
@@ -15607,13 +15573,13 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__CDNode_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"));}
 obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
@@ -15640,7 +15606,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__S
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"));}
@@ -15673,7 +15639,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_:
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<core::ExceptionEntry>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<chem::AtomInfo>"));}
@@ -15685,7 +15651,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__A
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__int__:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"));}
@@ -15700,7 +15666,7 @@ obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__F
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFStretch_O___:
 {
-    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>"));}
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__:
 {
     THROW_HARD_ERROR(BF("Should never finalize containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"));}
@@ -19421,7 +19387,7 @@ obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__AtomIndexer_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::AtomIndexer_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAngle_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAngle>"));}
@@ -19436,7 +19402,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::KeywordArgument>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__EntityNameSetBase_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::EntityNameSetBase_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyImproperRestraint_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyImproperRestraint>"));}
@@ -19478,22 +19444,22 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAtom>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Molecule_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Molecule_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Coupling_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Coupling_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__MonomerCoordinates_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::MonomerCoordinates_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Symbol_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Symbol_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__gctools__smart_ptr_chem__CDNode_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__PdbMonomerConnectivity_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::PdbMonomerConnectivity_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::RequiredArgument>"));}
@@ -19511,7 +19477,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Twister_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Twister_O>>"));}
@@ -19529,13 +19495,13 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::CacheRecord>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFItor_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFItor_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ChemInfo_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ChemInfo_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__SpecificContext_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::SpecificContext_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::Package_O>>"));}
@@ -19553,7 +19519,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Mate_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFAngle_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFAngle_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__TrajectoryFrame_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::TrajectoryFrame_O>>"));}
@@ -19562,10 +19528,10 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Residue_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__unsigned_int__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,unsigned int>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__DoubleFloat_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::DoubleFloat_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationCollectionEntry_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationCollectionEntry_O>>"));}
@@ -19574,16 +19540,16 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SingleDispatchMethod_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Entity_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Entity_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyChiralRestraint_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyChiralRestraint>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__chem__EstimateStretch__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,chem::EstimateStretch>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__Residue_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::Residue_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::Residue_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntry_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntry_O>>"));}
@@ -19595,10 +19561,10 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendAc
 }
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__Str_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<core::Str_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFPtor_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFPtor_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
@@ -19619,7 +19585,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<clbind::ClassRep_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Topology_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Topology_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::SymbolStorage>"));}
@@ -19628,13 +19594,13 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::KeyEntry>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_unsigned_int_gctools__smart_ptr_chem__Residue_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<unsigned int,gctools::smart_ptr<chem::Residue_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ComplexRestraint_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ComplexRestraint_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__CDFragment_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::CDFragment_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__FFAngle_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFAngle_O>>"));}
@@ -19649,13 +19615,13 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Stereoisomer_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FrameRecognizer_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FrameRecognizer_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCSTRING_gctools__GCString_moveable_char_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate gcstrings gctools::GCString_moveable<char>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_O>,gctools::smart_ptr<core::T_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__EnergyAnchorRestraint_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::EnergyAnchorRestraint>"));}
@@ -19670,13 +19636,13 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::T_O *>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_int_gctools__smart_ptr_chem__CDNode_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<int,gctools::smart_ptr<chem::CDNode_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__StereoisomerAtoms_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::StereoisomerAtoms_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Stereoisomer_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Stereoisomer_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
@@ -19703,7 +19669,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<core::SimpleBitVector_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__MonomerCoordinates_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::MonomerCoordinates_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__Coupling_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::Coupling_O>>"));}
@@ -19736,7 +19702,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core_
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<core::ExceptionEntry>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__Plug_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::Plug_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_chem__AtomInfo_:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<chem::AtomInfo>"));}
@@ -19748,7 +19714,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::AGEdge_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_chem__Atom_O__int__:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<chem::Atom_O>,int>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__ConformationExplorerEntryStage_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::ConformationExplorerEntryStage_O>>"));}
@@ -19763,7 +19729,7 @@ obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctoo
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::FFVdw_O>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_chem__FFStretch_O___:
 {
-    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::__1::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>"));}
+    THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::Symbol_O>,gctools::smart_ptr<chem::FFStretch_O>>>"));}
 obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_chem__StereoisomerAtom_O__:
 {
     THROW_HARD_ERROR(BF("Should never deallocate containers gctools::GCVector_moveable<gctools::smart_ptr<chem::StereoisomerAtom_O>>"));}
