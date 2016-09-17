@@ -157,8 +157,11 @@ build_cboehmdc:
 	./waf -j $(PJOBS) build_cboehmdc
 
 
+redeye-clean:
+	./waf -j $(PJOBS) clean_impsprep
+
 redeye-prep:
-	./waf -j $(PJOBS) clean_impsprep build_impsprep build_cboehmdc
+	./waf -j $(PJOBS) build_impsprep build_cboehmdc
 
 redeye-run:
 	(./build/clasp -f ignore-extensions \
