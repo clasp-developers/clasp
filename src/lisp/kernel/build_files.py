@@ -1,11 +1,14 @@
 import cleavir
 
-def aclasp():
-    return [
+def aclasp(wrappers):
+    result = [
         "src/lisp/kernel/tag/start",
-        "src/lisp/kernel/lsp/prologue",
-        "src/lisp/kernel/lsp/direct-calls",
-        "generated/cl-wrappers",
+        "src/lisp/kernel/lsp/prologue"]
+    if (wrappers):
+        result = result + [
+            "src/lisp/kernel/lsp/direct-calls",
+            "generated/cl-wrappers" ]
+    result = result + [  
         "src/lisp/kernel/tag/min-start",
         "src/lisp/kernel/init",
         "src/lisp/kernel/tag/after-init",
@@ -55,9 +58,10 @@ def aclasp():
         "src/lisp/kernel/tag/min-pre-epilogue",
         "src/lisp/kernel/lsp/epilogue-aclasp",
         "src/lisp/kernel/tag/min-end"]
+    return result
 
-def bclasp():
-    files = aclasp() + [
+def bclasp(wrappers):
+    files = aclasp(wrappers) + [
         "src/lisp/kernel/cmp/cmpwalk",
         "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/assert",
@@ -104,8 +108,8 @@ def bclasp():
     ]
     return files
 
-def cclasp():
-    return bclasp() + cleavir.cleavir_parts + [
+def cclasp(wrappers):
+    return bclasp(wrappers) + cleavir.cleavir_parts + [
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]
 

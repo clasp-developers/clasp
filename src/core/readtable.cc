@@ -190,9 +190,11 @@ CL_DEFUN T_mv core__reader_backquoted_expression(T_sp sin, Character_sp ch) {
   T_sp quoted_object = cl__read(sin, _lisp->_true(), _Nil<T_O>(), _lisp->_true());
   Cons_sp result = Cons_O::createList(_sym_backquote, quoted_object);
   //HERE_scCONS_CREATE_LIST2(_sym_backquote,quoted_object);
+#if 0
   if (_lisp->sourceDatabase().notnilp()) {
     gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(quoted_object, result);
   }
+#endif
   return (Values(result));
 };
 
@@ -229,13 +231,10 @@ CL_LAMBDA(sin ch);
 CL_DECLARE();
 CL_DOCSTRING("reader_list_allow_consing_dot");
 CL_DEFUN T_sp core__reader_list_allow_consing_dot(T_sp sin, Character_sp ch) {
-#ifdef SOURCE_TRACKING
+  // I'm turning on SOURCE_TRACKING for reading conses
   SourcePosInfo_sp info = core__input_stream_source_pos_info(sin);
-#endif
   List_sp list = read_list(sin, ')', true);
-#ifdef SOURCE_TRACKING
   lisp_registerSourcePosInfo(list, info);
-#endif
   return list;
 };
 

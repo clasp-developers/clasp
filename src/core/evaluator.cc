@@ -1360,9 +1360,11 @@ Function_sp lambda(T_sp name, bool wrap_block, T_sp lambda_list, List_sp body, T
                                          Cons_O::create(
                                              core__function_block_name(name),
                                              code)));
+#if 0
     if (_lisp->sourceDatabase().notnilp()) {
       gc::As<SourceManager_sp>(_lisp->sourceDatabase())->duplicateSourcePosInfo(body, code);
     }
+#endif
   }
   //            printf("%s:%d Creating InterpretedClosure with no source information - fix this\n", __FILE__, __LINE__ );
   T_sp spi(_Nil<T_O>());
@@ -2092,29 +2094,39 @@ T_mv t1SymbolMacrolet(List_sp args, T_sp env) {
 
 T_mv t1Evaluate(T_sp exp, T_sp environment) {
   if ((exp).consp()) {
-    T_sp head = oCar(exp);
-    if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-      printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());
-    }
-    // TODO: Deal with Compiler macros here
-    T_sp macroFunction(_Nil<T_O>());
-    if (cl__symbolp(head)) {
-      macroFunction = eval::funcall(cl::_sym_macroFunction, head, environment);
-      if (macroFunction.notnilp()) {
-        T_sp expanded = eval::funcall(macroFunction, exp, environment);
-        return t1Evaluate(expanded, environment);
-      } else if (head == cl::_sym_progn) {
-        return t1Progn(oCdr(exp), environment);
-      } else if (head == cl::_sym_eval_when) {
-        //                        printf("%s:%d   head is eval-when\n", __FILE__, __LINE__ );
-        return t1EvalWhen(oCdr(exp), environment);
-      } else if (head == cl::_sym_locally) {
-        return t1Locally(oCdr(exp), environment);
-      } else if (head == cl::_sym_macrolet) {
-        return t1Macrolet(oCdr(exp), environment);
-      } else if (head == cl::_sym_symbol_macrolet) {
-        return t1SymbolMacrolet(oCdr(exp), environment);
+    try {
+      // Push the form from the core:*top-level-form-stack*
+      List_sp tlf = _sym_STARtop_level_form_stackSTAR->symbolValue();
+      _sym_STARtop_level_form_stackSTAR->setf_symbolValue(Cons_O::create(exp,tlf));
+      T_sp head = oCar(exp);
+      if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
+        printf("%s:%d Checking if top-level head: %s  cl::_sym_eval_when: %s eq=%d    form: %s\n", __FILE__, __LINE__, _rep_(head).c_str(), _rep_(cl::_sym_eval_when).c_str(), (head == cl::_sym_eval_when), _rep_(exp).c_str());
       }
+    // TODO: Deal with Compiler macros here
+      T_sp macroFunction(_Nil<T_O>());
+      if (cl__symbolp(head)) {
+        macroFunction = eval::funcall(cl::_sym_macroFunction, head, environment);
+        if (macroFunction.notnilp()) {
+          T_sp expanded = eval::funcall(macroFunction, exp, environment);
+          return t1Evaluate(expanded, environment);
+        } else if (head == cl::_sym_progn) {
+          return t1Progn(oCdr(exp), environment);
+        } else if (head == cl::_sym_eval_when) {
+        //                        printf("%s:%d   head is eval-when\n", __FILE__, __LINE__ );
+          return t1EvalWhen(oCdr(exp), environment);
+        } else if (head == cl::_sym_locally) {
+          return t1Locally(oCdr(exp), environment);
+        } else if (head == cl::_sym_macrolet) {
+          return t1Macrolet(oCdr(exp), environment);
+        } else if (head == cl::_sym_symbol_macrolet) {
+          return t1SymbolMacrolet(oCdr(exp), environment);
+        }
+      }
+      // Pop the form from the core:*top-level-form-stack*
+      _sym_STARtop_level_form_stackSTAR->setf_symbolValue(oCdr(_sym_STARtop_level_form_stackSTAR->symbolValue()));
+    } catch (...) {
+      // Pop the form from the core:*top-level-form-stack*
+      _sym_STARtop_level_form_stackSTAR->setf_symbolValue(oCdr(_sym_STARtop_level_form_stackSTAR->symbolValue()));
     }
   }
   if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {

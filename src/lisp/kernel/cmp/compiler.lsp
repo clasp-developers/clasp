@@ -43,7 +43,9 @@
       (let ((*active-compilation-source-database* t)
             (core:*source-database* (core:make-source-manager)))
         (do-one-source-database closure))
-      (funcall closure)))
+      (unwind-protect
+           (funcall closure)
+        (core:source-manager-empty core:*source-database*))))
 (defmacro with-one-source-database (&rest body)
   `(do-one-source-database #'(lambda () ,@body)))
 
@@ -221,21 +223,17 @@ then compile it and return (values compiled-llvm-function lambda-name)"
               (lambda-list (compile-reference-to-literal lambda-list env)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
-          (multiple-value-bind (source-dir source-filename file-pos lineno column)
-              (cmp:walk-form-for-source-info lambda-or-lambda-block)
-            (unless lineno (setq lineno 0))
-            (unless column (setq column 0))
-            (irc-intrinsic "makeCompiledFunction" 
-                           result 
-                           compiled-fn 
-                           *gv-source-file-info-handle* 
-                           (jit-constant-size_t file-pos)
-                           (jit-constant-size_t lineno)
-                           (jit-constant-size_t column)
-                           (compile-reference-to-literal lambda-name env)
-                           funcs 
-                           (irc-renv env)
-                           lambda-list))
+          (irc-intrinsic "makeCompiledFunction" 
+                         result 
+                         compiled-fn 
+                         *gv-source-file-info-handle* 
+                         (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                         (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                         (cmp:irc-size_t-*current-source-pos-info*-column)
+                         (compile-reference-to-literal lambda-name env)
+                         funcs 
+                         (irc-renv env)
+                         lambda-list)
           *all-functions-for-one-compile*))))
 
 (defun codegen-global-function-lookup (result sym env)
@@ -1045,20 +1043,17 @@ jump to blocks within this tagbody."
 	(multiple-value-bind (index fn)
 	    (compile-ltv-thunk 'load-time-value-func form nil)
 	  ;; Invoke the repl function here
-          (multiple-value-bind (source-dir source-file file-pos lineno column)
-              (walk-form-for-source-info form)
-            (with-ltv-function-codegen (ltv-result ltv-env)
-              (irc-intrinsic "invokeTopLevelFunction" 
-			     ltv-result 
-			     fn
-                             (irc-renv ltv-env)
-			     (jit-constant-unique-string-ptr "load-time-value")
-                             *gv-source-file-info-handle*
-			     (jit-constant-size_t file-pos)
-                             (jit-constant-size_t lineno)
-                             (jit-constant-size_t column)
-			     *load-time-value-holder-global-var*
-                             )))
+          (with-ltv-function-codegen (ltv-result ltv-env)
+            (irc-intrinsic "invokeTopLevelFunction" 
+                           ltv-result 
+                           fn
+                           (irc-renv ltv-env)
+                           (jit-constant-unique-string-ptr "load-time-value")
+                           *gv-source-file-info-handle*
+                           (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                           (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                           (cmp:irc-size_t-*current-source-pos-info*-column)
+                           *load-time-value-holder-global-var*))
 	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))
 	(progn
 	  (cmp-log "About to generate load-time-value for COMPILE")
@@ -1377,6 +1372,7 @@ be wrapped with to make a closure"
     (setq *the-module* nil)
     (cmp-log "About to finalize-engine with fn %s\n" fn)
     (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
+           (cspi (ext:current-source-location))
 	   (compiled-function
 	    (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
 	     *run-time-execution-engine*
@@ -1385,8 +1381,8 @@ be wrapped with to make a closure"
 	     (irc-environment-activation-frame wrapped-env)
 	     *run-time-literals-external-name*
 	     core:*current-source-file-info*
-	     (core:source-pos-info-filepos *current-source-pos-info*)
-	     (core:source-pos-info-lineno *current-source-pos-info*)
+	     (core:source-pos-info-filepos cspi)
+	     (core:source-pos-info-lineno cspi)
 	     nil ; lambda-list, NIL for now - but this should be extracted from definition
 	     )))
       (values compiled-function warnp failp))))

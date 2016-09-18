@@ -99,6 +99,7 @@
 
 (export '(*module-provider-functions*
           *source-location-kinds*
+          current-source-location
           source-location
           source-location-pathname
           source-location-offset
@@ -128,6 +129,24 @@
 (setq *register-with-pde-hook* ())
 (core:*make-special '*source-location*)
 (setq *source-location* nil)
+(export 'current-source-location)
+;;; Macro: (EXT:CURRENT-SOURCE-LOCATION)
+;;; - Returns the source location of the current top-level form
+;;;   or nil if it's not known.
+(core:fset
+ 'current-source-location
+ #'(lambda ()
+     (block cur-src-loc
+       (if core:*source-database*
+           (let ((cur core:*top-level-form-stack*))
+             (tagbody
+              top
+                (if (null cur) (return-from cur-src-loc nil))
+                (let ((location (core:source-manager-lookup core:*source-database* (car cur))))
+                  (if location (return-from cur-src-loc location)))
+                (setq cur (cdr cur))
+                (go top)))))))
+
 (export '*register-with-pde-hook*)
 (core:fset 'register-with-pde
              #'(lambda (whole env)

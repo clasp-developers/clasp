@@ -42,6 +42,7 @@ public:
   typedef typename Base::const_iterator const_iterator;
 
 public:
+  void clear() { this->Base::clear(); };
   const_iterator find(Key k) const {
     const_iterator it;
     for (it = this->begin(); it != this->end(); ++it) {

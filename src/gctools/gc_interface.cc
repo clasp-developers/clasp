@@ -25,6 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 typedef bool _Bool;
+#ifndef SCRAPING // #endif at bottom
 #include <clasp/core/foundation.h>
 #include <type_traits>
 //#include <llvm/Support/system_error.h>
@@ -961,3 +962,4 @@ extern "C" {
 #include C_WRAPPERS
 #endif
 };
+#endif // #ifndef SCRAPING at top

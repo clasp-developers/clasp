@@ -169,9 +169,9 @@ Symbol_O::Symbol_O() : Base(),
                        _IsConstant(false),
                        _ReadOnlyFunction(false)
                        // ,_PropertyList(gctools::smart_ptr<Cons_O>())
-                       {
+{
                         // nothing
-                       };
+};
 
 void Symbol_O::finish_setup(Package_sp pkg, bool exportp, bool shadowp) {
   ASSERTF(pkg, BF("The package is UNDEFINED"));
@@ -210,7 +210,7 @@ Symbol_sp Symbol_O::create(const string &nm) {
   }
 #endif
 #if 0
-	n->_Name = Str_O::create(nm);
+  n->_Name = Str_O::create(nm);
 #endif
   return n;
 };
@@ -369,7 +369,7 @@ string Symbol_O::formattedName(bool prefixAlways) const { //no guard
 // Sometimes its useful to add the address of the symbol to
 // the name for debugging - uncomment the following line if you want that
 #if 0
-        ss << "@" << (void*)(this);
+  ss << "@" << (void*)(this);
 #endif
 
 #if VERBOSE_SYMBOLS
@@ -498,5 +498,11 @@ void Symbol_O::dump() {
   printf("%s", ss.str().c_str());
 }
 
+void Symbol_O::remove_package(Package_sp pkg)
+{
+  if (this->_HomePackage == pkg) {
+    this->_HomePackage = _Nil<T_O>();
+  }
+}
 
 };

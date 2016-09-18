@@ -138,13 +138,21 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                 ;; Documentation in help.lsp
                 (multiple-value-bind (decls body doc-string) 
                     (process-declarations body t)
-                  (let* ((doclist (when doc-string (list doc-string)))
+                  (let* ((loc (ext:current-source-location))
+                         (filepos (if loc (source-file-pos-filepos loc) 0))
+                         (lineno (if loc (source-file-pos-lineno loc) 0))
+                         (column (if loc (source-file-pos-column loc) 0))
+                         (fn (gensym))
+                         (doclist (when doc-string (list doc-string)))
                          (global-function `#'(lambda ,vl 
-                                               (declare (core:lambda-name ,name) ,@decls) 
+                                               (declare (core:lambda-name ,name core:current-source-file ,filepos ,lineno ,column) ,@decls) 
                                                ,@doclist (block ,(si::function-block-name name) ,@body))))
+                    ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
                     ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-                    `(progn
-                       ,(ext:register-with-pde whole `(si::fset ',name ,global-function nil t ',vl))
+                    `(let ((,fn ,global-function))
+                       ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
+                       ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
+                       (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
                        ,@(si::expand-set-documentation name 'function doc-string)
                        ,(and *defun-inline-hook*
                              (funcall *defun-inline-hook* name global-function))

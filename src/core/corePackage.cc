@@ -155,6 +155,8 @@ const char *CorePkg_nicknames[] = {
 };
 
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
+SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARsyspropsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARloadHooksSTAR);
 SYMBOL_EXPORT_SC_(ExtPkg, STARinvoke_debugger_hookSTAR);
@@ -546,7 +548,7 @@ SYMBOL_EXPORT_SC_(CorePkg, _PLUS_run_all_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, _PLUS_clasp_ctor_function_name_PLUS_);
 SYMBOL_EXPORT_SC_(CorePkg, STARcodeWalkerSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourceFileInfoSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARcurrentSourcePosInfoSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, current_source_file);
 SYMBOL_SC_(CorePkg, STARdebugMacroexpandSTAR);
 SYMBOL_EXPORT_SC_(ClPkg, T);
 SYMBOL_EXPORT_SC_(ClPkg, method);
@@ -1000,7 +1002,6 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARdebugMacroexpandSTAR->defparameter(_Nil<T_O>());
   _sym_STARclassNameHashTableSTAR->defparameter(HashTable_O::create(cl::_sym_eq));
   _sym_STARcurrentSourceFileInfoSTAR->defparameter(_Nil<T_O>());
-  _sym_STARcurrentSourcePosInfoSTAR->defparameter(_Nil<T_O>());
   _sym_STARcodeWalkerSTAR->defparameter(_Nil<T_O>());
   _sym_STARsharpEqContextSTAR->defparameter(_Nil<T_O>());
   cl::_sym_STARreadDefaultFloatFormatSTAR->defparameter(cl::_sym_single_float);
@@ -1080,6 +1081,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));
   _sym_STARdebug_fsetSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);

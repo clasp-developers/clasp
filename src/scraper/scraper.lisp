@@ -61,7 +61,7 @@ Read all of the scraped info files and interpret their tags."
                   for sif-tags = (read-sif-file sif-file)
                   nconc sif-tags))
          (app-config-path (merge-pathnames *application-config* (pathname clasp-home-path))))
-    (format t "app-config-path: ~a~%" app-config-path)
+    (format t "app-config-path    -> ~a~%" app-config-path)
     (let ((app-config (setup-application-config app-config-path)))
       (unless app-config
         (error "Could not get app-config"))
@@ -134,10 +134,10 @@ Read all of the scraped info files and interpret their tags."
          (main-path (merge-pathnames (pathname main-path) (pathname build-path)))
          (sif-files (cdddr args))
          (*default-pathname-defaults* (pathname build-path)))
-    (format t "clasp-home-path: ~a~%" clasp-home-path)
-    (format t "build-path: ~a~%" build-path)
-    (format t "main-path: ~a~%" main-path)
-    (format t "*default-pathname-defaults*: ~a~%" *default-pathname-defaults*)
+    (format t "clasp-home-path             -> ~a~%" clasp-home-path)
+    (format t "build-path                  -> ~a~%" build-path)
+    (format t "main-path                   -> ~a~%" main-path)
+    (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
     (process-all-sif-files clasp-home-path build-path sif-files)))
     
 (export '(generate-one-sif generate-headers-from-all-sifs))

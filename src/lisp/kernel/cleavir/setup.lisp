@@ -4,6 +4,13 @@
 
 (defvar *current-function-entry-basic-block*)
 
+;;; Save top level forms for source tracking
+(defmethod cleavir-generate-ast::convert-form :around (form info env system)
+  (push form core:*top-level-form-stack*)
+  (unwind-protect
+       (call-next-method)
+    (pop core:*top-level-form-stack*)))
+
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment clasp)
   ;; convert fixnum into immediate but bignums return nil
   (core:create-tagged-immediate-value-or-nil n))

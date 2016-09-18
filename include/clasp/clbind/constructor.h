@@ -46,6 +46,7 @@ class ConstructorCreator_O : public core::Creator_O {
 public:
   ConstructorCreator_O(core::Symbol_sp c) : _mostDerivedClassSymbol(c){};
   core::Symbol_sp _mostDerivedClassSymbol;
+  virtual ~ConstructorCreator_O() {};
 };
 };
 

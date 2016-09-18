@@ -36,11 +36,11 @@
   "Stores the current enclosing lexical scope for debugging info")
 
 
-
 (defun walk-form-for-source-info (form)
-  (let* ((lineno (source-pos-info-lineno *current-source-pos-info*))
-         (filepos (source-pos-info-filepos *current-source-pos-info*))
-         (source-file-info (source-file-info *current-source-pos-info*))
+  (let* ((cspi (ext:current-source-location))
+         (lineno (source-pos-info-lineno cspi))
+         (filepos (source-pos-info-filepos cspi))
+         (source-file-info (source-file-info cspi))
          (pathname (source-file-info-pathname source-file-info))
          (source-directory (directory-namestring pathname))
          (source-filename (file-namestring pathname)))

@@ -206,30 +206,34 @@
             macros)
       (t1progn body (augment-environment-with-declares macro-env declares)))))
 
+
 (defun t1expr (form &optional env)
   (cmp-log "t1expr-> %s\n" form)
-  (let ((head (if (atom form) form (car form))))
-    (cond
-      ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
-      ((eq head 'cl:progn) (t1progn (cdr form) env))
-      ((eq head 'cl:locally) (t1locally (cdr form) env))
-      ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
-      ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
-      ((and (listp form)
-            ;;(symbolp (car form))
-            (not (core:lexical-function (car form) env))
-            (not (core:lexical-macro-function (car form) env))
-            (not (core:declared-global-notinline-p (car form)))
-            (let ((expansion (core:compiler-macroexpand form env)))
-              (if (eq expansion form)
-                  nil
-                  (progn
-                    (t1expr expansion env)
-                    t)))))
-      ((macro-function head env)
-       (let ((expanded (macroexpand form env)))
-         (t1expr expanded env)))
-      (t (compile-top-level form)))))
+  (push form core:*top-level-form-stack*)
+  (unwind-protect
+       (let ((head (if (atom form) form (car form))))
+         (cond
+           ((eq head 'cl:eval-when) (t1eval-when (cdr form) env))
+           ((eq head 'cl:progn) (t1progn (cdr form) env))
+           ((eq head 'cl:locally) (t1locally (cdr form) env))
+           ((eq head 'cl:macrolet) (t1macrolet (cdr form) env))
+           ((eq head 'cl:symbol-macrolet) (t1symbol-macrolet (cdr form) env))
+           ((and (listp form)
+                 ;;(symbolp (car form))
+                 (not (core:lexical-function (car form) env))
+                 (not (core:lexical-macro-function (car form) env))
+                 (not (core:declared-global-notinline-p (car form)))
+                 (let ((expansion (core:compiler-macroexpand form env)))
+                   (if (eq expansion form)
+                       nil
+                       (progn
+                         (t1expr expansion env)
+                         t)))))
+           ((macro-function head env)
+            (let ((expanded (macroexpand form env)))
+              (t1expr expanded env)))
+           (t (compile-top-level form))))
+    (pop core:*top-level-form-stack*)))
 
 (defun compile-file-t1expr (form compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
@@ -375,18 +379,13 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 		(or *the-module* (error "*the-module* is NIL"))
 		(with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
 		  (loop
-		     (let* ((core:*source-database* (core:make-source-manager))
-			    (top-source-pos-info (core:input-stream-source-pos-info source-sin))
+		     (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
 			    (form (read source-sin nil eof-value)))
 		       (if (eq form eof-value)
 			   (return nil)
 			   (progn
 			     (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
-			     ;; If the form contains source-pos-info then use that
-			     ;; otherwise fall back to using *current-source-pos-info*
-			     (let ((core:*current-source-pos-info* 
-				    (core:walk-to-find-source-pos-info form top-source-pos-info)))
-			       (compile-file-t1expr form compile-file-hook))))))
+                             (compile-file-t1expr form compile-file-hook)))))
                   (make-boot-function-global-variable *the-module* ltv-init-fn)
 		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
                           (make-boot-function-global-variable *the-module* main-fn)

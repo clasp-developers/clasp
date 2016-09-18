@@ -933,6 +933,16 @@ T_sp Lisp_O::findPackage(const string &name, bool errorp) const {
   return getPackage;
 }
 
+
+void Lisp_O::remove_package(const string& name ) {
+  //        printf("%s:%d Lisp_O::findPackage name: %s\n", __FILE__, __LINE__, name.c_str());
+  map<string, int>::const_iterator fi = this->_PackageNameIndexMap.find(name);
+  if (fi == this->_PackageNameIndexMap.end()) {
+    PACKAGE_ERROR(Str_O::create(name));
+  }
+  this->_PackageNameIndexMap.erase(name);
+}
+
 T_sp Lisp_O::sourceDatabase() const {
   _OF();
   // At startup the *package* symbol may not yet
@@ -1065,6 +1075,7 @@ void Lisp_O::parseCommandLineArguments(int argc, char *argv[], const CommandLine
   }
   features = Cons_O::create(_lisp->internKeyword("SILENCE-CCLASP-COMPILE-WARNINGS"), features);
   features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
+  features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
 #ifdef _TARGET_OS_DARWIN
   features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
   features = Cons_O::create(_lisp->internKeyword("BSD"), features);
@@ -1189,11 +1200,9 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
 #else
       DynamicScopeManager innerScope(_sym_STARsourceDatabaseSTAR, _Nil<T_O>());
 #endif
-      innerScope.pushSpecialVariableAndSet(_sym_STARcurrentSourcePosInfoSTAR, core__input_stream_source_pos_info(stream));
       T_sp expression = cl__read(stream, _Nil<T_O>(), _Unbound<T_O>(), _Nil<T_O>());
       if (expression.unboundp())
         break;
-      _sym_STARcurrentSourcePosInfoSTAR->setf_symbolValue(core__walk_to_find_source_pos_info(expression, _sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
       if (_sym_STARechoReplReadSTAR->symbolValue().isTrue()) {
         string suppress;
         if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue()) {

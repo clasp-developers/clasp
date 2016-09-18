@@ -99,14 +99,11 @@ public:                                                                         
 
 public:
   static SourcePosInfo_sp create(uint spf, size_t filepos, uint spln, uint spcol) {
-#if 0
-            if ( filepos==UNDEF_UINT ) {
-                printf("%s:%d Caught filepos=UNDEF_UINT\n", __FILE__, __LINE__ );
-            }
-#endif
     GC_ALLOCATE_VARIADIC(SourcePosInfo_O, me, spf, filepos, spln, spcol); // ,filepos,fn);
     return me;
   }
+  CL_LISPIFY_NAME(make_source_pos_info);
+  CL_DEF_CLASS_METHOD static SourcePosInfo_sp make(const string& filename, size_t filepos, size_t lineno, size_t column);
   string __repr__() const;
   int fileHandle() const { return this->_FileId; };
   size_t filepos() const { return this->_Filepos; };
@@ -119,6 +116,9 @@ public:
   uint _Lineno;
   uint _Column;
   //	Function_sp 	_Expander;
+  CL_DEFMETHOD size_t source_file_pos_filepos() const { return this->_Filepos;}
+  CL_DEFMETHOD size_t source_file_pos_lineno() const { return this->_Lineno;}
+  CL_DEFMETHOD size_t source_file_pos_column() const { return this->_Column;}
 };
 inline core::Fixnum safe_fileId(T_sp spi) {
   if (spi.nilp())
@@ -191,8 +191,15 @@ public: // Functions here
 
   T_sp lookupSourcePosInfo(T_sp obj);
 
+  void empty() {
+    this->_SourcePosInfo->clrhash();
+  }
+
 }; // SourceManager class
 
+
+ T_sp core__source_manager_lookup(T_sp source_manager, T_sp form);
+ 
 T_mv core__walk_to_find_source_info(T_sp obj);
 T_sp core__walk_to_find_source_pos_info(T_sp obj, T_sp defaultSpi = _Nil<T_O>());
 //    SourceFileInfo_mv af_lookupSourceFileInfo(T_sp obj);
