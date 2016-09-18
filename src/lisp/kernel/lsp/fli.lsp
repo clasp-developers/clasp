@@ -62,28 +62,28 @@
 (defgeneric %mem-ref (ptr type &optional (offset 0)))
 
 (defun generate-mem-ref-accessor-functions ()
-  (loop for type-spec in core::*foreign-type-spec-table*
+  (loop for index from 0 to (1- (length  *foreign-type-spec-table*))
      do
-       (when type-spec
-         (def-mem-ref-accessor (%lisp-symbol type-spec)))))
+       (let ((type-spec (elt *foreign-type-spec-table* index)))
+         (when type-spec
+           (def-mem-ref-accessor (%lisp-symbol type-spec))))))
 
 ;;; === M E M - S E T ===
 
-#+memset
 (defmacro def-mem-set-accessor (type-kw)
   `(defmethod %mem-ref (ptr (type (eql ,type-kw)) &optional (offset 0))
      (funcall (intern (string-upcase
-                        (concatenate 'string "%MEM-REF-" ,type-kw)))
+                        (concatenate 'string "%MEM-SET-" ,type-kw)))
               (%offset-address-as-integer ptr offset))))
 
-#+memset
 (defgeneric clasp-ffi::%mem-set (ptr type value &optional (offset 0)))
 
 (defun generate-mem-set-accessor-functions ()
-  (loop for type-spec in core::*foreign-type-spec-table*
-    do
-      (when type-spec
-        (def-mem-set-accessor (%lisp-symbol type-spec)))))
+  (loop for index from 0 to (1- (length  *foreign-type-spec-table*))
+     do
+       (let ((type-spec (elt *foreign-type-spec-table* index)))
+         (when type-spec
+           (def-mem-set-accessor (%lisp-symbol type-spec))))))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -91,7 +91,7 @@
 ;;; F L I   I N I T I A L I Z A T I O N
 
 (eval-when (:load-toplevel :execute :compile-toplevel)
-  (generate-mem-ref-accessor-functions)
+  (generate-mem-ref-accessor-functions)
   (generate-mem-set-accessor-functions)
   (values))
 

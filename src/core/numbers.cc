@@ -2823,7 +2823,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
   // === CLASP_TO- TRANSLATORS ===
 
 
-  inline gc::Fixnum clasp_to_fixnum( core::T_sp x )
+  gc::Fixnum clasp_to_fixnum( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2840,7 +2840,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- SHORT ---
 
-  inline short clasp_to_short( core::T_sp x )
+  short clasp_to_short( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2855,7 +2855,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_short();
   }
 
-  inline unsigned short clasp_to_ushort( core::T_sp x )
+  unsigned short clasp_to_ushort( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2872,7 +2872,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- INT ---
 
-  inline int clasp_to_int( core::T_sp x )
+  int clasp_to_int( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2887,7 +2887,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_int();
   }
 
-  inline unsigned int clasp_to_uint( core::T_sp x )
+  unsigned int clasp_to_uint( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2904,7 +2904,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- LONG ---
 
-  inline long clasp_to_long( core::T_sp x )
+  long clasp_to_long( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2919,7 +2919,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_long();
   }
 
-  inline unsigned long clasp_to_ulong( core::T_sp x )
+  unsigned long clasp_to_ulong( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2936,7 +2936,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- LONG ---
 
-  inline long long clasp_to_longlong( core::T_sp x )
+  long long clasp_to_longlong( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2951,7 +2951,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_longlong();
   }
 
-  inline unsigned long long clasp_to_ulonglong( core::T_sp x )
+  unsigned long long clasp_to_ulonglong( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2968,7 +2968,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- INT8 ---
 
-  inline int8_t clasp_to_int8( core::T_sp x )
+  int8_t clasp_to_int8( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2983,7 +2983,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_int8_t();
   }
 
-  inline uint8_t clasp_to_uint8( core::T_sp x )
+  uint8_t clasp_to_uint8( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3000,7 +3000,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- INT16 ---
 
-  inline int16_t clasp_to_int16( core::T_sp x )
+  int16_t clasp_to_int16( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3015,7 +3015,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_int16_t();
   }
 
-  inline uint16_t clasp_to_uint16( core::T_sp x )
+  uint16_t clasp_to_uint16( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3032,7 +3032,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- INT32 ---
 
-  inline int32_t clasp_to_int32( core::T_sp x )
+  int32_t clasp_to_int32( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3047,7 +3047,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_int32_t();
   }
 
-  inline uint32_t clasp_to_uint32( core::T_sp x )
+  uint32_t clasp_to_uint32( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3062,14 +3062,14 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_uint32_t();
   }
 
-  inline uint32_t clasp_to_uint32_t( core::T_sp x )
+  uint32_t clasp_to_uint32_t( core::T_sp x )
   {
     return clasp_to_uint32( x );
   }
 
   // --- INT64 ---
 
-  inline int64_t clasp_to_int64( core::T_sp x )
+  int64_t clasp_to_int64( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3084,7 +3084,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     return (gc::As< Integer_sp >(x))->as_int64_t();
   }
 
-  inline uint64_t clasp_to_uint64( core::T_sp x )
+  uint64_t clasp_to_uint64( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3101,7 +3101,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- CL_INTPTR_T ---
 
-  inline cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
+  cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3118,7 +3118,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- PTRDIFF_T ---
 
-  inline ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
+  ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3135,7 +3135,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- MPZ ---
 
-  inline mpz_class clasp_to_mpz(Integer_sp x)
+  mpz_class clasp_to_mpz(Integer_sp x)
   {
     if (x.fixnump())
     {
@@ -3148,7 +3148,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- LONG LONG ---
 
-  inline unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
+  unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
       if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
@@ -3164,7 +3164,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- FIXNUM ---
 
-  inline Fixnum clasp_to_fixnum(Integer_sp i) {
+  Fixnum clasp_to_fixnum(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
       if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum) {
@@ -3177,7 +3177,7 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
 
   // --- SIZE ---
 
-  inline size_t clasp_to_size_t( T_sp x )
+  size_t clasp_to_size_t( T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3193,14 +3193,14 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
     SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to size_t"));
   }
 
-  inline cl_index clasp_to_size( T_sp x )
+  cl_index clasp_to_size( T_sp x )
   {
     return clasp_to_size_t( x );
   }
 
   // --- SSIZE ---
 
-  inline ssize_t clasp_to_ssize_t( T_sp x )
+  ssize_t clasp_to_ssize_t( T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3220,38 +3220,56 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
       SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char."));
   }
 
+  ssize_t clasp_to_ssize( T_sp x )
+  {
+    return clasp_to_size_t( x );
+  }
 
   // --- FLOAT ---
 
-  inline float clasp_to_float( Number_sp x) {
-    if (x.fixnump()) {
+  float clasp_to_float( T_sp x )
+  {
+    if (x.fixnump())
+    {
       float d = x.unsafe_fixnum();
       return d;
-    } else if (x.single_floatp()) {
-      float d = x.unsafe_single_float();
-      return d;
     }
-    return x->as_float_();
-  };
+    else
+      if (x.single_floatp())
+      {
+        float d = x.unsafe_single_float();
+        return d;
+      }
+
+    Integer_sp sp_i = gc::AsOrNull< Integer_sp >( x );
+    return sp_i->as_float_();
+  }
 
   // --- DOUBLE ---
 
-  inline double clasp_to_double( Number_sp x) {
-    if (x.fixnump()) {
+  double clasp_to_double( T_sp x )
+  {
+    if (x.fixnump())
+    {
       double d = x.unsafe_fixnum();
       return d;
-    } else if (x.single_floatp()) {
-      double d = x.unsafe_single_float();
-      return d;
     }
-    return x->as_double_();
+    else
+      if (x.single_floatp())
+      {
+       double d = x.unsafe_single_float();
+       return d;
+      }
+
+    Integer_sp sp_i = gc::AsOrNull< Integer_sp >( x );
+    return sp_i->as_double_();
   };
 
-  inline LongFloat clasp_to_long_float(Number_sp x) {
+  LongFloat clasp_to_long_float(Number_sp x) {
     return x->as_long_float_();
   };
 
-  inline LongFloat clasp_to_long_double(Number_sp x) {
+  LongFloat clasp_to_long_double(Number_sp x) {
     return x->as_long_float_();
   };
 

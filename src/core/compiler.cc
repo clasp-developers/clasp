@@ -58,6 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/character.h>
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
