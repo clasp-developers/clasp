@@ -11664,8 +11664,8 @@ public:
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),_Charge1), "_Charge1" }, // public: (T) fixable: NIL good-name: T
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),_Charge2), "_Charge2" }, // public: (T) fixable: NIL good-name: T
  {    variable_field, ctype_double, sizeof(double), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),_RStar), "_RStar" }, // public: (T) fixable: NIL good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iAtom), "term.iAtom" }, // public: (T T) fixable: NIL good-name: T
- {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iBondOrder), "term.iBondOrder" }, // public: (T T) fixable: NIL good-name: T
+// {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iAtom), "term.iAtom" }, // public: (T T) fixable: NIL good-name: T
+// {    variable_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(chem::EnergyNonbond),term.iBondOrder), "term.iBondOrder" }, // public: (T T) fixable: NIL good-name: T
 { container_kind, KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_, sizeof(gctools::GCVector_moveable<core::OptionalArgument>), 0, "gctools::GCVector_moveable<core::OptionalArgument>" },
 {  variable_array0, 0, 0, offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Data), "_Data" },
 {  variable_capacity, sizeof(core::OptionalArgument), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_End), offsetof(SAFE_TYPE_MACRO(gctools::GCVector_moveable<core::OptionalArgument>),_Capacity), NULL },
