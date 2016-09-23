@@ -288,7 +288,6 @@ void Environment_O::_environmentStackFill(int level, stringstream &sout) {
 
 CL_LISPIFY_NAME("environmentStackAsString");
 CL_DEFMETHOD string Environment_O::environmentStackAsString() {
-  _OF();
   stringstream sout;
   this->_environmentStackFill(1, sout);
   return sout.str();
@@ -672,7 +671,6 @@ CL_DEFMETHOD int Environment_O::countFunctionContainerEnvironments() const {
 
 CL_LISPIFY_NAME("find_block_named_environment");
 CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockName) const {
-  _OF();
   T_sp parent = this->getParentEnvironment();
   if (parent.nilp()) {
     SIMPLE_ERROR(BF("Could not find block with name[%s]") % _rep_(blockName));
@@ -682,13 +680,11 @@ CL_DEFMETHOD T_sp Environment_O::find_block_named_environment(Symbol_sp blockNam
 
 CL_LISPIFY_NAME("find_unwindable_environment");
 CL_DEFMETHOD T_sp Environment_O::find_unwindable_environment() const {
-  _OF();
   return Environment_O::clasp_find_unwindable_environment(this->getParentEnvironment());
 }
 
 CL_LISPIFY_NAME("find_tagbody_tag_environment");
 CL_DEFMETHOD T_sp Environment_O::find_tagbody_tag_environment(Symbol_sp tag) const {
-  _OF();
   return Environment_O::clasp_find_tagbody_tag_environment(this->getParentEnvironment(), tag);
 }
 

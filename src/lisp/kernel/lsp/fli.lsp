@@ -17,7 +17,7 @@
 ;;;
 ;;;----------------------------------------------------------------------------
 
-(eval-when (:compile-top-level :load-top-level :execute)
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (setq *echo-repl-tpl-read* t))
 
 (in-package "CLASP-FFI")
@@ -52,43 +52,35 @@
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
+;;; These code lines were debugged with the help of drneister, stassats and
+;;; Shinmera on 2016-09-22 as a joint effort on IRC channel #clasp. Thx again!
 
 ;;; === M E M - R E F ===
 
-(defmacro def-mem-ref-accessor (type-kw)
-  `(defmethod %mem-ref (ptr (type (eql ,type-kw)) &optional (offset 0))
-     (funcall (intern (string-upcase
-                        (concatenate 'string "%MEM-REF-" ,type-kw)))
-              (%offset-address-as-integer ptr offset))))
+(defgeneric %mem-ref (ptr type &optional offset))
 
-
-(defgeneric %mem-ref (ptr type &optional (offset 0)))
-
-(defun generate-mem-ref-accessor-functions ()
-  (loop for index from 0 to (1- (length  *foreign-type-spec-table*))
-     do
-       (let ((type-spec (elt *foreign-type-spec-table* index)))
-         (when type-spec
-           (def-mem-ref-accessor (%lisp-symbol type-spec))))))
+(defmacro generate-mem-ref-accessor-functions ()
+  `(progn
+     ,@(loop for spec across *foreign-type-spec-table*
+          when spec
+	  collect
+	    `(defmethod %mem-ref (ptr (type (eql ',(%lisp-symbol spec))) &optional (offset 0))
+	       (funcall ,(intern (concatenate 'string "%MEM-REF-" (string (%lisp-symbol spec))))
+                        (%offset-address-as-integer ptr offset))))))
 
 ;;; === M E M - S E T ===
 
-(defmacro def-mem-set-accessor (type-kw)
-  `(defmethod %mem-ref (ptr (type (eql ,type-kw)) &optional (offset 0))
-     (funcall (intern (string-upcase
-                        (concatenate 'string "%MEM-SET-" ,type-kw)))
-              (%offset-address-as-integer ptr offset))))
+(defgeneric %mem-set (ptr type value &optional offset))
 
-(defgeneric clasp-ffi::%mem-set (ptr type value &optional (offset 0)))
+(defmacro generate-mem-set-accessor-functions ()
+  `(progn
+     ,@(loop for spec across *foreign-type-spec-table*
+          when spec
+	  collect
+	    `(defmethod %mem-set (ptr (type (eql ',(%lisp-symbol spec))) value &optional (offset 0))
+	       (funcall ,(intern (concatenate 'string "%MEM-SET-" (string (%lisp-symbol spec))))
+                        (%offset-address-as-integer ptr offset) value)))))
 
-(defun generate-mem-set-accessor-functions ()
-  (loop for index from 0 to (1- (length  *foreign-type-spec-table*))
-     do
-       (let ((type-spec (elt *foreign-type-spec-table* index)))
-         (when type-spec
-           (def-mem-set-accessor (%lisp-symbol type-spec))))))
-
-;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
 ;;;
 ;;; F L I   I N I T I A L I Z A T I O N
