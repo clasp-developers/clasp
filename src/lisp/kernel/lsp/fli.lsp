@@ -17,9 +17,6 @@
 ;;;
 ;;;----------------------------------------------------------------------------
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (setq *echo-repl-tpl-read* t))
-
 (in-package "CLASP-FFI")
 
 ;;; ===========================================================================
@@ -65,7 +62,7 @@
           when spec
 	  collect
 	    `(defmethod %mem-ref (ptr (type (eql ',(%lisp-symbol spec))) &optional (offset 0))
-	       (funcall ,(intern (concatenate 'string "%MEM-REF-" (string (%lisp-symbol spec))))
+	       (funcall ,(intern (concatenate 'string "CLASP-FFI::%MEM-REF-" (string (%lisp-symbol spec))))
                         (%offset-address-as-integer ptr offset))))))
 
 ;;; === M E M - S E T ===
@@ -78,7 +75,7 @@
           when spec
 	  collect
 	    `(defmethod %mem-set (ptr (type (eql ',(%lisp-symbol spec))) value &optional (offset 0))
-	       (funcall ,(intern (concatenate 'string "%MEM-SET-" (string (%lisp-symbol spec))))
+	       (funcall ,(intern (concatenate 'string "CLASP-FFI::%MEM-SET-" (string (%lisp-symbol spec))))
                         (%offset-address-as-integer ptr offset) value)))))
 
 ;;;----------------------------------------------------------------------------
