@@ -50,7 +50,7 @@
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
 ;;; These code lines were debugged with the help of drneister, stassats and
-;;; Shinmera on 2016-09-22 as a joint effort on IRC channel #clasp. Thx again!
+;;; Shinmera on 2016-09-22 as a joint effort on IRC channel #clasp. Thx again!!
 
 ;;; === M E M - R E F ===
 
