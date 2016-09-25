@@ -26,26 +26,18 @@
 ;;;----------------------------------------------------------------------------
 ;;; MACROS
 
-(defmacro clasp-ffi::with-foreign-object ((var type) &body body)
-  `(let ((,var (clasp-ffi::%allocate-foreign-object ,type)))
+(defmacro with-foreign-object ((var type) &body body)
+  `(let ((,var (%allocate-foreign-object ,type)))
      (unwind-protect
           (progn ,@body)
-       (clasp-ffi::%free-foreign-object ,var))))
+       (%free-foreign-object ,var))))
 
-(defmacro clasp-ffi::with-foreign-objects (bindings &rest body)
+(defmacro with-foreign-objects (bindings &rest body)
   (if bindings
-      `(clasp-ffi::with-foreign-object ,(car bindings)
-         (clasp-ffi::with-foreign-objects ,(cdr bindings)
+      `(with-foreign-object ,(car bindings)
+         (with-foreign-objects ,(cdr bindings)
            ,@body))
       `(progn ,@body)))
-
-;;;----------------------------------------------------------------------------
-;;;----------------------------------------------------------------------------
-;;; UTILITIES
-
-(defun clasp-ffi::inline (fn)
-  (eval-when (:load-toplevel :compile-toplevel :execute)
-    (proclaim `(inline ,fn))))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -62,7 +54,7 @@
           when spec
 	  collect
 	    `(defmethod %mem-ref (ptr (type (eql ',(%lisp-symbol spec))) &optional (offset 0))
-	       (funcall ,(intern (concatenate 'string "CLASP-FFI::%MEM-REF-" (string (%lisp-symbol spec))))
+	       (funcall ,(intern (concatenate 'string "%MEM-REF-" (string (%lisp-symbol spec))) 'clasp-ffi)
                         (%offset-address-as-integer ptr offset))))))
 
 ;;; === M E M - S E T ===
@@ -75,7 +67,7 @@
           when spec
 	  collect
 	    `(defmethod %mem-set (ptr (type (eql ',(%lisp-symbol spec))) value &optional (offset 0))
-	       (funcall ,(intern (concatenate 'string "CLASP-FFI::%MEM-SET-" (string (%lisp-symbol spec))))
+	       (funcall ,(intern (concatenate 'string "%MEM-SET-" (string (%lisp-symbol spec))) 'clasp-ffi)
                         (%offset-address-as-integer ptr offset) value)))))
 
 ;;;----------------------------------------------------------------------------
