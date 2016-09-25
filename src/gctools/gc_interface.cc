@@ -128,6 +128,7 @@ typedef bool _Bool;
 #include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/readtable.h>
+#include <clasp/core/nativeVector.h>
 #include <clasp/core/arrayObjects.h>
 #include <clasp/core/arrayDisplaced.h>
 #include <clasp/core/intArray.h>
