@@ -765,24 +765,11 @@ Class_sp lisp_instance_class(T_sp o) {
       return core::Null_O::static_class;
     }
     return go->_instanceClass();
-#if 0
-    if (Instance_sp iobj = go.asOrNull<Instance_O>()) {
-      return iobj->_instanceClass();
-    } else if (WrappedPointer_sp exobj = go.asOrNull<WrappedPointer_O>()) {
-      return exobj->_instanceClass();
-    } else if (StructureObject_sp sobj = go.asOrNull<StructureObject_O>()) {
-      return sobj->_instanceClass();
-    } else if (Class_sp cobj = go.asOrNull<Class_O>()) {
-      return cobj->_instanceClass();
-    } else if (go.nilp()) {
-      return core::Null_O::static_class;
-    } else return go->__class(); // lisp_static_class()
-#endif
   } else if (o.valistp()) {
     // What do I return for this?
     return core::VaList_dummy_O::static_class;
   }
-  SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class"));
+  SIMPLE_ERROR(BF("Add support for unknown (immediate?) object to lisp_instance_class obj = %p") % (void*)(o.raw_()));
 }
 
 Class_sp lisp_static_class(T_sp o) {
