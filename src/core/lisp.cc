@@ -1808,7 +1808,8 @@ CL_DEFUN List_sp core__sorted(List_sp unsorted) {
     return _Nil<T_O>();
   fillVec0FromCons(sorted, unsorted);
   OrderByLessThan orderer;
-  sort::quickSort(sorted.begin(), sorted.end(), orderer);
+//  sort::quickSort(sorted.begin(), sorted.end(), orderer);
+  sort::quickSortVec0(sorted,0,sorted.size(), orderer);
   return asCons(sorted);
 }
 
@@ -1848,7 +1849,8 @@ CL_DEFUN T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key) {
   fillVec0FromCons(sorted, sequence);
   LOG(BF("Sort function: %s") % _rep_(sortProc));
   OrderBySortFunction orderer(sortProc,key);
-  sort::quickSort(sorted.begin(), sorted.end(), orderer);
+//  sort::quickSort(sorted.begin(), sorted.end(), orderer);
+  sort::quickSortVec0(sorted,0,sorted.size(),orderer);
   List_sp result = asCons(sorted);
   return result;
 }
