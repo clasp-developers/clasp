@@ -236,7 +236,8 @@ Function_sp SingleDispatchGenericFunctionClosure_O::slowMethodLookup(Class_sp mc
   }
   /* Sort the methods from most applicable to least applicable */
   SingleDispatch_OrderByClassPrecedence sort_by_class_precedence;
-  sort::quickSort(applicableMethods.begin(), applicableMethods.end(), sort_by_class_precedence);
+//  sort::quickSort(applicableMethods.begin(), applicableMethods.end(), sort_by_class_precedence);
+  sort::quickSortVec0(applicableMethods,0,applicableMethods.size(),sort_by_class_precedence);
   List_sp applicableMethodsList = _Nil<T_O>();
   for ( int i=applicableMethods.size()-1; i>=0; --i ) {
     applicableMethodsList = Cons_O::create(applicableMethods[i],applicableMethodsList);
