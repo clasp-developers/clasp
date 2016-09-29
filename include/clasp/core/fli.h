@@ -192,6 +192,8 @@ namespace clasp_ffi {
   CL_DEFUN ForeignData_sp PERCENTmake_nullpointer();
   CL_DEFUN core::T_sp PERCENTnull_pointer_p( core::T_sp obj );
 
+  CL_DEFUN core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign_data_ptr, core::Integer_sp offset );
+
   // ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE AND ALIGNMENT
   CL_DEFUN core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype);
