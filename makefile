@@ -173,7 +173,7 @@ redeye-run:
 redeye:
 	make redeye-prep
 	make redeye-run
-	./waf build_boehm
+	./waf build_cboehm
 
 
 pump:
