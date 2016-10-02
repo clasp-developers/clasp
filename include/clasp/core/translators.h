@@ -72,17 +72,25 @@ namespace translate {
   };
 
   template <>
-    struct from_object< int, std::true_type > {
+  struct from_object< int, std::true_type >
+  {
     typedef int DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( core::clasp_to_int( o )){};
+  from_object( core::T_sp o ) : _v( core::clasp_to_int( o ))
+    {
+      // fprintf( stderr, "*** translate::from_object: _v = %d\n",
+      //          _v );
+      // fflush( stderr );
+    };
   };
 
   template <>
     struct from_object< unsigned int, std::true_type > {
     typedef unsigned int DeclareType;
     DeclareType _v;
-  from_object(core::T_sp o) : _v( core::clasp_to_uint( o )){};
+  from_object(core::T_sp o) : _v( core::clasp_to_uint( o ))
+    {
+    };
   };
 
   template <>

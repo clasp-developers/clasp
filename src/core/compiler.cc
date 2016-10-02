@@ -1148,13 +1148,26 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 // === CORE TRANSLATORS FROM OBJECT / TO OBJECT ===
 
 template< typename T >
-core::T_O* from_object_raw(core::T_O* obj) {
-  T x =(translate::from_object< T >(gctools::smart_ptr<core::T_O>(obj)))._v;
-  return reinterpret_cast<core::T_O*>(x);
+core::T_O* from_object_raw(core::T_O* obj)
+{
+  core::T_sp ptr =  gctools::smart_ptr< core::T_O >( obj );
+
+  fprintf( stderr, "*** %s (%s:%d): CHECK POINT %d\n", __FUNCTION__, __FILE__, __LINE__, 1 );
+  fflush( stderr );
+
+  T x = translate::from_object< T >( ptr )._v;  // <<<--- SEGFAULTS HERE !
+
+  fprintf( stderr, "*** %s (%s:%d): CHECK POINT %d\n", __FUNCTION__, __FILE__, __LINE__, 2 );
+  fflush( stderr );
+
+  core::T_O *result = reinterpret_cast< core::T_O * >( x );
+
+  return result;
 }
 
 template< typename T >
-core::T_O* to_object_raw(core::T_O* obj) {
+core::T_O* to_object_raw(core::T_O* obj)
+{
   T x = static_cast< T >(reinterpret_cast<cl_intptr_t>(obj));
   return translate::to_object< T >::convert(x).raw_();
 }

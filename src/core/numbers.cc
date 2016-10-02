@@ -29,7 +29,9 @@ THE SOFTWARE.
 #define FAST_FIXNUM_ARITH
 //#include "clasp_gmpxx.h"
 #include <cstdint>
+
 #include <boost/format.hpp>
+
 #include <clasp/core/common.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/multipleValues.h>
@@ -43,7 +45,7 @@ THE SOFTWARE.
 #include <clasp/core/mathDispatch.h>
 #include <clasp/core/num_arith.h>
 #include <clasp/core/math_fenv.h>
-
+#include <clasp/gctools/pointer_tagging.h>
 #include <clasp/core/wrappers.h>
 
 
@@ -2882,8 +2884,10 @@ CL_EXTERN_DEFUN(&core::two_arg__EQ_);
       {
         TYPE_ERROR(x, Cons_O::createList(cl::_sym_Integer_O, make_fixnum(gc::most_negative_int), make_fixnum(gc::most_positive_int)));
       }
+
       return (int) farg;
     }
+
     return (gc::As< Integer_sp >(x))->as_int();
   }
 

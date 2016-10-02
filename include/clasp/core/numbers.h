@@ -58,123 +58,136 @@ extern core::Symbol_sp& _sym_Integer_O; // CL:INTEGER
 };
 
 namespace core {
-typedef enum { number_Fixnum = 0,
-               number_Bignum = 1,
-               number_Ratio = 2,
-               number_ShortFloat = 3,
-               number_SingleFloat = 4,
-               number_DoubleFloat = 5,
-               number_LongFloat = 6,
-               number_Complex = 7,
-               number_NUM = 8 } NumberType;
+  typedef enum { number_Fixnum = 0,
+                 number_Bignum = 1,
+                 number_Ratio = 2,
+                 number_ShortFloat = 3,
+                 number_SingleFloat = 4,
+                 number_DoubleFloat = 5,
+                 number_LongFloat = 6,
+                 number_Complex = 7,
+                 number_NUM = 8 } NumberType;
 
-template <typename T>
-gc::smart_ptr<T> immediate_fixnum(Fixnum f) {
-  return gc::make_tagged_fixnum<core::Fixnum_I>(f);
-};
-template <typename T>
-gc::smart_ptr<T> immediate_single_float(float f) {
-  return gc::make_tagged_single_float<core::SingleFloat_I>(f);
-};
+  // UTILS
 
-template <typename FLOAT>
-inline FLOAT _log1p(FLOAT x) {
-  IMPLEMENT_MEF(BF("Implement specialized log1p for basic float type"));
-}
+  template<class T>
+    inline std::string format_binary(T x)
+  {
+    char b[sizeof(T)*8+1] = {0};
 
-template <>
-inline float _log1p<float>(float x) {
-  float u = (float)1 + x;
-  if (u == 1) {
-    return (float)0;
+    for (size_t z = 0; z < sizeof(T)*8; z++)
+      b[sizeof(T)*8-1-z] = ((x>>z) & 0x1) ? '1' : '0';
+
+    return std::string(b);
   }
-  return (logf(u) * x) / (u - (float)1);
-}
 
-template <>
-inline double _log1p<double>(double x) {
-  double u = (double)1 + x;
-  if (u == 1) {
-    return (double)0;
+  template <typename T>
+    gc::smart_ptr<T> immediate_fixnum(Fixnum f) {
+    return gc::make_tagged_fixnum<core::Fixnum_I>(f);
+  };
+  template <typename T>
+    gc::smart_ptr<T> immediate_single_float(float f) {
+    return gc::make_tagged_single_float<core::SingleFloat_I>(f);
+  };
+
+  template <typename FLOAT>
+    inline FLOAT _log1p(FLOAT x) {
+    IMPLEMENT_MEF(BF("Implement specialized log1p for basic float type"));
   }
-  return (log(u) * x) / (u - (double)1);
-}
+
+  template <>
+    inline float _log1p<float>(float x) {
+    float u = (float)1 + x;
+    if (u == 1) {
+      return (float)0;
+    }
+    return (logf(u) * x) / (u - (float)1);
+  }
+
+  template <>
+    inline double _log1p<double>(double x) {
+    double u = (double)1 + x;
+    if (u == 1) {
+      return (double)0;
+    }
+    return (log(u) * x) / (u - (double)1);
+  }
 
 #ifdef CLASP_LONG_FLOAT
-template <>
-inline LongFloat _log1p<LongFloat>(LongFloat x) {
-  LongFloat u = (LongFloat)1 + x;
-  if (u == 1) {
-    return (LongFloat)0;
+  template <>
+    inline LongFloat _log1p<LongFloat>(LongFloat x) {
+    LongFloat u = (LongFloat)1 + x;
+    if (u == 1) {
+      return (LongFloat)0;
+    }
+    return (logl(u) * x) / (u - (LongFloat)1);
   }
-  return (logl(u) * x) / (u - (LongFloat)1);
-}
 #endif
 
-typedef double LongFloat;
+  typedef double LongFloat;
 
-bool clasp_zerop(Number_sp num);
-bool clasp_plusp(Real_sp num);
-bool clasp_minusp(Real_sp num);
-bool clasp_evenp(Integer_sp num);
-bool clasp_oddp(Integer_sp num);
-Number_sp clasp_abs(Number_sp num);
-Number_sp clasp_signum(Number_sp num);
-Number_sp clasp_one_plus(Number_sp num);
-Number_sp clasp_one_minus(Number_sp num);
-Number_sp clasp_negate(Number_sp num);
-bool clasp_float_nan_p(Float_sp num);
-bool clasp_float_infinity_p(Float_sp num);
-NumberType clasp_t_of(Number_sp num);
-Integer_sp clasp_shift(Integer_sp num, int bits);
-gc::Fixnum clasp_integer_length(Integer_sp x);
-mpz_class clasp_to_mpz(Integer_sp x);
+  bool clasp_zerop(Number_sp num);
+  bool clasp_plusp(Real_sp num);
+  bool clasp_minusp(Real_sp num);
+  bool clasp_evenp(Integer_sp num);
+  bool clasp_oddp(Integer_sp num);
+  Number_sp clasp_abs(Number_sp num);
+  Number_sp clasp_signum(Number_sp num);
+  Number_sp clasp_one_plus(Number_sp num);
+  Number_sp clasp_one_minus(Number_sp num);
+  Number_sp clasp_negate(Number_sp num);
+  bool clasp_float_nan_p(Float_sp num);
+  bool clasp_float_infinity_p(Float_sp num);
+  NumberType clasp_t_of(Number_sp num);
+  Integer_sp clasp_shift(Integer_sp num, int bits);
+  gc::Fixnum clasp_integer_length(Integer_sp x);
+  mpz_class clasp_to_mpz(Integer_sp x);
 
-gc::Fixnum clasp_to_fixnum( core::T_sp x );
+  gc::Fixnum clasp_to_fixnum( core::T_sp x );
 
-short clasp_to_short(T_sp x);
-unsigned short clasp_to_ushort(T_sp x);
+  short clasp_to_short(T_sp x);
+  unsigned short clasp_to_ushort(T_sp x);
 
-int clasp_to_int(T_sp x);
-unsigned int clasp_to_uint(T_sp x);
+  int clasp_to_int(T_sp x);
+  unsigned int clasp_to_uint(T_sp x);
 
-long clasp_to_long(T_sp x);
-unsigned long clasp_to_ulong(T_sp x);
+  long clasp_to_long(T_sp x);
+  unsigned long clasp_to_ulong(T_sp x);
 
-long long clasp_to_longlong(T_sp x);
-unsigned long long clasp_to_ulonglong(T_sp x);
+  long long clasp_to_longlong(T_sp x);
+  unsigned long long clasp_to_ulonglong(T_sp x);
 
-int8_t clasp_to_int8(T_sp x);
-uint8_t clasp_to_uint8(T_sp x);
+  int8_t clasp_to_int8(T_sp x);
+  uint8_t clasp_to_uint8(T_sp x);
 
-int16_t clasp_to_int16(T_sp x);
-uint16_t clasp_to_uint16(T_sp x);
+  int16_t clasp_to_int16(T_sp x);
+  uint16_t clasp_to_uint16(T_sp x);
 
-int32_t clasp_to_int32(T_sp x);
-uint32_t clasp_to_uint32(T_sp x);
-uint32_t clasp_to_uint32_t(T_sp x);
+  int32_t clasp_to_int32(T_sp x);
+  uint32_t clasp_to_uint32(T_sp x);
+  uint32_t clasp_to_uint32_t(T_sp x);
 
-int64_t clasp_to_int64(T_sp x);
-uint64_t clasp_to_uint64(T_sp x);
+  int64_t clasp_to_int64(T_sp x);
+  uint64_t clasp_to_uint64(T_sp x);
 
-cl_intptr_t clasp_to_cl_intptr_t(T_sp x);
-ptrdiff_t clasp_to_ptrdiff_t(T_sp x);
+  cl_intptr_t clasp_to_cl_intptr_t(T_sp x);
+  ptrdiff_t clasp_to_ptrdiff_t(T_sp x);
 
-cl_index clasp_to_size(T_sp x);
-size_t clasp_to_size_t(T_sp x);
-ssize_t clasp_to_ssize(T_sp x);
- ssize_t clasp_to_ssize_t(T_sp x);
+  cl_index clasp_to_size(T_sp x);
+  size_t clasp_to_size_t(T_sp x);
+  ssize_t clasp_to_ssize(T_sp x);
+  ssize_t clasp_to_ssize_t(T_sp x);
 
- float clasp_to_float(T_sp x);
- double clasp_to_double(T_sp x);
- LongFloat clasp_to_long_float(Number_sp x);
- LongFloat clasp_to_long_double(Number_sp x);
+  float clasp_to_float(T_sp x);
+  double clasp_to_double(T_sp x);
+  LongFloat clasp_to_long_float(Number_sp x);
+  LongFloat clasp_to_long_double(Number_sp x);
 
- Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
- SingleFloat_sp clasp_make_single_float(float d);
- DoubleFloat_sp clasp_make_double_float(double d);
+  Fixnum_sp clasp_make_fixnum(gc::Fixnum i);
+  SingleFloat_sp clasp_make_single_float(float d);
+  DoubleFloat_sp clasp_make_double_float(double d);
 
- Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
+  Number_sp clasp_log1_complex_inner(Number_sp r, Number_sp i);
 
 };
 

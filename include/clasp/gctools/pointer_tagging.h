@@ -10,14 +10,14 @@
 
 /*
   Copyright (c) 2014, Christian E. Schafmeister
- 
+
   CLASP is free software; you can redistribute it and/or
   modify it under the terms of the GNU Library General Public
   License as published by the Free Software Foundation; either
   version 2 of the License, or (at your option) any later version.
- 
+
   See directory 'clasp/licenses' for full details.
- 
+
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
 
@@ -45,16 +45,6 @@
 
 #include <clasp/gctools/globals.h>
 
-//#include "tagged_ptr.h"
-//#define TAGGED_PTR_BASE tagged_ptr
-
-//#define	IsUndefined(x) (x)
-//#define	NotUndefined(x) (!(x))
-
-//#define	_FWPLock(x)	(x)
-
-//#define	TAGGED_PTR core::T_O*
-
 extern void lisp_errorUnexpectedNil(type_info const &toType);
 extern void lisp_errorBadCast(type_info const &toType, type_info const &fromType, core::T_O *objP);
 extern void lisp_errorBadCastFromT_O(type_info const &toType, core::T_O *objP);
@@ -64,13 +54,11 @@ extern void lisp_errorBadCastFromSymbol_O(type_info const &toType, core::Symbol_
 extern void lisp_errorDereferencedNonPointer(core::T_O *objP);
 
 namespace core {
-class VaList_S;
- class Code_S;
+  class VaList_S;
+  class Code_S;
 };
 
 namespace gctools {
-
-//    typedef core::T_O Fixnum_ty;
 
 template <class T>
 class smart_ptr;
@@ -239,6 +227,7 @@ ABI's  */
    inline bool tagged_consp(T ptr) {
    return (reinterpret_cast<uintptr_t>(tag(ptr)) == cons_tag);
  };
+ static const std::string tagged_cons_str = "CONS";
 
  template <class T>
    inline T tag_cons(T p) {
@@ -271,18 +260,26 @@ ABI's  */
    inline bool tagged_nilp(T ptr) {
    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_nil);
  }
+ static const std::string tagged_nil_str = "NIL";
+
  template <class T>
    inline bool tagged_unboundp(T ptr) {
    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_unbound);
  }
+ static const std::string tagged_unbound_str = "UNBOUND";
+
  template <class T>
    inline bool tagged_deletedp(T ptr) {
    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_deleted);
  }
+ static const std::string tagged_deleted_str = "DELETED";
+
  template <class T>
    inline bool tagged_sameAsKeyp(T ptr) {
    return (reinterpret_cast<void *>(ptr) == global_tagged_Symbol_OP_sameAsKey);
  }
+ static const std::string tagged_same_as_key_str = "SAME_AS_KEY";
+
 
  template <class T>
    inline T tag_nil() {
@@ -309,6 +306,7 @@ ABI's  */
    GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(p) & tag_mask) == 0);
    return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(p) + valist_tag);
  }
+ static const std::string tagged_valist_str = "VALIST";
 
 
  template <class T>
@@ -327,14 +325,19 @@ ABI's  */
    inline T tag_fixnum(Fixnum fn) {
    return reinterpret_cast<T>((fn << fixnum_shift));
  }
+
  template <class T>
-   inline Fixnum untag_fixnum(T const ptr) {
+ inline Fixnum untag_fixnum(T const ptr)
+ {
    return (Fixnum)(reinterpret_cast<Fixnum>(ptr) >> fixnum_shift);
  }
+
  template <class T>
    inline bool tagged_fixnump(T ptr) {
    return ((reinterpret_cast<uintptr_t>(ptr) & fixnum_mask) == fixnum_tag);
  };
+ static const std::string tagged_fixnum_str = "FIXNUM";
+
  template <class T>
    inline T tag_character(int ch) {
    return reinterpret_cast<T>((ch << character_shift) | character_tag);
@@ -347,6 +350,8 @@ ABI's  */
    inline bool tagged_characterp(T ptr) {
    return ((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == character_tag);
  };
+ static const std::string tagged_character_str = "CHARACTER";
+
  template <class T>
    inline T tag_single_float(float fn) {
    GCTOOLS_ASSERT(sizeof(uintptr_t) == 8);
@@ -374,11 +379,15 @@ ABI's  */
    inline bool tagged_single_floatp(T ptr) {
    return ((reinterpret_cast<uintptr_t>(ptr) & immediate_mask) == single_float_tag);
  };
+ static const std::string tagged_single_float_str = "SINGLE_FLOAT";
+
 
  template <class T>
    inline bool tagged_generalp(T ptr) {
    return ((uintptr_t)(ptr) & tag_mask) == general_tag;
  }
+ static const std::string tagged_general_str = "GENERAL";
+
  template <class T>
    inline bool tagged_valistp(T ptr) {
    return ((reinterpret_cast<uintptr_t>(ptr) & tag_mask) == valist_tag);
@@ -388,13 +397,96 @@ ABI's  */
    inline bool tagged_objectp(T ptr) {
    return (reinterpret_cast<uintptr_t>(ptr) & pointer_tag_mask) == pointer_tag_eq;
  }
-
+ static const std::string tagged_object_str = "OBJECT";
 
  template <class Type>
    inline Type untag_object(Type tagged_obj) {
    GCTOOLS_ASSERT(tagged_objectp(tagged_obj));
    return reinterpret_cast<Type>((uintptr_t)tagged_obj & ptr_mask);
  }
-};
+
+// This returns a string containing info if and which tagged object is given
+// as parameter.
+
+ template< typename T >
+   std::string tag_str(T tagged_obj)
+ {
+   if( tagged_consp( tagged_obj )  )
+   {
+     return tagged_cons_str;
+   }
+
+   if( tagged_nilp( tagged_obj )  )
+   {
+     return tagged_nil_str;
+   }
+
+   if( tagged_unboundp( tagged_obj )  )
+   {
+     return tagged_unbound_str;
+   }
+
+   if( tagged_deletedp( tagged_obj )  )
+   {
+     return tagged_deleted_str;
+   }
+
+   if( tagged_sameAsKeyp( tagged_obj )  )
+   {
+     return tagged_same_as_key_str;
+   }
+
+   if( tagged_valistp( tagged_obj )  )
+   {
+     return tagged_valist_str;
+   }
+
+   if( tagged_fixnump( tagged_obj )  )
+   {
+     return tagged_fixnum_str;
+   }
+
+   if( tagged_characterp( tagged_obj )  )
+   {
+     return tagged_character_str;
+   }
+
+   if( tagged_single_floatp( tagged_obj )  )
+   {
+     return tagged_single_float_str;
+   }
+
+   if( tagged_generalp( tagged_obj )  )
+   {
+     return tagged_general_str;
+   }
+
+   if( tagged_objectp( tagged_obj )  )
+   {
+     return tagged_object_str;
+   }
+
+   return "*** UNKNOW_TAG ***";
+
+ }; // tag_str
+
+ template< typename T >
+   std::string tag_info(T tagged_obj)
+ {
+   std::stringstream ss;
+
+   ss << "<object tag info:";
+   ss << " type id: " << typeid( T ).name();
+   ss << " tag: " << tag_str( tagged_obj );
+
+ RETURN_FROM_TAG_INFO:
+
+   ss << ">";
+
+   return ss.str();
+
+ }; // tag_info
+
+}; // namespace gctools
 
 #endif // pointer_tagging
