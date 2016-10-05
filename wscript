@@ -119,7 +119,7 @@ def configure_clasp(cfg,variant):
     cfg.define("VARIANT_NAME",variant.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags(cfg.env.LIB_ST,cfg.env.LIB))
-    cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS))
+    cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS)+' '+' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
 
 def strip_libs(libs):
