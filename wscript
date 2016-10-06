@@ -142,7 +142,7 @@ def configure_clasp(cfg,variant):
     cfg.define("VARIANT_NAME",variant.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags(cfg.env.LIB_ST,cfg.env.LIB))
-    cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS))
+    cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS)+' '+' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
 
 def strip_libs(libs):
@@ -791,9 +791,24 @@ class link_fasl(Task.Task):
 class link_executable(Task.Task):
     def run(self):
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s %s %s %s -flto=thin -o %s -Wl,-object_path_lto,%s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath(),self.outputs[1].abspath())
+            cmd = "%s %s %s %s %s %s -flto=thin -o %s -Wl,-object_path_lto,%s" % (
+                self.env.CXX[0],
+                self.inputs[0].abspath(),
+                self.inputs[1].abspath(),
+                ' '.join(self.env['LINKFLAGS'])+' '+' '.join(self.env['LDFLAGS']),
+                libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB),
+                libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),
+                self.outputs[0].abspath(),
+                self.outputs[1].abspath())
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "%s %s %s %s %s %s -flto=thin -fuse-ld=gold -o %s" % (self.env.CXX[0],self.inputs[0].abspath(),self.inputs[1].abspath(),' '.join(self.env['LINKFLAGS']),libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB), libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),self.outputs[0].abspath())
+            cmd = "%s %s %s %s %s %s -flto=thin -fuse-ld=gold -o %s" % (
+                self.env.CXX[0],
+                self.inputs[0].abspath(),
+                self.inputs[1].abspath(),
+                ' '.join(self.env['LINKFLAGS'])+' '+' '.join(self.env['LDFLAGS']),
+                libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB),
+                libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),
+                self.outputs[0].abspath())
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
         print(" link_executable cmd: %s\n" % cmd)
