@@ -32,7 +32,11 @@ extern "C" {
 #include <clasp/mps/code/mps.h>
 };
 #endif
+
+#include <cctype>
+#include <cstdint>
 #include <typeinfo>
+
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
 #include <clasp/core/bignum.h>
@@ -465,14 +469,381 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   return functoid.raw_();
 }
 
+}; // extern "C"
 
+namespace llvmo {
 
+// === CORE TRANSLATORS FROM OBJECT / TO OBJECT ===
 
+template< typename T >
+core::T_O* from_object_raw(core::T_O* obj)
+{
+  core::T_sp ptr =  gctools::smart_ptr< core::T_O>( (gctools::Tagged) obj );
 
-};
+  T x = translate::from_object< T >( ptr )._v;    // <<<--- SEGFAULTS HERE !
+  core::T_O *result = reinterpret_cast< core::T_O * >( x );
+  return result;
+}
+
+template< typename T >
+core::T_O* to_object_raw(core::T_O* obj)
+{
+  T x = static_cast< T >(reinterpret_cast<cl_intptr_t>(obj));
+  return translate::to_object< T >::convert(x).raw_();
+}
+
+}; // namespace llvmo
+
+extern "C" {
+
+#define DEF_RAW_TRANSLATOR(TYPE,NAME) \
+static const int source_line_from_object_##NAME = __LINE__; \
+ALWAYS_INLINE core::T_O* from_object_##NAME(core::T_O* obj) \
+{ \
+  return llvmo::from_object_raw< TYPE >( obj ); \
+} \
+\
+static const int source_line_to_object_##NAME = __LINE__; \
+ALWAYS_INLINE core::T_O* to_object_##NAME(core::T_O* obj) \
+{ \
+  return llvmo::to_object_raw< TYPE >( obj ); \
+}
+
+DEF_RAW_TRANSLATOR(short,short);
+DEF_RAW_TRANSLATOR(unsigned short,ushort);
+DEF_RAW_TRANSLATOR(int,int);
+DEF_RAW_TRANSLATOR(unsigned int,uint);
+DEF_RAW_TRANSLATOR(long,long);
+DEF_RAW_TRANSLATOR(unsigned long,ulong);
+DEF_RAW_TRANSLATOR(long long,longlong);
+DEF_RAW_TRANSLATOR(unsigned long long,ulonglong);
+DEF_RAW_TRANSLATOR(int8_t,int8);
+DEF_RAW_TRANSLATOR(uint8_t,uint8);
+DEF_RAW_TRANSLATOR(int16_t,int16);
+DEF_RAW_TRANSLATOR(uint16_t,uint16);
+DEF_RAW_TRANSLATOR(int32_t,int32);
+DEF_RAW_TRANSLATOR(uint32_t,uint32);
+DEF_RAW_TRANSLATOR(int64_t,int64);
+DEF_RAW_TRANSLATOR(uint64_t,uint64);
+DEF_RAW_TRANSLATOR(size_t,size);
+DEF_RAW_TRANSLATOR(ssize_t,ssize);
+DEF_RAW_TRANSLATOR(ptrdiff_t,ptrdiff);
+DEF_RAW_TRANSLATOR(time_t,time);
+DEF_RAW_TRANSLATOR(char,char);
+
+// === END OF CORE TRANSLATORS ===
+
+}; // eytern "C"
+
+namespace llvmo
+{
+
+void initialize_raw_translators( void )
+{
+    // TRANSLATOR WRAPPERS
+
+  // -- SHORT --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<SHORT>", &from_object_short,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_short );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<SHORT>", &to_object_short,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_short );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<USHORT>", &from_object_ushort,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ushort );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_ushort,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ushort );
+
+  // -- INT --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT>", &from_object_int,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_int,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT>", &from_object_uint,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT>", &to_object_uint,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint );
+
+  // -- LONG --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<LONG>", &from_object_long,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_long );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<LONG>", &to_object_long,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_long );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<ULONG>", &from_object_ulong,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ulong );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<ULONG>", &to_object_ulong,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ulong );
+
+  // -- INT8 --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT8>", &from_object_int8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int8 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<INT8>", &to_object_int8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int8 );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT8>", &from_object_uint8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint8 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT8>", &to_object_uint8,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint8 );
+
+  // -- INT16 --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT16>", &from_object_int16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int16 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<INT16>", &to_object_int16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int16 );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT16>", &from_object_uint16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint16 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT16>", &to_object_uint16,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint16 );
+
+  // -- INT32 --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT32>", &from_object_int32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int32 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<INT32>", &to_object_int32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int32 );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT32>", &from_object_uint32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint32 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT32>", &to_object_uint32,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint32 );
+
+  // -- INT64 --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT64>", &from_object_int64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_int64 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<INT64>", &to_object_int64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_int64 );
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT64>", &from_object_uint64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_uint64 );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT64>", &to_object_uint64,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_uint64 );
+
+  // -- PTRDIFF --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<PTRDIFF>", &from_object_ptrdiff,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ptrdiff );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<PTRDIFF>", &to_object_ptrdiff,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ptrdiff );
+
+  // -- TIME --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<TIME>", &from_object_time,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_time );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<TIME>", &to_object_time,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_time );
+
+  // -- SIZE --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<SIZE>", &from_object_size,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_size );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<SIZE>", &to_object_size,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_size );
+
+  // -- SSIZE --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<SSIZE>", &from_object_ssize,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_ssize );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<SSIZE>", &to_object_ssize,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_ssize );
+
+  // -- CHAR --
+
+  wrap_translator( "CLASP-FFI","FROM-OBJECT<CHAR>", &from_object_char,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_from_object_size );
+
+  wrap_translator( "CLASP-FFI","TO-OBJECT<CHAR>", &to_object_char,
+                   "", // arguments
+                   "", // declares
+                   "", // docstring,
+                   __FILE__,
+                   source_line_to_object_char );
+
+  // END OF TRANSLATOR WRAPPERS
+
+  return;
+
+} // initialize_raw_translators
+
+}; // namespace llvmo
+
 namespace llvmo {
 void initialize_intrinsics() {
   // Do nothing
 }
 };
+
 #pragma GCC visibility pop

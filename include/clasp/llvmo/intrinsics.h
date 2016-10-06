@@ -39,22 +39,24 @@ void cc_invoke_startup_functions();
 
 namespace llvmo {
 
-void redirect_llvm_interface_addSymbol();
+  void redirect_llvm_interface_addSymbol();
 
-void initialize_intrinsics();
-void initialize_link_intrinsics();
+  void initialize_intrinsics();
+  void initialize_link_intrinsics();
 
-typedef enum { noFunctionBoundToSymbol,
-               badKeywordArgument,
-               couldNotCoerceToClosure,
-               destinationMustBeActivationFrame,
-               invalidIndexForFunctionFrame,
-               unboundSymbolValue,
-               unboundSymbolFunction,
-               unboundSymbolSetfFunction
-} ErrorCode;
+  typedef enum { noFunctionBoundToSymbol,
+                 badKeywordArgument,
+                 couldNotCoerceToClosure,
+                 destinationMustBeActivationFrame,
+                 invalidIndexForFunctionFrame,
+                 unboundSymbolValue,
+                 unboundSymbolFunction,
+                 unboundSymbolSetfFunction
+  } ErrorCode;
 
-extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+  extern void intrinsic_error(ErrorCode err, core::T_sp arg0 = _Nil<core::T_O>(), core::T_sp arg1 = _Nil<core::T_O>(), core::T_sp arg2 = _Nil<core::T_O>());
+
+  void initialize_raw_translators( void );
 }
 
 #endif
