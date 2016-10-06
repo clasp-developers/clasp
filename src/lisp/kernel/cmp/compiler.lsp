@@ -1151,6 +1151,33 @@ jump to blocks within this tagbody."
           (irc-store-result result result-in-registers))))
     (irc-low-level-trace :flow)))
 
+(defun codegen-pointer-call (result form evaluate-env)
+  "Evaluate each of the arguments into an alloca and invoke the function pointer"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((nargs (length (cdr form)))
+         args
+         (temp-result (irc-alloca-tsp)))
+    (dbg-set-invocation-history-stack-top-source-pos form)
+    ;; evaluate the arguments into the array
+    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+    (do* ((cur-exp (cdr form) (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp))
+          (i 0 (+ 1 i)))
+         ((endp cur-exp) nil)
+      (codegen temp-result exp evaluate-env)
+      (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+    (codegen temp-result (car form) evaluate-env)
+    (let* ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+           (varargs nil)
+           (function-type (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs))
+           (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
+           (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
+           (function-pointer (llvm-sys:create-bit-cast cmp:*irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
+           (result-in-registers
+            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result")))
+      (irc-store-result result result-in-registers))
+    (irc-low-level-trace :flow)))
 
 (defun codegen-application (result form env)
   "A compiler macro function, macro function or a regular function"
@@ -1216,7 +1243,8 @@ jump to blocks within this tagbody."
          ((eq sym 'cl:catch) nil)           ;; handled with macro
          ((eq sym 'cl:throw) nil)           ;; handled with macro
          ((eq sym 'core:debug-message) t)   ;; special operator
-         ((eq sym 'core::intrinsic-call) t) ;; Call intrinsic functions
+         ((eq sym 'core:intrinsic-call) t) ;; Call intrinsic functions
+         ((eq sym 'core:pointer-call) t) ;; Call function pointers
          (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 

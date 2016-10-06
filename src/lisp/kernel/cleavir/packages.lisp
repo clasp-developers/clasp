@@ -17,6 +17,7 @@
    #:*debug-log*
    #:instruction-gid
    #:unsafe-intrinsic-call
+   #:unsafe-pointer-call
    #:datum-gid
    #:create-landing-pad
    #:translate-datum
@@ -46,6 +47,7 @@
    #:named-function-ast
    #:debug-message-ast
    #:intrinsic-call-ast
+   #:pointer-call-ast
    #:argument-asts
    #:function-name
    #:make-throw-ast
@@ -81,8 +83,10 @@
    #:make-named-enter-instruction
    #:debug-message-instruction
    #:intrinsic-call-instruction
+   #:pointer-call-instruction
    #:function-name
    #:make-intrinsic-call-instruction
+   #:make-pointer-call-instruction
    #:make-precalc-symbol-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction

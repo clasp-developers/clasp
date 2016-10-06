@@ -1887,6 +1887,7 @@ CL_DEFUN APInt_sp APInt_O::makeAPInt32(core::Integer_sp value) {
 CL_DEFUN APInt_sp APInt_O::makeAPInt64(core::Integer_sp value) {
   return APInt_O::makeAPIntWidth(value, 64, true);
 }
+
 }
 
 namespace llvmo {
@@ -2239,22 +2240,18 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(ll
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateFCmp);
   CL_LISPIFY_NAME(CreatePHI);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreatePHI);
-  CL_LISPIFY_NAME(CreateCallArrayRef);
+CL_LISPIFY_NAME(CreateCallArrayRef);
 CL_LAMBDA(irbuilder callee args name &optional (fpmathtag nil));
 CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilder_O::ExternalType::CreateCall);
-//CL_LISPIFY_NAME(CreateCall0);
-// CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
-//CL_LISPIFY_NAME(CreateCall1);
-// CL_EXTERN_DEFMETHOD(IRBuilder_O,(llvm::CallInst *(IRBuilder_O::ExternalType::*) (llvm::Value *, llvm::Value *, const llvm::Twine &) )&IRBuilder_O::ExternalType::CreateCall);
-//  CL_LISPIFY_NAME(CreateCall2);
-//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall2);
-//  CL_LISPIFY_NAME(CreateCall3);
-//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall3);
-//  CL_LISPIFY_NAME(CreateCall4);
-//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall4);
-//  CL_LISPIFY_NAME(CreateCall5);
-//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCall5);
-  CL_LISPIFY_NAME(CreateSelect);
+
+
+// (llvm::FunctionType *FTy, Value *Callee, ArrayRef< Value * > Args, const Twine &Name="", MDNode *FPMathTag=nullptr)
+CL_LISPIFY_NAME(CreateCallFunctionPointer);
+CL_LAMBDA(irbuilder function_type callee args name &optional (fpmathtag nil));
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::CallInst *(IRBuilder_O::ExternalType::*)(llvm::FunctionType *FTy, llvm::Value *Callee, llvm::ArrayRef<llvm::Value *> Args, const llvm::Twine &Name, llvm::MDNode* FPMathTag ))&IRBuilder_O::ExternalType::CreateCall);
+
+
+CL_LISPIFY_NAME(CreateSelect);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateSelect);
   CL_LISPIFY_NAME(CreateVAArg);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateVAArg);

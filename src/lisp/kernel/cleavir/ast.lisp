@@ -103,6 +103,25 @@
 (defmethod cleavir-ast:children ((ast intrinsic-call-ast))
   (argument-asts ast))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class POINTER-CALL-AST
+;;;
+;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.
+
+(defclass pointer-call-ast (cleavir-ast:ast)
+  ((%argument-asts :initarg :argument-asts :reader argument-asts)))
+
+(cleavir-io:define-save-info pointer-call-ast
+  (:argument-asts argument-asts))
+
+(defmethod cleavir-ast-graphviz::label ((ast pointer-call-ast))
+  (with-output-to-string (s)
+    (format s "pointer-call")))
+
+(defmethod cleavir-ast:children ((ast pointer-call-ast))
+  (argument-asts ast))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

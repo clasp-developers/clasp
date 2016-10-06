@@ -194,7 +194,7 @@ No DIBuilder is defined for the default module")
 
 
 (defun jit-constant-i64 (val)
-  "Create an i1 constant in the current context"
+  "Create an i64 constant in the current context"
   (let ((ap-arg (llvm-sys:make-apint64 val)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 

@@ -263,7 +263,7 @@
             (t (cleavir-environment:macro-function symbol *clasp-env*)))))
 
 
-(defun generate-asts-for-clasp-source (start end)
+#+(or)(defun generate-asts-for-clasp-source (start end)
   (let* ((parts (core::select-source-files end :first-file start :system core:*system-files*))
 	 (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
 	 (eof (gensym)))
@@ -357,26 +357,26 @@
 (defvar *ast* nil)
 (defvar *hir* nil)
 (defvar *mir* nil)
-(defun generate-hir-for-clasp-source (&optional (start :init) (end :all) skip-errors)
-  (declare (special cleavir-generate-ast:*compiler*))
-  (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
-	 (parts (core::select-source-files end :first-file start :system core:*system-files*))
-	 (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
-	 (eof (gensym)))
-    (loop for file in pathnames
-       do (with-open-file (stream file :direction :input)
-	    (loop for form = (read stream nil eof)
-	       until (eq form eof)
-	       do (format t "FORM: ~a~%" form)
-	       do (if (and (eq form :pause-hir) (not *hir-single-step*))
-		      (hir-tpl)
-		      (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-			     (hir (cleavir-ast-to-hir:compile-toplevel ast)))
-			(setf *form* form
-			      *ast* ast
-			      *hir* hir)
-			(if *hir-single-step*
-			    (hir-tpl)))))))))
+#+(or)(defun generate-hir-for-clasp-source (&optional (start :init) (end :all) skip-errors)
+        (declare (special cleavir-generate-ast:*compiler*))
+        (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
+               (parts (core::select-source-files end :first-file start :system core:*system-files*))
+               (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
+               (eof (gensym)))
+          (loop for file in pathnames
+             do (with-open-file (stream file :direction :input)
+                  (loop for form = (read stream nil eof)
+                     until (eq form eof)
+                     do (format t "FORM: ~a~%" form)
+                     do (if (and (eq form :pause-hir) (not *hir-single-step*))
+                            (hir-tpl)
+                            (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
+                                   (hir (cleavir-ast-to-hir:compile-toplevel ast)))
+                              (setf *form* form
+                                    *ast* ast
+                                    *hir* hir)
+                              (if *hir-single-step*
+                                  (hir-tpl)))))))))
 
 
 

@@ -383,6 +383,7 @@ ALWAYS_INLINE core::T_O *cc_readCell(core::T_O *cell) {
   return val.raw_();
 }
 
+
 core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   //	core::ValueFrame_sp a = gctools::smart_ptr<core::ValueFrame_O>(reinterpret_cast<core::ValueFrame_O*>(array));
   gctools::smart_ptr<core::ClosureWithSlots_O> c = gctools::smart_ptr<core::ClosureWithSlots_O>((gc::Tagged)tagged_closure);
@@ -393,6 +394,12 @@ core::T_O *cc_fetch(core::T_O *tagged_closure, std::size_t idx) {
   return (*c)[idx].raw_();
 }
 
+
+ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object) {
+  core::Pointer_O* po = reinterpret_cast<core::Pointer_O*>(gctools::untag_general(pointer_object));
+  char* ptr = reinterpret_cast<char*>(po->ptr());
+  return ptr;
+}
 
 };
 
