@@ -113,6 +113,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;; Converting CORE:POINTER-CALL
+;;;
+;;; This is converted into a pointer call
+;;;
+(defmethod cleavir-generate-ast::convert-special
+    ((symbol (eql 'core:pointer-call)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:pointer-call-ast
+                 :argument-asts (cleavir-generate-ast:convert-sequence (cdr form) environment system)))
+
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:pointer-call)) form)
+  (cleavir-code-utilities:check-form-proper-list form)
+  (cleavir-code-utilities:check-argcount form 1 nil))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;; Converting CATCH
 ;;;
 ;;; Convert catch into a call

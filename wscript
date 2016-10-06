@@ -48,7 +48,9 @@ VERSION = '0.0'
 '''
 
 DARWIN_OS = 'darwin'
-LINUX_OS  = 'linux'
+LINUX_OS = 'linux'
+    
+STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'c' ]
 
 GCS = [ 'boehm',
         'boehmdc',
@@ -57,10 +59,6 @@ GCS = [ 'boehm',
 
 # DEBUG_CHARS None == optimized
 DEBUG_CHARS = [ None, 'd' ]
-
-
-STAGE_CHARS = [ 's', 'i', 'a', 'b', 'c' ]
-
 
 LLVM_LIBRARIES = []
 
@@ -116,7 +114,7 @@ def generate_dsym_files( name, path ):
     return [ info_plist, dwarf_file ]
 
 def stage_value(ctx,s):
-    if ( s == 's' ):
+    if ( s == 'r' ):
         sval = -1
     elif ( s == 'i' ):
         sval = 0
@@ -659,7 +657,15 @@ def build(bld):
         dsymutil_iclasp.set_outputs(iclasp_dsym_files)
         bld.add_to_group(dsymutil_iclasp)
         bld.install_files('${PREFIX}/%s/%s'%(executable_dir,iclasp_dsym.name),iclasp_dsym_files,relative_trick=True,cwd=iclasp_dsym)
-    if (stage_val >= 1):
+    if (stage_val <= -1):
+        print("About to add run_aclasp")
+        cmp_aclasp = run_aclasp(env=bld.env)
+#        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+        cmp_aclasp.set_inputs([iclasp_executable,intrinsics_bitcode_node]+fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
+        aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
+        cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
+        bld.add_to_group(cmp_aclasp)
+    if (stage_val >= 1):   
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
@@ -828,6 +834,24 @@ class link_executable(Task.Task):
 #    except AttributeError:
 #        return
 #    self.create_task('dsymutil',link_task.outputs[0])
+
+class run_aclasp(Task.Task):
+    def run(self):
+        print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
+        cmd = [self.inputs[0].abspath(),
+               "-I",
+               "-f", "clasp-min",
+               "-f", "clasp-builder",
+               "-f", "debug-run-clang",
+               "-e", "(load-aclasp)",
+               "--" ] + self.bld.clasp_aclasp
+        print("  run_aclasp cmd: %s" % cmd)
+        return self.exec_command(cmd)
+    def exec_command(self, cmd, **kw):
+        kw['stdout'] = sys.stdout
+        return super(run_aclasp, self).exec_command(cmd, **kw)
+    def keyword(self):
+        return 'Run aclasp using... '
 
 class compile_aclasp(Task.Task):
     def run(self):

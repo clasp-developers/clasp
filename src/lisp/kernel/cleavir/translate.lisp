@@ -393,6 +393,14 @@
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:pointer-call-instruction) return-value inputs outputs (abi abi-x86-64))
+  (cmp:irc-low-level-trace :flow)
+  (let ((call (clasp-cleavir:unsafe-pointer-call :call (%load (car inputs)) return-value (cdr inputs) abi)))
+    (cc-dbg-when *debug-log*
+		 (format *debug-log* "    translate-simple-instruction pointer-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "     instruction --> ~a~%" call))))
+
+(defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
   #+(or)(progn
 	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
@@ -603,8 +611,7 @@
 	 *debug-log*
 	 (format *debug-log* "    translate-simple-instruction invoke-multiple-value-call-instruction: ~a~%" 
 		 (cc-mir:describe-mir instruction))
-	 (format *debug-log* "     instruction --> ~a~%" call-result))
-	))))
+	 (format *debug-log* "     instruction --> ~a~%" call-result))))))
 
 
 (defmethod translate-simple-instruction

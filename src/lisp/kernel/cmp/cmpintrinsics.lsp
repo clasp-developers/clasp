@@ -735,6 +735,7 @@ and initialize it with an array consisting of one function pointer."
 
   ;; Primitives for Cleavir code
 
+  (primitive-nounwind module "cc_getPointer" +i8*+ (list +t*+))
   (primitive-nounwind module "cc_setTmvToNil" +void+ (list +tmv*+))
   (primitive-nounwind module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_precalcValue" +t*+ (list +ltv**+ +size_t+))

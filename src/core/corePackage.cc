@@ -234,6 +234,7 @@ SYMBOL_EXPORT_SC_(ClPkg, substitute);
 
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, intrinsic_call);
+SYMBOL_EXPORT_SC_(CorePkg, pointer_call);
 SYMBOL_EXPORT_SC_(CorePkg, STARclasp_packageSTAR );
 SYMBOL_EXPORT_SC_(CorePkg, single_dispatch_method);
 SYMBOL_EXPORT_SC_(CorePkg, setf_documentation);

@@ -102,6 +102,33 @@
 	  (error "INTRINSIC-CALL-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:pointer-call-ast) context)
+  (with-accessors ((results cleavir-ast-to-hir::results)
+		   (successors cleavir-ast-to-hir::successors))
+      context
+    (let* ((all-args (clasp-cleavir-ast:argument-asts ast))
+	   (temps (cleavir-ast-to-hir::make-temps all-args)))
+      (cleavir-ast-to-hir:compile-arguments
+       all-args
+       temps
+       (ecase (length successors)
+	 (1
+	  (if (typep results 'cleavir-ir:values-location)
+                (make-instance 'clasp-cleavir-hir:pointer-call-instruction
+                             :inputs temps
+                             :outputs (list results)
+                             :successors successors)
+	      (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
+		(make-instance 'clasp-cleavir-hir:pointer-call-instruction
+                               :inputs temps
+                               :outputs (list values-temp)
+                               :successors
+                               (list (cleavir-ir:make-multiple-to-fixed-instruction
+                                      values-temp results (first successors)))))))
+	 (2
+	  (error "POINTER-CALL-AST appears in a Boolean context.")))
+       (cleavir-ast-to-hir::invocation context)))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

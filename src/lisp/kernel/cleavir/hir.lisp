@@ -44,6 +44,29 @@
                  :successors (if successor-p (list successor) '())))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction POINTER-CALL-INSTRUCTION
+;;;
+;;; This instruction is an POINTER-CALL-INSTRUCTION that prints a message
+
+
+(defclass pointer-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ())
+
+
+(defmethod cleavir-ir-graphviz:label ((instr pointer-call-instruction))
+  (with-output-to-string (s)
+    (format s "pointer-call")))
+
+(defmethod make-pointer-call-instruction
+    (function-name inputs outputs &optional (successor nil successor-p))
+  (make-instance 'pointer-call-instruction
+                 :inputs inputs
+                 :outputs outputs
+                 :successors (if successor-p (list successor) '())))
+
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
