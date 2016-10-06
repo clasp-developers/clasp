@@ -1166,13 +1166,13 @@ core::T_O* to_object_raw(core::T_O* obj)
 
 #define DEF_CORE_TRANSLATOR(TYPE,NAME) \
 static const int source_line_from_object_##NAME = __LINE__; \
-core::T_O* from_object_##NAME(core::T_O* obj) \
+extern "C" core::T_O* from_object_##NAME(core::T_O* obj) \
 { \
   return from_object_raw< TYPE >( obj ); \
 } \
 \
 static const int source_line_to_object_##NAME = __LINE__; \
-core::T_O* to_object_##NAME(core::T_O* obj) \
+extern "C" core::T_O* to_object_##NAME(core::T_O* obj) \
 { \
   return to_object_raw< TYPE >( obj ); \
 }
