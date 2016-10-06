@@ -1150,18 +1150,10 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 template< typename T >
 core::T_O* from_object_raw(core::T_O* obj)
 {
-  core::T_sp ptr =  gctools::smart_ptr< core::T_O >( obj );
+  core::T_sp ptr =  gctools::smart_ptr< core::T_O>( (gctools::Tagged) obj );
 
-  fprintf( stderr, "*** %s (%s:%d): CHECK POINT %d\n", __FUNCTION__, __FILE__, __LINE__, 1 );
-  fflush( stderr );
-
-  T x = translate::from_object< T >( ptr )._v;  // <<<--- SEGFAULTS HERE !
-
-  fprintf( stderr, "*** %s (%s:%d): CHECK POINT %d\n", __FUNCTION__, __FILE__, __LINE__, 2 );
-  fflush( stderr );
-
+  T x = translate::from_object< T >( ptr )._v;    // <<<--- SEGFAULTS HERE !
   core::T_O *result = reinterpret_cast< core::T_O * >( x );
-
   return result;
 }
 

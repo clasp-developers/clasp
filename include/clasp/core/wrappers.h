@@ -4,14 +4,14 @@
 
 /*
 Copyright (c) 2014, Christian E. Schafmeister
- 
+
 CLASP is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
- 
+
 See directory 'clasp/licenses' for full details.
- 
+
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
@@ -87,28 +87,52 @@ public:
 
 namespace core {
 
-  inline void wrap_translator(const string &packageName, const string &name, core::T_O* (*fp)(core::T_O*), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = lispify_intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<TranslationFunctor>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
-}
+  inline void wrap_translator( const string &packageName,
+                               const string &name,
+                               core::T_O* (*fp)(core::T_O*),
+                               const string &arguments = "",
+                               const string &declares = "",
+                               const string &docstring = "",
+                               const string &sourceFile = "",
+                               int sourceLine = 0)
+  {
+    Symbol_sp        symbol = lispify_intern( name, packageName );
+    SourcePosInfo_sp spi    = lisp_createSourcePosInfo( sourceFile,
+                                                        0,
+                                                        sourceLine );
+    BuiltinClosure_sp f =
+      gctools::GC< TranslationFunctor >::allocate( symbol,
+                                                   kw::_sym_function,
+                                                   fp,
+                                                   SOURCE_POS_INFO_FIELDS( spi ));
 
-template <typename RT, typename... ARGS>
-void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = lispify_intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
-}
+    lisp_defun( symbol,
+                packageName,
+                f,
+                arguments,
+                declares,
+                docstring,
+                sourceFile,
+                sourceLine,
+                true,
+                1 );
+  }
 
- template <typename RT, typename... ARGS>
-void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = _lisp->intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
-}
+  template <typename RT, typename... ARGS>
+    void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+    Symbol_sp symbol = lispify_intern(name, packageName);
+    SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
+    BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
+  }
+
+  template <typename RT, typename... ARGS>
+    void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
+    Symbol_sp symbol = _lisp->intern(name, packageName);
+    SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
+    BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
+    lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
+  }
 
 
 };

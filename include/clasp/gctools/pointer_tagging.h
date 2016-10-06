@@ -407,7 +407,6 @@ ABI's  */
 
 // This returns a string containing info if and which tagged object is given
 // as parameter.
-
  template< typename T >
    std::string tag_str(T tagged_obj)
  {
@@ -478,9 +477,6 @@ ABI's  */
    ss << "<object tag info:";
    ss << " type id: " << typeid( T ).name();
    ss << " tag: " << tag_str( tagged_obj );
-
- RETURN_FROM_TAG_INFO:
-
    ss << ">";
 
    return ss.str();

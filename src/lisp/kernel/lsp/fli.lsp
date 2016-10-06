@@ -136,6 +136,9 @@
        else do (setf return-type type)
        finally (return (values transformed-args return-type)))))
 
+(defmacro produce-function-pointer-call (ptr types values return-type)
+  )
+
 (defmacro %foreign-funcall-pointer (ptr args &key convention)
   "Funcall a pointer to a foreign function."
   (declare (ignore convention))

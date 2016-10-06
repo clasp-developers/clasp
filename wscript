@@ -1,9 +1,21 @@
+'''
+  =============================================================================
+     C L A S P   WAF-based   B U I L D   S Y S T E M
+  =============================================================================
+'''
+
+'''
+  -----------------------------------------------------------------------------
+     I M P O R T S
+  -----------------------------------------------------------------------------
+'''
+
+# SYSTEM IMPORTS
+
 import subprocess
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
 from waflib.Tools.compiler_c import c_compiler
-#cxx_compiler['linux'] = ['clang++']
-#c_compiler['linux'] = ['clang']
 
 import sys
 import os
@@ -11,25 +23,44 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
+
+# WAF IMPORTS
+
 from waflib.extras import clang_compilation_database
 from waflib.Errors import ConfigurationError
 from waflib import Utils
+
+'''
+  -----------------------------------------------------------------------------
+     C O N F I G U R A T I O N
+  -----------------------------------------------------------------------------
+'''
 
 top = '.'
 out = 'build'
 APP_NAME = 'clasp'
 VERSION = '0.0'
+
+'''
+  -----------------------------------------------------------------------------
+     G L O B A L   V A R S  /  S E T T I N G S
+  -----------------------------------------------------------------------------
+'''
+
 DARWIN_OS = 'darwin'
-LINUX_OS = 'linux'
-    
-STAGE_CHARS = [ 's', 'i', 'a', 'b', 'c' ]
+LINUX_OS  = 'linux'
 
 GCS = [ 'boehm',
         'boehmdc',
         'mpsprep',
         'mps' ]
+
 # DEBUG_CHARS None == optimized
 DEBUG_CHARS = [ None, 'd' ]
+
+
+STAGE_CHARS = [ 's', 'i', 'a', 'b', 'c' ]
+
 
 LLVM_LIBRARIES = []
 
@@ -79,12 +110,10 @@ def libraries_as_link_flags(fmt,libs):
         all_libs.write(fmt % x)
     return all_libs.getvalue()
 
-def generate_dsym_files(name,path):
+def generate_dsym_files( name, path ):
     info_plist = path.find_or_declare("Contents/Info.plist")
-    dwarf_file = path.find_or_declare("Contents/Resources/DWARF/%s"%name)
-#    print("info_plist = %s" % info_plist)
-#    print("dwarf_file = %s" % dwarf_file)
-    return [info_plist,dwarf_file]
+    dwarf_file = path.find_or_declare("Contents/Resources/DWARF/%s" % name)
+    return [ info_plist, dwarf_file ]
 
 def stage_value(ctx,s):
     if ( s == 's' ):
@@ -105,13 +134,7 @@ def stage_value(ctx,s):
         ctx.fatal("Illegal stage: %s" % s)
     return sval
 
-def yadda(cfg):
-    print("In Yadda")
-
 def configure_clasp(cfg,variant):
-#    include_path = "%s/%s/%s/src/include/clasp/main/" % (cfg.path.abspath(),out,variant.variant_dir()) #__class__.__name__)
-#    cfg.env.append_value("CXXFLAGS", ['-I%s' % include_path])
-#    cfg.env.append_value("CFLAGS", ['-I%s' % include_path])
     cfg.define("EXECUTABLE_NAME",variant.executable_name())
     cfg.define("CLASP_CLANG_PATH",os.getenv("CLASP_CLANG_PATH"))
     cfg.define("APP_NAME",APP_NAME)
@@ -127,7 +150,7 @@ def strip_libs(libs):
     split_libs = libs.split()
     for lib in split_libs:
         result.append("%s" % str(lib[2:]))
-    return result 
+    return result
 
 def fix_lisp_paths(bld_path,out,variant,paths):
     nodes = []
@@ -139,13 +162,10 @@ def fix_lisp_paths(bld_path,out,variant,paths):
             if (lsp_res == None):
                 lsp_name = "%s.lisp"%file_name
                 lsp_res = bld_path.find_resource(lsp_name)
-#            print("Looking for file_name with .lsp or .lisp: %s  --> %s" % (file_name,lsp_res))
             assert lsp_res!=None, "lsp_res could not be resolved for file %s" % lsp_name
         else: # generated files
-#            lsp_name = "%s/%s/%s.lisp"%(out,variant.variant_dir(),p)
             lsp_name = "%s.lisp"%(p)
             lsp_res = bld_path.find_or_declare(lsp_name)
-#            print("Looking for generated file with .lisp: %s  --> %s" % (lsp_name,lsp_res))
             assert lsp_res!=None, "lsp_res could not be resolved for file %s" % lsp_name
         nodes.append(lsp_res)
     return nodes
@@ -241,8 +261,8 @@ class boehm_base(variant):
             cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
         else:
             cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
-        self.common_setup(cfg)        
-    
+        self.common_setup(cfg)
+
 class boehm(boehm_base):
     gc_name = 'boehm'
     debug_char = None
@@ -285,7 +305,7 @@ class mps_base(variant):
 #        else:
 #            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)
-        
+
 class mpsprep(mps_base):
     gc_name = 'mpsprep'
     debug_char = None
@@ -293,7 +313,7 @@ class mpsprep(mps_base):
         cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
         super(mpsprep,self).configure_variant(cfg,env_copy)
-        
+
 class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
     debug_char = 'd'
@@ -324,7 +344,7 @@ class bboehm(boehm):
     stage_char = 'b'
 class cboehm(boehm):
     stage_char = 'c'
-    
+
 class iboehm_d(boehm_d):
     stage_char = 'i'
 class aboehm_d(boehm_d):
@@ -361,7 +381,7 @@ class bmps(mps):
     stage_char = 'b'
 class cmps(mps):
     stage_char = 'c'
-    
+
 class imps_d(mps_d):
     stage_char = 'i'
 class amps_d(mps_d):
@@ -388,7 +408,7 @@ class bmpsprep_d(mpsprep_d):
     stage_char = 'b'
 class cmpsprep_d(mpsprep_d):
     stage_char = 'c'
-    
+
 import subprocess
 
 def get_git_commit(cfg):
@@ -639,7 +659,7 @@ def build(bld):
         dsymutil_iclasp.set_outputs(iclasp_dsym_files)
         bld.add_to_group(dsymutil_iclasp)
         bld.install_files('${PREFIX}/%s/%s'%(executable_dir,iclasp_dsym.name),iclasp_dsym_files,relative_trick=True,cwd=iclasp_dsym)
-    if (stage_val >= 1):   
+    if (stage_val >= 1):
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
@@ -784,7 +804,7 @@ class link_executable(Task.Task):
     def keyword(self):
         return 'Link executable using... '
 
-    
+
 #@TaskGen.feature('dsymutil')
 #@TaskGen.after('apply_link')
 #def add_dsymutil_task(self):
@@ -912,7 +932,7 @@ class compile_module(Task.Task):
         return super(compile_module, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile module using... '
-                               
+
 
 #class llvm_link(Task.Task):
 #    def run(self):
@@ -931,7 +951,7 @@ class build_extension_headers(Task.Task):
             if ( x != None ):
                 fout.write("#include \"%s\"\n" % x.abspath())
         fout.close()
-                               
+
 class link_bitcode(Task.Task):
     ext_out = ['.a']
     def run(self):
@@ -945,7 +965,7 @@ class link_bitcode(Task.Task):
         return "link_bitcode - linking all object(bitcode) files."
 #        master = self.generator.bld.producer
 #        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
-    
+
 
 class scrape_with_preproc_scan(Task.Task):
     run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
@@ -959,7 +979,7 @@ class scrape_with_preproc_scan(Task.Task):
         scan_result = c_preproc.scan(self)
         self.env = saved_env
         return scan_result
-                               
+
     def keyword(ctx):
         return "Scraping with preproc.scan"
 
@@ -974,11 +994,11 @@ class generated_headers(Task.Task):
 
     def __str__(self):
         return "generating headers from all sif files."
-    
+
 #    def display(self):
 #        master = self.generator.bld.producer
 #        return "[%d/%d] Generating headers from all sif files\n" % (master.processed-1,master.total)
-    
+
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
@@ -1064,4 +1084,3 @@ def init(ctx):
 #            for debug_char in DEBUG_CHARS:
 #                var = 'build_'+s+x+'_'+debug_char
 #                waflib.Options.commands.insert(0, var)
-
