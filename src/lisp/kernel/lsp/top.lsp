@@ -1131,7 +1131,7 @@ Use special code 0 to cancel this operation.")
                   (format nil "~4a ~20a ~5d LAMBDA(~a)" icur filename lineno (subseq arg-str 0 256))
                   (format nil "~4a ~20a ~5d (~s ~a)" icur filename lineno (function-name fun) (subseq arg-str 0 256)))
               backtrace)))
-    (dolist (bl backtrace)
+    (dolist (bl (nreverse backtrace))
       (format t "~a~%" bl))
     (format t "Backtrace done~%")))
 
