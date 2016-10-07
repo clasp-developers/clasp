@@ -989,7 +989,7 @@ class link_bitcode(Task.Task):
     
 
 class scrape_with_preproc_scan(Task.Task):
-    run_str = 'preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
+    run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
     ext_out = ['.sif']
     shell = False
 
@@ -1008,7 +1008,7 @@ class generated_headers(Task.Task):
 #    ext_out = ['.h']
     def run(self):
         cmd = StringIO()
-        cmd.write('generate-headers-from-all-sifs src/main/')
+        cmd.write('../../src/common/generate-headers-from-all-sifs src/main/')
         for f in self.inputs:
             cmd.write(' %s' % f.abspath())
         return self.exec_command(cmd.getvalue())
