@@ -864,13 +864,32 @@
          (cmp-lt (%icmp-eq x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
-#+(or)(progn
-	(defmethod translate-branch-instruction
-	    ((instruction cleavir-ir:typeq-instruction) return-value inputs outputs successors abi)
-	  `(if (typep ,(first inputs) ',(cleavir-ir:value-type instruction))
-	       (go ,(second successors))
-	       (go ,(first successors))))
-	)
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:typeq-instruction) return-value inputs outputs successors abi)
+  (let ((value (%load (first inputs))))
+    (case (cleavir-ir:value-type instruction)
+      (fixnum
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+fixnum-mask+) "fixnum-tag-only"))
+              (cmp (%icmp-eq tag (%uintptr_t cmp:+fixnum-tag+))))
+         (%cond-br cmp (first successors) (second successors)) :likely t))
+      (cons
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "fixnum-tag-only"))
+              (cmp (%icmp-eq tag (%uintptr_t cmp:+cons-tag+))))
+         (%cond-br cmp (first successors) (second successors)) :likely t))
+      (core:valist 
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "fixnum-tag-only"))
+              (cmp (%icmp-eq tag (%uintptr_t cmp:+valist-tag+))))
+         (%cond-br cmp (first successors) (second successors)) :likely t))
+      (character
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "fixnum-tag-only"))
+              (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
+         (%cond-br cmp (first successors) (second successors)) :likely t))
+      (single-float
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "fixnum-tag-only"))
+              (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
+         (%cond-br cmp (first successors) (second successors)) :likely t))
+      (otherwise
+       (error "What do I do here for typeq-instruction when it falls through all the types")))))
 
 ;;; When the FUNCALL-INSTRUCTION is the last instruction of a basic
 ;;; block, it is because there is a call to a function that will never
