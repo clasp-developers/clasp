@@ -131,8 +131,12 @@
 (defun find-slot-definition (class slot-name)
   (with-slots ((slots slots) (slot-table slot-table))
       class
-    (if (or (eq (si:instance-class class) (load-time-value (find-class 'clos:standard-class)) #+(or)+the-standard-class+)
-	    (eq (si:instance-class class) (load-time-value (find-class 'clos:funcallable-standard-class)) #+(or)+the-funcallable-standard-class+))
+    (if (or (eq (si:instance-class class)
+                #+clasp (load-time-value (find-class 'clos:standard-class))
+                #+ecl +the-standard-class+)
+	    (eq (si:instance-class class)
+                #+clasp (load-time-value (find-class 'clos:funcallable-standard-class))
+                #+ecl +the-funcallable-standard-class+))
 	(gethash slot-name slot-table nil)
 	(find slot-name slots :key #'slot-definition-name))))
 
