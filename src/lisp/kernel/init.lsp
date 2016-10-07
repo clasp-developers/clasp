@@ -777,14 +777,15 @@ the stage, the +application-name+ and the +bitcode-name+"
                 (eval (read-from-string (cdr entry)))))
           core::*command-line-load-eval-sequence*))
 
-(defun load-clasprc ()
-  "Load the users startup code"
-  (let ((clasprc (make-pathname :name ""
-			       :type "clasprc"
-			       :defaults (user-homedir-pathname))))
-    (if (probe-file clasprc)
-	(load clasprc))))
-(export 'load-clasprc)
+(defun maybe-load-clasprc ()
+  "Maybe load the users startup code"
+  (if (not (member :no-rc *features*))
+      (let ((clasprc (make-pathname :name ""
+                                    :type "clasprc"
+                                    :defaults (user-homedir-pathname))))
+        (if (probe-file clasprc)
+            (load clasprc)))))
+(export 'maybe-load-clasprc)
 
 
 (defun tpl-default-pathname-defaults-command ()
@@ -864,7 +865,7 @@ the stage, the +application-name+ and the +bitcode-name+"
 (defun run-repl ()
   (if (fboundp 'core:top-level)
       (progn
-	(load-clasprc)
+	(maybe-load-clasprc)
 	(core:top-level))
       (core:low-level-repl)))
 

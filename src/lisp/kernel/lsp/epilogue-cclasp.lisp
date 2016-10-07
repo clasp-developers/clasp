@@ -1,7 +1,7 @@
 #+cclasp(eval-when (:load-toplevel)
           (cl:in-package :cl-user)
           (core:process-extension-loads)
-          (core:load-clasprc)
+          (core:maybe-load-clasprc)
           (core:process-command-line-load-eval-sequence)
           (let ((core:*use-interpreter-for-eval* nil))
             (if (member :interactive *features*)
