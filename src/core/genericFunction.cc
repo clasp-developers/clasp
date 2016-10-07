@@ -307,27 +307,28 @@ LCC_RETURN generic_function_dispatch(Instance_sp gf, VaList_sp vargs) {
 }
 
 /*! Reproduces functionality in ecl_slot_reader_dispatch */
-LCC_RETURN slotReaderDispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) {
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
 
 /*! Reproduces functionality in ecl_slot_writer_dispatch */
-LCC_RETURN slotWriterDispatch(Instance_sp gf, VaList_sp vargs) {
+LCC_RETURN slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) {
   Cache_sp cache = _lisp->slotCachePtr();
   // Should I use standard_dispatch or do something special for slots?
   return standard_dispatch(gf, vargs, cache);
 }
 
 /*! Reproduces functionality in user_function_dispatch */
-LCC_RETURN userFunctionDispatch(Instance_sp gf, VaList_sp vargs) {
-  IMPLEMENT_MEF(BF("Implement userFunctionDispatch"));
+LCC_RETURN user_function_dispatch(Instance_sp gf, VaList_sp vargs) {
+  Function_sp func = gc::As<Function_sp>(gf->instanceRef(gf->numberOfSlots()-1));
+  return core::funcall_consume_valist_(func,vargs); // cl__apply(func,vargs).as_return_type();
 }
 
 /*! Reproduces functionality in FEnot_funcallable_vararg */
-LCC_RETURN notFuncallableDispatch(Instance_sp gf, VaList_sp vargs) {
-  IMPLEMENT_MEF(BF("Implement notFuncallableDispatch"));
+LCC_RETURN not_funcallable_dispatch(Instance_sp gf, VaList_sp vargs) {
+  SIMPLE_ERROR(BF("Not a funcallable instance %s") % _rep_(gf));
 }
 
 CL_LAMBDA(what);

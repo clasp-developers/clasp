@@ -37,6 +37,15 @@ namespace clos {
 
 SYMBOL_SC_(ClosPkg, aSingleClosSymbol);
 SYMBOL_EXPORT_SC_(ClosPkg, class_precedence_list);
+SYMBOL_EXPORT_SC_(ClosPkg,slot_definition);
+SYMBOL_EXPORT_SC_(ClosPkg,name);
+SYMBOL_EXPORT_SC_(ClosPkg,location_table);
+SYMBOL_EXPORT_SC_(ClosPkg,slot_value_set);
+SYMBOL_EXPORT_SC_(ClosPkg,slot_value);
+SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
+
+
+
 
 void initialize_closPackage() {
   list<string> lnicknames;
