@@ -42,6 +42,8 @@ THE SOFTWARE.
 #include <clasp/core/genericFunction.h>
 #include <clasp/core/wrappers.h>
 
+//#define DEBUG_ACCESSORS 1
+#define DEBUG_ACCESSORS_ON() (core::_sym_STARdebug_accessorsSTAR->symbolValue().notnilp())
 
 
 namespace core {
@@ -76,6 +78,11 @@ search_slot_index(T_sp gfun, T_sp instance, Cache_sp cache)
            __FILE__, __LINE__);
     abort();
   }
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d search_slot_index index = %s\n", __FILE__, __LINE__, _rep_(e->_value).c_str());
+  }
+#endif
   return e;
 }
 
@@ -95,7 +102,7 @@ slot_method_name(T_sp gfun, T_sp args)
 
 
 
-static T_sp
+static T_mv
 slot_method_index(T_sp gfun, T_sp instance, T_sp args)
 {
   T_sp slot_name = slot_method_name(gfun, args);
@@ -123,8 +130,13 @@ add_new_index(T_sp gfun, T_sp instance, List_sp args, Cache_sp cache)
         /* The keys and the cache may change while we compute the
          * applicable methods. We must save the keys and recompute the
          * cache location if it was filled. */
-  T_sp index = slot_method_index(gfun, instance, args);
-  unlikely_if (index.unboundp()) {
+  T_mv index = slot_method_index(gfun, instance, args);
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d add_new_index index = %s\n", __FILE__, __LINE__, _rep_(index).c_str());
+  }
+#endif
+  unlikely_if (index.second().nilp()) {
     no_applicable_method(gfun, args);
   }
   {
@@ -157,6 +169,11 @@ ensure_up_to_date_instance(T_sp tinstance)
 
 LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs) 
 {
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_reader_dispatch gf=%s\n", __FILE__, __LINE__, _rep_(gf).c_str() );
+  }
+#endif
   int nargs = vargs->remaining_nargs();
   if ( nargs != 1 ) {
     SIMPLE_ERROR(BF("Wrong number of arguments for reader %s") % _rep_(gf));
@@ -179,11 +196,34 @@ LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs)
     index = e->_value;
     if (index.fixnump()) {
       value = instance->_Slots[index.unsafe_fixnum()];
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_reader_dispatch getting slot[index = %s] value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+  }
+#endif
     } else if (!index.asOrNull<Cons_O>()) {
-      eval::funcall( clos::_sym_slot_value, instance, index);
+      value = eval::funcall( clos::_sym_slot_value, instance, index);
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_reader_dispatch getting slot-value index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+  }
+#endif
     } else {
       Cons_sp cindex = gc::As<Cons_sp>(index);
       value = cindex->_Car;
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_reader_dispatch getting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+  }
+#endif
+    }
+    unlikely_if (value.unboundp()) {
+      Cons_sp linstance = Cons_O::createList(instance);
+      T_sp slot_name = slot_method_name(gf,linstance);
+      value = eval::funcall(cl::_sym_slot_unbound,
+                            cl__class_of(instance),
+                            instance,
+                            slot_name);
     }
     return value.as_return_type();
   }
@@ -193,6 +233,11 @@ LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs)
 
 LCC_RETURN optimized_slot_writer_dispatch(Instance_sp gf, VaList_sp vargs) 
 {
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_writer_dispatch gf=%s\n", __FILE__, __LINE__, _rep_(gf).c_str() );
+  }
+#endif
   int nargs = vargs->remaining_nargs();
   if ( nargs != 2 ) {
     SIMPLE_ERROR(BF("Wrong number of arguments for generic function %s") % _rep_(gf));
@@ -214,10 +259,25 @@ LCC_RETURN optimized_slot_writer_dispatch(Instance_sp gf, VaList_sp vargs)
     }
     index = e->_value;
     if (index.fixnump()) {
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_writer_dispatch setting slot[index = %s]  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+  }
+#endif
       instance->_Slots[index.unsafe_fixnum()] = value;
     } else if (!index.asOrNull<Cons_O>()) {
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_writer_dispatch setting slot-value index = %s  value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+  }
+#endif
       eval::funcall( clos::_sym_slot_value_set, value, instance, index);
     } else {
+#ifdef DEBUG_ACCESSORS
+  if (DEBUG_ACCESSORS_ON()) {
+    printf("%s:%d optimized_slot_writer_dispatch setting slot cons index = %s value = %s\n", __FILE__, __LINE__, _rep_(index).c_str(), _rep_(value).c_str() );
+  }
+#endif
       Cons_sp cindex = gc::As<Cons_sp>(index);
       cindex->_Car = value;
     }
