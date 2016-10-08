@@ -3,4 +3,4 @@
 #    build-path
 #    main-path
 #    application.config path
-sbcl --noinform --lose-on-corruption --dynamic-space-size 4096 --load $CLASP_HOME/src/scraper/scraper.lisp --eval "(progn (cscrape:generate-headers-from-all-sifs)(quit))" -- `pwd`/ $CLASP_HOME/ $*
+$CLASP_SBCL --noinform --dynamic-space-size 4096 --lose-on-corruption --disable-ldb --no-userinit --disable-debugger --load $CLASP_HOME/src/scraper/scraper.lisp --eval "(progn (cscrape:generate-headers-from-all-sifs)(quit))" -- `pwd`/ $CLASP_HOME/ $*

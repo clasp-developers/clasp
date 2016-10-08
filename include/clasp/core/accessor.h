@@ -1,5 +1,5 @@
 /*
-    File: closPackage.cc
+    File: accessor.h
 */
 
 /*
@@ -24,33 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
+#ifndef _core_accessor_H_
+#define _core_accessor_H_
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/lisp.h>
-#include <clasp/core/symbol.h>
-#include <clasp/core/closPackage.h>
-#include <clasp/core/multipleValues.h>
-#include <clasp/core/package.h>
 
-namespace clos {
+namespace core {
 
-SYMBOL_SC_(ClosPkg, aSingleClosSymbol);
-SYMBOL_EXPORT_SC_(ClosPkg, class_precedence_list);
-SYMBOL_EXPORT_SC_(ClosPkg,slot_definition);
-SYMBOL_EXPORT_SC_(ClosPkg,name);
-SYMBOL_EXPORT_SC_(ClosPkg,location_table);
-SYMBOL_EXPORT_SC_(ClosPkg,slot_value_set);
-SYMBOL_EXPORT_SC_(ClosPkg,slot_value);
-SYMBOL_EXPORT_SC_(ClosPkg,update_instance);
+// Arguments are passed in the multiple_values structure
 
+LCC_RETURN optimized_slot_reader_dispatch(Instance_sp gf, VaList_sp vargs);
 
+LCC_RETURN optimized_slot_writer_dispatch(Instance_sp gf, VaList_sp vargs);
 
-
-void initialize_closPackage() {
-  list<string> lnicknames;
-  list<string> luse = {"COMMON-LISP"};
-  _lisp->makePackage("CLOS", lnicknames, luse);
-  // We don't have to create the CLOS symbols here - it's done in bootStrapCoreSymbolMap
-}
 };
+#endif /* _core_accessor_H_ */

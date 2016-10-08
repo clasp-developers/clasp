@@ -271,8 +271,8 @@ their lambda lists ~A and ~A are not congruent."
   ;;  (print (list "HUNT entering compute-applicable-methods-using-classes gf: " gf))
   (std-compute-applicable-methods-using-classes gf classes))
 
-  (function-to-method 'compute-effective-method
-		      '((gf standard-generic-function) method-combination applicable-methods))
+(function-to-method 'compute-effective-method
+                    '((gf standard-generic-function) method-combination applicable-methods))
 
 ;;; ----------------------------------------------------------------------
 ;;; Error messages

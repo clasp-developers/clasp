@@ -153,7 +153,8 @@ namespace core {
 const char *CorePkg_nicknames[] = {
     "SYSTEM", "sys", "SYS", "si", "SI", "" /*guard*/
 };
-
+SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(CorePkg, STARtop_level_form_stackSTAR);
@@ -176,6 +177,7 @@ SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
 
+SYMBOL_EXPORT_SC_(ClPkg, make_instance);
 SYMBOL_EXPORT_SC_(ClPkg, class);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
 SYMBOL_EXPORT_SC_(ClPkg, simple_base_string);
@@ -732,6 +734,7 @@ SYMBOL_EXPORT_SC_(ClPkg, quote);
 SYMBOL_EXPORT_SC_(ClPkg, function);
 SYMBOL_SC_(CorePkg, slot);
 SYMBOL_EXPORT_SC_(ClPkg, slot_value);
+SYMBOL_EXPORT_SC_(ClPkg, slot_unbound);
 SYMBOL_EXPORT_SC_(ClPkg, values);
 SYMBOL_SC_(CorePkg, item);
 SYMBOL_SC_(CorePkg, alist);
@@ -1078,6 +1081,8 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTableEqual_O::create_default());
   _sym_STARextension_startup_loadsSTAR->defparameter(_Nil<T_O>());
   _sym_STARsyspropsSTAR->defparameter(HashTableEql_O::create_default());
+  _sym_STARdebug_accessorsSTAR->defparameter(_Nil<T_O>());
+
   std::list<string> nicknames;
   std::list<string> use_packages;
   _sym_STARclasp_packageSTAR->defparameter(_lisp->makePackage("CLASP!",nicknames,use_packages));

@@ -27,6 +27,12 @@
           *run-time-literals-external-name*
           *run-time-value-holder-global-var*
           *the-module*
+          +cons-tag+
+          +fixnum-tag+
+          +valist-tag+
+          +single-float-tag+
+          +character-tag+
+          +general-tag+
           +i1+
           +exception-struct+
           +fn-prototype+
