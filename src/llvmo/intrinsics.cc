@@ -436,7 +436,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
   gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
   const gctools::GCKindEnum closure_kind = gctools::GCKind<core::ClosureWithSlots_O>::Kind;
   size_t size = gctools::sizeof_container_with_header<core::ClosureWithSlots_O>(numCells);
-  
+
 //  gctools::global_stack_closure_bytes_allocated += size;
 
 #ifdef DEBUG_GUARD
@@ -453,7 +453,7 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
                                                                           _Nil<T_O>(),
                                                                           _Nil<T_O>(),
                                                                           *sourceFileInfoHandleP, filePos, lineno, column);
-                                                                          
+
   gctools::smart_ptr<core::ClosureWithSlots_O> functoid = gctools::smart_ptr<core::ClosureWithSlots_O>(obj);
   core::T_O *p;
   va_list argp;
@@ -540,299 +540,299 @@ namespace llvmo
 
 void initialize_raw_translators( void )
 {
-    // TRANSLATOR WRAPPERS
+  // // TRANSLATOR WRAPPERS
 
-  // -- SHORT --
+  // // -- SHORT --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<SHORT>", &from_object_short,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_short );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<SHORT>", &from_object_short,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_short );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<SHORT>", &to_object_short,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_short );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<SHORT>", &to_object_short,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_short );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<USHORT>", &from_object_ushort,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_ushort );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<USHORT>", &from_object_ushort,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_ushort );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_ushort,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_ushort );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_ushort,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_ushort );
 
-  // -- INT --
+  // // -- INT --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT>", &from_object_int,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_int );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT>", &from_object_int,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_int );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_int,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_int );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_int,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_int );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT>", &from_object_uint,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_uint );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT>", &from_object_uint,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_uint );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT>", &to_object_uint,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_uint );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT>", &to_object_uint,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_uint );
 
-  // -- LONG --
+  // // -- LONG --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<LONG>", &from_object_long,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_long );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<LONG>", &from_object_long,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_long );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<LONG>", &to_object_long,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_long );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<LONG>", &to_object_long,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_long );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<ULONG>", &from_object_ulong,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_ulong );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<ULONG>", &from_object_ulong,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_ulong );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<ULONG>", &to_object_ulong,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_ulong );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<ULONG>", &to_object_ulong,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_ulong );
 
-  // -- INT8 --
+  // // -- INT8 --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT8>", &from_object_int8,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_int8 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT8>", &from_object_int8,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_int8 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<INT8>", &to_object_int8,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_int8 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT8>", &to_object_int8,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_int8 );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT8>", &from_object_uint8,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_uint8 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT8>", &from_object_uint8,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_uint8 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT8>", &to_object_uint8,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_uint8 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT8>", &to_object_uint8,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_uint8 );
 
-  // -- INT16 --
+  // // -- INT16 --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT16>", &from_object_int16,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_int16 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT16>", &from_object_int16,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_int16 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<INT16>", &to_object_int16,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_int16 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT16>", &to_object_int16,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_int16 );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT16>", &from_object_uint16,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_uint16 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT16>", &from_object_uint16,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_uint16 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT16>", &to_object_uint16,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_uint16 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT16>", &to_object_uint16,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_uint16 );
 
-  // -- INT32 --
+  // // -- INT32 --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT32>", &from_object_int32,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_int32 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT32>", &from_object_int32,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_int32 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<INT32>", &to_object_int32,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_int32 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT32>", &to_object_int32,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_int32 );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT32>", &from_object_uint32,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_uint32 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT32>", &from_object_uint32,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_uint32 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT32>", &to_object_uint32,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_uint32 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT32>", &to_object_uint32,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_uint32 );
 
-  // -- INT64 --
+  // // -- INT64 --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<INT64>", &from_object_int64,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_int64 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT64>", &from_object_int64,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_int64 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<INT64>", &to_object_int64,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_int64 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT64>", &to_object_int64,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_int64 );
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT64>", &from_object_uint64,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_uint64 );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT64>", &from_object_uint64,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_uint64 );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<UINT64>", &to_object_uint64,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_uint64 );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT64>", &to_object_uint64,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_uint64 );
 
-  // -- PTRDIFF --
+  // // -- PTRDIFF --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<PTRDIFF>", &from_object_ptrdiff,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_ptrdiff );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<PTRDIFF>", &from_object_ptrdiff,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_ptrdiff );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<PTRDIFF>", &to_object_ptrdiff,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_ptrdiff );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<PTRDIFF>", &to_object_ptrdiff,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_ptrdiff );
 
-  // -- TIME --
+  // // -- TIME --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<TIME>", &from_object_time,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_time );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<TIME>", &from_object_time,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_time );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<TIME>", &to_object_time,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_time );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<TIME>", &to_object_time,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_time );
 
-  // -- SIZE --
+  // // -- SIZE --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<SIZE>", &from_object_size,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_size );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<SIZE>", &from_object_size,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_size );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<SIZE>", &to_object_size,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_size );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<SIZE>", &to_object_size,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_size );
 
-  // -- SSIZE --
+  // // -- SSIZE --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<SSIZE>", &from_object_ssize,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_ssize );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<SSIZE>", &from_object_ssize,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_ssize );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<SSIZE>", &to_object_ssize,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_ssize );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<SSIZE>", &to_object_ssize,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_ssize );
 
-  // -- CHAR --
+  // // -- CHAR --
 
-  wrap_translator( "CLASP-FFI","FROM-OBJECT<CHAR>", &from_object_char,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_from_object_size );
+  // wrap_translator( "CLASP-FFI","FROM-OBJECT<CHAR>", &from_object_char,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_from_object_size );
 
-  wrap_translator( "CLASP-FFI","TO-OBJECT<CHAR>", &to_object_char,
-                   "", // arguments
-                   "", // declares
-                   "", // docstring,
-                   __FILE__,
-                   source_line_to_object_char );
+  // wrap_translator( "CLASP-FFI","TO-OBJECT<CHAR>", &to_object_char,
+  //                  "", // arguments
+  //                  "", // declares
+  //                  "", // docstring,
+  //                  __FILE__,
+  //                  source_line_to_object_char );
 
-  // END OF TRANSLATOR WRAPPERS
+  // // END OF TRANSLATOR WRAPPERS
 
   return;
 

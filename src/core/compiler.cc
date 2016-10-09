@@ -1159,11 +1159,3 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
 }
 
 }; /* namespace */
-
-// === T E S T I N G ===
-
-extern "C" {
-int mul2(int x) {
-  return 2*x;
-}
-};

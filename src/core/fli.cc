@@ -477,6 +477,27 @@ ForeignData_sp PERCENTmake_nullpointer() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
+Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) {
+  Pointer_sp ptr = Pointer_O::create( pfd_ptr->ptr() );
+  return ptr;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj ) {
+
+  ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
+
+  if( sp_foreign_data.nilp() ) {
+    return _Nil<core::T_O>();
+  }
+  else {
+    return _lisp->_true();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 core::T_sp PERCENTpointerp( core::T_sp obj ) {
 
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
@@ -1257,6 +1278,12 @@ int          CLASP_FLI_TEST_MEM_REF_INT          = -42;
 time_t       CLASP_FLI_TEST_MEM_REF_TIME_T       = time( nullptr );
 char         CLASP_FLI_TEST_MEM_REF_CHAR         = 'f';
 
-extern "C" int fli_test_fn1( int a, short b ) {
+extern "C" int fli_test_fn1( int a, short b )
+{
   return a + b;
+}
+
+extern "C" int mul2(int x)
+{
+  return 2 * x;
 }

@@ -67,6 +67,7 @@
 
 (defmacro generate-type-spec-accessor-functions ()
   `(progn
+
      ;; Generate accessors to tyoe spec
      ,@(loop for spec across *foreign-type-spec-table*
           for idx from 0 to (1- (length *foreign-type-spec-table*))
@@ -74,6 +75,7 @@
 	  collect
 	    `(defmethod %lisp-type->type-spec ((type (eql ',(%lisp-symbol spec))))
                (elt *foreign-type-spec-table* ,idx)))
+
      ;; Generate methods for accessing to-object<...> and from-object<...> fn
      ,@(loop for spec across *foreign-type-spec-table*
           for idx from 0 to (1- (length *foreign-type-spec-table*))
@@ -81,6 +83,7 @@
 	  collect
 	    `(defmethod %lisp-type->from-object-fn ((type (eql ',(%lisp-symbol spec))))
                (symbol-function ',(intern (concatenate 'string "FROM-OBJECT<" (string (%lisp-name spec)) ">") 'clasp-ffi))))
+
      ,@(loop for spec across *foreign-type-spec-table*
           for idx from 0 to (1- (length *foreign-type-spec-table*))
           when spec
@@ -146,27 +149,33 @@
 ;;; === F O R E I G N   F U N C T I O N  C A L L I N G ===
 
 (declaim (inline foreign-funcall-transform-args))
-(defun foreign-funcall-transform-args (args)
+(defun foreign-funcall-transform-args (&rest args)
   "Return two values: lists of transformed args and result type."
-  (let ((return-type :void))
+  (let ((to-object-call nil))
     (loop for (type arg) on args by #'cddr
-       if arg collect (funcall (%lisp-type->from-object-fn type) arg) into transformed-args
-       else do (setf return-type type)
-       finally (progn
-                 (break)
-                 return (values transformed-args return-type)))))
+       if arg collect `(core::foreign-funcall ,(concatenate 'string "FROM_OBJECT_" (%lisp-name (%lisp-type->type-spec type))) ,arg) into transformed-args
+       else do (setf to-object-call `(core::foreign-funcall ,(concatenate 'string "TO_OBJECT_" (%lisp-name (%lisp-type->type-spec type)))))
+       finally (return (values transformed-args to-object-call)))))
 
-(defmacro call-function-as-pointer-call (ptr types-and-values-obj-translations return-type)
-  `(funcall (%lisp-type->to-object-fn ,return-type)
-            (core::pointer-call ,ptr ,types-and-values-obj-translations)))
+(declaim (inline ensure-pointer-o))
+(defun ensure-pointer-o (ptr)
+  (cond ((not ptr) (error "Illegal argument value: argument \"ptr\" may not be NIL!"))
+        ((%foreign-data-pointerp ptr) (%make-pointer-from-foreign-data ptr))
+        (t ptr)))
 
-(declaim (inline %foreign.funcall-pointer))
-(defun %foreign-funcall-pointer (ptr args &key convention)
+(defmacro %foreign-funcall-pointer (ptr args &key convention)
   "Funcall a pointer to a foreign function."
   (declare (ignore convention))
-  (multiple-value-bind (types-and-values-obj-translations return-type)
+  (multiple-value-bind (from-object-args-calls to-object-call)
       (foreign-funcall-transform-args args)
-    (call-function-as-pointer-call ptr types-and-values-obj-translations return-type)))
+    (if to-object-call
+        `(,to-object-call
+          (core:foreign-funcall-pointer (ensure-pointer-o ,ptr)
+                                        ,@from-object-call-args))
+        `(progn
+           (core::foreign-funcall-pointer (ensure-pointer-o ,ptr)
+                                          ,@from-object-call-args)
+           (values)))))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 

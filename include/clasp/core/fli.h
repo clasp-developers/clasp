@@ -67,6 +67,7 @@ THE SOFTWARE.
 #include <clasp/core/clasp_ffi_package.fwd.h>
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/externalObject.h>
+#include <clasp/core/pointer.h>
 
 #if defined(__cplusplus)
 
@@ -125,8 +126,8 @@ namespace clasp_ffi {
     virtual ~ForeignData_O(); // non-trivial
 
     // OVERLADED FUNCTIONS
-    void *externalObject() const;
-    bool eql_(core::T_sp obj) const;
+    void *externalObject( void ) const;
+    bool eql_( core::T_sp obj ) const;
 
     // SLOT ACCESS
 
@@ -134,9 +135,10 @@ namespace clasp_ffi {
     const core::T_sp kind() { return m_kind; };
     void set_kind( core::T_sp kind ) { this->m_kind = kind; };
 
-    const int ownership_flags() { return m_ownership_flags; };
-    const void *orig_data_ptr() { return m_orig_data_ptr; };
-    void *raw_data() { return m_raw_data; };
+    const int ownership_flags( void ) { return m_ownership_flags; };
+    const void *orig_data_ptr( void ) { return m_orig_data_ptr; };
+    void *raw_data( void ) { return m_raw_data; };
+    void *ptr( void ) { return m_raw_data };
 
     // -- TRANSFORMING ACCESS --
     template <class T>
@@ -194,6 +196,9 @@ namespace clasp_ffi {
 
   CL_DEFUN core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign_data_ptr, core::Integer_sp offset );
 
+  CL_DEFUN Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) ;
+  CL_DEFUN core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj );
+
   // ---------------------------------------------------------------------------
   // FOREIGN TYPE SIZE AND ALIGNMENT
   CL_DEFUN core::Fixnum_sp PERCENTforeign_type_alignment(core::Symbol_sp atype);
@@ -208,269 +213,269 @@ namespace clasp_ffi {
 }; // namespace clasp_ffi
 
 // GC Policy Info for ForeignPataPtr_O instances
-template <>
-struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
+  template <>
+    struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = true;
+    static GCInfo_policy constexpr Policy = normal;
+  };
 
-namespace clasp_ffi {
+  namespace clasp_ffi {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
   // HELPER FUNCTIONS FOR MAKING CLASP LISP OBJECTS
-  core::T_sp mk_fixum_short( short value );
-  core::T_sp mk_fixum_ushort( unsigned short value );
-  core::T_sp mk_fixum_int( int value );
-  core::T_sp mk_fixum_uint( unsigned int value );
-  core::T_sp mk_fixum_int8( int8_t value );
-  core::T_sp mk_fixum_uint8( uint8_t value );
-  core::T_sp mk_fixum_int16( int16_t value );
-  core::T_sp mk_fixum_uint16( uint16_t value );
-  core::T_sp mk_fixum_int32( int32_t value );
-  core::T_sp mk_fixum_uint32( uint32_t value );
-  core::T_sp mk_integer_int64( int64_t value );
-  core::T_sp mk_integer_uint64( uint64_t value );
-  core::T_sp mk_integer_long( long value );
-  core::T_sp mk_integer_ulong( unsigned long value );
-  core::T_sp mk_integer_longlong( long long value );
-  core::T_sp mk_integer_ulonglong( unsigned long long value );
-  core::T_sp mk_double_float( double value );
-  core::T_sp mk_single_float( float value );
-  core::T_sp mk_long_double( long double value );
-  core::T_sp mk_time( time_t value );
-  core::T_sp mk_pointer( void * value );
-  core::T_sp mk_size( size_t value );
-  core::T_sp mk_ssize( ssize_t value );
-  core::T_sp mk_ptrdiff( ptrdiff_t value );
-  core::T_sp mk_char( char value );
+    core::T_sp mk_fixum_short( short value );
+    core::T_sp mk_fixum_ushort( unsigned short value );
+    core::T_sp mk_fixum_int( int value );
+    core::T_sp mk_fixum_uint( unsigned int value );
+    core::T_sp mk_fixum_int8( int8_t value );
+    core::T_sp mk_fixum_uint8( uint8_t value );
+    core::T_sp mk_fixum_int16( int16_t value );
+    core::T_sp mk_fixum_uint16( uint16_t value );
+    core::T_sp mk_fixum_int32( int32_t value );
+    core::T_sp mk_fixum_uint32( uint32_t value );
+    core::T_sp mk_integer_int64( int64_t value );
+    core::T_sp mk_integer_uint64( uint64_t value );
+    core::T_sp mk_integer_long( long value );
+    core::T_sp mk_integer_ulong( unsigned long value );
+    core::T_sp mk_integer_longlong( long long value );
+    core::T_sp mk_integer_ulonglong( unsigned long long value );
+    core::T_sp mk_double_float( double value );
+    core::T_sp mk_single_float( float value );
+    core::T_sp mk_long_double( long double value );
+    core::T_sp mk_time( time_t value );
+    core::T_sp mk_pointer( void * value );
+    core::T_sp mk_size( size_t value );
+    core::T_sp mk_ssize( ssize_t value );
+    core::T_sp mk_ptrdiff( ptrdiff_t value );
+    core::T_sp mk_char( char value );
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM REF
-  template <typename T>
-    T mem_ref(cl_intptr_t address);
+    template <typename T>
+      T mem_ref(cl_intptr_t address);
 
   // MEM-REF
-  CL_DEFUN core::T_sp PERCENTmem_ref_short( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_short);
+    CL_DEFUN core::T_sp PERCENTmem_ref_short( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_short);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_short);
+    CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_short( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_short);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_int( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int);
+    CL_DEFUN core::T_sp PERCENTmem_ref_int( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_int);
+    CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_int( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_int);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_int8( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int8);
+    CL_DEFUN core::T_sp PERCENTmem_ref_int8( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int8);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint8);
+    CL_DEFUN core::T_sp PERCENTmem_ref_uint8( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint8);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_int16( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int16);
+    CL_DEFUN core::T_sp PERCENTmem_ref_int16( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int16);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint16);
+    CL_DEFUN core::T_sp PERCENTmem_ref_uint16( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint16);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_int32( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int32);
+    CL_DEFUN core::T_sp PERCENTmem_ref_int32( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int32);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint32);
+    CL_DEFUN core::T_sp PERCENTmem_ref_uint32( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint32);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_int64( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int64);
+    CL_DEFUN core::T_sp PERCENTmem_ref_int64( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_int64);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint64);
+    CL_DEFUN core::T_sp PERCENTmem_ref_uint64( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_uint64);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_long( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_long);
+    CL_DEFUN core::T_sp PERCENTmem_ref_long( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_long);
+    CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_long( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_long_long);
+    CL_DEFUN core::T_sp PERCENTmem_ref_long_long( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_long_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_long_long);
+    CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_long_long( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_long_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_double( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_double);
+    CL_DEFUN core::T_sp PERCENTmem_ref_double( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_double);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_float( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_float);
+    CL_DEFUN core::T_sp PERCENTmem_ref_float( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_float);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_long_doublee);
+    CL_DEFUN core::T_sp PERCENTmem_ref_long_double( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_long_doublee);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_time( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_time);
+    CL_DEFUN core::T_sp PERCENTmem_ref_time( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_time);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_pointer);
+    CL_DEFUN core::T_sp PERCENTmem_ref_pointer( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_pointer);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_size( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_size);
+    CL_DEFUN core::T_sp PERCENTmem_ref_size( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_size);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_ssize);
+    CL_DEFUN core::T_sp PERCENTmem_ref_ssize( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_ssize);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_ptrdiff);
+    CL_DEFUN core::T_sp PERCENTmem_ref_ptrdiff( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_ptrdiff);
 
-  CL_DEFUN core::T_sp PERCENTmem_ref_char( core::Integer_sp address );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_char);
+    CL_DEFUN core::T_sp PERCENTmem_ref_char( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_char);
 
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
-  template <typename T>
-    T mem_set(cl_intptr_t address, T value);
+    template <typename T>
+      T mem_set(cl_intptr_t address, T value);
 
   // HELPER FUNCTIONS FOR MAKING C++ VALUES FROM CLASP LISP OBJECTS
-  ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value );
-  char clasp_to_char( core::T_sp sp_lisp_value );
+    ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value );
+    char clasp_to_char( core::T_sp sp_lisp_value );
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
-  template<typename T>
-    T mem_set( cl_intptr_t address, T value );
+    template<typename T>
+      T mem_set( cl_intptr_t address, T value );
 
   // MEM-SET
 
-  CL_DEFUN core::T_sp PERCENTmem_set_short( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_short);
+    CL_DEFUN core::T_sp PERCENTmem_set_short( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_short);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_short);
+    CL_DEFUN core::T_sp PERCENTmem_set_unsigned_short( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_short);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_int( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int);
+    CL_DEFUN core::T_sp PERCENTmem_set_int( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_int);
+    CL_DEFUN core::T_sp PERCENTmem_set_unsigned_int( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_int);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int8);
+    CL_DEFUN core::T_sp PERCENTmem_set_int8( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int8);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint8);
+    CL_DEFUN core::T_sp PERCENTmem_set_uint8( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint8);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int16);
+    CL_DEFUN core::T_sp PERCENTmem_set_int16( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int16);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint16);
+    CL_DEFUN core::T_sp PERCENTmem_set_uint16( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint16);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int32);
+    CL_DEFUN core::T_sp PERCENTmem_set_int32( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int32);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint32);
+    CL_DEFUN core::T_sp PERCENTmem_set_uint32( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint32);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_int64( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int64);
+    CL_DEFUN core::T_sp PERCENTmem_set_int64( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_int64);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_uint64( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint64);
+    CL_DEFUN core::T_sp PERCENTmem_set_uint64( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_uint64);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_long( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_long);
+    CL_DEFUN core::T_sp PERCENTmem_set_long( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_long);
+    CL_DEFUN core::T_sp PERCENTmem_set_unsigned_long( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_long_long);
+    CL_DEFUN core::T_sp PERCENTmem_set_long_long( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_long_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_long_long);
+    CL_DEFUN core::T_sp PERCENTmem_set_unsigned_long_long( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_long_long);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value ) ;
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_double);
+    CL_DEFUN core::T_sp PERCENTmem_set_double( core::Integer_sp address, core::T_sp value ) ;
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_double);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_float);
+    CL_DEFUN core::T_sp PERCENTmem_set_float( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_float);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_long_double( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_long_double);
+    CL_DEFUN core::T_sp PERCENTmem_set_long_double( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_long_double);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_time);
+    CL_DEFUN core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_time);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_pointer);
+    CL_DEFUN core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_pointer);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_size);
+    CL_DEFUN core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_size);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_ssize);
+    CL_DEFUN core::T_sp PERCENTmem_set_ssize( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_ssize);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_ptrdiff);
+    CL_DEFUN core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_ptrdiff);
 
-  CL_DEFUN core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value );
-  SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_char);
+    CL_DEFUN core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_char);
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
   // CLASS ForeignTypeSpec_O
 
-  SMART(ForeignTypeSpec);
+    SMART(ForeignTypeSpec);
 
-  class ForeignTypeSpec_O : public core::General_O {
-    LISP_CLASS(clasp_ffi, Clasp_ffi_pkg,
-               ForeignTypeSpec_O, "ForeignTypeSpec", core::General_O);
+    class ForeignTypeSpec_O : public core::General_O {
+      LISP_CLASS(clasp_ffi, Clasp_ffi_pkg,
+                 ForeignTypeSpec_O, "ForeignTypeSpec", core::General_O);
 
-  public:
+    public:
 
     // CTOR & DTOR
-    explicit ForeignTypeSpec_O();
-    virtual ~ForeignTypeSpec_O();
+      explicit ForeignTypeSpec_O();
+      virtual ~ForeignTypeSpec_O();
 
     // OVERLADED FUNCTIONS
-    bool eql_(ForeignTypeSpec_sp sp_obj) const;
+      bool eql_(ForeignTypeSpec_sp sp_obj) const;
 
     // OBJECT PRINTING
-    string __repr__() const;
+      string __repr__() const;
 
     // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
 
-    static ForeignTypeSpec_sp create( core::Symbol_sp   lisp_symbol,
-                                      core::Str_sp      lisp_name,
-                                      core::Integer_sp  size,
-                                      core::Fixnum_sp   alignment,
-                                      core::Str_sp      cxx_name );
+      static ForeignTypeSpec_sp create( core::Symbol_sp   lisp_symbol,
+                                        core::Str_sp      lisp_name,
+                                        core::Integer_sp  size,
+                                        core::Fixnum_sp   alignment,
+                                        core::Str_sp      cxx_name );
 
     // SLOT ACCESS
-    CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; };
-    CL_DEFMETHOD core::Str_sp         PERCENTlisp_name() { return m_lisp_name; };
-    CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; };
-    CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; };
-    CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; };
+      CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; };
+      CL_DEFMETHOD core::Str_sp         PERCENTlisp_name() { return m_lisp_name; };
+      CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; };
+      CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; };
+      CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; };
 
     // SLOTS
-    core::Symbol_sp   m_lisp_symbol;
-    core::Str_sp      m_lisp_name;
-    core::Integer_sp  m_size;
-    core::Fixnum_sp   m_alignment;
-    core::Str_sp      m_cxx_name;
+      core::Symbol_sp   m_lisp_symbol;
+      core::Str_sp      m_lisp_name;
+      core::Integer_sp  m_size;
+      core::Fixnum_sp   m_alignment;
+      core::Str_sp      m_cxx_name;
 
-  }; // ForeignTypeSpec_O
+    }; // ForeignTypeSpec_O
 
-}; // namespace clasp_ffi
+  }; // namespace clasp_ffi
 
 // GC Policy Info for ForeignTypeSpec_O instances
-template <>
-struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
+  template <>
+    struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O> {
+    static bool constexpr NeedsInitialization = false;
+    static bool constexpr NeedsFinalization = false;
+    static GCInfo_policy constexpr Policy = normal;
+  };
 
 
 // ---------------------------------------------------------------------------
