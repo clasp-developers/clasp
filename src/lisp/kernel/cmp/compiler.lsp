@@ -1170,13 +1170,13 @@ jump to blocks within this tagbody."
     (let* ((func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                      (let ((arg-types (make-list (length args) :initial-element cmp:+t*+)))
                        (llvm-sys:function-create
-                        (llvm-sys:function-type-get cmp:+return_type+ arg-types nil)
+                        (llvm-sys:function-type-get cmp:+t*+ arg-types nil)
                         'llvm-sys::External-linkage
                         foreign-name
                         *the-module*))))
-           (result-in-registers
+           (result-in-t*
             (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "foreign-function")))
-      (irc-store-result result result-in-registers))))
+      (irc-store-result-t* result result-in-t*))))
 
 (defun codegen-foreign-funcall-pointer (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function pointer"
@@ -1197,13 +1197,13 @@ jump to blocks within this tagbody."
     (codegen temp-result (car form) evaluate-env)
     (let* ((arg-types (make-list (length args) :initial-element cmp:+t*+))
            (varargs nil)
-           (function-type (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs))
+           (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
            (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
            (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
            (function-pointer (llvm-sys:create-bit-cast cmp:*irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
-           (result-in-registers
+           (result-in-t*
             (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result")))
-      (irc-store-result result result-in-registers))
+      (irc-store-result-t* result result-in-t*))
     (irc-low-level-trace :flow)))
 
 (defun codegen-application (result form env)

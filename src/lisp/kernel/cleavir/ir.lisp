@@ -277,7 +277,7 @@
                    (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
                           (varargs nil))
                      (llvm-sys:function-create
-                      (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                      (llvm-sys:function-type-get cmp:+t*+ arg-types varargs)
                       'llvm-sys::External-linkage
                       foreign-name
                       cmp:*the-module*))))
@@ -294,7 +294,7 @@
                    arguments)))
     (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
            (varargs nil)
-           (function-type (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs))
+           (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
            (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
            (pointer-t* pointer)
            (function-pointer (%bit-cast (cmp:irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
