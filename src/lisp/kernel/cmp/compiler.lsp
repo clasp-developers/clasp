@@ -1137,21 +1137,48 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       (codegen temp-result exp evaluate-env)
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
-    (let ((func (llvm-sys:get-function cmp:*the-module* intrinsic-name)))
-      (unless func
-        (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
-              (varargs nil))
-          (setq func (llvm-sys:function-create
-                      (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
-                      'llvm-sys::External-linkage
-                      intrinsic-name
-                      *the-module*)))
-        (let ((result-in-registers
-               (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "intrinsic")))
-          (irc-store-result result result-in-registers))))
-    (irc-low-level-trace :flow)))
+    (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
+                     (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+                           (varargs nil))
+                       (llvm-sys:function-create
+                        (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                        'llvm-sys::External-linkage
+                        intrinsic-name
+                        *the-module*))))
+           (result-in-registers
+            (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "intrinsic")))
+      (irc-store-result result result-in-registers)))
+  (irc-low-level-trace :flow))
 
-(defun codegen-pointer-call (result form evaluate-env)
+(defun codegen-foreign-funcall (result form evaluate-env)
+  "Evaluate each of the arguments into an alloca and invoke the function"
+  ;; setup the ActivationFrame for passing arguments to this function in the setup arena
+  (assert-result-isa-llvm-value result)
+  (let* ((foreign-name (car form))
+         (nargs (length (cdr form)))
+         args
+         (temp-result (irc-alloca-tsp)))
+    (dbg-set-invocation-history-stack-top-source-pos form)
+    ;; evaluate the arguments into the array
+    ;;  used to be done by --->    (codegen-evaluate-arguments (cdr form) evaluate-env)
+    (do* ((cur-exp (cdr form) (cdr cur-exp))
+          (exp (car cur-exp) (car cur-exp))
+          (i 0 (+ 1 i)))
+         ((endp cur-exp) nil)
+      (codegen temp-result exp evaluate-env)
+      (push (irc-smart-ptr-extract (irc-load temp-result)) args))
+    (let* ((func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
+                     (let ((arg-types (make-list (length args) :initial-element cmp:+t*+)))
+                       (llvm-sys:function-create
+                        (llvm-sys:function-type-get cmp:+return_type+ arg-types nil)
+                        'llvm-sys::External-linkage
+                        foreign-name
+                        *the-module*))))
+           (result-in-registers
+            (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "foreign-function")))
+      (irc-store-result result result-in-registers))))
+
+(defun codegen-foreign-funcall-pointer (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function pointer"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
@@ -1244,7 +1271,8 @@ jump to blocks within this tagbody."
          ((eq sym 'cl:throw) nil)           ;; handled with macro
          ((eq sym 'core:debug-message) t)   ;; special operator
          ((eq sym 'core:intrinsic-call) t) ;; Call intrinsic functions
-         ((eq sym 'core:pointer-call) t) ;; Call function pointers
+         ((eq sym 'core:foreign-funcall-pointer) t) ;; Call function pointers
+         ((eq sym 'core:foreign-funcall) t) ;; Call foreign function
          (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
@@ -1458,12 +1486,19 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 			 (core:source-file-info pathname)
 		       the-handle)))
 	(with-module (:module *the-module*
-                      :source-namestring (namestring pathname)
-                      :source-file-info-handle handle)
-	  (multiple-value-bind (compiled-function warnp failp)
-	      (compile-with-hook compile-hook bind-to-name definition env pathname)
-	    (when bind-to-name (setf-symbol-function bind-to-name compiled-function))
-	    (values compiled-function warnp failp)))))))
+                              :source-namestring (namestring pathname)
+                              :source-file-info-handle handle)
+          (let ((*all-functions-for-one-compile* nil))
+            (multiple-value-bind (compiled-function warnp failp)
+                (compile-with-hook compile-hook bind-to-name definition env pathname)
+              (when bind-to-name
+                (let ((lambda-list (cadr definition)))
+                  #+(or)(format t "Setting function name: ~a definition: ~a~%" bind-to-name definition)
+                  #+(or)(format t "*all-functions-for-one-compile* -> ~a~%" cmp:*all-functions-for-one-compile*)
+                  (core:fset bind-to-name compiled-function nil t lambda-list)
+                  #+(or)(setf-symbol-function bind-to-name compiled-function)
+                  ))
+              (values compiled-function warnp failp))))))))
 
 
 (defun compile* (compile-hook name &optional definition)

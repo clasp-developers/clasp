@@ -393,11 +393,20 @@
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:pointer-call-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:foreign-funcall-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (clasp-cleavir:unsafe-pointer-call :call (%load (car inputs)) return-value (cdr inputs) abi)))
+  (let ((call (clasp-cleavir:unsafe-foreign-funcall :call (clasp-cleavir-hir:function-name instruction) (car outputs) inputs abi)))
     (cc-dbg-when *debug-log*
-		 (format *debug-log* "    translate-simple-instruction pointer-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "    translate-simple-instruction foreign-funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "     instruction --> ~a~%" call))))
+
+
+(defmethod translate-simple-instruction
+    ((instruction clasp-cleavir-hir:foreign-funcall-pointer-instruction) return-value inputs outputs (abi abi-x86-64))
+  (cmp:irc-low-level-trace :flow)
+  (let ((call (clasp-cleavir:unsafe-foreign-funcall-pointer :call (%load (car inputs)) (car outputs) (cdr inputs) abi)))
+    (cc-dbg-when *debug-log*
+		 (format *debug-log* "    translate-simple-instruction foreign-funcall-pointer-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
@@ -873,19 +882,19 @@
               (cmp (%icmp-eq tag (%uintptr_t cmp:+fixnum-tag+))))
          (%cond-br cmp (first successors) (second successors)) :likely t))
       (cons
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "fixnum-tag-only"))
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "cons-tag-only"))
               (cmp (%icmp-eq tag (%uintptr_t cmp:+cons-tag+))))
          (%cond-br cmp (first successors) (second successors)) :likely t))
       (core:valist 
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "fixnum-tag-only"))
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "valist-tag-only"))
               (cmp (%icmp-eq tag (%uintptr_t cmp:+valist-tag+))))
          (%cond-br cmp (first successors) (second successors)) :likely t))
       (character
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "fixnum-tag-only"))
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
               (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
          (%cond-br cmp (first successors) (second successors)) :likely t))
       (single-float
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "fixnum-tag-only"))
+       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
               (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
          (%cond-br cmp (first successors) (second successors)) :likely t))
       (otherwise

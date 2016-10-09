@@ -103,7 +103,7 @@
 	      (tree-equal-TEST-NOT (car tree-1) (car tree-2) test-not)
 	      (tree-equal-TEST-NOT (cdr tree-1) (cdr tree-2) test-not)))
 	((consp tree-2) nil)
-	((not (funcall test-not tree-1 tree-2) t))
+	((not (funcall test-not tree-1 tree-2)))
 	(t nil)))
 
 (defun tree-equal (tree-1 tree-2 &key (test #'eql testp) (test-not nil notp))

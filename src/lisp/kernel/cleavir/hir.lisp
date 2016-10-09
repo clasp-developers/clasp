@@ -46,22 +46,45 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction POINTER-CALL-INSTRUCTION
+;;; Instruction FOREIGN-FUNCALL-INSTRUCTION
 ;;;
-;;; This instruction is an POINTER-CALL-INSTRUCTION that prints a message
+;;; This instruction is an FOREIGN-FUNCALL-INSTRUCTION that prints a message
 
 
-(defclass pointer-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-funcall-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+  ((%function-name :initarg :function-name :accessor function-name)))
+
+
+(defmethod cleavir-ir-graphviz:label ((instr foreign-funcall-instruction))
+  (with-output-to-string (s)
+    (format s "foreign-funcall(~a)" (function-name instr))))
+
+(defmethod make-foreign-funcall-instruction
+    (function-name inputs outputs &optional (successor nil successor-p))
+  (make-instance 'foreign-funcall-instruction
+                 :function-name function-name
+                 :inputs inputs
+                 :outputs outputs
+                 :successors (if successor-p (list successor) '())))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Instruction foreign-funcall-pointer-INSTRUCTION
+;;;
+;;; This instruction is an foreign-funcall-pointer-INSTRUCTION that prints a message
+
+
+(defclass foreign-funcall-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ())
 
 
-(defmethod cleavir-ir-graphviz:label ((instr pointer-call-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr foreign-funcall-pointer-instruction))
   (with-output-to-string (s)
-    (format s "pointer-call")))
+    (format s "foreign-funcall-pointer")))
 
-(defmethod make-pointer-call-instruction
-    (function-name inputs outputs &optional (successor nil successor-p))
-  (make-instance 'pointer-call-instruction
+(defmethod make-foreign-funcall-pointer-instruction
+    (inputs outputs &optional (successor nil successor-p))
+  (make-instance 'foreign-funcall-pointer-instruction
                  :inputs inputs
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))

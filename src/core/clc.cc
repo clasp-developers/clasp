@@ -31,7 +31,8 @@ bool treat_as_special_operator_p(core::T_sp form)
   if ( form == cl::_sym_throw ) return false;
   if ( form == core::_sym_debug_message ) return true;
   if ( form == core::_sym_intrinsic_call ) return true;
-  if ( form == core::_sym_pointer_call ) return true;
+  if ( form == core::_sym_foreign_funcall_pointer ) return true;
+  if ( form == core::_sym_foreign_funcall ) return true;
   return cl__special_operator_p(form);
 }
 

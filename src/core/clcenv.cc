@@ -71,7 +71,8 @@ CL_DEFUN bool clcenv__treat_as_special_operator_p(core::Symbol_sp symbol)
   if ( symbol == cl::_sym_throw ) return false;
   if ( symbol == core::_sym_debug_message ) return true;
   if ( symbol == core::_sym_intrinsic_call ) return true;
-  if ( symbol == core::_sym_pointer_call ) return true;
+  if ( symbol == core::_sym_foreign_funcall_pointer ) return true;
+  if ( symbol == core::_sym_foreign_funcall ) return true;
   return core::cl__special_operator_p(symbol);
 }
 
