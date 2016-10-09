@@ -105,21 +105,43 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Class POINTER-CALL-AST
+;;; Class FOREIGN-FUNCALL-AST
+;;;
+;;; This AST is used to represent a call to a named foreign function
+;;;   inserted into the generated code.
+
+(defclass foreign-funcall-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
+  ((%function-name :initarg :function-name :accessor function-name)
+   (%argument-asts :initarg :argument-asts :reader argument-asts)))
+
+(cleavir-io:define-save-info foreign-funcall-ast
+    (:function-name function-name)
+  (:argument-asts argument-asts))
+
+(defmethod cleavir-ast-graphviz::label ((ast foreign-funcall-ast))
+  (with-output-to-string (s)
+    (format s "foreign-funcall (~a)" (function-name ast))))
+
+(defmethod cleavir-ast:children ((ast foreign-funcall-ast))
+  (argument-asts ast))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Class foreign-funcall-pointer-AST
 ;;;
 ;;; This AST is used to represent a call to an pointer to a function inserted into the generated code.
 
-(defclass pointer-call-ast (cleavir-ast:ast)
+(defclass foreign-funcall-pointer-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin)
   ((%argument-asts :initarg :argument-asts :reader argument-asts)))
 
-(cleavir-io:define-save-info pointer-call-ast
+(cleavir-io:define-save-info foreign-funcall-pointer-ast
   (:argument-asts argument-asts))
 
-(defmethod cleavir-ast-graphviz::label ((ast pointer-call-ast))
+(defmethod cleavir-ast-graphviz::label ((ast foreign-funcall-pointer-ast))
   (with-output-to-string (s)
-    (format s "pointer-call")))
+    (format s "foreign-funcall-pointer")))
 
-(defmethod cleavir-ast:children ((ast pointer-call-ast))
+(defmethod cleavir-ast:children ((ast foreign-funcall-pointer-ast))
   (argument-asts ast))
 
 

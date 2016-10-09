@@ -470,9 +470,44 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 
 
 };
+
+
+extern "C" {
+core::T_O* from_object_int(core::T_O* obj) {
+  int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  return reinterpret_cast<core::T_O*>(x);
+}
+
+core::T_O* to_object_int(core::T_O* obj) {
+  int x = static_cast<int>(reinterpret_cast<intptr_t>(obj));
+  return translate::to_object<int>::convert(x).raw_();
+}
+
+#if 0
+core::T_O* from_object_short_int(core::T_O* obj) {
+  short int x = translate::from_object<short int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  return reinterpret_cast<core::T_O*>(static_cast<intptr_t>(x));
+}
+
+
+core::T_O* to_object_short_int(core::T_O* obj) {
+  short int x = static_cast<short int>(reinterpret_cast<intptr_t>(obj));
+  return translate::to_object<short int>::convert(x).raw_();
+}
+#endif
+
+};
+
+
+
+
 namespace llvmo {
 void initialize_intrinsics() {
   // Do nothing
+#if 0
+  wrap_translator("CORE","FROM-OBJECT<INT>", &from_object_int);
+  wrap_translator("CORE","TO-OBJECT<INT>", &to_object_int);
+#endif
 }
 };
 #pragma GCC visibility pop

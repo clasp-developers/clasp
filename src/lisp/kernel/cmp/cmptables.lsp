@@ -52,7 +52,7 @@
     (dbg-i32  codegen-dbg-i32 mincomp-dbg-i32)
     (load-time-value  codegen-load-time-value mincomp-load-time-value)
     (core:intrinsic-call codegen-intrinsic-call mincomp-intrinsic-call)
-    (core:pointer-call codegen-pointer-call mincomp-pointer-call)
+    (core:foreign-funcall-pointer codegen-pointer-call mincomp-pointer-call)
     (symbol-macrolet  codegen-symbol-macrolet mincomp-symbol-macrolet)
     (cmp:llvm-inline codegen-llvm-inline mincomp-llvm-inline)
     (cmp::gc-profiling codegen-gc-profiling mincomp-gc-profiling)

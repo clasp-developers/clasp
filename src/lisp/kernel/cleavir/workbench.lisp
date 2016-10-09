@@ -12,7 +12,7 @@
     (format t "Loading ASDF system~%")
     (time (require :asdf))
     (load "sys:local-asdf-config.lisp")
-    (core::cclasp-features)
+    #+(or)(core::cclasp-features)
     (format t "Loading :clasp-cleavir system~%")
     (time (require :clasp-cleavir))
     (print (core:getpid)))

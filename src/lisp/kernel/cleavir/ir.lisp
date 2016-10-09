@@ -255,39 +255,52 @@
                         arguments)))
     (with-return-values (return-vals return-value abi)
       (let* ((args (list* real-args))
-             (func (llvm-sys:get-function cmp:*the-module* intrinsic-name)))
-        (unless func
-          (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
-                (varargs nil))
-            (setq func (llvm-sys:function-create
-                        (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
-                        'llvm-sys::External-linkage
-                        intrinsic-name
-                        cmp:*the-module*)))
-          (let ((result-in-registers
-                 (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic"))
-                #+(or)(if (eq call-or-invoke :call)
-                          (cmp:irc-create-call intrinsic-name args label)
-                          (cmp:irc-create-invoke intrinsic-name args landing-pad label)))
-            (%store result-in-registers return-value)))))))
+             (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
+                       (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+                             (varargs nil))
+                         (setq func (llvm-sys:function-create
+                                     (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                                     'llvm-sys::External-linkage
+                                     intrinsic-name
+                                     cmp:*the-module*)))))
+             (result-in-registers
+              (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic")))
+        (%store result-in-registers return-value)))))
+
+(defun unsafe-foreign-funcall (call-or-invoke foreign-name output arg-allocas abi &key (label "") landing-pad)
+  ;; Write excess arguments into the multiple-value array
+  (let* ((arguments (mapcar #'%load arg-allocas))
+         (args (if (< (length arguments) core:+number-of-fixed-arguments+)
+                   (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
+                   arguments))
+         (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
+                   (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
+                          (varargs nil))
+                     (llvm-sys:function-create
+                      (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                      'llvm-sys::External-linkage
+                      foreign-name
+                      cmp:*the-module*))))
+         (result-in-registers
+          (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "foreign-funcall-result")))
+    (%store result-in-registers output)))
 
 
-(defun unsafe-pointer-call (call-or-invoke pointer return-value arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-foreign-funcall-pointer (call-or-invoke pointer output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar #'%load arg-allocas))
          (args (if (< (length arguments) core:+number-of-fixed-arguments+)
                    (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
                    arguments)))
-    (with-return-values (return-vals return-value abi)
-      (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
-             (varargs nil)
-             (function-type (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs))
-             (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
-             (pointer-t* pointer)
-             (function-pointer (%bit-cast (cmp:irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
-             (result-in-registers
-              (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer args "function-pointer")))
-        (%store result-in-registers return-value)))))
+    (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
+           (varargs nil)
+           (function-type (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs))
+           (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
+           (pointer-t* pointer)
+           (function-pointer (%bit-cast (cmp:irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
+           (result-in-registers
+            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer args "function-pointer")))
+      (%store result-in-registers output))))
 
 
 
