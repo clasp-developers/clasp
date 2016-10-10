@@ -24,7 +24,8 @@
 
 (defun ensure-boot-class (name &key (metaclass 'standard-class)
                                  direct-superclasses direct-slots index)
-  ;; (format t "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%" name metaclass direct-superclasses direct-slots index)
+  #+(or)(format t "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
+                name metaclass direct-superclasses direct-slots index)
   (let* ((the-metaclass (the class (gethash metaclass si::*class-name-hash-table*)))
          (class (or (gethash name si::*class-name-hash-table*)
                     #+clasp
