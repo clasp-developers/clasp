@@ -22,24 +22,24 @@
 ;;; DIRECT-SLOTS, etc are empty and therefore SLOT-VALUE does not work.
 #+clasp(defvar +the-standard-class+)
 
-
-
-
-(defun make-empty-standard-class (name &key (metaclass 'standard-class)
-					 direct-superclasses direct-slots index)
-  (declare (optimize speed (safety 0)))
-;;  (format t "make-empty-standard-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%" name metaclass direct-superclasses direct-slots index)
-  (let* ((the-metaclass (and metaclass (gethash metaclass si::*class-name-hash-table*)))
-	 (class (or (let ((existing-class (gethash name si::*class-name-hash-table*)))
-		      (if existing-class
-			  existing-class
-			  nil))
-		    #+clasp
-		    (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) name)
-		    #-clasp
-		    (si:allocate-raw-instance nil the-metaclass
-					      #.(length +standard-class-slots+)))))
+(defun ensure-boot-class (name &key (metaclass 'standard-class)
+                                 direct-superclasses direct-slots index)
+  #+(or)(format t "ensure-boot-class for ~s metaclass: ~s direct-superclasses: ~s :direct-slots ~s :index ~s~%"
+                name metaclass direct-superclasses direct-slots index)
+  (let* ((the-metaclass (the class (gethash metaclass si::*class-name-hash-table*)))
+         (class (or (gethash name si::*class-name-hash-table*)
+                    #+clasp
+                    (core:allocate-raw-class nil the-metaclass #.(length +standard-class-slots+) name)
+                    #-clasp
+                    (si:allocate-raw-instance nil the-metaclass #.(length +standard-class-slots+)))))
     (with-early-accessors (+standard-class-slots+)
+      (let ((existing-slots (class-slots class)))
+        (when (and (typep existing-slots 'list)
+                   (not (= (length existing-slots)
+                           (length direct-slots)))
+                   (not (zerop (length existing-slots))))
+          (error "~S was called on the already instantiated class ~S, but with ~S slots while it already has ~S slots."
+                 'ensure-boot-class name (length direct-slots) (length existing-slots))))
       (when (eq name 'standard-class)
 	#+ecl(defconstant +the-standard-class+ class)
 	#+clasp(setq +the-standard-class+ class)
@@ -74,13 +74,6 @@
       (when index
 	(setf (aref +builtin-classes-pre-array+ index) class))
       class)))
-
-(defun remove-accessors (slotds)
-  (declare (optimize speed (safety 0)))
-  (loop for i in slotds
-     for j = (copy-list i)
-     do (remf (cdr j) :accessor)
-     collect j))
 
 (defun add-slots (class slots)
   (declare (si::c-local)
@@ -120,7 +113,7 @@
 ;; 1) Create the classes
 ;;
 ;; Notice that, due to circularity in the definition, STANDARD-CLASS has
-;; itself as metaclass. MAKE-EMPTY-STANDARD-CLASS takes care of that.
+;; itself as metaclass. ENSURE-BOOT-CLASS takes care of that.
 ;;
 #+clasp
 (progn
@@ -136,7 +129,7 @@
   `(bformat t ,fmt ,@fmt-args))
 
 ;;;
-;;; make-empty-standard-class compiles a lot of code using EVAL
+;;; ENSURE-BOOT-CLASS compiles a lot of code using EVAL
 ;;;
 ;;; This is being run every time Clasp starts up!
 ;;; We have to figure out how ECL avoids this.
@@ -149,9 +142,9 @@
 			for class = (progn
                                       (dbg-boot "About to accumulate class %s\n" c)
                                       #+(or)(if (eq (car c) 'standard-generic-function)
-                                                (core:gdb "About to trap problem in make-empty-standard-class of standard-generic-function"))
-				      (apply #'make-empty-standard-class c))
-			collect class)))
+                                                (core:gdb "About to trap problem in ENSURE-BOOT-CLASS of STANDARD-GENERIC-FUNCTION"))
+                                      (apply #'ensure-boot-class c))
+                        collect class)))
     #+ecl
     (progn
       (defconstant +the-t-class+ (find-class 't nil))
