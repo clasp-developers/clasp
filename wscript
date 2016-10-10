@@ -817,16 +817,20 @@ class link_executable(Task.Task):
 #        return
 #    self.create_task('dsymutil',link_task.outputs[0])
 
+def clasp_invocation_command(executable, *args):
+    return [executable] + ['--non-interactive', '--norc'] + list(args)
+
 class run_aclasp(Task.Task):
     def run(self):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
-        cmd = [self.inputs[0].abspath(),
-               "-I",
-               "-f", "clasp-min",
-               "-f", "clasp-builder",
-               "-f", "debug-run-clang",
-               "-e", "(load-aclasp)",
-               "--" ] + self.bld.clasp_aclasp
+        cmd = clasp_invocation_command(
+            self.inputs[0].abspath(),
+            "--ignore-image",
+            "--feature", "clasp-min",
+            "--feature", "clasp-builder",
+            "--feature", "debug-run-clang",
+            "--eval", "(load-aclasp)",
+            "--", *self.bld.clasp_aclasp)
         print("  run_aclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -838,15 +842,15 @@ class run_aclasp(Task.Task):
 class compile_aclasp(Task.Task):
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
-        cmd = [self.inputs[0].abspath(),
-               "-I",
-               "-f", "clasp-min",
-               "-f", "clasp-builder",
-               "-f", "debug-run-clang",
-               "-N",
-               "-e", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-               "-e", "(quit)",
-               "--" ] + self.bld.clasp_aclasp
+        cmd = clasp_invocation_command(
+            self.inputs[0].abspath(),
+            "--ignore-image",
+            "--feature", "clasp-min",
+            "--feature", "clasp-builder",
+            "--feature", "debug-run-clang",
+            "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+            "--eval", "(quit)",
+            "--", *self.bld.clasp_aclasp)
         print("  compile_aclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -860,15 +864,14 @@ class compile_aclasp(Task.Task):
 class compile_bclasp(Task.Task):
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0],self.inputs[1],self.outputs[0]))
-#        cmd = '%s -i %s -N -f clasp-builder -f debug-run-clang -e "(compile-bclasp :link-type :bc)" -e "(quit)"' % (self.inputs[0].abspath(), self.inputs[1].abspath())
-        cmd = [self.inputs[0].abspath(),
-               "-i", self.inputs[1].abspath(),
-               "-N",
-               "-f", "clasp-builder",
-               "-f", "debug-run-clang",
-               "-e", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
-               "-e", "(quit)",
-               "--" ] + self.bld.clasp_bclasp
+        cmd = clasp_invocation_command(
+            self.inputs[0].abspath(),
+            "--image", self.inputs[1].abspath(),
+            "--feature", "clasp-builder",
+            "--feature", "debug-run-clang",
+            "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
+            "--eval", "(quit)",
+            "--", *self.bld.clasp_bclasp)
         print("  compile_bclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -880,14 +883,14 @@ class compile_bclasp(Task.Task):
 class compile_cclasp(Task.Task):
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-        cmd = [self.inputs[0].abspath(),
-               "-i", self.inputs[1].abspath(),
-               "-N",
-               "-f", "clasp-builder",
-               "-f", "debug-run-clang",
-               "-e", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-               "-e", "(quit)",
-               "--" ] + self.bld.clasp_cclasp
+        cmd = clasp_invocation_command(
+            self.inputs[0].abspath(),
+            "--image", self.inputs[1].abspath(),
+            "--feature", "clasp-builder",
+            "--feature", "debug-run-clang",
+            "--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+            "--eval", "(quit)",
+            "--", *self.bld.clasp_cclasp)
         print("  compile_cclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -903,18 +906,14 @@ class recompile_cclasp(Task.Task):
         if (other_clasp == None):
             print("To use 'dangerzone' you need to set the CLASP env variable to an installed clasp executable")
             os.exit(1)
-#        cclasp_exe = self.bld.find_program("cclasp")
-#        print("cclasp_exe = %s"%cclasp_exe)
-#        cmd = 'cclasp -f debug-run-clang -N -R %s/%s/%s -e "(recompile-cclasp :link-type :bc)" -e "(quit)"' % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir())
-        cmd = [other_clasp,
-               "-N",
-               "-f", "clasp-builder",
-               "-f", "debug-run-clang",
-               "-f", "ignore-extensions",
-               "-R", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
-               "-e", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-               "-e", "(quit)",
-               "--" ] + self.bld.clasp_cclasp_no_wrappers
+        cmd = clasp_invocation_command(
+            other_clasp,
+            "--feature", "clasp-builder",
+            "--feature", "debug-run-clang",
+            "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
+            "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+            "--eval", "(quit)",
+            "--", *self.bld.clasp_cclasp_no_wrappers)
         print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -926,7 +925,14 @@ class recompile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = '%s -f ignore-extensions -f clasp-builder -f debug-run-clang -N -e "(core:compile-addons)" -e "(core:link-addons)" -e "(quit)"' % self.inputs[0].abspath()
+        cmd = clasp_invocation_command(
+            self.inputs[0].abspath(),
+            "--feature", "ignore-extensions",
+            "--feature", "clasp-builder",
+            "--feature", "debug-run-clang",
+            "--eval", "(core:compile-addons)",
+            "--eval", "(core:link-addons)",
+            "--eval", "(quit)")
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -941,11 +947,12 @@ class compile_addons(Task.Task):
 class compile_module(Task.Task):
     def run(self):
         print("In compile_module %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = [self.inputs[0].abspath(),
-               "-f", "ignore-extensions",
-               "-f", "debug-run-clang",
-               "-e", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[1], self.outputs[0]),
-               "-e", "(quit)"]
+        cmd = clasp_invocation_command(
+            self.inputs[0].abspath(),
+            "--feature", "ignore-extensions",
+            "--feature", "debug-run-clang",
+            "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[1], self.outputs[0]),
+            "--eval", "(quit)")
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
