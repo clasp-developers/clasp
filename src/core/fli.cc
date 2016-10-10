@@ -477,9 +477,8 @@ ForeignData_sp PERCENTmake_nullpointer() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) {
-  Pointer_sp ptr = Pointer_O::create( pfd_ptr->ptr() );
-  return ptr;
+core::Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) {
+  return core::Pointer_O::create( fd_ptr->ptr() );
 }
 
 // ---------------------------------------------------------------------------
@@ -1028,40 +1027,6 @@ core::T_sp PERCENTmem_ref_char( core::Integer_sp address ) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTmem_ref_generic( core::T_sp address_or_foreign_data_ptr,
-                                   core::T_sp atype,
-                                   core::Integer_sp offset ) {
-
-  core::T_sp result =_Nil<core::T_O>();
-
-  core::VectorObjects_sp sp_tst = _sym_STARforeign_type_spec_tableSTAR->symbolValue();
-  auto iterator = sp_tst->begin();
-  auto it_end   = sp_tst->end();
-
-  cl_intptr_t real_address = core::clasp_to_cl_intptr_t( PERCENToffset_address_as_integer( address_or_foreign_data_ptr, offset ));
-
-  for (; iterator != it_end; iterator++) {
-    ForeignTypeSpec_sp sp_fts = iterator->asOrNull<ForeignTypeSpec_O>();
-
-    if ( sp_fts.notnilp() ) {
-      if ( sp_fts->PERCENTlisp_symbol()->eql_( atype ) ) {
-
-        IMPLEMENT_ME();
-        goto RETURN_FROM_CORE__PERCENT_MEM_REF;
-      }
-    }
-  }
-
-  SIMPLE_ERROR(BF("No foreign type %s found !"));
-  return _Nil<core::T_O>();
-
-RETURN_FROM_CORE__PERCENT_MEM_REF:
-
-  return result;
-}
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
 
 // Lisp to C++ translation, used by mem_set()
 
@@ -1256,15 +1221,6 @@ core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value ) {
   translate::from_object< char > v( value );
   tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_char( tmp );
-}
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-core::T_sp PERCENTmem_set_generic( core::T_sp address_or_foreign_data_ptr,
-                                   core::T_sp atype,
-                                   core::Integer_sp offset,
-                                   core::T_sp value) {
-  IMPLEMENT_ME();
 }
 
 }; // namespace clasp_ffi

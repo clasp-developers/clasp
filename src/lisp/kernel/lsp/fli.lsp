@@ -149,12 +149,12 @@
 ;;; === F O R E I G N   F U N C T I O N  C A L L I N G ===
 
 (declaim (inline foreign-funcall-transform-args))
-(defun foreign-funcall-transform-args (&rest args)
+(defun foreign-funcall-transform-args (args)
   "Return two values: lists of transformed args and result type."
-  (let ((to-object-call nil))
+  (let ((to-object-call$ nil))
     (loop for (type arg) on args by #'cddr
-       if arg collect `(core::foreign-funcall ,(concatenate 'string "FROM_OBJECT_" (%lisp-name (%lisp-type->type-spec type))) ,arg) into transformed-args
-       else do (setf to-object-call `(core::foreign-funcall ,(concatenate 'string "TO_OBJECT_" (%lisp-name (%lisp-type->type-spec type)))))
+       if arg collect `(list ,(string-downcase (concatenate 'string "FROM_OBJECT_" (%lisp-name (%lisp-type->type-spec type)))) ,arg) into transformed-args
+       else do (setf to-object-call$ `,(string-downcase (concatenate 'string "TO_OBJECT_" (%lisp-name (%lisp-type->type-spec type)))))
        finally (return (values transformed-args to-object-call)))))
 
 (declaim (inline ensure-pointer-o))
@@ -163,18 +163,34 @@
         ((%foreign-data-pointerp ptr) (%make-pointer-from-foreign-data ptr))
         (t ptr)))
 
-(defmacro %foreign-funcall-pointer (ptr args &key convention)
+(defmacro %foreign-funcall-pointer (ptr &rest args)
   "Funcall a pointer to a foreign function."
-  (declare (ignore convention))
   (multiple-value-bind (from-object-args-calls to-object-call)
       (foreign-funcall-transform-args args)
     (if to-object-call
         `(,to-object-call
           (core:foreign-funcall-pointer (ensure-pointer-o ,ptr)
-                                        ,@from-object-call-args))
+                                        ,@(loop for fn+arg in from-object-call-args
+                                             collect (funcall (car fn+arg) (cadr fn+arg)))))
         `(progn
-           (core::foreign-funcall-pointer (ensure-pointer-o ,ptr)
-                                          ,@from-object-call-args)
+           (core:foreign-funcall-pointer (ensure-pointer-o ,ptr)
+                                         ,@(loop for fn+arg in from-object-call-args
+                                              collect (funcall (car fn+arg) (cadr fn+arg))))
+           (values)))))
+
+(defmacro %foreign-funcall (name &rest args)
+  "Funcall a pointer to a foreign function."
+  (multiple-value-bind (from-object-args-calls to-object-call)
+      (foreign-funcall-transform-args args)
+    (if to-object-call
+        `(,to-object-call
+          (core::foreign-funcall ,name
+                                 ,@(loop for fn+arg in ,from-object-call-args
+                                      collect (funcall (car fn+arg) (cadr fn+arg)))))
+        `(progn
+           (core::foreign-funcall ,name
+                                  ,@(loop for fn+arg in `,from-object-call-args
+                                       collect (funcall (car fn+arg) (cadr fn+arg))))
            (values)))))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===

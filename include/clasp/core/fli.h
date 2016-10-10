@@ -138,7 +138,7 @@ namespace clasp_ffi {
     const int ownership_flags( void ) { return m_ownership_flags; };
     const void *orig_data_ptr( void ) { return m_orig_data_ptr; };
     void *raw_data( void ) { return m_raw_data; };
-    void *ptr( void ) { return m_raw_data };
+    void *ptr( void ) { return m_raw_data; };
 
     // -- TRANSFORMING ACCESS --
     template <class T>
@@ -196,7 +196,7 @@ namespace clasp_ffi {
 
   CL_DEFUN core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign_data_ptr, core::Integer_sp offset );
 
-  CL_DEFUN Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) ;
+  CL_DEFUN core::Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) ;
   CL_DEFUN core::T_sp PERCENTforeign_data_pointerp( core::T_sp obj );
 
   // ---------------------------------------------------------------------------
