@@ -10,6 +10,7 @@
   (:use #:common-lisp #:core)
   (:nicknames #:cc)
   (:export
+   #:*use-type-inference*
    #:cleavir-compile-eval
    #:clasp
    #:invoke-instruction
@@ -31,6 +32,7 @@
    #:*function-inline-asts*
    #:*clasp-env*
    #:*clasp-system*
+   #:*code-walker*
    #:alloca-i8
 ))
 

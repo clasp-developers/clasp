@@ -476,7 +476,8 @@ epilogue module - one that terminates a series of linked modules. "
 
 
 (defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((cmp:*cleavir-compile-file-hook* nil))
+  (let ((cmp:*cleavir-compile-file-hook* nil)
+        (core:*use-cleavir-compiler* nil))
     (apply #'compile-file input-file args)))
 
 (export 'compile-file)

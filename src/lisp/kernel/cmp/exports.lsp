@@ -224,10 +224,6 @@ treat-as-special-operator-p
 jit-function-name
 *the-module*
 *cleavir-compile-hook*
-*cleavir-compile-hook*
-*cleavir-compile-hook*
-*cleavir-compile-hook*
-*cleavir-compile-hook*
 *llvm-context*
 *the-module*
 with-debug-info-generator
