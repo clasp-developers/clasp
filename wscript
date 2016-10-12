@@ -1,3 +1,5 @@
+#-*- mode: python; coding: utf-8-unix -*-
+
 import subprocess
 from waflib.Tools import c_preproc
 from waflib.Tools.compiler_cxx import cxx_compiler
@@ -21,7 +23,7 @@ APP_NAME = 'clasp'
 VERSION = '0.0'
 DARWIN_OS = 'darwin'
 LINUX_OS = 'linux'
-    
+
 STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'c' ]
 
 GCS = [ 'boehm',
@@ -119,7 +121,7 @@ def configure_clasp(cfg,variant):
     cfg.define("VARIANT_NAME",variant.variant_name())
     cfg.define("BUILD_STLIB", libraries_as_link_flags(cfg.env.STLIB_ST,cfg.env.STLIB))
     cfg.define("BUILD_LIB", libraries_as_link_flags(cfg.env.LIB_ST,cfg.env.LIB))
-    cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS)+' '+' '.join(cfg.env.LDFLAGS))
+    cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
 
 def strip_libs(libs):
@@ -127,7 +129,7 @@ def strip_libs(libs):
     split_libs = libs.split()
     for lib in split_libs:
         result.append("%s" % str(lib[2:]))
-    return result 
+    return result
 
 def fix_lisp_paths(bld_path,out,variant,paths):
     nodes = []
@@ -241,8 +243,8 @@ class boehm_base(variant):
             cfg.env.append_value('STLIB',cfg.env.STLIB_BOEHM)
         else:
             cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
-        self.common_setup(cfg)        
-    
+        self.common_setup(cfg)
+
 class boehm(boehm_base):
     gc_name = 'boehm'
     debug_char = None
@@ -285,7 +287,7 @@ class mps_base(variant):
 #        else:
 #            cfg.env.append_value('LIB',cfg.env.LIB_BOEHM)
         self.common_setup(cfg)
-        
+
 class mpsprep(mps_base):
     gc_name = 'mpsprep'
     debug_char = None
@@ -293,7 +295,7 @@ class mpsprep(mps_base):
         cfg.setenv("mpsprep", env=env_copy.derive())
         cfg.define("RUNNING_GC_BUILDER",1)
         super(mpsprep,self).configure_variant(cfg,env_copy)
-        
+
 class mpsprep_d(mps_base):
     gc_name = 'mpsprep'
     debug_char = 'd'
@@ -324,7 +326,7 @@ class bboehm(boehm):
     stage_char = 'b'
 class cboehm(boehm):
     stage_char = 'c'
-    
+
 class iboehm_d(boehm_d):
     stage_char = 'i'
 class aboehm_d(boehm_d):
@@ -361,7 +363,7 @@ class bmps(mps):
     stage_char = 'b'
 class cmps(mps):
     stage_char = 'c'
-    
+
 class imps_d(mps_d):
     stage_char = 'i'
 class amps_d(mps_d):
@@ -388,7 +390,7 @@ class bmpsprep_d(mpsprep_d):
     stage_char = 'b'
 class cmpsprep_d(mpsprep_d):
     stage_char = 'c'
-    
+
 import subprocess
 
 def get_git_commit(cfg):
@@ -402,9 +404,6 @@ def get_clasp_version(cfg):
     proc = subprocess.Popen([git[0], "describe", "--always"], stdout=subprocess.PIPE, shell=False)
     (clasp_version, err) = proc.communicate()
     return clasp_version.strip()
-
-
-
 
 def options(cfg):
     cfg.load('compiler_cxx')
@@ -437,7 +436,7 @@ def configure(cfg):
     llvm_release_lib_dir_bytes = subprocess.Popen([llvm_config[0], "--libdir"], stdout=subprocess.PIPE).communicate()[0]
     llvm_release_lib_dir = str(llvm_release_lib_dir_bytes.decode("ASCII",'ignore').split()[0])
     print("llvm_release_lib_dir = %s" % llvm_release_lib_dir )
-### Uncommenting these checks causes problems-- AttributeError: 'BuildContext' object has no attribute 'variant_obj'
+### Without these checks the following error happens: AttributeError: 'BuildContext' object has no attribute 'variant_obj'
     cfg.check_cxx(lib='gmpxx gmp'.split(), cflags='-Wall', uselib_store='GMP')
     try:
         cfg.check_cxx(stlib='gc', cflags='-Wall', uselib_store='BOEHM')
@@ -459,7 +458,7 @@ def configure(cfg):
     cfg.extensions_names = sorted(cfg.extensions_names)
     print("cfg.extensions_names after sort = %s" % cfg.extensions_names)
     clasp_gc_filename = "clasp_gc.cc"
-    if (len(cfg.extensions_names)>0):
+    if (len(cfg.extensions_names) > 0):
         clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
     print("clasp_gc_filename = %s"%clasp_gc_filename)
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
@@ -647,7 +646,7 @@ def build(bld):
         aclasp_common_lisp_bitcode = bld.path.find_or_declare(variant.common_lisp_bitcode_name(stage='a'))
         cmp_aclasp.set_outputs(aclasp_common_lisp_bitcode)
         bld.add_to_group(cmp_aclasp)
-    if (stage_val >= 1):   
+    if (stage_val >= 1):
         print("About to add compile_aclasp")
         cmp_aclasp = compile_aclasp(env=bld.env)
 #        print("clasp_aclasp as nodes = %s" % fix_lisp_paths(bld.path,out,variant,bld.clasp_aclasp))
@@ -783,7 +782,7 @@ class link_executable(Task.Task):
                 self.env.CXX[0],
                 self.inputs[0].abspath(),
                 self.inputs[1].abspath(),
-                ' '.join(self.env['LINKFLAGS'])+' '+' '.join(self.env['LDFLAGS']),
+                ' '.join(self.env['LINKFLAGS']) + ' ' + ' '.join(self.env['LDFLAGS']),
                 libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB),
                 libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),
                 self.outputs[0].abspath(),
@@ -807,7 +806,6 @@ class link_executable(Task.Task):
     def keyword(self):
         return 'Link executable using... '
 
-    
 #@TaskGen.feature('dsymutil')
 #@TaskGen.after('apply_link')
 #def add_dsymutil_task(self):
@@ -960,7 +958,6 @@ class compile_module(Task.Task):
         return super(compile_module, self).exec_command(cmd, **kw)
     def keyword(self):
         return 'Compile module using... '
-                               
 
 #class llvm_link(Task.Task):
 #    def run(self):
@@ -979,7 +976,7 @@ class build_extension_headers(Task.Task):
             if ( x != None ):
                 fout.write("#include \"%s\"\n" % x.abspath())
         fout.close()
-                               
+
 class link_bitcode(Task.Task):
     ext_out = ['.a']
     def run(self):
@@ -993,7 +990,6 @@ class link_bitcode(Task.Task):
         return "link_bitcode - linking all object(bitcode) files."
 #        master = self.generator.bld.producer
 #        return "[%d/%d] Processing link_bitcode - all object files\n" % (master.processed-1,master.total)
-    
 
 class scrape_with_preproc_scan(Task.Task):
     run_str = '../../src/common/preprocess-to-sif ${TGT[0].abspath()} ${CXX} -E -DSCRAPING ${ARCH_ST:ARCH} ${CXXFLAGS} ${CPPFLAGS} ${FRAMEWORKPATH_ST:FRAMEWORKPATH} ${CPPPATH_ST:INCPATHS} ${DEFINES_ST:DEFINES} ${CXX_SRC_F}${SRC}'
@@ -1007,7 +1003,7 @@ class scrape_with_preproc_scan(Task.Task):
         scan_result = c_preproc.scan(self)
         self.env = saved_env
         return scan_result
-                               
+
     def keyword(ctx):
         return "Scraping with preproc.scan"
 
@@ -1022,11 +1018,11 @@ class generated_headers(Task.Task):
 
     def __str__(self):
         return "generating headers from all sif files."
-    
+
 #    def display(self):
 #        master = self.generator.bld.producer
 #        return "[%d/%d] Generating headers from all sif files\n" % (master.processed-1,master.total)
-    
+
 # Have all 'cxx' targets have 'include' in their include paths.
 @TaskGen.feature('cxx')
 @TaskGen.after('process_source')
@@ -1075,7 +1071,6 @@ def scrape_task_generator(self):
     self.bld.install_files('${PREFIX}/Contents/Resources/lib/',intrinsics_bitcode_node)
     self.bld.install_files('${PREFIX}/Contents/Resources/lib/',cxx_all_bitcode_node)
 
-
 def init(ctx):
     from waflib.Build import BuildContext, CleanContext, InstallContext, UninstallContext
     for gc in GCS:
@@ -1112,4 +1107,3 @@ def init(ctx):
 #            for debug_char in DEBUG_CHARS:
 #                var = 'build_'+s+x+'_'+debug_char
 #                waflib.Options.commands.insert(0, var)
-
