@@ -29,23 +29,21 @@
 ;;
 ;; The code-walker-function must return a form or an altered form to continue
 ;; compilation
-(defun code-walk-using-compiler (form env &key code-walker-function)
+(defun code-walk-using-bclasp (form env &key code-walker-function)
   "This is used in clos/method.lsp to code walk defmethod bodies"
+  (and core:*use-cleavir-compiler* (error "The core:*use-cleavir-compiler* is set to T"))
   (let* ((module (llvm-create-module "code-walk-for-defmethod"))
 	 (*code-walker* code-walker-function))
     (define-primitives-in-module module)
     (with-compilation-unit ()
       (with-module ( :module module
                              :optimize nil
-                             :source-namestring "code-walk-using-compiler")
+                             :source-namestring "code-walk-using-bclasp")
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
           (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
             (compile-in-env nil form env nil)))
         (llvm-sys::module-delete module)))))
 
-(export 'code-walk-using-compiler)
+(export 'code-walk-using-bclasp)
 
-
-(defvar *code-walk-hook* 'code-walk-using-compiler)
-(export '*code-walk-hook*)

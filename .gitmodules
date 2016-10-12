@@ -8,3 +8,6 @@
 	path = src/mps
 	url = https://github.com/Ravenbrook/mps.git
 	branch = version/1.115
+[submodule "src/lisp/kernel/contrib/Acclimation"]
+	path = src/lisp/kernel/contrib/Acclimation
+	url = https://github.com/robert-strandh/Acclimation.git

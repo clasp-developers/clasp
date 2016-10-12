@@ -50,6 +50,15 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Set up the core:*use-cleavir-compiler*
+;; so that walk-method-lambda in method.lsp uses the cleavir compiler.
+;;
+(eval-when (:execute :load-toplevel)
+  (setq core:*use-cleavir-compiler* t))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; cleavir-implicit-compile-hook - compile the form in the given environment
 ;;;
@@ -70,35 +79,5 @@
 (defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
 
 
-
-
-
-
-(defparameter *simple-environment* nil)
-(defvar *code-walker* nil)
-(export '(*simple-environment* *code-walker*))
-
-(defun mark-env-as-function ()
-  (push 'si::function-boundary *simple-environment*))
-
-(defun local-function-form-p (form)
-  #+clc(warn "Convert this to use predicate ext:local_function_p")
-  (and (listp form) (member (first form) '(flet labels))))
-
-(defmethod cleavir-generate-ast:convert :around (form environment (system clasp-64bit))
-  (declare (ignore system))
-  (let ((*simple-environment* *simple-environment*))
-    (when *code-walker*
-      (when (local-function-form-p form)
-        (mark-env-as-function))
-      (funcall *code-walker* form *simple-environment*))
-    (call-next-method)))
-
-(defun code-walk-using-cleavir (form env &key code-walker-function)
-  (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-         (clasp-cleavir:*code-walker* code-walker-function))
-    (cleavir-generate-ast:generate-ast form env *clasp-system*)))
-
-(export 'code-walk-using-cleavir)
 
 

@@ -1531,7 +1531,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 
 
 (defun bclasp-compile (name form)
-  (let ((*cleavir-compile-hook* nil))
+  (let ((*cleavir-compile-hook* nil)
+        (core:*use-cleavir-compiler* nil))
     (compile name form)))
 
 

@@ -187,6 +187,7 @@ submodules:
 submodules-other:
 	-git submodule update --init src/lisp/kernel/contrib/sicl
 	-git submodule update --init src/lisp/modules/asdf
+	-git submodule update --init src/lisp/kernel/contrib/Acclimation
 #	-(cd src/lisp/modules/asdf; git checkout master; git pull origin master)
 
 submodules-mps:

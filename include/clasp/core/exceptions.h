@@ -92,7 +92,12 @@ struct _TRACE {
     ::core::lisp_error_simple(__FUNCTION__, __FILE__, __LINE__, _boost_fmt_); \
     THROW_NEVER_REACH();                                                      \
   }
-#define NOT_ENVIRONMENT_ERROR(e) SIMPLE_ERROR(BF("Not an environment"))
+#define NOT_ENVIRONMENT_ERROR(_e_)                                                                  \
+  ERROR(cl::_sym_simpleTypeError,                                                                      \
+        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not a bclasp environment"), \
+                              kw::_sym_formatArguments, core::lisp_createList(_e_),                  \
+                              kw::_sym_expectedType, core::_sym_Environment_O, \
+                              kw::_sym_datum, _e_));
 #define SIMPLE_ERROR_BF(_str_) SIMPLE_ERROR(BF(_str_))
 
 /*! Error for when an index is out of range - eg: beyond the end of a string */
