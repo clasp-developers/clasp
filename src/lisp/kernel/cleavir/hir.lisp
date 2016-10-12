@@ -22,22 +22,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction INTRINSIC-CALL-INSTRUCTION
+;;; Instruction multiple-value-foreign-CALL-INSTRUCTION
 ;;;
-;;; This instruction is an INTRINSIC-CALL-INSTRUCTION that prints a message
+;;; This instruction is an multiple-value-foreign-CALL-INSTRUCTION that prints a message
 
 
-(defclass intrinsic-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass multiple-value-foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 
-(defmethod cleavir-ir-graphviz:label ((instr intrinsic-call-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr multiple-value-foreign-call-instruction))
   (with-output-to-string (s)
-    (format s "intrinsic-call(~a)" (function-name instr))))
+    (format s "multiple-value-foreign-call(~a)" (function-name instr))))
 
-(defmethod make-intrinsic-call-instruction
+(defmethod make-multiple-value-foreign-call-instruction
     (function-name inputs outputs &optional (successor nil successor-p))
-  (make-instance 'intrinsic-call-instruction
+  (make-instance 'multiple-value-foreign-call-instruction
                  :function-name function-name
                  :inputs inputs
                  :outputs outputs
@@ -46,22 +46,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction FOREIGN-FUNCALL-INSTRUCTION
+;;; Instruction FOREIGN-call-INSTRUCTION
 ;;;
-;;; This instruction is an FOREIGN-FUNCALL-INSTRUCTION that prints a message
+;;; This instruction is an FOREIGN-call-INSTRUCTION that prints a message
 
 
-(defclass foreign-funcall-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ((%function-name :initarg :function-name :accessor function-name)))
 
 
-(defmethod cleavir-ir-graphviz:label ((instr foreign-funcall-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr foreign-call-instruction))
   (with-output-to-string (s)
-    (format s "foreign-funcall(~a)" (function-name instr))))
+    (format s "foreign-call(~a)" (function-name instr))))
 
-(defmethod make-foreign-funcall-instruction
+(defmethod make-foreign-call-instruction
     (function-name inputs outputs &optional (successor nil successor-p))
-  (make-instance 'foreign-funcall-instruction
+  (make-instance 'foreign-call-instruction
                  :function-name function-name
                  :inputs inputs
                  :outputs outputs
@@ -69,22 +69,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Instruction foreign-funcall-pointer-INSTRUCTION
+;;; Instruction foreign-call-pointer-INSTRUCTION
 ;;;
-;;; This instruction is an foreign-funcall-pointer-INSTRUCTION that prints a message
+;;; This instruction is an foreign-call-pointer-INSTRUCTION that prints a message
 
 
-(defclass foreign-funcall-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
+(defclass foreign-call-pointer-instruction (cleavir-ir:instruction cleavir-ir:one-successor-mixin)
   ())
 
 
-(defmethod cleavir-ir-graphviz:label ((instr foreign-funcall-pointer-instruction))
+(defmethod cleavir-ir-graphviz:label ((instr foreign-call-pointer-instruction))
   (with-output-to-string (s)
-    (format s "foreign-funcall-pointer")))
+    (format s "foreign-call-pointer")))
 
-(defmethod make-foreign-funcall-pointer-instruction
+(defmethod make-foreign-call-pointer-instruction
     (inputs outputs &optional (successor nil successor-p))
-  (make-instance 'foreign-funcall-pointer-instruction
+  (make-instance 'foreign-call-pointer-instruction
                  :inputs inputs
                  :outputs outputs
                  :successors (if successor-p (list successor) '())))

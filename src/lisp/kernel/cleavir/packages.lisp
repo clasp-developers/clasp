@@ -17,9 +17,9 @@
    #:invoke-multiple-value-call-instruction
    #:*debug-log*
    #:instruction-gid
-   #:unsafe-intrinsic-call
-   #:unsafe-foreign-funcall
-   #:unsafe-foreign-funcall-pointer
+   #:unsafe-multiple-value-foreign-call
+   #:unsafe-foreign-call
+   #:unsafe-foreign-call-pointer
    #:datum-gid
    #:create-landing-pad
    #:translate-datum
@@ -49,9 +49,9 @@
    #:make-precalc-vector-function-ast
    #:named-function-ast
    #:debug-message-ast
-   #:intrinsic-call-ast
-   #:foreign-funcall-ast
-   #:foreign-funcall-pointer-ast
+   #:multiple-value-foreign-call-ast
+   #:foreign-call-ast
+   #:foreign-call-pointer-ast
    #:argument-asts
    #:function-name
    #:make-throw-ast
@@ -86,13 +86,13 @@
    #:jump-id
    #:make-named-enter-instruction
    #:debug-message-instruction
-   #:intrinsic-call-instruction
-   #:foreign-funcall-instruction
-   #:foreign-funcall-pointer-instruction
+   #:multiple-value-foreign-call-instruction
+   #:foreign-call-instruction
+   #:foreign-call-pointer-instruction
    #:function-name
-   #:make-intrinsic-call-instruction
-   #:make-foreign-funcall-instruction
-   #:make-foreign-funcall-pointer-instruction
+   #:make-multiple-value-foreign-call-instruction
+   #:make-foreign-call-instruction
+   #:make-foreign-call-pointer-instruction
    #:make-precalc-symbol-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction

@@ -385,28 +385,28 @@
       (cmp:irc-begin-block final-block))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:intrinsic-call-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:multiple-value-foreign-call-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (clasp-cleavir:unsafe-intrinsic-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
+  (let ((call (clasp-cleavir:unsafe-multiple-value-foreign-call :call (clasp-cleavir-hir:function-name instruction) return-value inputs abi)))
     (cc-dbg-when *debug-log*
-		 (format *debug-log* "    translate-simple-instruction intrinsic-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "    translate-simple-instruction multiple-value-foreign-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:foreign-funcall-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:foreign-call-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (clasp-cleavir:unsafe-foreign-funcall :call (clasp-cleavir-hir:function-name instruction) (car outputs) inputs abi)))
+  (let ((call (clasp-cleavir:unsafe-foreign-call :call (clasp-cleavir-hir:function-name instruction) (car outputs) inputs abi)))
     (cc-dbg-when *debug-log*
-		 (format *debug-log* "    translate-simple-instruction foreign-funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "    translate-simple-instruction foreign-call-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 
 (defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:foreign-funcall-pointer-instruction) return-value inputs outputs (abi abi-x86-64))
+    ((instruction clasp-cleavir-hir:foreign-call-pointer-instruction) return-value inputs outputs (abi abi-x86-64))
   (cmp:irc-low-level-trace :flow)
-  (let ((call (clasp-cleavir:unsafe-foreign-funcall-pointer :call (%load (car inputs)) (car outputs) (cdr inputs) abi)))
+  (let ((call (clasp-cleavir:unsafe-foreign-call-pointer :call (%load (car inputs)) (car outputs) (cdr inputs) abi)))
     (cc-dbg-when *debug-log*
-		 (format *debug-log* "    translate-simple-instruction foreign-funcall-pointer-instruction: ~a~%" (cc-mir:describe-mir instruction))
+		 (format *debug-log* "    translate-simple-instruction foreign-call-pointer-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 (defmethod translate-simple-instruction
@@ -420,6 +420,13 @@
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
+
+
+(defmethod translate-simple-instruction
+    ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs (abi abi-x86-64))
+  (cmp:irc-low-level-trace :flow)
+  (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)
+  (cmp:irc-unreachable))
 
 
 

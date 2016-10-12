@@ -95,50 +95,50 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:INTRINSIC-CALL
+;;; Converting CORE:multiple-value-foreign-CALL
 ;;;
 ;;; This is converted into an intrinsic call
 ;;;
 (defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'core:intrinsic-call)) form environment (system clasp-cleavir:clasp))
-  (make-instance 'clasp-cleavir-ast:intrinsic-call-ast
+    ((symbol (eql 'core:multiple-value-foreign-call)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:multiple-value-foreign-call-ast
                  :function-name (cadr form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))
 
-(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:intrinsic-call)) form)
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:multiple-value-foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 nil))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:FOREIGN-FUNCALL
+;;; Converting CORE:FOREIGN-call
 ;;;
 ;;; This is converted into a pointer call
 ;;;
 (defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'core:foreign-funcall)) form environment (system clasp-cleavir:clasp))
-  (make-instance 'clasp-cleavir-ast:foreign-funcall-ast
+    ((symbol (eql 'core:foreign-call)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:foreign-call-ast
                  :function-name (cadr form)
                  :argument-asts (cleavir-generate-ast:convert-sequence (cddr form) environment system)))
 
-(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-funcall)) form)
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 nil))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; Converting CORE:foreign-funcall-pointer
+;;; Converting CORE:foreign-call-pointer
 ;;;
 ;;; This is converted into a pointer call
 ;;;
 (defmethod cleavir-generate-ast::convert-special
-    ((symbol (eql 'core:foreign-funcall-pointer)) form environment (system clasp-cleavir:clasp))
-  (make-instance 'clasp-cleavir-ast:foreign-funcall-pointer-ast
+    ((symbol (eql 'core:foreign-call-pointer)) form environment (system clasp-cleavir:clasp))
+  (make-instance 'clasp-cleavir-ast:foreign-call-pointer-ast
                  :argument-asts (cleavir-generate-ast:convert-sequence (cdr form) environment system)))
 
-(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-funcall-pointer)) form)
+(defmethod cleavir-generate-ast::check-special-form-syntax ((head (eql 'core:foreign-call-pointer)) form)
   (cleavir-code-utilities:check-form-proper-list form)
   (cleavir-code-utilities:check-argcount form 1 nil))
 
