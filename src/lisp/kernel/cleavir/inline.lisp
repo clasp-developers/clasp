@@ -3,7 +3,12 @@
 (progn
   (declaim (inline cl:consp))
   (defun cl:consp (x)
-    (if (cleavir-primop:consp x) t nil)))
+    (if (cleavir-primop:typeq x cons) t nil)))
+
+(progn
+  (declaim (inline core:fixnump))
+  (defun core:fixnump (x)
+    (if (cleavir-primop:typeq x cl:fixnum) t nil)))
 
 (progn
   (declaim (inline cl:car))

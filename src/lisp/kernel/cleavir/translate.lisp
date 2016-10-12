@@ -991,13 +991,36 @@ nil)
              (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
-
+(defparameter *hir-after-ti* nil)
+(defparameter *hir-types* nil)
+(defparameter *use-type-inference* t)
 (defun my-hir-transformations (init-instr implementation processor os)
   (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-before.dot")) ;; comment out
-  (cleavir-hir-transformations:type-inference init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-ti.dot")) ;; comment out
-  (cleavir-hir-transformations:eliminate-typeq init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-et.dot")) ;; comment out
+  ;;
+  ;; The type inference code - this is currently generating unsafe code
+  ;; to generate type safe code I would put c-t-i::thes->typeqs beforehand
+  ;; but to do that I need to support the funcall-no-return-instruction.
+  ;;
+  (progn
+    ;; Conditionally use type inference.
+    ;; It involves a recursive function that blows the stack for very large tlf's
+    ;; I turn it off in hierarchy.lsp for +class-hierarchy+
+    (when *use-type-inference*
+      (let ((types (cleavir-type-inference:infer-types init-instr)))
+        (setq *hir-types* types)
+        ;; prune paths with redundant typeqs
+        (cleavir-type-inference::prune-typeqs init-instr types)
+        (when *debug-cleavir*
+          (let ((cleavir-ir-graphviz::*types* types))
+            (draw-hir init-instr #P"/tmp/hir-after-ti.dot")))))
+    ;; delete the-instruction and the-values-instruction
+    (cleavir-type-inference::delete-the init-instr)
+    ;; convert (typeq x fixnum) -> (fixnump x)
+    ;;         (typeq x cons) -> (consp x)
+    ;;         (typeq x YYY) -> (typep x 'YYY)
+    (cleavir-hir-transformations:eliminate-typeq init-instr)
+    (setf *hir-after-ti* init-instr))
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-etq.dot")) ;; comment out
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
   ;;  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-est.dot")) ;; comment out
@@ -1152,7 +1175,8 @@ nil)
             (values enclosed-function warnp failp)))))))
 
 (defun cleavir-compile-file-form (form)
-  (let ((cleavir-generate-ast:*compiler* 'cl:compile-file))
+  (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
+        (core:*use-cleavir-compiler* t))
     (multiple-value-bind (fn kind #|| more ||#)
 	(do-compile form)
       (cmp:with-ltv-function-codegen (result ltv-env)
@@ -1169,6 +1193,7 @@ nil)
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
+        (core:*use-cleavir-compiler* t)
 	(cmp:*all-functions-for-one-compile* nil))
     (cmp:compile-in-env name form env #'cleavir-compile-t1expr)))
         
@@ -1181,7 +1206,8 @@ nil)
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file)
-        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form))
+        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
+        (core:*use-cleavir-compiler* t))
     (apply #'cmp::compile-file* #'cleavir-compile-file-form given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
