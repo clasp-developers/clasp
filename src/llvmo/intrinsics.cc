@@ -225,6 +225,14 @@ ALWAYS_INLINE T_O *va_symbolFunction(core::Symbol_sp *symP) {
 
 extern "C" {
 
+ALWAYS_INLINE T_O* cc_t() {
+  return _lisp->_true().raw_();
+}
+
+ALWAYS_INLINE T_O* cc_nil() {
+  return _Nil<core::T_O>().raw_();
+}
+
 ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
   core::LoadTimeValues_O *tagged_ltvP = *tarray;
   core::LoadTimeValues_O *array = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
