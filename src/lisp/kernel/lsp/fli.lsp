@@ -49,6 +49,15 @@
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
 
+(declaim (inline ensure-core-pointer))
+(defun ensure-core-pointer (ptr)
+  (cond
+    ((not ptr) (error "#'ensure-core-ptr *** Illegal argument value: PTR may not be NIL!"))
+    ((eql (type-of ptr) 'CLASP-FFI::FOREIGN-DATA) (%core-pointer-from-foreign-data ptr ))
+    ((eql (type-of ptr) 'CORE::POINTER) ptr)
+    (t (error "#'ensure-core-pointer *** Illegal type ~S of ptr. Cannot convert to core::pointer." (type-of ptr)))))
+
+
 ;;; === B U I L T - I N   F O R E I G N   T Y P E S ===
 
 ;;; Implemented directly in C++.
@@ -62,34 +71,15 @@
 ;;; Adding built-in foreign types requires adding a type pec to this table!
 
 (defgeneric %lisp-type->lisp-name (type))
-(defgeneric %lisp-type->to-object-fn (type))
-(defgeneric %lisp-type->from-object-fn (type))
 
 (defmacro generate-type-spec-accessor-functions ()
   `(progn
-
-     ;; Generate accessors to tyoe spec
      ,@(loop for spec across *foreign-type-spec-table*
           for idx from 0 to (1- (length *foreign-type-spec-table*))
           when spec
 	  collect
 	    `(defmethod %lisp-type->type-spec ((type (eql ',(%lisp-symbol spec))))
                (elt *foreign-type-spec-table* ,idx)))
-
-     ;; Generate methods for accessing to-object<...> and from-object<...> fn
-     ,@(loop for spec across *foreign-type-spec-table*
-          for idx from 0 to (1- (length *foreign-type-spec-table*))
-          when spec
-	  collect
-	    `(defmethod %lisp-type->from-object-fn ((type (eql ',(%lisp-symbol spec))))
-               (symbol-function ',(intern (concatenate 'string "FROM-OBJECT<" (string (%lisp-name spec)) ">") 'clasp-ffi))))
-
-     ,@(loop for spec across *foreign-type-spec-table*
-          for idx from 0 to (1- (length *foreign-type-spec-table*))
-          when spec
-          collect
-            `(defmethod %lisp-type->to-object-fn ((type (eql ',(%lisp-symbol spec))))
-               (symbol-function ',(intern (concatenate 'string "TO-OBJECT<" (string (%lisp-symbol spec)) ">") 'clasp-ffi))))
      ))
 
 ;;; === B U I LT - I N   O P E R A T I O N S ===
@@ -151,47 +141,34 @@
 (declaim (inline foreign-funcall-transform-args))
 (defun foreign-funcall-transform-args (args)
   "Return two values: lists of transformed args and result type."
-  (let ((to-object-call$ nil))
+  (let ((to-object-fn-name$ nil))
     (loop for (type arg) on args by #'cddr
-       if arg collect `(list ,(string-downcase (concatenate 'string "FROM_OBJECT_" (%lisp-name (%lisp-type->type-spec type)))) ,arg) into transformed-args
-       else do (setf to-object-call$ `,(string-downcase (concatenate 'string "TO_OBJECT_" (%lisp-name (%lisp-type->type-spec type)))))
-       finally (return (values transformed-args to-object-call)))))
+       if arg
+       collect (core::foreign-call (string-downcase (concatenate 'string "FROM_OBJECT_" #| (%lisp-name (%lisp-type->type-spec type)) |# "INT")) arg) into transformed-args
+       else
+       do (setf to-object-fn-name$ (string-downcase (concatenate 'string "TO_OBJECT_" #|(%lisp-name (%lisp-type->type-spec type))|# "INT")))
+       finally (return (values transformed-args to-object-fn-name$)))))
 
-(declaim (inline ensure-pointer-o))
-(defun ensure-pointer-o (ptr)
-  (cond ((not ptr) (error "Illegal argument value: argument \"ptr\" may not be NIL!"))
-        ((%foreign-data-pointerp ptr) (%make-pointer-from-foreign-data ptr))
-        (t ptr)))
 
 (defmacro %foreign-funcall-pointer (ptr &rest args)
   "Funcall a pointer to a foreign function."
-  (multiple-value-bind (from-object-args-calls to-object-call)
-      (foreign-funcall-transform-args args)
-    (if to-object-call
-        `(,to-object-call
-          (core:foreign-funcall-pointer (ensure-pointer-o ,ptr)
-                                        ,@(loop for fn+arg in from-object-call-args
-                                             collect (funcall (car fn+arg) (cadr fn+arg)))))
-        `(progn
-           (core:foreign-funcall-pointer (ensure-pointer-o ,ptr)
-                                         ,@(loop for fn+arg in from-object-call-args
-                                              collect (funcall (car fn+arg) (cadr fn+arg))))
-           (values)))))
+  `(multiple-value-bind (from-object-args to-object-fn-name$)
+       (foreign-funcall-transform-args (list ,@args))
+     (if to-object-fn-name$
+	 `(core::foreign-call ,to-object-fn-name$
+			      (core::foreign-call-pointer (ensure-core-pointer ,,ptr)
+							  ,@from-object-args))
+	 `(core::foreign-call-pointer (ensure-core-pointer ,,ptr)
+				      ,@from-object-args)
+	 )))
 
 (defmacro %foreign-funcall (name &rest args)
-  "Funcall a pointer to a foreign function."
-  (multiple-value-bind (from-object-args-calls to-object-call)
-      (foreign-funcall-transform-args args)
-    (if to-object-call
-        `(,to-object-call
-          (core::foreign-funcall ,name
-                                 ,@(loop for fn+arg in ,from-object-call-args
-                                      collect (funcall (car fn+arg) (cadr fn+arg)))))
-        `(progn
-           (core::foreign-funcall ,name
-                                  ,@(loop for fn+arg in `,from-object-call-args
-                                       collect (funcall (car fn+arg) (cadr fn+arg))))
-           (values)))))
+  "Funcall a froeign function \"name\"."
+  (let ((g-ptr (gensym)))
+    `(let ((,g-ptr (%core-pointer-from-foreign-data (%dlsym ,name))))
+       (if ,g-ptr
+	   (%foreign-funcall-pointer ,g-ptr ,@args)
+	   (error "Cannot call foreign function ~S - foreign function not found." ,name)))))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 

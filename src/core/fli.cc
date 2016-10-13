@@ -477,7 +477,7 @@ ForeignData_sp PERCENTmake_nullpointer() {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::Pointer_sp PERCENTpointer_from_foreign_data( ForeignData_sp fd_ptr ) {
+core::Pointer_sp PERCENTcore_pointer_from_foreign_data( ForeignData_sp fd_ptr ) {
   return core::Pointer_O::create( fd_ptr->ptr() );
 }
 
