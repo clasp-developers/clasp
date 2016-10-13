@@ -73,7 +73,7 @@
 
 
 
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:intrinsic-call-ast) context)
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:multiple-value-foreign-call-ast) context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
       context
@@ -85,13 +85,13 @@
        (ecase (length successors)
 	 (1
 	  (if (typep results 'cleavir-ir:values-location)
-                (make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+                (make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :inputs temps
                              :outputs (list results)
                              :successors successors)
 	      (let* ((values-temp (make-instance 'cleavir-ir:values-location)))
-		(make-instance 'clasp-cleavir-hir:intrinsic-call-instruction
+		(make-instance 'clasp-cleavir-hir:multiple-value-foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
                                :inputs temps
                                :outputs (list values-temp)
@@ -99,10 +99,10 @@
                                (list (cleavir-ir:make-multiple-to-fixed-instruction
                                       values-temp results (first successors)))))))
 	 (2
-	  (error "INTRINSIC-CALL-AST appears in a Boolean context.")))
+	  (error "MULTIPLE-VALUE-FOREIGN-CALL-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-funcall-ast) context)
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-call-ast) context)
   (cleavir-ast-to-hir::check-context-for-one-value-ast context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
@@ -115,22 +115,22 @@
        (ecase (length successors)
 	 (1
 	  (if (typep (car results) 'cleavir-ir:lexical-location)
-              (make-instance 'clasp-cleavir-hir:foreign-funcall-instruction
+              (make-instance 'clasp-cleavir-hir:foreign-call-instruction
                              :function-name (clasp-cleavir-ast:function-name ast)
                              :inputs temps
                              :outputs results
                              :successors successors)
 	      (let* ((result-temp (cleavir-ir:new-temporary))) ;; make-instance 'cleavir-ir:lexical-location)))
-		(make-instance 'clasp-cleavir-hir:foreign-funcall-instruction
+		(make-instance 'clasp-cleavir-hir:foreign-call-instruction
                                :function-name (clasp-cleavir-ast:function-name ast)
                                :inputs temps
                                :outputs (list result-temp)
                                :successors successors))))
 	 (2
-	  (error "FOREIGN-FUNCALL-AST appears in a Boolean context.")))
+	  (error "FOREIGN-call-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-funcall-pointer-ast) context)
+(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:foreign-call-pointer-ast) context)
   (cleavir-ast-to-hir::check-context-for-one-value-ast context)
   (with-accessors ((results cleavir-ast-to-hir::results)
 		   (successors cleavir-ast-to-hir::successors))
@@ -143,17 +143,17 @@
        (ecase (length successors)
 	 (1
 	  (if (typep (car results) 'cleavir-ir:lexical-location)
-              (make-instance 'clasp-cleavir-hir:foreign-funcall-pointer-instruction
+              (make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
                              :inputs temps
                              :outputs results
                              :successors successors)
 	      (let* ((result-temp (cleavir-ir:new-temporary))) ;; make-instance 'cleavir-ir:lexical-location)))
-		(make-instance 'clasp-cleavir-hir:foreign-funcall-pointer-instruction
+		(make-instance 'clasp-cleavir-hir:foreign-call-pointer-instruction
                                :inputs temps
                                :outputs (list result-temp)
                                :successors successors))))
 	 (2
-	  (error "foreign-funcall-pointer-AST appears in a Boolean context.")))
+	  (error "foreign-call-pointer-AST appears in a Boolean context.")))
        (cleavir-ast-to-hir::invocation context)))))
 
 

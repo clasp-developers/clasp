@@ -247,7 +247,7 @@
           (%store result-in-registers return-value))))))
 
 
-(defun unsafe-intrinsic-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-multiple-value-foreign-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
          (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
@@ -267,7 +267,7 @@
               (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "intrinsic")))
         (%store result-in-registers return-value)))))
 
-(defun unsafe-foreign-funcall (call-or-invoke foreign-name output arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-foreign-call (call-or-invoke foreign-name output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar #'%load arg-allocas))
          (args (if (< (length arguments) core:+number-of-fixed-arguments+)
@@ -282,11 +282,11 @@
                       foreign-name
                       cmp:*the-module*))))
          (result-in-registers
-          (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "foreign-funcall-result")))
+          (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "foreign-call-result")))
     (%store result-in-registers output)))
 
 
-(defun unsafe-foreign-funcall-pointer (call-or-invoke pointer output arg-allocas abi &key (label "") landing-pad)
+(defun unsafe-foreign-call-pointer (call-or-invoke pointer output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar #'%load arg-allocas))
          (args (if (< (length arguments) core:+number-of-fixed-arguments+)

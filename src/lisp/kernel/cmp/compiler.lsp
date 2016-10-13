@@ -1120,7 +1120,7 @@ jump to blocks within this tagbody."
   )
 
 
-(defun codegen-intrinsic-call (result form evaluate-env)
+(defun codegen-multiple-value-foreign-call (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
@@ -1150,7 +1150,7 @@ jump to blocks within this tagbody."
       (irc-store-result result result-in-registers)))
   (irc-low-level-trace :flow))
 
-(defun codegen-foreign-funcall (result form evaluate-env)
+(defun codegen-foreign-call (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
@@ -1178,7 +1178,7 @@ jump to blocks within this tagbody."
             (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "foreign-function")))
       (irc-store-result-t* result result-in-t*))))
 
-(defun codegen-foreign-funcall-pointer (result form evaluate-env)
+(defun codegen-foreign-call-pointer (result form evaluate-env)
   "Evaluate each of the arguments into an alloca and invoke the function pointer"
   ;; setup the ActivationFrame for passing arguments to this function in the setup arena
   (assert-result-isa-llvm-value result)
@@ -1270,9 +1270,9 @@ jump to blocks within this tagbody."
          ((eq sym 'cl:catch) nil)           ;; handled with macro
          ((eq sym 'cl:throw) nil)           ;; handled with macro
          ((eq sym 'core:debug-message) t)   ;; special operator
-         ((eq sym 'core:intrinsic-call) t) ;; Call intrinsic functions
-         ((eq sym 'core:foreign-funcall-pointer) t) ;; Call function pointers
-         ((eq sym 'core:foreign-funcall) t) ;; Call foreign function
+         ((eq sym 'core:multiple-value-foreign-call) t) ;; Call intrinsic functions
+         ((eq sym 'core:foreign-call-pointer) t) ;; Call function pointers
+         ((eq sym 'core:foreign-call) t) ;; Call foreign function
          (t (special-operator-p sym))))
 (export 'treat-as-special-operator-p)
 
