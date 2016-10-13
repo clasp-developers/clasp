@@ -79,31 +79,24 @@ module."
                                           :name :wild
                                           :type :wild))))
 
-(pushnew #'(lambda (module)
-	     (let* ((module (string module))
-		    (dc-module (string-downcase module)))
-	       (block require-block
-		 (dolist (name (list module dc-module))
-                   (dolist (directory (list
-                                       (list :relative)
-                                       #+(or)(list :relative name)
-                                       #+(or)(list :relative "kernel" name)
-                                       (list :relative "modules" name)))
-		   (dolist (type (list "fasl" "FASL" "lsp" "lisp" "LSP" "LISP"))
-                       (if (let ((path (merge-pathnames
-                                        (translate-logical-pathname (make-pathname :name name :type type :directory directory))
-                                        (translate-logical-pathname (make-pathname :host "MODULES")))))
-                             (if (member :debug-require *features*)
-                                 (format t "Require searching in modules: ~a~%" path))
-                             (load path :if-does-not-exist nil))
-                           (return-from require-block t))
-                       (if (let ((path (merge-pathnames
-                                        (translate-logical-pathname (make-pathname :name name :type type :directory directory))
-                                        (translate-logical-pathname (make-pathname :host "MODULES-SOURCE")))))
-                             (if (member :debug-require *features*)
-                                 (format t "Require searching in modules: ~a~%" path))
-                             (load path :if-does-not-exist nil))
-                           (return-from require-block t))
-                       ))))))
-	 ext:*module-provider-functions*)
+(defun clasp-module-provider (module)
+  (flet ((try-it (path)
+           (when (member :debug-require *features*)
+             (format t "REQUIRE is searching in modules: ~a~%" path))
+           (when (load path :if-does-not-exist nil)
+             (return-from clasp-module-provider t))))
+    (dolist (name (list (string module) (string-downcase module)))
+      (dolist (directory (list
+                          (list :relative)
+                          #+(or)(list :relative name)
+                          #+(or)(list :relative "kernel" name)
+                          (list :relative "modules" name)))
+        (dolist (type (list "fasl" "FASL" "lsp" "lisp" "LSP" "LISP"))
+          (try-it (merge-pathnames
+                   (translate-logical-pathname (make-pathname :name name :type type :directory directory))
+                   (translate-logical-pathname (make-pathname :host "MODULES"))))
+          (try-it (merge-pathnames
+                   (translate-logical-pathname (make-pathname :name name :type type :directory directory))
+                   (translate-logical-pathname (make-pathname :host "MODULES-SOURCE")))))))))
 
+(pushnew 'clasp-module-provider ext:*module-provider-functions*)
