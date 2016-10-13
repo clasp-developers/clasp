@@ -97,6 +97,7 @@
                        "-flto=thin"
                        "-flat_namespace" 
                        "-undefined" "suppress"
+                       #+(or)"-Wl,-save-temps"
                        "-bundle"
 ;;;                        ,@link-flags
 ;;;                        ,(bformat nil "-Wl,-object_path_lto,%s.lto.o" exec-file)
