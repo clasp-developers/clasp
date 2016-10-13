@@ -1185,6 +1185,12 @@ void ltv_setf_numerator_denominator(core::T_sp *resultP, core::T_sp* numP, core:
   gc::As<core::Ratio_sp>(*iP)->setf_numerator_denominator(num,denom);
 }
 
+
+void ltv_setRealpart(core::T_sp *resultP, core::T_sp *carP) {
+  ASSERT(resultP != NULL);
+  gc::As<core::Complex_sp>((*resultP))->setf_realpart(*carP);
+}
+
 void ltv_setImagpart(core::T_sp *resultP, core::T_sp *carP) {
   ASSERT(resultP != NULL);
   gc::As<core::Complex_sp>((*resultP))->setf_imagpart(*carP);
