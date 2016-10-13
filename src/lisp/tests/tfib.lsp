@@ -1,16 +1,19 @@
 (defun fibn (reps num)
-  (declare (optimize speed (safety 0) (debug 0)))
+  (declare (optimize speed (safety 0) (debug 0))
+           (fixnum reps num))
   (let ((z 0))
-    (declare (type (unsigned-byte 53) reps num z))
+    (declare (fixnum z))
     (dotimes (r reps)
-      (let* ((p1 1)
-             (p2 1))
+      (declare (fixnum r))
+      (let ((p1 1)
+            (p2 1))
+        (declare (fixnum p1 p2))
         (dotimes (i (- num 2))
+          (declare (fixnum i))
           (setf z (+ p1 p2)
                 p2 p1
                 p1 z))))
     z))
-
 
 
 #+(or)(defun fibn (reps num)
