@@ -707,7 +707,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "ltv_makeCons" +void+ (list +tsp*+))
   (primitive-nounwind module "ltv_makeComplex" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeSourceCodeCons" +void+ (list +tsp*+ +i8*+ +i32+ +i32+))
+  (primitive-nounwind module "ltv_makeRatio" +void+ (list +tsp*+))
   (primitive-nounwind module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
   (primitive-nounwind module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_findBuiltInClass" +void+ (list +tsp*+ +tsp*+))
@@ -715,6 +715,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "rplacd" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_setRealpart" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_setImagpart" +void+ (list +tsp*+ +tsp*+))
+  (primitive-nounwind module "ltv_setf_numerator_denominator" +void+ (list +tsp*+ +tsp*+ +tsp*+))
   (primitive-nounwind module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
   (primitive-nounwind module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
