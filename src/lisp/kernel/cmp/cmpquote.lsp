@@ -189,6 +189,16 @@ and walk the realpart and imagpart"
 	      (walk-structure (realpart cur) env)
 	      (walk-structure (imagpart cur) env))))
 
+(defun walk-structure-ratio (cur env)
+  "If the RATIO cur is not in the *node-table* then create
+an ltv for it, put it in the *node-table*
+and walk the realpart and imagpart"
+  (with-walk-structure (cur)
+    :maker (make-ltv-ratio cur env)
+    :walker (progn
+	      (walk-structure (numerator cur) env)
+	      (walk-structure (denominator cur) env))))
+
 (defun walk-structure-cons (cur env)
   "If the CONS cur is not in the *node-table* then create
 an ltv for it, put it in the *node-table*
@@ -199,24 +209,6 @@ and walk the car and cdr"
 	      (walk-structure (car cur) env)
 	      (walk-structure (cdr cur) env))))
 
-#||
-;; Old way allowed source-code-cons
-(defun make-ltv-cons (val env)
-  (if (source-code-cons-p val)
-      (with-next-load-time-value (ltv-ref val env)
-	(let* ((source-file-info (source-file-info val))
-	       (source-path-name (if source-file-info
-				     (source-file-info-path-name source-file-info)
-				     "-no-file-")))
-	  (irc-intrinsic "ltv_makeSourceCodeCons"
-		    ltv-ref
-		    (jit-constant-unique-string-ptr source-path-name)
-		    (jit-constant-i32 (source-file-info-lineno val))
-		    (jit-constant-i32 (source-file-info-column val)))))
-      (with-next-load-time-value (ltv-ref val env)
-	(irc-intrinsic "ltv_makeCons" ltv-ref))))
-||#
-
 
 (defun make-ltv-cons (val env)
   (with-next-load-time-value (ltv-ref val env)
@@ -226,6 +218,18 @@ and walk the car and cdr"
   (with-next-load-time-value (ltv-ref val env)
     (irc-intrinsic "ltv_makeComplex" ltv-ref)))
 
+(defun make-ltv-ratio (val env)
+  (with-next-load-time-value (ltv-ref val env)
+    (irc-intrinsic "ltv_makeRatio" ltv-ref)))
+
+
+(defun initialize-ltv-ratio (obj ltv-idx env)
+  (with-initialize-load-time-value (ltv-ref ltv-idx env)
+    (let ((num-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+                                  (jit-constant-i32 (gethash (numerator obj) *node-table*))))
+	  (den-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+                                  (jit-constant-i32 (gethash (denominator obj) *node-table*)))))
+      (irc-intrinsic "ltv_setf_numerator_denominator" ltv-ref num-ref den-ref))))
 
 
 (defun initialize-ltv-complex (obj ltv-idx env)
@@ -246,10 +250,6 @@ and walk the car and cdr"
 			     (jit-constant-i32 (gethash (cdr obj) *node-table*)))))
       (irc-intrinsic "rplaca" ltv-ref car-ref)
       (irc-intrinsic "rplacd" ltv-ref cdr-ref))))
-
-
-
-
 
 (defun walk-structure-array-objects (obj env)
   (with-walk-structure (obj)
@@ -325,6 +325,7 @@ and walk the car and cdr"
 (defun walk-structure (cur env)
   (cond
     ((consp cur)   (walk-structure-cons cur env))
+    ((core:ratio-p cur) (walk-structure-ratio cur env))
     ((complexp cur) (walk-structure-complex cur env))
     ((stringp cur) (walk-structure-simple cur env))
     ((vectorp cur) (walk-structure-array-objects cur env))
@@ -344,6 +345,7 @@ and walk the car and cdr"
   (maphash #'(lambda (key val)
 	       (cond
 		 ((consp key)   (initialize-ltv-cons key val env))
+		 ((core:ratio-p key)   (initialize-ltv-ratio key val env))
 		 ((complexp key)   (initialize-ltv-complex key val env))
 		 ((stringp key) nil)
 		 ((vectorp key)  (initialize-ltv-array-objects key val env))
@@ -908,6 +910,7 @@ marshaling of compiled quoted data"
 	((packagep obj) (codegen-ltv/package result obj))
 	((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env #|necessary|#))
 	((floatp obj) (codegen-ltv/float result obj))
+	((core:ratio-p obj) (codegen-ltv/container result obj env #|necessary|#))
 	((complexp obj) (codegen-ltv/container result obj env #|necessary|#))
 	((symbolp obj) (codegen-ltv/symbol result obj))
 	((characterp obj) (codegen-ltv/character result obj))

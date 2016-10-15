@@ -19,6 +19,8 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (declare (fixnum x y)) (if (< x y) 1 2)) :debug t)
+
 *features*
 (clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf.lisp" :print t)
 (clasp-cleavir:cleavir-compile-file "~/Development/clasp/src/lisp/kernel/contrib/sicl/Code/Cleavir/Type-inference/type-descriptor.lisp" :print t)

@@ -890,45 +890,33 @@ namespace core {
      Integer_sp _numerator;
      Integer_sp _denominator;
 
-   public:
-     static Ratio_sp create(Integer_sp num, Integer_sp denom) {
-       _G();
-       GC_ALLOCATE(Ratio_O, v);
-       if (clasp_to_mpz(denom) < 0) {
-         v->_numerator = gc::As<Integer_sp>(clasp_negate(num));
-         v->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
-       } else {
-         v->_numerator = num;
-         v->_denominator = denom;
-       }
-       return v;
-     };
-     static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
-       _G();
-       GC_ALLOCATE(Ratio_O, r);
-       r->_numerator = Integer_O::create(num);
-       r->_denominator = Integer_O::create(denom);
-       return r;
-     }
-     static Ratio_sp create(const char *str) {
-       _G();
-       GC_ALLOCATE(Ratio_O, r);
-       r->setFromString(str);
-       return r;
-     }
-
-   public:
-     NumberType number_type_() const { return number_Ratio; };
-
-     virtual bool zerop_() const { return clasp_zerop(this->_numerator); };
-     virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator), this->_denominator); };
-
-     Integer_sp numerator() const { return this->_numerator; };
-     Integer_sp denominator() const { return this->_denominator; };
-     Integer_sp num() const { return this->_numerator; };
-     Integer_sp den() const { return this->_denominator; };
-     mpz_class numerator_as_mpz() const;
-     mpz_class denominator_as_mpz() const;
+  public:
+    static Ratio_sp create(Integer_sp num, Integer_sp denom) {
+      GC_ALLOCATE(Ratio_O, v);
+      v->setf_numerator_denominator(num,denom);
+      return v;
+    };
+    static Ratio_sp create(mpz_class const &num, mpz_class const &denom) {
+      return Ratio_O::create(Integer_O::create(num),Integer_O::create(denom));
+    }
+    static Ratio_sp create(const char *str) {
+      GC_ALLOCATE(Ratio_O, r);
+      r->setFromString(str);
+      return r;
+    }
+  public:
+    // Only useful for creating Ratio in fasl files.
+    void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
+  public:
+    NumberType number_type_() const { return number_Ratio; };
+    virtual bool zerop_() const { return clasp_zerop(this->_numerator); };
+    virtual Number_sp negate_() const { return Ratio_O::create(clasp_negate(this->_numerator), this->_denominator); };
+    Integer_sp numerator() const { return this->_numerator; };
+    Integer_sp denominator() const { return this->_denominator; };
+    Integer_sp num() const { return this->_numerator; };
+    Integer_sp den() const { return this->_denominator; };
+    mpz_class numerator_as_mpz() const;
+    mpz_class denominator_as_mpz() const;
 
      void sxhash_(HashGenerator &hg) const;
   //	virtual Number_sp copy() const;

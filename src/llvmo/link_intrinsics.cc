@@ -1172,6 +1172,20 @@ void ltv_makeComplex(core::T_sp *resultP) {
   (*resultP) = core::Complex_O::create();
 }
 
+void ltv_makeRatio(core::T_sp *resultP) {
+  ASSERT(resultP != NULL);
+  (*resultP) = core::Ratio_O::create();
+}
+
+void ltv_setf_numerator_denominator(core::T_sp *resultP, core::T_sp* numP, core::T_sp* denomP )
+{
+  core::Ratio_sp* iP = reinterpret_cast<core::Ratio_sp*>(resultP);
+  core::Integer_sp num = gctools::As<core::Integer_sp>(*numP);
+  core::Integer_sp denom = gctools::As<core::Integer_sp>(*denomP);
+  gc::As<core::Ratio_sp>(*iP)->setf_numerator_denominator(num,denom);
+}
+
+
 void ltv_setRealpart(core::T_sp *resultP, core::T_sp *carP) {
   ASSERT(resultP != NULL);
   gc::As<core::Complex_sp>((*resultP))->setf_realpart(*carP);
