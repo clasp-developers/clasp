@@ -74,6 +74,7 @@
 
 (defmacro generate-type-spec-accessor-functions ()
   `(progn
+     ;; type -> type spec
      ,@(loop for spec across *foreign-type-spec-table*
           for idx from 0 to (1- (length *foreign-type-spec-table*))
           when spec
@@ -138,43 +139,68 @@
 
 ;;; === F O R E I G N   F U N C T I O N  C A L L I N G ===
 
-(declaim (inline foreign-funcall-transform-args))
-(defun foreign-funcall-transform-args (args)
-  "Return two values: lists of transformed args and result type."
-  (let ((to-object-fn-name$ nil))
-    (loop for (type arg) on args by #'cddr
-       if arg
-       collect (core::foreign-call (string-downcase (concatenate 'string "FROM_OBJECT_" #| (%lisp-name (%lisp-type->type-spec type)) |# "INT")) arg) into transformed-args
-       else
-       do (setf to-object-fn-name$ (string-downcase (concatenate 'string "TO_OBJECT_" #|(%lisp-name (%lisp-type->type-spec type))|# "INT")))
-       finally (return (values transformed-args to-object-fn-name$)))))
+;;; This code has been invented on-the-fly by drmeister on 2016-10-13 ...
+;;; I still marvel at how drmeister comes up with simple code... Thx!
 
+(defun split-list (list)
+  (do ((list list (rest (rest list)))
+       (left '() (list* (first list) left))
+       (right '() (if (endp (rest list)) right (list* (second list) right))))
+      ((endp list) (list (nreverse left) (nreverse right)))))
 
-(defmacro %foreign-funcall-pointer (ptr &rest args)
-  "Funcall a pointer to a foreign function."
-  `(multiple-value-bind (from-object-args to-object-fn-name$)
-       (foreign-funcall-transform-args (list ,@args))
-     (if to-object-fn-name$
-	 `(core::foreign-call ,to-object-fn-name$
-			      (core::foreign-call-pointer (ensure-core-pointer ,,ptr)
-							  ,@from-object-args))
-	 `(core::foreign-call-pointer (ensure-core-pointer ,,ptr)
-				      ,@from-object-args)
-	 )))
+(defun translator-name (prefix type)
+  (format nil "~a_object_~a"
+          prefix
+          (string-downcase (string (%lisp-name (%lisp-type->type-spec type))))))
 
-(defmacro %foreign-funcall (name &rest args)
-  "Funcall a froeign function \"name\"."
-  (let ((g-ptr (gensym)))
-    `(let ((,g-ptr (%core-pointer-from-foreign-data (%dlsym ,name))))
-       (if ,g-ptr
-	   (%foreign-funcall-pointer ,g-ptr ,@args)
-	   (error "Cannot call foreign function ~S - foreign function not found." ,name)))))
+(defun process-arguments (arguments)
+  (let* ((splits (split-list arguments))
+         (types-and-maybe-return-type (car splits))
+         (args (cadr splits))
+         (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
+         (return-type (if explicit-return-type
+                          (car (last types-and-maybe-return-type))
+                          :void))
+         (types (if explicit-return-type
+                    (butlast types-and-maybe-return-type 1)
+                    types-and-maybe-return-type)))
+    (values (loop for type in types
+               for arg in args
+               collect `(core:foreign-call
+                         ,(translator-name "from" type)
+                         ,arg))
+            return-type)))
+
+(defmacro %foreign-funcall (name &rest arguments)
+  (multiple-value-bind (args return-type)
+      (process-arguments arguments)
+    (if (eq return-type :void)
+        `(core:foreign-call-pointer (core:dlsym :rtld-default ,name) ,@args)
+        `(core:foreign-call ,(translator-name "to" return-type)
+                            (core:foreign-call-pointer (core:dlsym :rtld-default ,name) ,@args)))))
+
+(defmacro %static-foreign-funcall (name &rest arguments)
+  (multiple-value-bind (args return-type)
+      (process-arguments arguments)
+    (if (eq return-type :void)
+        `(core:foreign-call ,name ,@args)
+        `(core:foreign-call ,(translator-name "to" return-type)
+                            (core:foreign-call ,name ,@args)))))
+
+(defmacro %foreign-funcall-pointer (ptr &rest arguments)
+  (multiple-value-bind (args return-type)
+      (process-arguments arguments)
+    (if (eq return-type :void)
+        `(core:foreign-call-pointer (ensure-core-pointer, ptr) ,@args)
+        `(core:foreign-call ,(translator-name "to" return-type)
+                            (core:foreign-call-pointer (ensure-core-pointer ,ptr) ,@args)))))
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 
 (declaim (inline %load-foreign-library))
 (defun %load-foreign-library (name path)
   "Load a foreign library to be foudn at path. (name is ignored"
+  (declare (ignore name))
   (%dlopen path))
 
 (declaim (inline %close-foreign-library))
@@ -184,8 +210,9 @@
 
 ;;; === F O R E I G N   G L O B A L S ===
 
-(declaim (inline %foreign-symbol-name))
+(declaim (inline %foreign-symbol-pointer))
 (defun %foreign-symbol-pointer (name)
+  "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
   (%dlsym name))
 
 ;;;----------------------------------------------------------------------------

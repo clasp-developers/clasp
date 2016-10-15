@@ -421,6 +421,8 @@ namespace clasp_ffi {
     CL_DEFUN core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value );
     SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_char);
 
+    void * clasp_to_void_pointer( ForeignData_sp sp_lisp_value );
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
   // CLASS ForeignTypeSpec_O
@@ -449,7 +451,11 @@ namespace clasp_ffi {
                                         core::Str_sp      lisp_name,
                                         core::Integer_sp  size,
                                         core::Fixnum_sp   alignment,
-                                        core::Str_sp      cxx_name );
+                                        core::Str_sp      cxx_name,
+                                        core::Str_sp      to_object_fn_name,
+                                        core::Str_sp      from_object_fn_name,
+                                        ForeignData_sp    to_object_fn_ptr,
+                                        ForeignData_sp    from_object_fn_ptr );
 
     // SLOT ACCESS
       CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; };
@@ -458,12 +464,22 @@ namespace clasp_ffi {
       CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; };
       CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; };
 
+      CL_DEFMETHOD core::Str_sp         PERCENTto_object_fn_name() { return m_to_object_fn_name; };
+      CL_DEFMETHOD core::Str_sp         PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };
+      CL_DEFMETHOD core::Str_sp         PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
+      CL_DEFMETHOD core::Str_sp         PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
+
     // SLOTS
-      core::Symbol_sp   m_lisp_symbol;
-      core::Str_sp      m_lisp_name;
-      core::Integer_sp  m_size;
-      core::Fixnum_sp   m_alignment;
-      core::Str_sp      m_cxx_name;
+      core::Symbol_sp       m_lisp_symbol;
+      core::Str_sp          m_lisp_name;
+      core::Integer_sp      m_size;
+      core::Fixnum_sp       m_alignment;
+      core::Str_sp          m_cxx_name;
+
+      core::Str_sp          m_to_object_fn_name;
+      core::Str_sp          m_from_object_fn_name;
+      ForeignData_sp        m_to_object_fn_ptr;
+      ForeignData_sp        m_from_object_fn_ptr;
 
     }; // ForeignTypeSpec_O
 

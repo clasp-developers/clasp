@@ -476,19 +476,19 @@ namespace llvmo {
 // === CORE TRANSLATORS FROM OBJECT / TO OBJECT ===
 
 template< typename T >
-core::T_O* from_object_raw(core::T_O* obj)
+ALWAYS_INLINE core::T_O* from_object_raw(core::T_O* obj)
 {
   core::T_sp ptr =  gctools::smart_ptr< core::T_O>( (gctools::Tagged) obj );
 
-  T x = translate::from_object< T >( ptr )._v;    // <<<--- SEGFAULTS HERE !
+  T x = translate::from_object< T >( ptr )._v;
   core::T_O *result = reinterpret_cast< core::T_O * >( x );
   return result;
 }
 
 template< typename T >
-core::T_O* to_object_raw(core::T_O* obj)
+ALWAYS_INLINE core::T_O* to_object_raw(core::T_O* obj)
 {
-  T x = static_cast< T >(reinterpret_cast<cl_intptr_t>(obj));
+  T x = static_cast< T >(reinterpret_cast<cl_intptr_t>( (gctools::Tagged) obj));
   return translate::to_object< T >::convert(x).raw_();
 }
 
@@ -530,6 +530,33 @@ DEF_RAW_TRANSLATOR(ssize_t,ssize);
 DEF_RAW_TRANSLATOR(ptrdiff_t,ptrdiff);
 DEF_RAW_TRANSLATOR(time_t,time);
 DEF_RAW_TRANSLATOR(char,char);
+
+// Special Case: Pointers
+// DEF_RAW_TRANSLATOR(void *,pointer);
+// drmeister says:
+// 17:06 <drmeister> I think it's best to static cast from unsigned long to
+//                   uintptr_t and then reinterpret_cast to void*
+// 17:06 <drmeister> reinterpret_cast<void*>(static_cast<uintptr_t>(unsigned
+//                   long))
+// 17:07 <drmeister> Good 'ole C++, it's trying to save you from yourself.
+
+static const int source_line_from_object_pointer = __LINE__;
+ALWAYS_INLINE core::T_O* from_object_pointer(core::T_O* obj)
+{
+  core::T_sp ptr =  gctools::smart_ptr< core::T_O>( (gctools::Tagged) obj );
+
+  void * x = translate::from_object< void * >( ptr )._v;
+
+  core::T_O *result = reinterpret_cast< core::T_O * >( x );
+  return result;
+}
+
+static const int source_line_to_object_pointer = __LINE__;
+ALWAYS_INLINE core::T_O* to_object_pointer( core::T_O* obj )
+{
+  void * x = reinterpret_cast< void * >(reinterpret_cast<cl_intptr_t>( (gctools::Tagged) obj));
+  return translate::to_object< void * >::convert( x ).raw_();
+}
 
 // === END OF CORE TRANSLATORS ===
 

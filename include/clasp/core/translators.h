@@ -221,6 +221,13 @@ namespace translate {
   //   from_object(T_P o) : _v( clasp_ffi::clasp_to_char( o )){};
   // };
 
+  template <>
+    struct from_object<void *, std::true_type> {
+    typedef void *DeclareType;
+    DeclareType _v;
+  from_object(core::T_sp o) : _v( ( gc::As< clasp_ffi::ForeignData_sp> ( o  ))->ptr() ){};
+  };
+
   // === TO-OBJECT ===
 
   template <>

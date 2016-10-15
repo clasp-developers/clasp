@@ -52,7 +52,7 @@ THE SOFTWARE.
 #include <map>
 #include <type_traits>
 #include <cstdint>
-// #include <climits> - Not needed as safety checks not done for translations
+#include <algorithm>
 
 #include <dlfcn.h>
 #include <arpa/inet.h> // for htonl
@@ -128,6 +128,13 @@ namespace clasp_ffi {
 // None
 
 // ---------------------------------------------------------------------------
+//   GLOBAL VARS
+// ---------------------------------------------------------------------------
+
+const std::string TO_OBJECT_FN_NAME_PREFIX( "to_object_" );
+const std::string FROM_OBJECT_FN_NAME_PREFIX( "from_object_" );
+
+// ---------------------------------------------------------------------------
 //   FORWARD DECLARATIONS
 // ---------------------------------------------------------------------------
 
@@ -162,10 +169,15 @@ struct register_foreign_type {
     size_t size = sizeof(T);
     size_t alignment = std::alignment_of<T>::value;
 
+    // For corrent naming we need to replace all '-' by '_' and make
+    // sure we're all lowercase (will be done in Lisp) in lisp_name.
+    std::string lisp_name = lisp_symbol->symbolNameAsString();
+    std::replace( lisp_name.begin(), lisp_name.end(), '-', '_' );
+
     register_foreign_type_spec( sp_tst,
                                 n_index,
                                 lisp_symbol,
-                                lisp_symbol->symbolNameAsString(),
+                                lisp_name,
                                 size,
                                 alignment,
                                 cxx_name );
@@ -209,12 +221,37 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                  const size_t alignment,
                                  const std::string& cxx_name ) {
 
+  std::locale loc = std::locale("C");
+  std::string tmp_str;
+
+  tmp_str = TO_OBJECT_FN_NAME_PREFIX + lisp_name;
+  std::stringstream to_object_fn_name_stream;
+  std::string to_object_fn_name;
+
+  for( auto elem : tmp_str )
+    to_object_fn_name_stream << std::tolower( elem, loc );
+
+  to_object_fn_name = to_object_fn_name_stream.str();
+
+  tmp_str = FROM_OBJECT_FN_NAME_PREFIX + lisp_name;
+  std::stringstream from_object_fn_name_stream;
+  std::string from_object_fn_name;
+
+  for( auto elem : tmp_str )
+    from_object_fn_name_stream << std::tolower( elem, loc );
+
+  from_object_fn_name = from_object_fn_name_stream.str();
+
   ForeignTypeSpec_sp sp_fts =
     ForeignTypeSpec_O::create( lisp_symbol,
                                core::Str_O::create( lisp_name ),
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
-                               core::Str_O::create( cxx_name ) );
+                               core::Str_O::create( cxx_name ),
+                               core::Str_O::create( to_object_fn_name ),
+                               core::Str_O::create( from_object_fn_name ),
+                               _Nil<core::T_O>(),
+                               _Nil<core::T_O>() );
 
   sp_tst->setf_elt( n_index, sp_fts->asSmartPtr() );
 };
@@ -666,7 +703,12 @@ ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
                                          m_lisp_name( _Nil<T_O>() ),
                                          m_size( (gc::Fixnum) 0 ),
                                          m_alignment( (gc::Fixnum) 0 ),
-                                         m_cxx_name( _Nil<T_O>() ) {
+                                         m_cxx_name( _Nil<T_O>() ),
+                                         m_to_object_fn_name( _Nil<T_O>() ),
+                                         m_from_object_fn_name( _Nil<T_O>() ),
+                                         m_to_object_fn_ptr( _Nil<T_O>() ),
+                                         m_from_object_fn_ptr( _Nil<T_O>() )
+{
   // NOTHIHG TO DO
 }
 
@@ -690,6 +732,8 @@ inline string ForeignTypeSpec_O::__repr__() const {
      << " :size "        << this->m_size
      << " :alignment "   << this->m_alignment
      << " :cxx-name "    << this->m_cxx_name
+     << " :to-object-fn-name " << this->m_to_object_fn_name
+     << " :from-object-fn-name " << this->m_from_object_fn_name
      << ">";
 
   return ss.str();
@@ -701,14 +745,22 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
                                               core::Str_sp      lisp_name,
                                               core::Integer_sp  size,
                                               core::Fixnum_sp   alignment,
-                                              core::Str_sp      cxx_name ) {
+                                              core::Str_sp      cxx_name,
+                                              core::Str_sp      to_object_fn_name,
+                                              core::Str_sp      from_object_fn_name,
+                                              ForeignData_sp to_object_fn_ptr,
+                                              ForeignData_sp from_object_fn_ptr) {
   GC_ALLOCATE(ForeignTypeSpec_O, self);
 
-  self->m_lisp_symbol = lisp_symbol;
-  self->m_lisp_name   = lisp_name;
-  self->m_size        = size;
-  self->m_alignment   = alignment;
-  self->m_cxx_name    = cxx_name;
+  self->m_lisp_symbol           = lisp_symbol;
+  self->m_lisp_name             = lisp_name;
+  self->m_size                  = size;
+  self->m_alignment             = alignment;
+  self->m_cxx_name              = cxx_name;
+  self->m_to_object_fn_name     = to_object_fn_name;
+  self->m_from_object_fn_name   = from_object_fn_name;
+  self->m_to_object_fn_ptr      = to_object_fn_ptr;
+  self->m_from_object_fn_ptr    = from_object_fn_ptr;
 
   return self;
 }
@@ -1030,14 +1082,19 @@ core::T_sp PERCENTmem_ref_char( core::Integer_sp address ) {
 
 // Lisp to C++ translation, used by mem_set()
 
-inline ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value ) {
-  translate::from_object< ptrdiff_t > v( sp_lisp_value );
-  return v._v;
-}
+// inline ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value ) {
+//   translate::from_object< ptrdiff_t > v( sp_lisp_value );
+//   return v._v;
+// }
 
-inline char clasp_to_char( core::T_sp sp_lisp_value ) {
-  translate::from_object< char > v( sp_lisp_value );
-  return v._v;
+// inline char clasp_to_char( core::T_sp sp_lisp_value ) {
+//   translate::from_object< char > v( sp_lisp_value );
+//   return v._v;
+// }
+
+void * clasp_to_void_pointer( ForeignData_sp sp_lisp_value )
+{
+  return sp_lisp_value->ptr();
 }
 
 // ---------------------------------------------------------------------------
@@ -1234,12 +1291,17 @@ int          CLASP_FLI_TEST_MEM_REF_INT          = -42;
 time_t       CLASP_FLI_TEST_MEM_REF_TIME_T       = time( nullptr );
 char         CLASP_FLI_TEST_MEM_REF_CHAR         = 'f';
 
-extern "C" int fli_test_fn1( int a, short b )
+extern "C" int fli_test_add( int a, short b )
 {
   return a + b;
 }
 
-extern "C" int mul2(int x)
+extern "C" int fli_test_mul2(int x)
 {
   return 2 * x;
+}
+
+extern "C" char * fli_test_echo_string( char * pc_str )
+{
+  return pc_str;
 }
