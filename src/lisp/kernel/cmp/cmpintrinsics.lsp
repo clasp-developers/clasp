@@ -571,7 +571,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "copyTmv" +void+ (list +tmv*+ +tmv*+))
   (primitive-nounwind module "copyTmvOrSlice" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
-  (primitive-nounwind module "isNilTsp" +i32+ (list +tsp*+))
   (primitive-nounwind module "isTrue" +i32+ (list +tsp*+))
   (primitive-nounwind module "isBound" +i32+ (list +tsp*+))
 
@@ -736,7 +735,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "matchKeywordOnce" +size_t+ (list +tsp*+ +t*+ +i8*+))
 
   ;; Primitives for Cleavir code
-
+  
   (primitive-nounwind module "cc_getPointer" +i8*+ (list +t*+))
   (primitive-nounwind module "cc_setTmvToNil" +void+ (list +tmv*+))
   (primitive-nounwind module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))
@@ -744,6 +743,8 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_makeCell" +t*+ nil)
   (primitive-nounwind module "cc_writeCell" +void+ (list +t*+ +t*+))
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
+  (primitive-nounwind module "cc_t_reference" +t**+ nil)
+  (primitive-nounwind module "cc_nil_reference" +t**+ nil)
   (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
@@ -773,7 +774,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_restoreMultipleValue0" +void+ (list +tmv*+))
   (primitive-nounwind module "cc_pushLandingPadFrame" +t*+ nil)
   (primitive-nounwind module "cc_popLandingPadFrame" +void+ (list +t*+))
-
   (primitive module "cc_landingpadUnwindMatchFrameElseRethrow" +size_t+ (list +i8*+ +t*+))
   )
 

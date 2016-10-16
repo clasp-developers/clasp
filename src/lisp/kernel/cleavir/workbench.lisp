@@ -19,6 +19,7 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x) (car (the cons x))) :debug t)
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (declare (fixnum x y)) (if (< x y) 1 2)) :debug t)
 
 *features*

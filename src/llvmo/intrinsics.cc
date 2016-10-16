@@ -225,12 +225,12 @@ ALWAYS_INLINE T_O *va_symbolFunction(core::Symbol_sp *symP) {
 
 extern "C" {
 
-ALWAYS_INLINE T_O* cc_t() {
-  return _lisp->_true().raw_();
+ALWAYS_INLINE T_O** cc_t_reference() {
+  return &_lisp->_true().rawRef_();
 }
 
-ALWAYS_INLINE T_O* cc_nil() {
-  return _Nil<core::T_O>().raw_();
+ALWAYS_INLINE T_O** cc_nil_reference() {
+  return &_Nil<core::T_O>().rawRef_();
 }
 
 ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
@@ -472,10 +472,6 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 //  printf("%s:%d  Allocating closure on stack at %p\n", __FILE__, __LINE__, functoid.raw_());
   return functoid.raw_();
 }
-
-
-
-
 
 };
 

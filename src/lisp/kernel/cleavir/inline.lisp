@@ -6,6 +6,11 @@
     (if (cleavir-primop:typeq x cons) t nil)))
 
 (progn
+  (declaim (inline cl:null))
+  (defun cl:null (x)
+    (if (cleavir-primop:typeq x null) t nil)))
+
+(progn
   (declaim (inline core:fixnump))
   (defun core:fixnump (x)
     (if (cleavir-primop:typeq x cl:fixnum) t nil)))
@@ -13,11 +18,14 @@
 (progn
   (declaim (inline cl:car))
   (defun cl:car (x)
+    (core:foreign-call "clasp_silent_trap" x)
     (if (consp x)
         (cleavir-primop:car x)
         (if (null x)
             nil
-            (error "Cannot get car of non-list ~s" x)))))
+            (progn
+              (core:foreign-call "clasp_trap" (core:foreign-call "from_object_int" 1234))
+              (error "Cannot get car of non-list ~s of type ~a" x (type-of x)))))))
 
 (progn
   (declaim (inline cl:cdr))

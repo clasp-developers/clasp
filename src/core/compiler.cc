@@ -1162,5 +1162,13 @@ extern "C" {
 int mul2(int x) {
   return 2*x;
 }
+
+void clasp_trap(int val) {
+  printf("%s:%d  clasp_trap called with %d\n", __FILE__, __LINE__, val);
+}
+
+void clasp_silent_trap(core::T_O* obj) {
+  // Do nothing
+}
 };
         

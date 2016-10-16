@@ -185,16 +185,6 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 }
 
 
-#if 0
-T_O *va_coerceToClosure(core::T_sp *argP) {
-  IMPLEMENT_MEF(BF("Previously I returned Closure* - what should I return now?"));
-  if (!(*argP).objectp()) {
-    intrinsic_error(llvmo::couldNotCoerceToClosure, *argP);
-  }
-  core::Function_sp func = core::coerce::functionDesignator((*argP));
-  return &closure);
-}
-#endif
 
 ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
   core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*evaluateFrameP);
@@ -248,61 +238,7 @@ void NamednewFunction_sp(core::Function_sp *sharedP) {
   ASSERT(sharedP != NULL);
   new (sharedP) core::Function_sp();
 }
-#pragma clang diagnostic push
-//#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#if 0
-void NameddestructFunction_sp(core::Function_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  DEPRECIATED(); // April 2015
-  if ((*sharedP).objectp()) {
-    typedef core::Function_sp dummy;
-    (*sharedP).~dummy();
-  }
-}
-void destructTsp(core::T_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  DEPRECIATED(); // April 2015
-  if ((*sharedP).objectp()) {
-    typedef core::T_sp dummy;
-    (*sharedP).~dummy();
-  }
-}
-void destructTmv(core::T_mv *sharedP) {
-  ASSERT(sharedP != NULL);
-  DEPRECIATED(); // April 2015
-  if ((*sharedP).objectp()) {
-    typedef core::T_mv dummy;
-    (*sharedP).~dummy();
-  }
-}
-void destructAFsp(core::ActivationFrame_sp *frameP) {
-  DEPRECIATED(); // April 2015
-  ASSERT(frameP != NULL);
-  if ((*frameP).objectp()) {
-    typedef core::ActivationFrame_sp dummy;
-    (*frameP).~dummy();
-  }
-}
-#endif
-#pragma clang diagnostic pop
-#if 0
 
-void resetTsp(core::T_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  (*sharedP).reset_();
-}
-
-void makeUnboundTsp(core::T_sp *sharedP) {
-  (*sharedP) = _Unbound<T_O>();
-}
-#endif
-#if 0
-ALWAYS_INLINE extern int compareTsp(core::T_sp *xP, core::T_sp *yP) {
-  //	ASSERT(xP!=NULL);
-  //	ASSERT(yP!=NULL);
-  return ((*xP) == (*yP)) ? 1 : 0;
-}
-#endif
 NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
   DEPRECIATED();
   //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
@@ -379,11 +315,6 @@ int isTrue(core::T_sp *valP) {
   //	return (gctools::tagged_ptr<core::T_O>::tagged_nilp(valP)) ? 0 : 1;
 }
 
-/*! Return i32 1 if (*valP) is Nil or 0 if not */
-int isNilTsp(core::T_sp *valP) {
-  ASSERT(valP != NULL);
-  return (*valP).nilp();
-}
 
 void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP) {
   core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
@@ -1820,6 +1751,9 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
 }
 #endif
+
+
+
 
 void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
   printf("Terminating file: %s  func: %s\n", file, func);
