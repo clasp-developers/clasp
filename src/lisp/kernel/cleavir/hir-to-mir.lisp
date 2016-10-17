@@ -56,3 +56,12 @@
                 :outputs nil))
 
 
+(defmethod cleavir-hir-transformations::maybe-eliminate :around ((instruction cleavir-ir:typeq-instruction))
+  "This is HIR to MIR translation done by eliminate-typeq"
+  (let ((type (cleavir-ir:value-type instruction)))
+    (cond ((and (subtypep type 'character) (subtypep 'character type))
+           (change-class instruction 'cc-mir:characterp-instruction))
+          ((and (subtypep type 'single-float) (subtypep 'single-float type))
+           (change-class instruction 'cc-mir:single-float-p-instruction))
+          (t (call-next-method)))))
+

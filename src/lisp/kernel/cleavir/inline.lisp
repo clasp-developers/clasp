@@ -1,19 +1,50 @@
 (in-package :clasp-cleavir)
 
+#+(or)
+(defmacro debug-inline (msg &rest msg-args)
+  `(progn
+     (format t "debug-inline>> ")
+     (format t ,msg ,@msg-args)
+     (format t "~%")
+     (finish-output)))
+(defmacro debug-inline (msg &rest msg-args)
+  nil)
+
+
+;;; Use typeq
 (progn
   (declaim (inline cl:consp))
   (defun cl:consp (x)
     (if (cleavir-primop:typeq x cons) t nil)))
 
+(debug-inline "null")
+
 (progn
   (declaim (inline cl:null))
   (defun cl:null (x)
-    (if (cleavir-primop:typeq x null) t nil)))
+    (eq x nil)))
+;; if (cleavir-primop:typeq x null) t nil)))
+
+(debug-inline "fixnump")
 
 (progn
   (declaim (inline core:fixnump))
   (defun core:fixnump (x)
     (if (cleavir-primop:typeq x cl:fixnum) t nil)))
+
+#+(or)
+(progn
+  (declaim (inline cl:characterp))
+  (defun cl:characterp (x)
+    (if (cleavir-primop:typeq x cl:character) t nil)))
+
+#+(or)
+(progn
+  (declaim (inline core:single-float-p))
+  (defun core:single-float-p (x)
+    (if (cleavir-primop:typeq x cl:single-float) t nil)))
+
+(debug-inline "car")
 
 (progn
   (declaim (inline cl:car))
@@ -24,22 +55,26 @@
         (if (null x)
             nil
             (progn
-              (core:foreign-call "clasp_trap" (core:foreign-call "from_object_int" 1234))
+              (core:foreign-call "clasp_trap" x)
               (error "Cannot get car of non-list ~s of type ~a" x (type-of x)))))))
+
+(debug-inline "cdr")
 
 (progn
   (declaim (inline cl:cdr))
   (defun cl:cdr (x)
-    (if (consp x)
+    (if (cleavir-primop:typeq x cons) ;; (consp x)
         (cleavir-primop:cdr x)
         (if (null x)
             nil
             (error "Cannot get cdr of non-list ~s" x)))))
 
+(debug-inline "rplaca")
+
 (progn
   (declaim (inline cl:rplaca))
   (defun cl:rplaca (p v)
-    (if (consp p)
+    (if (cleavir-primop:typeq p cons)
         (progn
           (cleavir-primop:rplaca p v)
           p)
@@ -48,12 +83,14 @@
 (progn
   (declaim (inline cl:rplacd))
   (defun cl:rplacd (p v)
-    (if (consp p)
+    (if (cleavir-primop:typeq p cons)
         (progn
           (cleavir-primop:rplacd p v)
           p)
         (error "Cannot rplacd non-cons ~s" p))))
 
+
+(debug-inline "primop")
 
 (defpackage "PRIMOP"
   (:export #:convert-to-bignum

@@ -71,15 +71,18 @@ load-time-value manager (true - in COMPILE-FILE) or not (false - in COMPILE)."
 
 
 
+#+(or)(defun check-ltv-env (env)
+  (or (eq env *load-time-initializer-environment*)
+      (warn "the environment ~a doesn't match *load-time-initializer-environment* ~a"
+             env *load-time-initializer-environment*))
+  )
 
 
-
-(defun get-next-available-ltv-entry (&optional value)
+(defun new-table-index ()
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
-  (let ((ltv-idx *next-load-time-value-index*))
-    (incf *next-load-time-value-index*)
-    ltv-idx))
+  (prog1 *next-load-time-value-index*
+    (incf *next-load-time-value-index*)))
 
 
 (defmacro with-next-load-time-value ((ltv-ref obj env) &rest creator)
@@ -87,13 +90,13 @@ the value is put into *default-load-time-value-vector* and its index is returned
 Return the ltv index of the value."
   (let ((index-gs (gensym "index")))
     ;; Always create a new load-time-value
-    `(let ((,index-gs (get-next-available-ltv-entry)))
+    `(let ((,index-gs (new-table-index)))
        (with-irbuilder (*irbuilder-ltv-function-body*)
-	   ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
+         ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	 (irc-low-level-trace)
 	 (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs))))
-	   (with-landing-pad (irc-get-cleanup-landing-pad-block ,env)
-	     ,@creator))
+	   (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
+             ,@creator))
 	 )
        ,index-gs)))
 
@@ -106,7 +109,7 @@ Return the ltv index of the value."
 					 &key coalesce-hash-table maker
 					   (push-and-get-reference-fn-name "loadTimeValueReference")
 					   (copy-value-fn-name "copyLoadTimeValue")
-					   (get-next-available-entry-index-fn-name 'get-next-available-ltv-entry))
+					   (new-table-index-name 'new-table-index))
   "An index for _obj_ will be looked up in the coalesce-hash-table
 - if not found one is created and the maker is codegen'd into the load-time-value function.
 Finally, if _result_ is not nil then the load-time-value index and *load-time-value-holder-global-var* will be used to
@@ -122,15 +125,15 @@ Return the ltv index of the value."
        (cmp-log "with-coalesce-load-time-value index within coalesce-hash-table: %s\n" ,index-gs)
        (if (null ,index-gs)
 	   (with-irbuilder (*irbuilder-ltv-function-body*)
-	     (setq ,index-gs (,get-next-available-entry-index-fn-name))
+	     (setq ,index-gs (,new-table-index-name))
 	     (cmp-log "new index: %s\n" ,index-gs)
 	     (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	     (irc-low-level-trace)
 	     (let ((,ltv-ref (irc-intrinsic ,push-and-get-reference-fn-name  *load-time-value-holder-global-var* (jit-constant-i32 ,index-gs))))
 	       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
-		 (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker)
-;;		 (break "Where will codegeneration go?")
-		 ,maker))
+                 (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker)
+                 ;;		 (break "Where will codegeneration go?")
+                 ,maker))
 	     ;; insert block may have changed in maker
 	     ))
        (when ,result
@@ -145,7 +148,7 @@ Return the ltv index of the value."
   `(with-irbuilder (*irbuilder-ltv-function-body*)
      ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
      (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-i32 ,ltv-idx))))
-       (with-landing-pad (irc-get-cleanup-landing-pad-block ,env)
+       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
 	 ,@initializer))
      ;; insert block may have changed in initializer
      ))
@@ -332,14 +335,6 @@ and walk the car and cdr"
     ((arrayp cur)  (walk-structure-array-objects cur env))
     ((hash-table-p cur) (walk-structure-hash-table cur env))
     (t (walk-structure-simple cur env))))
-
-
-
-
-
-
-
-
 
 (defun initialize-ltv-nodes (env)
   (maphash #'(lambda (key val)
@@ -664,7 +659,7 @@ COMPILE is invoked and it stores the literals for the function being compiled")
 and the next one is stored here")
 
 
-(defun get-next-available-lts-entry (&optional value)
+(defun new-symbol-table-index (&optional value)
   "Return the next load-time-symbol-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
   (let ((load-time-symbol-idx *next-load-time-symbol-index*))
@@ -700,7 +695,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 		 ))
     :push-and-get-reference-fn-name "loadTimeSymbolReference"
     :copy-value-fn-name "copyLoadTimeSymbol"
-    :get-next-available-entry-index-fn-name get-next-available-lts-entry
+    :new-table-index-name new-symbol-table-index
     ))
 
 
@@ -842,20 +837,20 @@ marshaling of compiled quoted data"
 	 (*current-function* *load-time-value-initialization-function*)
 	 (,result *load-time-value-result*)
 	 (,env *load-time-initializer-environment*)
-#||	 (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)||#
+         #||	 (*current-invocation-history-frame* *load-time-value-invocation-history-frame*)||#
 	 )
      (with-irbuilder (*irbuilder-ltv-function-body*)
        (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
-       ,@form))))
+         ,@form))))
 
 
 ;;(eval-when (:compile-toplevel) (setq cmp:*debug-compiler* t))
 
-
+;; Should be bclasp-compile-ltv-thunk
 (defun compile-ltv-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (let* ((ltv-index (get-next-available-ltv-entry))
+  (let* ((ltv-index (new-table-index))
 	 (fn (with-new-function (fn fn-env fn-result
 				    :function-name name
 				    :parent-env env
@@ -875,6 +870,17 @@ marshaling of compiled quoted data"
     (cmp-log-dump fn)
     (irc-verify-function fn t)
     (values ltv-index fn)))
+
+#+(or)
+(defun compile-ltv-thunk (name form env)
+  "Compile the form into the current Module in the top level environment.
+Use Cleavir if cmp:*cleavir-compile-file-hook* is defined and
+use bclasp-compile-ltv-thunk if it is NIL."
+  (if cmp:*cleavir-compile-file-hook*
+      (progn
+        (and env (error "compile-ltv-thunk was called with non NIL environment ~a - Cleavir can't handle it." env))
+        (funcall cmp:*cleavir-compile-file-hook* form))
+      (bclasp-compile-ltv-thunk name form env)))
 
 
 
@@ -900,7 +906,11 @@ marshaling of compiled quoted data"
 ;; 4) You will need to expose the makeXXX function in cmpintrinsics.lsp
 ;;
 (defun codegen-literal (result obj &optional (env *load-time-initializer-environment*))
-  "Generate a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively.  Write the value into the first argument and if the first argument is nil then return the index of the value in the load/run-time-value array"
+  "Generate a load-time-value or run-time-value literal depending 
+if called from COMPILE-FILE or COMPILE respectively.  
+Write the value into the first argument and if the first 
+argument is nil then return the index of the value 
+in the load/run-time-value array"
   (if *generate-compile-file-load-time-values*
       (cond
 	((null obj) (codegen-ltv/nil result))
@@ -918,15 +928,13 @@ marshaling of compiled quoted data"
 	((consp obj) (codegen-ltv/container result obj env #|necessary|#))
 	((hash-table-p obj) (codegen-ltv/container result obj env #|necessary|#))
 	((typep obj '(or standard-object structure-object condition class))
-	 (error "Finish dealing with make-load-form")
-	 #||	 ;; Deal with coallescence of obj
+         (error "bad code")
 	 (multiple-value-bind (create-form init-form)
-	 (make-load-form obj env)
-	 (if (null init-form)
-	 (codegen-load-time-value result create-form env)
-	 (codegen-load-time-value result `(funcall init-form create-form)))))
-	 ||#
-	 )
+             (make-load-form obj env)
+           (prog1
+               (codegen-load-time-value result create-form env)
+             (when init-form
+               (codegen-load-time-value result init-form env)))))
 	(t (error "In codegen-literal add support to codegen the object type ~a - value: ~a" (class-name (class-of obj)) obj )))
       ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
       ;; default module without coalescence.

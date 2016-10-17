@@ -16,6 +16,7 @@
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction
    #:*debug-log*
+   #:*debug-final-gml*
    #:instruction-gid
    #:unsafe-multiple-value-foreign-call
    #:unsafe-foreign-call
@@ -132,6 +133,10 @@
   (:export
    #:stack-enclose-instruction
    #:make-stack-enclose-instruction
+   #:characterp-instruction
+   #:make-characterp-instruction
+   #:single-float-p-instruction
+   #:make-single-float-p-instruction
    #:enter-instruction
    #:closure-pointer-dynamic-lexical-location
    #:describe-mir

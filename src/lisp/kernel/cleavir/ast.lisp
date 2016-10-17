@@ -320,7 +320,9 @@ If this form has already been precalculated then just return the precalculated-v
 
 (defun hoist-load-time-value (ast)
   (let* ((load-time-value-asts (find-load-time-value-asts ast))
-	 (forms (mapcar (lambda (ast-parent) (cleavir-ast:form (first ast-parent))) load-time-value-asts)))
+	 (forms (mapcar (lambda (ast-parent)
+                          (cleavir-ast:form (first ast-parent)))
+                        load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
        do (cond
 	    ((typep parent '(or cleavir-ast:fdefinition-ast setf-fdefinition-ast cleavir-ast:symbol-value-ast))

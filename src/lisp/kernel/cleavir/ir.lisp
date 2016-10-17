@@ -105,6 +105,8 @@
 
 (defun %icmp-eq (x y &optional (label ""))
   (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))
+(defun %icmp-ne (x y &optional (label ""))
+  (llvm-sys:create-icmp-ne cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
   (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
