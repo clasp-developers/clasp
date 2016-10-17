@@ -182,7 +182,7 @@ CL_DEFUN T_sp core__getppid() {
 CL_LAMBDA(pathname);
 CL_DECLARE();
 CL_DOCSTRING("chdir");
-CL_DEFUN T_sp ext__chdir(Pathname_sp dir) {
+CL_DEFUN T_sp ext__chdir(T_sp dir) {
   Str_sp sdir = clasp_namestring(dir, true);
   return Integer_O::create((gc::Fixnum)safe_chdir(sdir->get().c_str(), _Nil<T_O>()));
 };
