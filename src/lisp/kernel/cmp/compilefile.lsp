@@ -115,7 +115,6 @@
       (irc-intrinsic "invokeTopLevelFunction" 
 		     result 
 		     fn 
-		     (irc-renv ltv-env)
 		     (jit-constant-unique-string-ptr "top-level")
                      *gv-source-file-info-handle*
 		     (irc-size_t-*current-source-pos-info*-filepos)
@@ -264,7 +263,7 @@ to append a NULL function to the list of main functions."
                             :source-namestring (namestring (string name)))
         (with-debug-info-generator (:module *the-module*
                                             :pathname *compile-file-truename*)
-          (with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
+          (with-ltv (ltv-init-fn)
             (compile-top-level form)
             (make-boot-function-global-variable *the-module* ltv-init-fn)
             #+(or)(let ((main-fn (compile-main-function name ltv-init-fn )))
@@ -377,7 +376,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	      (with-debug-info-generator (:module *the-module*
 						  :pathname *compile-file-truename*)
 		(or *the-module* (error "*the-module* is NIL"))
-		(with-compile-file-dynamic-variables-and-load-time-value-unit (ltv-init-fn)
+		(with-ltv (ltv-init-fn)
 		  (loop
 		     (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
 			    (form (read source-sin nil eof-value)))

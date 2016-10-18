@@ -32,14 +32,14 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 extern "C" {
-extern void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, int index);
+extern void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, size_t index);
 };
 
 namespace core {
 
 FORWARD(VectorObjects);
 class VectorObjects_O : public Vector_O {
-  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
+  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, size_t index));
   LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
   void archiveBase(SNode_sp node);
 public:

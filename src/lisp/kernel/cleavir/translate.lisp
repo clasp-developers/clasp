@@ -29,12 +29,8 @@
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum))
-	     (ltv-index (cmp:codegen-literal nil value))
-	     (ltv-ref (cmp:irc-intrinsic "cc_loadTimeValueReference"
-					 (if cmp:*generate-compile-file-load-time-values*
-					     cmp:*load-time-value-holder-global-var*
-					     cmp:*run-time-value-holder-global-var*)
-					 (%size_t ltv-index))))
+	     (ltv-index (cmp:reference-literal value))
+	     (ltv-ref (cmp:compile-reference-to-load-time-value ltv-index)))
 	ltv-ref)
       (let ((var (gethash datum *vars*)))
 	(when (null var)
@@ -327,10 +323,6 @@
        (let ((load (%load input)))
          (%store load output))))))
 
-(defun ltv-global ()
-  (if cmp:*generate-compile-file-load-time-values*
-      cmp:*load-time-value-holder-global-var*
-      cmp:*run-time-value-holder-global-var*))
 
 
 (defmethod translate-simple-instruction
@@ -339,7 +331,7 @@
     ;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
     (cmp:irc-low-level-trace :flow)
     (let ((label (format nil "~s" (clasp-cleavir-hir:precalc-symbol-instruction-original-object instruction))))
-      (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (ltv-global) idx) :label label)))
+      (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (cmp:ltv-global) idx) :label label)))
 	(llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil)))))
 
 (defmethod translate-simple-instruction
@@ -347,7 +339,7 @@
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (result (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) idx) :label label)))
+           (result (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) idx) :label label)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -532,8 +524,8 @@
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
-	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+	     (ltv-lambda-name-index (cmp:reference-literal lambda-name))
+	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
 	     (result (cmp:irc-intrinsic-args
                       "cc_enclose"
                       (list* ltv-lambda-name
@@ -561,8 +553,8 @@
              (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
              (ptr-to-sacs
               (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
-             (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
-             (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+             (ltv-lambda-name-index (cmp:reference-literal lambda-name))
+             (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
              (result
               (let ()
                 (cmp:irc-intrinsic-args
@@ -1011,7 +1003,7 @@ nil)
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
 
-(defun do-compile (form)
+(defun compile-form (form)
   (cc-dbg-when *debug-log*
                (incf *debug-log-index*)
                (format *debug-log* "====== STARTING TO LOG A NEW FORM - INDEX: ~d~%" *debug-log-index*)
@@ -1145,7 +1137,6 @@ nil)
                  'REPL			; main fn name
                  fn			; llvm-fn
                  nil			; environment
-                 cmp:*run-time-literals-external-name*
                  "repl-fn.txt"
                  4321
                  5678
@@ -1162,12 +1153,11 @@ nil)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (multiple-value-bind (fn kind #|| more ||#)
-	(do-compile form)
+	(compile-form form)
       (cmp:with-ltv-function-codegen (result ltv-env)
 	(cmp:irc-intrinsic "invokeTopLevelFunction" 
 			   result 
 			   fn 
-			   (cmp:irc-renv ltv-env)
 			   (cmp:jit-constant-unique-string-ptr "top-level")
 			   cmp:*gv-source-file-info-handle*
 			   (cmp:irc-size_t-*current-source-pos-info*-filepos)

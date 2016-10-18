@@ -110,6 +110,10 @@ CL_DEFUN T_sp core__bformat(T_sp destination, const string &control, List_sp arg
   return _Nil<T_O>();
 }
 
+CL_DEFUN void core__fflush() {
+  fflush(stdout);
+}
+
 CL_LAMBDA(destination control &rest args);
 CL_DECLARE();
 CL_DOCSTRING("Subset of CL format - this does the job until the real format is installed");

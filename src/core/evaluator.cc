@@ -1300,6 +1300,16 @@ T_mv sp_multipleValueProg1(List_sp args, T_sp environment) {
 #endif
 }
 
+T_mv sp_multipleValueForeignCall(List_sp args, T_sp env) {
+  IMPLEMENT_ME();
+}
+T_mv sp_foreignCall(List_sp args, T_sp env) {
+  IMPLEMENT_ME();
+}
+T_mv sp_foreignCallPointer(List_sp args, T_sp env) {
+  IMPLEMENT_ME();
+}
+
 T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   ASSERT(env.generalp());
   Function_sp func = gc::As<Function_sp>(eval::evaluate(oCar(args), env));
@@ -2239,7 +2249,7 @@ T_mv evaluate(T_sp exp, T_sp environment) {
     }
     theadFunc = af_interpreter_lookup_function(headSym, environment);
     if (theadFunc.nilp()) {
-      SIMPLE_ERROR(BF("Could not find form(%s) in the lexical/dynamic environment") % _rep_(headSym));
+      SIMPLE_ERROR(BF("Could not find special-operator/macro/function(%s) in %s in the lexical/dynamic environment") % _rep_(headSym) % _rep_(form) );
     }
 
     //
@@ -2410,6 +2420,9 @@ void defineSpecialOperatorsAndMacros(Package_sp pkg) {
   _lisp->defineSpecialOperator(ClPkg, "macrolet", &sp_macrolet);
   _lisp->defineSpecialOperator(ClPkg, "multipleValueProg1", &sp_multipleValueProg1);
   _lisp->defineSpecialOperator(ClPkg, "multipleValueCall", &sp_multipleValueCall);
+  _lisp->defineSpecialOperator(CorePkg, "multiple-value-foreign-call", &sp_multipleValueForeignCall);
+  _lisp->defineSpecialOperator(CorePkg, "foreign-call", &sp_foreignCall);
+  _lisp->defineSpecialOperator(CorePkg, "foreign-call-pointer", &sp_foreignCallPointer);
   _lisp->defineSpecialOperator(ClPkg, "progv", &sp_progv);
   _lisp->defineSpecialOperator(ClPkg, "quote", &sp_quote);
   _lisp->defineSpecialOperator(ClPkg, "return-from", &sp_returnFrom);

@@ -258,7 +258,7 @@ If this form has already been precalculated then just return the precalculated-v
   (let* ((form (cleavir-ast:form ast))
 	 (read-only-p (cleavir-ast:read-only-p ast))
 	 (symbol (second form))
-	 (symbol-index (cmp:codegen-symbol nil symbol)))
+	 (symbol-index (cmp:reference-literal symbol)))
 ;;    (format t "    generate-new-precalculated-symbol-index for: ~s  index: ~a~%" symbol symbol-index)
     (when (< symbol-index 0)
       (error "There is a problem with the symbol index: ~a" symbol-index))
@@ -272,37 +272,22 @@ If this form has already been precalculated then just return the precalculated-v
     (cond
       ((and (consp form) (eq (first form) 'QUOTE))
        (let* ((constant (cadr form))
-	      (constant-index (cmp:codegen-literal nil constant)))
+	      (constant-index (cmp:reference-literal constant)))
 	 constant-index))
       ((symbolp form)
-       (cmp:codegen-literal nil form))
+       (cmp:reference-literal form))
       ((constantp form)
-       (cmp:codegen-literal nil form))
+       (cmp:reference-literal form))
       (t
        (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
            ;; COMPLE-FILE will generate a function for the form in the Module
            ;; and arrange for it's evaluation at load time
-           (multiple-value-bind (index fn)
-               (cmp:compile-ltv-thunk "ltv-literal" form nil)
-             (let ()
-               (cmp:with-ltv-function-codegen (result ltv-env)
-                 (cmp:irc-intrinsic "invokeTopLevelFunction" 
-                                    result 
-                                    fn 
-                                    (cmp:irc-renv ltv-env)
-                                    (cmp:jit-constant-unique-string-ptr "top-level")
-                                    cmp:*gv-source-file-info-handle*
-                                    (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                                    (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                                    (cmp:irc-size_t-*current-source-pos-info*-column)
-                                    cmp:*load-time-value-holder-global-var*
-                                    )))
-             index)
+           (let ((fn (cmp:compile-form form)))
+             (cmp::reference-evaluated-function fn))
            ;; COMPILE on the other hand evaluates the form and puts its
            ;; value in the run-time environment
            (let ((value (eval form)))
-             (cmp:codegen-rtv nil value nil))))
-      )))
+             (cmp:codegen-rtv nil value nil)))))))
 
 
 (defun find-load-time-value-asts (ast)

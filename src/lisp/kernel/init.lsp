@@ -2,6 +2,7 @@
 ;; :clos to compile with CLOS
 ;;
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 

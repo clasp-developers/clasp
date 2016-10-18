@@ -230,7 +230,7 @@ Boehm and MPS use a single pointer"
 (defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
 
 ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +vec0-tsp+ +vec0-symsp+)  nil)) ;; "LoadTimeValue_O"
+(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ #+(or) +vec0-tsp+)  nil)) ;; "LoadTimeValue_O"
 (defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
 (defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
 (defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
@@ -560,6 +560,38 @@ and initialize it with an array consisting of one function pointer."
   (primitive module name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return))
 
 (defun define-primitives-in-module (module)
+
+  (primitive-nounwind module "ltvc_get_or_create_load_time_value_array" +void+ (list +ltv**+ +i8*+ +size_t+))
+  (primitive-nounwind module "ltvc_assign_source_file_info_handle"
+                      +void+ (list +i8*+ +i8*+ +size_t+ +i32+ +i32*+))
+
+  (primitive-nounwind module "ltvc_make_nil" +void+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "ltvc_make_t" +void+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "ltvc_make_ratio" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_cons" +void+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "ltvc_cons_fill" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_array" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_setf_row_major_aref" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_hash_table" +void+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "ltvc_setf_gethash" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_fixnum" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
+  (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_bignum" +void+ (list +ltv**+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_symbol" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_character" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
+  (primitive-nounwind module "ltvc_make_base_string" +void+ (list +ltv**+ +size_t+ +i8*+))
+  (primitive-nounwind module "ltvc_make_pathname" +void+
+                      (list +ltv**+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_built_in_class" +void+ (list +ltv**+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_float" +void+ (list +ltv**+ +size_t+ +float+))
+  (primitive-nounwind module "ltvc_make_double" +void+ (list +ltv**+ +size_t+ +double+))
+  (primitive-nounwind module "ltvc_make_complex" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_set_ltv_funcall" +void+ (list +ltv**+ +size_t+ +fn-prototype*+))
+  (primitive-nounwind module "ltvc_funcall" +void+ (list +fn-prototype*+))
+
+  
+  
   (primitive-nounwind module "newFunction_sp" +void+ (list +Function_sp*+))
   (primitive-nounwind module "newTsp" +void+ (list +tsp*+))
   (primitive-nounwind module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
@@ -596,12 +628,12 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makeCompiledFunction" +void+ (list +tsp*-or-tmv*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +tsp*+ +tsp*+ +afsp*+ +tsp*+))
 
-  (primitive module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
-  (primitive-nounwind module "symbolValueReference" +tsp*+ (list +symsp*+))
+  (primitive module "symbolValueRead" +void+ (list +tsp*-or-tmv*+ +tsp*+))
+  (primitive-nounwind module "symbolValueReference" +tsp*+ (list +tsp*+))
   (primitive-nounwind module "lexicalValueReference" +tsp*+ (list +i32+ +i32+ +afsp*+))
   (primitive-nounwind module "lexicalValueRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
-  (primitive-nounwind module "symbolFunctionRead" +void+ (list +tsp*-or-tmv*+ +symsp*+))
-  (primitive          module "setfSymbolFunctionRead" +void+ (list +tsp*+ +symsp*+))
+  (primitive-nounwind module "symbolFunctionRead" +void+ (list +tsp*-or-tmv*+ +tsp*+))
+  (primitive          module "setfSymbolFunctionRead" +void+ (list +tsp*+ +tsp*+))
   (primitive-nounwind module "lexicalFunctionRead" +void+ (list +tsp*-or-tmv*+ +i32+ +i32+ +afsp*+))
 
 
@@ -619,7 +651,7 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive module "prependMultipleValues" +void+ (list +tsp*-or-tmv*+ +tmv*+))
 
-  (primitive module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +afsp*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
+  (primitive-nounwind module "invokeTopLevelFunction" +void+ (list +tmv*+ +fn-prototype*+ +i8*+ +i32*+ +size_t+ +size_t+ +size_t+ +ltv**+))
   (primitive module "cc_register_startup_function" +void+ (list +fn-prototype*+))
 
   (primitive-nounwind module "activationFrameSize" +i32+ (list +afsp*+))
@@ -653,7 +685,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "va_tooManyArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
   (primitive-nounwind module "va_notEnoughArgumentsException" +void+ (list +i8*+ +size_t+ +size_t+))
   (primitive-nounwind module "va_ifExcessKeywordArgumentsException" +void+ (list +i8*+ +size_t+ +VaList_S*+ +size_t+))
-  (primitive module "va_symbolFunction" +t*+ (list +symsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
+  (primitive module "va_symbolFunction" +t*+ (list +tsp*+)) ;; void va_symbolFunction(core::Function_sp fn, core::Symbol_sp sym)
   (primitive module "va_lexicalFunction" +t*+ (list +i32+ +i32+ +afsp*+))
   (primitive module "FUNCALL" +return_type+ (list* +t*+ +t*+ +size_t+ (map 'list (lambda (x) x) (make-array core:+number-of-fixed-arguments+ :initial-element +t*+))) :varargs t)
 
@@ -662,11 +694,11 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
   (primitive-nounwind module "pushCatchFrame" +size_t+ (list +tsp*+))
-  (primitive-nounwind module "pushBlockFrame" +size_t+ (list +symsp*+))
+  (primitive-nounwind module "pushBlockFrame" +size_t+ (list +tsp*+))
   (primitive-nounwind module "pushTagbodyFrame" +size_t+ (list +tsp*+))
 
   (primitive module "throwCatchThrow" +void+ (list +tsp*+ #| +tmv*+ |#) :does-not-return t)
-  (primitive module "throwReturnFrom" +void+ (list +symsp*+) :does-not-return t)
+  (primitive module "throwReturnFrom" +void+ (list +tsp*+) :does-not-return t)
   (primitive module "throwDynamicGo" +void+ (list +size_t+ +size_t+ +afsp*+) :does-not-return t)
 
   (primitive module "ifCatchFrameMatchesStoreResultElseRethrow" +void+ (list +tsp*-or-tmv*+ +size_t+ +i8*+))
@@ -691,16 +723,13 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "llvm.ssub.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
   (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
   
-  (primitive-nounwind module "getOrCreateLoadTimeValueArray" +void+ (list +ltv**+ +i8*+ +i32+ +i32+))
+  (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
 
-  (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
-
-  (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +ltv**+ +i32+))
-  (primitive-nounwind module "loadTimeSymbolReference" +symsp*+ (list +ltv**+ +i32+))
+  (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +ltv**+ +size_t+))
+#+(or)(primitive-nounwind module "loadTimeSymbolReference" +symsp*+ (list +ltv**+ +i32+))
   (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
   (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
-  (primitive-nounwind module "assignSourceFileInfoHandle" +void+ (list +i8*+ +i8*+ +i64+ +i32+ +i32*+))
   (primitive-nounwind module "debugSourceFileInfoHandle" +void+ (list +i32*+))
 
   (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
@@ -729,8 +758,8 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "progvSaveSpecials" +void+ (list +i8**+ +tsp*+ +tsp*+))
   (primitive-nounwind module "progvRestoreSpecials" +void+ (list +i8**+))
 
-  (primitive-nounwind module "pushDynamicBinding" +void+ (list +symsp*+))
-  (primitive-nounwind module "popDynamicBinding" +void+ (list +symsp*+))
+  (primitive-nounwind module "pushDynamicBinding" +void+ (list +tsp*+))
+  (primitive-nounwind module "popDynamicBinding" +void+ (list +tsp*+))
 
   (primitive-nounwind module "matchKeywordOnce" +size_t+ (list +tsp*+ +t*+ +i8*+))
 

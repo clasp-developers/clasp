@@ -160,7 +160,7 @@
 	 (*irbuilder-function-alloca* nil)
 	 (*irbuilder-function-body* nil)
 	 (*generate-compile-file-load-time-values* nil)
-	 (*next-load-time-value-index* nil)
+	 (*table-index* nil)
 	 (*load-time-value-holder-global-var* nil)
 	 (*load-time-value-coalesce* nil)
 	 (*load-time-initializer-environment* nil)

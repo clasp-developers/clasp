@@ -23,7 +23,9 @@
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:+i32+)
 
 (defun %literal (lit &optional (label "literal"))
-  (llvm-sys:create-extract-value cmp:*irbuilder* (cmp:irc-load (cmp:compile-reference-to-literal lit nil)) (list 0) label))
+  (llvm-sys:create-extract-value
+   cmp:*irbuilder*
+   (cmp:irc-load (cmp:compile-reference-to-literal lit)) (list 0) label))
 
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
@@ -132,12 +134,6 @@
   (cmp:irc-intrinsic "llvm.ssub.with.overflow.i64" x y))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
-
-#||
-(defun %precalc-value (ltv-global** index)
-  (let* ((ltva (%load ltv-global**))
-         (
-||#
 
    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

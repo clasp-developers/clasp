@@ -823,14 +823,13 @@ def clasp_invocation_command(executable, *args):
 class run_aclasp(Task.Task):
     def run(self):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
-        cmd = clasp_invocation_command(
-            self.inputs[0].abspath(),
-            "--ignore-image",
-            "--feature", "clasp-min",
-            "--feature", "clasp-builder",
-            "--feature", "debug-run-clang",
-            "--eval", "(load-aclasp)",
-            "--", *self.bld.clasp_aclasp)
+        cmd = [ self.inputs[0].abspath(),
+                "--ignore-image",
+                "--feature", "clasp-min",
+                "--feature", "clasp-builder",
+                "--feature", "debug-run-clang",
+                "--eval", "(load-aclasp)",
+                "--"] +  self.bld.clasp_aclasp
         print("  run_aclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):

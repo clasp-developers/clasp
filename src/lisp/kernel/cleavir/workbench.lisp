@@ -1022,7 +1022,6 @@ clasp-cleavir::*hir-types*
                      'REPL              ; main fn name
                      fn			; llvm-fn
                      nil                ; environment
-                     cmp:*run-time-literals-external-name*
                      "repl-fn.txt"
                      0
                      0

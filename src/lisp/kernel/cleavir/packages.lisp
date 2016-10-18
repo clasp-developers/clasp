@@ -12,6 +12,7 @@
   (:export
    #:*use-type-inference*
    #:cleavir-compile-eval
+   #:compile-form
    #:clasp
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction

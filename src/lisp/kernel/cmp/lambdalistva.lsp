@@ -325,7 +325,7 @@ will put a value into target-ref."
 	  (irc-intrinsic "copyTspTptr" target-ref val-ref))
 	(when flag
 	  (with-target-reference-no-bind-do (flag-ref flag new-env) ; run-time AF binding
-	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
+	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t))))
 	(irc-br cont-block)
 	(irc-begin-block init-block)
 	(with-target-reference-no-bind-do (target-ref target new-env) ; codegen init-form into target-ref
@@ -333,7 +333,7 @@ will put a value into target-ref."
 	  (codegen target-ref init-form new-env))
 	(when flag
 	  (with-target-reference-no-bind-do (flag-ref flag new-env) ; copy nil into flag-ref
-	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
+	    (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil))))
 	(irc-br cont-block)
 	(irc-begin-block cont-block)))
     (define-binding-in-value-environment* new-env target)
@@ -381,7 +381,7 @@ will put a value into target-ref."
     (irc-branch-to-and-begin-block process-kw-args-block)
     (let* ((entry-saw-aok (jit-constant-size_t (if lambda-list-allow-other-keys 2 0)))
 	   (entry-bad-kw-idx (jit-constant-size_t 65536))
-	   (aok-ref (compile-reference-to-literal :allow-other-keys old-env))
+	   (aok-ref (compile-reference-to-literal :allow-other-keys))
 	   (loop-kw-args-block (irc-basic-block-create "loop-kw-args"))
 	   (kw-exit-block (irc-basic-block-create "kw-exit-block"))
 	   (loop-cont-block (irc-basic-block-create "loop-cont"))
@@ -428,7 +428,7 @@ will put a value into target-ref."
 		   ((endp cur-key-arg))
 		(irc-branch-to-and-begin-block (irc-basic-block-create (bformat nil "kw-%s-test" key)))
 		(irc-low-level-trace)
-		(let* ((kw-ref (compile-reference-to-literal key old-env))
+		(let* ((kw-ref (compile-reference-to-literal key))
 		       (test-kw-and-arg (irc-intrinsic "matchKeywordOnce" kw-ref arg-ref (elt sawkeys idx)))
                        (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 0)))
 		       (matched-kw-block (irc-basic-block-create "matched-kw-block"))
@@ -445,7 +445,7 @@ will put a value into target-ref."
                     (irc-store (jit-constant-i8 1) (elt sawkeys idx))
                     (when flag
                       (with-target-reference-no-bind-do (flag-ref flag new-env)
-                        (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t new-env))))
+                        (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal t))))
                     (irc-br good-kw-block)
                     (irc-begin-block next-kw-test-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
@@ -510,7 +510,7 @@ will put a value into target-ref."
       (when flag
 	(irc-low-level-trace)
 	(with-target-reference-no-bind-do (flag-ref flag new-env) ; run-time binding
-	  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil new-env))))
+	  (irc-intrinsic "copyTsp" flag-ref (compile-reference-to-literal nil))))
       (irc-low-level-trace)
       (irc-branch-to-and-begin-block next-kw-block))
     (define-binding-in-value-environment* new-env target)

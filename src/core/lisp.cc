@@ -651,11 +651,11 @@ List_sp Lisp_O::loadTimeValuesIds() const {
 /*! How is this going to work with moving garbage collection?
      We return a reference to the LoadTimeValues_sp smart_ptr in the LoadtimeValueArrays hash-table
     What happens when this moves????    Disaster!!!!!!!   */
-LoadTimeValues_sp Lisp_O::getOrCreateLoadTimeValues(const string &name, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols) {
+LoadTimeValues_sp Lisp_O::getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues ) {
   Str_sp key = Str_O::create(name);
   T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key, _Nil<T_O>());
   if (it.nilp()) {
-    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues, numberOfLoadTimeSymbols);
+    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues);
     this->_Roots._LoadTimeValueArrays->setf_gethash(key, vo);
     return vo; // gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
   }

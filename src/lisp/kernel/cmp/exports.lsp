@@ -145,7 +145,7 @@ codegen-symbol
 codegen-literal
 codegen-literal
 codegen-literal
-compile-ltv-thunk
+bclasp-compile-form
 with-ltv-function-codegen
 irc-intrinsic
 irc-renv
@@ -251,7 +251,7 @@ codegen-literal
 irc-intrinsic
 *generate-compile-file-load-time-values*
 *load-time-value-holder-global-var*
-*run-time-value-holder-global-var*
+*run-time-values-table-global-var*
 irc-unreachable
 irc-br
 *current-function-name*
@@ -286,9 +286,6 @@ irc-store
 irc-low-level-trace
 *irbuilder*
 *irbuilder*
-*generate-compile-file-load-time-values*
-*load-time-value-holder-global-var*
-*run-time-value-holder-global-var*
 irc-low-level-trace
 irc-intrinsic-args
 *irbuilder*
@@ -378,7 +375,7 @@ cmp-log
 *the-module*
 cmp-log
 *run-time-execution-engine*
-*run-time-literals-external-name*
+*run-time-values-table-name*
 *run-time-literal-holder*
 set-associated-funcs
 *all-functions-for-one-compile*

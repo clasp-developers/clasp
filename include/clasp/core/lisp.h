@@ -494,7 +494,7 @@ public:
 public:
   /*! Get the LoadTimeValues_sp that corresponds to the name.
 	  If it doesn't exist then make one and return it. */
-  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, int numberOfLoadTimeValues = 0, int numberOfLoadTimeSymbols = 0);
+  LoadTimeValues_sp getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues = 0);
   List_sp loadTimeValuesIds() const;
   T_sp loadTimeValue(const string &name, int idx);
   Symbol_sp loadTimeSymbol(const string &name, int idx);
