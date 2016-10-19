@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/core/debugger.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/sockets/socketsPackage.h>
@@ -99,9 +100,10 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
     printf("%s:%d An unwind was thrown but not caught frame[%ld] tag[%lu]\n", __FILE__, __LINE__, gctools::untag_fixnum(failedUnwind.getFrame()), failedUnwind.index());
   } catch (core::ExitProgram &ee) {
-    printf("\n");
-    //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
     exitCode = ee.getExitResult();
+    if ( exitCode != 0 ) {
+      printf("Clasp is terminating with exit code %d\n", exitCode );
+    }
   }; // catch (...) { exitCode = gctools::handleFatalCondition(); }
   return exitCode;
 }

@@ -155,7 +155,10 @@ const char *CorePkg_nicknames[] = {
 };
 SYMBOL_EXPORT_SC_(CorePkg, STARuse_cleavir_compilerSTAR);  // nil (clasp) or T (cleavir)
 
+SYMBOL_EXPORT_SC_(KeywordPkg, pause_pid);
+SYMBOL_EXPORT_SC_(KeywordPkg, exit_backtrace);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
 SYMBOL_EXPORT_SC_(ExtPkg, STARclasp_clang_pathSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, make_source_pos_info);
@@ -1093,6 +1096,7 @@ void CoreExposer_O::define_essential_globals(Lisp_sp lisp) {
   _sym_STARtop_level_form_stackSTAR->defparameter(_Nil<core::T_O>());
   ext::_sym_STARinvoke_debugger_hookSTAR->defparameter(_Nil<core::T_O>());
   _sym_STARuse_cleavir_compilerSTAR->defparameter(_Nil<core::T_O>());
+  _sym_STARexit_backtraceSTAR->defparameter(_Nil<core::T_O>());
 #if defined(__x86_64__)
   SYMBOL_EXPORT_SC_(KeywordPkg, address_model_64);
   Symbol_sp address_model = kw::_sym_address_model_64;
