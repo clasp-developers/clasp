@@ -833,9 +833,6 @@ class link_executable(Task.Task):
 #        return
 #    self.create_task('dsymutil',link_task.outputs[0])
 
-def clasp_invocation_command(executable, *args):
-    return [executable] + ['--non-interactive', '--norc'] + list(args)
-
 class run_aclasp(Task.Task):
     def run(self):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
@@ -855,18 +852,24 @@ class run_aclasp(Task.Task):
         return 'Run aclasp using... '
 
 class compile_aclasp(Task.Task):
+    def __str__(self):
+        return "compile_aclasp"
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
-        cmd = clasp_invocation_command(
-            self.inputs[0].abspath(),
-            "--ignore-image",
-            "--feature", "clasp-min",
-            "--feature", "clasp-builder",
-            "--feature", "debug-run-clang",
-            "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-            "--eval", "(quit)",
-            "--", *self.bld.clasp_aclasp)
-        print("  compile_aclasp cmd: %s" % cmd)
+        cmd = [self.inputs[0].abspath()]
+        if (self.bld.debug_on ):
+            cmd = cmd + [ '--feature', 'exit-backtrace',
+                          '--feature', 'pause-pid' ]
+        if (not self.bld.interactive ):
+            cmd = cmd + [ '--non-interactive' ]
+        cmd = cmd + [ "--norc",
+                      "--ignore-image",
+                      "--feature", "clasp-min",
+                      "--feature", "clasp-builder",
+                      "--feature", "debug-run-clang",
+                      "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", "(quit)",
+                      "--" ] + self.bld.clasp_aclasp
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -877,17 +880,23 @@ class compile_aclasp(Task.Task):
 #
 # Use the aclasp fasl file
 class compile_bclasp(Task.Task):
+    def __str__(self):
+        return "compile_bclasp"
     def run(self):
         print("In compile_bclasp %s %s -> %s" % (self.inputs[0],self.inputs[1],self.outputs[0]))
-        cmd = clasp_invocation_command(
-            self.inputs[0].abspath(),
-            "--image", self.inputs[1].abspath(),
-            "--feature", "clasp-builder",
-            "--feature", "debug-run-clang",
-            "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
-            "--eval", "(quit)",
-            "--", *self.bld.clasp_bclasp)
-        print("  compile_bclasp cmd: %s" % cmd)
+        cmd = [self.inputs[0].abspath()]
+        if (self.bld.debug_on ):
+            cmd = cmd + [ '--feature', 'exit-backtrace',
+                          '--feature', 'pause-pid' ]
+        if (not self.bld.interactive ):
+            cmd = cmd + [ '--non-interactive' ]
+        cmd = cmd + [ "--norc",
+                      "--image", self.inputs[1].abspath(),
+                      "--feature", "clasp-builder",
+                      "--feature", "debug-run-clang",
+                      "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", "(quit)",
+                      "--" ] + self.bld.clasp_bclasp
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -896,17 +905,23 @@ class compile_bclasp(Task.Task):
         return 'Compile bclasp using... '
 
 class compile_cclasp(Task.Task):
+    def __str__(self):
+        return "compile_cclasp"
     def run(self):
         print("In compile_cclasp %s %s -> %s" % (self.inputs[0].abspath(),self.inputs[1].abspath(),self.outputs[0].abspath()))
-        cmd = clasp_invocation_command(
-            self.inputs[0].abspath(),
-            "--image", self.inputs[1].abspath(),
-            "--feature", "clasp-builder",
-            "--feature", "debug-run-clang",
-            "--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-            "--eval", "(quit)",
-            "--", *self.bld.clasp_cclasp)
-        print("  compile_cclasp cmd: %s" % cmd)
+        cmd = [self.inputs[0].abspath()]
+        if (self.bld.debug_on ):
+            cmd = cmd + [ '--feature', 'exit-backtrace',
+                          '--feature', 'pause-pid' ]
+        if (not self.bld.interactive ):
+            cmd = cmd + [ '--non-interactive' ]
+        cmd = cmd + [ "--norc",
+                      "--image", self.inputs[1].abspath(),
+                      "--feature", "clasp-builder",
+                      "--feature", "debug-run-clang",
+                      "--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", "(quit)",
+                      "--" ] + self.bld.clasp_cclasp
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -921,14 +936,13 @@ class recompile_cclasp(Task.Task):
         other_clasp = env.CLASP or "clasp"
         if not os.path.isfile(other_clasp):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
-        cmd = clasp_invocation_command(
-            other_clasp,
-            "--feature", "clasp-builder",
-            "--feature", "debug-run-clang",
-            "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
-            "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-            "--eval", "(quit)",
-            "--", *self.bld.clasp_cclasp_no_wrappers)
+        cmd = [ other_clasp ]
+        cmd = cmd + [ "--feature", "clasp-builder",
+                      "--feature", "debug-run-clang",
+                      "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
+                      "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", "(quit)",
+                      "--" ] + self.bld.clasp_cclasp_no_wrappers)
         print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -940,15 +954,19 @@ class recompile_cclasp(Task.Task):
 class compile_addons(Task.Task):
     def run(self):
         print("In compile_addons %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = clasp_invocation_command(
-            self.inputs[0].abspath(),
-            "--feature", "ignore-extensions",
-            "--feature", "clasp-builder",
-            "--feature", "debug-run-clang",
-            "--eval", "(core:compile-addons)",
-            "--eval", "(core:link-addons)",
-            "--eval", "(quit)")
-        print("  cmd: %s" % cmd)
+        cmd = [self.inputs[0].abspath()]
+        if (self.bld.debug_on ):
+            cmd = cmd + [ '--feature', 'exit-backtrace',
+                          '--feature', 'pause-pid' ]
+        if (not self.bld.interactive ):
+            cmd = cmd + [ '--non-interactive' ]
+        cmd = cmd + [ "--norc",
+                      "--feature", "ignore-extensions",
+                      "--feature", "clasp-builder",
+                      "--feature", "debug-run-clang",
+                      "--eval", "(core:compile-addons)",
+                      "--eval", "(core:link-addons)",
+                      "--eval", "(quit)" ]
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -962,12 +980,17 @@ class compile_addons(Task.Task):
 class compile_module(Task.Task):
     def run(self):
         print("In compile_module %s -> %s" % (self.inputs[0].abspath(),self.outputs[0].abspath()))
-        cmd = clasp_invocation_command(
-            self.inputs[0].abspath(),
-            "--feature", "ignore-extensions",
-            "--feature", "debug-run-clang",
-            "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[1], self.outputs[0]),
-            "--eval", "(quit)")
+        cmd = [self.inputs[0].abspath()]
+        if (self.bld.debug_on ):
+            cmd = cmd + [ '--feature', 'exit-backtrace',
+                          '--feature', 'pause-pid' ]
+        if (not self.bld.interactive ):
+            cmd = cmd + [ '--non-interactive' ]
+        cmd = cmd + [ "--norc",
+                      "--feature", "ignore-extensions",
+                      "--feature", "debug-run-clang",
+                      "--eval", "(compile-file #P\"%s\" :output-file #P\"%s\" :output-type :fasl)" % (self.inputs[1], self.outputs[0]),
+                      "--eval", "(quit)" ]
         print("  cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
@@ -1123,6 +1146,26 @@ def init(ctx):
                             variant = gc+'_'+debug_char
                         cmd = name + '_' + s + variant
                         stage = s
+                        debug_on = False
+                        interactive = False
+                    class tmp(y):
+                        if (debug_char==None):
+                            variant = gc
+                        else:
+                            variant = gc+'_'+debug_char
+                        cmd = "debug_" + name + '_' + s + variant
+                        stage = s
+                        debug_on = True
+                        interactive = False
+                    class tmp(y):
+                        if (debug_char==None):
+                            variant = gc
+                        else:
+                            variant = gc+'_'+debug_char
+                        cmd = "interactiveDebug_" + name + '_' + s + variant
+                        stage = s
+                        debug_on = True
+                        interactive = True
             class tmp(BuildContext):
                 if (debug_char==None):
                     variant = gc
@@ -1130,6 +1173,8 @@ def init(ctx):
                     variant = gc+'_'+debug_char
                 cmd = 'rebuild_c'+variant
                 stage = 'rebuild'
+                debug_on = True
+                interactive = True
             class tmp(BuildContext):
                 if (debug_char==None):
                     variant = gc
@@ -1137,6 +1182,8 @@ def init(ctx):
                     variant = gc+'_'+debug_char
                 cmd = 'dangerzone_c'+variant
                 stage = 'dangerzone'
+                debug_on = True
+                interactive = True
 
 #def buildall(ctx):
 #    import waflib.Options
