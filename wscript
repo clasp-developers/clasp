@@ -411,7 +411,7 @@ def get_clasp_version(cfg):
 def call_llvm_config(cfg, *args):
     result = subprocess.Popen([cfg.env.LLVM_CONFIG_BINARY] + list(args), stdout = subprocess.PIPE).communicate()[0]
     assert len(result) > 0
-    return result.strip()
+    return result.strip().decode()
 
 def configure(cfg):
     def update_exe_search_path():
