@@ -1016,8 +1016,6 @@ void debugPrint_size_t(size_t v) {
   printf("+++DBG-size_t[%lu]\n", v);
 }
 
-void singleStepCallback() {
-}
 
 void throwCatchThrow(core::T_sp *tagP) {
   ASSERT(tagP != NULL);
