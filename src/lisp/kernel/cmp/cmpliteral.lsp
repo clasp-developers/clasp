@@ -254,7 +254,8 @@ and put into ltv-ref."
       (make-load-form object)
     (with-add-init (ltv)
       (add-call "ltvc_set_ltv_funcall" ltv index (compile-form create))
-      (add-call "ltvc_funcall" (compile-form initialize)))))
+      (when initialize
+        (add-call-args "ltvc_funcall" (list (compile-form initialize)))))))
 
 (defun object-similarity-table-and-creator (object)
   (cond
