@@ -5,28 +5,22 @@
 ### This file has to be named `wscript.config` to be
 ### recognised by the build system.
 
-def configure_local(cfg):
-    def config_dict():
-        # It contains some external dependencies for clasp. The end
-        # goal is that it won't be needed anymore and the default
-        # packages of the host OS are found and utilized. Unfortunately
-        # version constraints make that ideal sometimes unreachable.
-        #EXTERNALS_CLASP_DIR = '/path/externals-clasp/'
+# It contains some external dependencies for clasp. The end
+# goal is that it won't be needed anymore and the default
+# packages of the host OS are found and utilized. Unfortunately
+# version constraints make that ideal sometimes unreachable.
+#EXTERNALS_CLASP_DIR = '/path/externals-clasp/'
 
-        # Where to install clasp. Defaults to '/usr/local/'.
-        #INSTALL_PATH_PREFIX = '/opt/clasp/'
+# Where to install clasp. Defaults to '/usr/local/'.
+#INSTALL_PATH_PREFIX = '/opt/clasp/'
 
-        # SBCL is used at build time. Defaults to 'sbcl'.
-        #SBCL                = '/path/sbcl/run-sbcl.sh'
+# SBCL is used at build time. Defaults to 'sbcl'.
+#SBCL                = '/path/sbcl/run-sbcl.sh'
 
-        # Optional clasp binary. It is used only when rebuilding
-        # clasp, e.g. with the './waf rebuild_cboehm' command.
-        #CLASP               = '/path/cclasp-boehm'
+# Optional clasp binary. It is used only when rebuilding
+# clasp, e.g. with the './waf rebuild_cboehm' command.
+#CLASP               = '/path/cclasp-boehm'
 
-        return dict(locals())
-
-    cfg.env.update(config_dict())
-
-    # This is how you can specify non-standard locations
-    #cfg.env.append_value('INCLUDES', "/opt/boost_1_62_0/include")
-    #cfg.env.append_value('LINKFLAGS', ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"])
+# This is how you can specify non-standard locations
+#INCLUDES = "/opt/boost_1_62_0/include"
+#LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]

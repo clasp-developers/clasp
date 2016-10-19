@@ -428,8 +428,9 @@ def configure(cfg):
         if not os.path.isfile("./wscript.config"):
             print("Please provide the required config for the build; see the wscript.config.template file.")
             sys.exit(1)
-        exec(open("./wscript.config").read(), globals(), locals())
-        configure_local(cfg)
+        local_environment = {}
+        exec(open("./wscript.config").read(), globals(), local_environment)
+        cfg.env.update(local_environment)
 
     # KLUDGE there should be a better way than this
     cfg.env["BUILD_ROOT"] = os.path.abspath(top)
