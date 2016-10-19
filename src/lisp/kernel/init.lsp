@@ -778,6 +778,7 @@ the stage, the +application-name+ and the +bitcode-name+"
                 (eval (read-from-string (cdr entry)))))
           core::*command-line-load-eval-sequence*))
 
+(export 'maybe-load-clasprc)
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
   (if (not (member :no-rc *features*))
@@ -786,8 +787,6 @@ the stage, the +application-name+ and the +bitcode-name+"
                                     :defaults (user-homedir-pathname))))
         (if (probe-file clasprc)
             (load clasprc)))))
-(export 'maybe-load-clasprc)
-
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))
