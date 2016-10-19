@@ -942,7 +942,7 @@ class recompile_cclasp(Task.Task):
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
                       "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
-                      "--" ] + self.bld.clasp_cclasp_no_wrappers)
+                      "--" ] + self.bld.clasp_cclasp_no_wrappers
         print(" recompile_clasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
