@@ -124,11 +124,11 @@ and put into ltv-ref."
        (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
          ,@code))))
 
-(defun add-call-args (name args &optional (label ""))
+(defun add-call-args (name args)
   "Call the named function after converting fixnum args to llvm constants"
   (let ((fixed-args (mapcar (lambda (x) (if (fixnump x) (jit-constant-size_t x) x))
                             args)))
-    (cmp:irc-intrinsic-args name (list* fixed-args) :label label)))
+    (cmp:irc-intrinsic-args name fixed-args)))
 
 (defun add-call (name ltv index &rest args)
   "Call the named function after converting fixnum args to llvm constants"
@@ -178,8 +178,8 @@ and put into ltv-ref."
 
 (defun ltv/hash-table (hash-table index)
   (with-add-init (ltv)
-    (add-call "ltvc_make_hash_table" ltv index
-              (load-time-reference-literal (hash-table-test hash-table)))
+    (add-call-args "ltvc_make_hash_table"
+                   (list ltv index (load-time-reference-literal (hash-table-test hash-table))))
     (maphash (lambda (key val)
                (add-call "ltvc_setf_gethash" ltv index
                          (load-time-reference-literal key)
@@ -275,6 +275,7 @@ and put into ltv-ref."
     ((packagep object) (values *package-coalesce* #'ltv/package))
     ((complexp object) (values *complex-coalesce* #'ltv/complex))
     ((core:built-in-class-p object) (values *built-in-class-coalesce* #'ltv/built-in-class))
+    ((typep object '(or standard-object structure-object condition class)) (values *everything-else-coalesce* #'ltv/mlf))
     (t (error "Handle object ~a" object))))
 
 (defun make-similarity-table (test)

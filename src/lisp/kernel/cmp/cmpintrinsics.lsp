@@ -572,7 +572,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_cons_fill" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_array" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_setf_row_major_aref" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_hash_table" +void+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "ltvc_make_hash_table" +void+ (list +ltv**+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_setf_gethash" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_fixnum" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
   (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
