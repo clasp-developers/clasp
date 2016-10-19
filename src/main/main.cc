@@ -93,6 +93,7 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
       SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
     }
 #endif
+//    printf("%s:%d About to _lisp->run()    ExitProgram typeid %p;\n", __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
     _lisp->run();
   } catch (core::DynamicGo &failedGo) {
     printf("%s:%d A DynamicGo was thrown but not caught frame[%lu] tag[%lu]\n", __FILE__, __LINE__, failedGo.getFrame(), failedGo.index());
@@ -104,7 +105,9 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     if ( exitCode != 0 ) {
       printf("Clasp is terminating with exit code %d\n", exitCode );
     }
-  }; // catch (...) { exitCode = gctools::handleFatalCondition(); }
+  } catch (...) {
+    printf("%s:%d  The generic catch(...) caught an unhandled exception of type %p - fix this!!!!\n", __FILE__, __LINE__, (void*)__cxxabiv1::__cxa_current_exception_type() );
+  }
   return exitCode;
 }
 
