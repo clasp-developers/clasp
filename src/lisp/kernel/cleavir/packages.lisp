@@ -61,9 +61,6 @@
    #:make-setf-fdefinition-ast
    #:lambda-name
    #:debug-message
-   #:precalc-symbol-reference-ast
-   #:precalc-symbol-reference-index
-   #:precalc-symbol-reference-ast-original-object
    #:precalc-value-reference-ast
    #:precalc-value-reference-index
    #:precalc-value-reference-ast-original-object
@@ -95,18 +92,15 @@
    #:make-multiple-value-foreign-call-instruction
    #:make-foreign-call-instruction
    #:make-foreign-call-pointer-instruction
-   #:make-precalc-symbol-instruction
    #:make-precalc-value-instruction
    #:invoke-instruction
    #:make-setf-fdefinition-instruction
    #:make-throw-instruction
    #:lambda-name
-   #:precalc-symbol-instruction
    #:precalc-value-instruction
    #:debug-message
    #:setf-fdefinition-instruction
    #:throw-instruction
-   #:precalc-symbol-instruction-original-object
    #:precalc-value-instruction-original-object
    #:instruction-id
    #:push-special-binding-instruction

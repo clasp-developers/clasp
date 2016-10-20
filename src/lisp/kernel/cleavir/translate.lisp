@@ -28,10 +28,8 @@
 
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
-      (let* ((value (cleavir-ir:value datum))
-	     (ltv-index (cmp:reference-literal value))
-	     (ltv-ref (cmp:compile-reference-to-load-time-value ltv-index)))
-	ltv-ref)
+      (let* ((value (cleavir-ir:value datum)))
+        (%literal-ref value))
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond
@@ -323,17 +321,6 @@
        (let ((load (%load input)))
          (%store load output))))))
 
-
-
-(defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:precalc-symbol-instruction) return-value inputs outputs abi)
-  (let ((idx (first inputs)))
-    ;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
-    (cmp:irc-low-level-trace :flow)
-    (let ((label (format nil "~s" (clasp-cleavir-hir:precalc-symbol-instruction-original-object instruction))))
-      (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (cmp:ltv-global) idx) :label label)))
-	(llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil)))))
-
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi)
   (let ((idx (first inputs)))
@@ -524,8 +511,7 @@
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-	     (ltv-lambda-name-index (cmp:reference-literal lambda-name))
-	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+	     (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
 	     (result (cmp:irc-intrinsic-args
                       "cc_enclose"
                       (list* ltv-lambda-name
@@ -553,8 +539,7 @@
              (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
              (ptr-to-sacs
               (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
-             (ltv-lambda-name-index (cmp:reference-literal lambda-name))
-             (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+             (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
              (result
               (let ()
                 (cmp:irc-intrinsic-args

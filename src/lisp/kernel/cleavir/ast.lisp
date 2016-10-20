@@ -177,43 +177,6 @@
     (:precalc-asts precalc-asts))
 
 
-#||(defmethod clavir-ast-graphviz:label ((ast precalc-vector-function-ast))
-  (with-output-to-string (s)
-    (format s "precalc-vec-fn (~a ~a)" 
-||#
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Class PRECALC-SYMBOL-REFERENCE-AST
-;;;
-;;; This class represents a reference to a symbol that is precalculated
-;;; at load-time (COMPILE-FILE) or compile-time (COMPILE) and placed into
-;;; a LoadTimeValue object that is passed to the function.
-;;;
-
-(defclass precalc-symbol-reference-ast (cleavir-ast:ast cleavir-ast:one-value-ast-mixin cleavir-ast:side-effect-free-ast-mixin) 
-  ((%ref-index :initarg :index :accessor precalc-symbol-reference-index)
-   (%original-object :initarg :original-object :accessor precalc-symbol-reference-ast-original-object)))
-
-(cleavir-io:define-save-info precalc-symbol-reference-ast
-  (:index precalc-symbol-reference-index)
-  (:original-object precalc-symbol-reference-ast-original-object))
-
-  
-(defmethod cleavir-ast:children ((ast precalc-symbol-reference-ast))
-  nil)
-
-
-(defun escaped-string (str)
-  (with-output-to-string (s) (loop for c across str do (when (member c '(#\\ #\")) (princ #\\ s)) (princ c s))))
-
-(defmethod cleavir-ast-graphviz::label ((ast precalc-symbol-reference-ast))
-  (with-output-to-string (s)
-    (format s "precalc-sym-ref(~a) ; " (precalc-symbol-reference-index ast))
-    (let ((original-object (escaped-string (format nil "~s" (precalc-symbol-reference-ast-original-object ast)))))
-      (if (> (length original-object) 10)
-	  (format s "~a..." (subseq original-object 0 10))
-	  (princ original-object s)))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -250,19 +213,6 @@
 
 
 
-
-
-(defun generate-new-precalculated-symbol-index (ast)
-  "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
-If this form has already been precalculated then just return the precalculated-value index"
-  (let* ((form (cleavir-ast:form ast))
-	 (read-only-p (cleavir-ast:read-only-p ast))
-	 (symbol (second form))
-	 (symbol-index (cmp:reference-literal symbol)))
-;;    (format t "    generate-new-precalculated-symbol-index for: ~s  index: ~a~%" symbol symbol-index)
-    (when (< symbol-index 0)
-      (error "There is a problem with the symbol index: ~a" symbol-index))
-    symbol-index))
 
 (defun generate-new-precalculated-value-index (ast)
   "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
@@ -309,14 +259,9 @@ If this form has already been precalculated then just return the precalculated-v
                           (cleavir-ast:form (first ast-parent)))
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
-       do (cond
-	    ((typep parent '(or cleavir-ast:fdefinition-ast setf-fdefinition-ast cleavir-ast:symbol-value-ast))
-	     (change-class ast 'precalc-symbol-reference-ast ; 'cleavir-ast:t-aref-ast
-			   :index (generate-new-precalculated-symbol-index ast)
-			   :original-object (cleavir-ast:form ast)))
-	    (t (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-			     :index (generate-new-precalculated-value-index ast)
-			     :original-object (cleavir-ast:form ast)))))
+       do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
+                        :index (generate-new-precalculated-value-index ast)
+                        :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
      ast (mapcar #'first load-time-value-asts) forms)))
 

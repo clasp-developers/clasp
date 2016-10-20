@@ -1,5 +1,19 @@
 (in-package :clasp-cleavir)
 
+(defun %literal-ref (value)
+  (let ((index (cmp:reference-literal value)))
+    (cond
+      ((= index 0) (cmp:irc-intrinsic-args "cc_nil_reference" nil :label "&NIL"))
+      ((= index 1) (cmp:irc-intrinsic-args "cc_t_reference" nil :label "&T"))
+      (t (cmp:compile-reference-to-load-time-value index)))))
+
+(defun %literal-value (value &optional label)
+  (let ((index (cmp:reference-literal value)))
+    (cond
+      ((= index 0) (cmp:irc-intrinsic-args "cc_nil_value" nil :label "NIL"))
+      ((= index 1) (cmp:irc-intrinsic-args "cc_t_value" nil :label "T"))
+      (t (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t index)) :label label)))))
+
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 
