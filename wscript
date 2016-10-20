@@ -550,7 +550,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
         lto_library = "%s/%s" % ( llvm_lib_dir, lto_library_name)
-        cfg.env.append_value('LINKFLAGS',"-Wl,-lto_library,%s" % lto_library)
+        cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
