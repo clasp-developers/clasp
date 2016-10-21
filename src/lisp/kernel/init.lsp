@@ -356,6 +356,7 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (defvar *proclaim-hook* nil)
 (export '(*defun-inline-hook*
           *do-inline-hook*
+          *inline-on*
           *proclaim-hook*))
 
 ;; Discard documentation until helpfile.lsp is loaded
