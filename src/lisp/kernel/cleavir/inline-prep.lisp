@@ -8,11 +8,6 @@
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
-(defun do-inline-hook (name ast)
-  (when (core:declared-global-inline-p name)
-    (if (fboundp name)
-        (core:setf-cleavir-ast (fdefinition name) ast))))
-  
 ;; Generate an AST and save it for inlining if the
 ;; function is proclaimed as inline
 (defun defun-inline-hook (name function-form)
@@ -20,12 +15,9 @@
     (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
            (ast (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*)))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
-           ;; I'm featuring out the *do-inline-hook* test
-           ;; I don't think it's needed in addition to
-           ;; *defun-inline-hook*
-         (funcall do-inline-hook (QUOTE ,name) ,ast)
-         #+(or)(when core:*do-inline-hook*
-                 (funcall core:*do-inline-hook* (QUOTE ,name) ,ast))))))
+         (when (core:declared-global-inline-p ',name)
+           (when (fboundp ',name)
+             (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
 
 ;;; original
 #+(or)
@@ -53,11 +45,7 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   #+(or)(setq core::*inline-on* t)
   (setq core:*defun-inline-hook* 'defun-inline-hook)
-  (setq core:*proclaim-hook* 'proclaim-hook)
-  ;; The following may not be needed in addition to *defun-inline-hook*
-  ;; remove it from init.lsp if not
-  #+(or)(setq core:*do-inline-hook* 'do-inline-hook) ; maybe depreciated
-  )
+  (setq core:*proclaim-hook* 'proclaim-hook))
   
 (defparameter *simple-environment* nil)
 (defvar *code-walker* nil)
