@@ -71,8 +71,9 @@ using namespace core;
 
 extern "C" {
 
-ALWAYS_INLINE core::T_sp *symbolValueReference(core::Symbol_sp *symbolP) {
-  return ((*symbolP)->valueReference());
+ALWAYS_INLINE core::T_sp *symbolValueReference(core::T_sp *symbolP) {
+  core::Symbol_sp sym((gctools::Tagged)(symbolP->raw_()));
+  return sym->valueReference();
 }
 
 ALWAYS_INLINE core::T_sp *lexicalValueReference(int depth, int index, core::ActivationFrame_sp *frameP) {
@@ -123,13 +124,13 @@ ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int in
 }
 
 
-ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, int index) {
+ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
   core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
   core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::T_sp &result = ltvP->data_element(index);
+  core::T_sp &result = (*ltvP)[index];
   return &result;
 }
-
+#if 0
 ALWAYS_INLINE core::Symbol_sp *loadTimeSymbolReference(core::LoadTimeValues_O **ltvPP, int index) {
   core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
   core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
@@ -139,6 +140,9 @@ ALWAYS_INLINE core::Symbol_sp *loadTimeSymbolReference(core::LoadTimeValues_O **
 #endif
   return &result;
 }
+#endif
+
+
 
 ALWAYS_INLINE void newTsp(core::T_sp *sharedP) {
   ASSERT(sharedP != NULL);
@@ -204,10 +208,11 @@ ALWAYS_INLINE void makeCons(core::T_sp *resultConsP, core::T_sp *carP, core::T_s
   (*resultConsP) = core::Cons_O::create(*carP, *cdrP);
 }
 
-ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
-  T_sp sv = (*symP)->_Value;
+ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsymP) {
+  Symbol_sp sym((gctools::Tagged)(tsymP->raw_())); 
+  T_sp sv = sym->_Value;
   if (sv.unboundp()) {
-    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % (*symP)->_Name->c_str());
+    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % sym->_Name);
   }
   *resultP = sv;
 }
@@ -219,23 +224,24 @@ ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp
   *resultP = sv;
 }
 
-ALWAYS_INLINE T_O *va_symbolFunction(core::Symbol_sp *symP) {
-  if (!(*symP)->fboundp())
-    intrinsic_error(llvmo::noFunctionBoundToSymbol, *symP);
-  core::Function_sp func((gc::Tagged)(*symP)->_Function.theObject);
+ALWAYS_INLINE T_O *va_symbolFunction(core::T_sp *symP) {
+  core::Symbol_sp sym((gctools::Tagged)symP->raw_());
+  if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
+  core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
   return func.raw_();
 }
 };
 
 extern "C" {
 
-ALWAYS_INLINE T_O* cc_t() {
-  return _lisp->_true().raw_();
+ALWAYS_INLINE T_O** cc_t_reference() {
+  return &_lisp->_true().rawRef_();
 }
 
-ALWAYS_INLINE T_O* cc_nil() {
-  return _Nil<core::T_O>().raw_();
+ALWAYS_INLINE T_O** cc_nil_reference() {
+  return &_Nil<core::T_O>().rawRef_();
 }
+
 
 ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx) {
   core::LoadTimeValues_O *tagged_ltvP = *tarray;
@@ -243,10 +249,11 @@ ALWAYS_INLINE T_O *cc_precalcSymbol(core::LoadTimeValues_O **tarray, size_t idx)
 #ifdef DEBUG_CC
   printf("%s:%d precalcSymbol idx[%zu] symbol = %p\n", __FILE__, __LINE__, idx, (*array).symbols_element(idx).px);
 #endif
-  T_O *res = array->symbols_element(idx).raw_();
+  T_O *res = (*array)[idx].raw_();
   ASSERT(res != NULL);
   return res;
 }
+
 
 ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) {
   core::LoadTimeValues_O *tagged_ltvP = *tarray;
@@ -254,7 +261,7 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) 
 #ifdef DEBUG_CC
   printf("%s:%d precalcValue idx[%zu] value = %p\n", __FILE__, __LINE__, idx, (*array).data_element(idx).px);
 #endif
-  T_O *res = array->data_element(idx).raw_();
+  T_O *res = (*array)[idx].raw_();
   return res;
 }
 

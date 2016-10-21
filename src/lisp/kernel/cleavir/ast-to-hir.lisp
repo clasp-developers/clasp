@@ -157,19 +157,6 @@
        (cleavir-ast-to-hir::invocation context)))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Compile precalculated value AST nodes to HIR
-;;;
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-symbol-reference-ast) context)
-  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
-  (clasp-cleavir-hir:make-precalc-symbol-instruction
-   (cleavir-ir:make-immediate-input (clasp-cleavir-ast:precalc-symbol-reference-index ast))
-   (first (cleavir-ast-to-hir::results context))
-   :successor (first (cleavir-ast-to-hir::successors context))
-   :original-object (clasp-cleavir-ast:precalc-symbol-reference-ast-original-object ast)
-   ))
-
 
 (defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:precalc-value-reference-ast) context)
   (cleavir-ast-to-hir::check-context-for-one-value-ast context)

@@ -219,8 +219,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
     (if result
         (let ((funcs (compile-reference-to-literal (if *generate-compile-file-load-time-values*
                                                        nil
-                                                       *all-functions-for-one-compile*) env))
-              (lambda-list (compile-reference-to-literal lambda-list env)))
+                                                       *all-functions-for-one-compile*)))
+              (lambda-list (compile-reference-to-literal lambda-list)))
           ;; TODO:   Here walk the source code in lambda-or-lambda-block and
           ;; get the line-number/column for makeCompiledFunction
           (irc-intrinsic "makeCompiledFunction" 
@@ -230,7 +230,7 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                          (cmp:irc-size_t-*current-source-pos-info*-filepos)
                          (cmp:irc-size_t-*current-source-pos-info*-lineno)
                          (cmp:irc-size_t-*current-source-pos-info*-column)
-                         (compile-reference-to-literal lambda-name env)
+                         (compile-reference-to-literal lambda-name)
                          funcs 
                          (irc-renv env)
                          lambda-list)
@@ -1041,13 +1041,12 @@ jump to blocks within this tagbody."
 	 (read-only-p (cadr rest)))
     (if *generate-compile-file-load-time-values*
 	(multiple-value-bind (index fn)
-	    (compile-ltv-thunk 'load-time-value-func form nil)
+	    (compile-ltv-thunk form)
 	  ;; Invoke the repl function here
           (with-ltv-function-codegen (ltv-result ltv-env)
             (irc-intrinsic "invokeTopLevelFunction" 
                            ltv-result 
                            fn
-                           (irc-renv ltv-env)
                            (jit-constant-unique-string-ptr "load-time-value")
                            *gv-source-file-info-handle*
                            (cmp:irc-size_t-*current-source-pos-info*-filepos)
@@ -1059,7 +1058,7 @@ jump to blocks within this tagbody."
 	  (cmp-log "About to generate load-time-value for COMPILE")
           ;;	  (break "Handle load-time-value for COMPILE")
 	  (let ((ltv (eval form)))
-	    (codegen-rtv/all result ltv env))))))
+	    (codegen-rtv result ltv env))))))
 
 
 
@@ -1294,7 +1293,7 @@ jump to blocks within this tagbody."
       (if (atom form)
           (if (symbolp form)
               (codegen-symbol-value result form env)
-              (codegen-atom result form env))
+              (codegen-literal result form env))
           (let ((head (car form))
                 (rest (cdr form)))
             (cmp-log "About to codegen special-operator or application for: %s\n" form)
@@ -1414,7 +1413,8 @@ be wrapped with to make a closure"
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
     (when *dump-module-on-completion*
-      (llvm-sys:dump *the-module*))
+      (llvm-sys:dump *the-module*)
+      (core::fflush))
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (if (not *run-time-execution-engine*)
 	;; SETUP THE *run-time-execution-engine* here for the first time
@@ -1436,7 +1436,6 @@ be wrapped with to make a closure"
 	     lambda-name
 	     fn ;; This may not be valid anymore
 	     (irc-environment-activation-frame wrapped-env)
-	     *run-time-literals-external-name*
 	     core:*current-source-file-info*
 	     (core:source-pos-info-filepos cspi)
 	     (core:source-pos-info-lineno cspi)
@@ -1473,13 +1472,13 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
       (define-primitives-in-module *the-module*)
-      (let* ((*run-time-value-holder-global-var*
+      (let* ((*run-time-values-table-global-var*
 	      (llvm-sys:make-global-variable *the-module*
                                              +run-and-load-time-value-holder-global-var-type+
 					     nil
 					     'llvm-sys:external-linkage
 					     nil
-					     *run-time-literals-external-name*))
+					     *run-time-values-table-name*))
 	     (pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))

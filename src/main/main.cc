@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/instance.h>
 #include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/core/debugger.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #include <clasp/clbind/clbindPackage.h>
 #include <clasp/sockets/socketsPackage.h>
@@ -92,6 +93,7 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
       SIMPLE_ERROR(BF("USE_MPI is true but mpiEnabled is false!!!!"));
     }
 #endif
+//    printf("%s:%d About to _lisp->run()    ExitProgram typeid %p;\n", __FILE__, __LINE__, (void*)&typeid(core::ExitProgram) );
     _lisp->run();
   } catch (core::DynamicGo &failedGo) {
     printf("%s:%d A DynamicGo was thrown but not caught frame[%lu] tag[%lu]\n", __FILE__, __LINE__, failedGo.getFrame(), failedGo.index());
@@ -99,10 +101,13 @@ int startup(int argc, char *argv[], bool &mpiEnabled, int &mpiRank, int &mpiSize
     ASSERT(gctools::tagged_fixnump(failedUnwind.getFrame()));
     printf("%s:%d An unwind was thrown but not caught frame[%ld] tag[%lu]\n", __FILE__, __LINE__, gctools::untag_fixnum(failedUnwind.getFrame()), failedUnwind.index());
   } catch (core::ExitProgram &ee) {
-    printf("\n");
-    //            printf("Caught ExitProgram in %s:%d\n", __FILE__, __LINE__);
     exitCode = ee.getExitResult();
-  }; // catch (...) { exitCode = gctools::handleFatalCondition(); }
+    if ( exitCode != 0 ) {
+      printf("Clasp is terminating with exit code %d\n", exitCode );
+    }
+  } catch (...) {
+    printf("%s:%d  The generic catch(...) caught an unhandled exception of type %p - fix this!!!!\n", __FILE__, __LINE__, (void*)__cxxabiv1::__cxa_current_exception_type() );
+  }
   return exitCode;
 }
 

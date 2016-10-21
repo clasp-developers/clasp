@@ -28,14 +28,8 @@
 
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
-      (let* ((value (cleavir-ir:value datum))
-	     (ltv-index (cmp:codegen-literal nil value))
-	     (ltv-ref (cmp:irc-intrinsic "cc_loadTimeValueReference"
-					 (if cmp:*generate-compile-file-load-time-values*
-					     cmp:*load-time-value-holder-global-var*
-					     cmp:*run-time-value-holder-global-var*)
-					 (%size_t ltv-index))))
-	ltv-ref)
+      (let* ((value (cleavir-ir:value datum)))
+        (%literal-ref value))
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond
@@ -48,10 +42,7 @@
 	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
 	    ((typep datum 'cleavir-ir:static-lexical-location)
 	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
-	    #+(or)((typep datum 'cleavir-ir:load-time-value-input)
-		   (format t "load-time-value-input - what does the datum look like: ~a~%" datum)
-		   (warn "Get the load-time-value-input and setf var"))
-	    (t (error "Add support to translate datum: ~a~%" datum)))
+            (t (error "Add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
 	var)))
 
@@ -263,8 +254,7 @@
        (let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
 	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
-      (layout-procedure initial-instruction abi )
-      )))
+      (layout-procedure initial-instruction abi ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -331,26 +321,12 @@
        (let ((load (%load input)))
          (%store load output))))))
 
-(defun ltv-global ()
-  (if cmp:*generate-compile-file-load-time-values*
-      cmp:*load-time-value-holder-global-var*
-      cmp:*run-time-value-holder-global-var*))
-
-
-(defmethod translate-simple-instruction
-    ((instruction clasp-cleavir-hir:precalc-symbol-instruction) return-value inputs outputs abi)
-  (let ((idx (first inputs)))
-    ;;    (format t "translate-simple-instruction (first inputs) --> ~a~%" (first inputs))
-    (cmp:irc-low-level-trace :flow)
-    (let ((label (format nil "~s" (clasp-cleavir-hir:precalc-symbol-instruction-original-object instruction))))
-      (let ((result (cmp:irc-intrinsic-args "cc_precalcSymbol" (list (ltv-global) idx) :label label)))
-	(llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil)))))
-
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:precalc-value-instruction) return-value inputs outputs abi)
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-intrinsic "cc_precalcValue" (ltv-global) idx)))
+    (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
+           (result (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) idx) :label label)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -535,8 +511,7 @@
     (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
 	(layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
-	     (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
-	     (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+	     (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
 	     (result (cmp:irc-intrinsic-args
                       "cc_enclose"
                       (list* ltv-lambda-name
@@ -564,8 +539,7 @@
              (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
              (ptr-to-sacs
               (llvm-sys:create-bit-cast cmp:*irbuilder* stack-allocated-closure-space cmp:+i8*+ "closure-ptr"))
-             (ltv-lambda-name-index (cmp:codegen-literal nil lambda-name))
-             (ltv-lambda-name (cmp:irc-intrinsic-args "cc_precalcValue" (list (ltv-global) (%size_t ltv-lambda-name-index)) :label (format nil "lambda-name->~a" lambda-name)))
+             (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
              (result
               (let ()
                 (cmp:irc-intrinsic-args
@@ -802,18 +776,33 @@
     (cmp:irc-cond-br ceq (first successors) (second successors))))
 
 (defmethod translate-branch-instruction
-          ((instruction cleavir-ir:consp-instruction) return-value inputs outputs successors abi)
-        (let* ((x (%load (first inputs)))
-               (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+tag-mask+) "tag-only"))
-               (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
-          (%cond-br cmp (first successors) (second successors))) :likely t)
+    ((instruction cleavir-ir:consp-instruction) return-value inputs outputs successors abi)
+  (let* ((x (%load (first inputs)))
+         (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+tag-mask+) "tag-only"))
+         (cmp (%icmp-eq tag (%i32 cmp:+cons-tag+) "consp-test")))
+    (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 (defmethod translate-branch-instruction
-          ((instruction cleavir-ir:fixnump-instruction) return-value inputs outputs successors abi)
-        (let* ((x (%load (first inputs)))
-               (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
-               (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
-          (%cond-br cmp (first successors) (second successors))) :likely t)
+    ((instruction cleavir-ir:fixnump-instruction) return-value inputs outputs successors abi)
+  (let* ((x (%load (first inputs)))
+         (tag (%and (%ptrtoint x cmp::+i32+) (%i32 cmp:+fixnum-mask+) "fixnum-tag-only"))
+         (cmp (%icmp-eq tag (%i32 cmp:+fixnum-tag+) "fixnump-test")))
+    (%cond-br cmp (first successors) (second successors) :likely-true t)))
+
+(defmethod translate-branch-instruction
+    ((instruction cc-mir:characterp-instruction) return-value inputs outputs successors abi)
+  (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+)
+                    (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
+         (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
+    (%cond-br cmp (first successors) (second successors) :likely-true t)))
+
+
+(defmethod translate-branch-instruction
+    ((instruction cc-mir:single-float-p-instruction) return-value inputs outputs successors abi)
+  (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+)
+                    (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
+         (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
+    (%cond-br cmp (first successors) (second successors) :likely-true t)))
 
 
 (defmethod translate-branch-instruction
@@ -880,33 +869,6 @@
          (cmp-lt (%icmp-eq x y)))
       (%cond-br cmp-lt (first successors) (second successors))))
 
-(defmethod translate-branch-instruction
-    ((instruction cleavir-ir:typeq-instruction) return-value inputs outputs successors abi)
-  (let ((value (%load (first inputs))))
-    (case (cleavir-ir:value-type instruction)
-      (fixnum
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+fixnum-mask+) "fixnum-tag-only"))
-              (cmp (%icmp-eq tag (%uintptr_t cmp:+fixnum-tag+))))
-         (%cond-br cmp (first successors) (second successors)) :likely t))
-      (cons
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "cons-tag-only"))
-              (cmp (%icmp-eq tag (%uintptr_t cmp:+cons-tag+))))
-         (%cond-br cmp (first successors) (second successors)) :likely t))
-      (core:valist 
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+tag-mask+) "valist-tag-only"))
-              (cmp (%icmp-eq tag (%uintptr_t cmp:+valist-tag+))))
-         (%cond-br cmp (first successors) (second successors)) :likely t))
-      (character
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "character-tag-only"))
-              (cmp (%icmp-eq tag (%uintptr_t cmp:+character-tag+))))
-         (%cond-br cmp (first successors) (second successors)) :likely t))
-      (single-float
-       (let* ((tag (%and (%ptrtoint value cmp:+uintptr_t+) (%uintptr_t cmp:+immediate-mask+) "single-float-tag-only"))
-              (cmp (%icmp-eq tag (%uintptr_t cmp:+single-float-tag+))))
-         (%cond-br cmp (first successors) (second successors)) :likely t))
-      (otherwise
-       (error "What do I do here for typeq-instruction when it falls through all the types")))))
-
 ;;; When the FUNCALL-INSTRUCTION is the last instruction of a basic
 ;;; block, it is because there is a call to a function that will never
 ;;; return, such as ERROR, and the instruction then has no successors
@@ -919,15 +881,6 @@
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs successors abi)
   (declare (ignore outputs successors))
   `(funcall ,(first inputs) ,@(rest inputs)))
-
-
-
-
-
-
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -998,45 +951,44 @@ nil)
              (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
-(defparameter *hir-after-ti* nil)
-(defparameter *hir-types* nil)
-(defparameter *use-type-inference* t)
+
+(defparameter *enable-type-inference* nil)
+
+
 (defun my-hir-transformations (init-instr implementation processor os)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-before.dot")) ;; comment out
   ;;
   ;; The type inference code - this is currently generating unsafe code
   ;; to generate type safe code I would put c-t-i::thes->typeqs beforehand
   ;; but to do that I need to support the funcall-no-return-instruction.
   ;;
-  (progn
+  (when *enable-type-inference*
     ;; Conditionally use type inference.
-    ;; It involves a recursive function that blows the stack for very large tlf's
-    ;; I turn it off in hierarchy.lsp for +class-hierarchy+
-    (when *use-type-inference*
-      (let ((types (cleavir-type-inference:infer-types init-instr)))
-        (setq *hir-types* types)
-        ;; prune paths with redundant typeqs
-        (cleavir-type-inference::prune-typeqs init-instr types)
-        (when *debug-cleavir*
-          (let ((cleavir-ir-graphviz::*types* types))
-            (draw-hir init-instr #P"/tmp/hir-after-ti.dot")))))
-    ;; delete the-instruction and the-values-instruction
-    (cleavir-type-inference::delete-the init-instr)
-    ;; convert (typeq x fixnum) -> (fixnump x)
-    ;;         (typeq x cons) -> (consp x)
-    ;;         (typeq x YYY) -> (typep x 'YYY)
-    (cleavir-hir-transformations:eliminate-typeq init-instr)
-    (setf *hir-after-ti* init-instr))
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-etq.dot")) ;; comment out
+    (let ((types (cleavir-type-inference:infer-types init-instr)))
+      (when *debug-cleavir*
+        (let ((cleavir-ir-graphviz::*types* types))
+          (draw-hir init-instr #P"/tmp/hir-before-prune-ti.dot")))
+      ;; prune paths with redundant typeqs
+      (cleavir-type-inference::prune-typeqs init-instr types)
+      (when *debug-cleavir*
+        (let ((cleavir-ir-graphviz::*types* types))
+          (draw-hir init-instr #P"/tmp/hir-after-ti.dot")))))
+  ;; delete the-instruction and the-values-instruction
+  (cleavir-type-inference::delete-the init-instr)
+  ;; convert (typeq x fixnum) -> (fixnump x)
+  ;;         (typeq x cons) -> (consp x)
+  ;;         (typeq x YYY) -> (typep x 'YYY)
+  (cleavir-hir-transformations:eliminate-typeq init-instr)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-etq.dot"))
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
-  ;;  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-est.dot")) ;; comment out
+  ;;  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-est.dot"))
   (cleavir-hir-transformations:process-captured-variables init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-pcv.dot")) ;; comment out
-  )
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-pcv.dot")))
 
+(defparameter *debug-final-gml* nil)
+(defparameter *debug-final-next-id* 0)
 
-(defun do-compile (form)
+(defun compile-form (form)
   (cc-dbg-when *debug-log*
                (incf *debug-log-index*)
                (format *debug-log* "====== STARTING TO LOG A NEW FORM - INDEX: ~d~%" *debug-log-index*)
@@ -1083,6 +1035,8 @@ nil)
           (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
           (cleavir-ir:hir-to-mir hir clasp-system nil nil)
           (when *debug-cleavir* (draw-mir hir)) ;; comment out
+          #+(or)(format t "About to dump mir~%")
+          (when *debug-final-gml* (cleavir-ir-gml:draw-flowchart hir (format nil "/tmp/mir~a.gml" (incf *debug-final-next-id*))))
           (clasp-cleavir:optimize-stack-enclose hir)
           (cc-mir:assign-mir-instruction-datum-ids hir)
           (setf *ast* hoisted-ast
@@ -1134,13 +1088,13 @@ nil)
               (cleavir-ir:hir-to-mir hir clasp-system nil nil) 
               (clasp-cleavir:optimize-stack-enclose hir)
               (cc-mir:assign-mir-instruction-datum-ids hir)
-              #|| Moved up ||# #+(or) (clasp-cleavir:convert-funcalls hir)
               (setf *ast* hoisted-ast
                     *hir* hir)
               (let ((*form* form)
                     (abi *abi-x86-64*))
                 (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
                 (when *debug-cleavir* (draw-mir hir)) ;; comment out
+                (when *debug-final-gml* (cleavir-ir-gml:draw-flowchart hir (format nil "/tmp/mir~a.gml" (incf *debug-final-next-id*))))
                 (translate hir abi))))
         (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
         (or fn (error "There was no function returned by compile-lambda-function"))
@@ -1168,7 +1122,6 @@ nil)
                  'REPL			; main fn name
                  fn			; llvm-fn
                  nil			; environment
-                 cmp:*run-time-literals-external-name*
                  "repl-fn.txt"
                  4321
                  5678
@@ -1185,12 +1138,11 @@ nil)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
     (multiple-value-bind (fn kind #|| more ||#)
-	(do-compile form)
+	(compile-form form)
       (cmp:with-ltv-function-codegen (result ltv-env)
 	(cmp:irc-intrinsic "invokeTopLevelFunction" 
 			   result 
 			   fn 
-			   (cmp:irc-renv ltv-env)
 			   (cmp:jit-constant-unique-string-ptr "top-level")
 			   cmp:*gv-source-file-info-handle*
 			   (cmp:irc-size_t-*current-source-pos-info*-filepos)

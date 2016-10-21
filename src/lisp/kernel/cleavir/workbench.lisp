@@ -19,7 +19,17 @@
     (print (core:getpid)))
   (print "Done - you are ready to go"))
 
+(progn
+  (load "sys:kernel;cleavir;auto-compile.lisp")
+  (load "sys:kernel;cleavir;inline.lisp"))
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;clos;std-slot-value.lsp")
+
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x) (car (the cons x))) :debug t)
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (declare (fixnum x y)) (if (< x y) 1 2)) :debug t)
+
 
 *features*
 (clasp-cleavir:cleavir-compile-file "sys:modules;asdf;build;asdf.lisp" :print t)
@@ -1012,7 +1022,6 @@ clasp-cleavir::*hir-types*
                      'REPL              ; main fn name
                      fn			; llvm-fn
                      nil                ; environment
-                     cmp:*run-time-literals-external-name*
                      "repl-fn.txt"
                      0
                      0

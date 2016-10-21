@@ -101,6 +101,261 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
   };
 };
 };
+
+
+
+extern "C" {
+
+core::LoadTimeValues_O& ltvGet(core::LoadTimeValues_O** ltvPP)
+{
+  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
+  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
+  core::LoadTimeValues_O &ltv = *ltvP;
+  return ltv;
+}
+
+
+void ltvc_get_or_create_load_time_value_array(core::LoadTimeValues_O **ltvPP, const char *moduleName, size_t numberOfLoadTimeValues) {
+  core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues);
+  *ltvPP = NULL;
+//  printf("%s:%d - I am registering the ltvPP=%p *ltvP=%p as a root in getOrCreateLoadTimeValueArray.\n   I believe this is the best place to do this - I previously did it in finalizeEngineAndRegisterWithGcAndGetCompiledFunction.\n  If this is the best place then remove this notice.",__FILE__,__LINE__, ltvPP, *ltvPP);
+#ifdef USE_MPS
+  registerLoadTimeValuesRoot(ltvPP);
+#endif
+  *ltvPP = reinterpret_cast<core::LoadTimeValues_O *>(loadTimeValues.raw_()); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
+                                                                              //	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
+}
+
+
+
+void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
+  //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
+  core::Str_sp mname = core::Str_O::create(moduleName);
+  core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
+  SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
+  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
+#if 0
+  if ( sfindex == 0 ) {
+    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
+  } else {
+    printf("%s:%d Assigning SourceFileInfoHandle %d for %s  at sourceFileInfoHandleP@%p\n", __FILE__, __LINE__, sfindex, moduleName, sourceFileInfoHandleP );
+  }
+#endif
+  *sourceFileInfoHandleP = sfindex;
+}
+
+
+void ltvc_make_nil(core::LoadTimeValues_O **ltvPP, size_t index)
+{
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = _Nil<core::T_O>();
+}
+
+void ltvc_make_t(core::LoadTimeValues_O **ltvPP, size_t index)
+{
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = _lisp->_true();
+}
+
+
+void ltvc_make_ratio(core::LoadTimeValues_O **ltvPP, size_t index,
+                     size_t num_index,
+                     size_t denom_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = core::Ratio_O::create(ltv[num_index],ltv[denom_index]);
+}
+
+void ltvc_make_complex(core::LoadTimeValues_O **ltvPP, size_t index,
+                     size_t real_index,
+                     size_t imag_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = core::Complex_O::create(ltv[real_index],ltv[imag_index]);
+}
+
+
+void ltvc_make_cons(core::LoadTimeValues_O **ltvPP, size_t index) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
+}
+
+void ltvc_cons_fill( core::LoadTimeValues_O **ltvPP, size_t index,
+                     size_t car_index,
+                     size_t cdr_index) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::Cons_sp cons = gctools::As<core::Cons_sp>(ltv[index]);
+  cons->rplaca(ltv[car_index]);
+  cons->rplacd(ltv[cdr_index]);
+}
+  
+
+void ltvc_make_array(core::LoadTimeValues_O **ltvPP, size_t index,
+                     size_t element_type_index,
+                     size_t dimensions_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::T_sp element_type = ltv[element_type_index];
+  core::List_sp dimensions = gctools::As<List_sp>(ltv[dimensions_index]);
+  if (core::cl__length(dimensions) == 1) // vector
+  {
+    ltv[index] = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);
+  } else {
+    ltv[index] = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true());
+  }
+}
+
+void ltvc_setf_row_major_aref(core::LoadTimeValues_O **ltvPP, size_t index,
+                              size_t row_major_index,
+                              size_t value_index )
+{
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::Array_sp array = gc::As<core::Array_sp>(ltv[index]);
+  array->rowMajorAset(row_major_index,ltv[value_index]);
+}
+  
+void ltvc_make_hash_table(core::LoadTimeValues_O **ltvPP, size_t index,
+                          size_t test_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = core::HashTable_O::create(ltv[test_index]);
+}
+
+void ltvc_setf_gethash(core::LoadTimeValues_O **ltvPP, size_t index,
+                       size_t key_index,
+                       size_t value_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::HashTable_sp hash_table = gctools::As<HashTable_sp>(ltv[index]);
+  core::T_sp key = ltv[key_index];
+  core::T_sp value = ltv[value_index];
+  hash_table->hash_table_setf_gethash(key, value);
+}
+
+void ltvc_make_fixnum(core::LoadTimeValues_O **ltvPP, size_t index,
+                      int64_t val) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index].rawRef_() = clasp_make_fixnum(val).raw_();
+}
+
+void ltvc_make_bignum(core::LoadTimeValues_O **ltvPP, size_t index,
+                      size_t bignum_string_index) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::Str_sp bignum_string = gctools::As<core::Str_sp>(ltv[bignum_string_index]);
+  ltv[index] = core::Bignum_O::make(bignum_string->get());
+}
+
+
+void ltvc_make_symbol(core::LoadTimeValues_O **ltvPP, size_t index,
+                      size_t name_index,
+                      size_t package_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::T_sp package = ltv[package_index];
+  core::Str_sp symbol_name = gctools::As<core::Str_sp>(ltv[name_index]);
+  core::Symbol_sp sym;
+  if (package.notnilp()) {
+    sym = gctools::As<Package_sp>(package)->intern(symbol_name);
+  } else {
+    sym = core::Symbol_O::create(symbol_name);
+  }
+  ltv[index] = sym;
+}
+
+void ltvc_make_character(core::LoadTimeValues_O **ltvPP, size_t index,
+                         uintptr_t val) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index].rawRef_() = clasp_make_character(val).raw_();//reinterpret_cast<core::T_O*>(val);
+}
+
+void ltvc_make_base_string(core::LoadTimeValues_O **ltvPP, size_t index,
+                           const char* str) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = core::Str_O::create(str);
+}
+
+void ltvc_make_pathname(core::LoadTimeValues_O **ltvPP, size_t index,
+                        size_t host_index,
+                        size_t device_index,
+                        size_t directory_index,
+                        size_t name_index,
+                        size_t type_index,
+                        size_t version_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = core::Pathname_O::makePathname(ltv[host_index],
+                                              ltv[device_index],
+                                              ltv[directory_index],
+                                              ltv[name_index],
+                                              ltv[type_index],
+                                              ltv[version_index],
+                                              kw::_sym_local,
+                                              ltv[host_index].notnilp());
+}
+
+void ltvc_make_package(core::LoadTimeValues_O **ltvPP, size_t index,
+                       size_t package_name_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::Str_sp package_name = gctools::As<core::Str_sp>(ltv[package_name_index]);
+  core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
+  if ( tpkg.nilp() ) {
+    SIMPLE_ERROR(BF("Could not find package %s") % package_name );
+  } else {
+    ltv[index] = tpkg;
+  }
+}
+
+void ltvc_make_built_in_class(core::LoadTimeValues_O **ltvPP, size_t index,
+                              size_t class_name_index ) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::Symbol_sp class_name = gctools::As<core::Symbol_sp>(ltv[class_name_index]);
+  core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
+  if ( cl.nilp() ) {
+    SIMPLE_ERROR(BF("Could not find class %s") % class_name );
+  } else {
+    ltv[index] = cl;
+  }
+}
+
+
+void ltvc_make_float(core::LoadTimeValues_O **ltvPP, size_t index,
+                     float f) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = clasp_make_single_float(f);
+}
+
+void ltvc_make_double(core::LoadTimeValues_O **ltvPP, size_t index,
+                      double f) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  ltv[index] = clasp_make_double_float(f);
+}
+
+
+void ltvc_set_ltv_funcall(core::LoadTimeValues_O **ltvPP, size_t index,
+                          fnLispCallingConvention fptr) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  ltv[index].rawRef_() = ret.ret0;
+}
+
+void ltvc_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+}
+
+
+
+
+
+void dumpLoadTimeValues(core::LoadTimeValues_O *tagged_ltvP) {
+  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
+  ltvP->dump();
+}
+
+
+};
+
+
+
+
+
+
+
+
 extern "C" {
 
 LispCallingConventionPtr lccGlobalFunction(core::Symbol_sp sym) {
@@ -141,6 +396,7 @@ void unreachableError() {
   printf("%s:%d In unreachableError -  Hit an unreachable block\n",
          __FILE__, __LINE__);
 }
+
 
 void dumpLowLevelTrace(int numLowLevels) {
   int cur = _LLVMLowLevelTraceQueueIn;
@@ -185,16 +441,6 @@ NOINLINE extern void va_ifExcessKeywordArgumentsException(char *fnName, std::siz
 }
 
 
-#if 0
-T_O *va_coerceToClosure(core::T_sp *argP) {
-  IMPLEMENT_MEF(BF("Previously I returned Closure* - what should I return now?"));
-  if (!(*argP).objectp()) {
-    intrinsic_error(llvmo::couldNotCoerceToClosure, *argP);
-  }
-  core::Function_sp func = core::coerce::functionDesignator((*argP));
-  return &closure);
-}
-#endif
 
 ALWAYS_INLINE T_O *va_lexicalFunction(int depth, int index, core::T_sp *evaluateFrameP) {
   core::ActivationFrame_sp af = gctools::reinterpret_cast_smart_ptr<core::ActivationFrame_O>(*evaluateFrameP);
@@ -248,61 +494,7 @@ void NamednewFunction_sp(core::Function_sp *sharedP) {
   ASSERT(sharedP != NULL);
   new (sharedP) core::Function_sp();
 }
-#pragma clang diagnostic push
-//#pragma clang diagnostic ignored "-Wunused-local-typedef"
-#if 0
-void NameddestructFunction_sp(core::Function_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  DEPRECIATED(); // April 2015
-  if ((*sharedP).objectp()) {
-    typedef core::Function_sp dummy;
-    (*sharedP).~dummy();
-  }
-}
-void destructTsp(core::T_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  DEPRECIATED(); // April 2015
-  if ((*sharedP).objectp()) {
-    typedef core::T_sp dummy;
-    (*sharedP).~dummy();
-  }
-}
-void destructTmv(core::T_mv *sharedP) {
-  ASSERT(sharedP != NULL);
-  DEPRECIATED(); // April 2015
-  if ((*sharedP).objectp()) {
-    typedef core::T_mv dummy;
-    (*sharedP).~dummy();
-  }
-}
-void destructAFsp(core::ActivationFrame_sp *frameP) {
-  DEPRECIATED(); // April 2015
-  ASSERT(frameP != NULL);
-  if ((*frameP).objectp()) {
-    typedef core::ActivationFrame_sp dummy;
-    (*frameP).~dummy();
-  }
-}
-#endif
-#pragma clang diagnostic pop
-#if 0
 
-void resetTsp(core::T_sp *sharedP) {
-  ASSERT(sharedP != NULL);
-  (*sharedP).reset_();
-}
-
-void makeUnboundTsp(core::T_sp *sharedP) {
-  (*sharedP) = _Unbound<T_O>();
-}
-#endif
-#if 0
-ALWAYS_INLINE extern int compareTsp(core::T_sp *xP, core::T_sp *yP) {
-  //	ASSERT(xP!=NULL);
-  //	ASSERT(yP!=NULL);
-  return ((*xP) == (*yP)) ? 1 : 0;
-}
-#endif
 NOINLINE extern void copyArgs(core::T_sp *destP, int nargs, core::T_O *arg0, core::T_O *arg1, core::T_O *arg2, va_list args) {
   DEPRECIATED();
   //        printf("%s:%d copyArgs destP=%p  nargs=%d\n", __FILE__, __LINE__, destP, nargs);
@@ -379,11 +571,6 @@ int isTrue(core::T_sp *valP) {
   //	return (gctools::tagged_ptr<core::T_O>::tagged_nilp(valP)) ? 0 : 1;
 }
 
-/*! Return i32 1 if (*valP) is Nil or 0 if not */
-int isNilTsp(core::T_sp *valP) {
-  ASSERT(valP != NULL);
-  return (*valP).nilp();
-}
 
 void internSymbol_tsp(core::T_sp *resultP, const char *symbolNameP, const char *packageNameP) {
   core::Symbol_sp newSym = _lisp->internWithPackageName(packageNameP, symbolNameP);
@@ -494,7 +681,6 @@ void mv_makeCompiledFunction(core::T_mv *resultCompiledFunctionP, fnLispCallingC
 extern "C" {
 void invokeTopLevelFunction(core::T_mv *resultP,
                             fnLispCallingConvention fptr,
-                            core::ActivationFrame_sp *frameP,
                             char *cpname,
                             int *sourceFileInfoHandleP,
                             size_t filePos,
@@ -502,27 +688,8 @@ void invokeTopLevelFunction(core::T_mv *resultP,
                             size_t column,
                             core::LoadTimeValues_O **ltvPP) {
   ASSERT(ltvPP != NULL);
-#if 0
-  ActivationFrame_sp frame = (*frameP);
-#endif
   core::Str_sp name = core::Str_O::create(cpname);
-#if 1
   FunctionClosure_sp tc = FunctionClosure_O::create(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
-#else
-  // When I used tagged_pointer<...> I stack allocated the BuiltinClosure_O
-  // I can't do that now that Closure_O is under General_O in the
-  // class hierarchy.  I'm leaving this code in here in case I need
-  // anything from it.
-  // Once this code works - delete this #else clause
-  BuiltinClosure_O tempClosure(name, kw::_sym_function, *sourceFileInfoHandleP, filePos, lineno, column);
-  core::BuiltinClosure_sp tc(&tempClosure);
-#endif
-#if 0
-  STACK_FRAME(buff, no_args, 0);
-  VaList_S empty_valist(no_args);
-  core::T_O *empty_valist_ptr = empty_valist.asTaggedPtr();
-  LCC_SPILL_CLOSURE_TO_VA_LIST(empty_valist);
-#endif
 #define TIME_TOP_LEVEL_FUNCTIONS
 #ifdef TIME_TOP_LEVEL_FUNCTIONS
   core::Number_sp startTime;
@@ -692,15 +859,17 @@ void mv_prependMultipleValues(core::T_mv *resultP, core::T_mv *multipleValuesP) 
 extern "C" {
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-void sp_symbolFunctionRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
+void sp_symbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
   ASSERT(resultP != NULL);
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
+  const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = (*symP)->symbolFunction();
   ASSERTNOTNULL(*resultP);
 }
-void mv_symbolFunctionRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
+void mv_symbolFunctionRead(core::T_mv *resultP, const core::T_sp *tsymP) {
   ASSERT(resultP != NULL);
+  const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
   ASSERTF((*symP)->fboundp(), BF("There is no function bound to symbol[%s]") % _rep_((*symP)));
   (*resultP) = Values((*symP)->symbolFunction());
@@ -708,8 +877,9 @@ void mv_symbolFunctionRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
 }
 
 /*! Invoke a symbol function with the given arguments and put the result in (*resultP) */
-extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::Symbol_sp *symP) {
+extern void setfSymbolFunctionRead(core::T_sp *resultP, const core::T_sp *tsymP) {
   ASSERT(resultP != NULL);
+  const core::Symbol_sp* symP = reinterpret_cast<const core::Symbol_sp*>(tsymP);
   ASSERTF(symP != NULL, BF("passed symbol is NULL"));
   core::Function_sp setfFunc = (*symP)->getSetfFdefinition(); //_lisp->get_setfDefinition(*symP);
   ASSERTF(setfFunc, BF("There is no setf function bound to symbol[%s]") % _rep_((*symP)));
@@ -846,8 +1016,6 @@ void debugPrint_size_t(size_t v) {
   printf("+++DBG-size_t[%lu]\n", v);
 }
 
-void singleStepCallback() {
-}
 
 void throwCatchThrow(core::T_sp *tagP) {
   ASSERT(tagP != NULL);
@@ -868,7 +1036,7 @@ void throwCatchThrow(core::T_sp *tagP) {
   SIMPLE_ERROR(BF("This should never happen"));
 }
 
-void throwReturnFrom(core::Symbol_sp *blockSymbolP) {
+void throwReturnFrom(core::T_sp *blockSymbolP) {
   ASSERT(blockSymbolP != NULL);
   core::T_sp blockSymbol = *blockSymbolP;
   int frame = my_thread->exceptionStack().findKey(BlockFrame, blockSymbol);
@@ -930,7 +1098,7 @@ size_t pushCatchFrame(core::T_sp *tagP) {
   return result;
 }
 
-size_t pushBlockFrame(core::Symbol_sp *tagP) {
+size_t pushBlockFrame(core::T_sp *tagP) {
   ASSERT(tagP != NULL);
   core::T_sp osym = *tagP;
   size_t result = my_thread->exceptionStack().push(BlockFrame, osym);
@@ -1062,37 +1230,7 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
   throw * goExceptionP;
 }
 
-void getOrCreateLoadTimeValueArray(core::LoadTimeValues_O **ltvPP, const char *moduleName, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols) {
-  core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues, numberOfLoadTimeSymbols);
-  *ltvPP = NULL;
-//  printf("%s:%d - I am registering the ltvPP=%p *ltvP=%p as a root in getOrCreateLoadTimeValueArray.\n   I believe this is the best place to do this - I previously did it in finalizeEngineAndRegisterWithGcAndGetCompiledFunction.\n  If this is the best place then remove this notice.",__FILE__,__LINE__, ltvPP, *ltvPP);
-#ifdef USE_MPS
-  registerLoadTimeValuesRoot(ltvPP);
-#endif
-  *ltvPP = reinterpret_cast<core::LoadTimeValues_O *>(loadTimeValues.raw_()); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
-                                                                              //	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
-}
 
-void dumpLoadTimeValues(core::LoadTimeValues_O *tagged_ltvP) {
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  ltvP->dump();
-}
-
-void assignSourceFileInfoHandle(const char *moduleName, const char *sourceDebugPathname, size_t sourceDebugOffset, int useLineno, int *sourceFileInfoHandleP) {
-  //	printf("%s:%d assignSourceFileInfoHandle %s\n", __FILE__, __LINE__, moduleName );
-  core::Str_sp mname = core::Str_O::create(moduleName);
-  core::Str_sp struename = core::Str_O::create(sourceDebugPathname);
-  SourceFileInfo_mv sfi_mv = core::core__source_file_info(mname, struename, sourceDebugOffset, useLineno ? true : false);
-  int sfindex = unbox_fixnum(gc::As<core::Fixnum_sp>(sfi_mv.valueGet_(1)));
-#if 0
-	if ( sfindex == 0 ) {
-	    printf("%s:%d Could not get a SourceFileInfoHandle for %s\n", __FILE__, __LINE__, moduleName );
-	} else {
-	    printf("%s:%d Assigning SourceFileInfoHandle %d for %s  at sourceFileInfoHandleP@%p\n", __FILE__, __LINE__, sfindex, moduleName, sourceFileInfoHandleP );
-	}
-#endif
-  *sourceFileInfoHandleP = sfindex;
-}
 
 void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
   int sfindex = *sourceFileInfoHandleP;
@@ -1102,14 +1240,14 @@ void debugSourceFileInfoHandle(int *sourceFileInfoHandleP) {
 }
 };
 
-inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, int index) {
+inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, size_t index) {
   core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
   core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
   core::LoadTimeValues_O &ltv = *ltvP;
   return ltv.data_element(index);
 }
 extern "C" {
-void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, int index) {
+void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, size_t index) {
   ASSERT(resultP != NULL);
   ASSERT(ltvPP != NULL);
   ASSERT((*ltvPP) != NULL);
@@ -1124,7 +1262,7 @@ void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, i
   (*resultP) = val;
   ASSERTNOTNULL(*resultP);
 }
-void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, int index) {
+void mv_copyLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, size_t index) {
   ASSERT(resultP != NULL);
   ASSERT(ltvPP != NULL);
   ASSERT((*ltvPP) != NULL);
@@ -1362,19 +1500,19 @@ void progvRestoreSpecials(void **saveSpecialsP) {
 
 extern "C" {
 
-void pushDynamicBinding(core::Symbol_sp *symbolP) {
-  core::Symbol_sp sym = *symbolP;
+void pushDynamicBinding(core::T_sp *tsymbolP) {
+  core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
   my_thread->bindings().push(sym);
   //	printf("%s:%d - pushDynamicBinding symbol: %s  value: %s\n", __FILE__, __LINE__, sym->__repr__().c_str(), sym->symbolValueOrUnbound()->__repr__().c_str() );
 }
 
-void popDynamicBinding(core::Symbol_sp *symbolP) {
-  core::Symbol_sp sym = *symbolP;
+void popDynamicBinding(core::T_sp *tsymbolP) {
+  core::Symbol_sp sym((gctools::Tagged)(tsymbolP->raw_()));
   core::Symbol_sp top = my_thread->bindings().topSymbol();
   if (sym != my_thread->bindings().topSymbol()) {
     stringstream ss;
     ss << __FILE__ << ":" << __LINE__;
-    ss << " popDynamicBinding of " << _rep_(*symbolP) << std::endl;
+    ss << " popDynamicBinding of " << _rep_(*tsymbolP) << std::endl;
     ss << "  mismatch with top of dynamic binding stack: " << _rep_(top) << std::endl;
     ss << "  dumping stack: " << std::endl;
     core::core__dynamic_binding_stack_dump(ss);
@@ -1820,6 +1958,9 @@ T_mv cc_multiple_value_prog1_function(core::T_mv* result, core::T_O* tfunc1, cor
   for (size_t i(1), iEnd(mvFunc1._Size); i < iEnd; ++i) mvThreadLocal[i] = mvFunc1[i];
 }
 #endif
+
+
+
 
 void clasp_terminate(const char *file, size_t line, size_t column, const char *func) {
   printf("Terminating file: %s  func: %s\n", file, func);

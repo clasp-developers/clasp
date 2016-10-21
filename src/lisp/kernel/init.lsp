@@ -2,6 +2,7 @@
 ;; :clos to compile with CLOS
 ;;
 
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (core:select-package "CORE"))
 
@@ -359,10 +360,12 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 
 ;;; Define these here so that Cleavir can do inlining
 (defvar *defun-inline-hook* nil)
+(defvar *inline-on* nil)
 (defvar *do-inline-hook* nil)
 (defvar *proclaim-hook* nil)
 (export '(*defun-inline-hook*
           *do-inline-hook*
+          *inline-on*
           *proclaim-hook*))
 
 ;; Discard documentation until helpfile.lsp is loaded
@@ -786,6 +789,7 @@ the stage, the +application-name+ and the +bitcode-name+"
                 (eval (read-from-string (cdr entry)))))
           core::*command-line-load-eval-sequence*))
 
+(export 'maybe-load-clasprc)
 (defun maybe-load-clasprc ()
   "Maybe load the users startup code"
   (if (not (member :no-rc *features*))
@@ -794,8 +798,6 @@ the stage, the +application-name+ and the +bitcode-name+"
                                     :defaults (user-homedir-pathname))))
         (if (probe-file clasprc)
             (load clasprc)))))
-(export 'maybe-load-clasprc)
-
 
 (defun tpl-default-pathname-defaults-command ()
   (print *default-pathname-defaults*))

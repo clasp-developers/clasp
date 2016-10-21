@@ -106,11 +106,20 @@ Read all of the scraped info files and interpret their tags."
       (process-all-sif-files main-path (mapcar (lambda (cc) (sif-name cc)) all-cc)))))
 
 (defun slurp-clang-output (file command)
-  (let ((output
+  (let* ((exit-code nil)
+         (output
           (with-output-to-string (str)
-            (sb-ext:run-program "sh" (list "-c" command) :search t
-                                                         :output str
-                                                         :external-format :latin1))))
+            (let* ((process (sb-ext:run-program "sh" (list "-c" command)
+                                                :search t
+                                                :output str
+                                                :external-format :latin1))
+                   (status (sb-ext:process-status process)))
+              (setf exit-code (when (member status '(:exited :signaled))
+                                (sb-ext:process-exit-code process)))))))
+    (when (and exit-code
+               (/= exit-code 0))
+      (error "Clang returned with exit code: ~A, error message: ~S, the command was: ~S"
+             exit-code output command))
     (make-instance 'buffer-stream
                    :buffer output
                    :buffer-pathname file
@@ -125,20 +134,29 @@ Read all of the scraped info files and interpret their tags."
             (*print-pretty* nil))
         (prin1 tags fout)))))
 
+(defun directory-pathname-p (pathname)
+  (and pathname
+       (let ((pathname (pathname pathname)))
+         (flet ((check-one (x)
+                  (member x '(nil :unspecific) :test 'equal)))
+           (and (not (wild-pathname-p pathname))
+                (check-one (pathname-name pathname))
+                (check-one (pathname-type pathname))
+                t)))))
+
 (defun generate-headers-from-all-sifs ()
   (let* ((minus-minus-pos (position "--" sb-ext:*posix-argv* :test #'string=))
-         (args (cdr (nthcdr minus-minus-pos sb-ext:*posix-argv*)))
-         (build-path (car args))
-         (clasp-home-path (cadr args))
-         (main-path (caddr args))
-         (main-path (merge-pathnames (pathname main-path) (pathname build-path)))
-         (sif-files (cdddr args))
-         (*default-pathname-defaults* (pathname build-path)))
-    (format t "clasp-home-path             -> ~a~%" clasp-home-path)
-    (format t "build-path                  -> ~a~%" build-path)
-    (format t "main-path                   -> ~a~%" main-path)
-    (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
-    (process-all-sif-files clasp-home-path build-path sif-files)))
+         (args (subseq sb-ext:*posix-argv* (1+ minus-minus-pos))))
+    (destructuring-bind
+          (build-path clasp-home-path &rest sif-files)
+        args
+      (let ((*default-pathname-defaults* (pathname build-path)))
+        (format t "clasp-home-path             -> ~a~%" clasp-home-path)
+        (format t "build-path                  -> ~a~%" build-path)
+        (format t "*default-pathname-defaults* -> ~a~%" *default-pathname-defaults*)
+        (assert (every 'directory-pathname-p (list clasp-home-path build-path)))
+        (assert sif-files)
+        (process-all-sif-files clasp-home-path build-path sif-files)))))
     
 (export '(generate-one-sif generate-headers-from-all-sifs))
 

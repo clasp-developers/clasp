@@ -778,14 +778,18 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathna
   CL_EXTERN_DEFUN((llvm::AttributeSet (*)(llvm::LLVMContext &, unsigned, llvm::ArrayRef<llvm::Attribute::AttrKind>)) & llvm::AttributeSet::get);
 
 
-
-  CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::Str_sp svalue) {
+CL_LAMBDA(module value &optional label);
+CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::Str_sp svalue, core::T_sp label) {
     llvm::Module &M = *(module->wrappedPtr());
     llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(M.getContext(), svalue->get());
     llvm::GlobalVariable *GV = new llvm::GlobalVariable(M, StrConstant->getType(),
                                                         true, llvm::GlobalValue::InternalLinkage,
                                                         StrConstant);
-    GV->setName(":::str");
+    if (label.nilp()) {
+      GV->setName(":::str");
+    } else {
+      GV->setName(gctools::As<core::Str_sp>(label)->get());
+    }
     GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
     return gc::As<Value_sp>(translate::to_object<llvm::Value *>::convert(GV));
   }
@@ -2723,7 +2727,7 @@ void finalizeEngineAndTime(llvm::ExecutionEngine *engine) {
   _sym_STARnumberOfLlvmFinalizationsSTAR->setf_symbolValue(core::make_fixnum(num));
 }
 
-CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::Str_sp globalRunTimeValueName, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList) {
+CL_DEFUN core::Function_sp finalizeEngineAndRegisterWithGcAndGetCompiledFunction(ExecutionEngine_sp oengine, core::T_sp functionName, Function_sp fn, core::T_sp activationFrameEnvironment, core::T_sp fileName, size_t filePos, int linenumber, core::T_sp lambdaList) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
   finalizeEngineAndTime(engine);
@@ -2748,7 +2752,7 @@ struct CtorStruct {
 };
 
 
-CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::Str_sp globalRunTimeValueName, core::T_sp fileName) {
+CL_DEFUN void finalizeEngineAndRegisterWithGcAndRunMainFunctions(ExecutionEngine_sp oengine, core::T_sp fileName) {
   // Stuff to support MCJIT
   llvm::ExecutionEngine *engine = oengine->wrappedPtr();
 #ifdef DEBUG_STARTUP
@@ -2814,11 +2818,7 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   return Values(targeto, _Nil<core::T_O>());
 }
 
-
-
-
-
-    SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
+  SYMBOL_SC_(LlvmoPkg, STARglobal_value_linkage_typesSTAR);
   SYMBOL_EXPORT_SC_(LlvmoPkg, ExternalLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, AvailableExternallyLinkage);
   SYMBOL_EXPORT_SC_(LlvmoPkg, LinkOnceAnyLinkage);

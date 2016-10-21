@@ -29,7 +29,7 @@
 	  *run-time-execution-engine*
 	  create-run-time-execution-engine
 	  irc-environment-activation-frame
-	  *run-time-literals-external-name*
+	  *run-time-values-table-name*
 	  *all-functions-for-one-compile*
 	  *dump-module-on-completion*
 	  irc-intrinsic-args

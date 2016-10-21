@@ -42,8 +42,8 @@
 (defparameter *datum-table* nil)
 
 (defun datum-id (datum)
-  (clasp-cleavir:datum-gid datum))
-;;  (gethash datum *datum-table*))
+  #+(or)(clasp-cleavir:datum-gid datum)
+  (gethash datum *datum-table*))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,8 +110,8 @@
 (defparameter *instruction-table* nil)
 
 (defun instruction-id (instruction)
-  (clasp-cleavir:instruction-gid instruction))
-;;  (gethash instruction *instruction-table*))
+  #+(or)(clasp-cleavir:instruction-gid instruction)
+  (gethash instruction *instruction-table*))
 
 (defgeneric draw-instruction (instruction stream))
 
@@ -188,8 +188,7 @@
 		when (null (gethash datum *datum-table*))
 		do (let ((tid (incf id)))
 		     (setf (gethash datum *datum-table*) tid)
-		     (push datum datums))
-		  )))
+		     (push datum datums)))))
 	 initial-instruction)
 	(dolist (instr instructions)
 	  (draw-instruction instr stream))

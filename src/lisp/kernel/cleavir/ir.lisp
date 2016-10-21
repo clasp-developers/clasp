@@ -1,5 +1,19 @@
 (in-package :clasp-cleavir)
 
+(defun %literal-ref (value)
+  (let ((index (cmp:reference-literal value)))
+    (cond
+      ((= index 0) (cmp:irc-intrinsic-args "cc_nil_reference" nil :label "&NIL"))
+      ((= index 1) (cmp:irc-intrinsic-args "cc_t_reference" nil :label "&T"))
+      (t (cmp:compile-reference-to-load-time-value index)))))
+
+(defun %literal-value (value &optional label)
+  (let ((index (cmp:reference-literal value)))
+    (cond
+      ((= index 0) (cmp:irc-intrinsic-args "cc_nil_value" nil :label "NIL"))
+      ((= index 1) (cmp:irc-intrinsic-args "cc_t_value" nil :label "T"))
+      (t (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t index)) :label label)))))
+
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
 
@@ -23,7 +37,9 @@
 (defmethod %default-int-type ((abi abi-x86-32)) cmp:+i32+)
 
 (defun %literal (lit &optional (label "literal"))
-  (llvm-sys:create-extract-value cmp:*irbuilder* (cmp:irc-load (cmp:compile-reference-to-literal lit nil)) (list 0) label))
+  (llvm-sys:create-extract-value
+   cmp:*irbuilder*
+   (cmp:irc-load (cmp:compile-reference-to-literal lit)) (list 0) label))
 
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))
@@ -105,6 +121,8 @@
 
 (defun %icmp-eq (x y &optional (label ""))
   (llvm-sys:create-icmp-eq cmp:*irbuilder* x y label))
+(defun %icmp-ne (x y &optional (label ""))
+  (llvm-sys:create-icmp-ne cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
   (llvm-sys:create-icmp-slt cmp:*irbuilder* x y label))
 (defun %icmp-slt (x y &optional (label ""))
@@ -130,12 +148,6 @@
   (cmp:irc-intrinsic "llvm.ssub.with.overflow.i64" x y))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
   (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
-
-#||
-(defun %precalc-value (ltv-global** index)
-  (let* ((ltva (%load ltv-global**))
-         (
-||#
 
    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

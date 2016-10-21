@@ -45,7 +45,7 @@
       ;;    (break "About to codegen attach-debugging-info")
       (when symbol-names
 	(let* ((ltv-idx (codegen-literal nil symbol-names env))
-	       (ltv-ref (compile-reference-to-load-time-value ltv-idx env)))
+	       (ltv-ref (compile-reference-to-load-time-value ltv-idx)))
 	  (irc-intrinsic "attachDebuggingInfoToValueFrame" af ltv-ref))))))
 
 
@@ -59,7 +59,7 @@
     (irc-intrinsic scope-exit-fn scope-level scope-msg)))
 
 (defun irc-t ()
-  (compile-reference-to-literal t nil))
+  (compile-reference-to-literal t))
 
 
 (defun irc-personality-function ()
@@ -349,7 +349,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv\n")
 	  renv)
-	(let ((nil-renv (compile-reference-to-literal nil env))) ;; (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s\n" nil-renv)
 	  nil-renv))))
 
@@ -359,7 +359,7 @@
 	(progn
 	  (cmp-log "Returning non-nil renv\n")
 	  renv)
-	(let ((nil-renv (compile-reference-to-literal nil env))) ;; (irc-intrinsic "activationFrameNil")))
+	(let ((nil-renv (compile-reference-to-literal nil))) ;; (irc-intrinsic "activationFrameNil")))
 	  (cmp-log "Returning nil renv: %s\n" nil-renv)
 	  nil-renv))))
 
@@ -1164,14 +1164,14 @@ If the *primitives* hashtable says that the function with (name) requires a firs
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
-  (compile-reference-to-symbol sym env)
+  (compile-reference-to-symbol sym)
   )
 
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
-  (compile-reference-to-symbol sym env)
+  (compile-reference-to-symbol sym)
   )
 
 

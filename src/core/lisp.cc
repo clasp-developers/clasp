@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <dlfcn.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -651,11 +653,11 @@ List_sp Lisp_O::loadTimeValuesIds() const {
 /*! How is this going to work with moving garbage collection?
      We return a reference to the LoadTimeValues_sp smart_ptr in the LoadtimeValueArrays hash-table
     What happens when this moves????    Disaster!!!!!!!   */
-LoadTimeValues_sp Lisp_O::getOrCreateLoadTimeValues(const string &name, int numberOfLoadTimeValues, int numberOfLoadTimeSymbols) {
+LoadTimeValues_sp Lisp_O::getOrCreateLoadTimeValues(const string &name, size_t numberOfLoadTimeValues ) {
   Str_sp key = Str_O::create(name);
   T_sp it = this->_Roots._LoadTimeValueArrays->gethash(key, _Nil<T_O>());
   if (it.nilp()) {
-    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues, numberOfLoadTimeSymbols);
+    LoadTimeValues_sp vo = LoadTimeValues_O::make(numberOfLoadTimeValues);
     this->_Roots._LoadTimeValueArrays->setf_gethash(key, vo);
     return vo; // gctools::smart_ptr<LoadTimeValues_O>(reinterpret_cast<LoadTimeValues_O*>(vo.pbase()));
   }
@@ -1385,6 +1387,11 @@ CL_DECLARE();
 CL_DOCSTRING("exit");
 CL_DEFUN void core__exit(int exitValue) {
   global_debuggerOnSIGABRT = false;
+  if (exitValue != 0) {
+    if ( core::_sym_STARexit_backtraceSTAR->symbolValue().notnilp() ) {
+      core::core__clib_backtrace(999999);
+    }
+  }
   throw(ExitProgram(exitValue));
 };
 
@@ -2585,7 +2592,15 @@ void Lisp_O::run() {
     if (oCar(cur) == kw::_sym_debugStartup) {
       printf("%s:%d Setting core:*debug-startup* to T\n", __FILE__, __LINE__);
       _sym_STARdebugStartupSTAR->setf_symbolValue(_lisp->_true());
+    } else if (oCar(cur) == kw::_sym_exit_backtrace) {
+      printf("%s:%d Setting core:*exit-backtrace* to T\n", __FILE__, __LINE__);
+      _sym_STARexit_backtraceSTAR->setf_symbolValue(_lisp->_true());
+    } else if (oCar(cur) == kw::_sym_pause_pid) {
+      printf("%s:%d PID = %d  Paused at startup - press enter to continue: \n", __FILE__, __LINE__, getpid() );
+      fflush(stdout);
+      getchar();
     }
+
   }
   if (!this->_IgnoreInitImage) {
     if ( startup_functions_are_waiting() ) {

@@ -34,7 +34,7 @@ THE SOFTWARE.
 
 namespace core {
 class LoadTimeValues_O : public General_O {
-  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, int index));
+  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, size_t index));
   LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues",General_O);
 
 public: // Simple default ctor/dtor
@@ -47,27 +47,30 @@ public: // ctor/dtor for classes with shared virtual base
 
 GCPRIVATE: // instance variables here
   gctools::Vec0<T_sp> _Objects;
-  gctools::Vec0<Symbol_sp> _Symbols;
+//  gctools::Vec0<Symbol_sp> _Symbols;
 
 public: // Functions here
-  static LoadTimeValues_sp make(int dataDimension, int symbolDimension);
+  static LoadTimeValues_sp make(size_t dataDimension);
+
+
+  T_sp &operator[](size_t index) { return this->_Objects[index]; }
 
   int numberOfValues() const { return this->_Objects.size(); };
-  int numberOfSymbols() const { return this->_Symbols.size(); };
+//  int numberOfSymbols() const { return this->_Symbols.size(); };
 
   void dumpValues(vector<gctools::Fixnum> &indices);
-  void dumpSymbols(vector<gctools::Fixnum> &indices);
+//  void dumpSymbols(vector<gctools::Fixnum> &indices);
 
   // -------- Regular data storage
 
-  ALWAYS_INLINE T_sp &data_element(uint i) { return this->_Objects[i]; };
-  int data_vectorPushExtend(T_sp val, int extension);
-
+  ALWAYS_INLINE T_sp &data_element(size_t i) { return this->_Objects[i]; };
+  size_t data_vectorPushExtend(T_sp val, size_t extension);
+CL_DEFMETHOD  void load_time_value_array_setf(size_t index, T_sp object ) { this->_Objects[index] = object;};
   // -------- Symbols storage
 
-  void symbols_setFillPointer(uint i);
-  ALWAYS_INLINE Symbol_sp &symbols_element(uint i) { return this->_Symbols[i]; };
-  int symbols_vectorPushExtend(Symbol_sp val, int extension);
+//  void symbols_setFillPointer(uint i);
+//  ALWAYS_INLINE Symbol_sp &symbols_element(uint i) { return this->_Symbols[i]; };
+//  int symbols_vectorPushExtend(Symbol_sp val, int extension);
 
 }; // LoadTimeValues class
 };

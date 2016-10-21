@@ -103,9 +103,7 @@ CL_DEFUN bool llvm_sys__load_bitcode(core::Pathname_sp filename, bool verbose, b
   if (comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue().nilp() ) {
     SIMPLE_ERROR(BF("The cmp:*load-time-value-holder-name* is nil"));
   }
-  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine,
-                                                     comp::_sym_STARload_time_value_holder_nameSTAR->symbolValue(),
-                                                     namestring);
+  finalizeEngineAndRegisterWithGcAndRunMainFunctions(executionEngine, namestring);
   return true;
 }
 
@@ -157,7 +155,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
 #define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name), code), list)
   LoadTimeValues_O tempLtv;
   ENTRY(list, LOAD - TIME - VALUES - OBJECTS - OFFSET, make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
-  ENTRY(list, LOAD - TIME - VALUES - SYMBOLS - OFFSET, make_fixnum((char *)&tempLtv._Symbols - (char *)&tempLtv));
+//  ENTRY(list, LOAD - TIME - VALUES - SYMBOLS - OFFSET, make_fixnum((char *)&tempLtv._Symbols - (char *)&tempLtv));
   gc::Vec0<T_sp> tempVec0Tsp;
   ENTRY(list, VEC0 - VECTOR - OFFSET, make_fixnum((char *)&tempVec0Tsp._Vector - (char *)&tempVec0Tsp));
   gc::GCVector_moveable<T_O *> tempGCVector(1, 0);

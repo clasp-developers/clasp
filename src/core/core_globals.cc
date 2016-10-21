@@ -44,7 +44,7 @@ extern "C" {
       We use a pointer to the smart_ptr because we don't want
       to have to maintain this as a garbage collection root.
     */
-core::LoadTimeValues_O *globalTaggedRunTimeValues ATTR_WEAK = NULL;
+core::LoadTimeValues_O *run_time_values_table ATTR_WEAK = NULL;
 };
 #pragma GCC visibility pop
 

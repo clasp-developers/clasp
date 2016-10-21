@@ -276,8 +276,8 @@
 ;;; 	standard-class			(class)
 ;;; 	funcallable-standard-class	(class)
 ;;;
-#+cclasp
-(eval-when (:compile-toplevel :execute :load-toplevel)
+;;;#+cclasp
+#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
   (setq clasp-cleavir:*use-type-inference* nil))
 
 (eval-when (eval #+clasp :compile-toplevel #+clasp :load-toplevel  )
@@ -397,8 +397,8 @@
        :direct-superclasses (t))
       )))
 
-#+cclasp
-(eval-when (:compile-toplevel :execute :load-toplevel)
+;;;#+cclasp
+#+(or)(eval-when (:compile-toplevel :execute :load-toplevel)
   (setq clasp-cleavir:*use-type-inference* t))
 
 

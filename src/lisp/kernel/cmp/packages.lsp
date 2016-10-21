@@ -23,8 +23,8 @@
           *low-level-trace-print*
           *run-time-execution-engine*
           *run-time-literal-holder*
-          *run-time-literals-external-name*
-          *run-time-value-holder-global-var*
+          *run-time-values-table-name*
+          *run-time-values-table-global-var*
           *the-module*
           +cons-tag+
           +fixnum-tag+
@@ -53,11 +53,15 @@
           cmp-log
           cmp-log-dump
           codegen-literal
+          reference-literal
           codegen-rtv
           codegen-symbol
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function
+          bclasp-compile-form
+          compile-form
+          reference-evaluated-function
           compile-ltv-thunk
           compiler-error
           compiler-fatal-error
@@ -122,6 +126,8 @@
           with-landing-pad
           with-ltv-function-codegen
           compile-reference-to-literal
+          compile-reference-to-load-time-value
+          ltv-global
           bclasp-compile
           bclasp-compile-file
           make-uintptr_t

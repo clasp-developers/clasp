@@ -48,7 +48,7 @@ def aclasp(wrappers):
         "src/lisp/kernel/cmp/debuginfo",
         "src/lisp/kernel/cmp/lambdalistva",
         "src/lisp/kernel/cmp/cmpvars",
-        "src/lisp/kernel/cmp/cmpquote",
+        "src/lisp/kernel/cmp/cmpliteral",
         "src/lisp/kernel/cmp/cmpobj",
         "src/lisp/kernel/cmp/compiler",
         "src/lisp/kernel/cmp/compilefile",
@@ -63,8 +63,8 @@ def aclasp(wrappers):
 def bclasp(wrappers):
     files = aclasp(wrappers) + [
         "src/lisp/kernel/cmp/cmpwalk",
-        "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/assert",
+        "src/lisp/kernel/lsp/sharpmacros",
         "src/lisp/kernel/lsp/numlib",
         "src/lisp/kernel/lsp/describe",
         "src/lisp/kernel/lsp/module",

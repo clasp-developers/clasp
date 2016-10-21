@@ -141,8 +141,6 @@ Return the module and the global variable that represents the load-time-value-ho
 
 (defvar *run-time-module* nil)
 
-;;;(defvar *load-time-value-holder-name* "load-time-value-vector")
-
 (defvar *the-module* nil "This stores the module into which compile puts its stuff")
 (defvar *run-time-execution-engine* nil)
 (defvar *the-function-pass-manager* nil "the function-pass-manager applied to runtime functions")
@@ -195,11 +193,18 @@ No DIBuilder is defined for the default module")
 
 (defun jit-constant-i64 (val)
   "Create an i64 constant in the current context"
-  (let ((ap-arg (llvm-sys:make-apint64 val)))
+  (let ((ap-arg (llvm-sys:make-apint-width val 64 t)))
     (llvm-sys:constant-int-get *llvm-context* ap-arg)))
 
 
 (defun jit-constant-size_t (val)
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) (jit-constant-i64 val))
+      ((= 4 sizeof_size_t) (jit-constant-i32 val))
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+
+(defun jit-constant-uintptr_t (val)
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
     (cond
       ((= 8 sizeof-size_t) (jit-constant-i64 val))

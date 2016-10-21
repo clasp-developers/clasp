@@ -1158,4 +1158,12 @@ void initialize_compiler_primitives(Lisp_sp lisp) {
   return;
 }
 
-}; /* namespace */
+void clasp_trap(core::T_O* val) {
+  printf("%s:%d  clasp_trap called with %p\n", __FILE__, __LINE__, val);
+}
+
+void clasp_silent_trap(core::T_O* obj) {
+  // Do nothing
+}
+};
+        
