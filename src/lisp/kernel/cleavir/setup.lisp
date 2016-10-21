@@ -128,11 +128,15 @@
      (fboundp function-name)
      ;; In that case, we return the relevant info
      ;; Check if we should inline the function
-     (make-instance 'cleavir-env:global-function-info
-                    :name function-name
-                    :compiler-macro (compiler-macro-function function-name)
-                    :inline (core:global-inline-status function-name)
-                    :ast (core:cleavir-ast (fdefinition function-name))))
+     (let ((inline-status (when core:*inline-on*
+                            (core:global-inline-status function-name)))
+           (cleavir-ast (when core:*inline-on*
+                          (core:cleavir-ast (fdefinition function-name)))))
+       (make-instance 'cleavir-env:global-function-info
+                      :name function-name
+                      :compiler-macro (compiler-macro-function function-name)
+                      :inline inline-status
+                      :ast cleavir-ast)))
     ( ;; If it is neither of the cases above, then this name does
      ;; not have any function-info associated with it.
      t

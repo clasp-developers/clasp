@@ -8,10 +8,6 @@
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
-#+(or)
-(defun global-function-inline-ast (name)
-  (gethash name *function-inline-asts*))
-
 (defun do-inline-hook (name ast)
   (when (core:declared-global-inline-p name)
     (if (fboundp name)
@@ -24,8 +20,12 @@
     (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
            (ast (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*)))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
-         (when core:*do-inline-hook*
-           (funcall core:*do-inline-hook* (QUOTE ,name) ,ast))))))
+           ;; I'm featuring out the *do-inline-hook* test
+           ;; I don't think it's needed in addition to
+           ;; *defun-inline-hook*
+         (funcall do-inline-hook (QUOTE ,name) ,ast)
+         #+(or)(when core:*do-inline-hook*
+                 (funcall core:*do-inline-hook* (QUOTE ,name) ,ast))))))
 
 ;;; original
 #+(or)
@@ -37,19 +37,28 @@
            (astfn-gs (gensym "ASTFN")))
       `(eval-when (:compile-toplevel :load-toplevel :execute)
          (let ((,astfn-gs (lambda () ,ast-form)))
-           (when core:*do-inline-hook*
+           ;; I'm featuring out the *do-inline-hook* test
+           ;; I don't think it's needed in addition to
+           ;; *defun-inline-hook*
+           (funcall do-inline-hook (QUOTE ,name) (funcall ,astfn-gs))
+           #+(or)(when core:*do-inline-hook*
              (funcall core:*do-inline-hook* (QUOTE ,name) (funcall ,astfn-gs))))))))
 
-(setq core:*defun-inline-hook* 'defun-inline-hook)
-(setq core:*do-inline-hook* 'do-inline-hook)
-(setq core:*proclaim-hook* 'proclaim-hook)
+(defun inline-on! ()
+  (setq core:*inline-on* t))
 
+(defun inline-off! ()
+  (setq core:*inline-on* nil))
 
-
-
-
-
-
+(eval-when (:compile-toplevel :execute :load-toplevel)
+  #+(or)(setq core::*inline-on* t)
+  (setq core:*defun-inline-hook* 'defun-inline-hook)
+  (setq core:*proclaim-hook* 'proclaim-hook)
+  ;; The following may not be needed in addition to *defun-inline-hook*
+  ;; remove it from init.lsp if not
+  #+(or)(setq core:*do-inline-hook* 'do-inline-hook) ; maybe depreciated
+  )
+  
 (defparameter *simple-environment* nil)
 (defvar *code-walker* nil)
 (export '(*simple-environment* *code-walker*))
@@ -77,3 +86,14 @@
     (cleavir-generate-ast:generate-ast form env *clasp-system*)))
 
 (export 'code-walk-using-cleavir)
+
+
+(defmethod make-load-form ((ast cleavir-ast:ast) &optional environment)
+  (values `(allocate-instance ',(class-of ast))
+          `(initialize-instance
+            ,ast
+            ,@(loop for (keyword reader)
+                    in (cleavir-io:save-info ast)
+                    for value = (funcall reader ast)
+                    collect `(quote ,keyword)
+                    collect `(quote ,value)))))
