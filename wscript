@@ -76,9 +76,10 @@ BOOST_LIBRARIES = [
 def update_submodules(cfg):
     os.system("echo This is where I get submodules")
     os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
-    os.system("git submodule update --init src/lisp/modules/asdf")
     os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
     os.system("git submodule update --init src/mps")
+    os.system("git submodule update --init src/lisp/modules/asdf")
+    os.system("(cd src/lisp/modules/asdf; make)")
 
 def sync_submodules(cfg):
     os.system("echo This is where I sync submodules")
