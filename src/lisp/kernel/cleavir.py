@@ -158,7 +158,7 @@ cleavir_parts = [
     "src/lisp/kernel/cleavir/closure-optimize",
     "src/lisp/kernel/cleavir/translate",
     "src/lisp/kernel/cleavir/inline-prep",
-    "src/lisp/kernel/tags/pre-auto"
+    "src/lisp/kernel/tags/pre-auto",
     "src/lisp/kernel/cleavir/auto-compile",
     "src/lisp/kernel/cleavir/inline"
 ]
