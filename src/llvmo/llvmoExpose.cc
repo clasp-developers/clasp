@@ -651,8 +651,8 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathna
     SIMPLE_ERROR(BF("Could not write bitcode to file[%s] - error: %s") % pn % errcode.message());
   }
   if (useThinLTO) {
-    llvm::ModuleSummaryIndexBuilder IndexBuilder(module->wrappedPtr());
-    llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &IndexBuilder.getIndex(),true);
+    auto Index = llvm::buildModuleSummaryIndex(*(module->wrappedPtr()),NULL,NULL);
+    llvm::WriteBitcodeToFile(module->wrappedPtr(), OS,false, &Index,true);
   } else {
     llvm::WriteBitcodeToFile(module->wrappedPtr(),OS);
   }
@@ -2053,13 +2053,12 @@ string IRBuilder_O::__repr__() const {
   return ss.str();
 }
 
-  CL_LAMBDA (irbuilder cond true-branch false-branch &optional branch-weights unpred);
-  CL_LISPIFY_NAME(CreateCondBr);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateCondBr);
-
-  CL_LAMBDA("irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw");
-  CL_LISPIFY_NAME(CreateAdd);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAdd);
+CL_LAMBDA (irbuilder cond true-branch false-branch &optional branch-weights unpred);
+CL_LISPIFY_NAME(CreateCondBr);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::BranchInst * (IRBuilder_O::ExternalType::*)(llvm::Value *, llvm::BasicBlock *, llvm::BasicBlock *, llvm::MDNode *, llvm::MDNode *))&IRBuilder_O::ExternalType::CreateCondBr);
+CL_LAMBDA("irbuilder lhs rhs &optional (name \"\") has-nuw has-nsw");
+CL_LISPIFY_NAME(CreateAdd);
+CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateAdd);
 
   CL_LISPIFY_NAME(CreateRet);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateRet);
@@ -2877,8 +2876,8 @@ CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple)
   CL_LISPIFY_NAME(createFunctionInliningPass);
   CL_EXTERN_DEFUN( (llvm::Pass * (*)(unsigned, unsigned)) & llvm::createFunctionInliningPass);
 
-  CL_LISPIFY_NAME(createAlwaysInlinerPass);
-  CL_EXTERN_DEFUN( (llvm::Pass * (*)()) & llvm::createAlwaysInlinerPass);
+  CL_LISPIFY_NAME(createAlwaysInlinerLegacyPass);
+  CL_EXTERN_DEFUN( (llvm::Pass * (*)()) & llvm::createAlwaysInlinerLegacyPass);
 
   CL_LISPIFY_NAME(createAAEvalPass);
   CL_EXTERN_DEFUN( &llvm::createAAEvalPass);

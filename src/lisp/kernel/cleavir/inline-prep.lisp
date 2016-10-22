@@ -8,48 +8,12 @@
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
-;; Generate an AST and save it for inlining if the
-;; function is proclaimed as inline
-(defun defun-inline-hook (name function-form)
-  (when (core:declared-global-inline-p name)
-    (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-           (ast (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*)))
-      `(eval-when (:compile-toplevel :load-toplevel :execute)
-         (when (core:declared-global-inline-p ',name)
-           (when (fboundp ',name)
-             (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
-
-;;; original
-#+(or)
-(defun defun-inline-hook (name function-form)
-  (when (core:declared-global-inline-p name)
-    (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
-           (ast (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*))
-           (ast-form (cleavir-ast-transformations:codegen-clone-ast ast))
-           (astfn-gs (gensym "ASTFN")))
-      `(eval-when (:compile-toplevel :load-toplevel :execute)
-         (let ((,astfn-gs (lambda () ,ast-form)))
-           ;; I'm featuring out the *do-inline-hook* test
-           ;; I don't think it's needed in addition to
-           ;; *defun-inline-hook*
-           (funcall do-inline-hook (QUOTE ,name) (funcall ,astfn-gs))
-           #+(or)(when core:*do-inline-hook*
-             (funcall core:*do-inline-hook* (QUOTE ,name) (funcall ,astfn-gs))))))))
-
 (defun inline-on! ()
   (setq core:*inline-on* t))
 
 (defun inline-off! ()
   (setq core:*inline-on* nil))
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  #+(or)(setq core::*inline-on* t)
-  (setq core:*defun-inline-hook* 'defun-inline-hook)
-  (setq core:*proclaim-hook* 'proclaim-hook))
-  
-(defparameter *simple-environment* nil)
-(defvar *code-walker* nil)
-(export '(*simple-environment* *code-walker*))
 
 (defun mark-env-as-function ()
   (push 'si::function-boundary *simple-environment*))
@@ -85,3 +49,33 @@
                     for value = (funcall reader ast)
                     collect `(quote ,keyword)
                     collect `(quote ,value)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Turn cleavir off and on
+;;;
+
+(defun cleavir-on! ()
+  (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr)
+  (setq cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
+  (setq core:*use-cleavir-compiler* t)
+  (setq core:*eval-with-env-hook* 'cclasp-eval))
+
+(defun cleavir-off! ()
+  (setq cmp:*cleavir-compile-hook* nil)
+  (setq cmp:*cleavir-compile-file-hook* nil)
+  (setq core:*use-cleavir-compiler* nil)
+  (setq core:*eval-with-env-hook* (fdefinition 'core:eval-with-env-default)))
+
+;; Generate an AST and save it for inlining if the
+;; function is proclaimed as inline
+(defun defun-inline-hook (name function-form)
+  (when (core:declared-global-inline-p name)
+    (let* ((cleavir-generate-ast:*compiler* 'cl:compile)
+           (ast (cleavir-generate-ast:generate-ast function-form *clasp-env* *clasp-system*)))
+      `(eval-when (:compile-toplevel :load-toplevel :execute)
+         (when (core:declared-global-inline-p ',name)
+           (when (fboundp ',name)
+             (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
+

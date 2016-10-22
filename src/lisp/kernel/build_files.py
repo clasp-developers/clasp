@@ -36,7 +36,6 @@ def aclasp(wrappers):
         "src/lisp/kernel/lsp/iolib",
         "src/lisp/kernel/lsp/logging",
         "src/lisp/kernel/lsp/trace",
-        "src/lisp/kernel/cmp/packages",
         "src/lisp/kernel/cmp/cmpsetup",
         "src/lisp/kernel/cmp/cmpglobals",
         "src/lisp/kernel/cmp/cmptables",
@@ -109,7 +108,7 @@ def bclasp(wrappers):
     return files
 
 def cclasp(wrappers):
-    return bclasp(wrappers) + cleavir.cleavir_parts + [
+    return bclasp(wrappers) + [ 'src/lisp/kernel/cmp/export-to-cleavir' ] + cleavir.cleavir_parts + [
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]
 

@@ -393,14 +393,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	      (cmp-log-dump *the-module*)
 	      (if *dump-module-on-completion*
 		  (llvm-sys:dump *the-module*))
-	      (multiple-value-bind (found-errors error-message)
-		  (progn
-		    (cmp-log "About to verify module prior to writing bitcode\n")
-		    (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-		(if found-errors
-		    (progn
-		      (format t "Module error: ~a~%" error-message)
-		      (break "Verify module found errors"))))))))
+              (irc-verify-module-safe *the-module*)))))
       module)))
 
 

@@ -681,13 +681,14 @@ core::T_sp ast_tooling__newFrontendActionFactory(core::T_sp consumerFactory) {
   SIMPLE_ERROR(BF("Implement newFrontendActionFactory for %s") % _rep_(consumerFactory));
 };
 
-#define ARGS_ast_tooling__Replacements_insert "(replacement)"
-#define DECL_ast_tooling__Replacements_insert ""
-#define DOCS_ast_tooling__Replacements_insert "Replacements_insert - try to insert the Replacement, return true if successful"
-bool ast_tooling__Replacements_insert(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
-  pair<clang::tooling::Replacements::iterator, bool> res = replacements.insert(one);
-  return res.second;
-};
+bool ast_tooling__Replacements_add(clang::tooling::Replacements &replacements, const clang::tooling::Replacement &one) {
+  llvm::Error err = replacements.add(one);
+  if (err) {
+    return false;
+  }
+  return true;
+}
+#if 0
 
 #define ARGS_ast_tooling__deduplicate "(replacements)"
 #define DECL_ast_tooling__deduplicate ""
@@ -723,6 +724,10 @@ CL_DEFUN core::T_mv ast_tooling__deduplicate(core::List_sp replacements) {
   }
   return Values(oCdr(firstRep), oCdr(firstRang));
 }
+#endif
+
+
+
 
 #if 1
 CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::MatchCallback *ptr) {
@@ -846,8 +851,9 @@ void initialize_clangTooling() {
      .def("toString", &clang::tooling::Replacement::toString)
      .def("replacement-apply", &clang::tooling::Replacement::apply),
      class_<clang::tooling::Range>("Range", no_default_constructor),
+     
      class_<clang::tooling::Replacements>("Replacements", no_default_constructor),
-     def("Replacements-insert", &ast_tooling__Replacements_insert) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
+     def("Replacements-add", &ast_tooling__Replacements_add) // I have to wrap this one by hand - the overloads for std::set::insert are too many and too complicated
      ,
      class_<clang::tooling::RefactoringTool, clang::tooling::ClangTool>("RefactoringTool", no_default_constructor)
      .def_constructor("newRefactoringTool", constructor<const clang::tooling::CompilationDatabase &, llvm::ArrayRef<std::string>>())

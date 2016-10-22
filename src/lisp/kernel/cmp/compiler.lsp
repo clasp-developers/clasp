@@ -1360,7 +1360,7 @@ be wrapped with to make a closure"
            (fpm (llvm-sys:make-function-pass-manager module)))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder 3)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder 1)
-      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-pass))
+      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
       (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
 ;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
       (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)

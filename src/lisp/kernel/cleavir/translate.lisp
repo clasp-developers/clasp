@@ -177,29 +177,31 @@
       ;; instruction (passed arguments)  I think I should use passed arguments
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
-        (setq return-value (alloca-return_type))
-        ;; In case of a non-local exit, zero out the number of returned
-        ;; values
-        (with-return-values (return-values return-value abi)
-          (%store (%size_t 0) (number-of-return-values return-values)))
-        (cmp:with-dbg-function ("repl-FIX"
-                                :linkage-name (llvm-sys:get-name fn)
-                                :function fn
-                                :function-type cmp:+fn-prototype+
-                                :form *form*)
-          (cmp:with-dbg-lexical-block (*form*)
-            (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
-            (cmp:dbg-set-current-source-pos-for-irbuilder *form* body-irbuilder)
-            (cmp:irc-low-level-trace :arguments)
-            #+use-ownerships(loop for var being each hash-key of *ownerships*
-                               using (hash-value owner)
-                               when (and (typep var '(or
-                                                      cleavir-ir:lexical-location
-                                                      cleavir-ir:values-location))
-                                         (eq owner initial-instruction)
-                                         #+(or)(not (member var (cleavir-ir:outputs
-                                                                 initial-instruction))))
-                               collect (translate-datum var)))))
+        ;; make sure no landing pads are used from outer functions
+        (cmp:with-landing-pad nil 
+          (setq return-value (alloca-return_type))
+          ;; In case of a non-local exit, zero out the number of returned
+          ;; values
+          (with-return-values (return-values return-value abi)
+            (%store (%size_t 0) (number-of-return-values return-values)))
+          (cmp:with-dbg-function ("repl-FIX"
+                                  :linkage-name (llvm-sys:get-name fn)
+                                  :function fn
+                                  :function-type cmp:+fn-prototype+
+                                  :form *form*)
+            (cmp:with-dbg-lexical-block (*form*)
+              (cmp:dbg-set-current-source-pos-for-irbuilder *form* *entry-irbuilder*)
+              (cmp:dbg-set-current-source-pos-for-irbuilder *form* body-irbuilder)
+              (cmp:irc-low-level-trace :arguments)
+              #+use-ownerships(loop for var being each hash-key of *ownerships*
+                                 using (hash-value owner)
+                                 when (and (typep var '(or
+                                                        cleavir-ir:lexical-location
+                                                        cleavir-ir:values-location))
+                                           (eq owner initial-instruction)
+                                           #+(or)(not (member var (cleavir-ir:outputs
+                                                                   initial-instruction))))
+                                 collect (translate-datum var))))))
       (cmp:with-dbg-function ("unused-with-dbg-function-name"
                               :linkage-name (llvm-sys:get-name fn)
                               :function fn
@@ -230,9 +232,9 @@
   (let* (#+use-ownerships(ownerships
 			  (cleavir-hir-transformations:compute-ownerships initial-instruction)))
     (let* (#+use-ownerships(*ownerships* ownerships)
-	   (*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
-	   (*tags* (make-hash-table :test #'eq))
-	   (*vars* (make-hash-table :test #'eq)))
+                           (*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
+                           (*tags* (make-hash-table :test #'eq))
+                           (*vars* (make-hash-table :test #'eq)))
       #+use-ownerships(setf *debug-ownerships* *ownerships*)
       (setf *debug-basic-blocks* *basic-blocks*
 	    *debug-tags* *tags*
@@ -254,7 +256,8 @@
        (let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
 	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
-      (layout-procedure initial-instruction abi ))))
+      (prog1 (layout-procedure initial-instruction abi )
+        (cmp:irc-verify-module-safe cmp:*the-module*)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -290,7 +293,7 @@
 	      (clasp-cleavir:create-landing-pad exn.slot ehselector.slot instr return-value landing-pad *tags* abi)))
       (cmp:with-irbuilder (*entry-irbuilder*)
         (cmp:irc-low-level-trace :cclasp-eh)
-	(let ((result (cmp:irc-intrinsic "cc_pushLandingPadFrame")))
+	(let ((result (cmp:irc-create-call "cc_pushLandingPadFrame" nil)))
 	  (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr)))))))
   (call-next-method))
 
@@ -326,7 +329,7 @@
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (result (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) idx) :label label)))
+           (result (cmp:irc-create-call "cc_precalcValue" (list (cmp:ltv-global) idx) label)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -429,14 +432,14 @@
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
     ;; Save whatever is in return-vals in the multiple-value array
-    (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value) ;; (sret-arg return-vals))
+    (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
-    (cmp:irc-intrinsic "cc_unwind" (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction)))))
+    (cmp:irc-create-invoke-default-unwind "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
-  (let ((result (cmp:irc-intrinsic "cc_makeCell")))
+  (let ((result (cmp:irc-create-call "cc_makeCell" nil)))
     (%store result (first outputs))))
 
 (defmethod translate-simple-instruction
@@ -444,14 +447,14 @@
   (cmp:irc-low-level-trace :flow)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell"))
 	(val (llvm-sys:create-load-value-twine cmp:*irbuilder* (second inputs) "val")))
-    (cmp:irc-intrinsic "cc_writeCell" cell val)))
+    (cmp:irc-create-call "cc_writeCell" (list cell val))))
 
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:read-cell-instruction) return-value inputs outputs abi)
   (let ((cell (llvm-sys:create-load-value-twine cmp:*irbuilder* (first inputs) "cell")))
   (cmp:irc-low-level-trace :flow)
-    (let ((result (cmp:irc-intrinsic "cc_readCell" cell)))
+    (let ((result (cmp:irc-create-call "cc_readCell" (list cell))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -459,28 +462,29 @@
   (cmp:irc-low-level-trace :flow)
   (let ((env (cmp:irc-load (first inputs) "env"))
 	(idx (second inputs)))
-    (let ((result (cmp:irc-intrinsic "cc_fetch" env idx)))
+    (let ((result (cmp:irc-create-call "cc_fetch" (list env idx))))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:fdefinition-instruction) return-value inputs outputs abi)
+  ;; How do we figure out if we should use safe or unsafe version
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "func-name")))
-;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
-    (let ((result (cmp:irc-intrinsic-args "cc_safe_fdefinition" (list cell) :label "func")))
+    ;;    (format t "translate-simple-instruction (first inputs) = ~a ~%" (first inputs))
+    (let ((result (cmp:irc-create-call "cc_safe_fdefinition" (list cell) "func")))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:debug-message-instruction) return-value inputs outputs abi)
   (let ((msg (cmp:jit-constant-unique-string-ptr (clasp-cleavir-hir:debug-message instruction))))
-    (cmp:irc-intrinsic "debugMessage" msg)))
+    (cmp:irc-create-call "debugMessage" (list msg))))
 	
 
 (defmethod translate-simple-instruction
     ((instruction clasp-cleavir-hir:setf-fdefinition-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (let ((cell (cmp:irc-load (first inputs) "setf-func-name")))
-    (let ((result (cmp:irc-intrinsic "cc_safe_setfdefinition" cell)))
+    (let ((result (cmp:irc-create-call "cc_safe_setfdefinition" (list cell))))
       (%store result (first outputs)))))
 
 (defmethod translate-simple-instruction
@@ -495,7 +499,7 @@
   (cmp:irc-low-level-trace :flow)
   (let ((sym (cmp:irc-load (first inputs) "sym-name"))
 	(val (cmp:irc-load (second inputs) "value")))
-    (cmp:irc-intrinsic "cc_setSymbolValue" sym val)))
+    (cmp:irc-create-call "cc_setSymbolValue" (list sym val))))
 
 
 
@@ -512,7 +516,7 @@
 	(layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
-	     (result (cmp:irc-intrinsic-args
+	     (result (cmp:irc-create-call
                       "cc_enclose"
                       (list* ltv-lambda-name
                              enclosed-function
@@ -522,7 +526,7 @@
                              (cmp:irc-size_t-*current-source-pos-info*-column)
                              (%size_t (length inputs))
                              loaded-inputs)
-                      :label (format nil "closure->~a" lambda-name))))
+                      (format nil "closure->~a" lambda-name))))
 	(cc-dbg-when *debug-log*
 		     (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
 		     (format *debug-log* "    inputs: ~a~%" inputs))
@@ -542,7 +546,7 @@
              (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
              (result
               (let ()
-                (cmp:irc-intrinsic-args
+                (cmp:irc-create-call
                  "cc_stack_enclose"
                  (list* ptr-to-sacs
                         ltv-lambda-name
@@ -553,7 +557,7 @@
                         (cmp:irc-size_t-*current-source-pos-info*-column)
                         (%size_t (length inputs))
                         loaded-inputs)
-                 :label (format nil "closure->~a" lambda-name)))
+                 (format nil "closure->~a" lambda-name)))
                #+(or) (progn
                         (cmp:irc-intrinsic-args
                          "cc_enclose"
@@ -565,7 +569,7 @@
                                 (cmp:irc-size_t-*current-source-pos-info*-column)
                                 (%size_t (length inputs))
                                 loaded-inputs)
-                         :label (format nil "closure->~a" lambda-name)))
+                         (format nil "closure->~a" lambda-name)))
                ))
         (cc-dbg-when *debug-log*
                      (format *debug-log* "cc_enclose with ~a cells~%" (length inputs))
@@ -576,7 +580,7 @@
     ((instruction cleavir-ir:multiple-value-call-instruction) return-value inputs outputs abi)
   (cmp:irc-low-level-trace :flow)
   (with-return-values (return-vals return-value abi)
-    (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value) ;; (sret-arg return-vals))
+    (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     (let ((call-result (cmp:irc-create-call "cc_call_multipleValueOneFormCall" 
 				     (list (cmp:irc-load (first inputs))))))
       (%store call-result return-value)
@@ -592,7 +596,7 @@
   (cmp:irc-low-level-trace :flow)
   (let* ((lpad (clasp-cleavir::landing-pad instruction)))
     (with-return-values (return-vals return-value abi)
-      (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value) ;; (sret-arg return-vals))
+      (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
       (let ((call-result (cmp:irc-create-invoke "cc_call_multipleValueOneFormCall" 
 					 (list (cmp:irc-load (first inputs)))
 					 (basic-block lpad))))
@@ -819,13 +823,13 @@
   #+(or)(with-return-values (return-vals return-value abi)
           (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value #|(sret-arg return-vals)|#)
           (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
-  (cmp:irc-intrinsic "cc_throw" (%load (first inputs)) (%load (second inputs)))
+  (cmp:irc-create-invoke-default-unwind "cc_throw" (list (%load (first inputs)) (%load (second inputs))))
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:landing-pad-return-instruction) return-value inputs outputs successors abi)
   (cmp:irc-low-level-trace :cclasp-eh)
-  (cmp:irc-intrinsic "cc_popLandingPadFrame" (cmp:irc-load (car (last inputs))))
+  (cmp:irc-create-call "cc_popLandingPadFrame" (list (cmp:irc-load (car (last inputs)))))
   (call-next-method))
 
 (defmethod translate-branch-instruction
@@ -881,28 +885,6 @@
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs successors abi)
   (declare (ignore outputs successors))
   `(funcall ,(first inputs) ,@(rest inputs)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; JIT the module
-;;;
-#||
-(defun jit-module-run-main (module main-name)
-  (let ((engine-builder (llvm-sys:make-engine-builder module))
-	;; After make-engine-builder MODULE becomes invalid!!!!!
-	(target-options (llvm-sys:make-target-options)))
-;;    (llvm-sys:setf-no-frame-pointer-elim target-options t)
-    (llvm-sys:set-target-options engine-builder target-options)
-;;;	 (llvm-sys:set-use-mcjit engine-builder t)
-    (let*((execution-engine (llvm-sys:create engine-builder))
-	  (stem (string-downcase (pathname-name filename)))
-	  (main-fn-name llvm-sys:+clasp-main-function-name+)
-	  (time-jit-start (clock-gettime-nanoseconds)))
-      (llvm-sys:finalize-engine-and-register-with-gc-and-run-function execution-engine main-fn-name (namestring (truename filename)) 0 0 *load-time-value-holder-name* )
-      )))
-t)
-nil)
-||#
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1140,15 +1122,16 @@ nil)
     (multiple-value-bind (fn kind #|| more ||#)
 	(compile-form form)
       (cmp:with-ltv-function-codegen (result ltv-env)
-	(cmp:irc-intrinsic "invokeTopLevelFunction" 
-			   result 
-			   fn 
-			   (cmp:jit-constant-unique-string-ptr "top-level")
-			   cmp:*gv-source-file-info-handle*
-			   (cmp:irc-size_t-*current-source-pos-info*-filepos)
-			   (cmp:irc-size_t-*current-source-pos-info*-lineno)
-			   (cmp:irc-size_t-*current-source-pos-info*-column)
-			   cmp:*load-time-value-holder-global-var*)))))
+	(cmp:irc-create-call "invokeTopLevelFunction"
+                             (list
+                              result 
+                              fn 
+                              (cmp:jit-constant-unique-string-ptr "top-level")
+                              cmp:*gv-source-file-info-handle*
+                              (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                              (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                              (cmp:irc-size_t-*current-source-pos-info*-column)
+                              cmp:*load-time-value-holder-global-var*))))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
