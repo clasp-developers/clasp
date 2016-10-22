@@ -178,35 +178,6 @@
 ;;;
 (defvar *landing-pad* nil)
 
-#+(or)
-(defmethod cleavir-ast-to-hir::compile-ast ((ast clasp-cleavir-ast:unwind-protect-ast) context)
-  (with-accessors ((results cleavir-ast-to-hir::results)
-		   (successors cleavir-ast-to-hir::successors)
-		   (invocation cleavir-ast-to-hir::invocation))
-      context
-    ;;  (cleavir-ast-to-hir::check-context-for-one-value-ast context)
-    (let* ((save-temp (cleavir-ast-to-hir::make-temp))
-	   (restore-mv (clasp-cleavir-hir:make-restore-multiple-values-return-instruction save-temp results (first successors)))
-	   (cleanup-form (cleavir-ast-to-hir::compile-ast
-                          (clasp-cleavir-ast:cleanup-ast ast) 
-                          (cleavir-ast-to-hir::context nil
-                                                       (list restore-mv)
-                                                       (cleavir-ast-to-hir::invocation context))))
-	   (values-temp (make-instance 'cleavir-ir:values-location))
-	   (save-mv (clasp-cleavir-hir:make-save-multiple-values-return-instruction values-temp save-temp cleanup-form))
-	   (cleanup-instr (clasp-cleavir-hir:make-cleanup-instruction save-mv))
-	   (landing-pad (clasp-cleavir-hir:make-landing-pad-instruction cleanup-instr))
-	   (*landing-pad* landing-pad)
-	   ;; Compile the protected form but use invokes rather than calls
-	   (protected-form (cleavir-ast-to-hir::compile-ast (clasp-cleavir-ast:protected-ast ast)
-							   (cleavir-ast-to-hir::context values-temp
-										       (list save-mv)
-										       (cleavir-ast-to-hir::invocation context))))
-	   (try-instr (clasp-cleavir-hir:make-try-instruction 123456789 protected-form))
-	   )
-      try-instr)))
-
-
 
 (defun make-call/invoke (&key inputs outputs successors (landing-pad *landing-pad*))
   (if landing-pad
@@ -220,9 +191,6 @@
 		     :inputs inputs
 		     :outputs outputs
 		     :successors successors)))
-      
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

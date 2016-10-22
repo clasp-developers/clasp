@@ -1070,12 +1070,10 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
-  ;;  (check-debug-info-setup *irbuilder*)
-  (let* ((func (get-function-or-error *the-module* function-name (car args)))
-	 (ra args)
-         (code (llvm-sys:create-call-array-ref *irbuilder* func ra label nil)))
-    (unless code (error "irc-create-call returning nil"))
-    code))
+  (let* ((func (get-function-or-error *the-module* function-name (car args))))
+    (let ((code (llvm-sys:create-call-array-ref *irbuilder* func args label nil)))
+      (unless code (error "irc-create-call returning nil"))
+      code)))
 
 
 (defparameter *current-unwind-landing-pad-dest* nil)
@@ -1099,6 +1097,9 @@ Otherwise just create a function call"
 	(irc-create-call function-name args label)
 	(irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))))
 
+(defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
+  (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
+  (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
 
 (defun irc-intrinsic-args (function-name args &key (label "") suppress-arg-type-checking)
   (let* ((last-arg (car (last args)))
@@ -1126,6 +1127,16 @@ Otherwise just create a function call"
 (defun irc-verify-module (module return-action)
   (when *verify-llvm-modules*
     (llvm-sys:verify-module module return-action)))
+
+(defun irc-verify-module-safe (module)
+  (multiple-value-bind (found-errors error-message)
+      (progn
+        (cmp-log "About to verify module prior to writing bitcode\n")
+        (irc-verify-module *the-module* 'llvm-sys::return-status-action))
+    (if found-errors
+        (progn
+          (format t "Module error: ~a~%" error-message)
+          (break "Verify module found errors")))))
 
 (defun irc-verify-function (fn &optional (continue t))
   (when *verify-llvm-functions*

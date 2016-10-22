@@ -31,7 +31,14 @@
 
 (in-package :clasp-cleavir)
 
-
+(eval-when (:execute :load-toplevel)
+  #+(or)(setq core::*inline-on* t)
+  (setq core:*defun-inline-hook* 'defun-inline-hook)
+  (setq core:*proclaim-hook* 'proclaim-hook))
+  
+(defparameter *simple-environment* nil)
+(defvar *code-walker* nil)
+(export '(*simple-environment* *code-walker*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -47,8 +54,6 @@
 (eval-when (:execute :load-toplevel)
   (setq cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form))
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set up the core:*use-cleavir-compiler*
@@ -56,7 +61,6 @@
 ;;
 (eval-when (:execute :load-toplevel)
   (setq core:*use-cleavir-compiler* t))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -66,17 +70,18 @@
 (eval-when (:execute :load-toplevel)
   (setq core:*eval-with-env-hook* 'cclasp-eval))
 
-
 ;;; These should be set up in Cleavir code
 ;;; Remove them once beach implements them
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplaca-instruction))
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
+    ((instruction cleavir-ir:rplaca-instruction))
   nil)
 
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:rplacd-instruction))
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
+    ((instruction cleavir-ir:rplacd-instruction))
   nil)
 
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
+    ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
 
 
 

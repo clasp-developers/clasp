@@ -85,13 +85,13 @@
 	     (llvm-sys:finalize *the-module-dibuilder*)
 	     ;; add the flag that defines the Dwarf Version
 	     (llvm-sys:add-module-flag *the-module*
-				       (llvm-sys:mdnode-get cmp:*llvm-context*
+				       (llvm-sys:mdnode-get *llvm-context*
 							    (list
 							     (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
 							     (llvm-sys:mdstring-get *llvm-context* "Dwarf Version")
 							     (llvm-sys:value-as-metadata-get (jit-constant-i32 +debug-dwarf-version+)))))
 	     (llvm-sys:add-module-flag *the-module*
-				       (llvm-sys:mdnode-get cmp:*llvm-context*
+				       (llvm-sys:mdnode-get *llvm-context*
 							    (list
 							     (llvm-sys:value-as-metadata-get (jit-constant-i32 2))
 							     (llvm-sys:mdstring-get *llvm-context* "Debug Info Version")

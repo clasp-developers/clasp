@@ -13,6 +13,8 @@
    #:*use-type-inference*
    #:cleavir-compile-eval
    #:compile-form
+   #:cleavir-off!
+   #:cleavir-on!
    #:clasp
    #:invoke-instruction
    #:invoke-multiple-value-call-instruction

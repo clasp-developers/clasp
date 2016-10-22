@@ -37,4 +37,6 @@
                  (:file "closure-optimize")
 		 (:file "translate")
                  (:file "inline-prep")
+;;                 (:file "auto-compile")
+;;                 (:file "inline")
 		 ))

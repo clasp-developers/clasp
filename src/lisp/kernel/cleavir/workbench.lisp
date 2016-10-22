@@ -5,23 +5,24 @@
 ;;; Running slime from bclasp+cleavir - don't load inline.lsp or auto-compile
 ;;;  --- Testing defun-inline-hook
 
-(progn
-  (progn ;; Set up everything for building cclasp from bclasp with auto-compile
-    (format t "Loading ASDF system~%")
-    (finish-output)
-    (time (load "sys:modules;asdf;build;asdf.lisp"))
-    #+(or)(time (require :asdf))
-    (load "sys:local-asdf-config.lisp")
-    #+(or)(core::cclasp-features)
-    (format t "Loading :clasp-cleavir system~%")
-    (finish-output)
-    (time (require :clasp-cleavir))
-    (print (core:getpid)))
-  (print "Done - you are ready to go"))
+(progn ;; Set up everything for building cclasp from bclasp with auto-compile
+  (format t "Loading ASDF system~%")
+  (finish-output)
+  (time (load "sys:modules;asdf;build;asdf.lisp"))
+  #+(or)(time (require :asdf))
+  (load "sys:local-asdf-config.lisp")
+  #+(or)(core::cclasp-features)
+  (format t "Loading :clasp-cleavir system~%")
+  (finish-output)
+  (time (require :clasp-cleavir))
+  (format t "Done  pid = ~a~%"  (core:getpid)))
 
-(progn
-  (load "sys:kernel;cleavir;auto-compile.lisp")
-  (load "sys:kernel;cleavir;inline.lisp"))
+(load "sys:kernel;cleavir;auto-compile.lisp")
+
+(setq cmp::*dump-module-on-completion* t)
+(compile-file "sys:tests;ti.lsp")
+
+(load "sys:kernel;cleavir;inline.lisp")
 
 (clasp-cleavir:cleavir-compile-file "sys:kernel;clos;std-slot-value.lsp")
 

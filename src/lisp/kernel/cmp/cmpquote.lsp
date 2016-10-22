@@ -752,16 +752,16 @@ marshaling of compiled quoted data"
 	     (*load-time-initializer-environment* ,fn-env-gs)
 	     (*irbuilder-ltv-function-alloca* ,irbuilder-alloca)
              (*irbuilder-ltv-function-body* ,irbuilder-body))
-         (cmp:with-dbg-function ("runAll-dummy-name"
+         (with-dbg-function ("runAll-dummy-name"
                                  :linkage-name (llvm-sys:get-name ,ltv-init-fn)
                                  :function ,ltv-init-fn
                                  :function-type +fn-prototype+
                                  :form nil) ;; No form for run-all
            ;; Set up dummy debug info for these irbuilders
-           (cmp:with-irbuilder (*irbuilder-ltv-function-alloca*)
-             (cmp:dbg-set-current-source-pos nil))
-           (cmp:with-irbuilder (*irbuilder-ltv-function-body*)
-             (cmp:dbg-set-current-source-pos nil))
+           (with-irbuilder (*irbuilder-ltv-function-alloca*)
+             (dbg-set-current-source-pos nil))
+           (with-irbuilder (*irbuilder-ltv-function-body*)
+             (dbg-set-current-source-pos nil))
            (let ((*ltv-function-landing-pad-block* nil)
                  (*load-time-value-holder-global-var*
                   #|| spacer ||#(llvm-sys:make-global-variable 
@@ -842,7 +842,7 @@ marshaling of compiled quoted data"
          ,@form))))
 
 
-;;(eval-when (:compile-toplevel) (setq cmp:*debug-compiler* t))
+;;(eval-when (:compile-toplevel) (setq *debug-compiler* t))
 
 ;; Should be bclasp-compile-ltv-thunk
 (defun compile-ltv-thunk (name form env)
@@ -872,12 +872,12 @@ marshaling of compiled quoted data"
 #+(or)
 (defun compile-ltv-thunk (name form env)
   "Compile the form into the current Module in the top level environment.
-Use Cleavir if cmp:*cleavir-compile-file-hook* is defined and
+Use Cleavir if *cleavir-compile-file-hook* is defined and
 use bclasp-compile-ltv-thunk if it is NIL."
-  (if cmp:*cleavir-compile-file-hook*
+  (if *cleavir-compile-file-hook*
       (progn
         (and env (error "compile-ltv-thunk was called with non NIL environment ~a - Cleavir can't handle it." env))
-        (funcall cmp:*cleavir-compile-file-hook* form))
+        (funcall *cleavir-compile-file-hook* form))
       (bclasp-compile-ltv-thunk name form env)))
 
 

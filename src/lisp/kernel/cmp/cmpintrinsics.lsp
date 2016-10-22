@@ -240,9 +240,9 @@ Boehm and MPS use a single pointer"
 
 (defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
 (defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
-(defvar +mv-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
+(defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
 (defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
-(defvar +thread-info-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +mv-struct+) nil))
+(defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
 
 
 
@@ -562,9 +562,7 @@ and initialize it with an array consisting of one function pointer."
 (defun define-primitives-in-module (module)
 
   (primitive-nounwind module "ltvc_get_or_create_load_time_value_array" +void+ (list +ltv**+ +i8*+ +size_t+))
-  (primitive-nounwind module "ltvc_assign_source_file_info_handle"
-                      +void+ (list +i8*+ +i8*+ +size_t+ +i32+ +i32*+))
-
+  (primitive-nounwind module "ltvc_assign_source_file_info_handle" +void+ (list +i8*+ +i8*+ +size_t+ +i32+ +i32*+))
   (primitive-nounwind module "ltvc_make_nil" +void+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "ltvc_make_t" +void+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "ltvc_make_ratio" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
@@ -580,8 +578,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_make_symbol" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_character" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
   (primitive-nounwind module "ltvc_make_base_string" +void+ (list +ltv**+ +size_t+ +i8*+))
-  (primitive-nounwind module "ltvc_make_pathname" +void+
-                      (list +ltv**+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_pathname" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_built_in_class" +void+ (list +ltv**+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_float" +void+ (list +ltv**+ +size_t+ +float+))
@@ -687,7 +684,7 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive-nounwind module "cc_gatherRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +i8*+))
   (primitive-nounwind module "cc_gatherVaRestArguments" +t*+ (list +size_t+ +VaList_S*+ +size_t+ +VaList_S*+))
-  (primitive-nounwind module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
+  (primitive          module "cc_ifBadKeywordArgumentException" +void+ (list +size_t+ +size_t+ +t*+))
 
   (primitive-nounwind module "pushCatchFrame" +size_t+ (list +tsp*+))
   (primitive-nounwind module "pushBlockFrame" +size_t+ (list +tsp*+))
@@ -722,21 +719,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
   (primitive-nounwind module "debugSourceFileInfoHandle" +void+ (list +i32*+))
-
-  (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
-  (primitive-nounwind module "ltv_makeCons" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeComplex" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeRatio" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
-  (primitive-nounwind module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_findBuiltInClass" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "rplaca" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "rplacd" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_setRealpart" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_setImagpart" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_setf_numerator_denominator" +void+ (list +tsp*+ +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
-  (primitive-nounwind module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
   (primitive-nounwind module "saveToMultipleValue0" +void+ (list +tmv*+))
   (primitive-nounwind module "restoreFromMultipleValue0" +void+ (list +tsp*-or-tmv*+ ))
@@ -773,12 +755,12 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_stack_enclose" +t*+ (list +i8*+ +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
   (primitive-nounwind module "cc_loadThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
-  (primitive-nounwind module "cc_safe_fdefinition" +t*+ (list +t*+))
+  (primitive          module "cc_safe_fdefinition" +t*+ (list +t*+))
   (primitive-nounwind module "cc_unsafe_fdefinition" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_safe_setfdefinition" +t*+ (list +t*+))
+  (primitive          module "cc_safe_setfdefinition" +t*+ (list +t*+))
   (primitive-nounwind module "cc_unsafe_setfdefinition" +t*+ (list +t*+))
+  (primitive          module "cc_safe_symbol_value" +t*+ (list +t*+))
   (primitive-nounwind module "cc_unsafe_symbol_value" +t*+ (list +t*+))
-  (primitive-nounwind module "cc_safe_symbol_value" +t*+ (list +t*+))
   (primitive-nounwind module "cc_setSymbolValue" +void+ (list +t*+ +t*+))
   (primitive          module "cc_call_multipleValueOneFormCall" +return_type+ (list +t*+))
   (primitive          module "cc_call"   +return_type+ (list* +t*+ +t*+ +size_t+

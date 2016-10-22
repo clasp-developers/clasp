@@ -128,13 +128,13 @@ and put into ltv-ref."
   "Call the named function after converting fixnum args to llvm constants"
   (let ((fixed-args (mapcar (lambda (x) (if (fixnump x) (jit-constant-size_t x) x))
                             args)))
-    (cmp:irc-intrinsic-args name fixed-args)))
+    (irc-create-call name fixed-args)))
 
 (defun add-call (name ltv index &rest args)
   "Call the named function after converting fixnum args to llvm constants"
   (let ((fixed-args (mapcar (lambda (x) (if (fixnump x) (jit-constant-size_t x) x))
                             (list* index args))))
-    (apply #'cmp:irc-intrinsic name ltv fixed-args)))
+    (irc-create-call name (list* ltv fixed-args))))
 
 
 (defun ltv/nil (object index)
@@ -309,16 +309,16 @@ and put into ltv-ref."
               (*load-time-initializer-environment* ,fn-env-gs)
               (*irbuilder-ltv-function-alloca* ,irbuilder-alloca)
               (*irbuilder-ltv-function-body* ,irbuilder-body))
-         (cmp:with-dbg-function ("runAll-dummy-name"
+         (with-dbg-function ("runAll-dummy-name"
                                  :linkage-name (llvm-sys:get-name ,ltv-init-fn)
                                  :function ,ltv-init-fn
                                  :function-type +fn-prototype+
                                  :form nil) ;; No form for run-all
            ;; Set up dummy debug info for these irbuilders
-           (cmp:with-irbuilder (*irbuilder-ltv-function-alloca*)
-             (cmp:dbg-set-current-source-pos nil))
-           (cmp:with-irbuilder (*irbuilder-ltv-function-body*)
-             (cmp:dbg-set-current-source-pos nil))
+           (with-irbuilder (*irbuilder-ltv-function-alloca*)
+             (dbg-set-current-source-pos nil))
+           (with-irbuilder (*irbuilder-ltv-function-body*)
+             (dbg-set-current-source-pos nil))
            (let ((*table-index* 0)
                  (*load-time-value-result* (irc-alloca-tmv *load-time-initializer-environment*
                                                            :irbuilder *irbuilder-ltv-function-alloca*))
@@ -552,9 +552,9 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 
 (defun ltv-global ()
   "called by cclasp"
-  (if cmp:*generate-compile-file-load-time-values*
-      cmp:*load-time-value-holder-global-var*
-      cmp:*run-time-values-table-global-var*))
+  (if *generate-compile-file-load-time-values*
+      *load-time-value-holder-global-var*
+      *run-time-values-table-global-var*))
 
 
 

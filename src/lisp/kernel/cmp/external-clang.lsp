@@ -87,6 +87,6 @@
 				      (dolist (arg args)
 					(core:bformat sout " %s" arg)))))
       (core:bformat t "run-clang:  %s\n" cmd)))
-  (cmp:safe-system (list* (namestring clang) args) :output-file-name output-file-name))
+  (cmp::safe-system (list* (namestring clang) args) :output-file-name output-file-name))
 
 (export 'run-clang)

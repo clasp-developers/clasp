@@ -70,6 +70,7 @@
           create-run-time-execution-engine
           safe-system
           dbg-set-current-debug-location-here
+          irc-verify-module-safe
           irc-add
           irc-add-clause
           irc-basic-block-create
@@ -79,6 +80,7 @@
           irc-cond-br
           irc-create-call
           irc-create-invoke
+          irc-create-invoke-default-unwind
           irc-create-landing-pad
           irc-exception-typeid*
           irc-generate-terminate-code

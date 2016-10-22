@@ -632,13 +632,6 @@ void makePathname(core::T_sp *fnP, const char *cstr) {
   (*fnP) = ns;
 }
 
-void ltv_findPackage(core::T_sp *fnP, const char *cstr) {
-  // placement new into memory passed into this function
-  ASSERT(fnP != NULL);
-  string packageName = cstr;
-  core::Package_sp pkg = _lisp->findPackage(packageName);
-  (*fnP) = pkg;
-}
 
 void makeShortFloat(core::T_sp *fnP, double s) {
   ASSERT(fnP != NULL);
@@ -1294,110 +1287,6 @@ void mv_getLoadTimeValue(core::T_mv *resultP, core::LoadTimeValues_O **ltvPP, in
 
 extern "C" {
 
-void ltv_findBuiltInClass(core::T_sp *resultP, core::T_sp *symbolP) {
-  ASSERT(resultP != NULL);
-  *resultP = core::cl__find_class(*symbolP, true, _Nil<core::T_O>());
-  ASSERTNOTNULL(*resultP);
-}
-
-void ltv_makeCons(core::T_sp *resultP) {
-  ASSERT(resultP != NULL);
-  (*resultP) = core::Cons_O::create(_Nil<core::T_O>(),_Nil<core::T_O>());
-}
-
-void ltv_makeComplex(core::T_sp *resultP) {
-  ASSERT(resultP != NULL);
-  (*resultP) = core::Complex_O::create();
-}
-
-void ltv_makeRatio(core::T_sp *resultP) {
-  ASSERT(resultP != NULL);
-  (*resultP) = core::Ratio_O::create();
-}
-
-void ltv_setf_numerator_denominator(core::T_sp *resultP, core::T_sp* numP, core::T_sp* denomP )
-{
-  core::Ratio_sp* iP = reinterpret_cast<core::Ratio_sp*>(resultP);
-  core::Integer_sp num = gctools::As<core::Integer_sp>(*numP);
-  core::Integer_sp denom = gctools::As<core::Integer_sp>(*denomP);
-  gc::As<core::Ratio_sp>(*iP)->setf_numerator_denominator(num,denom);
-}
-
-
-void ltv_setRealpart(core::T_sp *resultP, core::T_sp *carP) {
-  ASSERT(resultP != NULL);
-  gc::As<core::Complex_sp>((*resultP))->setf_realpart(*carP);
-}
-
-void ltv_setImagpart(core::T_sp *resultP, core::T_sp *carP) {
-  ASSERT(resultP != NULL);
-  gc::As<core::Complex_sp>((*resultP))->setf_imagpart(*carP);
-}
-
-#if 0
-    void ltv_makeSourceCodeCons(core::T_sp* resultP, const char* sourceFileNameP, int lineNo, int column)
-    {
-	ASSERT(resultP!=NULL);
-	(*resultP) = core::Cons_O::create(lineNo,column,core::SourceFileInfo_O::getOrCreate(sourceFileNameP),_lisp);
-	ASSERTNOTNULL(*resultP);
-    }
-#endif
-void ltv_makeArrayObjects(core::T_sp *resultP, core::T_sp *elementTypeP, int rank, int dimensions[]) {
-  ASSERT(resultP != NULL);
-  ASSERT(elementTypeP != NULL);
-  if (rank == 1) // vector
-  {
-    *resultP = core::VectorObjects_O::create(_Nil<core::T_O>(), dimensions[0], *elementTypeP);
-  } else {
-    core::List_sp dims = _Nil<core::T_O>();
-    for (int i = rank - 1; i >= 0; i--) {
-      dims = core::Cons_O::create(core::make_fixnum(dimensions[i]), dims);
-    }
-    *resultP = core::ArrayObjects_O::make(dims, cl::_sym_T_O, *elementTypeP, _lisp->_true());
-  }
-  ASSERTNOTNULL(*resultP);
-}
-
-void ltv_makeHashTable(core::T_sp *resultP, core::T_sp *testP) {
-  ASSERT(resultP != NULL);
-  (*resultP) = core::HashTable_O::create(*testP);
-  ASSERTNOTNULL(*resultP);
-}
-
-void rplaca(core::T_sp *resultP, core::T_sp *carP) {
-  ASSERT(resultP != NULL);
-  gc::As<core::Cons_sp>((*resultP))->setCar(*carP);
-}
-
-void rplacd(core::T_sp *resultP, core::T_sp *carP) {
-  ASSERT(resultP != NULL);
-  gc::As<core::Cons_sp>((*resultP))->setCdr(*carP);
-}
-
-void ltv_initializeArrayObjectsRowMajorArefOrder(core::T_sp *arrayP, core::LoadTimeValues_O **ltvPP, int *indices) {
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::Array_sp array = gc::As<core::Array_sp>((*arrayP));
-  int arrayTotalSize = array->arrayTotalSize();
-  for (int i = 0; i < arrayTotalSize; i++) {
-    array->rowMajorAset(i, ltvP->data_element(indices[i]));
-  }
-}
-
-void ltv_initializeHashTable(core::T_sp *hashTableP, int numEntries, core::LoadTimeValues_O **ltvPP, int *indices) {
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::HashTable_sp hashTable = gc::As<core::HashTable_sp>((*hashTableP));
-  int j = 0;
-  for (int i = 0; i < numEntries; i++) {
-    int ikey = indices[j];
-    int ival = indices[j + 1];
-    core::T_sp key = (ltvP)->data_element(ikey);
-    core::T_sp val = (ltvP)->data_element(ival);
-    hashTable->hash_table_setf_gethash(key, val);
-    j += 2;
-  }
-}
 
 void saveToMultipleValue0(core::T_mv *mvP) {
   mvP->saveToMultipleValue0();

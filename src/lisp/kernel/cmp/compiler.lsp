@@ -227,9 +227,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
                          result 
                          compiled-fn 
                          *gv-source-file-info-handle* 
-                         (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                         (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                         (cmp:irc-size_t-*current-source-pos-info*-column)
+                         (irc-size_t-*current-source-pos-info*-filepos)
+                         (irc-size_t-*current-source-pos-info*-lineno)
+                         (irc-size_t-*current-source-pos-info*-column)
                          (compile-reference-to-literal lambda-name)
                          funcs 
                          (irc-renv env)
@@ -1049,9 +1049,9 @@ jump to blocks within this tagbody."
                            fn
                            (jit-constant-unique-string-ptr "load-time-value")
                            *gv-source-file-info-handle*
-                           (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                           (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                           (cmp:irc-size_t-*current-source-pos-info*-column)
+                           (irc-size_t-*current-source-pos-info*-filepos)
+                           (irc-size_t-*current-source-pos-info*-lineno)
+                           (irc-size_t-*current-source-pos-info*-column)
                            *load-time-value-holder-global-var*))
 	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))
 	(progn
@@ -1136,16 +1136,16 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       (codegen temp-result exp evaluate-env)
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
-    (let* ((func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
-                     (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+    (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
+                     (let ((arg-types (make-list (length args) :initial-element +t*+))
                            (varargs nil))
                        (llvm-sys:function-create
-                        (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
+                        (llvm-sys:function-type-get +return_type+ arg-types varargs)
                         'llvm-sys::External-linkage
                         intrinsic-name
                         *the-module*))))
            (result-in-registers
-            (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "intrinsic")))
+            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "intrinsic")))
       (irc-store-result result result-in-registers)))
   (irc-low-level-trace :flow))
 
@@ -1166,15 +1166,15 @@ jump to blocks within this tagbody."
          ((endp cur-exp) nil)
       (codegen temp-result exp evaluate-env)
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
-    (let* ((func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
-                     (let ((arg-types (make-list (length args) :initial-element cmp:+t*+)))
+    (let* ((func (or (llvm-sys:get-function *the-module* foreign-name)
+                     (let ((arg-types (make-list (length args) :initial-element +t*+)))
                        (llvm-sys:function-create
-                        (llvm-sys:function-type-get cmp:+t*+ arg-types nil)
+                        (llvm-sys:function-type-get +t*+ arg-types nil)
                         'llvm-sys::External-linkage
                         foreign-name
                         *the-module*))))
            (result-in-t*
-            (llvm-sys:create-call-array-ref cmp:*irbuilder* func (nreverse args) "foreign-function")))
+            (llvm-sys:create-call-array-ref *irbuilder* func (nreverse args) "foreign-function")))
       (irc-store-result-t* result result-in-t*))))
 
 (defun codegen-foreign-call-pointer (result form evaluate-env)
@@ -1194,14 +1194,14 @@ jump to blocks within this tagbody."
       (codegen temp-result exp evaluate-env)
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
     (codegen temp-result (car form) evaluate-env)
-    (let* ((arg-types (make-list (length args) :initial-element cmp:+t*+))
+    (let* ((arg-types (make-list (length args) :initial-element +t*+))
            (varargs nil)
-           (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
+           (function-type (llvm-sys:function-type-get +t*+ arg-types varargs))
            (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
            (pointer-t* (irc-smart-ptr-extract (irc-load temp-result)))
-           (function-pointer (llvm-sys:create-bit-cast cmp:*irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
+           (function-pointer (llvm-sys:create-bit-cast *irbuilder* (irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
            (result-in-t*
-            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result")))
+            (llvm-sys:create-call-function-pointer *irbuilder* function-type function-pointer (nreverse args) "fn-ptr-call-result")))
       (irc-store-result-t* result result-in-t*))
     (irc-low-level-trace :flow)))
 
@@ -1360,7 +1360,7 @@ be wrapped with to make a closure"
            (fpm (llvm-sys:make-function-pass-manager module)))
       (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder 3)
       (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder 1)
-      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-pass))
+      (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
       (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
 ;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
       (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
@@ -1494,7 +1494,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (when bind-to-name
                 (let ((lambda-list (cadr definition)))
                   #+(or)(format t "Setting function name: ~a definition: ~a~%" bind-to-name definition)
-                  #+(or)(format t "*all-functions-for-one-compile* -> ~a~%" cmp:*all-functions-for-one-compile*)
+                  #+(or)(format t "*all-functions-for-one-compile* -> ~a~%" *all-functions-for-one-compile*)
                   (core:fset bind-to-name compiled-function nil t lambda-list)
                   #+(or)(setf-symbol-function bind-to-name compiled-function)
                   ))

@@ -15,8 +15,8 @@
 	(llvm-sys:create-store cmp:*irbuilder* exception-selector ehselector.slot-alloca nil)
 	(let* ((not-unwind-exception-bb (cmp:irc-basic-block-create "not-unwind-exception"))
 	       (unwind-exception-bb (cmp:irc-basic-block-create "match-unwind"))
-	       (typeid (cmp:irc-intrinsic "llvm.eh.typeid.for"
-					  (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind)))
+	       (typeid (cmp:irc-create-call "llvm.eh.typeid.for"
+                                            (list (cmp:irc-exception-typeid* 'cmp:typeid-core-unwind))))
 	       (matches-type (cmp:irc-icmp-eq exception-selector typeid)))
 	  (cmp:irc-cond-br matches-type unwind-exception-bb not-unwind-exception-bb)
 	  (cmp:irc-begin-block unwind-exception-bb)
@@ -32,7 +32,7 @@
                              (cmp:irc-load (clasp-cleavir::translate-datum
                                             (clasp-cleavir-hir:frame-holder enter-instruction))))))
                 (with-return-values (return-vals return-value abi)
-                  (cmp:irc-intrinsic "cc_restoreMultipleValue0" return-value #|(sret-arg return-vals)|#))))
+                  (cmp:irc-create-call "cc_restoreMultipleValue0" (list return-value)))))
             (let* ((default-block (cmp:irc-basic-block-create "switch-default"))
                    (unwinds (unwinds landing-pad-object))
                    (sw (cmp:irc-switch go-index default-block (length unwinds)))
@@ -44,8 +44,8 @@
                         (incf jump-id))
                     unwinds)
               (cmp:irc-begin-block default-block)
-              (cmp:irc-intrinsic "throwIllegalSwitchValue"
-                                 go-index (%size_t (length unwinds)))))
+              (cmp:irc-create-call "throwIllegalSwitchValue"
+                                   (list go-index (%size_t (length unwinds))))))
 	  (cmp:irc-unreachable)
 	  (cmp:irc-begin-block not-unwind-exception-bb)
 	  (let* ((exn7 (llvm-sys:create-load-value-twine cmp:*irbuilder* exn.slot-alloca "exn7"))

@@ -3,16 +3,16 @@
 (defun %literal-ref (value)
   (let ((index (cmp:reference-literal value)))
     (cond
-      ((= index 0) (cmp:irc-intrinsic-args "cc_nil_reference" nil :label "&NIL"))
-      ((= index 1) (cmp:irc-intrinsic-args "cc_t_reference" nil :label "&T"))
+      ((= index 0) (cmp:irc-create-call "cc_nil_reference" nil "&NIL"))
+      ((= index 1) (cmp:irc-create-call "cc_t_reference" nil "&T"))
       (t (cmp:compile-reference-to-load-time-value index)))))
 
 (defun %literal-value (value &optional label)
   (let ((index (cmp:reference-literal value)))
     (cond
-      ((= index 0) (cmp:irc-intrinsic-args "cc_nil_value" nil :label "NIL"))
-      ((= index 1) (cmp:irc-intrinsic-args "cc_t_value" nil :label "T"))
-      (t (cmp:irc-intrinsic-args "cc_precalcValue" (list (cmp:ltv-global) (%size_t index)) :label label)))))
+      ((= index 0) (cmp:irc-create-call "cc_nil_value" nil "NIL"))
+      ((= index 1) (cmp:irc-create-call "cc_t_value" nil "T"))
+      (t (cmp:irc-create-call "cc_precalcValue" (list (cmp:ltv-global) (%size_t index)) label)))))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
@@ -139,15 +139,15 @@
 
 (defgeneric %sadd.with-overflow (x y abi))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-64))
-  (cmp:irc-intrinsic "llvm.sadd.with.overflow.i64" x y))
+  (cmp:irc-create-call "llvm.sadd.with.overflow.i64" (list x y)))
 (defmethod %sadd.with-overflow (x y (abi abi-x86-32))
-  (cmp:irc-intrinsic "llvm.sadd.with.overflow.i32" x y))
+  (cmp:irc-create-call "llvm.sadd.with.overflow.i32" (list x y)))
 
 (defgeneric %ssub.with-overflow (x y abi))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-64))
-  (cmp:irc-intrinsic "llvm.ssub.with.overflow.i64" x y))
+  (cmp:irc-create-call "llvm.ssub.with.overflow.i64" (list x y)))
 (defmethod %ssub.with-overflow (x y (abi abi-x86-32))
-  (cmp:irc-intrinsic "llvm.ssub.with.overflow.i32" x y))
+  (cmp:irc-create-call "llvm.ssub.with.overflow.i32" (list x y)))
 
    
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -179,7 +179,7 @@
   (unless *function-current-multiple-value-array-address*
     (with-entry-ir-builder
 	(setq *function-current-multiple-value-array-address* 
-	      (cmp:irc-intrinsic "cc_multipleValuesArrayAddress"))))
+	      (cmp:irc-create-call "cc_multipleValuesArrayAddress" nil))))
   *function-current-multiple-value-array-address*)
 
 
@@ -309,7 +309,7 @@
            (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
            (function-pointer-type (llvm-sys:type-get-pointer-to function-type))
            (pointer-t* pointer)
-           (function-pointer (%bit-cast (cmp:irc-intrinsic "cc_getPointer" pointer-t*) function-pointer-type "cast-function-pointer"))
+           (function-pointer (%bit-cast (cmp:irc-create-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer"))
            (result-in-registers
             (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer args "function-pointer")))
       (%store result-in-registers output))))

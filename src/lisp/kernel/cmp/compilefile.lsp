@@ -393,14 +393,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	      (cmp-log-dump *the-module*)
 	      (if *dump-module-on-completion*
 		  (llvm-sys:dump *the-module*))
-	      (multiple-value-bind (found-errors error-message)
-		  (progn
-		    (cmp-log "About to verify module prior to writing bitcode\n")
-		    (irc-verify-module *the-module* 'llvm-sys::return-status-action))
-		(if found-errors
-		    (progn
-		      (format t "Module error: ~a~%" error-message)
-		      (break "Verify module found errors"))))))))
+              (irc-verify-module-safe *the-module*)))))
       module)))
 
 
@@ -459,7 +452,7 @@ epilogue module - one that terminates a series of linked modules. "
 	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (ensure-directories-exist temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (cmp:llvm-link output-file
+	     (llvm-link output-file
                             :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
@@ -475,7 +468,7 @@ epilogue module - one that terminates a series of linked modules. "
 
 
 (defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((cmp:*cleavir-compile-file-hook* nil)
+  (let ((*cleavir-compile-file-hook* nil)
         (core:*use-cleavir-compiler* nil))
     (apply #'compile-file input-file args)))
 

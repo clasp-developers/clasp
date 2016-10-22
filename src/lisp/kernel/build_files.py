@@ -36,7 +36,6 @@ def aclasp(wrappers):
         "src/lisp/kernel/lsp/iolib",
         "src/lisp/kernel/lsp/logging",
         "src/lisp/kernel/lsp/trace",
-        "src/lisp/kernel/cmp/packages",
         "src/lisp/kernel/cmp/cmpsetup",
         "src/lisp/kernel/cmp/cmpglobals",
         "src/lisp/kernel/cmp/cmptables",
@@ -103,6 +102,7 @@ def bclasp(wrappers):
         "src/lisp/kernel/lsp/fli",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",
+        "src/lisp/kernel/cmp/export-to-cleavir",
         "src/lisp/kernel/lsp/epilogue-bclasp",
         "src/lisp/kernel/tag/bclasp"
     ]
