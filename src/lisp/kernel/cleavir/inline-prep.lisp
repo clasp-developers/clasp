@@ -8,13 +8,6 @@
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 
-(defun inline-on! ()
-  (setq core:*inline-on* t))
-
-(defun inline-off! ()
-  (setq core:*inline-on* nil))
-
-
 (defun mark-env-as-function ()
   (push 'si::function-boundary *simple-environment*))
 
@@ -51,22 +44,6 @@
                     collect `(quote ,value)))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Turn cleavir off and on
-;;;
-
-(defun cleavir-on! ()
-  (setq cmp:*cleavir-compile-hook* 'cleavir-compile-t1expr)
-  (setq cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
-  (setq core:*use-cleavir-compiler* t)
-  (setq core:*eval-with-env-hook* 'cclasp-eval))
-
-(defun cleavir-off! ()
-  (setq cmp:*cleavir-compile-hook* nil)
-  (setq cmp:*cleavir-compile-file-hook* nil)
-  (setq core:*use-cleavir-compiler* nil)
-  (setq core:*eval-with-env-hook* (fdefinition 'core:eval-with-env-default)))
 
 ;; Generate an AST and save it for inlining if the
 ;; function is proclaimed as inline

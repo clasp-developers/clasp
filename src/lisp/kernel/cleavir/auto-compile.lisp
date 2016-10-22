@@ -1,5 +1,5 @@
 ;;;
-;;;    File: cmprepl.lsp
+;;;    File: auto-compile.lsp
 ;;;
 
 ;; Copyright (c) 2014, Christian E. Schafmeister
@@ -31,8 +31,7 @@
 
 (in-package :clasp-cleavir)
 
-(eval-when (:execute :load-toplevel)
-  #+(or)(setq core::*inline-on* t)
+(eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook)
   (setq core:*proclaim-hook* 'proclaim-hook))
   
@@ -70,18 +69,6 @@
 (eval-when (:execute :load-toplevel)
   (setq core:*eval-with-env-hook* 'cclasp-eval))
 
-;;; These should be set up in Cleavir code
-;;; Remove them once beach implements them
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:rplaca-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:rplacd-instruction))
-  nil)
-
-(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
-    ((instruction cleavir-ir:set-symbol-value-instruction)) nil)
 
 
 

@@ -44,6 +44,7 @@
    ;; auto-compile must preceed inline because the Cleavir compiler
    ;; needs to be the default compiler before inlining is used to
    ;; replace CL functions like CONSP, CAR, CDR, RPLACA etc
+   #P"src/lisp/kernel/tags/pre-auto"
    #P"src/lisp/kernel/cleavir/auto-compile"
    #P"src/lisp/kernel/cleavir/inline")))
 (format t "Done~%")
