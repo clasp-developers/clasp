@@ -452,7 +452,7 @@ epilogue module - one that terminates a series of linked modules. "
 	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (ensure-directories-exist temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
-	     (cmp:llvm-link output-file
+	     (llvm-link output-file
                             :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
 	   (error "Add support to file of type: ~a" output-type)))
@@ -468,7 +468,7 @@ epilogue module - one that terminates a series of linked modules. "
 
 
 (defun bclasp-compile-file (input-file &rest args &key &allow-other-keys)
-  (let ((cmp:*cleavir-compile-file-hook* nil)
+  (let ((*cleavir-compile-file-hook* nil)
         (core:*use-cleavir-compiler* nil))
     (apply #'compile-file input-file args)))
 

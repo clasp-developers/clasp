@@ -74,7 +74,7 @@
 (in-package :ext)
 
 (defun run-ld (args &key output-file-name)
-  (cmp:safe-system `("ld" ,@args :output-file-name output-file-name)))
+  (safe-system `("ld" ,@args :output-file-name output-file-name)))
 
 (export 'run-ld)
 

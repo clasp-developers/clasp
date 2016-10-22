@@ -55,8 +55,8 @@
     (core:foreign-call codegen-foreign-call mincomp-foreign-call)
     (core:foreign-call-pointer codegen-foreign-call-pointer mincomp-foreign-call-pointer)
     (symbol-macrolet  codegen-symbol-macrolet mincomp-symbol-macrolet)
-    (cmp:llvm-inline codegen-llvm-inline mincomp-llvm-inline)
-    (cmp::gc-profiling codegen-gc-profiling mincomp-gc-profiling)
+    (llvm-inline codegen-llvm-inline mincomp-llvm-inline)
+    (:gc-profiling codegen-gc-profiling mincomp-gc-profiling)
     (core::debug-message codegen-debug-message mincomp-debug-message)
     ;; Handled with macros and funcalls
     #+(or)(unwind-protect .  codegen-unwind-protect)

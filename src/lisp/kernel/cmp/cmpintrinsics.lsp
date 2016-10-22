@@ -240,9 +240,9 @@ Boehm and MPS use a single pointer"
 
 (defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
 (defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
-(defvar +mv-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
+(defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
 (defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
-(defvar +thread-info-struct+ (llvm-sys:struct-type-get cmp:*llvm-context* (list +mv-struct+) nil))
+(defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
 
 
 
@@ -719,21 +719,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
   (primitive-nounwind module "debugSourceFileInfoHandle" +void+ (list +i32*+))
-
-  (primitive          module "ltv_findPackage" +void+ (list +tsp*+ +i8*+))
-  (primitive-nounwind module "ltv_makeCons" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeComplex" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeRatio" +void+ (list +tsp*+))
-  (primitive-nounwind module "ltv_makeArrayObjects" +void+ (list +tsp*+ +tsp*+ +i32+ +i32*+))
-  (primitive-nounwind module "ltv_makeHashTable" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_findBuiltInClass" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "rplaca" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "rplacd" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_setRealpart" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_setImagpart" +void+ (list +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_setf_numerator_denominator" +void+ (list +tsp*+ +tsp*+ +tsp*+))
-  (primitive-nounwind module "ltv_initializeArrayObjectsRowMajorArefOrder" +void+ (list +tsp*+ +ltv**+ +i32*+))
-  (primitive-nounwind module "ltv_initializeHashTable" +void+ (list +tsp*+ +i32+ +ltv**+ +i32*+))
 
   (primitive-nounwind module "saveToMultipleValue0" +void+ (list +tmv*+))
   (primitive-nounwind module "restoreFromMultipleValue0" +void+ (list +tsp*-or-tmv*+ ))

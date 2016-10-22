@@ -434,7 +434,7 @@
     ;; Save whatever is in return-vals in the multiple-value array
     (cmp:irc-create-call "cc_saveMultipleValue0" (list return-value)) ;; (sret-arg return-vals))
     (cmp:irc-low-level-trace :cclasp-eh)
-    (cmp:irc-create-invoke-default-unwind "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
+    (cmp:irc-create-call "cc_unwind" (list (cmp::irc-load (first inputs)) (%size_t (clasp-cleavir-hir:jump-id instruction))))))
 
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:create-cell-instruction) return-value inputs outputs abi)
@@ -823,7 +823,7 @@
   #+(or)(with-return-values (return-vals return-value abi)
           (cmp:irc-intrinsic "cc_saveMultipleValue0" return-value #|(sret-arg return-vals)|#)
           (cmp:irc-intrinsic "cc_throw" (cmp:irc-load (first inputs))))
-  (cmp:irc-create-invoke-default-unwind "cc_throw" (list (%load (first inputs)) (%load (second inputs))))
+  (cmp:irc-create-call "cc_throw" (list (%load (first inputs)) (%load (second inputs))))
   (cmp:irc-unreachable))
 
 (defmethod translate-branch-instruction

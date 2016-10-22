@@ -1097,7 +1097,7 @@ Otherwise just create a function call"
 	(irc-create-call function-name args label)
 	(irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))))
 
-(defun irc-create-invoke-default-unwind (function-name args label)
+(defun irc-create-invoke-default-unwind (function-name args &optional (label ""))
   (or *current-unwind-landing-pad-dest* (error "irc-create-invoke-default-unwind was called when *current-unwind-landing-pad-dest* was NIL - check the outer with-landing-pad macro"))
   (irc-create-invoke function-name args *current-unwind-landing-pad-dest* label))
 

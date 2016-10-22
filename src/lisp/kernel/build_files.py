@@ -102,13 +102,14 @@ def bclasp(wrappers):
         "src/lisp/kernel/lsp/ffi",
         "src/lisp/modules/sockets/sockets",
         "src/lisp/kernel/lsp/top",
+        "src/lisp/kernel/cmp/export-to-cleavir",
         "src/lisp/kernel/lsp/epilogue-bclasp",
         "src/lisp/kernel/tag/bclasp"
     ]
     return files
 
 def cclasp(wrappers):
-    return bclasp(wrappers) + [ 'src/lisp/kernel/cmp/export-to-cleavir' ] + cleavir.cleavir_parts + [
+    return bclasp(wrappers) + cleavir.cleavir_parts + [
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]
 
