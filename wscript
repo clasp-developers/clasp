@@ -13,77 +13,77 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
-    from waflib.extras import clang_compilation_database
-    from waflib.Errors import ConfigurationError
-    from waflib import Utils
+from waflib.extras import clang_compilation_database
+from waflib.Errors import ConfigurationError
+from waflib import Utils
 
-    top = '.'
-    out = 'build'
-    APP_NAME = 'clasp'
-    VERSION = '0.0'
-    DARWIN_OS = 'darwin'
-    LINUX_OS = 'linux'
+top = '.'
+out = 'build'
+APP_NAME = 'clasp'
+VERSION = '0.0'
+DARWIN_OS = 'darwin'
+LINUX_OS = 'linux'
 
-    STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'c' ]
+STAGE_CHARS = [ 'r', 'i', 'a', 'b', 'c' ]
 
-    GCS = [ 'boehm',
-            'boehmdc',
-            'mpsprep',
-            'mps' ]
-    # DEBUG_CHARS None == optimized
-    DEBUG_CHARS = [ None, 'd' ]
+GCS = [ 'boehm',
+        'boehmdc',
+        'mpsprep',
+        'mps' ]
+# DEBUG_CHARS None == optimized
+DEBUG_CHARS = [ None, 'd' ]
 
-    CLANG_LIBRARIES = [
-        'clangASTMatchers',
-        'clangDynamicASTMatchers',
-        'clangIndex',
-        'clangTooling',
-        'clangFormat',
-        'clangToolingCore',
-        'clangBasic',
-        'clangCodeGen',
-        'clangDriver',
-        'clangFrontend',
-        'clangFrontendTool',
-        'clangCodeGen',
-        'clangRewriteFrontend',
-        'clangARCMigrate',
-        'clangStaticAnalyzerFrontend',
-        'clangFrontend',
-        'clangDriver',
-        'clangParse',
-        'clangSerialization',
-        'clangSema',
-        'clangEdit',
-        'clangStaticAnalyzerCheckers',
-        'clangStaticAnalyzerCore',
-        'clangAnalysis',
-        'clangAST',
-        'clangRewrite',
-        'clangLex',
-        'clangBasic',
-        ]
+CLANG_LIBRARIES = [
+            'clangASTMatchers',
+            'clangDynamicASTMatchers',
+            'clangIndex',
+            'clangTooling',
+            'clangFormat',
+            'clangToolingCore',
+            'clangBasic',
+            'clangCodeGen',
+            'clangDriver',
+            'clangFrontend',
+            'clangFrontendTool',
+            'clangCodeGen',
+            'clangRewriteFrontend',
+            'clangARCMigrate',
+            'clangStaticAnalyzerFrontend',
+            'clangFrontend',
+            'clangDriver',
+            'clangParse',
+            'clangSerialization',
+            'clangSema',
+            'clangEdit',
+            'clangStaticAnalyzerCheckers',
+            'clangStaticAnalyzerCore',
+            'clangAnalysis',
+            'clangAST',
+            'clangRewrite',
+            'clangLex',
+            'clangBasic',
+ ]
 
-    BOOST_LIBRARIES = [
-        'boost_filesystem',
-        'boost_regex',
-        'boost_date_time',
-        'boost_program_options',
-        'boost_system',
-        'boost_iostreams']
+BOOST_LIBRARIES = [
+            'boost_filesystem',
+            'boost_regex',
+            'boost_date_time',
+            'boost_program_options',
+            'boost_system',
+            'boost_iostreams']
 
 
-    def update_submodules(cfg):
-        os.system("echo This is where I get submodules")
-        os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
-        os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
-        os.system("git submodule update --init src/mps")
-        os.system("git submodule update --init src/lisp/modules/asdf")
-        os.system("(cd src/lisp/modules/asdf; make)")
+def update_submodules(cfg):
+    os.system("echo This is where I get submodules")
+    os.system("git submodule update --init src/lisp/kernel/contrib/sicl")
+    os.system("git submodule update --init src/lisp/kernel/contrib/Acclimation")
+    os.system("git submodule update --init src/mps")
+    os.system("git submodule update --init src/lisp/modules/asdf")
+    os.system("(cd src/lisp/modules/asdf; make)")
 
-        def sync_submodules(cfg):
-            os.system("echo This is where I sync submodules")
-            os.system("git submodule sync")
+def sync_submodules(cfg):
+    os.system("echo This is where I sync submodules")
+    os.system("git submodule sync")
 
 def libraries_as_link_flags(fmt,libs):
     all_libs = StringIO()
