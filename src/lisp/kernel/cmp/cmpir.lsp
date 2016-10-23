@@ -876,8 +876,7 @@ Within the _irbuilder_ dynamic environment...
   (let ((irbuilder-desc (gensym)))
     `(let ((*irbuilder* ,irbuilder))
        (cmp-log "Switching to irbuilder --> %s\n" (bformat nil "%s" ,irbuilder))
-       (prog1 (progn
-                ,@code)
+       (multiple-value-prog1 (progn ,@code)
          (cmp-log "Leaving irbuilder --> %s\n" (bformat nil "%s" ,irbuilder))))))
 
 

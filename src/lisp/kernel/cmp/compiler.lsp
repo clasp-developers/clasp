@@ -1406,7 +1406,7 @@ be wrapped with to make a closure"
 	  (*source-debug-use-lineno* ,source-debug-use-lineno)
 	  (*gv-source-file-info-handle* (make-gv-source-file-info-handle ,module ,source-file-info-handle)))
      (or *the-module* (error "with-module *the-module* is NIL"))
-     (prog1
+     (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
        (when ,optimize (do-optimization ,module)))))
@@ -1522,8 +1522,20 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 
 (defun compile* (compile-hook name &optional definition)
   (cond
+    ((compiled-function-p definition)
+     (cond (name
+            (setf (fdefinition name) definition)
+            (values name nil nil))
+           (t (values definition nil nil))))
+    ((interpreted-function-p definition)
+     (dbg-set-current-debug-location-here)
+     ;; Recover the lambda-expression from the interpreted-function
+     (multiple-value-bind (lambda-expression wrapped-env)
+         (generate-lambda-expression-from-interpreted-function definition)
+       (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
+       (compile-in-env name lambda-expression wrapped-env compile-hook)))
     ((functionp definition)
-     (error "Handle compile with definition = function"))
+     (error "COMPILE doesn't know how to handle this type of function"))
     ((consp definition)
      (cmp-log "compile form: %s\n" definition)
      (compile-in-env name definition nil compile-hook))
