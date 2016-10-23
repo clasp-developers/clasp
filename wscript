@@ -140,8 +140,8 @@ def configure_common(cfg,variant):
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
     cfg.define("VARIANT_NAME",variant.variant_name())
-    cfg.define("BUILD_STLIB", libraries_as_link_flags_string(cfg.env.STLIB_ST,cfg.env.STLIB))
-    cfg.define("BUILD_LIB", libraries_as_link_flags_string(cfg.env.LIB_ST,cfg.env.LIB))
+    cfg.define("BUILD_STLIB", libraries_as_link_flags_as_string(cfg.env.STLIB_ST,cfg.env.STLIB))
+    cfg.define("BUILD_LIB", libraries_as_link_flags_as_string(cfg.env.LIB_ST,cfg.env.LIB))
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
 
