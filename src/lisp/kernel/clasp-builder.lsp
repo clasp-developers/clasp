@@ -375,7 +375,7 @@ Return files."
 
 (export '(compile-cclasp recompile-cclasp))
 
-(defun compile-cclasp* (system)
+(defun compile-cclasp* (output-file system)
   "Turn off generation of inlining code until its turned back on by the source code.
 Compile the cclasp source code."
   (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/pre-auto" :system system)
@@ -390,17 +390,16 @@ Compile the cclasp source code."
   
 (defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))
-  (compile-cclasp* system))
+  (compile-cclasp* output-file system))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (cclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)
-        (time
-         (progn
-           (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system)
-           (compile-cclasp* system))))))
+    (time
+     (progn
+       (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system)
+       (compile-cclasp* output-file system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
