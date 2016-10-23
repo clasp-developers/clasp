@@ -933,9 +933,7 @@
              (format t ";    eval-when ~a ~a~%" (cadr form) (caddr form)))
       (t ()))))
 
-
-(defparameter *enable-type-inference* nil)
-
+(defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
   ;;
@@ -945,15 +943,20 @@
   ;;
   (when *enable-type-inference*
     ;; Conditionally use type inference.
-    (let ((types (cleavir-type-inference:infer-types init-instr)))
-      (when *debug-cleavir*
-        (let ((cleavir-ir-graphviz::*types* types))
-          (draw-hir init-instr #P"/tmp/hir-before-prune-ti.dot")))
-      ;; prune paths with redundant typeqs
-      (cleavir-type-inference::prune-typeqs init-instr types)
-      (when *debug-cleavir*
-        (let ((cleavir-ir-graphviz::*types* types))
-          (draw-hir init-instr #P"/tmp/hir-after-ti.dot")))))
+    (handler-case
+        (let ((types (cleavir-type-inference:infer-types init-instr)))
+          (when *debug-cleavir*
+            (let ((cleavir-ir-graphviz::*types* types))
+              (draw-hir init-instr #P"/tmp/hir-before-prune-ti.dot")))
+          ;; prune paths with redundant typeqs
+          (cleavir-type-inference::prune-typeqs init-instr types)
+          (when *debug-cleavir*
+            (let ((cleavir-ir-graphviz::*types* types))
+              (draw-hir init-instr #P"/tmp/hir-after-ti.dot"))))
+      (error (c)
+        (warn "Cannot infer types in ~s: ~s"
+              init-instr
+              c))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-type-inference::delete-the init-instr)
   ;; convert (typeq x fixnum) -> (fixnump x)

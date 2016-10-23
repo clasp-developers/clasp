@@ -128,10 +128,8 @@
      (fboundp function-name)
      ;; In that case, we return the relevant info
      ;; Check if we should inline the function
-     (let ((inline-status (when core:*inline-on*
-                            (core:global-inline-status function-name)))
-           (cleavir-ast (when core:*inline-on*
-                          (core:cleavir-ast (fdefinition function-name)))))
+     (let* ((cleavir-ast (core:cleavir-ast (fdefinition function-name)))
+            (inline-status (core:global-inline-status function-name)))
        (make-instance 'cleavir-env:global-function-info
                       :name function-name
                       :compiler-macro (compiler-macro-function function-name)
@@ -257,30 +255,6 @@
 
 (defparameter *code1* '(let ((x 1) (y 2)) (+ x y)))
 (defparameter *code2* '(let ((x 10)) (if (> x 5) 1 2)))
-#+(or)(defparameter *code3* 
-        '(defun cl:macro-function (symbol &optional (environment nil environment-p))
-          (cond
-            ((typep environment 'core:environment)
-             (core:macro-function symbol environment))
-            (environment
-             (cleavir-environment:macro-function symbol environment))
-            (t (cleavir-environment:macro-function symbol *clasp-env*)))))
-
-
-#+(or)(defun generate-asts-for-clasp-source (start end)
-  (let* ((parts (core::select-source-files end :first-file start :system core:*system-files*))
-	 (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
-	 (eof (gensym)))
-    (loop for file in pathnames
-	 do (with-open-file (stream file :direction :input)
-	      (loop for form = (read stream nil eof)
-		 until (eq form eof)
-		 do (format t "FORM: ~a~%" form)
-		 do (let ((ast (cleavir-generate-ast:generate-ast form *clasp-env*)))
-		      )
-	      )))))
-
-
 
 (defvar *hir-single-step* nil)
 (defun hir-single-step (&optional (on t))
@@ -361,27 +335,6 @@
 (defvar *ast* nil)
 (defvar *hir* nil)
 (defvar *mir* nil)
-#+(or)(defun generate-hir-for-clasp-source (&optional (start :init) (end :all) skip-errors)
-        (declare (special cleavir-generate-ast:*compiler*))
-        (let* ((cleavir-generate-ast:*compiler* 'cl:compile-file)
-               (parts (core::select-source-files end :first-file start :system core:*system-files*))
-               (pathnames (mapcar (lambda (part) (core:build-pathname part)) parts))
-               (eof (gensym)))
-          (loop for file in pathnames
-             do (with-open-file (stream file :direction :input)
-                  (loop for form = (read stream nil eof)
-                     until (eq form eof)
-                     do (format t "FORM: ~a~%" form)
-                     do (if (and (eq form :pause-hir) (not *hir-single-step*))
-                            (hir-tpl)
-                            (let* ((ast (cleavir-generate-ast:generate-ast form *clasp-env*))
-                                   (hir (cleavir-ast-to-hir:compile-toplevel ast)))
-                              (setf *form* form
-                                    *ast* ast
-                                    *hir* hir)
-                              (if *hir-single-step*
-                                  (hir-tpl)))))))))
-
 
 
 (defmacro with-ir-function ((lisp-function-name
@@ -423,3 +376,15 @@
 	    (format stream "~a~%" (cc-mir:describe-mir last))))))))
 
   
+;;; These should be set up in Cleavir code
+;;; Remove them once beach implements them
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
+    ((instruction cleavir-ir:rplaca-instruction))
+  nil)
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
+    ((instruction cleavir-ir:rplacd-instruction))
+  nil)
+
+(defmethod cleavir-remove-useless-instructions:instruction-may-be-removed-p
+    ((instruction cleavir-ir:set-symbol-value-instruction)) nil)

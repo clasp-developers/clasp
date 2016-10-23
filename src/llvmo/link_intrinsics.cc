@@ -292,10 +292,11 @@ void ltvc_make_package(core::LoadTimeValues_O **ltvPP, size_t index,
   core::Str_sp package_name = gctools::As<core::Str_sp>(ltv[package_name_index]);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find package %s") % package_name );
-  } else {
-    ltv[index] = tpkg;
+    // If we don't find the package - just make it
+    // a more comprehensive defpackage should be coming
+    tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
   }
+  ltv[index] = tpkg;
 }
 
 void ltvc_make_built_in_class(core::LoadTimeValues_O **ltvPP, size_t index,

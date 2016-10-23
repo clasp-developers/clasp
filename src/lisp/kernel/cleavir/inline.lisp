@@ -49,14 +49,11 @@
 (progn
   (declaim (inline cl:car))
   (defun cl:car (x)
-    (core:foreign-call "clasp_silent_trap" x)
     (if (consp x)
         (cleavir-primop:car x)
         (if (null x)
             nil
-            (progn
-              (core:foreign-call "clasp_trap" x)
-              (error "Cannot get car of non-list ~s of type ~a" x (type-of x)))))))
+            (error "Cannot get car of non-list ~s of type ~a" x (type-of x))))))
 
 (debug-inline "cdr")
 
@@ -181,3 +178,35 @@
     `(primop:inlined-two-arg-+ ,x 1))
   (define-compiler-macro 1- (x)
     `(primop:inlined-two-arg-- ,x 1)))
+
+
+
+;;; ------------------------------------------------------------
+;;;
+;;;  Copied from clasp/src/lisp/kernel/lsp/assorted.lsp
+;;;    and put here so that the inline definition is available
+;;;
+(declaim (inline coerce-fdesignator)
+	 (ftype (function ((or function symbol)) function) fdesignator))
+(defun coerce-fdesignator (fdesignator)
+  "Take a CL function designator and spit out a function."
+  (etypecase fdesignator
+    (function fdesignator)
+    (symbol (fdefinition fdesignator))))
+
+
+;;; ------------------------------------------------------------
+;;;
+;;;  Copied from clasp/src/lisp/kernel/lsp/pprint.lsp
+;;;    and put here so that the inline definition is available
+;;;
+(declaim (inline index-posn posn-index posn-column))
+(defun index-posn (index stream)
+  (declare (type index index) (type pretty-stream stream))
+  (+ index (pretty-stream-buffer-offset stream)))
+(defun posn-index (posn stream)
+  (declare (type posn posn) (type pretty-stream stream))
+  (- posn (pretty-stream-buffer-offset stream)))
+(defun posn-column (posn stream)
+  (declare (type posn posn) (type pretty-stream stream))
+  (index-column (posn-index posn stream) stream))

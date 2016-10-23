@@ -61,7 +61,7 @@ Return files."
      done)
     (nreverse files)))
 
-(defun select-source-files (last-file &key first-file system)
+(defun select-source-files (first-file last-file &key system)
         (or first-file (error "You must provide first-file to select-source-files"))
         (or system (error "You must provide system to select-source-files"))
         (let ((cur (member first-file system :test #'equal))
@@ -87,7 +87,7 @@ Return files."
 
 
 (defun bitcode-pathnames (start end &key system)
-  (let ((sources (select-source-files end :first-file start :system system)))
+  (let ((sources (select-source-files start end :system system)))
     (mapcar #'(lambda (f &aux (fn (entry-filename f))) (build-pathname fn :bc)) sources)))
 
 (defun print-bitcode-file-names-one-line (start end)
@@ -96,7 +96,7 @@ Return files."
   nil)
 
 (defun out-of-date-bitcodes (start end &key system)
-  (let ((sources (select-source-files end :first-file start :system system))
+  (let ((sources (select-source-files start end :system system))
         out-of-dates)
     (mapc #'(lambda (f) (if out-of-dates
                             (setq out-of-dates (list* f out-of-dates))
@@ -107,7 +107,7 @@ Return files."
 
 (defun source-file-names (start end)
   (let ((sout (make-string-output-stream))
-        (cur (select-source-files end :first-file :start))
+        (cur (select-source-files :start end))
         pn)
     (tagbody
      top
@@ -184,7 +184,7 @@ Return files."
 (defun load-system ( first-file last-file &key interp load-bitcode (target-backend *target-backend*) system)
   #+dbg-print(bformat t "DBG-PRINT  load-system: %s - %s\n" first-file last-file )
   (let* ((*target-backend* target-backend)
-         (files (select-source-files last-file :first-file first-file :system system))
+         (files (select-source-files first-file last-file :system system))
 	 (cur files))
     (tagbody
      top
@@ -374,27 +374,32 @@ Return files."
                     (cmp:link-bitcode-modules output-file all-bitcode))))))))
 
 (export '(compile-cclasp recompile-cclasp))
-(defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
-  (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))
-  (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
+
+(defun compile-cclasp* (output-file system)
+  "Turn off generation of inlining code until its turned back on by the source code.
+Compile the cclasp source code."
+  (let ((files (append (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/pre-auto" :system system)
+                       (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
+                                            #P"src/lisp/kernel/tag/cclasp"
+                                            :system system))))
+    (setf core:*defun-inline-hook* nil)
     (compile-system files)
     (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-bitcode)
           (cmp:link-bitcode-modules output-file all-bitcode)))))
+  
+(defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
+  (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))
+  (compile-cclasp* output-file system))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (cclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
   (let ((*target-backend* (default-target-backend)))
-    (if (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)
-        (time
-         (progn
-           (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system)
-           (let ((files (out-of-date-bitcodes #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
-             (compile-system files)
-             (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
-               (if (out-of-date-target output-file all-bitcode)
-                     (cmp:link-bitcode-modules output-file all-bitcode)))))))))
+    (time
+     (progn
+       (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system)
+       (compile-cclasp* output-file system)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

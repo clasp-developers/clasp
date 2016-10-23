@@ -206,7 +206,7 @@
 (defun boot-bitcode-pathnames (last-file &key first-file target-backend)
   (or first-file (error "You must provide first-file"))
   (let* ((source-files (mapcan #'(lambda (part) (and (not (keywordp part)) (list (core::get-pathname-with-type part "lsp"))))
-                               (core::select-source-files last-file :first-file first-file)))
+                               (core::select-source-files first-file last-file )))
          (bitcode-files (mapcar (lambda (k) (compile-file-pathname k :target-backend target-backend))
                                 source-files)))
     bitcode-files))

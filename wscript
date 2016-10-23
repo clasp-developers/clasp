@@ -86,6 +86,13 @@ def sync_submodules(cfg):
     os.system("git submodule sync")
 
 def libraries_as_link_flags(fmt,libs):
+    all_libs = []
+    for x in libs:
+        all_libs.append(fmt%"")
+        all_libs.append(x)
+    return all_libs
+    
+def libraries_as_link_flags_as_string(fmt,libs):
     all_libs = StringIO()
     for x in libs:
         all_libs.write(" ")
@@ -133,8 +140,8 @@ def configure_common(cfg,variant):
     cfg.define("APP_NAME",APP_NAME)
     cfg.define("BITCODE_NAME",variant.bitcode_name())
     cfg.define("VARIANT_NAME",variant.variant_name())
-    cfg.define("BUILD_STLIB", libraries_as_link_flags(cfg.env.STLIB_ST,cfg.env.STLIB))
-    cfg.define("BUILD_LIB", libraries_as_link_flags(cfg.env.LIB_ST,cfg.env.LIB))
+    cfg.define("BUILD_STLIB", libraries_as_link_flags_string(cfg.env.STLIB_ST,cfg.env.STLIB))
+    cfg.define("BUILD_LIB", libraries_as_link_flags_string(cfg.env.LIB_ST,cfg.env.LIB))
     cfg.define("BUILD_LINKFLAGS", ' '.join(cfg.env.LINKFLAGS) + ' ' + ' '.join(cfg.env.LDFLAGS))
 #    cfg.define("DEBUG_STARTUP",1)
 
@@ -810,27 +817,31 @@ class link_fasl(Task.Task):
 class link_executable(Task.Task):
     def run(self):
         if (self.env['DEST_OS'] == DARWIN_OS ):
-            cmd = "%s %s %s %s %s %s -flto=thin -o %s -Wl,-object_path_lto,%s" % (
-                self.env.CXX[0],
-                self.inputs[0].abspath(),
-                self.inputs[1].abspath(),
-                ' '.join(self.env['LINKFLAGS']) + ' ' + ' '.join(self.env['LDFLAGS']),
-                libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB),
-                libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),
-                self.outputs[0].abspath(),
-                self.outputs[1].abspath())
+            cmd = [ self.env.CXX[0],
+                    self.inputs[0].abspath(),
+                    self.inputs[1].abspath() ] + \
+                    self.env['LINKFLAGS'] + \
+                    self.env['LDFLAGS']  + \
+                    libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
+                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + [
+                        "-flto=thin",
+                        "-o",
+                        self.outputs[0].abspath(),
+                        "-Wl,-object_path_lto,%s"% self.outputs[1].abspath() ]
         elif (self.env['DEST_OS'] == LINUX_OS ):
-            cmd = "%s %s %s %s %s %s -flto=thin -fuse-ld=gold -o %s" % (
-                self.env.CXX[0],
-                self.inputs[0].abspath(),
-                self.inputs[1].abspath(),
-                ' '.join(self.env['LINKFLAGS'])+' '+' '.join(self.env['LDFLAGS']),
-                libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB),
-                libraries_as_link_flags(self.env.LIB_ST,self.env.LIB),
-                self.outputs[0].abspath())
+            cmd = [ self.env.CXX[0],
+                    self.inputs[0].abspath(),
+                    self.inputs[1].abspath() ] + \
+                    self.env['LINKFLAGS'] + \
+                    self.env['LDFLAGS'] + \
+                    libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
+                    libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + [
+                        "-flto=thin",
+                        "-fuse-ld=gold",
+                        "-o",
+                        self.outputs[0].abspath()]
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
-        print(" link_executable cmd: %s\n" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
