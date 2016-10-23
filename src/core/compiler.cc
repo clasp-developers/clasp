@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/str.h>
+#include <clasp/core/character.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/sequence.h>
 #include <clasp/core/pathname.h>
@@ -58,7 +59,6 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/activationFrame.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/character.h>
 #include <clasp/core/environment.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/core/wrappers.h>
@@ -1149,14 +1149,19 @@ CL_DEFUN T_mv core__progv_function(List_sp symbols, List_sp values, Function_sp 
 
 void initialize_compiler_primitives(Lisp_sp lisp) {
 
-  //	SYMBOL_SC_(CorePkg,processDeclarations);
+  // Initialize raw object translators needed for Foreign Language Interface support 
+  llvmo::initialize_raw_translators(); // See file intrinsics.cc!
+
   comp::_sym_STARimplicit_compile_hookSTAR->defparameter(comp::_sym_implicit_compile_hook_default->symbolFunction());
   cleavirPrimops::_sym_callWithVariableBound->setf_symbolFunction(_sym_callWithVariableBound->symbolFunction());
 
-  llvmo::initialize_raw_translators(); // See file intrinsics.cc!
-
   return;
 }
+
+}; /* namespace */
+
+
+extern "C" {
 
 void clasp_trap(core::T_O* val) {
   printf("%s:%d  clasp_trap called with %p\n", __FILE__, __LINE__, val);
@@ -1165,5 +1170,5 @@ void clasp_trap(core::T_O* val) {
 void clasp_silent_trap(core::T_O* obj) {
   // Do nothing
 }
+
 };
-        
