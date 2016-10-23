@@ -10,6 +10,7 @@
   (:use #:common-lisp #:core)
   (:nicknames #:cc)
   (:export
+   #:%literal-index
    #:*use-type-inference*
    #:cleavir-compile-eval
    #:compile-form
@@ -18,6 +19,8 @@
    #:invoke-multiple-value-call-instruction
    #:*debug-log*
    #:*debug-final-gml*
+   #:*debug-cleavir*
+   #:*debug-cleavir-literals*
    #:instruction-gid
    #:unsafe-multiple-value-foreign-call
    #:unsafe-foreign-call
