@@ -109,6 +109,12 @@ class type_info;
 
 typedef std::size_t class_id;
 
+// BASE TYPES CL_POINTER_T AND CL_VALUE_T
+// A 64bit or 32bit value holding representing a Lisp Object - either
+// tagged or untagged.
+typedef std::uintptr_t cl_pointer_t;
+typedef std::uintptr_t cl_value_t;
+
 /*! Configure architecture dependent types */
 #include <clasp/core/config.h>
 
