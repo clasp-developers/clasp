@@ -785,6 +785,7 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   SYMBOL_EXPORT_SC_(ClPkg, labels);
   SYMBOL_EXPORT_SC_(ClPkg, progv);
   if ((sym == cl::_sym_block) ||
+      (sym == cl::_sym_progn) ||
       (sym == cl::_sym_let) ||
       (sym == cl::_sym_letSTAR) ||
       (sym == cl::_sym_return_from) ||
@@ -802,7 +803,6 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
       (sym == cl::_sym_go) ||
       (sym == cl::_sym_multiple_value_prog1) ||
       (sym == cl::_sym_if) ||
-      (sym == cl::_sym_progn) ||
       (sym == cl::_sym_labels) ||
       (sym == cl::_sym_unwind_protect) ||
       (sym == cl::_sym_catch) ||
@@ -811,7 +811,12 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
       (sym == cl::_sym_quote)) {
     return (Values(_lisp->_true()));
   }
-  return (Values(_Nil<T_O>()));
+  // Now check the special operators hash table because
+  // there may be a few more there.
+  // special-operator-p returns a generalized boolean
+  // so it's ok to return a special form symbol if
+  // sym is a special form
+  return _lisp->specialFormOrNil(sym);
 };
 
 
