@@ -54,6 +54,7 @@ THE SOFTWARE.
 #include <llvm/Support/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Pass.h>
+#include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/IR/Verifier.h>
@@ -271,6 +272,8 @@ CL_DEFMETHOD void TargetMachine_O::addPassesToEmitFileAndRunPassManager(PassMana
 }; // llvmo
 
 namespace llvmo {
+
+  
 
 
 CL_LAMBDA(triple-str);
@@ -683,6 +686,17 @@ CL_DEFUN void llvm_sys__writeBitcodeToFile(Module_sp module, core::Str_sp pathna
 #endif
     return omodule;
   };
+
+
+CL_DEFUN Module_sp llvm_sys__clone_module(Module_sp original)
+{
+  llvm::Module* o = original->wrappedPtr();
+  std::unique_ptr<llvm::Module> m = llvm::CloneModule(o);
+  Module_sp module = core::RP_Create_wrapped<Module_O,llvm::Module*>(m.release());
+  return module;
+}
+
+
 
   CL_DEFUN bool llvm_sys__valuep(core::T_sp arg) {
     return gc::IsA<Value_sp>(arg);

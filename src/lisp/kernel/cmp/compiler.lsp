@@ -50,6 +50,25 @@
   `(do-one-source-database #'(lambda () ,@body)))
 
 
+(defvar *intrinsics-module* nil)
+
+;;; Don't do anything - memory balloons when intrinsics are linked in like this
+(defun link-intrinsics-module (module)
+  "Merge the intrinsics module with the passed module.
+The passed module is modified as a side-effect."
+  ;; Lazily load the intrinsics bitcode
+  ;; and keep an original copy in *intrinsics-module*
+  #+(or)(progn
+          (unless *intrinsics-module*
+            (let ((intrinsics-bitcode-name (namestring (truename (build-intrinsics-bitcode-pathname :compile)))))
+              (setf *intrinsics-module* (llvm-sys:parse-bitcode-file intrinsics-bitcode-name *llvm-context*))))
+          ;; Clone the intrinsics module and link it in
+          (let ((linker (llvm-sys:make-linker module))
+                (intrinsics-clone (llvm-sys:clone-module *intrinsics-module*)))
+            (llvm-sys:link-in-module linker intrinsics-clone)))
+    module)
+
+
 (defun compile-arguments (fn-name	; passed for logging only
 			  lambda-list-handler ; llh for function
 			  function-env
@@ -1412,6 +1431,7 @@ be wrapped with to make a closure"
     (or fn (error "There was no function returned by compile-lambda-function outer: ~a" fn))
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
+    (link-intrinsics-module *the-module*)
     (when *dump-module-on-completion*
       (llvm-sys:dump *the-module*)
       (core::fflush))
@@ -1472,6 +1492,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
   (with-compiler-env (conditions)
     (let ((*the-module* (create-run-time-module-for-compile)))
       (define-primitives-in-module *the-module*)
+      ;; Link the C++ intrinsics into the module
       (let* ((*run-time-values-table-global-var*
 	      (llvm-sys:make-global-variable *the-module*
                                              +run-and-load-time-value-holder-global-var-type+

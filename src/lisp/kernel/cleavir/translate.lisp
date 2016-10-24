@@ -1,8 +1,12 @@
 (cl:in-package #:clasp-cleavir)
 
 
-(defvar *debug-cleavir* nil)
-(export '*debug-cleavir*)
+(defvar *debug-cleavir* nil
+  "Controls if graphs are generated as forms are being compiled.")
+(defvar *debug-cleavir-literals* nil
+  "Controls if cleavir debugging is carried out on literal compilation. 
+When this is T a LOT of graphs will be generated.")
+
 ;;;
 ;;; The first argument to this function is an instruction that has a
 ;;; single successor.  Whether a GO is required at the end of this
@@ -1085,6 +1089,7 @@
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
         (cmp:cmp-log-dump cmp:*the-module*)
+        (cmp:link-intrinsics-module cmp:*the-module*)
         (when cmp:*dump-module-on-completion*
           (llvm-sys:dump cmp:*the-module*))
         (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")

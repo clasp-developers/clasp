@@ -222,12 +222,10 @@ If this form has already been precalculated then just return the precalculated-v
     (cond
       ((and (consp form) (eq (first form) 'QUOTE))
        (let* ((constant (cadr form))
-	      (constant-index (cmp:reference-literal constant)))
+	      (constant-index (clasp-cleavir:%literal-index constant)))
 	 constant-index))
-      ((symbolp form)
-       (cmp:reference-literal form))
-      ((constantp form)
-       (cmp:reference-literal form))
+      ((symbolp form) (clasp-cleavir:%literal-index form))
+      ((constantp form) (clasp-cleavir:%literal-index form))
       (t
        (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
            ;; COMPLE-FILE will generate a function for the form in the Module

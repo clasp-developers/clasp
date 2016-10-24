@@ -60,8 +60,8 @@
 #define PACKAGE_NICKNAME(name_str)
 #define PACKAGE_SHADOW(name_str)
 #define NAMESPACE_PACKAGE_ASSOCIATION(x, y, z) \
-  static const std::string y = z;              \
+  static const char* /*std::string*/ y = z;              \
   namespace x {                                \
-  static const std::string CurrentPkg = z;     \
+    static const char* /*std::string*/ CurrentPkg = z;     \
   }
 #endif

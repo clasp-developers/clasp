@@ -1653,8 +1653,12 @@ namespace llvmo {
 };
 
 namespace llvmo {
+  FORWARD(Module);
+};
 
-FORWARD(Module);
+
+namespace llvmo {
+
 class Module_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Module, Module_O, "module", core::ExternalObject_O);
   typedef llvm::Module ExternalType;
@@ -1684,7 +1688,8 @@ public:
   }
   Module_O() : Base(), _ptr(NULL){};
   ~Module_O() {
-    if (_ptr != NULL) { /* delete _ptr;*/
+    if (_ptr != NULL) {
+      // delete _ptr;   // Don't delete the module Delete the module when it's not used
       _ptr = NULL;
     };
   }
