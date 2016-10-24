@@ -112,6 +112,7 @@
           jit-function-name
           jit-make-global-string-ptr
           llvm-link
+          link-intrinsics-module
           load-bitcode
           parse-function-arguments
           set-associated-funcs

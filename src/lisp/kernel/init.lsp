@@ -493,6 +493,8 @@ a relative path from there."
   (cond
     ((eq link-type :fasl)
      (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.a" +bitcode-name+)))
+    ((eq link-type :compile)
+     (translate-logical-pathname (bformat nil "lib:%s-intrinsics-cxx.bc" +bitcode-name+)))
     ((eq link-type :executable)
      (translate-logical-pathname (bformat nil "lib:%s-all-cxx.a" +bitcode-name+)))
     (t (error "Provide a bitcode file for the link-type ~a" link-type))))

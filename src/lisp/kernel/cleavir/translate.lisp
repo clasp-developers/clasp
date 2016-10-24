@@ -1089,6 +1089,7 @@ When this is T a LOT of graphs will be generated.")
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)
         (cmp:cmp-log-dump cmp:*the-module*)
+        (cmp:link-intrinsics-module cmp:*the-module*)
         (when cmp:*dump-module-on-completion*
           (llvm-sys:dump cmp:*the-module*))
         (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
