@@ -266,9 +266,12 @@
 (defun unsafe-multiple-value-foreign-call (call-or-invoke intrinsic-name return-value arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar (lambda (x) (%load x)) arg-allocas))
-         (real-args (if (< (length arguments) core:+number-of-fixed-arguments+)
-                        (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                        arguments)))
+         (real-args arguments
+           ;; I used to pad the number of real-args using the code below - why?????
+           ;; If Clasp works without this then delete the code below
+           #+(or)(if (< (length arguments) core:+number-of-fixed-arguments+)
+                              (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
+                              arguments)))
     (with-return-values (return-vals return-value abi)
       (let* ((args (list* real-args))
              (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
@@ -286,9 +289,6 @@
 (defun unsafe-foreign-call (call-or-invoke foreign-name output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
   (let* ((arguments (mapcar #'%load arg-allocas))
-         (args (if (< (length arguments) core:+number-of-fixed-arguments+)
-                   (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                   arguments))
          (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                    (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
                           (varargs nil))
@@ -298,16 +298,13 @@
                       foreign-name
                       cmp:*the-module*))))
          (result-in-registers
-          (llvm-sys:create-call-array-ref cmp:*irbuilder* func args "foreign-call-result")))
+          (llvm-sys:create-call-array-ref cmp:*irbuilder* func arguments "foreign-call-result")))
     (%store result-in-registers output)))
 
 
 (defun unsafe-foreign-call-pointer (call-or-invoke pointer output arg-allocas abi &key (label "") landing-pad)
   ;; Write excess arguments into the multiple-value array
-  (let* ((arguments (mapcar #'%load arg-allocas))
-         (args (if (< (length arguments) core:+number-of-fixed-arguments+)
-                   (append arguments (make-list (- core:+number-of-fixed-arguments+ (length arguments)) :initial-element (cmp:null-t-ptr)))
-                   arguments)))
+  (let* ((arguments (mapcar #'%load arg-allocas)))
     (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
            (varargs nil)
            (function-type (llvm-sys:function-type-get cmp:+t*+ arg-types varargs))
@@ -315,7 +312,7 @@
            (pointer-t* pointer)
            (function-pointer (%bit-cast (cmp:irc-create-call "cc_getPointer" (list pointer-t*)) function-pointer-type "cast-function-pointer"))
            (result-in-registers
-            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer args "function-pointer")))
+            (llvm-sys:create-call-function-pointer cmp:*irbuilder* function-type function-pointer arguments "function-pointer")))
       (%store result-in-registers output))))
 
 

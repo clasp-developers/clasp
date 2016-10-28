@@ -502,21 +502,25 @@ ALWAYS_INLINE core::T_O* to_lisp_object_from_value_in_T_O_ptr_fixnum( core::T_O*
   return result;
 }
 
+ALWAYS_INLINE core::T_O* from_lisp_object_to_value_in_T_O_ptr_fixnum( core::T_O* lisp_object_ptr )
+{
+  // uintptr_t ptr( reinterpret_cast< uintptr_t >( lisp_object_ptr ));
+  gctools::Fixnum value = gctools::untag_fixnum< T_O * >( lisp_object_ptr );
+  core::T_O * result = reinterpret_cast< core::T_O * >( value );
+  return result;
+}
+
+ALWAYS_INLINE core::T_O* to_lisp_object_from_value_in_T_O_ptr_fixnum( core::T_O* raw_ptr )
+{
+  core::T_O * result = gctools::tag_fixnum< T_O * >( reinterpret_cast< gctools::Fixnum >( raw_ptr ));
+  return result;
+}
+
 /* *** OLD STUFF - TO BE REMOVED !!! ***
-DEF_RAW_TRANSLATOR(short,short);
-DEF_RAW_TRANSLATOR(unsigned short,ushort);
-DEF_RAW_TRANSLATOR(int,int);
-DEF_RAW_TRANSLATOR(unsigned int,uint);
 DEF_RAW_TRANSLATOR(long,long);
 DEF_RAW_TRANSLATOR(unsigned long,ulong);
 DEF_RAW_TRANSLATOR(long long,longlong);
 DEF_RAW_TRANSLATOR(unsigned long long,ulonglong);
-DEF_RAW_TRANSLATOR(int8_t,int8);
-DEF_RAW_TRANSLATOR(uint8_t,uint8);
-DEF_RAW_TRANSLATOR(int16_t,int16);
-DEF_RAW_TRANSLATOR(uint16_t,uint16);
-DEF_RAW_TRANSLATOR(int32_t,int32);
-DEF_RAW_TRANSLATOR(uint32_t,uint32);
 DEF_RAW_TRANSLATOR(int64_t,int64);
 DEF_RAW_TRANSLATOR(uint64_t,uint64);
 DEF_RAW_TRANSLATOR(size_t,size);
