@@ -10,7 +10,7 @@
           *current-function*
           *current-function-name*
           *debug-compile-file*
-          *dump-module-on-completion*
+          *debug-dump-module*
           *generate-compile-file-load-time-values*
           *gv-current-function-name*
           *gv-source-file-info-handle*
