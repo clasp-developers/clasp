@@ -257,6 +257,15 @@ void dump_funcs(core::Function_sp compiledFunction) {
   }
 }
 
+CL_LAMBDA(module &optional (stream t))
+CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
+  core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
+  module->wrappedPtr()->print(sout,NULL);
+  core::clasp_write_string(outstr,stream);
+}
+
 CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {
   dump_funcs(cf);
 }
