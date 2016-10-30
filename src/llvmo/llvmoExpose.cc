@@ -876,6 +876,13 @@ CL_DEFUN Module_sp Module_O::make(llvm::StringRef module_name, LLVMContext_sp co
   return self;
 };
 
+std::string Module_O::__repr__() const {
+  stringstream ss;
+  ss << "#<MODULE ID:";
+  ss << this->_Id << ">";
+  return ss.str();
+}
+  
 CL_DEFUN core::List_sp llvm_sys__module_get_function_list(Module_sp module) {
   ql::list fl(_lisp);
   for (llvm::Function &f : *module->wrappedPtr()) {
@@ -897,6 +904,8 @@ namespace llvmo {
   CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable *(llvm::Module::*)(llvm::StringRef, bool)) &llvm::Module::getGlobalVariable);
   CL_LISPIFY_NAME(getNamedGlobal);
   CL_EXTERN_DEFMETHOD(Module_O, (llvm::GlobalVariable *(llvm::Module::*)(llvm::StringRef))&llvm::Module::getNamedGlobal);
+  CL_LISPIFY_NAME(getOrInsertFunction);
+CL_EXTERN_DEFMETHOD(Module_O, (llvm::Constant*(llvm::Module::*)(llvm::StringRef,llvm::FunctionType*))&llvm::Module::getOrInsertFunction);
   CL_LISPIFY_NAME(getOrInsertGlobal);
   CL_EXTERN_DEFMETHOD(Module_O, &llvm::Module::getOrInsertGlobal);
   CL_LISPIFY_NAME(getTargetTriple);
@@ -2457,6 +2466,8 @@ CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
   this->wrappedPtr()->getBasicBlockList().push_back(basicBlock->wrappedPtr());
 }
 
+  CL_LISPIFY_NAME(getFunctionType);
+  CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::getFunctionType);
   CL_LISPIFY_NAME(eraseFromParent);
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::eraseFromParent);
   CL_LISPIFY_NAME(empty);
