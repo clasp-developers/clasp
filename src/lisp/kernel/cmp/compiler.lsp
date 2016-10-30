@@ -202,8 +202,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
-(defun compile-lambda-function (lambda-or-lambda-block env )
-  "Return the same things that generate-llvm-function-from-code returns"
+(defun compile-lambda-function (lambda-or-lambda-block &optional env)
+  "Compile a lambda form and return an llvm-ir function that evaluates it.
+Return the same things that generate-llvm-function-from-code returns"
   (dbg-set-current-debug-location-here)
   (let* (wrap-block block-name lambda-list body lambda-block-name)
     (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)

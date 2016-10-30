@@ -241,38 +241,6 @@
       (funcall compile-file-hook form)
       (t1expr form)))
 
-#+(or)
-(defun compile-form-into-module (form name &key epilogue-module-p)
-  "* Arguments
-- form :: A form.
-- name :: The name of the module
-- epilogue-module-p :: T or NIL
-* Description
-This is used to generate a module from a single form - specifically
-to compile prologue and epilogue code when linking modules.
-If epilogue-module-p is T then tell make-boot-function-global-variable
-to append a NULL function to the list of main functions."
-  (let* ((module (create-llvm-module-for-compile-file name))
-         conditions
-	 (*compile-file-pathname* nil)
-	 (*compile-file-truename* name)
-	 (*compile-print* nil)
-	 (*compile-verbose* nil)	 )
-    (with-compiler-env (conditions)
-      (with-module (:module module
-                            :source-namestring (namestring (string name)))
-        (with-debug-info-generator (:module *the-module*
-                                            :pathname *compile-file-truename*)
-          (with-ltv (ltv-init-fn)
-            (compile-top-level form)
-            (make-boot-function-global-variable *the-module* ltv-init-fn)
-            #+(or)(let ((main-fn (compile-main-function name ltv-init-fn )))
-                    (make-boot-function-global-variable *the-module* main-fn)
-                    #+(or)(add-main-function *the-module*)))
-          )))
-    module))
-
-
 (defun cfp-output-extension (output-type)
   (cond
     ((eq output-type :bitcode) "bc")
@@ -333,7 +301,7 @@ and the pathname of the source file - this will also be used as the module initi
 
 (defvar *debug-compile-file* nil)
 
-(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0) epilogue-module-p )
+(defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0))
   "* Arguments
 - given-input-pathname :: A pathname.
 - output-path :: A pathname.
@@ -341,7 +309,6 @@ and the pathname of the source file - this will also be used as the module initi
 - type :: :kernel or :user (I'm not sure this is useful anymore
 - source-debug-namestring :: A namestring.
 - source-debug-offset :: An integer.
-- epilogue-module-p :: T if this is an epilogue module.
 Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; TODO: Save read-table and package with unwind-protect
   (let* ((clasp-source-root (translate-logical-pathname "source-dir:"))
@@ -417,11 +384,9 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                         (output-type :fasl)
 ;;; type can be either :kernel or :user
                         (type :user)
-                        epilogue-module-p
                       &aux conditions
                         )
-  "See CLHS compile-file. If epilogue-module-p is T then compile-file an 
-epilogue module - one that terminates a series of linked modules. "
+  "See CLHS compile-file."
   (if system-p-p (error "I don't support system-p keyword argument - use output-type"))
   (if (not output-file-p) (setq output-file (cfp-output-file-default given-input-pathname output-type)))
   (with-compiler-env (conditions)
@@ -433,8 +398,7 @@ epilogue module - one that terminates a series of linked modules. "
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 
 					     :source-debug-offset source-debug-offset
-                                             :compile-file-hook compile-file-hook
-                                             :epilogue-module-p epilogue-module-p)))
+                                             :compile-file-hook compile-file-hook)))
 	(cond
 	  ((eq output-type :object)
 	   (when verbose (bformat t "Writing object to %s\n" (core:coerce-to-filename output-path)))
@@ -451,9 +415,10 @@ epilogue module - one that terminates a series of linked modules. "
 	  ((eq output-type :fasl)
 	   (ensure-directories-exist output-path)
 	   (let ((temp-bitcode-file (compile-file-pathname given-input-pathname :output-file output-file :output-type :bitcode)))
-	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (ensure-directories-exist temp-bitcode-file)
+	     (bformat t "Writing temporary bitcode file to: %s\n" temp-bitcode-file)
 	     (llvm-sys:write-bitcode-to-file module (core:coerce-to-filename temp-bitcode-file))
+	     (bformat t "Writing fasl file to: %s\n" output-file)
 	     (llvm-link output-file
                             :lisp-bitcode-files (list temp-bitcode-file))))
 	  (t ;; fasl
