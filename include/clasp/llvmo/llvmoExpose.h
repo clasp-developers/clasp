@@ -1659,12 +1659,14 @@ namespace llvmo {
 
 namespace llvmo {
 
+  static size_t global_NextModuleId;
 class Module_O : public core::ExternalObject_O {
   LISP_EXTERNAL_CLASS(llvmo, LlvmoPkg, llvm::Module, Module_O, "module", core::ExternalObject_O);
   typedef llvm::Module ExternalType;
   typedef llvm::Module *PointerToExternalType;
   void initialize();
 GCPROTECTED:
+  size_t _Id;
   PointerToExternalType _ptr;
   core::HashTableEqual_sp _UniqueGlobalVariableStrings;
 
@@ -1686,13 +1688,15 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
-  Module_O() : Base(), _ptr(NULL){};
+ Module_O() : Base(), _ptr(NULL), _Id(++global_NextModuleId) {};
   ~Module_O() {
     if (_ptr != NULL) {
       // delete _ptr;   // Don't delete the module Delete the module when it's not used
       _ptr = NULL;
     };
   }
+  std::string __repr__() const;
+  CL_DEFMETHOD size_t module_id() const { return this->_Id;};
   static Module_sp make(llvm::StringRef module_name, LLVMContext_sp context);
   /*! Return true if the wrapped Module is defined */
   bool valid() const;
