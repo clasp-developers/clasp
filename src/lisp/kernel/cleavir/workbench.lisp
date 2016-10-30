@@ -19,7 +19,7 @@
 
 (load "sys:kernel;cleavir;auto-compile.lisp")
 
-(setq cmp::*dump-module-on-completion* t)
+(setq cmp::*debug-dump-module* t)
 (compile-file "sys:tests;ti.lsp")
 
 (load "sys:kernel;cleavir;inline.lisp")
@@ -952,22 +952,22 @@ clasp-cleavir::*hir-types*
        'cbar)
 
 
-     (let ((cmp:*dump-module-on-completion* t)
+     (let ((cmp:*debug-dump-module* t)
            (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
        (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad.bc" )))
 
-     (let ((cmp:*dump-module-on-completion* t)
+     (let ((cmp:*debug-dump-module* t)
            (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
        (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad01.bc" )))
 
      (getpid)
      (fdefinition 'badthrow)#<COMMON-LISP:COMPILED-FUNCTION CORE::UNNAMED-LAMBDA :address 0x11c778080>
 
-     (let ((cmp:*dump-module-on-completion* t)
+     (let ((cmp:*debug-dump-module* t)
            (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
        (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad03.bc" )))
 
-     (let ((cmp:*dump-module-on-completion* t)
+     (let ((cmp:*debug-dump-module* t)
            (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
        (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad04.bc" )))
 
@@ -978,7 +978,7 @@ clasp-cleavir::*hir-types*
      (catch 'foo (badthrow))
 
 
-     (let ((cmp:*dump-module-on-completion* t)
+     (let ((cmp:*debug-dump-module* t)
            (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
        (compile 'goodthrow (list "COMMON-LISP:LAMBDA" nil "/Users/meister/Development/clasp/src/tests/lisp/good01.bc" )))
 
@@ -1009,7 +1009,7 @@ clasp-cleavir::*hir-types*
                (setq cmp:*the-module* module))
            (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname))
            (format t "In C~%")
-           (when cmp:*dump-module-on-completion* (llvm-sys:dump cmp:*the-module*))
+           (when cmp:*debug-dump-module* (llvm-sys:dump cmp:*the-module*))
            (if (not cmp:*run-time-execution-engine*)
                (setq cmp:*run-time-execution-engine* (cmp:create-run-time-execution-engine cmp:*the-module*))
                (llvm-sys:add-module cmp:*run-time-execution-engine* cmp:*the-module*))

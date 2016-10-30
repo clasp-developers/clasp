@@ -1432,9 +1432,8 @@ be wrapped with to make a closure"
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
     (link-intrinsics-module *the-module*)
-    (when *dump-module-on-completion*
-      (llvm-sys:dump *the-module*)
-      (core::fflush))
+    (when *debug-dump-module*
+      (quick-module-dump *the-module* "/tmp/compile-module-pre-optimize"))
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (if (not *run-time-execution-engine*)
 	;; SETUP THE *run-time-execution-engine* here for the first time

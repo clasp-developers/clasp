@@ -31,7 +31,7 @@
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
 	  *all-functions-for-one-compile*
-	  *dump-module-on-completion*
+	  *debug-dump-module*
 	  irc-intrinsic-args
 	  set-associated-funcs
 	  *block-name-prefix*

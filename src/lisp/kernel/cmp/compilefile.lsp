@@ -391,9 +391,11 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                           #+(or)(add-main-function *the-module*))))
 	      (cmp-log "About to verify the module\n")
 	      (cmp-log-dump *the-module*)
-	      (if *dump-module-on-completion*
-		  (llvm-sys:dump *the-module*))
-              (irc-verify-module-safe *the-module*)))))
+	      (if *debug-dump-module*
+		  (quick-module-dump *the-module* "/tmp/compile-file-module-pre-optimize"))
+              (irc-verify-module-safe *the-module*)))
+          (if *debug-dump-module*
+           (quick-module-dump module "/tmp/compile-file-module-post-optimize"))))
       module)))
 
 

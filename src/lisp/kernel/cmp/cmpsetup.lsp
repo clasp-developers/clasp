@@ -43,7 +43,8 @@
 (defvar *verify-llvm-functions* nil)
 
 
-(defvar *dump-module-on-completion* nil)
+(defvar *debug-dump-module* nil)
+(defvar *debug-link-options* nil)
 
 
 
