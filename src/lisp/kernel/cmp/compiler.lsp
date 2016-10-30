@@ -379,11 +379,6 @@ Return the same things that generate-llvm-function-from-code returns"
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
 
-(defun codegen-lexical-var-reference (depth-index env)
-  (let ((renv (irc-renv env))
-	(depth (car depth-index))
-	(index (cadr depth-index)))
-    (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"
@@ -402,7 +397,8 @@ Return the same things that generate-llvm-function-from-code returns"
 		  (let* ((classified (irc-classify-variable env cur-var))
 			 (target-ref (if (eq (car classified) 'ext:special-var)
 					 (codegen-special-var-reference cur-var env)
-					 (codegen-lexical-var-reference (cddr classified) env))))
+					 (let ((depth-index (cddr classified)))
+                                           (codegen-lexical-var-reference (first depth-index) (second depth-index) (irc-renv env))))))
 		    (codegen temp-res cur-expr env)
 		    (irc-intrinsic "copyTsp" target-ref temp-res)))
 		;; symbol was macroexpanded use SETF

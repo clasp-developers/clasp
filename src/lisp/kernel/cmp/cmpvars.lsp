@@ -44,13 +44,41 @@
 
 
 
+(defun codegen-local-lexical-var-reference (index renv)
+  "Generate code to reference a lexical variable in the current value frame"
+  (let* ((value-frame-tsp (irc-load renv))
+         (tagged-value-frame-ptr (llvm-sys:create-extract-value *irbuilder* value-frame-tsp (list 0) "tagged-value-frame-ptr"))
+         (as-uintptr_t (llvm-sys:create-bit-cast cmp:*irbuilder* tagged-value-frame-ptr +uintptr_t+ ""))
+         (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
+         (no-tag-uintptr_t (llvm-sys:create-sub cmp:*irbuilder* as-uintptr_t (jit-constant-uintptr_t general-pointer-tag) "value-frame-no-tag" nil nil))
+         (element0-offset (cdr (assoc :value-frame-element0-offset cmp::+cxx-data-structures-info+)))
+         (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
+         (element-size (cdr (assoc :value-frame-element-size cmp::+cxx-data-structures-info+)))
+         (offset (+ element0-offset (* element-size index)))
+         (entry-uintptr_t (llvm-sys:create-add cmp:*irbuilder* as-uintptr_t (jit-constant-uintptr_t offset)))
+         (entry-ptr (llvm-sys:create-bit-cast *irbuilder* entry-uintptr_t +tsp*+ "entry")))
+    entry-ptr))
+    
+
+(defun codegen-lexical-var-reference (depth index renv)
+  (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)
+  #+(or)(if (= depth 0)
+            (codegen-local-lexical-var-reference index renv)
+            (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
+
+(defun codegen-lexical-var-value (depth index renv)
+  (let ((ref (codegen-lexical-var-reference depth index renv)))
+    (irc-load ref)))
+
+
 (defun codegen-lexical-var-lookup (result depth-index env)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
   (let* ((depth (car depth-index))
 	 (index (cadr depth-index))
 	 (runtime-env (irc-renv env)))
     (dbg-set-current-debug-location-here)
-    (cmp-log "About to call lexicalValueRead depth-index[%s] depth[%d] index[%d]\n" depth-index depth index)
+    #+(or)(let ((val (codegen-lexical-var-value depth index runtime-env)))
+            (irc-store val result))
     (irc-intrinsic "lexicalValueRead" result (jit-constant-i32 depth) (jit-constant-i32 index) runtime-env))
   result)
 

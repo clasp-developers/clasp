@@ -1135,7 +1135,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (cmp:cmp-log-dump cmp:*the-module*)
         (cmp:link-intrinsics-module cmp:*the-module*)
         (when cmp:*debug-dump-module*
-          (quick-module-dump cmp:*the-module* "/tmp/cclasp-compile-module-pre-optimize"))
+          (cmp:quick-module-dump cmp:*the-module* "/tmp/cclasp-compile-module-pre-optimize"))
         (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
         (if (not cmp:*run-time-execution-engine*)
             ;; SETUP THE *run-time-execution-engine* here for the first time
