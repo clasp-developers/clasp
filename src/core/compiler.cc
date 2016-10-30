@@ -375,7 +375,7 @@ LOAD:
   else if ((dsp = stem.find("_o")) != string::npos)
     stem = stem.substr(0, dsp);
 
-  int mode = RTLD_NOW | RTLD_LOCAL; // | RTLD_FIRST;
+  int mode = RTLD_NOW | RTLD_GLOBAL; // | RTLD_FIRST;
   // Check if we already have this dynamic library loaded
   map<string, void *>::iterator handleIt = _lisp->openDynamicLibraryHandles().find(name);
   if (handleIt != _lisp->openDynamicLibraryHandles().end()) {
@@ -411,7 +411,7 @@ CL_DEFUN T_mv core__dlload(T_sp pathDesig) {
 #ifdef _TARGET_OS_LINUX
   lib_extension = ".so";
 #endif
-  int mode = RTLD_NOW | RTLD_LOCAL;
+  int mode = RTLD_NOW | RTLD_GLOBAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
   Path_sp pathWithProperExtension = path->replaceExtension(lib_extension);
   string ts = pathWithProperExtension->asString();
@@ -500,7 +500,7 @@ std::tuple< int, string > do_dlclose(void * p_handle) {
 CL_DOCSTRING("dlopen - Open a dynamic library and return the handle. Returns (values returned-value error-message(or nil if no error))");
 CL_DEFUN T_mv core__dlopen(T_sp pathDesig) {
 
-  int mode = RTLD_NOW | RTLD_LOCAL;
+  int mode = RTLD_NOW | RTLD_GLOBAL;
   Path_sp path = coerce::pathDesignator(pathDesig);
   string ts0 = path->asString();
 
