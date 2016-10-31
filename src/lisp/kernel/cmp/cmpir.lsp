@@ -1013,9 +1013,9 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 (defun irc-extract-value (struct idx-list &optional (label ""))
   (llvm-sys:create-extract-value *irbuilder* struct idx-list label))
 
-(defun irc-smart-ptr-extract (smart-ptr)
+(defun irc-smart-ptr-extract (smart-ptr &optional (label ""))
   "Extract the t-ptr from the smart-ptr"
-  (irc-extract-value smart-ptr (list 0)))
+  (irc-extract-value smart-ptr (list 0) label))
 
 
 (defun irc-store-result-t* (result result-in-registers)
