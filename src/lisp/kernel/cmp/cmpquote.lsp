@@ -94,7 +94,7 @@ Return the ltv index of the value."
        (with-irbuilder (*irbuilder-ltv-function-body*)
          ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	 (irc-low-level-trace)
-	 (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-size_t ,index-gs))))
+	 (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t ,index-gs))))
 	   (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
              ,@creator))
 	 )
@@ -107,7 +107,6 @@ Return the ltv index of the value."
 
 (defmacro with-coalesce-load-time-value ((ltv-ref result obj)
 					 &key coalesce-hash-table maker
-					   (push-and-get-reference-fn-name "loadTimeValueReference")
 					   (copy-value-fn-name "copyLoadTimeValue")
 					   (new-table-index-name 'new-table-index))
   "An index for _obj_ will be looked up in the coalesce-hash-table
@@ -129,7 +128,7 @@ Return the ltv index of the value."
 	     (cmp-log "new index: %s\n" ,index-gs)
 	     (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	     (irc-low-level-trace)
-	     (let ((,ltv-ref (irc-intrinsic ,push-and-get-reference-fn-name  *load-time-value-holder-global-var* (jit-constant-size_t ,index-gs))))
+	     (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t ,index-gs))))
 	       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
                  (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker)
                  ;;		 (break "Where will codegeneration go?")
@@ -147,7 +146,7 @@ Return the ltv index of the value."
 (defmacro with-initialize-load-time-value ((ltv-ref ltv-idx env) &rest initializer)
   `(with-irbuilder (*irbuilder-ltv-function-body*)
      ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
-     (let ((,ltv-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-size_t ,ltv-idx))))
+     (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t ,ltv-idx))))
        (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
 	 ,@initializer))
      ;; insert block may have changed in initializer
@@ -228,18 +227,18 @@ and walk the car and cdr"
 
 (defun initialize-ltv-ratio (obj ltv-idx env)
   (with-initialize-load-time-value (ltv-ref ltv-idx env)
-    (let ((num-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+    (let ((num-ref (load-time-value-reference *load-time-value-holder-global-var*
                                   (jit-constant-size_t (gethash (numerator obj) *node-table*))))
-	  (den-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+	  (den-ref (load-time-value-reference *load-time-value-holder-global-var*
                                   (jit-constant-size_t (gethash (denominator obj) *node-table*)))))
       (irc-intrinsic "ltv_setf_numerator_denominator" ltv-ref num-ref den-ref))))
 
 
 (defun initialize-ltv-complex (obj ltv-idx env)
   (with-initialize-load-time-value (ltv-ref ltv-idx env)
-    (let ((real-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+    (let ((real-ref (load-time-value-reference *load-time-value-holder-global-var*
 			     (jit-constant-size_t (gethash (realpart obj) *node-table*))))
-	  (imag-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+	  (imag-ref (load-time-value-reference *load-time-value-holder-global-var*
 			     (jit-constant-size_t (gethash (imagpart obj) *node-table*)))))
       (irc-intrinsic "ltv_setRealpart" ltv-ref real-ref)
       (irc-intrinsic "ltv_setImagpart" ltv-ref imag-ref))))
@@ -247,9 +246,9 @@ and walk the car and cdr"
 
 (defun initialize-ltv-cons (obj ltv-idx env)
   (with-initialize-load-time-value (ltv-ref ltv-idx env)
-    (let ((car-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+    (let ((car-ref (load-time-value-reference *load-time-value-holder-global-var*
 			     (jit-constant-size_t (gethash (car obj) *node-table*))))
-	  (cdr-ref (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var*
+	  (cdr-ref (load-time-value-reference *load-time-value-holder-global-var*
 			     (jit-constant-size_t (gethash (cdr obj) *node-table*)))))
       (irc-intrinsic "rplaca" ltv-ref car-ref)
       (irc-intrinsic "rplacd" ltv-ref cdr-ref))))
@@ -691,7 +690,6 @@ the value is put into *default-load-time-value-vector* and its index is returned
 		 (progn
 		   (irc-intrinsic "makeSymbol_symsp" lts-temp sn-value-ptr))
 		 ))
-    :push-and-get-reference-fn-name "loadTimeSymbolReference"
     :copy-value-fn-name "copyLoadTimeSymbol"
     :new-table-index-name new-symbol-table-index
     ))
@@ -856,7 +854,7 @@ marshaling of compiled quoted data"
 	       (let* ((given-name (llvm-sys:get-name fn)))
 		 ;; Map the function argument names
 		 (cmp-log "Creating ltv thunk with name: %s\n" given-name)
-		 (let ((ltv-result (irc-intrinsic "loadTimeValueReference"
+		 (let ((ltv-result (load-time-value-reference
                                                   *load-time-value-holder-global-var*
                                                   (jit-constant-size_t ltv-index))))
                    ;;		   (break "codegen ltv thunk form")
@@ -954,7 +952,7 @@ in the load/run-time-value array"
 
 
 (defun compile-reference-to-load-time-value (idx env &optional (name "value"))
-  (irc-intrinsic "loadTimeValueReference"
+  (load-time-value-reference
 	    (if *generate-compile-file-load-time-values*
 		*load-time-value-holder-global-var*
 		*run-time-values-table-global-var*)

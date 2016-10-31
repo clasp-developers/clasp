@@ -497,9 +497,9 @@ run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
     (if *generate-compile-file-load-time-values*
 	(progn
 	  (unless *load-time-value-holder-global-var* (error "There must be a *load-time-value-holder-global-var* defined"))
-	  (irc-intrinsic "loadTimeValueReference" *load-time-value-holder-global-var* (jit-constant-size_t lts-idx) (pretty-load-time-name symbol lts-idx)))
+	  (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t lts-idx) (pretty-load-time-name symbol lts-idx)))
 	(progn
-	  (irc-intrinsic "loadTimeValueReference" *run-time-values-table-global-var* (jit-constant-size_t lts-idx) (pretty-load-time-name symbol lts-idx))))))
+	  (load-time-value-reference *run-time-values-table-global-var* (jit-constant-size_t lts-idx) (pretty-load-time-name symbol lts-idx))))))
 
 
 (defun codegen-symbol (result obj &optional (env *load-time-initializer-environment*))
@@ -538,7 +538,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   (codegen-literal result (car rest) env))
 
 (defun compile-reference-to-load-time-value (idx &optional (name "value"))
-  (irc-intrinsic "loadTimeValueReference"
+  (load-time-value-reference
 	    (if *generate-compile-file-load-time-values*
 		*load-time-value-holder-global-var*
 		*run-time-values-table-global-var*)
@@ -571,7 +571,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 	       (let* ((given-name (llvm-sys:get-name fn)))
 		 ;; Map the function argument names
 		 (cmp-log "Creating ltv thunk with name: %s\n" given-name)
-		 (let ((ltv-result (irc-intrinsic "loadTimeValueReference"
+		 (let ((ltv-result (load-time-value-reference
                                                   *load-time-value-holder-global-var*
                                                   (jit-constant-size_t ltv-index))))
                    ;;		   (break "codegen ltv thunk form")
@@ -582,6 +582,18 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (cmp-log-dump fn)
     (irc-verify-function fn t)
     (values ltv-index fn)))
+
+
+
+;;; ------------------------------------------------------------
+;;;
+;;; Access load-time-values
+;;;
+
+(defun load-time-value-reference (holder index &optional (label "ltv"))
+  (irc-intrinsic "loadTimeValueReference" holder index label))
+
+
 
 ;;; ------------------------------------------------------------
 ;;;
