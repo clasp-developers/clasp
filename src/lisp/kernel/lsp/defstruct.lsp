@@ -290,8 +290,9 @@
   (create-type-name name)
   ;; We are going to modify this list!!!
   (setf slot-descriptions (copy-tree slot-descriptions))
-;;  #+(and clasp (not clos))
-  #+(or)(progn
+  #+(and clasp (not clos))
+  (unless type
+    ;; Here I attempt to create a structure-class for the structure in aclasp. 
     (core:ensure-structure-class name include nil))
   #+clos
   (unless type
@@ -317,8 +318,8 @@
   #+clos
   (when print-object
     (eval `(defmethod print-object ((obj ,name) stream)
-	    (,print-object obj stream)
-	    obj)))
+             (,print-object obj stream)
+             obj)))
   (when predicate
     (fset predicate (make-predicate name type named name-offset)))
   (put-sysprop name 'DEFSTRUCT-FORM `(defstruct ,name ,@slots))
@@ -341,6 +342,10 @@
     (fset copier #'copy-structure))
   #+clos
   (unless type
+    (find-class name))
+  #+(and clasp (not clos))
+  (unless type
+    ;; See ensure-structure-class above
     (find-class name)))
 
 ;;; The DEFSTRUCT macro.

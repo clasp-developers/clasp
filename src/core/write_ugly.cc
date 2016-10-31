@@ -139,11 +139,12 @@ void Instance_O::__write__(T_sp stream) const {
 
 void StructureObject_O::__write__(T_sp stream) const {
   //  printf("%s:%d StructureObject_O::__write__\n", __FILE__, __LINE__);
-  if (UNLIKELY(!gc::IsA<Symbol_sp>(this->_Type)))
-    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type name~%  ~S") % _rep_(this->_Type));
+  if (UNLIKELY(!gc::IsA<Class_sp>(this->_Type)))
+    SIMPLE_ERROR(BF("Found a corrupt structure with an invalid type %s") % _rep_(this->_Type));
+  Symbol_sp type_name = this->_Type->className();
   SYMBOL_EXPORT_SC_(CorePkg, structure_print_function);
   SYMBOL_EXPORT_SC_(CorePkg, STARprint_structureSTAR);
-  T_sp print_function = core__get_sysprop(this->_Type, _sym_structure_print_function);
+  T_sp print_function = core__get_sysprop(type_name, _sym_structure_print_function);
   if (print_function.nilp() || !_sym_STARprint_structureSTAR->symbolValue().isTrue()) {
     clasp_write_string("#S", stream);
     /* structure_to_list conses slot names and values into
