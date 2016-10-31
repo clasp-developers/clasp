@@ -589,16 +589,40 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;;
 
 (defun load-time-value-reference (holder index &optional (label "ltv"))
-  (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label))
+  (let* ((tagged-ltv-ptr (irc-load holder "tagged-ltv-ptr"))
+         (tagged-ltv-intptr_t (irc-ptr-to-int tagged-ltv-ptr +intptr_t+ "tagged-ltv-intptr_t"))
+         (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
+         (ltvo-address (llvm-sys:create-add *irbuilder* tagged-ltv-intptr_t (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo_address"))
+         (ltvo-objects-offset (cdr (assoc :load-time-values-objects-offset cmp::+cxx-data-structures-info+)))
+         (ltvo-objects-address (llvm-sys:create-add *irbuilder* ltvo-address (jit-constant-uintptr_t ltvo-objects-offset) "ltvo_objects_address"))
+         (tagged-ltvo-objects-smart-ptr (irc-load (irc-int-to-ptr ltvo-objects-address +tsp*+) "tagged-ltvo-objects-ptr"))
+         (tagged-ltvo-objects-ptr (irc-smart-ptr-extract tagged-ltvo-objects-smart-ptr "tagged-ltvo-objects-ptr"))
+         (tagged-ltvo-objects-addr (irc-ptr-to-int tagged-ltvo-objects-ptr +uintptr_t+ "tagged-ltvo-objects-addr"))
+         (ltvo-objects-addr (irc-add tagged-ltvo-objects-addr (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo-objects-addr"))
+         (data0-offset (cdr (assoc :gcvector-data0-offset cmp::+cxx-data-structures-info+)))
+         (element-size (cdr (assoc 'core:tsp cmp::+cxx-data-structures-info+)))
+         (offset (+ data0-offset (* element-size index)))
+         (entry-uintptr_t (irc-add ltvo-objects-addr (jit-constant-uintptr_t offset) "entry-uintptr_t"))
+         (entry-ptr (irc-int-to-ptr entry-uintptr_t +tsp*+ (bformat nil "entry[%d]-ptr" index))))
+    #+(or)(let ((orig (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label)))
+            (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t"
+                                           (irc-ptr-to-int entry-ptr +uintptr_t+)
+                                           (irc-ptr-to-int orig +uintptr_t+))
+                            +tsp*+))
+    entry-ptr))
 
 (defun get-load-time-value (result holder index)
-  (irc-intrinsic "getLoadTimeValue"
+  #+(or)(irc-intrinsic "getLoadTimeValue"
                  result
                  holder
-                 (jit-constant-i32 index)))
+                 (jit-constant-i32 index))
+  (let ((ref (load-time-value-reference holder index )))
+    (irc-store (irc-load ref) result)))
 
 (defun copy-load-time-value (result holder index)
-  (irc-intrinsic "copyLoadTimeValue" result holder (jit-constant-size_t index)))
+  #+(or)(irc-intrinsic "copyLoadTimeValue" result holder (jit-constant-size_t index))
+  (get-load-time-value result holder index)
+  )
 
 ;;; ------------------------------------------------------------
 ;;;
