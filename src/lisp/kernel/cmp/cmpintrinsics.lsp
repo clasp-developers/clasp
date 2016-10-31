@@ -694,6 +694,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "debugMessage" +void+ (list +i8*+))
   (primitive-nounwind module "debugPrintI32" +void+ (list +i32+))
   (primitive-nounwind module "debugPrint_size_t" +void+ (list +size_t+))
+  (primitive-nounwind module "debug_match_two_uintptr_t" +uintptr_t+ (list +uintptr_t+ +uintptr_t+))
   (primitive-nounwind module "lowLevelTrace" +void+ (list +i32+))
   (primitive-nounwind module "unreachableError" +void+ nil)
 
