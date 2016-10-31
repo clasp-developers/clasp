@@ -2529,6 +2529,8 @@ CL_DEFMETHOD Instruction_sp BasicBlock_O::back() {
 
 namespace llvmo {
 
+CL_LISPIFY_NAME(get_contained_type);
+CL_EXTERN_DEFMETHOD(Type_O,&llvm::Type::getContainedType);
 
 bool Type_O::equal(core::T_sp obj) const {
   if (Type_sp t = obj.asOrNull<Type_O>()) {
@@ -2721,6 +2723,7 @@ CL_DEFUN PointerType_sp PointerType_O::get(Type_sp elementType, uint addressSpac
   at->set_wrapped(llvm_at);
   return at;
 }
+
 
 ;
 

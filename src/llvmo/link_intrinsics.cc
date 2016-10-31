@@ -968,6 +968,14 @@ void debugMessage(const char *msg) {
   printf("++++++ DEBUG-MESSAGE: %s \n", msg);
 }
 
+uintptr_t debug_match_two_uintptr_t(uintptr_t x, uintptr_t y)
+{
+  if ( x == y ) return x;
+  printf("%s:%d !!!!! in debug_match_two_uintptr_t the two pointers %p and %p don't match\n", __FILE__, __LINE__, (void*)x, (void*)y);
+  gdb();
+  UNREACHABLE();
+}
+
 void debugPointer(const unsigned char *ptr) {
   printf("++++++ debugPointer: %p \n", ptr);
 }

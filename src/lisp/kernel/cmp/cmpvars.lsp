@@ -46,40 +46,42 @@
 
 (defun codegen-local-lexical-var-reference (index renv)
   "Generate code to reference a lexical variable in the current value frame"
+  (or (equal (llvm-sys:get-type renv) +afsp*+)
+      (error "renv is not the right type +afsp*+, it is: ~a" (llvm-sys:get-type renv)))
   (let* ((value-frame-tsp (irc-load renv))
          (tagged-value-frame-ptr (llvm-sys:create-extract-value *irbuilder* value-frame-tsp (list 0) "tagged-value-frame-ptr"))
-         (as-uintptr_t (llvm-sys:create-bit-cast cmp:*irbuilder* tagged-value-frame-ptr +uintptr_t+ ""))
+         (as-uintptr_t (irc-ptr-to-int tagged-value-frame-ptr +uintptr_t+ ""))
          (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
          (no-tag-uintptr_t (llvm-sys:create-sub cmp:*irbuilder* as-uintptr_t (jit-constant-uintptr_t general-pointer-tag) "value-frame-no-tag" nil nil))
          (element0-offset (cdr (assoc :value-frame-element0-offset cmp::+cxx-data-structures-info+)))
          (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
          (element-size (cdr (assoc :value-frame-element-size cmp::+cxx-data-structures-info+)))
          (offset (+ element0-offset (* element-size index)))
-         (entry-uintptr_t (llvm-sys:create-add cmp:*irbuilder* as-uintptr_t (jit-constant-uintptr_t offset)))
-         (entry-ptr (llvm-sys:create-bit-cast *irbuilder* entry-uintptr_t +tsp*+ "entry")))
+         (entry-uintptr_t (llvm-sys:create-add cmp:*irbuilder* no-tag-uintptr_t (jit-constant-uintptr_t offset)))
+         (entry-ptr (irc-int-to-ptr entry-uintptr_t +tsp*+ (bformat nil "frame[%s]-ptr" index))))
+    ;; Check the calculated value
+    #+(or)(let ((orig (irc-intrinsic "lexicalValueReference" (jit-constant-i32 0) (jit-constant-i32 index) renv)))
+      (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t" (irc-ptr-to-int entry-ptr +uintptr_t+) (irc-ptr-to-int orig +uintptr_t+)) +tsp*+))
     entry-ptr))
     
 
 (defun codegen-lexical-var-reference (depth index renv)
-  (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)
-  #+(or)(if (= depth 0)
-            (codegen-local-lexical-var-reference index renv)
-            (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
+  #+(or)(irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)
+  (if (= depth 0)
+      (codegen-local-lexical-var-reference index renv)
+      (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
 
 (defun codegen-lexical-var-value (depth index renv)
   (let ((ref (codegen-lexical-var-reference depth index renv)))
-    (irc-load ref)))
+    (irc-load ref "lexical-value")))
 
 
-(defun codegen-lexical-var-lookup (result depth-index env)
+(defun codegen-lexical-var-lookup (result depth index renv)
   "Generate IR for lookup of lexical value in runtime-env using depth and index"
-  (let* ((depth (car depth-index))
-	 (index (cadr depth-index))
-	 (runtime-env (irc-renv env)))
-    (dbg-set-current-debug-location-here)
-    #+(or)(let ((val (codegen-lexical-var-value depth index runtime-env)))
-            (irc-store val result))
-    (irc-intrinsic "lexicalValueRead" result (jit-constant-i32 depth) (jit-constant-i32 index) runtime-env))
+  (dbg-set-current-debug-location-here)
+  (let ((val (codegen-lexical-var-value depth index renv)))
+    (irc-store val result))
+  #+(or)(irc-intrinsic "lexicalValueRead" result (jit-constant-i32 depth) (jit-constant-i32 index) renv)
   result)
 
 
@@ -90,7 +92,7 @@
     (if (eq (car classified) 'ext:special-var)
 	(codegen-special-var-lookup result sym old-env)
 	(let ((depth-index (cddr classified)))
-	  (codegen-lexical-var-lookup result depth-index old-env)))))
+	  (codegen-lexical-var-lookup result (first depth-index) (second depth-index) (irc-renv old-env))))))
 
 
 (defun codegen-symbol-value (result symbol env)

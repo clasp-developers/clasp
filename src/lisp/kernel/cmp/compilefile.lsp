@@ -339,28 +339,27 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                 :source-namestring (namestring source-location)
                                 :source-debug-namestring source-debug-namestring
                                 :source-debug-offset source-debug-offset)
-	    (let* ()
-	      (with-debug-info-generator (:module *the-module*
-						  :pathname *compile-file-truename*)
-		(or *the-module* (error "*the-module* is NIL"))
-		(with-ltv (ltv-init-fn)
-		  (loop
-		     (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
-			    (form (read source-sin nil eof-value)))
-		       (if (eq form eof-value)
-			   (return nil)
-			   (progn
-			     (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
-                             (compile-file-t1expr form compile-file-hook)))))
-                  (make-boot-function-global-variable *the-module* ltv-init-fn)
-		  #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
-                          (make-boot-function-global-variable *the-module* main-fn)
-                          #+(or)(add-main-function *the-module*))))
-	      (cmp-log "About to verify the module\n")
-	      (cmp-log-dump *the-module*)
-	      (if *debug-dump-module*
-		  (quick-module-dump *the-module* "/tmp/compile-file-module-pre-optimize"))
-              (irc-verify-module-safe *the-module*)))
+            (with-debug-info-generator (:module *the-module*
+                                                :pathname *compile-file-truename*)
+              (or *the-module* (error "*the-module* is NIL"))
+              (with-ltv (ltv-init-fn)
+                (loop
+                   (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
+                          (form (read source-sin nil eof-value)))
+                     (if (eq form eof-value)
+                         (return nil)
+                         (progn
+                           (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
+                           (compile-file-t1expr form compile-file-hook)))))
+                (make-boot-function-global-variable *the-module* ltv-init-fn)
+                #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
+                        (make-boot-function-global-variable *the-module* main-fn)
+                        #+(or)(add-main-function *the-module*))))
+            (cmp-log "About to verify the module\n")
+            (cmp-log-dump *the-module*)
+            (if *debug-dump-module*
+                (quick-module-dump *the-module* "/tmp/compile-file-module-pre-optimize"))
+            (irc-verify-module-safe *the-module*))
           (if *debug-dump-module*
            (quick-module-dump module "/tmp/compile-file-module-post-optimize"))))
       module)))
