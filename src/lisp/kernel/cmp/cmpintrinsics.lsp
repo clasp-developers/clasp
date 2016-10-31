@@ -68,6 +68,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +vtable*+ +i8*+)
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
+(defvar +ui64+ (llvm-sys:type-get-int64-ty *llvm-context*))
 (defvar +fixnum+ (if (member :address-model-64 *features*)
                      +i64+
                      (error "Add support for non 64-bit address model")))
@@ -125,6 +126,11 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
+(defvar +intptr_t+
+  (cond
+    ((= 8 +uintptr_t-size+) +i64+)
+    ((= 4 +uintptr_t-size+) +i32+)
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
 (defvar +uintptr_t+
   (cond
     ((= 8 +uintptr_t-size+) +i64+)

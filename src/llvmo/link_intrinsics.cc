@@ -106,6 +106,156 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
 
 extern "C" {
 
+core::T_O* rltv_make_nil() {
+  return _Nil<core::T_O>().raw_();
+}
+
+core::T_O* rltv_make_t() {
+  return _lisp->_true().raw_();
+}
+
+gc::Tagged rltv_make_ratio(gc::Tagged num, gc::Tagged denom) {
+  return (gc::Tagged)core::Ratio_O::create(core::T_sp(num),core::T_sp(denom)).raw_();
+}
+
+gc::Tagged rltv_make_complex(gc::Tagged real, gc::Tagged imag) {
+  return (gc::Tagged)core::Complex_O::create(core::T_sp(real),core::T_sp(imag)).raw_();
+}
+
+
+gc::Tagged rltv_make_cons() {
+  return (gc::Tagged)core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>()).raw_();
+}
+
+void rltv_cons_fill( gc::Tagged tcons, gc::Tagged car, gc::Tagged cdr ) {
+  core::Cons_sp cons(tcons);
+  cons->rplaca(core::T_sp(car));
+  cons->rplacd(core::T_sp(cdr));
+}
+  
+
+gc::Tagged rltv_make_array(gc::Tagged tobj,
+                           gc::Tagged telement_type,
+                           gc::Tagged tdimensions ) {
+  core::T_sp element_type(telement_type);
+  core::List_sp dimensions = gctools::As<List_sp>(core::T_sp(tdimensions));
+  if (core::cl__length(dimensions) == 1) { // vector
+    return (gc::Tagged)core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type).raw_();
+  } else {
+    return (gc::Tagged)core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true()).raw_();
+  }
+}
+
+void rltv_setf_row_major_aref(gc::Tagged tobj,
+                              size_t row_major_index,
+                              gc::Tagged tvalue )
+{
+  core::Array_sp array = gc::As<core::Array_sp>(core::T_sp(tobj));
+  array->rowMajorAset(row_major_index,core::T_sp(tvalue));
+}
+  
+gc::Tagged rltv_make_hash_table(gc::Tagged tobj,
+                                gc::Tagged test) {
+  return (gc::Tagged)core::HashTable_O::create(core::T_sp(test)).raw_();
+}
+
+void rltv_setf_gethash(gc::Tagged tobj,
+                             gc::Tagged tkey,
+                             gc::Tagged tvalue) {
+  core::HashTable_sp hash_table = gctools::As<HashTable_sp>(core::T_sp(tobj));
+  hash_table->hash_table_setf_gethash(core::T_sp(tkey), core::T_sp(tvalue));
+}
+
+gc::Tagged rltv_make_fixnum(int64_t val) {
+  return (gc::Tagged)clasp_make_fixnum(val).raw_();
+}
+
+gc::Tagged rltv_make_bignum(gc::Tagged tbignum_string) {
+  core::Str_sp bignum_string = gctools::As<core::Str_sp>(core::T_sp(tbignum_string));
+  return (gc::Tagged)core::Bignum_O::make(bignum_string->get()).raw_();
+}
+
+gc::Tagged rltv_make_symbol(gc::Tagged tname,
+                            gc::Tagged tpackage ) {
+  core::T_sp package(tpackage);
+  core::Str_sp symbol_name = gctools::As<core::Str_sp>(core::T_sp(tname));
+  core::Symbol_sp sym;
+  if (package.notnilp()) {
+    sym = gctools::As<Package_sp>(package)->intern(symbol_name);
+  } else {
+    sym = core::Symbol_O::create(symbol_name);
+  }
+  return (gc::Tagged)sym.raw_();
+}
+
+gc::Tagged rltv_make_character(uintptr_t val) {
+  return (gc::Tagged)clasp_make_character(val).raw_();
+}
+
+gc::Tagged rltv_make_base_string(const char* str) {
+  return (gc::Tagged)core::Str_O::create(str).raw_();
+}
+
+gc::Tagged rltv_make_pathname(gc::Tagged thost,
+                              gc::Tagged tdevice,
+                              gc::Tagged tdirectory,
+                              gc::Tagged tname,
+                              gc::Tagged ttype,
+                              gc::Tagged tversion ) {
+  return (gc::Tagged)core::Pathname_O::makePathname(core::T_sp(thost),
+                                                    core::T_sp(tdevice),
+                                                    core::T_sp(tdirectory),
+                                                    core::T_sp(tname),
+                                                    core::T_sp(ttype),
+                                                    core::T_sp(tversion),
+                                                    kw::_sym_local,
+                                                    core::T_sp(thost).notnilp()).raw_();
+}
+
+gc::Tagged rltv_make_package(gc::Tagged tpackage_name ) {
+  core::Str_sp package_name = gctools::As<core::Str_sp>(core::T_sp(tpackage_name));
+  core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
+  if ( tpkg.nilp() ) {
+    // If we don't find the package - just make it
+    // a more comprehensive defpackage should be coming
+    tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
+  }
+  return (gc::Tagged)tpkg.raw_();
+}
+
+gc::Tagged rltv_make_built_in_class(gc::Tagged tclass_name ) {
+  core::Symbol_sp class_name = gctools::As<core::Symbol_sp>(core::T_sp(tclass_name));
+  core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
+  if ( cl.nilp() ) {
+    SIMPLE_ERROR(BF("Could not find class %s") % class_name );
+  } else {
+    return (gc::Tagged)cl.raw_();
+  }
+}
+
+
+gc::Tagged rltv_make_float(float f) {
+  return (gc::Tagged)clasp_make_single_float(f).raw_();
+}
+
+gc::Tagged rltv_make_double(double f) {
+  return (gc::Tagged)clasp_make_double_float(f).raw_();
+}
+
+gc::Tagged rltv_set_ltv_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return (gc::Tagged)ret.ret0;
+}
+
+void rltv_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+}
+};
+
+extern "C" {
+
 core::LoadTimeValues_O& ltvGet(core::LoadTimeValues_O** ltvPP)
 {
   core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
