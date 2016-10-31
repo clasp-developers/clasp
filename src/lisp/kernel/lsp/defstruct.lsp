@@ -290,8 +290,8 @@
   (create-type-name name)
   ;; We are going to modify this list!!!
   (setf slot-descriptions (copy-tree slot-descriptions))
-  #+(and clasp (not clos))
-  (progn
+;;  #+(and clasp (not clos))
+  #+(or)(progn
     (core:ensure-structure-class name include nil))
   #+clos
   (unless type
