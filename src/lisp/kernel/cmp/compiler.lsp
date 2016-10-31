@@ -1069,7 +1069,7 @@ jump to blocks within this tagbody."
                            (irc-size_t-*current-source-pos-info*-lineno)
                            (irc-size_t-*current-source-pos-info*-column)
                            *load-time-value-holder-global-var*))
-	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* index))
+	  (get-load-time-value result *load-time-value-holder-global-var* index))
 	(progn
 	  (cmp-log "About to generate load-time-value for COMPILE")
           ;;	  (break "Handle load-time-value for COMPILE")

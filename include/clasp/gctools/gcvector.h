@@ -250,8 +250,14 @@ public:
   size_t size() const { return this->_Contents ? this->_Contents->_End : 0; };
   size_t capacity() const { return this->_Contents ? this->_Contents->_Capacity : 0; };
 
-  T &operator[](size_t n) { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
-  const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
+  T &operator[](size_t n) {
+    GCTOOLS_ASSERT(this->_Contents);
+    return (*this->_Contents)[n];
+  };
+  const T &operator[](size_t n) const {
+    GCTOOLS_ASSERT(this->_Contents);
+    return (*this->_Contents)[n];
+  };
 
   void push_back(const value_type &x) {
     if (!this->_Contents) {
