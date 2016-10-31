@@ -94,7 +94,7 @@ Return the ltv index of the value."
        (with-irbuilder (*irbuilder-ltv-function-body*)
          ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	 (irc-low-level-trace)
-	 (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t ,index-gs))))
+	 (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* ,index-gs)))
 	   (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
              ,@creator))
 	 )
@@ -128,7 +128,7 @@ Return the ltv index of the value."
 	     (cmp-log "new index: %s\n" ,index-gs)
 	     (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
 	     (irc-low-level-trace)
-	     (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t ,index-gs))))
+	     (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* ,index-gs)))
 	       (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
                  (cmp-log "About to generate code for load-time-value maker: %s\n" ',maker)
                  ;;		 (break "Where will codegeneration go?")
@@ -146,7 +146,7 @@ Return the ltv index of the value."
 (defmacro with-initialize-load-time-value ((ltv-ref ltv-idx env) &rest initializer)
   `(with-irbuilder (*irbuilder-ltv-function-body*)
      ;;	 (core::hash-table-setf-gethash ,coalesce-hash-table ,key-gs ,index-gs)
-     (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t ,ltv-idx))))
+     (let ((,ltv-ref (load-time-value-reference *load-time-value-holder-global-var* ,ltv-idx)))
        (with-landing-pad (irc-get-cleanup-landing-pad-block *load-time-initializer-environment*)
 	 ,@initializer))
      ;; insert block may have changed in initializer
@@ -228,18 +228,18 @@ and walk the car and cdr"
 (defun initialize-ltv-ratio (obj ltv-idx env)
   (with-initialize-load-time-value (ltv-ref ltv-idx env)
     (let ((num-ref (load-time-value-reference *load-time-value-holder-global-var*
-                                  (jit-constant-size_t (gethash (numerator obj) *node-table*))))
+                                  (gethash (numerator obj) *node-table*)))
 	  (den-ref (load-time-value-reference *load-time-value-holder-global-var*
-                                  (jit-constant-size_t (gethash (denominator obj) *node-table*)))))
+                                              (gethash (denominator obj) *node-table*))))
       (irc-intrinsic "ltv_setf_numerator_denominator" ltv-ref num-ref den-ref))))
 
 
 (defun initialize-ltv-complex (obj ltv-idx env)
   (with-initialize-load-time-value (ltv-ref ltv-idx env)
     (let ((real-ref (load-time-value-reference *load-time-value-holder-global-var*
-			     (jit-constant-size_t (gethash (realpart obj) *node-table*))))
+                                               (gethash (realpart obj) *node-table*)))
 	  (imag-ref (load-time-value-reference *load-time-value-holder-global-var*
-			     (jit-constant-size_t (gethash (imagpart obj) *node-table*)))))
+                                               (gethash (imagpart obj) *node-table*))))
       (irc-intrinsic "ltv_setRealpart" ltv-ref real-ref)
       (irc-intrinsic "ltv_setImagpart" ltv-ref imag-ref))))
 
@@ -247,9 +247,9 @@ and walk the car and cdr"
 (defun initialize-ltv-cons (obj ltv-idx env)
   (with-initialize-load-time-value (ltv-ref ltv-idx env)
     (let ((car-ref (load-time-value-reference *load-time-value-holder-global-var*
-			     (jit-constant-size_t (gethash (car obj) *node-table*))))
+                                              (gethash (car obj) *node-table*)))
 	  (cdr-ref (load-time-value-reference *load-time-value-holder-global-var*
-			     (jit-constant-size_t (gethash (cdr obj) *node-table*)))))
+                                              (gethash (cdr obj) *node-table*))))
       (irc-intrinsic "rplaca" ltv-ref car-ref)
       (irc-intrinsic "rplacd" ltv-ref cdr-ref))))
 
@@ -357,7 +357,7 @@ and walk the car and cdr"
       (irc-intrinsic "getLoadTimeValue"
 		result
 		*load-time-value-holder-global-var*
-		(jit-constant-i32 ltv-idx)))
+		ltv-idx))
     ltv-idx))
 
 
@@ -856,7 +856,7 @@ marshaling of compiled quoted data"
 		 (cmp-log "Creating ltv thunk with name: %s\n" given-name)
 		 (let ((ltv-result (load-time-value-reference
                                                   *load-time-value-holder-global-var*
-                                                  (jit-constant-size_t ltv-index))))
+                                                  ltv-index)))
                    ;;		   (break "codegen ltv thunk form")
 		   (dbg-set-current-debug-location-here)
 		   (codegen ltv-result form fn-env)
@@ -956,7 +956,7 @@ in the load/run-time-value array"
 	    (if *generate-compile-file-load-time-values*
 		*load-time-value-holder-global-var*
 		*run-time-values-table-global-var*)
-	    (jit-constant-size_t idx) name))
+	    idx name))
 
 (defun compile-reference-to-literal (literal env)
   "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"

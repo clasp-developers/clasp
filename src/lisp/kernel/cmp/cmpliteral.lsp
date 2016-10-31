@@ -497,9 +497,9 @@ run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
     (if *generate-compile-file-load-time-values*
 	(progn
 	  (unless *load-time-value-holder-global-var* (error "There must be a *load-time-value-holder-global-var* defined"))
-	  (load-time-value-reference *load-time-value-holder-global-var* (jit-constant-size_t lts-idx) (pretty-load-time-name symbol lts-idx)))
+	  (load-time-value-reference *load-time-value-holder-global-var* lts-idx (pretty-load-time-name symbol lts-idx)))
 	(progn
-	  (load-time-value-reference *run-time-values-table-global-var* (jit-constant-size_t lts-idx) (pretty-load-time-name symbol lts-idx))))))
+	  (load-time-value-reference *run-time-values-table-global-var* lts-idx (pretty-load-time-name symbol lts-idx))))))
 
 
 (defun codegen-symbol (result obj &optional (env *load-time-initializer-environment*))
@@ -515,9 +515,7 @@ run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
 (defun codegen-rtv (result sym env)
   "bclasp calls this to get copy the run-time-value for sym into result"
   (let ((idx (run-time-reference-literal sym)))
-    (irc-intrinsic "copyLoadTimeValue" result
-                   *run-time-values-table-global-var*
-                   (jit-constant-size_t idx))
+    (copy-load-time-value result *run-time-values-table-global-var* idx)
     idx))
 
 (defun codegen-literal (result object env)
@@ -528,9 +526,9 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
       (if *generate-compile-file-load-time-values*
           (progn
             (unless *load-time-value-holder-global-var* (error "There must be a *load-time-value-holder-global-var* defined"))
-            (irc-intrinsic "copyLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-size_t index)))
+            (copy-load-time-value result *load-time-value-holder-global-var* index))
           (progn
-            (irc-intrinsic "copyLoadTimeValue" result *run-time-values-table-global-var* (jit-constant-size_t index)))))
+            (copy-load-time-value result *run-time-values-table-global-var* index))))
     index))
         
 (defun codegen-quote (result rest env)
@@ -542,7 +540,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 	    (if *generate-compile-file-load-time-values*
 		*load-time-value-holder-global-var*
 		*run-time-values-table-global-var*)
-	    (jit-constant-size_t idx) name))
+	    idx name))
 
 (defun compile-reference-to-literal (literal)
   "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
@@ -573,7 +571,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 		 (cmp-log "Creating ltv thunk with name: %s\n" given-name)
 		 (let ((ltv-result (load-time-value-reference
                                                   *load-time-value-holder-global-var*
-                                                  (jit-constant-size_t ltv-index))))
+                                                  ltv-index)))
                    ;;		   (break "codegen ltv thunk form")
 		   (dbg-set-current-debug-location-here)
 		   (codegen ltv-result form fn-env)
@@ -591,9 +589,16 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;;
 
 (defun load-time-value-reference (holder index &optional (label "ltv"))
-  (irc-intrinsic "loadTimeValueReference" holder index label))
+  (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label))
 
+(defun get-load-time-value (result holder index)
+  (irc-intrinsic "getLoadTimeValue"
+                 result
+                 holder
+                 (jit-constant-i32 index)))
 
+(defun copy-load-time-value (result holder index)
+  (irc-intrinsic "copyLoadTimeValue" result holder (jit-constant-size_t index)))
 
 ;;; ------------------------------------------------------------
 ;;;
