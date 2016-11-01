@@ -2851,7 +2851,7 @@ Number_sp DoubleFloat_O::sin_() const
   // === CLASP_TO- TRANSLATORS ===
 
 
-  gc::Fixnum clasp_to_fixnum( core::T_sp x )
+  ALWAYS_INLINE gc::Fixnum clasp_to_fixnum( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2868,7 +2868,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- SHORT ---
 
-  short clasp_to_short( core::T_sp x )
+  ALWAYS_INLINE short clasp_to_short( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2883,7 +2883,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_short();
   }
 
-  unsigned short clasp_to_ushort( core::T_sp x )
+  ALWAYS_INLINE unsigned short clasp_to_ushort( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2900,7 +2900,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- INT ---
 
-  int clasp_to_int( core::T_sp x )
+  ALWAYS_INLINE int clasp_to_int( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2917,7 +2917,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_int();
   }
 
-  unsigned int clasp_to_uint( core::T_sp x )
+  ALWAYS_INLINE unsigned int clasp_to_uint( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2934,7 +2934,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- LONG ---
 
-  long clasp_to_long( core::T_sp x )
+  ALWAYS_INLINE long clasp_to_long( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2949,7 +2949,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_long();
   }
 
-  unsigned long clasp_to_ulong( core::T_sp x )
+  ALWAYS_INLINE unsigned long clasp_to_ulong( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2966,7 +2966,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- LONG ---
 
-  long long clasp_to_longlong( core::T_sp x )
+  ALWAYS_INLINE long long clasp_to_longlong( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2981,7 +2981,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_longlong();
   }
 
-  unsigned long long clasp_to_ulonglong( core::T_sp x )
+  ALWAYS_INLINE unsigned long long clasp_to_ulonglong( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -2998,7 +2998,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- INT8 ---
 
-  int8_t clasp_to_int8( core::T_sp x )
+  ALWAYS_INLINE int8_t clasp_to_int8( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3013,7 +3013,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_int8_t();
   }
 
-  uint8_t clasp_to_uint8( core::T_sp x )
+  ALWAYS_INLINE uint8_t clasp_to_uint8( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3030,7 +3030,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- INT16 ---
 
-  int16_t clasp_to_int16( core::T_sp x )
+  ALWAYS_INLINE int16_t clasp_to_int16( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3045,7 +3045,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_int16_t();
   }
 
-  uint16_t clasp_to_uint16( core::T_sp x )
+  ALWAYS_INLINE uint16_t clasp_to_uint16( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3062,7 +3062,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- INT32 ---
 
-  int32_t clasp_to_int32( core::T_sp x )
+  ALWAYS_INLINE int32_t clasp_to_int32( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3077,7 +3077,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_int32_t();
   }
 
-  uint32_t clasp_to_uint32( core::T_sp x )
+  ALWAYS_INLINE uint32_t clasp_to_uint32( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3092,14 +3092,14 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_uint32_t();
   }
 
-  uint32_t clasp_to_uint32_t( core::T_sp x )
+  ALWAYS_INLINE uint32_t clasp_to_uint32_t( core::T_sp x )
   {
     return clasp_to_uint32( x );
   }
 
   // --- INT64 ---
 
-  int64_t clasp_to_int64( core::T_sp x )
+  ALWAYS_INLINE int64_t clasp_to_int64( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3114,7 +3114,7 @@ Number_sp DoubleFloat_O::sin_() const
     return (gc::As< Integer_sp >(x))->as_int64_t();
   }
 
-  uint64_t clasp_to_uint64( core::T_sp x )
+  ALWAYS_INLINE uint64_t clasp_to_uint64( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3131,7 +3131,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- CL_INTPTR_T ---
 
-  cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
+  ALWAYS_INLINE cl_intptr_t clasp_to_cl_intptr_t( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3148,7 +3148,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- PTRDIFF_T ---
 
-  ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
+  ALWAYS_INLINE ptrdiff_t clasp_to_ptrdiff_t( core::T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3165,7 +3165,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- MPZ ---
 
-  mpz_class clasp_to_mpz(Integer_sp x)
+  ALWAYS_INLINE mpz_class clasp_to_mpz(Integer_sp x)
   {
     if (x.fixnump())
     {
@@ -3178,7 +3178,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- LONG LONG ---
 
-  unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
+  ALWAYS_INLINE unsigned long long clasp_to_unsigned_long_long(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
       if (f >= 0 && f <= gc::most_positive_unsigned_long_long) {
@@ -3194,7 +3194,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- FIXNUM ---
 
-  Fixnum clasp_to_fixnum(Integer_sp i) {
+  ALWAYS_INLINE Fixnum clasp_to_fixnum(Integer_sp i) {
     if (i.fixnump()) {
       gc::Fixnum f = i.unsafe_fixnum();
       if (f >= gc::most_negative_fixnum && f <= gc::most_positive_fixnum) {
@@ -3207,7 +3207,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- SIZE ---
 
-  size_t clasp_to_size_t( T_sp x )
+  ALWAYS_INLINE size_t clasp_to_size_t( T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3223,14 +3223,14 @@ Number_sp DoubleFloat_O::sin_() const
     SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to size_t"));
   }
 
-  cl_index clasp_to_size( T_sp x )
+  ALWAYS_INLINE cl_index clasp_to_size( T_sp x )
   {
     return clasp_to_size_t( x );
   }
 
   // --- SSIZE ---
 
-  ssize_t clasp_to_ssize_t( T_sp x )
+  ALWAYS_INLINE ssize_t clasp_to_ssize_t( T_sp x )
   {
     if ( x.fixnump() )
     {
@@ -3250,14 +3250,14 @@ Number_sp DoubleFloat_O::sin_() const
       SIMPLE_ERROR(BF("Cannot convert cl_intptr_t to char."));
   }
 
-  ssize_t clasp_to_ssize( T_sp x )
+  ALWAYS_INLINE ssize_t clasp_to_ssize( T_sp x )
   {
     return clasp_to_size_t( x );
   }
 
   // --- FLOAT ---
 
-  float clasp_to_float( T_sp x )
+  ALWAYS_INLINE float clasp_to_float( T_sp x )
   {
     if (x.fixnump())
     {
@@ -3277,7 +3277,7 @@ Number_sp DoubleFloat_O::sin_() const
 
   // --- DOUBLE ---
 
-  double clasp_to_double( T_sp x )
+  ALWAYS_INLINE double clasp_to_double( T_sp x )
   {
     if (x.fixnump())
     {
@@ -3295,11 +3295,11 @@ Number_sp DoubleFloat_O::sin_() const
     return sp_i->as_double_();
   };
 
-  LongFloat clasp_to_long_float(Number_sp x) {
+  ALWAYS_INLINE LongFloat clasp_to_long_float(Number_sp x) {
     return x->as_long_float_();
   };
 
-  LongFloat clasp_to_long_double(Number_sp x) {
+  ALWAYS_INLINE LongFloat clasp_to_long_double(Number_sp x) {
     return x->as_long_float_();
   };
 

@@ -222,35 +222,6 @@ namespace clasp_ffi {
 
   namespace clasp_ffi {
 
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-  // HELPER FUNCTIONS FOR MAKING CLASP LISP OBJECTS
-    core::T_sp mk_fixum_short( short value );
-    core::T_sp mk_fixum_ushort( unsigned short value );
-    core::T_sp mk_fixum_int( int value );
-    core::T_sp mk_fixum_uint( unsigned int value );
-    core::T_sp mk_fixum_int8( int8_t value );
-    core::T_sp mk_fixum_uint8( uint8_t value );
-    core::T_sp mk_fixum_int16( int16_t value );
-    core::T_sp mk_fixum_uint16( uint16_t value );
-    core::T_sp mk_fixum_int32( int32_t value );
-    core::T_sp mk_fixum_uint32( uint32_t value );
-    core::T_sp mk_integer_int64( int64_t value );
-    core::T_sp mk_integer_uint64( uint64_t value );
-    core::T_sp mk_integer_long( long value );
-    core::T_sp mk_integer_ulong( unsigned long value );
-    core::T_sp mk_integer_longlong( long long value );
-    core::T_sp mk_integer_ulonglong( unsigned long long value );
-    core::T_sp mk_double_float( double value );
-    core::T_sp mk_single_float( float value );
-    core::T_sp mk_long_double( long double value );
-    core::T_sp mk_time( time_t value );
-    core::T_sp mk_pointer( void * value );
-    core::T_sp mk_size( size_t value );
-    core::T_sp mk_ssize( ssize_t value );
-    core::T_sp mk_ptrdiff( ptrdiff_t value );
-    core::T_sp mk_char( char value );
-
   // FOREIGN MEMORY DIRECT ACCESS - MEM REF
     template <typename T>
       T mem_ref(cl_intptr_t address);
@@ -458,11 +429,11 @@ namespace clasp_ffi {
                                         ForeignData_sp    from_object_fn_ptr );
 
     // SLOT ACCESS
-      CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; };
-      CL_DEFMETHOD core::Str_sp         PERCENTlisp_name() { return m_lisp_name; };
-      CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; };
-      CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; };
-      CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; };
+      CL_DEFMETHOD core::Symbol_sp      PERCENTlisp_symbol() { return m_lisp_symbol; }; // e.g. :unsigned-int
+      CL_DEFMETHOD core::Str_sp         PERCENTlisp_name() { return m_lisp_name; }; // e.g. unisgned_int
+      CL_DEFMETHOD core::Integer_sp     PERCENTsize() { return m_size; }; // size in bytes
+      CL_DEFMETHOD core::Fixnum_sp      PERCENTalignment() { return m_alignment; }; // alignment in bytes
+      CL_DEFMETHOD core::Str_sp         PERCENTcxx_name() { return m_cxx_name; }; // e.g. "unsigned int"
 
       CL_DEFMETHOD core::Str_sp         PERCENTto_object_fn_name() { return m_to_object_fn_name; };
       CL_DEFMETHOD core::Str_sp         PERCENTfrom_object_fn_name() { return m_from_object_fn_name; };

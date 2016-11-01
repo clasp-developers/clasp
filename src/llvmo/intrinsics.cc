@@ -39,6 +39,7 @@ extern "C" {
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
+#include <clasp/core/numbers.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
@@ -488,41 +489,545 @@ ALWAYS_INLINE core::T_O *cc_stack_enclose(void* closure_address,
 
 extern "C" {
 
-ALWAYS_INLINE core::T_O* from_lisp_object_to_value_in_T_O_ptr_fixnum( core::T_O* lisp_object_ptr )
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// M K -FUNCTIONS
+// Helpers to create Lisp objects from C++ typed vars / values
+
+// These functions are part of the Foreign Language Interface and are
+// referenced from the FLI functions in fli.cc.
+
+ALWAYS_INLINE core::T_sp mk_fixnum_short( short v )
 {
-  // uintptr_t ptr( reinterpret_cast< uintptr_t >( lisp_object_ptr ));
-  gctools::Fixnum value = gctools::untag_fixnum< T_O * >( lisp_object_ptr );
-  core::T_O * result = reinterpret_cast< core::T_O * >( value );
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_ushort( unsigned short v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_int( int v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_uint( unsigned int v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_int8( int8_t v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_uint8( uint8_t v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_int16( int16_t v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_uint16( uint16_t v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_int32( int32_t v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_fixnum_uint32( uint32_t v )
+{
+  return core::make_fixnum( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_integer_int64( int64_t v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_integer_uint64( uint64_t v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_integer_long( long v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_integer_ulong( unsigned long v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_integer_longlong( long long v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_integer_ulonglong( unsigned long long v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_double_float( double v )
+{
+  return core::DoubleFloat_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_single_float( float v )
+{
+  return core::make_single_float( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_long_double( long double v )
+{
+  return core::LongFloat_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_time( time_t v )
+{
+  size_t size = sizeof( time_t );
+  GC_ALLOCATE(clasp_ffi::ForeignData_O, self);
+  self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
+  memmove( self->raw_data(), &v, size );
+  return self;
+}
+
+ALWAYS_INLINE core::T_sp mk_pointer( void * v )
+{
+  clasp_ffi::ForeignData_sp ptr = clasp_ffi::ForeignData_O::create( reinterpret_cast<cl_intptr_t>( v ) );
+  ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
+  return ptr;
+}
+
+ALWAYS_INLINE core::T_sp mk_size( size_t v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_ssize( ssize_t v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_ptrdiff( ptrdiff_t v )
+{
+  return core::Integer_O::create( v );
+}
+
+ALWAYS_INLINE core::T_sp mk_char( char v )
+{
+  return core::clasp_make_character( v );
+}
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// T R A N S L A T O R S
+
+// These functions are part of the Foreign Language Interface and are
+// referenced from the FLI functions in fli.cc.
+
+// ----------------------------------------------------------------------------
+// FIXNUM
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE gctools::Fixnum from_object_fixnum( core::T_O* lisp_object_ptr )
+{
+  return gctools::untag_fixnum< T_O * >( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_fixnum( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< core::T_O * >( from_object_fixnum( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_fixnum( gctools::Fixnum value )
+{
+  return core::make_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_fixnum( core::T_O* raw_ptr )
+{
+  return to_object_fixnum( reinterpret_cast< gctools::Fixnum >( raw_ptr ) );
+}
+
+// ----------------------------------------------------------------------------
+// SHORT
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE short from_object_short( core::T_O* lisp_object_ptr )
+{
+  return (short) from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_short( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_short( short value )
+{
+  return to_object_fixnum( (gctools::Fixnum) value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_short( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// INT
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE int from_object_int( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_int( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_int( int value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_int( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// UNSIGNED INT
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE unsigned int from_object_unsigned_int( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_int( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_unsigned_int( unsigned int value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_unsigned_int( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// LONG
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE long from_object_long( core::T_O* lisp_object_ptr )
+{
+  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
+  return clasp_to_long( ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_long( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< T_O *>( from_object_long( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_long( long value )
+{
+  return mk_integer_long( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_long( core::T_O* raw_ptr )
+{
+  return to_object_long( reinterpret_cast< long >( raw_ptr ) );
+}
+
+// ----------------------------------------------------------------------------
+// UNSIGNED LONG
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE unsigned long from_object_unsigned_long( core::T_O* lisp_object_ptr )
+{
+  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
+  return clasp_to_ulong( ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< T_O *>( from_object_unsigned_long( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_unsigned_long( long value )
+{
+  return mk_integer_ulong( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_unsigned_long( core::T_O* raw_ptr )
+{
+  return to_object_unsigned_long( reinterpret_cast< unsigned long >( raw_ptr ) );
+}
+
+// ----------------------------------------------------------------------------
+// INT8
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE int8_t from_object_int8( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_int8( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_int8( int8_t value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_int8( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// UINT8
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE uint8_t from_object_uint8( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_uint8( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_uint8( uint8_t value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_uint8( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// INT16
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE int16_t from_object_int16( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_int16( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_int16( int16_t value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_int16( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// UINT16
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE uint16_t from_object_uint16( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_uint16( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_uint16( uint16_t value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_uint16( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// INT32
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE int32_t from_object_int32( core::T_O* lisp_object_ptr )
+{
+  return from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_int32( core::T_O* lisp_object_ptr )
+{
+  return tr_from_object_fixnum( lisp_object_ptr );
+}
+
+ALWAYS_INLINE core::T_sp to_object_int32( int32_t value )
+{
+  return to_object_fixnum( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_int32( core::T_O* raw_ptr )
+{
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// UINT32
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE uint32_t from_object_uint32( core::T_O* lisp_object_ptr )
+{
+  uint32_t result = from_object_fixnum( lisp_object_ptr );
+  fprintf( stderr, "%s (%s,%d): result = %d\n", __FUNCTION__, __FILE__, __LINE__, result );
   return result;
 }
 
-ALWAYS_INLINE core::T_O* to_lisp_object_from_value_in_T_O_ptr_fixnum( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_uint32( core::T_O* lisp_object_ptr )
 {
-  core::T_O * result = gctools::tag_fixnum< T_O * >( reinterpret_cast< gctools::Fixnum >( raw_ptr ));
-  return result;
+  return tr_from_object_fixnum( lisp_object_ptr );
 }
 
-ALWAYS_INLINE core::T_O* from_lisp_object_to_value_in_T_O_ptr_fixnum( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_sp to_object_uint32( uint32_t value )
 {
-  // uintptr_t ptr( reinterpret_cast< uintptr_t >( lisp_object_ptr ));
-  gctools::Fixnum value = gctools::untag_fixnum< T_O * >( lisp_object_ptr );
-  core::T_O * result = reinterpret_cast< core::T_O * >( value );
-  return result;
+  return to_object_fixnum( value );
 }
 
-ALWAYS_INLINE core::T_O* to_lisp_object_from_value_in_T_O_ptr_fixnum( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_sp tr_to_object_uint32( core::T_O* raw_ptr )
 {
-  core::T_O * result = gctools::tag_fixnum< T_O * >( reinterpret_cast< gctools::Fixnum >( raw_ptr ));
-  return result;
+  return tr_to_object_fixnum( raw_ptr );
+}
+
+// ----------------------------------------------------------------------------
+// INT64
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE int64_t from_object_int64( core::T_O* lisp_object_ptr )
+{
+  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
+  return clasp_to_int64( ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_int64( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< core::T_O * >( from_object_int64( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_int64( int64_t value )
+{
+  return mk_integer_int64( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_int64( core::T_O* raw_ptr )
+{
+  return to_object_int64( reinterpret_cast< int64_t >( raw_ptr ) );
+}
+
+// ----------------------------------------------------------------------------
+// UINT64
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE uint64_t from_object_uint64( core::T_O* lisp_object_ptr )
+{
+  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
+  return clasp_to_uint64( ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_uint64( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< core::T_O * >( from_object_uint64( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_uint64( uint64_t value )
+{
+  return mk_integer_uint64( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_uint64( core::T_O* raw_ptr )
+{
+  return to_object_uint64( reinterpret_cast< uint64_t >( raw_ptr ) );
+}
+
+// ----------------------------------------------------------------------------
+// LONG LONG
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE long long from_object_long_long( core::T_O* lisp_object_ptr )
+{
+  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
+  return clasp_to_longlong( ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_long_long( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< T_O *>( from_object_long_long( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_long_long( long value )
+{
+  return mk_integer_longlong( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_long_long( core::T_O* raw_ptr )
+{
+  return to_object_long_long( reinterpret_cast< long long >( raw_ptr ) );
+}
+
+// ----------------------------------------------------------------------------
+// UNSIGNED LONG LONG
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE unsigned long long from_object_unsigned_long_long( core::T_O* lisp_object_ptr )
+{
+  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
+  return clasp_to_ulonglong( ptr );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long_long( core::T_O* lisp_object_ptr )
+{
+  return reinterpret_cast< T_O *>( from_object_unsigned_long_long( lisp_object_ptr ) );
+}
+
+ALWAYS_INLINE core::T_sp to_object_unsigned_long_long( long value )
+{
+  return mk_integer_ulonglong( value );
+}
+
+ALWAYS_INLINE core::T_sp tr_to_object_unsigned_long_long( core::T_O* raw_ptr )
+{
+  return to_object_unsigned_long( reinterpret_cast< unsigned long long >( raw_ptr ) );
 }
 
 /* *** OLD STUFF - TO BE REMOVED !!! ***
-DEF_RAW_TRANSLATOR(long,long);
-DEF_RAW_TRANSLATOR(unsigned long,ulong);
-DEF_RAW_TRANSLATOR(long long,longlong);
-DEF_RAW_TRANSLATOR(unsigned long long,ulonglong);
-DEF_RAW_TRANSLATOR(int64_t,int64);
-DEF_RAW_TRANSLATOR(uint64_t,uint64);
 DEF_RAW_TRANSLATOR(size_t,size);
 DEF_RAW_TRANSLATOR(ssize_t,ssize);
 DEF_RAW_TRANSLATOR(ptrdiff_t,ptrdiff);
@@ -539,299 +1044,7 @@ namespace llvmo
 
 void initialize_raw_translators( void )
 {
-  // // TRANSLATOR WRAPPERS
-
-  // // -- SHORT --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<SHORT>", &from_object_short,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_short );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<SHORT>", &to_object_short,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_short );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<USHORT>", &from_object_ushort,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_ushort );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_ushort,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_ushort );
-
-  // // -- INT --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT>", &from_object_int,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_int );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT>", &to_object_int,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_int );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT>", &from_object_uint,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_uint );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT>", &to_object_uint,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_uint );
-
-  // // -- LONG --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<LONG>", &from_object_long,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_long );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<LONG>", &to_object_long,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_long );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<ULONG>", &from_object_ulong,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_ulong );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<ULONG>", &to_object_ulong,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_ulong );
-
-  // // -- INT8 --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT8>", &from_object_int8,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_int8 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT8>", &to_object_int8,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_int8 );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT8>", &from_object_uint8,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_uint8 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT8>", &to_object_uint8,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_uint8 );
-
-  // // -- INT16 --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT16>", &from_object_int16,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_int16 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT16>", &to_object_int16,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_int16 );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT16>", &from_object_uint16,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_uint16 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT16>", &to_object_uint16,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_uint16 );
-
-  // // -- INT32 --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT32>", &from_object_int32,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_int32 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT32>", &to_object_int32,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_int32 );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT32>", &from_object_uint32,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_uint32 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT32>", &to_object_uint32,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_uint32 );
-
-  // // -- INT64 --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<INT64>", &from_object_int64,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_int64 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<INT64>", &to_object_int64,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_int64 );
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<UINT64>", &from_object_uint64,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_uint64 );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<UINT64>", &to_object_uint64,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_uint64 );
-
-  // // -- PTRDIFF --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<PTRDIFF>", &from_object_ptrdiff,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_ptrdiff );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<PTRDIFF>", &to_object_ptrdiff,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_ptrdiff );
-
-  // // -- TIME --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<TIME>", &from_object_time,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_time );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<TIME>", &to_object_time,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_time );
-
-  // // -- SIZE --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<SIZE>", &from_object_size,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_size );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<SIZE>", &to_object_size,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_size );
-
-  // // -- SSIZE --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<SSIZE>", &from_object_ssize,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_ssize );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<SSIZE>", &to_object_ssize,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_ssize );
-
-  // // -- CHAR --
-
-  // wrap_translator( "CLASP-FFI","FROM-OBJECT<CHAR>", &from_object_char,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_from_object_size );
-
-  // wrap_translator( "CLASP-FFI","TO-OBJECT<CHAR>", &to_object_char,
-  //                  "", // arguments
-  //                  "", // declares
-  //                  "", // docstring,
-  //                  __FILE__,
-  //                  source_line_to_object_char );
-
-  // // END OF TRANSLATOR WRAPPERS
+  // Nothing to do
 
   return;
 

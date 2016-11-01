@@ -11,16 +11,9 @@
 ;;; --- END OF IMPLEMEMTATION NOTES ---
 
 ;;;----------------------------------------------------------------------------
-;;; TODO
-;;;
-;;; 001 Implement Foreign Function Calling
-;;; 002 Implement Callback Support
-;;;
-;;;----------------------------------------------------------------------------
-
-;;;----------------------------------------------------------------------------
 ;;; ISSUES / KNOWN PROBLEMS
 ;;;
+;;;  None so far :-D
 ;;;
 ;;;----------------------------------------------------------------------------
 
@@ -83,6 +76,9 @@
                (elt *foreign-type-spec-table* ,idx)))
      ))
 
+(defmethod %lisp-type->type-spec (type)
+  (error "Unknown FLI lisp type ~S - cannot determine type spec." type))
+
 ;;; === B U I LT - I N   O P E R A T I O N S ===
 
 ;;; Implemented directly in C++:
@@ -124,6 +120,10 @@
 	       (funcall ',(intern (concatenate 'string "%MEM-REF-" (string (%lisp-symbol spec))) 'clasp-ffi)
                         (%offset-address-as-integer ptr offset))))))
 
+(defmethod %mem-ref (ptr type &optional offset)
+  (declare (ignore ptr offset))
+  (error "Unknown lisp type ~S for %mem-ref." type))
+
 ;;; === M E M - S E T ===
 
 (defgeneric %mem-set (ptr type value &optional offset))
@@ -136,6 +136,10 @@
 	    `(defmethod %mem-set (ptr (type (eql ',(%lisp-symbol spec))) value &optional (offset 0))
 	       (funcall ',(intern (concatenate 'string "%MEM-SET-" (string (%lisp-symbol spec))) 'clasp-ffi)
                         (%offset-address-as-integer ptr offset) value)))))
+
+(defmethod %mem-set (ptr type value &optional offset)
+  (declare (ignore ptr offset value))
+  (error "Unknown lisp type ~S for %mem-set." type))
 
 ;;; === F O R E I G N   F U N C T I O N  C A L L I N G ===
 
@@ -154,7 +158,7 @@
           (string-downcase (string (%lisp-name (%lisp-type->type-spec type))))))
 
 (defun process-arguments (arguments)
-  (let* ((splits (split-list arguments))
+  (let* ((splits (split-list (car arguments)))
          (types-and-maybe-return-type (car splits))
          (args (cadr splits))
          (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
@@ -164,6 +168,17 @@
          (types (if explicit-return-type
                     (butlast types-and-maybe-return-type 1)
                     types-and-maybe-return-type)))
+
+    #|
+    (format *debug-io* "arguments = ~S~&" arguments)
+    (format *debug-io* "splits = ~S~&" splits)
+    (format *debug-io* "types-and-maybe-return-type = ~S~&" types-and-maybe-return-type)
+    (format *debug-io* "args = ~S~&" args)
+    (format *debug-io* "explicit-return-type = ~S~&" explicit-return-type)
+    (format *debug-io* "return-type = ~S~&" return-type)
+    (format *debug-io* "types = ~S~&" types)
+    |#
+
     (values (loop for type in types
                for arg in args
                collect `(core:foreign-call
@@ -175,17 +190,9 @@
   (multiple-value-bind (args return-type)
       (process-arguments arguments)
     (if (eq return-type :void)
-        `(core:foreign-call-pointer (core:dlsym :rtld-default ,name) ,@args)
+        `(core:foreign-call-pointer (ensure-core-pointer (%dlsym ,name)) ,@args)
         `(core:foreign-call ,(translator-name "to" return-type)
-                            (core:foreign-call-pointer (core:dlsym :rtld-default ,name) ,@args)))))
-
-(defmacro %static-foreign-funcall (name &rest arguments)
-  (multiple-value-bind (args return-type)
-      (process-arguments arguments)
-    (if (eq return-type :void)
-        `(core:foreign-call ,name ,@args)
-        `(core:foreign-call ,(translator-name "to" return-type)
-                            (core:foreign-call ,name ,@args)))))
+                            (core:foreign-call-pointer (ensure-core-pointer (%dlsym ,name)) ,@args)))))
 
 (defmacro %foreign-funcall-pointer (ptr &rest arguments)
   (multiple-value-bind (args return-type)
@@ -227,9 +234,58 @@
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
-;;; EXPORTS
+;;; E X P O R T S
 
-(export '(with-foreign-object
-          with-foreign-objects
-          %mem-ref
-          %mem-set))
+(eval-when (:load-toplevel :execute :compile-toplevel)
+  (export '(with-foreign-object
+            with-foreign-objects
+            %foreign-alloc
+            %foreign-free
+            %mem-ref
+            %mem-set
+            %foreign-funcall
+            %static-foreign-funcall
+            %foreign-funcall-pointer
+            %load-foreign-library
+            %close-foreign-library
+            %foreign-symbol-pointer)))
+
+;;;----------------------------------------------------------------------------
+;;;----------------------------------------------------------------------------
+;;; T E S T I N G
+
+(defun test-ffi ()
+
+  (format *debug-io* "*** TEST 1: %MEM-SET and %MEM-REF ...~&")
+  (format *debug-io* "    Expected results: a = 47111, b = 47112.~&")
+
+  (let* ((*v1* (%allocate-foreign-object :uint32))
+         (a nil)
+         (b nil)
+         (fa (%foreign-data-address *v1*)))
+
+    ;; --- WITH LOW-LEVEL CALLS ---
+    (%mem-set-uint32 fa 47111)
+    (setq a (%mem-ref-uint32 fa))
+
+    ;; --- WITH HIGH-LEVEL CALLS ---
+    (%mem-set fa :uint32 47112)
+    (setq b (%mem-ref fa :uint32))
+
+    (format *debug-io* "*** a = ~S, b = ~S.~&" a b))
+
+  (format *debug-io* "*** TEST 2: %FOREIGN-FUNCALL ...~&")
+  (format *debug-io* " => (%foreign-funcall \"fli_test_add\" (:int 2 :short 45 :int)) -> ~S~&" (%foreign-funcall "fli_test_add" (:int 2 :short 45 :int)))
+
+  (format *debug-io* "*** TEST 3: %FOREIGN-FUNCALL-POINTER ...~&")
+  (let ((fn-addr (%dlsym "fli_test_mul_uint32")))
+    (format *debug-io* " => for function fli_test_mul2: (%foreign-funcall-pointer ~S (:uint32 45 :uint32)) -> ~S~&" fn-addr (%foreign-funcall-pointer fn-addr (:uint32 45 :uint32))))
+
+  (format *debug-io* "*** TEST 4: %FOREIGN-FUNCALL-POINTER ...~&")
+  (let ((fn-addr (%dlsym "fli_test_mul2_long")))
+    (format *debug-io* " => for function fli_test_mul2_long: (%foreign-funcall-pointer ~S (:long 45 :long)) -> ~S~&" fn-addr (%foreign-funcall-pointer fn-addr (:long 45 :long))))
+
+  )
+
+(defun dbg-numeric-limits ()
+  (%foreign-funcall "info_numeric_limits" ))

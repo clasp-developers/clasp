@@ -39,9 +39,10 @@ THE SOFTWARE.
 // --- IMPLEMEMTATION NOTES ---
 //
 // The complete FLI is comprised of the following files:
-// .../src/core/fli.cc            - this file
+// .../src/core/fli.cc            - this file, main API for FLI
 // .../include/clasp/core/fli.h   - corresponding .h file
 // .../src/lisp/kernel/fli.lsp    - Lisp land macros and functions
+// .../src/llvmo/intrinsics.cc    - translators: to/from Lisp objects
 //
 // --- END OF IMPLEMEMTATION NOTES ---
 
@@ -76,6 +77,8 @@ THE SOFTWARE.
 #include <clasp/core/character.h>
 #include <clasp/core/str.h>
 #include <clasp/core/designators.h>
+#include <clasp/llvmo/intrinsics.h>
+
 #include <clasp/core/wrappers.h> // last include is wrappers.h
 
 // ---------------------------------------------------------------------------
@@ -831,116 +834,6 @@ core::Integer_sp PERCENToffset_address_as_integer( core::T_sp address_or_foreign
 }
 
 // ---------------------------------------------------------------------------
-//  HELPER FUNCTIONS FOR HANDLING FOREIGN TYPES
-// ---------------------------------------------------------------------------
-
-inline core::T_sp mk_fixnum_short( short v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_ushort( unsigned short v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_int( int v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_uint( unsigned int v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_int8( int8_t v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_uint8( uint8_t v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_int16( int16_t v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_uint16( uint16_t v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_int32( int32_t v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_fixnum_uint32( uint32_t v ) {
-  return core::make_fixnum( v );
-}
-
-inline core::T_sp mk_integer_int64( int64_t v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_integer_uint64( uint64_t v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_integer_long( long v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_integer_ulong( unsigned long v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_integer_longlong( long long v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_integer_ulonglong( unsigned long long v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_double_float( double v ) {
-  return core::DoubleFloat_O::create( v );
-}
-
-inline core::T_sp mk_single_float( float v ) {
-  return core::make_single_float( v );
-}
-
-inline core::T_sp mk_long_double( long double v ) {
-  return core::LongFloat_O::create( v );
-}
-
-inline core::T_sp mk_time( time_t v ) {
-  size_t size = sizeof( time_t );
-  GC_ALLOCATE(ForeignData_O, self);
-  self->allocate( kw::_sym_clasp_foreign_data_kind_time, core::DeleteOnDtor, size);
-  memmove( self->raw_data(), &v, size );
-  return self;
-}
-
-inline core::T_sp mk_pointer( void * v ) {
-  ForeignData_sp ptr = ForeignData_O::create( reinterpret_cast<cl_intptr_t>( v ) );
-  ptr->set_kind( kw::_sym_clasp_foreign_data_kind_pointer );
-  return ptr;
-}
-
-inline core::T_sp mk_size( size_t v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_ssize( ssize_t v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_ptrdiff( ptrdiff_t v ) {
-  return core::Integer_O::create( v );
-}
-
-inline core::T_sp mk_char( char v ) {
-  return core::clasp_make_character( v );
-}
-
-// ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 template<class T>
 inline T mem_ref( cl_intptr_t address ) {
@@ -1286,22 +1179,60 @@ core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value ) {
 // ---------------------------------------------------------------------------
 // T E S T I N G
 
+#include <limits>
+
 unsigned int CLASP_FLI_TEST_MEM_REF_UNSIGNED_INT = 42;
 int          CLASP_FLI_TEST_MEM_REF_INT          = -42;
 time_t       CLASP_FLI_TEST_MEM_REF_TIME_T       = time( nullptr );
 char         CLASP_FLI_TEST_MEM_REF_CHAR         = 'f';
+
+extern "C" void info_numeric_limits( void )
+{
+  std::cerr << "=============================================================================\n";
+  std::cerr << "SHORT MIN: " << std::numeric_limits< short >::min() << "\n";
+  std::cerr << "SHORT MAX: " << std::numeric_limits< short >::max() << "\n";
+
+  std::cerr << "INT MIN: " << std::numeric_limits< int >::min() << "\n";
+  std::cerr << "INT MAX: " << std::numeric_limits< int >::max() << "\n";
+
+  std::cerr << "LONG MIN: " << std::numeric_limits< long >::min() << "\n";
+  std::cerr << "LONG MAX: " << std::numeric_limits< long >::max() << "\n";
+
+  std::cerr << "LONG LONG MIN: " << std::numeric_limits< long long >::min() << "\n";
+  std::cerr << "LONG LONG MAX: " << std::numeric_limits< long long >::max() << "\n";
+
+  std::cerr << "FLOAT MIN: " << std::numeric_limits< float >::min() << "\n";
+  std::cerr << "FLOAT MAX: " << std::numeric_limits< float >::max() << "\n";
+
+  std::cerr << "DOUBLE MIN: " << std::numeric_limits< double >::min() << "\n";
+  std::cerr << "DOUBLE MAX: " << std::numeric_limits< double >::max() << "\n";
+
+  std::cerr << "LONG DOUBLE MIN: " << std::numeric_limits< long double >::min() << "\n";
+  std::cerr << "LONG DOUBLE MAX: " << std::numeric_limits< long double >::max() << "\n";
+  std::cerr << "=============================================================================\n";
+}
 
 extern "C" int fli_test_add( int a, short b )
 {
   return a + b;
 }
 
-extern "C" int fli_test_mul2(int x)
+extern "C" char * fli_test_echo_string( char * pc_str )
+{
+  return pc_str;
+}
+
+extern "C" uint32_t fli_test_mul2_uint32(uint32_t x)
 {
   return 2 * x;
 }
 
-extern "C" char * fli_test_echo_string( char * pc_str )
+extern "C" long fli_test_mul2_long(long x)
 {
-  return pc_str;
+  return 2 * x;
+}
+
+extern "C" long long fli_test_mul2_long_long(long long x)
+{
+  return 2 * x;
 }
