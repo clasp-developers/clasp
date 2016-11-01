@@ -219,6 +219,8 @@
 If this form has already been precalculated then just return the precalculated-value index"
   (let ((form (cleavir-ast:form ast))
 	(read-only-p (cleavir-ast:read-only-p ast)))
+    (unless read-only-p
+      (warn "Handle compilation of the ltv ~a with read-only-p NIL" form))
     (cond
       ((and (consp form) (eq (first form) 'QUOTE))
        (let* ((constant (cadr form))

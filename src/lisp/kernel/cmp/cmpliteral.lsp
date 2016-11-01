@@ -372,7 +372,22 @@ and put into ltv-ref."
                  (with-landing-pad (irc-get-terminate-landing-pad-block ,fn-env-gs)
                    (irc-function-cleanup-and-return ,fn-env-gs ,result ))))))))))
 
-(defun load-time-reference-literal (object)
+#+(or)
+(defun load-time-reference-literal (object &optional read-only-p)
+  (multiple-value-bind (similarity creator)
+      (object-similarity-table-and-creator object)
+    (if read-only-p
+        (let* ((existing (find-similar object similarity)))
+          (or existing
+              (let ((index (new-table-index)))
+                (add-similar object index similarity)
+                (funcall creator object index)
+                index)))
+        (let ((index (new-table-index)))
+          (funcall creator object index)
+          index))))
+
+(defun load-time-reference-literal (object &optional read-only-p)
   (multiple-value-bind (similarity creator)
       (object-similarity-table-and-creator object)
     (let* ((existing (find-similar object similarity)))
@@ -381,7 +396,6 @@ and put into ltv-ref."
             (add-similar object index similarity)
             (funcall creator object index)
             index)))))
-
 
 (defun reference-evaluated-function (fn)
   (let ((index (new-table-index)))
@@ -419,7 +433,21 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun add-run-time-object (object index)
   (load-time-value-array-setf *run-time-values-table* index object))
 
-(defun run-time-reference-literal (object)
+#+(or)
+(defun run-time-reference-literal (object &optional read-only-p)
+  (if read-only-p
+      (let* ((similarity *run-time-coalesce*)
+             (existing (find-similar object similarity)))
+        (or existing
+            (let ((index (new-run-time-table-index)))
+              (add-similar object index similarity)
+              (add-run-time-object object index)
+              index)))
+      (let ((index (new-run-time-table-index)))
+        (add-run-time-object object index)
+        index)))
+
+(defun run-time-reference-literal (object &optional read-only-p)
   (let* ((similarity *run-time-coalesce*)
          (existing (find-similar object similarity)))
     (or existing
@@ -479,10 +507,10 @@ the value is put into *default-load-time-value-vector* and its index is returned
 ;;; ------------------------------------------------------------
 ;;; ------------------------------------------------------------
 
-(defun reference-literal (object)
+(defun reference-literal (object &optional read-only-p)
   (if *generate-compile-file-load-time-values*
-      (load-time-reference-literal object)
-      (run-time-reference-literal object)))
+      (load-time-reference-literal object read-only-p)
+      (run-time-reference-literal object read-only-p)))
 
 
 ;;; ------------------------------------------------------------
@@ -589,27 +617,28 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;;
 
 (defun load-time-value-reference (holder index &optional (label "ltv"))
-  (let* ((tagged-ltv-ptr (irc-load holder "tagged-ltv-ptr"))
-         (tagged-ltv-intptr_t (irc-ptr-to-int tagged-ltv-ptr +intptr_t+ "tagged-ltv-intptr_t"))
-         (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
-         (ltvo-address (llvm-sys:create-add *irbuilder* tagged-ltv-intptr_t (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo_address"))
-         (ltvo-objects-offset (cdr (assoc :load-time-values-objects-offset cmp::+cxx-data-structures-info+)))
-         (ltvo-objects-address (llvm-sys:create-add *irbuilder* ltvo-address (jit-constant-uintptr_t ltvo-objects-offset) "ltvo_objects_address"))
-         (tagged-ltvo-objects-smart-ptr (irc-load (irc-int-to-ptr ltvo-objects-address +tsp*+) "tagged-ltvo-objects-ptr"))
-         (tagged-ltvo-objects-ptr (irc-smart-ptr-extract tagged-ltvo-objects-smart-ptr "tagged-ltvo-objects-ptr"))
-         (tagged-ltvo-objects-addr (irc-ptr-to-int tagged-ltvo-objects-ptr +uintptr_t+ "tagged-ltvo-objects-addr"))
-         (ltvo-objects-addr (irc-add tagged-ltvo-objects-addr (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo-objects-addr"))
-         (data0-offset (cdr (assoc :gcvector-data0-offset cmp::+cxx-data-structures-info+)))
-         (element-size (cdr (assoc 'core:tsp cmp::+cxx-data-structures-info+)))
-         (offset (+ data0-offset (* element-size index)))
-         (entry-uintptr_t (irc-add ltvo-objects-addr (jit-constant-uintptr_t offset) "entry-uintptr_t"))
-         (entry-ptr (irc-int-to-ptr entry-uintptr_t +tsp*+ (bformat nil "entry[%d]-ptr" index))))
-    #+(or)(let ((orig (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label)))
-            (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t"
-                                           (irc-ptr-to-int entry-ptr +uintptr_t+)
-                                           (irc-ptr-to-int orig +uintptr_t+))
-                            +tsp*+))
-    entry-ptr))
+  #+(or)(let* ((tagged-ltv-ptr (irc-load holder "tagged-ltv-ptr"))
+               (tagged-ltv-intptr_t (irc-ptr-to-int tagged-ltv-ptr +intptr_t+ "tagged-ltv-intptr_t"))
+               (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
+               (ltvo-address (llvm-sys:create-add *irbuilder* tagged-ltv-intptr_t (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo_address"))
+               (ltvo-objects-offset (cdr (assoc :load-time-values-objects-offset cmp::+cxx-data-structures-info+)))
+               (ltvo-objects-address (llvm-sys:create-add *irbuilder* ltvo-address (jit-constant-uintptr_t ltvo-objects-offset) "ltvo_objects_address"))
+               (tagged-ltvo-objects-smart-ptr (irc-load (irc-int-to-ptr ltvo-objects-address +tsp*+) "tagged-ltvo-objects-ptr"))
+               (tagged-ltvo-objects-ptr (irc-smart-ptr-extract tagged-ltvo-objects-smart-ptr "tagged-ltvo-objects-ptr"))
+               (tagged-ltvo-objects-addr (irc-ptr-to-int tagged-ltvo-objects-ptr +uintptr_t+ "tagged-ltvo-objects-addr"))
+               (ltvo-objects-addr (irc-add tagged-ltvo-objects-addr (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo-objects-addr"))
+               (data0-offset (cdr (assoc :gcvector-data0-offset cmp::+cxx-data-structures-info+)))
+               (element-size (cdr (assoc 'core:tsp cmp::+cxx-data-structures-info+)))
+               (offset (+ data0-offset (* element-size index)))
+               (entry-uintptr_t (irc-add ltvo-objects-addr (jit-constant-uintptr_t offset) "entry-uintptr_t"))
+               (entry-ptr (irc-int-to-ptr entry-uintptr_t +tsp*+ (bformat nil "entry[%d]-ptr" index))))
+          #+(or)(let ((orig (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label)))
+                  (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t"
+                                                 (irc-ptr-to-int entry-ptr +uintptr_t+)
+                                                 (irc-ptr-to-int orig +uintptr_t+))
+                                  +tsp*+))
+          entry-ptr)
+  (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label))
 
 (defun get-load-time-value (result holder index)
   #+(or)(irc-intrinsic "getLoadTimeValue"

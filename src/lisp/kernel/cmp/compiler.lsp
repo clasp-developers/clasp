@@ -1055,6 +1055,8 @@ jump to blocks within this tagbody."
   (cmp-log "Starting codegen-load-time-value rest: %s\n" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
+    (if (not read-only-p)
+        (warn "In codegen-load-time-value - handle compilation of ~a with read-only-p NIL" form))
     (if *generate-compile-file-load-time-values*
 	(multiple-value-bind (index fn)
 	    (compile-ltv-thunk form)
