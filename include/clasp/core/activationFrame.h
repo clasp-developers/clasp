@@ -383,15 +383,13 @@ namespace core {
   {
     while (true) {
       if ( depth == 0 ) {
-        if (activationFrame.isA<ValueFrame_O>()) {
-          ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
+        ASSERT(activationFrame.isA<ValueFrame_O>());
+        ValueFrame_sp vf = gc::reinterpret_cast_smart_ptr<ValueFrame_O,T_O>(activationFrame);
 #ifdef DEBUG_ASSERTS
-          if ( index >= vf->_Objects.capacity() )
-            error_frame_range("ValueFrame",index,vf->_Objects.capacity());
+        if ( index >= vf->_Objects.capacity() )
+          error_frame_range("ValueFrame",index,vf->_Objects.capacity());
 #endif
-          return vf->_Objects[index];
-        }
-        error_end_of_frame_list("ValueFrame");
+        return vf->_Objects[index];
       }
       --depth;
       activationFrame = activationFrame->_Parent;

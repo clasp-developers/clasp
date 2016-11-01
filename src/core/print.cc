@@ -182,16 +182,16 @@ CL_DEFUN T_sp cl__write(T_sp x, T_sp strm, T_sp array, T_sp base,
 CL_LAMBDA(o stream type id function);
 CL_DECLARE();
 CL_DOCSTRING("printUnreadableObjectFunction - see ecl::print_unreadable.d");
-CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp type, T_sp id, T_sp function) {
+CL_DEFUN void core__print_unreadable_object_function(T_sp object, T_sp ostream, T_sp type, T_sp id, T_sp function) {
   if (clasp_print_readably()) {
-    PRINT_NOT_READABLE_ERROR(o);
-  } else if (o.unboundp()) {
+    PRINT_NOT_READABLE_ERROR(object);
+  } else if (object.unboundp()) {
     SIMPLE_ERROR(BF("Error! printUnreadableObjectFunction object is Unbound"));
   } else {
     stringstream ss;
     ss << "#<";
     if (type.notnilp()) {
-      type = cl__type_of(o);
+      type = cl__type_of(object);
       if (!gc::IsA<Symbol_sp>(type)) {
         type = cl::_sym_StandardObject_O;
       }
@@ -206,7 +206,7 @@ CL_DEFUN void core__print_unreadable_object_function(T_sp o, T_sp ostream, T_sp 
     stringstream stail;
 #if 0
     stail << " @";
-    stail << o.raw_();
+    stail << object.raw_();
 #endif
     stail << ">";
     clasp_write_string(stail.str(), ostream);

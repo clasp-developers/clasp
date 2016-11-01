@@ -133,6 +133,9 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(_sym_invocationHistoryFrame, make_fixnum((int)sizeof(InvocationHistoryFrame))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-PARENT-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Parent))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT0-OFFSET"), make_fixnum((int)offsetof(core::ValueFrame_O,_Objects._Data[0]))),list);
+  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"), make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-MASK"), make_fixnum((int)gctools::tag_mask)), list);
@@ -152,16 +155,15 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS*sizeof(void*))), list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"),make_fixnum(gctools::Alignment())),list);
   list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"),make_fixnum(sizeof(void*))),list);
-#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(#name), code), list)
+#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   LoadTimeValues_O tempLtv;
-  ENTRY(list, LOAD - TIME - VALUES - OBJECTS - OFFSET, make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
-//  ENTRY(list, LOAD - TIME - VALUES - SYMBOLS - OFFSET, make_fixnum((char *)&tempLtv._Symbols - (char *)&tempLtv));
+  ENTRY(list, "LOAD-TIME-VALUES-OBJECTS-OFFSET", make_fixnum((char *)&tempLtv._Objects - (char *)&tempLtv));
   gc::Vec0<T_sp> tempVec0Tsp;
-  ENTRY(list, VEC0 - VECTOR - OFFSET, make_fixnum((char *)&tempVec0Tsp._Vector - (char *)&tempVec0Tsp));
+  ENTRY(list, "VEC0-VECTOR-OFFSET", make_fixnum((char *)&tempVec0Tsp._Vector - (char *)&tempVec0Tsp));
   gc::GCVector_moveable<T_O *> tempGCVector(1, 0);
-  ENTRY(list, GCVECTOR - CAPACITY - OFFSET, make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
-  ENTRY(list, GCVECTOR - END - OFFSET, make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
-  ENTRY(list, GCVECTOR - DATA0 - OFFSET, make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
+  ENTRY(list, "GCVECTOR-CAPACITY-OFFSET", make_fixnum((char *)&tempGCVector._Capacity - (char *)&tempGCVector));
+  ENTRY(list, "GCVECTOR-END-OFFSET", make_fixnum((char *)&tempGCVector._End - (char *)&tempGCVector));
+  ENTRY(list, "GCVECTOR-DATA0-OFFSET", make_fixnum((char *)&tempGCVector._Data[0] - (char *)&tempGCVector));
   return list;
 }
 
@@ -255,6 +257,15 @@ void dump_funcs(core::Function_sp compiledFunction) {
   } else {
     STDOUT_BFORMAT(BF("There were no associated functions available for disassembly\n"));
   }
+}
+
+CL_LAMBDA(module &optional (stream t))
+CL_DEFUN void dump_module(Module_sp module, core::T_sp tstream) {
+  core::T_sp stream = core::coerce::outputStreamDesignator(tstream);
+  string outstr;
+  llvm::raw_string_ostream sout(outstr);
+  module->wrappedPtr()->print(sout,NULL);
+  core::clasp_write_string(outstr,stream);
 }
 
 CL_DEFUN void llvm_sys__disassembleSTAR(core::Function_sp cf) {

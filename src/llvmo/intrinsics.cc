@@ -426,9 +426,14 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object) {
 extern "C" {
 
 ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, core::T_O *closureRaw) {
-  Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
-  T_sp activationFrame = closure->closedEnvironment();
-  core::T_O* parentP =  activationFrame.raw_();
+  core::T_O* parentP;
+  if (closureRaw != NULL ) {
+    Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
+    T_sp activationFrame = closure->closedEnvironment();
+    parentP =  activationFrame.raw_();
+  } else {
+    parentP = _Nil<core::T_O>().raw_();
+  }
   ASSERT((*resultP).isA<ActivationFrame_O>());
   ActivationFrame_sp af = gc::reinterpret_cast_smart_ptr<ActivationFrame_O, T_O>((*resultP));
   af->setParentFrame(parentP);
@@ -634,6 +639,35 @@ ALWAYS_INLINE core::T_sp mk_char( char v )
 
 // These functions are part of the Foreign Language Interface and are
 // referenced from the FLI functions in fli.cc.
+
+// --- IMPLEMEMTATION NOTE ---
+
+// This is the origival code used for testing by drmeister ...
+// Difference to frgo's code: tr_ prefix used differently!
+
+#if 0
+
+extern "C" {
+int tr_from_object_int(core::T_O* obj) {
+  int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  return x;
+}
+
+core::T_O* tr_to_object_int(int x ) {
+  return translate::to_object<int>::convert(x).raw_();
+}
+};
+
+extern "C" {
+core::T_O* from_object_int(core::T_O* obj) {
+  int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
+  return reinterpret_cast<core::T_O*>(x);
+}
+
+#endif
+
+// --- END OF IMPLEMENTATION NOTE ---
+
 
 // ----------------------------------------------------------------------------
 // FIXNUM

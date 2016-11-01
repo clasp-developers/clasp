@@ -550,6 +550,12 @@
 (defun irc-cond-br (icond true false &optional branchWeights)
   (llvm-sys:create-cond-br *irbuilder* icond true false branchWeights))
 
+(defun irc-ptr-to-int (val int-type &optional (label "ptrtoint"))
+  (llvm-sys:create-ptr-to-int *irbuilder* val int-type label))
+
+(defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
+  (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
+
 (defun irc-ret-void ()
   (llvm-sys:create-ret-void *irbuilder*))
 
@@ -587,9 +593,20 @@
   (llvm-sys:create-load-value-twine *irbuilder* source label))
 
 (defun irc-store (val destination &optional (label ""))
-  (llvm-sys:create-store *irbuilder* val destination nil))
-
-
+  (let ((val-type (llvm-sys:get-type val))
+        (dest-type (llvm-sys:get-contained-type (llvm-sys:get-type destination) 0)))
+    (if (equal val-type dest-type)
+        (llvm-sys:create-store *irbuilder* val destination nil)
+        (cond
+          ((and (equal val-type +tsp+)
+                (equal dest-type +tmv+))
+           (let* ((ptr (irc-extract-value val (list 0) "t*-part"))
+                  (undef (llvm-sys:undef-value-get +tmv+))
+                  (tmv0 (llvm-sys:create-insert-value *irbuilder* undef ptr '(0) "tmv0"))
+                  (tmv1 (llvm-sys:create-insert-value *irbuilder* tmv0 (jit-constant-uintptr_t 1) '(1) "tmv1")))
+             #+(or)(bformat t "irc-store of val %s -> tmv1 %s to %s\n" val tmv1 destination)
+             (llvm-sys:create-store *irbuilder* tmv1 destination nil)))
+          (t (error "!!! Mismatch in irc-store between val type %s and destination type %s\n" val-type dest-type))))))
 
 (defun irc-phi (return-type num-reserved-values &optional (label "phi"))
   (llvm-sys:create-phi *irbuilder* return-type num-reserved-values label))
@@ -996,9 +1013,9 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 (defun irc-extract-value (struct idx-list &optional (label ""))
   (llvm-sys:create-extract-value *irbuilder* struct idx-list label))
 
-(defun irc-smart-ptr-extract (smart-ptr)
+(defun irc-smart-ptr-extract (smart-ptr &optional (label ""))
   "Extract the t-ptr from the smart-ptr"
-  (irc-extract-value smart-ptr (list 0)))
+  (irc-extract-value smart-ptr (list 0) label))
 
 
 (defun irc-store-result-t* (result result-in-registers)

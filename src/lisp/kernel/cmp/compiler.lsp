@@ -202,8 +202,9 @@ then compile it and return (values compiled-llvm-function lambda-name)"
       ((consp name) (bformat nil "%s" name))
       (t (error "Add support for function-name-from-lambda with ~a as arg" name))))
 
-(defun compile-lambda-function (lambda-or-lambda-block env )
-  "Return the same things that generate-llvm-function-from-code returns"
+(defun compile-lambda-function (lambda-or-lambda-block &optional env)
+  "Compile a lambda form and return an llvm-ir function that evaluates it.
+Return the same things that generate-llvm-function-from-code returns"
   (dbg-set-current-debug-location-here)
   (let* (wrap-block block-name lambda-list body lambda-block-name)
     (if (eq (car lambda-or-lambda-block) 'ext::lambda-block)
@@ -378,11 +379,6 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 (defun codegen-special-var-reference (var &optional env)
   (irc-intrinsic "symbolValueReference" (irc-global-symbol var env) (bformat nil "<special-var:%s>" (symbol-name var) )))
 
-(defun codegen-lexical-var-reference (depth-index env)
-  (let ((renv (irc-renv env))
-	(depth (car depth-index))
-	(index (cadr depth-index)))
-    (irc-intrinsic "lexicalValueReference" (jit-constant-i32 depth) (jit-constant-i32 index) renv)))
 
 (defun codegen-setq (result setq-pairs env)
   "Carry out setq for a collection of pairs"
@@ -401,7 +397,8 @@ then compile it and return (values compiled-llvm-function lambda-name)"
 		  (let* ((classified (irc-classify-variable env cur-var))
 			 (target-ref (if (eq (car classified) 'ext:special-var)
 					 (codegen-special-var-reference cur-var env)
-					 (codegen-lexical-var-reference (cddr classified) env))))
+					 (let ((depth-index (cddr classified)))
+                                           (codegen-lexical-var-reference (first depth-index) (second depth-index) (irc-renv env))))))
 		    (codegen temp-res cur-expr env)
 		    (irc-intrinsic "copyTsp" target-ref temp-res)))
 		;; symbol was macroexpanded use SETF
@@ -1072,7 +1069,7 @@ jump to blocks within this tagbody."
                            (irc-size_t-*current-source-pos-info*-lineno)
                            (irc-size_t-*current-source-pos-info*-column)
                            *load-time-value-holder-global-var*))
-	  (irc-intrinsic "getLoadTimeValue" result *load-time-value-holder-global-var* (jit-constant-i32 index)))
+	  (get-load-time-value result *load-time-value-holder-global-var* index))
 	(progn
 	  (cmp-log "About to generate load-time-value for COMPILE")
           ;;	  (break "Handle load-time-value for COMPILE")
@@ -1432,9 +1429,8 @@ be wrapped with to make a closure"
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
     (link-intrinsics-module *the-module*)
-    (when *dump-module-on-completion*
-      (llvm-sys:dump *the-module*)
-      (core::fflush))
+    (when *debug-dump-module*
+      (quick-module-dump *the-module* "/tmp/compile-module-pre-optimize"))
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (if (not *run-time-execution-engine*)
 	;; SETUP THE *run-time-execution-engine* here for the first time

@@ -172,10 +172,11 @@ you need to also bind the target in the compile-time environment "
 	     ))
     ((eq (car target) 'ext:lexical-var)
      (cmp-log "compiling as a ext:lexical-var\n")
-     (values (irc-intrinsic "lexicalValueReference"
+     (values #+(or)(irc-intrinsic "lexicalValueReference"
 		       (jit-constant-i32 0)
 		       (jit-constant-i32 (cddr target))
 		       (irc-renv env))
+             (codegen-lexical-var-reference 0 #|<-depth|# (cddr target) (irc-renv env))
 	     (car target)		; target-type --> 'ext:lexical-var
 	     (cadr target)		; target-symbol
 	     (cddr target)		; target-lexical-index

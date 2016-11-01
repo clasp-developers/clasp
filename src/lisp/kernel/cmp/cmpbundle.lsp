@@ -89,14 +89,17 @@
                                       in-all-names
                                     (list in-all-names))))
         (bundle-file (ensure-string in-bundle-file)))
+    #+(or)(warn "Linking fasl with -fvisibility=default - use an exported symbol list in the future")
     (cond
      ((member :target-os-darwin *features*)
       (ext:run-clang `(,@options
                        ,@all-object-files
 ;;;                                 "-macosx_version_min" "10.10"
                        "-flto=thin"
-                       "-flat_namespace" 
+                       "-flat_namespace"
+                       #+(or)"-fvisibility=default"
                        "-undefined" "suppress"
+                       ,@*debug-link-options*
                        #+(or)"-Wl,-save-temps"
                        "-bundle"
 ;;;                        ,@link-flags
@@ -111,6 +114,8 @@
                        ,@all-object-files
                        "-flto=thin"
                        "-fuse-ld=gold"
+                       ,@*debug-link-options*
+                       #+(or)"-fvisibility=default"
                        "-shared"
                        "-o"
                        ,bundle-file)

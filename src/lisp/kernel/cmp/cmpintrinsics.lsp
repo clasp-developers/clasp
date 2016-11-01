@@ -68,6 +68,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +vtable*+ +i8*+)
 (defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
 (defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
+(defvar +ui64+ (llvm-sys:type-get-int64-ty *llvm-context*))
 (defvar +fixnum+ (if (member :address-model-64 *features*)
                      +i64+
                      (error "Add support for non 64-bit address model")))
@@ -125,6 +126,11 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
 (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
 (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
+(defvar +intptr_t+
+  (cond
+    ((= 8 +uintptr_t-size+) +i64+)
+    ((= 4 +uintptr_t-size+) +i32+)
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
 (defvar +uintptr_t+
   (cond
     ((= 8 +uintptr_t-size+) +i64+)
@@ -524,6 +530,28 @@ and initialize it with an array consisting of one function pointer."
 	    ""))))
     (bformat nil "%s%s" name-dispatch-prefix name)))
 
+;;;
+;;; An attempt to inline specific functions from intrinsics.cc
+;;;
+
+#+(or)
+(defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
+  (unless *intrinsics-module*
+    (setf *intrinsics-module* (llvm-sys:parse-bitcode-file (namestring (truename (cmp::build-intrinsics-bitcode-pathname :compile))) cmp:*llvm-context*)))
+  (when *intrinsics-module* (bformat t "Loaded intrinsics.cc\n"))
+  (let* ((orig-func (llvm-sys:get-function *intrinsics-module* name))
+         (fn (if orig-func
+                 (progn (llvm-sys:get-or-insert-function module (llvm-sys:get-name orig-func) (llvm-sys:get-function-type orig-func))
+                   (bformat t "The function %s is in intrinsics\n" name)
+                   (llvm-sys:get-function module (llvm-sys:get-name orig-func)))
+                 (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
+                                           'llvm-sys::External-linkage
+                                           name
+                                           module))))
+    (when does-not-throw (llvm-sys:set-does-not-throw fn))
+    (when does-not-return (llvm-sys:set-does-not-return fn))))
+
+;;#+(or)
 (defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
   (let ((fn (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
 				      'llvm-sys::External-linkage
@@ -635,7 +663,7 @@ and initialize it with an array consisting of one function pointer."
 
 
   (primitive-nounwind module "makeTagbodyFrame" +void+ (list +afsp*+))
-  (primitive-nounwind module "makeValueFrame" +void+ (list +afsp*+ +i64+))
+  (primitive-nounwind module "makeValueFrame" +void+ (list +tsp*+ +i64+))
   (primitive-nounwind module "setParentOfActivationFrameFromClosure" +void+ (list +tsp*+ +t*+))
   (primitive-nounwind module "setParentOfActivationFrame" +void+ (list +tsp*+ +tsp*+))
 
@@ -672,6 +700,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "debugMessage" +void+ (list +i8*+))
   (primitive-nounwind module "debugPrintI32" +void+ (list +i32+))
   (primitive-nounwind module "debugPrint_size_t" +void+ (list +size_t+))
+  (primitive-nounwind module "debug_match_two_uintptr_t" +uintptr_t+ (list +uintptr_t+ +uintptr_t+))
   (primitive-nounwind module "lowLevelTrace" +void+ (list +i32+))
   (primitive-nounwind module "unreachableError" +void+ nil)
 
@@ -713,7 +742,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
   
   (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
-
   (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
   (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
@@ -777,6 +805,9 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_pushLandingPadFrame" +t*+ nil)
   (primitive-nounwind module "cc_popLandingPadFrame" +void+ (list +t*+))
   (primitive          module "cc_landingpadUnwindMatchFrameElseRethrow" +size_t+ (list +i8*+ +t*+))
+  ;; Translator functions
+  (primitive-nounwind module "tr_to_object_int" +t*+ (list +i32+))
+  (primitive-nounwind module "tr_from_object_int" +i32+ (list +t*+))
   )
 
 
@@ -813,3 +844,12 @@ It has appending linkage.")
 (defvar *current-function* nil "The current function")
 (defvar *current-function-name* nil "Store the current function name")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
+
+
+(defun quick-module-dump (module file-name-prefix)
+  "Dump the module as a .ll file"
+  (let* ((output-name (bformat nil "%s-%s.ll" file-name-prefix (llvm-sys:module-id module)))
+         (fout (open output-name :direction :output)))
+    (unwind-protect
+         (llvm-sys:dump-module module fout)
+      (close fout))))
