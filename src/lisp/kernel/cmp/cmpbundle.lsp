@@ -109,7 +109,7 @@
                      :output-file-name bundle-file))
      ((member :target-os-linux *features*)
       ;; Linux needs to use clang to link
-      (ext:run-clang `("-v"
+      (ext:run-clang `(#+(or)"-v"
                        ,@options
                        ,@all-object-files
                        "-flto=thin"
