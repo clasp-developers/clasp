@@ -33,7 +33,7 @@ When this is T a LOT of graphs will be generated.")
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum)))
-        (%literal-ref value))
+        (%literal-ref value t))
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond

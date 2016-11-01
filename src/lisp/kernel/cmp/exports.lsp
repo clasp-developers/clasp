@@ -141,9 +141,6 @@ irc-load
 irc-load
 calling-convention-register-args
 *irbuilder*
-codegen-symbol
-codegen-literal
-codegen-literal
 codegen-literal
 bclasp-compile-form
 with-ltv-function-codegen

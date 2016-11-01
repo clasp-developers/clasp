@@ -1055,8 +1055,8 @@ jump to blocks within this tagbody."
   (cmp-log "Starting codegen-load-time-value rest: %s\n" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
-    (if (not read-only-p)
-        (warn "In codegen-load-time-value - handle compilation of ~a with read-only-p NIL" form))
+    ;;; Currently if read-only-p is T there is no
+    ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
 	(multiple-value-bind (index fn)
 	    (compile-ltv-thunk form)
