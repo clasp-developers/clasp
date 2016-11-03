@@ -1521,38 +1521,48 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 
 
 (defun compile* (compile-hook name &optional definition)
-  (cond
-    ((compiled-function-p definition)
-     (cond (name
-            (setf (fdefinition name) definition)
-            (values name nil nil))
-           (t (values definition nil nil))))
-    ((interpreted-function-p definition)
-     (dbg-set-current-debug-location-here)
-     ;; Recover the lambda-expression from the interpreted-function
-     (multiple-value-bind (lambda-expression wrapped-env)
-         (generate-lambda-expression-from-interpreted-function definition)
-       (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-       (compile-in-env name lambda-expression wrapped-env compile-hook)))
-    ((functionp definition)
-     (error "COMPILE doesn't know how to handle this type of function"))
-    ((consp definition)
-     (cmp-log "compile form: %s\n" definition)
-     (compile-in-env name definition nil compile-hook))
-    ((null definition)
-     (let ((func (symbol-function name)))
-       (cond
-	 ((interpreted-function-p func)
-	  (dbg-set-current-debug-location-here)
-	  ;; Recover the lambda-expression from the interpreted-function
-	  (multiple-value-bind (lambda-expression wrapped-env)
-	      (generate-lambda-expression-from-interpreted-function func)
-	    (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
-	    (compile-in-env name lambda-expression wrapped-env compile-hook)))
-         (t (warn "We have lost the original function definition for ~s. Compilation failed." func)
-            (values func t nil)))))
-    (t (error "Illegal combination of arguments for compile: ~a ~a"
-	      name definition))))
+  (multiple-value-bind (function warnp failp)
+      ;; Get the actual compiled function and warnp+failp.
+      (cond
+        ((compiled-function-p definition)
+         (values definition nil nil))
+        ((interpreted-function-p definition)
+         (dbg-set-current-debug-location-here)
+         ;; Recover the lambda-expression from the interpreted-function
+         (multiple-value-bind (lambda-expression wrapped-env)
+             (generate-lambda-expression-from-interpreted-function definition)
+           (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
+           (compile-in-env name lambda-expression wrapped-env compile-hook)))
+        ((functionp definition)
+         (error "COMPILE doesn't know how to handle this type of function"))
+        ((consp definition)
+         (cmp-log "compile form: %s\n" definition)
+         (compile-in-env name definition nil compile-hook))
+        ((null definition)
+         (let ((func (cond ((fboundp name) (fdefinition name))
+                           ((and (symbolp name) (macro-function name)))
+                           (t (error "No definition for ~a" name)))))
+           (cond
+             ((interpreted-function-p func)
+              (dbg-set-current-debug-location-here)
+              ;; Recover the lambda-expression from the interpreted-function
+              (multiple-value-bind (lambda-expression wrapped-env)
+                  (generate-lambda-expression-from-interpreted-function func)
+                (cmp-log "About to compile  name: %s  lambda-expression: %s wrapped-env: %s\n" name lambda-expression wrapped-env)
+                (compile-in-env name lambda-expression wrapped-env compile-hook)))
+             ((compiled-function-p func)
+              (values func nil nil))
+             (t (error "COMPILE doesn't know how to handle this type of function")))))
+        (t (error "Illegal combination of arguments for compile: ~a ~a"
+                  name definition)))
+    ;; Bind the name if applicable.
+    (cond ((and (symbolp name) (macro-function name))
+           (setf (macro-function name) function)
+           (values name warnp failp))
+          (name
+           (setf (fdefinition name) function)
+           (values name warnp failp))
+          (t (values function warnp failp)))))
 
 (defun compile (&rest args)
   ;; Use the *cleavir-compile-hook* to determine which compiler to use
