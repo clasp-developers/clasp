@@ -70,6 +70,7 @@ It's something to dispatch on */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
   LexicalVariable_O() : _Name(_Unbound<core::T_O>()), _Identity(_Unbound<core::T_O>()) {};
   LexicalVariable_O(core::T_sp env, core::T_sp name, core::T_sp identity) :
@@ -148,6 +149,7 @@ is encountered */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
     explicit Function_O() : _Name(_Unbound<core::T_O>())
       ,_Identity(_Unbound<core::T_O>())
@@ -187,6 +189,7 @@ is encountered */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
   explicit Block_O() : _Name(_Unbound<core::T_O>())
       ,_Identity(_Unbound<core::T_O>())
@@ -206,6 +209,7 @@ is encountered */
     core::T_sp _Identity;
   public:
     /*METHODS*/
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
   Tag_O() : _Name(_Unbound<core::T_O>())
       ,_Identity(_Unbound<core::T_O>())
@@ -394,6 +398,7 @@ namespace clcenv {
     virtual core::T_sp name() const { SUBIMP(); };
     virtual core::T_sp type() const { SUBIMP(); };
     virtual core::T_sp inline_() const { SUBIMP(); };
+    virtual core::T_sp identity() const { SUBIMP(); };
     Info_O() {};
     virtual ~Info_O() {};
 //    virtual clc::Ast_sp convert_form(ARGS_form_env_rest);
@@ -433,6 +438,7 @@ namespace clcenv {
   public:
     /*METHODS*/
     core::T_sp name() const override { return this->_Name; };
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
   LexicalVariableInfo_O() :
     _Name(_Unbound<core::T_O>())
@@ -518,6 +524,7 @@ namespace clcenv {
     /*METHODS*/
     core::T_sp name() const override { return this->_Name; };
     core::T_sp inline_() const override { return this->_Inline; };
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
   LocalFunctionInfo_O() :
     _Name(_Unbound<core::T_O>())
@@ -633,6 +640,7 @@ namespace clcenv {
   public:
     /*METHODS*/
     core::T_sp name() const override { return this->_Name; };
+    virtual core::T_sp identity() const { return this->_Identity; };
   public:
   BlockInfo_O() :
     _Name(_Unbound<core::T_O>())
