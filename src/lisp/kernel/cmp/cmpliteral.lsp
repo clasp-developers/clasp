@@ -195,6 +195,11 @@ and put into ltv-ref."
     (with-add-init (ltv)
       (add-call "ltvc_make_bignum" ltv index (load-time-reference-literal bn-str read-only-p)))))
 
+(defun ltv/random-state (random-state index read-only-p)
+  (let ((rs-str (format nil "~a" (core:random-state-get random-state))))
+    (with-add-init (ltv)
+      (add-call "ltvc_make_random_state" ltv index (load-time-reference-literal rs-str read-only-p)))))
+
 (defun ltv/symbol (symbol index read-only-p)
   (let ((pkg (symbol-package symbol))
         (sym-str (symbol-name symbol)))
@@ -275,6 +280,7 @@ and put into ltv-ref."
     ((pathnamep object) (values *pathname-coalesce* #'ltv/pathname))
     ((packagep object) (values *package-coalesce* #'ltv/package))
     ((complexp object) (values *complex-coalesce* #'ltv/complex))
+    ((random-state-p object) (values *everything-else-coalesce* #'ltv/random-state))
     ((core:built-in-class-p object) (values *built-in-class-coalesce* #'ltv/built-in-class))
     ((typep object '(or standard-object structure-object condition class)) (values *everything-else-coalesce* #'ltv/mlf))
     (t (error "Handle object ~a" object))))
