@@ -640,434 +640,523 @@ ALWAYS_INLINE core::T_sp mk_char( char v )
 // These functions are part of the Foreign Language Interface and are
 // referenced from the FLI functions in fli.cc.
 
-// --- IMPLEMEMTATION NOTE ---
-
-// This is the origival code used for testing by drmeister ...
-// Difference to frgo's code: tr_ prefix used differently!
-
-#if 0
-
-extern "C" {
-int tr_from_object_int(core::T_O* obj) {
-  int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
-  return x;
-}
-
-core::T_O* tr_to_object_int(int x ) {
-  return translate::to_object<int>::convert(x).raw_();
-}
-};
-
-extern "C" {
-core::T_O* from_object_int(core::T_O* obj) {
-  int x = translate::from_object<int>(gctools::smart_ptr<core::T_O>((gctools::Tagged)obj))._v;
-  return reinterpret_cast<core::T_O*>(x);
-}
-
-#endif
-
-// --- END OF IMPLEMENTATION NOTE ---
-
-
 // ----------------------------------------------------------------------------
 // FIXNUM
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE gctools::Fixnum from_object_fixnum( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE gctools::Fixnum from_object_fixnum( core::T_O* obj )
 {
-  return gctools::untag_fixnum< T_O * >( lisp_object_ptr );
+  gctools::Fixnum x = translate::from_object<gctools::Fixnum>(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_fixnum( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_fixnum( core::T_O* obj )
 {
-  return reinterpret_cast< core::T_O * >( from_object_fixnum( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_fixnum( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_fixnum( gctools::Fixnum value )
+ALWAYS_INLINE core::T_O* to_object_fixnum( gctools::Fixnum x )
 {
-  return core::make_fixnum( value );
+  return translate::to_object< gctools::Fixnum >::convert( x ).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_fixnum( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_fixnum( core::T_O* raw_ )
 {
-  return to_object_fixnum( reinterpret_cast< gctools::Fixnum >( raw_ptr ) );
+  return to_object_fixnum( reinterpret_cast< gctools::Fixnum >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
 // SHORT
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE short from_object_short( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE short from_object_short( core::T_O* obj )
 {
-  return (short) from_object_fixnum( lisp_object_ptr );
+  return (short) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_short( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_short( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_short( short value )
+ALWAYS_INLINE core::T_O* to_object_short( short x )
 {
-  return to_object_fixnum( (gctools::Fixnum) value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_short( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_short( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // INT
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE int from_object_int( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE int from_object_int( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (int) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_int( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_int( int value )
+ALWAYS_INLINE core::T_O* to_object_int( int x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_int( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_int( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // UNSIGNED INT
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE unsigned int from_object_unsigned_int( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE unsigned int from_object_unsigned_int( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (unsigned int) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_int( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_int( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_unsigned_int( unsigned int value )
+ALWAYS_INLINE core::T_O* to_object_unsigned_int( unsigned int x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_unsigned_int( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_unsigned_int( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // LONG
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE long from_object_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE long from_object_long( core::T_O* obj )
 {
-  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
-  return clasp_to_long( ptr );
+  long x = translate::from_object< long >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_long( core::T_O* obj )
 {
-  return reinterpret_cast< T_O *>( from_object_long( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_long( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_long( long value )
+ALWAYS_INLINE core::T_O* to_object_long( long x )
 {
-  return mk_integer_long( value );
+  return translate::to_object< long >::convert( x ).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_long( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_long( core::T_O* raw_ )
 {
-  return to_object_long( reinterpret_cast< long >( raw_ptr ) );
+  return to_object_long( reinterpret_cast< long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
 // UNSIGNED LONG
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE unsigned long from_object_unsigned_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE unsigned long from_object_unsigned_long( core::T_O* obj )
 {
-  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
-  return clasp_to_ulong( ptr );
+  unsigned long x = translate::from_object< unsigned long >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long( core::T_O* obj )
 {
-  return reinterpret_cast< T_O *>( from_object_unsigned_long( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_unsigned_long( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_unsigned_long( long value )
+ALWAYS_INLINE core::T_O* to_object_unsigned_long( unsigned long x )
 {
-  return mk_integer_ulong( value );
+  return translate::to_object< unsigned long >::convert( x ).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_unsigned_long( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_unsigned_long( core::T_O* raw_ )
 {
-  return to_object_unsigned_long( reinterpret_cast< unsigned long >( raw_ptr ) );
+  return to_object_unsigned_long( reinterpret_cast< unsigned long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
 // INT8
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE int8_t from_object_int8( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE int8_t from_object_int8( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (int8_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int8( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_int8( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_int8( int8_t value )
+ALWAYS_INLINE core::T_O* to_object_int8( int8_t x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_int8( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_int8( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // UINT8
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE uint8_t from_object_uint8( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE uint8_t from_object_uint8( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (uint8_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint8( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_uint8( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_uint8( uint8_t value )
+ALWAYS_INLINE core::T_O* to_object_uint8( uint8_t x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_uint8( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_uint8( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // INT16
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE int16_t from_object_int16( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE int16_t from_object_int16( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (int16_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int16( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_int16( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_int16( int16_t value )
+ALWAYS_INLINE core::T_O* to_object_int16( int16_t x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_int16( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_int16( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // UINT16
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE uint16_t from_object_uint16( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE uint16_t from_object_uint16( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (uint16_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint16( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_uint16( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_uint16( uint16_t value )
+ALWAYS_INLINE core::T_O* to_object_uint16( uint16_t x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_uint16( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_uint16( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // INT32
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE int32_t from_object_int32( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE int32_t from_object_int32( core::T_O* obj )
 {
-  return from_object_fixnum( lisp_object_ptr );
+  return (int32_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int32( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_int32( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_int32( int32_t value )
+ALWAYS_INLINE core::T_O* to_object_int32( int32_t x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_int32( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_int32( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // UINT32
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE uint32_t from_object_uint32( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE uint32_t from_object_uint32( core::T_O* obj )
 {
-  uint32_t result = from_object_fixnum( lisp_object_ptr );
-  fprintf( stderr, "%s (%s,%d): result = %d\n", __FUNCTION__, __FILE__, __LINE__, result );
-  return result;
+  return (uint32_t) from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint32( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_uint32( core::T_O* obj )
 {
-  return tr_from_object_fixnum( lisp_object_ptr );
+  return tr_from_object_fixnum( obj );
 }
 
-ALWAYS_INLINE core::T_sp to_object_uint32( uint32_t value )
+ALWAYS_INLINE core::T_O* to_object_uint32( uint32_t x )
 {
-  return to_object_fixnum( value );
+  return to_object_fixnum( (gctools::Fixnum) x );
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_uint32( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_uint32( core::T_O* raw_ )
 {
-  return tr_to_object_fixnum( raw_ptr );
+  return tr_to_object_fixnum( raw_ );
 }
 
 // ----------------------------------------------------------------------------
 // INT64
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE int64_t from_object_int64( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE int64_t from_object_int64( core::T_O* obj )
 {
-  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
-  return clasp_to_int64( ptr );
+  int64_t x = translate::from_object< int64_t >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_int64( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_int64( core::T_O* obj )
 {
-  return reinterpret_cast< core::T_O * >( from_object_int64( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_int64( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_int64( int64_t value )
+ALWAYS_INLINE core::T_O* to_object_int64( int64_t x )
 {
-  return mk_integer_int64( value );
+  return translate::to_object< int64_t >::convert(x).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_int64( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_int64( core::T_O* raw_ )
 {
-  return to_object_int64( reinterpret_cast< int64_t >( raw_ptr ) );
+  return to_object_int64( reinterpret_cast< int64_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
 // UINT64
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE uint64_t from_object_uint64( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE uint64_t from_object_uint64( core::T_O* obj )
 {
-  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
-  return clasp_to_uint64( ptr );
+  uint64_t x = translate::from_object< uint64_t >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_uint64( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_uint64( core::T_O* obj )
 {
-  return reinterpret_cast< core::T_O * >( from_object_uint64( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_uint64( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_uint64( uint64_t value )
+ALWAYS_INLINE core::T_O* to_object_uint64( uint64_t x )
 {
-  return mk_integer_uint64( value );
+  return translate::to_object< uint64_t >::convert(x).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_uint64( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_uint64( core::T_O* raw_ )
 {
-  return to_object_uint64( reinterpret_cast< uint64_t >( raw_ptr ) );
+  return to_object_uint64( reinterpret_cast< uint64_t >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
 // LONG LONG
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE long long from_object_long_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE long long from_object_long_long( core::T_O* obj )
 {
-  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
-  return clasp_to_longlong( ptr );
+  long long x = translate::from_object< long long >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_long_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_long_long( core::T_O* obj )
 {
-  return reinterpret_cast< T_O *>( from_object_long_long( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_long_long( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_long_long( long value )
+ALWAYS_INLINE core::T_O* to_object_long_long( long long x )
 {
-  return mk_integer_longlong( value );
+  return translate::to_object< long long >::convert(x).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_long_long( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_long_long4( core::T_O* raw_ )
 {
-  return to_object_long_long( reinterpret_cast< long long >( raw_ptr ) );
+  return to_object_long_long( reinterpret_cast< long long >( raw_ ) );
 }
 
 // ----------------------------------------------------------------------------
 // UNSIGNED LONG LONG
 // ----------------------------------------------------------------------------
 
-ALWAYS_INLINE unsigned long long from_object_unsigned_long_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE unsigned long long from_object_unsigned_long_long( core::T_O* obj )
 {
-  core::T_sp ptr( (gctools::Tagged) lisp_object_ptr );
-  return clasp_to_ulonglong( ptr );
+  unsigned long long x = translate::from_object< long long >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
 }
 
-ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long_long( core::T_O* lisp_object_ptr )
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_long_long( core::T_O* obj )
 {
-  return reinterpret_cast< T_O *>( from_object_unsigned_long_long( lisp_object_ptr ) );
+  return reinterpret_cast< core::T_O * >( from_object_unsigned_long_long( obj ) );
 }
 
-ALWAYS_INLINE core::T_sp to_object_unsigned_long_long( long value )
+ALWAYS_INLINE core::T_O* to_object_unsigned_long_long( unsigned long long x )
 {
-  return mk_integer_ulonglong( value );
+  return translate::to_object< unsigned long long >::convert(x).raw_();
 }
 
-ALWAYS_INLINE core::T_sp tr_to_object_unsigned_long_long( core::T_O* raw_ptr )
+ALWAYS_INLINE core::T_O* tr_to_object_unsigned_long_long( core::T_O* raw_ )
 {
-  return to_object_unsigned_long( reinterpret_cast< unsigned long long >( raw_ptr ) );
+  return to_object_unsigned_long_long( reinterpret_cast< unsigned long long >( raw_ ) );
 }
 
-/* *** OLD STUFF - TO BE REMOVED !!! ***
-DEF_RAW_TRANSLATOR(size_t,size);
-DEF_RAW_TRANSLATOR(ssize_t,ssize);
-DEF_RAW_TRANSLATOR(ptrdiff_t,ptrdiff);
-DEF_RAW_TRANSLATOR(time_t,time);
-DEF_RAW_TRANSLATOR(char,char);
-*/
+// ----------------------------------------------------------------------------
+// SIZE_T
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE size_t from_object_size( core::T_O* obj )
+{
+  size_t x = translate::from_object< size_t >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_size( core::T_O* obj )
+{
+  return reinterpret_cast< core::T_O * >( from_object_size( obj ) );
+}
+
+ALWAYS_INLINE core::T_O* to_object_size( size_t x )
+{
+  return translate::to_object< size_t >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_size( core::T_O* raw_ )
+{
+  return to_object_size( reinterpret_cast< size_t >( raw_ ) );
+}
+
+// ----------------------------------------------------------------------------
+// SSIZE_T
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE size_t from_object_ssize( core::T_O* obj )
+{
+  ssize_t x = translate::from_object< ssize_t >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_ssize( core::T_O* obj )
+{
+  return reinterpret_cast< core::T_O * >( from_object_ssize( obj ) );
+}
+
+ALWAYS_INLINE core::T_O* to_object_ssize( ssize_t x )
+{
+  return translate::to_object< ssize_t >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_ssize( core::T_O* raw_ )
+{
+  return to_object_ssize( reinterpret_cast< ssize_t >( raw_ ) );
+}
+
+// ----------------------------------------------------------------------------
+// PTRDIFF_T
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE ptrdiff_t from_object_ptrdiff( core::T_O* obj )
+{
+  ptrdiff_t x = translate::from_object< ptrdiff_t >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_ptrdiff( core::T_O* obj )
+{
+  return reinterpret_cast< core::T_O * >( from_object_ptrdiff( obj ) );
+}
+
+ALWAYS_INLINE core::T_O* to_object_ptrdiff( ptrdiff_t x )
+{
+  return translate::to_object< ptrdiff_t >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_ptrdiff( core::T_O* raw_ )
+{
+  return to_object_ptrdiff( reinterpret_cast< ssize_t >( raw_ ) );
+}
+
+// ----------------------------------------------------------------------------
+// TIME_T
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE time_t from_object_time( core::T_O* obj )
+{
+  time_t x = translate::from_object< time_t >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_time( core::T_O* obj )
+{
+  return reinterpret_cast< core::T_O * >( from_object_time( obj ) );
+}
+
+ALWAYS_INLINE core::T_O* to_object_time( time_t x )
+{
+  return translate::to_object< time_t >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_time( core::T_O* raw_ )
+{
+  return to_object_time( reinterpret_cast< time_t >( raw_ ) );
+}
+
+// ----------------------------------------------------------------------------
+// CHAR
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE char from_object_char( core::T_O* obj )
+{
+  char x = translate::from_object< char >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_char( core::T_O* obj )
+{
+  return reinterpret_cast< core::T_O * >( from_object_char( obj ) );
+}
+
+ALWAYS_INLINE core::T_O* to_object_char( char x )
+{
+  return translate::to_object< char >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_char( core::T_O* raw_ )
+{
+  char * ptr = (char *) raw_ ;
+  char c = * ptr;
+  return to_object_char( c );
+}
 
 // === END OF CORE TRANSLATORS ===
 

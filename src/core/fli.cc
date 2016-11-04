@@ -134,8 +134,8 @@ namespace clasp_ffi {
 //   GLOBAL VARS
 // ---------------------------------------------------------------------------
 
-const std::string TO_OBJECT_FN_NAME_PREFIX( "to_object_" );
-const std::string FROM_OBJECT_FN_NAME_PREFIX( "from_object_" );
+const std::string TO_OBJECT_FN_NAME_PREFIX( "tr_to_object_" );
+const std::string FROM_OBJECT_FN_NAME_PREFIX( "tr_from_object_" );
 
 // ---------------------------------------------------------------------------
 //   FORWARD DECLARATIONS
@@ -251,6 +251,7 @@ void register_foreign_type_spec( core::VectorObjects_sp sp_tst,
                                core::make_fixnum(size),
                                core::make_fixnum(alignment),
                                core::Str_O::create( cxx_name ),
+                               _Nil<core::T_O>(),
                                core::Str_O::create( to_object_fn_name ),
                                core::Str_O::create( from_object_fn_name ),
                                _Nil<core::T_O>(),
@@ -634,9 +635,9 @@ core::Fixnum_sp PERCENTforeign_type_size(core::Symbol_sp atype) {
 
 RETURN_FROM_CORE__PERCENT_FOREIGN_TYPE_SIZE:
 
-  fprintf( stderr, "*** PERCENTforeign_type_size of %s = %ld\n",
-           atype->symbolNameAsString().c_str(),
-           unbox_fixnum( result ) );
+  // fprintf( stderr, "*** PERCENTforeign_type_size of %s = %ld\n",
+  //          atype->symbolNameAsString().c_str(),
+  //          unbox_fixnum( result ) );
 
   return result;
 }
@@ -707,6 +708,7 @@ ForeignTypeSpec_O::ForeignTypeSpec_O() : m_lisp_symbol( _Nil<T_O>() ),
                                          m_size( (gc::Fixnum) 0 ),
                                          m_alignment( (gc::Fixnum) 0 ),
                                          m_cxx_name( _Nil<T_O>() ),
+                                         m_llvm_type_symbol( _Nil<T_O>() ),
                                          m_to_object_fn_name( _Nil<T_O>() ),
                                          m_from_object_fn_name( _Nil<T_O>() ),
                                          m_to_object_fn_ptr( _Nil<T_O>() ),
@@ -735,6 +737,7 @@ inline string ForeignTypeSpec_O::__repr__() const {
      << " :size "        << this->m_size
      << " :alignment "   << this->m_alignment
      << " :cxx-name "    << this->m_cxx_name
+     << " :llvm-type-symbol " << this->m_llvm_type_symbol
      << " :to-object-fn-name " << this->m_to_object_fn_name
      << " :from-object-fn-name " << this->m_from_object_fn_name
      << ">";
@@ -749,10 +752,12 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
                                               core::Integer_sp  size,
                                               core::Fixnum_sp   alignment,
                                               core::Str_sp      cxx_name,
+                                              core::Symbol_sp   llvm_type_symbol,
                                               core::Str_sp      to_object_fn_name,
                                               core::Str_sp      from_object_fn_name,
                                               ForeignData_sp to_object_fn_ptr,
-                                              ForeignData_sp from_object_fn_ptr) {
+                                              ForeignData_sp from_object_fn_ptr)
+{
   GC_ALLOCATE(ForeignTypeSpec_O, self);
 
   self->m_lisp_symbol           = lisp_symbol;
@@ -760,6 +765,7 @@ ForeignTypeSpec_sp ForeignTypeSpec_O::create( core::Symbol_sp   lisp_symbol,
   self->m_size                  = size;
   self->m_alignment             = alignment;
   self->m_cxx_name              = cxx_name;
+  self->m_llvm_type_symbol      = llvm_type_symbol;
   self->m_to_object_fn_name     = to_object_fn_name;
   self->m_from_object_fn_name   = from_object_fn_name;
   self->m_to_object_fn_ptr      = to_object_fn_ptr;

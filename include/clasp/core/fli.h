@@ -423,6 +423,7 @@ namespace clasp_ffi {
                                         core::Integer_sp  size,
                                         core::Fixnum_sp   alignment,
                                         core::Str_sp      cxx_name,
+                                        core::Symbol_sp   llvm_type_symbol,
                                         core::Str_sp      to_object_fn_name,
                                         core::Str_sp      from_object_fn_name,
                                         ForeignData_sp    to_object_fn_ptr,
@@ -446,6 +447,7 @@ namespace clasp_ffi {
       core::Integer_sp      m_size;
       core::Fixnum_sp       m_alignment;
       core::Str_sp          m_cxx_name;
+      core::Symbol_sp       m_llvm_type_symbol;
 
       core::Str_sp          m_to_object_fn_name;
       core::Str_sp          m_from_object_fn_name;

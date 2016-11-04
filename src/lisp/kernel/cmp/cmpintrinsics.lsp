@@ -27,14 +27,9 @@
 
 (in-package :cmp)
 
-
-
-
-
 (defvar *irbuilder* nil
   "This is the IRBuilder that defines where all irc-xxx functions that generate IR code put the code.
 Set this to other IRBuilders to make code go where you want")
-
 
 (defvar *irbuilder-ltv-function-alloca* nil
   "Maintains an IRBuilder for the load-time-value function alloca area")
@@ -49,35 +44,59 @@ Set this to other IRBuilders to make code go where you want")
   "Incremented for each module build within a compilation-unit.
    It's used to get the proper order for ctor initialization.")
 
-
-
 ;;
 ;; Create types
 ;;
 
 (defvar +float+ (llvm-sys:type-get-float-ty *llvm-context*))
 (defvar +double+ (llvm-sys:type-get-double-ty *llvm-context*))
-#+long-float(defvar +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
-(defvar +void+ (llvm-sys:type-get-void-ty *llvm-context*))
+#+long-float (defvar +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
+
 (defvar +i1+ (llvm-sys:type-get-int1-ty *llvm-context*))
-(defvar +i32+ (llvm-sys:type-get-int32-ty *llvm-context*))
+
+(defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*)) ;; -> CHAR / BYTE
+(defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
+(defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
+
+(defvar +i16+ (llvm-sys:type-get-int16-ty *llvm-context*)) ;; -> SHORT
+(defvar +i16*+ (llvm-sys:type-get-pointer-to +i16+))
+(defvar +i16**+ (llvm-sys:type-get-pointer-to +i16*+))
+
+(defvar +i32+ (llvm-sys:type-get-int32-ty *llvm-context*)) ;; -> INT
 (defvar +i32*+ (llvm-sys:type-get-pointer-to +i32+))
 (defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
-(defvar +i8+ (llvm-sys:type-get-int8-ty *llvm-context*))
-(defvar +i8*+ (llvm-sys:type-get-pointer-to +i8+))
-(defvar +vtable*+ +i8*+)
-(defvar +i8**+ (llvm-sys:type-get-pointer-to +i8*+))
-(defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*))
-(defvar +ui64+ (llvm-sys:type-get-int64-ty *llvm-context*))
-(defvar +fixnum+ (if (member :address-model-64 *features*)
+
+(defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*)) ;; -> LONG
+(defvar +i64*+ (llvm-sys:type-get-pointer-to +i64+))
+(defvar +i64**+ (llvm-sys:type-get-pointer-to +i64*+))
+
+;;(defvar +ui64+ (llvm-sys:type-get-int64-ty *llvm-context*)) - Dead code? to be checked!
+
+(defvar +i128+ (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> LONG LONG
+(defvar +i128*+ (llvm-sys:type-get-pointer-to +i128+))
+(defvar +i128**+ (llvm-sys:type-get-pointer-to +128*+))
+
+(defvar +fixnum+ (if (member :address-model-64 *features*) ;; -> FIXNUM
                      +i64+
                      (error "Add support for non 64-bit address model")))
+
+(defvar +size_t+
+  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
+    (cond
+      ((= 8 sizeof-size_t) +i64+)
+      ((= 4 sizeof-size_t) +i32+)
+      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
+(defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
+(defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
+
+(defvar +void+ (llvm-sys:type-get-void-ty *llvm-context*))
+
+(defvar +vtable*+ +i8*+)
+
 ;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
 (defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
 (defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
 (defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
-
-
 
 (defvar +fn-ctor+
   (llvm-sys:function-type-get +void+ nil)
@@ -91,15 +110,6 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
   "An array of pointers to the global-ctors-struct")
 
-(defvar +size_t+
-  (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
-    (cond
-      ((= 8 sizeof-size_t) +i64+)
-      ((= 4 sizeof-size_t) +i32+)
-      (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
-
-(defvar +size_t*+ (llvm-sys:type-get-pointer-to +size_t+))
-(defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
 
 (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
@@ -333,7 +343,7 @@ Boehm and MPS use a single pointer"
 1) A closed over runtime environment a pointer to a closure.
 2) A valist of remaining arguments
 3) The number of arguments +size_t+
-4) core::+number-of-fixed-arguments+ T_O* pointers, 
+4) core::+number-of-fixed-arguments+ T_O* pointers,
    the first arguments passed in registers,
 5) The remaining arguments are on the stack
       If no argument is passed then pass NULL.")
@@ -615,8 +625,8 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "ltvc_set_ltv_funcall" +void+ (list +ltv**+ +size_t+ +fn-prototype*+))
   (primitive          module "ltvc_funcall" +void+ (list +fn-prototype*+))
 
-  
-  
+
+
   (primitive-nounwind module "newFunction_sp" +void+ (list +Function_sp*+))
   (primitive-nounwind module "newTsp" +void+ (list +tsp*+))
   (primitive-nounwind module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
@@ -647,7 +657,7 @@ and initialize it with an array consisting of one function pointer."
   #+short-float (primitive-nounwind module "makeShortFloat" +void+ (list +tsp*+ +double+))
   (primitive-nounwind module "makeSingleFloat" +void+ (list +tsp*+ +float+))
   (primitive-nounwind module "makeDoubleFloat" +void+ (list +tsp*+ +double+))
-  
+
   #+long-float (primitive-nounwind module "makeLongFloat" +void+ (list +tsp*+ +long-float+))
   (primitive-nounwind module "makeString" +void+ (list +tsp*+ +i8*+))
   (primitive-nounwind module "makePathname" +void+ (list +tsp*+ +i8*+))
@@ -740,7 +750,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "llvm.sadd.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
   (primitive-nounwind module "llvm.ssub.with.overflow.i32" +{i32.i1}+ (list +i32+ +i32+))
   (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
-  
+
   (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
   (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +ltv**+ +size_t+))
   (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
@@ -765,7 +775,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "matchKeywordOnce" +size_t+ (list +tsp*+ +t*+ +i8*+))
 
   ;; Primitives for Cleavir code
-  
+
   (primitive-nounwind module "cc_getPointer" +i8*+ (list +t*+))
   (primitive-nounwind module "cc_setTmvToNil" +void+ (list +tmv*+))
   (primitive-nounwind module "cc_precalcSymbol" +t*+ (list +ltv**+ +size_t+))

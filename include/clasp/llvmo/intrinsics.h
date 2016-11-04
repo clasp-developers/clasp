@@ -36,7 +36,12 @@ void cc_throw(core::T_O *tag, core::T_O *resultP);
 
 void cc_invoke_startup_functions();
 
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // HELPER FUNCTIONS FOR MAKING CLASP LISP OBJECTS
+//
+// These functions are part of the Foreign Language Interface and are
+// referenced from the FLI functions in fli.cc.
 
 core::T_sp mk_fixnum_short( short value );
 core::T_sp mk_fixnum_ushort( unsigned short value );
@@ -64,68 +69,97 @@ core::T_sp mk_ssize( ssize_t value );
 core::T_sp mk_ptrdiff( ptrdiff_t value );
 core::T_sp mk_char( char value );
 
-// TRANSLATORS
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// T R A N S L A T O R S
+//
+// These functions are part of the Foreign Language Interface and are
+// referenced from the FLI functions in fli.cc.
 
-gctools::Fixnum from_object_fixnum( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_fixnum( core::T_O* lisp_object_ptr );
-core::T_sp to_object_fixnum( gctools::Fixnum value );
-core::T_sp tr_to_object_fixnum( core::T_O* raw_ptr );
-
-short from_object_short( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_short( core::T_O* lisp_object_ptr );
-core::T_sp to_object_short( short value );
-core::T_sp tr_to_object_short( core::T_O* raw_ptr );
-
-int from_object_int( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_int( core::T_O* lisp_object_ptr );
-core::T_sp to_object_int( int value );
-core::T_sp tr_to_object_int( core::T_O* raw_ptr );
-
-unsigned int from_object_unsigned_int( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_unsigned_int( core::T_O* lisp_object_ptr );
-core::T_sp to_object_unsigned_int( unsigned int value );
-core::T_sp tr_to_object_unsigned_int( core::T_O* raw_ptr );
-
-int8_t from_object_int8( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_int8( core::T_O* lisp_object_ptr );
-core::T_sp to_object_int8( int8_t value );
-core::T_sp tr_to_object_int8( core::T_O* raw_ptr );
-
-uint8_t from_object_uint8( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_uint8( core::T_O* lisp_object_ptr );
-core::T_sp to_object_uint8( uint8_t value );
-core::T_sp tr_to_object_uint8( core::T_O* raw_ptr );
-
-int16_t from_object_int16( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_int16( core::T_O* lisp_object_ptr );
-core::T_sp to_object_int16( int16_t value );
-core::T_sp tr_to_object_int16( core::T_O* raw_ptr );
-
-uint16_t from_object_uint16( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_uint16( core::T_O* lisp_object_ptr );
-core::T_sp to_object_uint16( uint16_t value );
-core::T_sp tr_to_object_uint16( core::T_O* raw_ptr );
-
-int32_t from_object_int32( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_int32( core::T_O* lisp_object_ptr );
-core::T_sp to_object_int32( int32_t value );
-core::T_sp tr_to_object_int32( core::T_O* raw_ptr );
-
-uint32_t from_object_uint32( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_uint32( core::T_O* lisp_object_ptr );
-core::T_sp to_object_uint32( uint32_t value );
-core::T_sp tr_to_object_uint32( core::T_O* raw_ptr );
-
-int64_t from_object_int64( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_int64( core::T_O* lisp_object_ptr );
-core::T_sp to_object_int64( int64_t value );
-core::T_sp tr_to_object_int64( core::T_O* raw_ptr );
-
-uint64_t from_object_uint64( core::T_O* lisp_object_ptr );
-core::T_O* tr_from_object_uint64( core::T_O* lisp_object_ptr );
-core::T_sp to_object_uint64( uint64_t value );
-core::T_sp tr_to_object_uint64( core::T_O* raw_ptr );
-
+gctools::Fixnum from_object_fixnum( core::T_O* obj );
+core::T_O* tr_from_object_fixnum( core::T_O* obj );
+core::T_O* to_object_fixnum( gctools::Fixnum x );
+core::T_O* tr_to_object_fixnum( core::T_O* raw_ );
+short from_object_short( core::T_O* obj );
+core::T_O* tr_from_object_short( core::T_O* obj );
+core::T_O* to_object_short( short x );
+core::T_O* tr_to_object_short( core::T_O* raw_ );
+int from_object_int( core::T_O* obj );
+core::T_O* tr_from_object_int( core::T_O* obj );
+core::T_O* to_object_int( int x );
+core::T_O* tr_to_object_int( core::T_O* raw_ );
+unsigned int from_object_unsigned_int( core::T_O* obj );
+core::T_O* tr_from_object_unsigned_int( core::T_O* obj );
+core::T_O* to_object_unsigned_int( unsigned int x );
+core::T_O* tr_to_object_unsigned_int( core::T_O* raw_ );
+long from_object_long( core::T_O* obj );
+core::T_O* tr_from_object_long( core::T_O* obj );
+core::T_O* to_object_long( long x );
+core::T_O* tr_to_object_long( core::T_O* raw_ );
+unsigned long from_object_unsigned_long( core::T_O* obj );
+core::T_O* tr_from_object_unsigned_long( core::T_O* obj );
+core::T_O* to_object_unsigned_long( unsigned long x );
+core::T_O* tr_to_object_unsigned_long( core::T_O* raw_ );
+int8_t from_object_int8( core::T_O* obj );
+core::T_O* tr_from_object_int8( core::T_O* obj );
+core::T_O* to_object_int8( int8_t x );
+core::T_O* tr_to_object_int8( core::T_O* raw_ );
+uint8_t from_object_uint8( core::T_O* obj );
+core::T_O* tr_from_object_uint8( core::T_O* obj );
+core::T_O* to_object_uint8( uint8_t x );
+core::T_O* tr_to_object_uint8( core::T_O* raw_ );
+int16_t from_object_int16( core::T_O* obj );
+core::T_O* tr_from_object_int16( core::T_O* obj );
+core::T_O* to_object_int16( int16_t x );
+core::T_O* tr_to_object_int16( core::T_O* raw_ );
+uint16_t from_object_uint16( core::T_O* obj );
+core::T_O* tr_from_object_uint16( core::T_O* obj );
+core::T_O* to_object_uint16( uint16_t x );
+core::T_O* tr_to_object_uint16( core::T_O* raw_ );
+int32_t from_object_int32( core::T_O* obj );
+core::T_O* tr_from_object_int32( core::T_O* obj );
+core::T_O* to_object_int32( int32_t x );
+core::T_O* tr_to_object_int32( core::T_O* raw_ );
+uint32_t from_object_uint32( core::T_O* obj );
+core::T_O* tr_from_object_uint32( core::T_O* obj );
+core::T_O* to_object_uint32( uint32_t x );
+core::T_O* tr_to_object_uint32( core::T_O* raw_ );
+int64_t from_object_int64( core::T_O* obj );
+core::T_O* tr_from_object_int64( core::T_O* obj );
+core::T_O* to_object_int64( int64_t x );
+core::T_O* tr_to_object_int64( core::T_O* raw_ );
+uint64_t from_object_uint64( core::T_O* obj );
+core::T_O* tr_from_object_uint64( core::T_O* obj );
+core::T_O* to_object_uint64( uint64_t x );
+core::T_O* tr_to_object_uint64( core::T_O* raw_ );
+long long from_object_long_long( core::T_O* obj );
+core::T_O* tr_from_object_long_long( core::T_O* obj );
+core::T_O* to_object_long_long( long long x );
+core::T_O* tr_to_object_long_long4( core::T_O* raw_ );
+unsigned long long from_object_unsigned_long_long( core::T_O* obj );
+core::T_O* tr_from_object_unsigned_long_long( core::T_O* obj );
+core::T_O* to_object_unsigned_long_long( unsigned long long x );
+core::T_O* tr_to_object_unsigned_long_long( core::T_O* raw_ );
+size_t from_object_size( core::T_O* obj );
+core::T_O* tr_from_object_size( core::T_O* obj );
+core::T_O* to_object_size( size_t x );
+core::T_O* tr_to_object_size( core::T_O* raw_ );
+size_t from_object_ssize( core::T_O* obj );
+core::T_O* tr_from_object_ssize( core::T_O* obj );
+core::T_O* to_object_ssize( ssize_t x );
+core::T_O* tr_to_object_ssize( core::T_O* raw_ );
+ptrdiff_t from_object_ptrdiff( core::T_O* obj );
+core::T_O* tr_from_object_ptrdiff( core::T_O* obj );
+core::T_O* to_object_ptrdiff( ptrdiff_t x );
+core::T_O* tr_to_object_ptrdiff( core::T_O* raw_ );
+time_t from_object_time( core::T_O* obj );
+core::T_O* tr_from_object_time( core::T_O* obj );
+core::T_O* to_object_time( time_t x );
+core::T_O* tr_to_object_time( core::T_O* raw_ );
+char from_object_char( core::T_O* obj );
+core::T_O* tr_from_object_char( core::T_O* obj );
+core::T_O* to_object_char( char x );
+core::T_O* tr_to_object_char( core::T_O* raw_ );
 
 };
 
