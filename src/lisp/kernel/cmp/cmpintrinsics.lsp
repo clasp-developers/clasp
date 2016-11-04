@@ -70,11 +70,7 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +i64*+ (llvm-sys:type-get-pointer-to +i64+))
 (defvar +i64**+ (llvm-sys:type-get-pointer-to +i64*+))
 
-;;(defvar +ui64+ (llvm-sys:type-get-int64-ty *llvm-context*)) - Dead code? to be checked!
-
 (defvar +i128+ (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> LONG LONG
-(defvar +i128*+ (llvm-sys:type-get-pointer-to +i128+))
-(defvar +i128**+ (llvm-sys:type-get-pointer-to +128*+))
 
 (defvar +fixnum+ (if (member :address-model-64 *features*) ;; -> FIXNUM
                      +i64+
@@ -90,256 +86,257 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +size_t**+ (llvm-sys:type-get-pointer-to +size_t*+))
 
 (defvar +void+ (llvm-sys:type-get-void-ty *llvm-context*))
+(defvar +void*+ (llvm-sys:type-get-pointer-to +void+))
 
-(defvar +vtable*+ +i8*+)
+  (defvar +vtable*+ +i8*+)
 
-;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
-(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
-(defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
-(defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
+  ;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
+  (defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
+  (defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
+  (defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
 
-(defvar +fn-ctor+
-  (llvm-sys:function-type-get +void+ nil)
-  "A ctor void ()* function prototype")
-(defvar +fn-ctor-argument-names+ nil)
-(defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
-  "A pointer to the ctor function prototype")
-
-
-(defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
-(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
-  "An array of pointers to the global-ctors-struct")
+  (defvar +fn-ctor+
+    (llvm-sys:function-type-get +void+ nil)
+    "A ctor void ()* function prototype")
+  (defvar +fn-ctor-argument-names+ nil)
+  (defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
+    "A pointer to the ctor function prototype")
 
 
+  (defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
+  (defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
+    "An array of pointers to the global-ctors-struct")
 
-(defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
-(defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))
-  (let ((find (assoc name info)))
-    (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
-    (cdr find)))
-(defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
-(defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
-(defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
-(defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
-(defvar +valist-tag+ (get-cxx-data-structure-info :valist-tag))
-(defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
-(defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
-(defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
-(defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
-(defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
-(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
-(defvar +alignment+ (get-cxx-data-structure-info :alignment))
-(export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
-          +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
-          +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
-(defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
-(defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
-(defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
-(defvar +intptr_t+
-  (cond
-    ((= 8 +uintptr_t-size+) +i64+)
-    ((= 4 +uintptr_t-size+) +i32+)
-    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-(defvar +uintptr_t+
-  (cond
-    ((= 8 +uintptr_t-size+) +i64+)
-    ((= 4 +uintptr_t-size+) +i32+)
-    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-(defun make-uintptr_t (x)
-  (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
-  (cond
-    ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
-    ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
-    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+
+  (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
+
+  (defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))
+    (let ((find (assoc name info)))
+      (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
+      (cdr find)))
+  (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
+  (defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
+  (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
+  (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
+  (defvar +valist-tag+ (get-cxx-data-structure-info :valist-tag))
+  (defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
+  (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
+  (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
+  (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
+  (defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
+  (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
+  (defvar +alignment+ (get-cxx-data-structure-info :alignment))
+  (export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
+            +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
+            +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
+  (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
+  (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
+  (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
+  (defvar +intptr_t+
+    (cond
+      ((= 8 +uintptr_t-size+) +i64+)
+      ((= 4 +uintptr_t-size+) +i32+)
+      (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+  (defvar +uintptr_t+
+    (cond
+      ((= 8 +uintptr_t-size+) +i64+)
+      ((= 4 +uintptr_t-size+) +i32+)
+      (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+  (defun make-uintptr_t (x)
+    (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
+    (cond
+      ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
+      ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
+      (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
 
 ;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
 
-(defun build-list-of-pointers (size type)
-  (multiple-value-bind (num-pointers remainder)
-      (floor size +void*-size+)
-    (unless (= remainder 0)
-      (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
-             type size +void*-size+))
-    (make-list num-pointers :initial-element +i8*+)))
+  (defun build-list-of-pointers (size type)
+    (multiple-value-bind (num-pointers remainder)
+        (floor size +void*-size+)
+      (unless (= remainder 0)
+        (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
+               type size +void*-size+))
+      (make-list num-pointers :initial-element +i8*+)))
 
-(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
+  (defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
 ;;;(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
-(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
+  (defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
-(defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
-(defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
-(defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
+  (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
+  (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
+  (defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
 
-;;
-;; Setup setjmp_buf type
-;;
-;; setjmp_buf buffers consist of five words.
-;; Word 0 - Stores the frame-ptr (set by the library)
-;; Word 1 - Stores the longjmp destination address - we set this
-;; Word 2..4 - Three words for target specific data.
-;; I'm going to use Word 2.. to represent different things.
-;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
-;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
+  ;;
+  ;; Setup setjmp_buf type
+  ;;
+  ;; setjmp_buf buffers consist of five words.
+  ;; Word 0 - Stores the frame-ptr (set by the library)
+  ;; Word 1 - Stores the longjmp destination address - we set this
+  ;; Word 2..4 - Three words for target specific data.
+  ;; I'm going to use Word 2.. to represent different things.
+  ;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
+  ;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
 
-(defvar +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
-(defvar +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
+  (defvar +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
+  (defvar +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
 
-;;
-;; Setup smart-ptr constants
-;;
-(multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
-    (smart-pointer-details)
-  (defvar +using-intrusive-reference-count+
-    (eq pointer-type 'core::intrusive-reference-counted-pointer))
-  (defvar +smart-ptr-px-offset+ pointer-px-offset))
+  ;;
+  ;; Setup smart-ptr constants
+  ;;
+  (multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
+      (smart-pointer-details)
+    (defvar +using-intrusive-reference-count+
+      (eq pointer-type 'core::intrusive-reference-counted-pointer))
+    (defvar +smart-ptr-px-offset+ pointer-px-offset))
 
 
-(defun smart-pointer-fields (data-ptr-type &rest additional-fields)
-  "List the types that make up a smart_ptr.
+  (defun smart-pointer-fields (data-ptr-type &rest additional-fields)
+    "List the types that make up a smart_ptr.
 Boehm and MPS use a single pointer"
-  (list* data-ptr-type additional-fields))
+    (list* data-ptr-type additional-fields))
 
 
-;;
-;; If I use an opaque type then the symbol type gets duplicated and that causes
-;; problems - try just using an int
-;;(defvar +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-(defvar +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defvar +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
-(defvar +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
-(defvar +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
+  ;;
+  ;; If I use an opaque type then the symbol type gets duplicated and that causes
+  ;; problems - try just using an int
+  ;;(defvar +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
+  (defvar +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
+  (defvar +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
+  (defvar +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
+  (defvar +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
 
 
-;;
-;; Store a core::Function_sp pointer
-;;
-(defvar +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
-(defvar +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
-(defvar +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
-(defvar +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
-
-
-
-;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
-(defvar +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
-(defvar +t*+ (llvm-sys:type-get-pointer-to +t+))
-(defvar +t**+ (llvm-sys:type-get-pointer-to +t*+))
-(defvar +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
-(defvar +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
-(defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
-(defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
-(defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
-(defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
-(defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
-
-
-;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
-(defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
-(defvar +return_type+ +tmv+)
-(defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
-(defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
-
-(defvar +gcvector-tsp+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +tsp+) nil))
-(defvar +gcvector-symsp+ (llvm-sys:struct-type-get *llvm-context*(list +size_t+ +size_t+ +symsp+) nil))
-(defvar +vec0-tsp+ (llvm-sys:struct-type-get *llvm-context*(list +gcvector-tsp+) nil))
-(defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
-
-;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ #+(or) +vec0-tsp+)  nil)) ;; "LoadTimeValue_O"
-(defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
-(defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
-(defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
-#+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
-#+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
-
-
-(defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
-(defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
-(defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
-(defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
-(defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
+  ;;
+  ;; Store a core::Function_sp pointer
+  ;;
+  (defvar +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
+  (defvar +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
+  (defvar +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
+  (defvar +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
 
 
 
-#+(or)(progn
-        (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-        (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-        (defvar +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
-        (defvar +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
-        )
+  ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
+  (defvar +t+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "T_O"
+  (defvar +t*+ (llvm-sys:type-get-pointer-to +t+))
+  (defvar +t**+ (llvm-sys:type-get-pointer-to +t*+))
+  (defvar +t*[0]+ (llvm-sys:array-type-get +t*+ 0))
+  (defvar +t*[0]*+ (llvm-sys:type-get-pointer-to +t*[0]+))
+  (defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
+  (defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
+  (defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
+  (defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
+  (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
-;; Substitute afsp* with tsp
-(defvar +afsp+ +tsp+)
-(defvar +afsp*+ +tsp*+)
+
+  ;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
+  (defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
+  (defvar +return_type+ +tmv+)
+  (defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
+  (defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
+
+  (defvar +gcvector-tsp+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +tsp+) nil))
+  (defvar +gcvector-symsp+ (llvm-sys:struct-type-get *llvm-context*(list +size_t+ +size_t+ +symsp+) nil))
+  (defvar +vec0-tsp+ (llvm-sys:struct-type-get *llvm-context*(list +gcvector-tsp+) nil))
+  (defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
+
+  ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
+  (defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ #+(or) +vec0-tsp+)  nil)) ;; "LoadTimeValue_O"
+  (defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
+  (defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
+  (defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
+  #+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
+  #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
+
+
+  (defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
+  (defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
+  (defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
+  (defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
+  (defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
+
+
+
+  #+(or)(progn
+          (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
+          (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
+          (defvar +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+          (defvar +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
+          )
+
+  ;; Substitute afsp* with tsp
+  (defvar +afsp+ +tsp+)
+  (defvar +afsp*+ +tsp*+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
-;; and names of the arguments passed in registers
-;;
-;; The last passed-arg is va-list
-(defstruct (calling-convention-impl (:type vector))
-  valist
-  nargs
-  register-args ;; the last passed-arg is a va-list
-  )
+  ;;
+  ;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
+  ;; and names of the arguments passed in registers
+  ;;
+  ;; The last passed-arg is va-list
+  (defstruct (calling-convention-impl (:type vector))
+    valist
+    nargs
+    register-args ;; the last passed-arg is a va-list
+    )
 
-;; Parse the function arguments into a (values closed-env calling-convention)
-(defun parse-function-arguments (arguments)
-  (let ((closed-env (first arguments))
-        (cc (make-calling-convention-impl
-             :valist (second arguments)
-             :nargs (third arguments) ;; The number of arguments
-             :register-args (nthcdr 3 arguments))))
-    (values closed-env cc)))
+  ;; Parse the function arguments into a (values closed-env calling-convention)
+  (defun parse-function-arguments (arguments)
+    (let ((closed-env (first arguments))
+          (cc (make-calling-convention-impl
+               :valist (second arguments)
+               :nargs (third arguments) ;; The number of arguments
+               :register-args (nthcdr 3 arguments))))
+      (values closed-env cc)))
 
-(defun calling-convention-nargs (cc)
-  (calling-convention-impl-nargs cc))
+  (defun calling-convention-nargs (cc)
+    (calling-convention-impl-nargs cc))
 
-(defun calling-convention-register-args (cc)
-  (calling-convention-impl-register-args cc))
+  (defun calling-convention-register-args (cc)
+    (calling-convention-impl-register-args cc))
 
-;; If there is no va-list return nil - Why would this ever be so?
-(defun calling-convention-va-list (cc)
-  (calling-convention-impl-valist cc))
+  ;; If there is no va-list return nil - Why would this ever be so?
+  (defun calling-convention-va-list (cc)
+    (calling-convention-impl-valist cc))
 
 
-(defun calling-convention-args.va-end (cc)
-  (irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))
+  (defun calling-convention-args.va-end (cc)
+    (irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))
 
 ;;;
 ;;; Read the next argument from the va_list
 ;;; Everytime the arg-idx is incremented, this function must be called.
 ;;; The arg-idx is not used but it is passed because I used to index into an array
-(defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
-  (declare (ignore arg-idx))
-  (let ((label (if (and target-idx core::*enable-print-pretty*)
-                   (bformat nil "arg-%d" target-idx)
-                   "rawarg")))
-    (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
-;;    (llvm-sys:create-vaarg *irbuilder* (calling-convention-va-list cc) +t*+ label)))
+  (defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
+    (declare (ignore arg-idx))
+    (let ((label (if (and target-idx core::*enable-print-pretty*)
+                     (bformat nil "arg-%d" target-idx)
+                     "rawarg")))
+      (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
+  ;;    (llvm-sys:create-vaarg *irbuilder* (calling-convention-va-list cc) +t*+ label)))
 ;;;    (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
 
-(defvar *register-arg-types* nil)
-(defvar *register-arg-names* nil)
-(let (arg-types arg-names)
-  (dotimes (i core:+number-of-fixed-arguments+)
-    (push +t*+ arg-types)
-    (push (bformat nil "farg%d" i) arg-names))
-  ;; va-list arg
-  (setf *register-arg-types* (nreverse arg-types)
-	*register-arg-names* (nreverse arg-names)))
-(defvar +fn-registers-prototype-argument-names+
-  (list* "closure-ptr" "va-list" "nargs" *register-arg-names*))
-(defvar +fn-registers-prototype+
-  (llvm-sys:function-type-get
-   +tmv+
-   (list* +t*+ +VaList_S*+ +size_t+ *register-arg-types*))
-  "X86_64 calling convention The general function prototypes pass the following pass:
+  (defvar *register-arg-types* nil)
+  (defvar *register-arg-names* nil)
+  (let (arg-types arg-names)
+    (dotimes (i core:+number-of-fixed-arguments+)
+      (push +t*+ arg-types)
+      (push (bformat nil "farg%d" i) arg-names))
+    ;; va-list arg
+    (setf *register-arg-types* (nreverse arg-types)
+          *register-arg-names* (nreverse arg-names)))
+  (defvar +fn-registers-prototype-argument-names+
+    (list* "closure-ptr" "va-list" "nargs" *register-arg-names*))
+  (defvar +fn-registers-prototype+
+    (llvm-sys:function-type-get
+     +tmv+
+     (list* +t*+ +VaList_S*+ +size_t+ *register-arg-types*))
+    "X86_64 calling convention The general function prototypes pass the following pass:
 1) A closed over runtime environment a pointer to a closure.
 2) A valist of remaining arguments
 3) The number of arguments +size_t+
@@ -348,88 +345,88 @@ Boehm and MPS use a single pointer"
 5) The remaining arguments are on the stack
       If no argument is passed then pass NULL.")
 
-(progn
-  (defvar +fn-prototype+ +fn-registers-prototype+)
-  (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
+  (progn
+    (defvar +fn-prototype+ +fn-registers-prototype+)
+    (defvar +fn-prototype-argument-names+ +fn-registers-prototype-argument-names+))
 
-(defvar +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
-  "A pointer to the function prototype")
+  (defvar +fn-prototype*+ (llvm-sys:type-get-pointer-to +fn-prototype+)
+    "A pointer to the function prototype")
 
-(defvar +fn-prototype**+ (llvm-sys:type-get-pointer-to +fn-prototype*+)
-  "A pointer to a pointer to the function prototype")
+  (defvar +fn-prototype**+ (llvm-sys:type-get-pointer-to +fn-prototype*+)
+    "A pointer to a pointer to the function prototype")
 
-(defvar +fn-prototype*[0]+ (llvm-sys:array-type-get +fn-prototype*+ 0)
-  "An array of pointers to the function prototype")
+  (defvar +fn-prototype*[0]+ (llvm-sys:array-type-get +fn-prototype*+ 0)
+    "An array of pointers to the function prototype")
 
-(defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
-  "An array of pointers to the function prototype")
-(defvar +fn-prototype*[2]+ (llvm-sys:array-type-get +fn-prototype*+ 2)
-  "An array of pointers to the function prototype")
+  (defvar +fn-prototype*[1]+ (llvm-sys:array-type-get +fn-prototype*+ 1)
+    "An array of pointers to the function prototype")
+  (defvar +fn-prototype*[2]+ (llvm-sys:array-type-get +fn-prototype*+ 2)
+    "An array of pointers to the function prototype")
 
-;;
-;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
-;;
-;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
-(defvar +InvocationHistoryStack*+ +i8*+ "Make this a generic pointer")
-(defparameter +InvocationHistoryFrame+ (llvm-sys:struct-type-create *llvm-context* :name "InvocationHistoryFrame"))
-(defparameter +InvocationHistoryFrame*+ (llvm-sys:type-get-pointer-to +InvocationHistoryFrame+))
-(llvm-sys:set-body +InvocationHistoryFrame+ (list +i32**+ +i32+ +InvocationHistoryStack*+ +InvocationHistoryFrame*+ +i8+ +i32+) nil)
-(defvar +LispFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +InvocationHistoryFrame+ +tsp+ +tsp+ +tsp+ +i32+ +i32+) :name "LispFunctionIHF"))
-;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
-(defvar +LispCompiledFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +LispFunctionIHF+) :name "LispCompiledFunctionIHF"))
-
-
-(defun make-gv-source-file-info-handle (module &optional handle)
-  (if (null handle) (setq handle -1))
-  (llvm-sys:make-global-variable module
-                                 +i32+  ; type
-                                 nil    ; constant
-                                 'llvm-sys:internal-linkage
-                                 (jit-constant-i32 handle)
-                                 "source-file-info-handle"))
+  ;;
+  ;; Define the InvocationHistoryFrame type for LispCompiledFunctionIHF
+  ;;
+  ;; %"class.core::InvocationHistoryFrame" = type { i32 (...)**, i32, %"class.core::InvocationHistoryStack"*, %"class.core::InvocationHistoryFrame"*, i8, i32 }
+  (defvar +InvocationHistoryStack*+ +i8*+ "Make this a generic pointer")
+  (defparameter +InvocationHistoryFrame+ (llvm-sys:struct-type-create *llvm-context* :name "InvocationHistoryFrame"))
+  (defparameter +InvocationHistoryFrame*+ (llvm-sys:type-get-pointer-to +InvocationHistoryFrame+))
+  (llvm-sys:set-body +InvocationHistoryFrame+ (list +i32**+ +i32+ +InvocationHistoryStack*+ +InvocationHistoryFrame*+ +i8+ +i32+) nil)
+  (defvar +LispFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +InvocationHistoryFrame+ +tsp+ +tsp+ +tsp+ +i32+ +i32+) :name "LispFunctionIHF"))
+  ;; %"class.core::LispCompiledFunctionIHF" = type { %"class.core::LispFunctionIHF" }
+  (defvar +LispCompiledFunctionIHF+ (llvm-sys:struct-type-create *llvm-context* :elements (list +LispFunctionIHF+) :name "LispCompiledFunctionIHF"))
 
 
-(defun add-global-ctor-function (module main-function)
-  "Create a function with the name core:+clasp-ctor-function-name+ and
+  (defun make-gv-source-file-info-handle (module &optional handle)
+    (if (null handle) (setq handle -1))
+    (llvm-sys:make-global-variable module
+                                   +i32+  ; type
+                                   nil    ; constant
+                                   'llvm-sys:internal-linkage
+                                   (jit-constant-i32 handle)
+                                   "source-file-info-handle"))
+
+
+  (defun add-global-ctor-function (module main-function)
+    "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-  (let ((*the-module* module))
-    (let ((fn (with-new-function
-                  (ctor-func func-env result
-                             :function-name core:+clasp-ctor-function-name+
-                             :parent-env nil
-                             :linkage 'llvm-sys:internal-linkage
-                             :function-type +fn-ctor+
-                             :return-void t
-                             :argument-names +fn-ctor-argument-names+ )
-                (let* ((bc-bf (llvm-sys:create-bit-cast *irbuilder* main-function +fn-prototype*+ "fnptr-pointer")))
-                  (irc-intrinsic "cc_register_startup_function" bc-bf)))))
-      fn)))
+    (let ((*the-module* module))
+      (let ((fn (with-new-function
+                    (ctor-func func-env result
+                               :function-name core:+clasp-ctor-function-name+
+                               :parent-env nil
+                               :linkage 'llvm-sys:internal-linkage
+                               :function-type +fn-ctor+
+                               :return-void t
+                               :argument-names +fn-ctor-argument-names+ )
+                  (let* ((bc-bf (llvm-sys:create-bit-cast *irbuilder* main-function +fn-prototype*+ "fnptr-pointer")))
+                    (irc-intrinsic "cc_register_startup_function" bc-bf)))))
+        fn)))
 
-(defun find-global-ctor-function (module)
-  (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
-    (or ctor (error "Couldn't find the ctor-function: ~a" core:+clasp-ctor-function-name+))
-    ctor))
+  (defun find-global-ctor-function (module)
+    (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
+      (or ctor (error "Couldn't find the ctor-function: ~a" core:+clasp-ctor-function-name+))
+      ctor))
 
-(defun remove-llvm.global_ctors-if-exists (module)
-  (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
-    (if global
-      (llvm-sys:erase-from-parent global))))
+  (defun remove-llvm.global_ctors-if-exists (module)
+    (let ((global (llvm-sys:get-named-global module "llvm.global_ctors")))
+      (if global
+          (llvm-sys:erase-from-parent global))))
 
-(defun add-llvm.global_ctors (module priority global-ctor-function)
-  (or global-ctor-function (error "global-ctor-function must not be NIL"))
-  (llvm-sys:make-global-variable module
-                                 +global-ctors-struct[1]+
-                                 nil
-                                 'llvm-sys:appending-linkage
-                                 (llvm-sys:constant-array-get
-                                  +global-ctors-struct[1]+
-                                  (list
-                                   (llvm-sys:constant-struct-get +global-ctors-struct+
-                                                                 (list
-                                                                  (jit-constant-i32 priority)
-                                                                  global-ctor-function
-                                                                  (llvm-sys:constant-pointer-null-get +i8*+)))))
-                                 "llvm.global_ctors")))
+  (defun add-llvm.global_ctors (module priority global-ctor-function)
+    (or global-ctor-function (error "global-ctor-function must not be NIL"))
+    (llvm-sys:make-global-variable module
+                                   +global-ctors-struct[1]+
+                                   nil
+                                   'llvm-sys:appending-linkage
+                                   (llvm-sys:constant-array-get
+                                    +global-ctors-struct[1]+
+                                    (list
+                                     (llvm-sys:constant-struct-get +global-ctors-struct+
+                                                                   (list
+                                                                    (jit-constant-i32 priority)
+                                                                    global-ctor-function
+                                                                    (llvm-sys:constant-pointer-null-get +i8*+)))))
+                                   "llvm.global_ctors")))
 
 (defun make-boot-function-global-variable (module func-ptr)
   "* Arguments

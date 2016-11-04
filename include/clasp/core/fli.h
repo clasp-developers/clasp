@@ -441,6 +441,10 @@ namespace clasp_ffi {
       CL_DEFMETHOD core::Str_sp         PERCENTto_object_fn_ptr() { return m_to_object_fn_ptr; };
       CL_DEFMETHOD core::Str_sp         PERCENTfrom_object_fn_ptr() { return m_from_object_fn_ptr; };
 
+      CL_DEFMETHOD core::Str_sp         PERCENTllvm_type_symbol() { return m_llvm_type_symbol; };
+
+      CL_DEFMETHOD void                 PERCENTset_llvm_type_symbol( core::Symbol_sp llvm_type_symbol );
+
     // SLOTS
       core::Symbol_sp       m_lisp_symbol;
       core::Str_sp          m_lisp_name;

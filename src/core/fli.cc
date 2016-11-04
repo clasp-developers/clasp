@@ -285,7 +285,7 @@ inline void register_foreign_types( void ) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long,long,kw::_sym_long,"long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long,unsigned long,kw::_sym_unsigned_long,"unsigned long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_long,long long,kw::_sym_long_long,"long long");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long_long,unsigned long long,kw::_sym_long_long,"unsigned long long");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_long_long,unsigned long long,kw::_sym_unsigned_long_long,"unsigned long long");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_char,unsigned char,kw::_sym_unsigned_char,"unsigned char");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uchar,unsigned char,kw::_sym_uchar,"uchar");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ushort,unsigned short,kw::_sym_ushort,"ushort");
@@ -301,9 +301,14 @@ inline void register_foreign_types( void ) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint32,uint32_t,kw::_sym_uint32,"uint32");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int64,int64_t,kw::_sym_int64,"int64");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint64,uint64_t,kw::_sym_uint64,"uint64");
+#if defined( CLASP_HAS_INT128_T )
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int128,int128_t,kw::_sym_int128,"int128");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint64,uint128_t,kw::_sym_uint128,"uint128");
+#endif
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,double,double,kw::_sym_double,"double");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,kw::_sym_single_float,"float");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_double,long double,kw::_sym_long_double,"long double");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,float,float,kw::_sym_float,"float");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,kw::_sym_float,"float");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_float,long double,kw::_sym_long_float,"long double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,time,time_t,kw::_sym_time,"time");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,pointer,void *,kw::_sym_pointer,"pointer");
 
@@ -782,6 +787,15 @@ bool ForeignTypeSpec_O::eql_(ForeignTypeSpec_sp sp_obj) const {
     return true;
   else
     return false;
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+void ForeignTypeSpec_O::PERCENTset_llvm_type_symbol( core::Symbol_sp llvm_type_symbol )
+{
+  this->m_llvm_type_symbol = llvm_type_symbol;
+
+  return;
 }
 
 // ---------------------------------------------------------------------------

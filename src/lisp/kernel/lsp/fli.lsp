@@ -50,7 +50,6 @@
     ((eql (type-of ptr) 'CORE::POINTER) ptr)
     (t (error "#'ensure-core-pointer *** Illegal type ~S of ptr. Cannot convert to core::pointer." (type-of ptr)))))
 
-
 ;;; === B U I L T - I N   F O R E I G N   T Y P E S ===
 
 ;;; Implemented directly in C++.
@@ -63,7 +62,7 @@
 ;;; - C++ name
 ;;; Adding built-in foreign types requires adding a type pec to this table!
 
-(defgeneric %lisp-type->lisp-name (type))
+(defgeneric %lisp-type->lisp-name (lisp-type-kw))
 
 (defmacro generate-type-spec-accessor-functions ()
   `(progn
@@ -72,62 +71,92 @@
           for idx from 0 to (1- (length *foreign-type-spec-table*))
           when spec
 	  collect
-	    `(defmethod %lisp-type->type-spec ((type (eql ',(%lisp-symbol spec))))
+	    `(defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
                (elt *foreign-type-spec-table* ,idx)))
      ))
 
-(defmethod %lisp-type->type-spec (type)
-  (error "Unknown FLI lisp type ~S - cannot determine type spec." type))
-
+(defmethod %lisp-type->type-spec (lisp-type-kw)
+  (error "Unknown FLI lisp type ~S - cannot determine type spec." lisp-type-kw))
 
 ;;; === T R A N S L A T O R    S U P O R T ===
 
+(defgeneric %lisp-type->llvm-type-symbol (lisp-type-kw))
+
+(defmacro generate-llvm-type-symbol-accessor-functions ()
+  `(progn
+     ;; type -> llvm type symbol
+     ,@(loop for spec across *foreign-type-spec-table*
+          for idx from 0 to (1- (length *foreign-type-spec-table*))
+          when spec
+	  collect
+	    `(defmethod %lisp-type->llvm-type-symbol ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+               (%llvm-type-symbol (elt *foreign-type-spec-table* ,idx))))
+     ))
+
+(defmethod %lisp-type->llvm-type-symbol (lisp-type-kw)
+  (error "Unknown FLI lisp type ~S - cannot determine llvm type symbol." type))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defun init-translatprs (lisp-type-kw)
 
-    (set-llvm-symbol (lisp-type->type-spec :short) cmp::+i16+)
-    (set-llvm-symbol (lisp-type->type-spec :unsinged-short) cmp::+i16+)
-    (set-llvm-symbol (lisp-type->type-spec :ushort) cmp::+i16+)
+  (defun init-translators ()
 
-    (set-llvm-symbol (lisp-type->type-spec :int) cmp::+i32+)
-    (set-llvm-symbol (lisp-type->type-spec :unsinged-int) cmp::+i32+)
-    (set-llvm-symbol (lisp-type->type-spec :uint) cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :short) 'cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-short) 'cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ushort) 'cmp::+i16+)
 
-    (set-llvm-symbol (lisp-type->type-spec :long) cmp::+i64+)
-    (set-llvm-symbol (lisp-type->type-spec :unsinged-long) cmp::+i64+)
-    (set-llvm-symbol (lisp-type->type-spec :ulong) cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int) 'cmp::+i32+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-int) 'cmp::+i32+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint) 'cmp::+i16+)
 
-    (set-llvm-symbol (lisp-type->type-spec :long-long) cmp::+i128+)
-    (set-llvm-symbol (lisp-type->type-spec :unsinged-long-long) cmp::+i128+)
-    (set-llvm-symbol (lisp-type->type-spec :ullong) cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :long) 'cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long) 'cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ulong) 'cmp::+i64+)
 
-    (set-llvm-symbol (lisp-type->type-spec :int8) cmp::+i8+)
-    (set-llvm-symbol (lisp-type->type-spec :uint8) cmp::+i8+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :long-long) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-long-long) 'cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ullong) 'cmp::+i128+)
 
-    (set-llvm-symbol (lisp-type->type-spec :int16) cmp::+i16+)
-    (set-llvm-symbol (lisp-type->type-spec :uint16) cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int8) 'cmp::+i8+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint8) 'cmp::+i8+)
 
-    (set-llvm-symbol (lisp-type->type-spec :int32) cmp::+i32+)
-    (set-llvm-symbol (lisp-type->type-spec :uint32) cmp::+i32+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int16) 'cmp::+i16+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint16) 'cmp::+i16+)
 
-    (set-llvm-symbol (lisp-type->type-spec :int64) cmp::+i64+)
-    (set-llvm-symbol (lisp-type->type-spec :uint64) cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int32) 'cmp::+i32+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint32) 'cmp::+i32+)
 
-    (set-llvm-symbol (lisp-type->type-spec :int128) cmp::+i128+)
-    (set-llvm-symbol (lisp-type->type-spec :uint128) cmp::+i128+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :int64) 'cmp::+i64+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uint64) 'cmp::+i64+)
 
-    (set-llvm-symbol (lisp-type->type-spec :size) cmp::+size_t+)
-    (set-llvm-symbol (lisp-type->type-spec :ssize) cmp::+size_t+)
+    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :int128) 'cmp::+i128+)
+    #+int128 (%set-llvm-type-symbol (%lisp-type->type-spec :uint128) 'cmp::+i128+)
 
-    (set-llvm-symbol (lisp-type->type-spec :float) cmp::+float+)
-    (set-llvm-symbol (lisp-type->type-spec :double) cmp::+double+)
-    #+long-float (set-llvm-symbol (lisp-type->type-spec :long-float) cmp::+long-float+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :size) 'cmp::+size_t+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :ssize) 'cmp::+size_t+)
+
+    ;;(%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::+float+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
+    ;; #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
+
+    ;; (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+void*+)
 
     ;; TODO: CHECK & IMPLEMEMT !
-    ;; (set-llvm-symbol (lisp-type->type-spec :ptrdiff) cmp::+size_t+)
-    ;; (set-llvm-symbol (lisp-type->type-spec :pointer) cmp::+uintptr_t+)
+    ;; (%set-llvm-type-symbol (%lisp-type->type-spec :time) 'cmp::+time_t+)
+    ;; (%set-llvm-type-symbol (%lisp-type->type-spec :ptrdiff) 'cmp::+ptrdiff_t+)
 
-    ))
+    )
+
+  (defun safe-translator-type (lisp-type-kw)
+    (symbol-value (%lisp-type->llvm-type-symbol lisp-type-kw)))
+
+  (defun safe-translator-to-object-name (lisp-type-kw)
+    (to-object-fn-name (%lisp-type->llvm-type-symbol lisp-type-kw)))
+
+  (defun safe-translator-from-object-name (lisp-type-kw)
+    (from-object-fn-name (%lisp-type->llvm-type-symbol lisp-type-kw)))
+
+  ) ;; eval-when
 
 ;;; === B U I LT - I N   O P E R A T I O N S ===
 
@@ -279,6 +308,7 @@
 (eval-when (:load-toplevel :execute :compile-toplevel)
   (generate-type-spec-accessor-functions)
   (init-translators)
+  (generate-llvm-type-symbol-accessor-functions)
   (generate-mem-ref-accessor-functions)
   (generate-mem-set-accessor-functions)
   (values))
@@ -295,7 +325,6 @@
             %mem-ref
             %mem-set
             %foreign-funcall
-            %static-foreign-funcall
             %foreign-funcall-pointer
             %load-foreign-library
             %close-foreign-library
@@ -309,24 +338,18 @@
 ;;; CLASP-FFI package.
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-
-  (defun init-translatprs ()
-    )
-
-  (defun safe-translator-type (kw)
-    (translator-type (gethash kw *translators*)))
-  (defun safe-translator-to-object-name (kw)
-    (translator-to-object-name (gethash kw *translators*)))
-  (defun safe-translator-from-object-name (kw)
-    (translator-from-object-name (gethash kw *translators*)))
-
-  ;; Needed by
   (defun mangled-callback-name (name)
     (format nil "Callback_~a" name)))
 
-;;;
 ;;; This is what defcallback needs to do to generate a callback function
 ;;;
+;;; TODO: Implement and/or correct the following issues:
+;;; 1. Symbols *the-module*, *current-function*,irc-basic-block-create,
+;;;    *llvm-context*, *irbuilder*, null-t-ptr, compile-lambda-function, ...
+;;; need to be exported properly from cackage cmp
+;;;
+
+#|
 (defmacro defcallback (name-and-options return-type-kw arguments &rest body)
   (let ((function-name (if (consp name-and-options)
                            (car name-and-options)
@@ -359,13 +382,13 @@
                   (new-func (llvm-sys:function-create function-type
                                                       'llvm-sys:external-linkage
                                                       mangled-function-name
-                                                      cmp:*the-module*))
-                  (cmp:*current-function* new-func)
-                  (cmp:*current-function-name* mangled-function-name)
+                                                      cmp::*the-module*))
+                  (cmp::*current-function* new-func)
+                  (cmp::*current-function-name* mangled-function-name)
                   ;; Create an IRBuilder - a helper for adding instructions to func
-                  (irbuilder-cur (llvm-sys:make-irbuilder cmp:*llvm-context*)))
+                  (irbuilder-cur (llvm-sys:make-irbuilder cmp::*llvm-context*)))
              ;; Create the entry basic block in the current function
-             (let ((bb (cmp:irc-basic-block-create "entry" cmp:*current-function*)))
+             (let ((bb (cmp::irc-basic-block-create "entry" cmp::*current-function*)))
                (llvm-sys:set-insert-point-basic-block irbuilder-cur bb)
                ;; Start generating instructions
                (with-irbuilder (irbuilder-cur)
@@ -380,44 +403,45 @@
                                            (let* ((to-object-name (safe-translator-to-object-name arg-type-kw))
                                                   (trans-arg-name (format nil "translated-~a" arg-name))
                                                   ;; Create the function declaration on the fly
-                                                  (to-object-func (get-function-or-error *the-module* to-object-name)))
+                                                  (to-object-func (get-function-or-error cmp::*the-module* to-object-name)))
                                              (llvm-sys:create-call-array-ref
-                                              cmp:*irbuilder*
+                                              cmp::*irbuilder*
                                               to-object-func
                                               (list c-arg)
                                               trans-arg-name nil)))
                                          c-args argument-type-kws argument-names)))
                    ;; (2) Call the closure with the arguments in registers
                    (let* ((real-args (if (< (length cl-args) core:+number-of-fixed-arguments+)
-                                         (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args)) :initial-element (cmp:null-t-ptr)))
+                                         (append cl-args (make-list (- core:+number-of-fixed-arguments+ (length cl-args)) :initial-element (cmp::null-t-ptr)))
                                          cl-args))
                           (function-object (if core:*use-cleavir-compiler*
                                                (funcall (find-symbol "COMPILE-LAMBDA-FORM-TO-LLVM-FUNCTION" :clasp-cleavir) body-form)
-                                               (cmp:compile-lambda-function body-form)))
+                                               (cmp::compile-lambda-function body-form)))
                           (cl-result (llvm-sys:create-call-array-ref
-                                      cmp:*irbuilder*
+                                      cmp::*irbuilder*
                                       function-object
-                                      (list* (cmp:null-t-ptr) (cmp:null-t-ptr) (jit-constant-size_t (length cl-args)) real-args) "cl-result")))
+                                      (list* (cmp::null-t-ptr) (cmp::null-t-ptr) (jit-constant-size_t (length cl-args)) real-args) "cl-result")))
                      ;; (3) Call the translator for the return value
                      (if (eq return-type-kw :void)
                          ;; Return with void
-                         (llvm-sys:create-ret-void cmp:*irbuilder*)
+                         (llvm-sys:create-ret-void cmp::*irbuilder*)
                          ;; Return the result
                          (let* ((from-object-name (safe-translator-from-object-name return-type-kw))
-                                (from-object-func (get-function-or-error *the-module* from-object-name))
+                                (from-object-func (get-function-or-error cmp::*the-module* from-object-name))
                                 (c-result (llvm-sys:create-call-array-ref
-                                           cmp:*irbuilder*
+                                           cmp::*irbuilder*
                                            from-object-func
-                                           (list (llvm-sys:create-extract-value cmp:*irbuilder* cl-result (list 0) "val0"))
+                                           (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
                                            "cl-result" nil)))
-                           (llvm-sys:create-ret cmp:*irbuilder* c-result)))))))))))))
+                           (llvm-sys:create-ret cmp::*irbuilder* c-result)))))))))))))
 
+|#
 
 (defmacro callback (sym)
-  `(core:dlsym :rtld-default (mangled-callback-name ',sym)))
+  `(%dlsym (mangled-callback-name ',sym)))
 
 (defun get-callback (sym)
-  (core:dlsym :rtld-default (mangled-callback-name sym)))
+  (%dlsym (mangled-callback-name sym)))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
