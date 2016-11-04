@@ -613,6 +613,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_make_fixnum" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
   (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_bignum" +void+ (list +ltv**+ +size_t+ +size_t+))
+  (primitive-nounwind module "ltvc_make_random_state" +void+ (list +ltv**+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_symbol" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
   (primitive-nounwind module "ltvc_make_character" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
   (primitive-nounwind module "ltvc_make_base_string" +void+ (list +ltv**+ +size_t+ +i8*+))

@@ -219,14 +219,19 @@
 If this form has already been precalculated then just return the precalculated-value index"
   (let ((form (cleavir-ast:form ast))
 	(read-only-p (cleavir-ast:read-only-p ast)))
+    #+(or)(when read-only-p
+      (warn "Handle compilation of the ltv ~a with read-only-p NIL" form))
     (cond
       ((and (consp form) (eq (first form) 'QUOTE))
        (let* ((constant (cadr form))
-	      (constant-index (clasp-cleavir:%literal-index constant)))
+	      (constant-index (clasp-cleavir:%literal-index constant read-only-p)))
 	 constant-index))
-      ((symbolp form) (clasp-cleavir:%literal-index form))
-      ((constantp form) (clasp-cleavir:%literal-index form))
+      ((symbolp form) (clasp-cleavir:%literal-index form read-only-p))
+      ((constantp form) (clasp-cleavir:%literal-index form read-only-p))
       (t
+       ;; Currently read-only-p is ignored from here on
+       ;; OPTIMIZE - an optimization would be to coalesce
+       ;; the forms and their results
        (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
            ;; COMPLE-FILE will generate a function for the form in the Module
            ;; and arrange for it's evaluation at load time

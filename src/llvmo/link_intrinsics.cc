@@ -51,6 +51,7 @@ extern "C" {
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/stacks.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/random.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
@@ -221,6 +222,13 @@ gc::Tagged rltv_make_package(gc::Tagged tpackage_name ) {
     tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
   }
   return (gc::Tagged)tpkg.raw_();
+}
+
+gc::Tagged rltv_make_random_state(gc::Tagged tstate) {
+  core::Str_sp state = gctools::As<core::Str_sp>(core::T_sp(tstate));
+  core::RandomState_sp random_state = core::RandomState_O::create();
+  random_state->random_state_set(state->get());
+  return (gc::Tagged)random_state.raw_();
 }
 
 gc::Tagged rltv_make_built_in_class(gc::Tagged tclass_name ) {
@@ -448,6 +456,16 @@ void ltvc_make_package(core::LoadTimeValues_O **ltvPP, size_t index,
   }
   ltv[index] = tpkg;
 }
+
+void ltvc_make_random_state(core::LoadTimeValues_O **ltvPP, size_t index,
+                            size_t random_state_string_index) {
+  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+  core::Str_sp random_state_string = gctools::As<core::Str_sp>(ltv[random_state_string_index]);
+  core::RandomState_sp rs = core::RandomState_O::create();
+  rs->random_state_set(random_state_string->get());
+  ltv[index] = rs;
+}
+
 
 void ltvc_make_built_in_class(core::LoadTimeValues_O **ltvPP, size_t index,
                               size_t class_name_index ) {

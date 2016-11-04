@@ -46,7 +46,7 @@ CL_DEFUN RandomState_sp RandomState_O::make(T_sp state) {
     RandomState_sp currentState = gc::As<RandomState_sp>(cl::_sym_STARrandom_stateSTAR->symbolValue());
     return RandomState_O::create(currentState);
   } else if (state == _lisp->_true()) {
-    return RandomState_O::create();
+    return RandomState_O::create_random();
   }
   SIMPLE_ERROR(BF("Illegal argument for make-random-state: ~a") % _rep_(state));
 }

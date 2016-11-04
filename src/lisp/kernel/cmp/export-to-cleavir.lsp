@@ -55,7 +55,6 @@
           codegen-literal
           reference-literal
           codegen-rtv
-          codegen-symbol
           compile-error-if-not-enough-arguments
           compile-in-env
           compile-lambda-function

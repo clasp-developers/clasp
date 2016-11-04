@@ -33,7 +33,7 @@ When this is T a LOT of graphs will be generated.")
 (defun translate-datum (datum)
   (if (typep datum 'cleavir-ir:constant-input)
       (let* ((value (cleavir-ir:value datum)))
-        (%literal-ref value))
+        (%literal-ref value t))
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond
@@ -1039,41 +1039,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
                                  "UNBOUND" )))
         (let ((mir (compile-form-to-mir form *clasp-env*))
               (abi *abi-x86-64*))
-          (translate mir abi))
-        #||(let* ((clasp-system *clasp-system*)
-        (ast (let ((a (cleavir-generate-ast:generate-ast form *clasp-env* clasp-system)))
-        (when *debug-cleavir* (draw-ast a))
-        a))
-        (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-        (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-          ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS") ;
-          ;; Beach says remove-useless-instructions is a bad idea right now - removing ;
-          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out ;
-          ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir) ;
-          ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out ;
-        (cc-dbg-when *debug-log*
-        (let ((ast-pathname (make-pathname :name (format nil "ast~a" *debug-log-index*) 
-        :type "dot" 
-        :defaults (pathname *debug-log*))))
-        (cleavir-ast-graphviz:draw-ast hoisted-ast (namestring ast-pathname))
-        (format *debug-log* "Wrote ast to: ~a~%" (namestring ast-pathname))))
-        (clasp-cleavir:convert-funcalls hir)
-          ;; eliminate superfluous temporaries ;
-        (my-hir-transformations hir clasp-system nil nil)
-        (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out ;
-        (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-        (when *debug-cleavir* (draw-mir hir)) ;; comment out ;
-        #+(or)(format t "About to dump mir~%")
-        (when *debug-final-gml* (cleavir-ir-gml:draw-flowchart hir (format nil "/tmp/mir~a.gml" (incf *debug-final-next-id*))))
-        (clasp-cleavir:optimize-stack-enclose hir)
-        (cc-mir:assign-mir-instruction-datum-ids hir)
-        (setf *ast* hoisted-ast
-        *hir* hir)
-        (let ((*form* form)
-        (abi *abi-x86-64*))
-        (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
-        (translate hir abi)))||#
-  )
+          (translate mir abi)))
     (cc-dbg-when *debug-log*
                  (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))))
 
@@ -1102,33 +1068,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (let ((mir (compile-form-to-mir form env))
                   (abi *abi-x86-64*))
-              (translate mir abi))
-            #||(let* ((clasp-system *clasp-system*)
-                   (ast (cleavir-generate-ast:generate-ast form env clasp-system))
-                   (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
-                   (hir (progn
-                          (when *debug-cleavir* (draw-ast hoisted-ast)) ;; comment out
-                          (cleavir-ast-to-hir:compile-toplevel hoisted-ast))))
-              ;;(warn "Turn on cleavir-remove-useless-instructions:remove-useless-instructions hir - check out Evernote: CLEAVIR-REMOVE-USELESS-INSTRUCTIONS")
-              ;; Beach says remove-useless-instructions is a bad idea right now - removing
-              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-r-u-i.dot")) ;; comment out
-              ;; (cleavir-remove-useless-instructions:remove-useless-instructions hir)
-              ;; (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-post-r-u-i.dot")) ;; comment out
-              (clasp-cleavir:convert-funcalls hir)
-              (my-hir-transformations hir clasp-system nil nil)
-              #+(or)(format t "About to draw *debug-cleavir* = ~a~%" *debug-cleavir*)
-              (cleavir-ir:hir-to-mir hir clasp-system nil nil) 
-              (clasp-cleavir:optimize-stack-enclose hir)
-              (cc-mir:assign-mir-instruction-datum-ids hir)
-              (setf *ast* hoisted-ast
-                    *hir* hir)
-              (let ((*form* form)
-                    (abi *abi-x86-64*))
-                (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
-                (when *debug-cleavir* (draw-mir hir)) ;; comment out
-                (when *debug-final-gml* (cleavir-ir-gml:draw-flowchart hir (format nil "/tmp/mir~a.gml" (incf *debug-final-next-id*))))
-                (translate hir abi)))||#
-            )
+              (translate mir abi)))
         (cmp:cmp-log "------------  Finished building MCJIT Module - about to finalize-engine  Final module follows...\n")
         (or fn (error "There was no function returned by compile-lambda-function"))
         (cmp:cmp-log "fn --> %s\n" fn)

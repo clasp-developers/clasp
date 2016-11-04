@@ -43,28 +43,46 @@ public: // Simple default ctor/dtor
   boost::mt11213b _Producer;
 
 public: // ctor/dtor for classes with shared virtual base
-  explicit RandomState_O() {
-    clock_t currentTime;
-    int tt;
+  explicit RandomState_O(bool random = false) {
+    if (random) {
+      clock_t currentTime;
+      int tt;
 #ifdef darwin
-    currentTime = mach_absolute_time();
+      currentTime = mach_absolute_time();
 #else
-    currentTime = clock();
+      currentTime = clock();
 #endif
-    tt = currentTime % 32768;
-    this->_Producer.seed(static_cast<uint>(tt));
+      tt = currentTime % 32768;
+      this->_Producer.seed(static_cast<uint>(tt));
+    } else {
+      this->_Producer.seed(0);
+    }
   };
   explicit RandomState_O(const RandomState_O &state) {
     this->_Producer = state._Producer;
   };
   virtual ~RandomState_O() {}
 
-public: // Functions here
+  CL_DEFMETHOD std::string random_state_get() {
+    stringstream ss;
+    ss << this->_Producer;
+    return ss.str();
+  }
+  CL_DEFMETHOD void random_state_set(const std::string& s) {
+    stringstream ss(s);
+    ss >> this->_Producer;
+  }
+
+ public: // Functions here
   static RandomState_sp make(T_sp state);
   static RandomState_sp create(RandomState_sp other) {
     GC_ALLOCATE_VARIADIC(RandomState_O, b, *other);
     return b;
   };
+  static RandomState_sp create_random() {
+    GC_ALLOCATE_VARIADIC(RandomState_O, b, true );
+    return b;
+  }
 
 }; // RandomState class
 
