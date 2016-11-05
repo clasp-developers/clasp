@@ -685,22 +685,13 @@ void obj_finalize(mps_addr_t client) {
 #endif // ifdef USE_MPS
 
 
-#ifdef USE_MPS
-extern "C" {
-vector<core::LoadTimeValues_O **> globalLoadTimeValuesRoots;
-
-void registerLoadTimeValuesRoot(core::LoadTimeValues_O **ptr) {
-  globalLoadTimeValuesRoots.push_back(ptr);
-}
-};
-#endif // ifdef USE_MPS
 
 #ifdef USE_MPS
 extern "C" {
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
     GC_TELEMETRY0(telemetry::label_root_scan_start);
-    for (auto &it : globalLoadTimeValuesRoots) {
+    for (auto &it : global_roots) {
       POINTER_FIX(it);
     }
 #ifndef RUNNING_GC_BUILDER
