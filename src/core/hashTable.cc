@@ -451,8 +451,8 @@ void HashTable_O::fields(Record_sp node) {
     node->field(INTERN_(core, data), keyValueVec);
     this->clrhash();
     for (size_t i(0), iEnd(cl__length(keyValueVec)); i < iEnd; ++++i) {
-      T_sp key = (*keyValueVec)[i + 0];
-      T_sp val = (*keyValueVec)[i + 1];
+      T_sp key = keyValueVec->elt(i + 0);
+      T_sp val = keyValueVec->elt(i + 1);
       this->hash_table_setf_gethash(key, val);
     };
   } break;
@@ -460,8 +460,8 @@ void HashTable_O::fields(Record_sp node) {
     Vector_sp keyValueVec = core__make_vector(cl::_sym_T_O, 2 * this->hashTableCount());
     size_t idx = 0;
     this->mapHash([&idx, &keyValueVec](T_sp key, T_sp val) {
-        (*keyValueVec)[idx++] = key;
-        (*keyValueVec)[idx++] = val;
+        keyValueVec->setf_elt(idx++,key);
+        keyValueVec->setf_elt(idx++,val);
     });
     node->field(INTERN_(core, data), keyValueVec);
   } break;

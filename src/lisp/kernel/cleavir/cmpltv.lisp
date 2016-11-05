@@ -1,4 +1,4 @@
-(in-package :literal)
+(in-package :ltv)
 
 ;;;; implementation of load-time-value and literal logic in compile-file and compile
 ;;;;
@@ -646,7 +646,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           entry-ptr)
   (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label))
 
-(defun get-load-time-value (result index &optional (holder *load-time-value-holder-global-var*))
+(defun get-load-time-value (result holder index)
   #+(or)(irc-intrinsic "getLoadTimeValue"
                  result
                  holder
@@ -656,7 +656,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 
 (defun copy-load-time-value (result holder index)
   #+(or)(irc-intrinsic "copyLoadTimeValue" result holder (jit-constant-size_t index))
-  (get-load-time-value result index holder)
+  (get-load-time-value result holder index)
   )
 
 ;;; ------------------------------------------------------------
@@ -665,5 +665,3 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;;
 (run-time-reference-literal nil t)
 (run-time-reference-literal t t)
-
-

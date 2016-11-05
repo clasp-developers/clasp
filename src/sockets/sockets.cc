@@ -170,7 +170,7 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByName(const string &hostName,  
       int pos;
       core::Vector_sp vector = gc::As<core::Vector_sp>(core::eval::funcall(cl::_sym_makeArray, core::make_fixnum(length)));
       for (pos = 0; pos < length; pos++)
-        vector->operator[](pos) = core::make_fixnum((unsigned char)((*addrs)[pos]));
+        vector->setf_elt(pos,core::make_fixnum((unsigned char)((*addrs)[pos])));
       addr_list = core::Cons_O::create(vector, addr_list);
     }
     core::eval::funcall(/*#5*/ setf_host_ent_addresses, addr_list, /*#1*/ tHostEnt);
@@ -194,10 +194,10 @@ CL_DEFUN core::T_sp sockets_internal__ll_getHostByAddress(core::Vector_sp addres
 {
   unsigned char vector[4];
   struct hostent *hostent;
-  vector[0] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->operator[](0)));
-  vector[1] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->operator[](1)));
-  vector[2] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->operator[](2)));
-  vector[3] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->operator[](3)));
+  vector[0] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(0)));
+  vector[1] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(1)));
+  vector[2] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(2)));
+  vector[3] = unbox_fixnum(gc::As<core::Fixnum_sp>(address->elt(3)));
   clasp_disable_interrupts();
   hostent = gethostbyaddr(REINTERPRET_CAST(const char *, vector), 4, AF_INET);
   clasp_enable_interrupts();

@@ -91,7 +91,7 @@ void ArrayDisplaced_O::rowMajorAset(cl_index idx, T_sp value) {
   this->_Array->rowMajorAset(this->_DisplacedIndexOffset + idx, value);
 }
 
-T_sp ArrayDisplaced_O::aset_unsafe(int idx, T_sp value) {
+T_sp ArrayDisplaced_O::aset_unsafe(size_t idx, T_sp value) {
   this->_Array->aset_unsafe(this->_DisplacedIndexOffset + idx, value);
   return value;
 }

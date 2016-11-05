@@ -166,5 +166,7 @@ namespace gctools {
     unsigned long _rs;
   };
 
+ void boehm_register_roots(gctools::Tagged* root_address, size_t num_roots);
+
 };
 #endif // _clasp_boehmGarbageCollection_H

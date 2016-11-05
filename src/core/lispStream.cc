@@ -6101,12 +6101,31 @@ Str_sp clasp_writeString(Str_sp str, T_sp stream, int istart, T_sp end) {
   return str;
 }
 
-CL_LAMBDA(string &optional output-stream &key (start 0) end);
+CL_LAMBDA(string &optional (output-stream cl:*standard-output*) &key (start 0) end);
 CL_DECLARE();
 CL_DOCSTRING("writeString");
-CL_DEFUN Str_sp cl__write_string(Str_sp str, T_sp stream, int start, T_sp end) {
-  // outputStreamDesignator in clasp_writeString
-  return clasp_writeString(str, stream, start, end);
+CL_DEFUN T_sp cl__write_string(T_sp tstr, T_sp tstream, int start, T_sp end) {
+  T_sp stream = coerce::outputStreamDesignator(tstream);
+  if ( Str_sp str = tstr.asOrNull<Str_O>() ) {
+    clasp_writeString(str, stream, start, end);
+  } else if ( Vector_sp vstr = tstr.asOrNull<Vector_O>() ) {
+    if ( clasp_is_character_type(vstr->elementType()) ) {
+      size_t send;
+      if (end.nilp()) {
+        send = vstr->dimension();
+      } else if (end.fixnump()) {
+        send = MIN(end.unsafe_fixnum(),vstr->dimension());
+      } else {
+        TYPE_ERROR(end,cl::_sym_integer);
+      }
+      for (size_t i=start; i<send; ++i ) {
+        clasp_write_char(gctools::As<Character_sp>(vstr->elt(i)).unsafe_character(),stream);
+      }
+    } else {
+      TYPE_ERROR(tstr,cl::_sym_string);
+    }
+  }
+  return tstr;
 };
 
 CL_LAMBDA(string &optional output-stream &key (start 0) end);

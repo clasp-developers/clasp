@@ -47,6 +47,16 @@ void rawHeaderDescribe(uintptr_t *rawheaderP) {
 
 };
 
+namespace gctools  {
+void boehm_register_roots(gctools::Tagged* root_address, size_t num_roots)
+{
+  gctools::Tagged* dest = reinterpret_cast<gctools::Tagged*>(GC_MALLOC_UNCOLLECTABLE(sizeof(gctools::Tagged)*num_roots));
+  std::memcpy(dest,root_address,sizeof(gctools::Tagged)*num_roots);
+}
+
+}
+
+
 extern "C" {
 void client_describe(void *taggedClient) {
   if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
@@ -65,6 +75,9 @@ void client_describe(void *taggedClient) {
     printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
   };
 };
+
+
+  
 void client_validate(void *taggedClient)
 {
 }

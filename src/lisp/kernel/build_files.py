@@ -114,3 +114,15 @@ def cclasp(wrappers):
         "src/lisp/kernel/lsp/epilogue-cclasp",
         "src/lisp/kernel/tag/cclasp" ]
 
+def dump_names(l):
+    for x in l:
+        print("%s" % x),
+    print("")
+if __name__ == '__main__':
+    print("Running from command line")
+    print("aclasp: ")
+    dump_names(aclasp(False))
+    print("bclasp: ")
+    dump_names(bclasp(False))
+    print("cclasp: ")
+    dump_names(cclasp(False))

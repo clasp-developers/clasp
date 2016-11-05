@@ -816,7 +816,10 @@ CL_DEFUN T_mv cl__special_operator_p(T_sp sym) {
   // special-operator-p returns a generalized boolean
   // so it's ok to return a special form symbol if
   // sym is a special form
-  return _lisp->specialFormOrNil(sym);
+  if ( Symbol_sp ssym = sym.asOrNull<Symbol_O>() ) {
+    return _lisp->specialFormOrNil(ssym);
+  }
+  return _Nil<T_O>();
 };
 
 

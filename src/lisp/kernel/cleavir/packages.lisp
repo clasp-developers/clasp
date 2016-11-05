@@ -1,5 +1,14 @@
 (cl:in-package #:common-lisp-user)
 
+(defpackage #:ltv
+  (:use #:common-lisp #:cmp)
+  (:export
+   #:reference-literal
+   #:compile-reference-to-load-time-value
+   #:compile-reference-to-literal
+  )
+  )
+
 (defpackage #:cclasp-build
   (:use #:common-lisp #:core)
   (:export

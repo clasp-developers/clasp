@@ -122,6 +122,7 @@
  "src/lisp/kernel/contrib/sicl/Code/Conditions/Additional/conditions"
  "src/lisp/kernel/contrib/sicl/Code/Conditions/Additional/condition-reporters-en"
  "src/lisp/kernel/cleavir/packages"
+ "src/lisp/kernel/cmp/cmpltv"
  "src/lisp/kernel/cleavir/cleavir-fixups-and-hacks"
  "src/lisp/kernel/cleavir/system" "src/lisp/kernel/cleavir/ast"
  "src/lisp/kernel/cleavir/convert-form"

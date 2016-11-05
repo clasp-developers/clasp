@@ -89,6 +89,8 @@ void pointerSearcherAddRef(PointerSearcher *searcher, mps_addr_t ref) {
 extern void memory_find_ref(mps_arena_t arena, mps_addr_t ref, PointerSearcher *searcher);
 };
 
+
+
 namespace gctools {
 
 MpsMetrics globalMpsMetrics;
@@ -124,6 +126,20 @@ mps_pool_t global_non_moving_pool;
 mps_pool_t global_unmanaged_pool;
 mps_ap_t global_non_moving_ap;
 size_t global_sizeof_fwd;
+
+};
+
+namespace gctools {
+void mps_register_roots(gctools::Tagged* root_address, size_t num_roots) {
+  mps_root_t* mps_root = reinterpret_cast<mps_root_t>(malloc(sizeof(mps_root_t)));
+  mps_root_create_area_tagged(mps_root,_global_arena,mps_rank_exact(),
+                              MPS_RM_CONST, reinterpret_cast<void*>(root_address),
+                              reinterpret_cast<void*>(reinterpret_cast<char*>(root_address)+num_roots*sizeof(gctools::Tagged)),
+                              gctools::pointer_tag_mask,gctools::pointer_tag_eq);
+}
+};
+
+namespace gctools {
 
 #ifdef DEBUG_GUARD
 size_t random_tail_size() {
@@ -1024,7 +1040,7 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create scan root");
 
-  registerLoadTimeValuesRoot(&globalTaggedRunTimeValues);
+  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
 
   _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
 
