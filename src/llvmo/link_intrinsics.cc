@@ -272,16 +272,25 @@ core::LoadTimeValues_O& ltvGet(core::LoadTimeValues_O** ltvPP)
   return ltv;
 }
 
+void register_tagged_roots(gctools::Tagged* root_address, size_t num_roots, ... ) {
+  va_list vl;
+  va_start(vl,num_roots);
+  for ( size_t i=0; i<num_roots; ++i ) {
+    root_address[i] = va_arg(vl,gctools::Tagged);
+  }
+  va_end(vl);
+#ifdef USE_MPS
+  gctools::mps_register_roots(root_address, num_roots);
+#endif
+#ifdef USE_BOEHM
+  gctools::boehm_register_roots(root_address,num_roots);
+#endif
+}
 
 void ltvc_get_or_create_load_time_value_array(core::LoadTimeValues_O **ltvPP, const char *moduleName, size_t numberOfLoadTimeValues) {
   core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues);
-  *ltvPP = NULL;
-//  printf("%s:%d - I am registering the ltvPP=%p *ltvP=%p as a root in getOrCreateLoadTimeValueArray.\n   I believe this is the best place to do this - I previously did it in finalizeEngineAndRegisterWithGcAndGetCompiledFunction.\n  If this is the best place then remove this notice.",__FILE__,__LINE__, ltvPP, *ltvPP);
-#ifdef USE_MPS
-  registerLoadTimeValuesRoot(ltvPP);
-#endif
-  *ltvPP = reinterpret_cast<core::LoadTimeValues_O *>(loadTimeValues.raw_()); //reinterpret_cast<core::LoadTimeValues_O*>(loadTimeValues.pbase());
-                                                                              //	printf("%s:%d  getOrCreateLoadTimeValueArray ltvPP=%p  *ltvPP=%p\n", __FILE__, __LINE__, ltvPP, *ltvPP );
+  gctools::Tagged tagged = reinterpret_cast<gctools::Tagged>(loadTimeValues.raw_());
+  register_tagged_roots(reinterpret_cast<gctools::Tagged*>(ltvPP),1,tagged);
 }
 
 
