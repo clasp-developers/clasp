@@ -38,7 +38,7 @@
 ;;; Contains the current RUN-ALL, initialization function
 ;;; for the current module
 (defvar *load-time-value-initialization-function*)
-(defvar +run-and-load-time-value-holder-global-var-type+ +ltv*+) ;; Was +ltvsp*+
+(defvar +run-and-load-time-value-holder-global-var-type+ cmp:+ltv*+) ;; Was +ltvsp*+
 (defvar *run-time-values-table-name* "run_time_values_table")
 (defvar *load-time-initializer-environment*)
 ;;;------
@@ -434,10 +434,10 @@ and the next one is stored here")
 (defun new-run-time-table-index ()
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
-  (data-vector-push-extend *run-time-values-table* nil 16))
+  (core:data-vector-push-extend *run-time-values-table* nil 16))
 
 (defun add-run-time-object (object index)
-  (load-time-value-array-setf *run-time-values-table* index object))
+  (core:load-time-value-array-setf *run-time-values-table* index object))
 
 (defun run-time-reference-literal (object read-only-p)
   (if read-only-p

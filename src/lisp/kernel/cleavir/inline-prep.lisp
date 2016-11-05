@@ -56,3 +56,7 @@
            (when (fboundp ',name)
              (core:setf-cleavir-ast (fdefinition ',name) ,ast)))))))
 
+  
+(defparameter *simple-environment* nil)
+(defvar *code-walker* nil)
+(export '(*simple-environment* *code-walker*))
