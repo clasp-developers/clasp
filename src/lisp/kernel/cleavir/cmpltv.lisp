@@ -1,10 +1,3 @@
-(defpackage "LTV"
-  (:use #:common-lisp #:cmp)
-  (:export
-   #:reference-literal
-   #:compile-reference-to-load-time-value
-  )
-)
 (in-package :ltv)
 
 ;;;; implementation of load-time-value and literal logic in compile-file and compile
@@ -52,7 +45,7 @@
 ;;; Set up the run-time-values-table
 ;;;  set-run-time-values-table MUST be called to set the
 ;;;  global
-(defvar *run-time-values-table* (load-time-value-array *run-time-values-table-name* 0))
+(defvar *run-time-values-table* (core:load-time-value-array *run-time-values-table-name* 0))
 (core:set-run-time-values-table *run-time-values-table-name*)
 
 (defvar *load-time-value-holder-global-var* nil

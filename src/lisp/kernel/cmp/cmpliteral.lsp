@@ -1,4 +1,4 @@
-(in-package :cmp)
+(in-package :literal)
 
 ;;;; implementation of load-time-value and literal logic in compile-file and compile
 ;;;;
@@ -45,7 +45,7 @@
 ;;; Set up the run-time-values-table
 ;;;  set-run-time-values-table MUST be called to set the
 ;;;  global
-(defvar *run-time-values-table* (load-time-value-array *run-time-values-table-name* 0))
+(defvar *run-time-values-table* (core:load-time-value-array *run-time-values-table-name* 0))
 (core:set-run-time-values-table *run-time-values-table-name*)
 
 (defvar *load-time-value-holder-global-var* nil
@@ -646,7 +646,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
           entry-ptr)
   (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label))
 
-(defun get-load-time-value (result holder index)
+(defun get-load-time-value (result index &optional (holder *load-time-value-holder-global-var*))
   #+(or)(irc-intrinsic "getLoadTimeValue"
                  result
                  holder
@@ -656,7 +656,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 
 (defun copy-load-time-value (result holder index)
   #+(or)(irc-intrinsic "copyLoadTimeValue" result holder (jit-constant-size_t index))
-  (get-load-time-value result holder index)
+  (get-load-time-value result index holder)
   )
 
 ;;; ------------------------------------------------------------
@@ -665,3 +665,5 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;;
 (run-time-reference-literal nil t)
 (run-time-reference-literal t t)
+
+

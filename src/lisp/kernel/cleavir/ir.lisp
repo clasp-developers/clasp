@@ -2,14 +2,14 @@
 
 (defun %literal-index (value &optional read-only-p)
   (let ((*debug-cleavir* *debug-cleavir-literals*))
-    (cmp:reference-literal value read-only-p)))
+    (ltv:reference-literal value read-only-p)))
 
 (defun %literal-ref (value &optional read-only-p)
   (let ((index (%literal-index value read-only-p)))
     (cond
       ((= index 0) (cmp:irc-create-call "cc_nil_reference" nil "&NIL"))
       ((= index 1) (cmp:irc-create-call "cc_t_reference" nil "&T"))
-      (t (cmp:compile-reference-to-load-time-value index)))))
+      (t (ltv:compile-reference-to-load-time-value index)))))
 
 (defun %literal-value (value &optional label)
   (let ((index (%literal-index value t)))
@@ -43,7 +43,7 @@
 (defun %literal (lit &optional (label "literal"))
   (llvm-sys:create-extract-value
    cmp:*irbuilder*
-   (cmp:irc-load (cmp:compile-reference-to-literal lit)) (list 0) label))
+   (cmp:irc-load (ltv:compile-reference-to-literal lit)) (list 0) label))
 
 (defun %extract (val index &optional (label "extract"))
   (llvm-sys:create-extract-value cmp:*irbuilder* val (list index) label))

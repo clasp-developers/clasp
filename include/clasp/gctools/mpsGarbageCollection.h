@@ -47,6 +47,10 @@ extern void ShieldCover(Arena arena, Seg seg);
 
 
 namespace gctools {
+  void mps_regsiter_root_address(gctools::Tagged* ptr);
+}
+
+namespace gctools {
 
   extern bool global_underscanning;
 #ifdef DEBUG_MPS_UNDERSCANNING
@@ -135,8 +139,12 @@ void obj_finalize(mps_addr_t base);
 extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t s);
 };
 
-namespace gctools {
 
+namespace gctools {
+  void mps_register_roots(gctools::Tagged* root_address, size_t num_roots);
+};
+
+namespace gctools {
   template <class T>
     inline size_t sizeof_with_header();
 

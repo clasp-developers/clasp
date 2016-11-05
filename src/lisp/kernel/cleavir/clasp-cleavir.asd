@@ -18,6 +18,7 @@
     :serial t
     :components ((:file "packages")
                  ;;                 (:file "compile-cclasp")
+                 (:file "cmpltv")
                  (:file "cleavir-fixups-and-hacks")
 		 (:file "system")
 		 (:file "ast")
