@@ -813,9 +813,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_pushLandingPadFrame" +t*+ nil)
   (primitive-nounwind module "cc_popLandingPadFrame" +void+ (list +t*+))
   (primitive          module "cc_landingpadUnwindMatchFrameElseRethrow" +size_t+ (list +i8*+ +t*+))
-  ;; Translator functions
-  (primitive-nounwind module "tr_to_object_int" +t*+ (list +i32+))
-  (primitive-nounwind module "tr_from_object_int" +i32+ (list +t*+))
   )
 
 

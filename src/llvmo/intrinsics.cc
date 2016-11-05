@@ -640,13 +640,52 @@ ALWAYS_INLINE core::T_sp mk_char( char v )
 // These functions are part of the Foreign Language Interface and are
 // referenced from the FLI functions in fli.cc.
 
+// The following conversation happened on 2016-11-05:
+//
+// 02:31 <drmeister> For example, the from_object_uint64 could be written in a
+//                   more efficient way given type inference.
+// 02:31 <drmeister> Currently from_object_uint64(core::T_O* obj) { uint64_t x
+//                   = translate::from_object<uint64_t>(... obj ...); }
+// 02:32 <drmeister> The from_object<uint64_t>(...) translator has a runtime
+//                   test if obj is a fixnum or a bignum.
+// 02:32 <drmeister> With type inference the CL code might already know that
+//                   obj is a fixnum and so the test is unnecessary.
+// 02:34 <drmeister> The better way to do this would be to implement a
+//                   from_object translator to uint64 in Common Lisp.
+// 02:34 <drmeister> (defun from-object-uint64 (o) (if (fixnump o)
+//                   (from-fixnum-uint64 o) (from-bignum-uint64 o)))
+// 02:35 <drmeister> Then you implement the C++ functions from_fixnum_uint64
+//                   and from_bignum_uint64
+// 02:35 <drmeister> Something like from_object_int8   doesn't need this
+//                   because the argument will always be a Common Lisp
+//                   fixnum.
+// 02:37 <drmeister> I don't think there are any changes like this that need
+//                   to be made to the to_object translators.
+// 02:38 <drmeister> And it's only the from_object translators where there is
+//                   any possibility that the 'object' passed to the
+//                   from_object_xxx translator can be anything other than a
+//                   single type.
+// 02:39 <drmeister> But if there is a run-time test for the type of the
+//                   passed object other than a sanity check (and that should
+//                   be an ASSERT so it's compiled out in production code)
+//                   then the from_object_xxx translator should be broken into
+//                   a from_type1_xxx translator and from_type2_xxx
+//                   translator.
+// 02:40 <drmeister> I think this only applies to C++ integer types that are
+//                   larger than 61 bits/can fit in a Common Lisp fixnum.
+//
+// => This still leaves the following questions::
+// 1. What should the API / function signatures look like for from_object_...
+//    functions?
+// 2. WHhat should be returned by these functions?
+
 // ----------------------------------------------------------------------------
 // FIXNUM
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE gctools::Fixnum from_object_fixnum( core::T_O* obj )
 {
-  gctools::Fixnum x = translate::from_object<gctools::Fixnum>(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  gctools::Fixnum x = gctools::untag_fixnum< T_O * >( obj );
   return x;
 }
 
@@ -657,7 +696,7 @@ ALWAYS_INLINE core::T_O* tr_from_object_fixnum( core::T_O* obj )
 
 ALWAYS_INLINE core::T_O* to_object_fixnum( gctools::Fixnum x )
 {
-  return translate::to_object< gctools::Fixnum >::convert( x ).raw_();
+  return core::make_fixnum( x ).raw_();
 }
 
 ALWAYS_INLINE core::T_O* tr_to_object_fixnum( core::T_O* raw_ )
@@ -812,7 +851,7 @@ ALWAYS_INLINE core::T_O* tr_to_object_int8( core::T_O* raw_ )
 }
 
 // ----------------------------------------------------------------------------
-// UINT8
+// Uint8
 // ----------------------------------------------------------------------------
 
 ALWAYS_INLINE uint8_t from_object_uint8( core::T_O* obj )

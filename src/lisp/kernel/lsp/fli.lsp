@@ -62,6 +62,16 @@
 ;;; - C++ name
 ;;; Adding built-in foreign types requires adding a type spec to this table!
 
+(defun dbg-print-*foreign-type-spec-table* ()
+  (format *debug-io* "*** DEBUG INFO: clasp-ffi::*foreign-type-spec-table* =>~%~%")
+  (loop
+     for spec across *foreign-type-spec-table*
+     for idx from 0 to (1- (length *foreign-type-spec-table*))
+     when spec
+     do
+       (format *debug-io* "~d: ~S~&" idx spec))
+  (format *debug-io* "~%*** END OF DEBUG INFO ***~%"))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
 
   (defgeneric %lisp-type->lisp-name (lisp-type-kw))
@@ -154,10 +164,10 @@
     (symbol-value (%lisp-type->llvm-type-symbol lisp-type-kw)))
 
   (defun safe-translator-to-object-name (lisp-type-kw)
-    (to-object-fn-name (%lisp-type->llvm-type-symbol lisp-type-kw)))
+    (to-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
 
   (defun safe-translator-from-object-name (lisp-type-kw)
-    (from-object-fn-name (%lisp-type->llvm-type-symbol lisp-type-kw)))
+    (from-object-fn-name (%lisp-type->type-spec lisp-type-kw)))
 
   ) ;; eval-when
 
@@ -312,8 +322,8 @@
 
 (eval-when (:load-toplevel :execute :compile-toplevel)
   (generate-type-spec-accessor-functions)
-  ;;(init-translators)
-  ;;(generate-llvm-type-symbol-accessor-functions)
+  (init-translators)
+  (generate-llvm-type-symbol-accessor-functions)
   (generate-mem-ref-accessor-functions)
   (generate-mem-set-accessor-functions)
   (values))
