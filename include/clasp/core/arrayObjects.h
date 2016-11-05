@@ -60,7 +60,7 @@ public: // Functions here
 
 public:
   virtual bool equalp(T_sp other) const;
-  virtual T_sp aset_unsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(size_t j, T_sp val);
   T_sp elementType() const { return this->_ElementType; };
 
   virtual void rowMajorAset(cl_index idx, T_sp value);

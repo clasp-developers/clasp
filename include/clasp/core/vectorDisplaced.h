@@ -65,8 +65,8 @@ public:
   T_sp elementType() const { return this->_ElementType; };
 
 public: // Functions here
-  virtual T_sp aset_unsafe(int j, T_sp val) { (*this->_Vector)[j + this->_DisplacedIndexOffset] = val; return val;};
-  virtual T_sp aref_unsafe(cl_index index) const { return (*this->_Vector)[index + this->_DisplacedIndexOffset]; };
+  virtual T_sp aset_unsafe(size_t j, T_sp val) { this->_Vector->setf_elt(j + this->_DisplacedIndexOffset,val); return val;};
+  virtual T_sp aref_unsafe(cl_index index) const { return this->_Vector->elt(index + this->_DisplacedIndexOffset); };
 
   virtual std::vector<cl_index> dimensions() const {
     std::vector<cl_index> dims;
@@ -78,13 +78,13 @@ public: // Functions here
   virtual T_sp rowMajorAref(cl_index idx) const;
   //  virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
 
-  T_sp &operator[](uint index) { return (*this->_Vector)[index + this->_DisplacedIndexOffset]; }
-  const T_sp &operator[](uint index) const { return (*this->_Vector)[index + this->_DisplacedIndexOffset]; }
+//  T_sp &operator[](uint index) { return this->_Vector->elt(index + this->_DisplacedIndexOffset); }
+//  const T_sp &operator[](uint index) const { return (*this->_Vector)[index + this->_DisplacedIndexOffset]; }
 
   virtual void swapElements(uint i1, uint i2) {
-    T_sp t = (*this)[i2];
-    (*this)[i2] = (*this)[i1];
-    (*this)[i1] = t;
+    T_sp x = this->elt(i2);
+    this->setf_elt(i2,this->elt(i1));
+    this->setf_elt(i1,x);
   }
 
   /*! Swap the contents of the VectorDisplaced */

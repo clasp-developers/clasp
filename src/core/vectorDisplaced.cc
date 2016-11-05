@@ -62,7 +62,7 @@ string VectorDisplaced_O::__repr__() const {
   stringstream ss;
   ss << "#( ";
   for (int i = 0; i < this->_Size; i++) {
-    ss << _rep_((*this->_Vector)[i]) << " ";
+    ss << _rep_(this->_Vector->elt(i)) << " ";
   }
   ss << ")";
   return ss.str();

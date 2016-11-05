@@ -98,7 +98,7 @@ struct from_object<clang::tooling::CommandLineArguments> {
       } else if (core::Vector_sp vargs = o.asOrNull<core::Vector_O>()) {
         _v.clear();
         for (int i(0), iEnd(vargs->length()); i < iEnd; ++i) {
-          core::Str_sp s = gc::As<core::Str_sp>((*vargs)[i]);
+          core::Str_sp s = gc::As<core::Str_sp>(vargs->elt(i));
           _v.push_back(s->get());
         }
         return;

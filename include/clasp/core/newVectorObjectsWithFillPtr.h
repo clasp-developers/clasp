@@ -55,7 +55,7 @@ public: // Functions here
   uint length() const { return this->_FillPtr; };
 
   virtual bool arrayHasFillPointerP() const { return true; };
-  virtual T_sp &operator[](uint index);
+  T_sp &operator[](uint index);
 
   virtual T_sp elt(int index) const;
   virtual T_sp setf_elt(int index, T_sp value);

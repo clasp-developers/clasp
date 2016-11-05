@@ -70,7 +70,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
     this->_Contents[i2] = this->_Contents[i1];
     this->_Contents[i1] = t;
   }
-  virtual T_sp aset_unsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(size_t j, T_sp val);
   virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]); };
   virtual T_sp elementType() const;
   /*! Return the value at the indices */

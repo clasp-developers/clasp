@@ -95,13 +95,6 @@ CL_DEFMETHOD   bool isZero() { return (this->countSet() == 0); };
   std::ostream &dumpToStream(std::ostream &out);
   void dump();
 
-#if 0
-    virtual T_sp& operator[](uint index);
-
-    virtual T_sp getElementObject(uint index) const;
-
-    virtual T_sp setElementObject(uint index, T_sp val);
-#endif
 
   virtual void rowMajorAset(cl_index idx, T_sp value);
   virtual T_sp rowMajorAref(cl_index idx) const;

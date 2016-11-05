@@ -58,7 +58,7 @@ public:
 
 public: // Functions here
   virtual bool equalp(T_sp other) const { SUBIMP(); };
-  virtual T_sp aset_unsafe(int j, T_sp val) { SUBIMP(); };
+  virtual T_sp aset_unsafe(size_t j, T_sp val) { SUBIMP(); };
 CL_LISPIFY_NAME("cl:arrayHasFillPointerP");
 CL_DEFMETHOD   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;

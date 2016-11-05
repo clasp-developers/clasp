@@ -76,7 +76,7 @@ public:
 public: // Functions here
   bool adjustableArrayP() const { return this->_Adjustable; };
 
-  virtual T_sp aset_unsafe(int j, T_sp val);
+  virtual T_sp aset_unsafe(size_t j, T_sp val);
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };
 
   virtual std::vector<cl_index> dimensions() const {
@@ -90,6 +90,7 @@ public: // Functions here
   virtual gc::Fixnum arrayRowMajorIndex(List_sp indices) const;
 
   T_sp &operator[](uint index) { return this->_Values[index]; }
+  const T_sp &operator[](uint index) const { return this->_Values[index]; }
 
   virtual void swapElements(uint i1, uint i2) {
     T_sp t = this->_Values[i2];
