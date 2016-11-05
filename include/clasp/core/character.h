@@ -154,6 +154,13 @@ inline short clasp_digit_char(Fixnum w, Fixnum r) {
     return (w - 10 + 'A');
 }
 
+ inline bool clasp_is_character_type( T_sp the_type) {
+   return ( the_type == cl::_sym_character ||
+            the_type == cl::_sym_base_char ||
+            the_type == cl::_sym_extended_char ||
+            the_type == cl::_sym_standard_char );
+ }
+ 
 }; /* core */
 
 namespace translate {
