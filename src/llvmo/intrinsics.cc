@@ -208,14 +208,14 @@ ALWAYS_INLINE void sp_symbolValueRead(core::T_sp *resultP, const core::T_sp *tsy
   Symbol_sp sym((gctools::Tagged)(tsymP->raw_())); 
   T_sp sv = sym->_Value;
   if (sv.unboundp()) {
-    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % sym->_Name);
+    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % sym->fullName());
   }
   *resultP = sv;
 }
 ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp *symP) {
   T_sp sv = (*symP)->_Value;
   if (sv.unboundp()) {
-    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % (*symP)->_Name->c_str());
+    SIMPLE_ERROR(BF("Unbound symbol-value for %s") % (*symP)->fullName());
   }
   *resultP = sv;
 }
