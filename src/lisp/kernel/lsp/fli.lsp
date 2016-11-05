@@ -1,4 +1,4 @@
-;; ===========================================================================
+;;; ===========================================================================
 ;;;                  F L I    I M P L E M E N T A T I O N
 ;;; ===========================================================================
 ;;; -- IMPLEMEMTATION NOTES ---
@@ -60,23 +60,26 @@
 ;;; - size
 ;;; - alignment
 ;;; - C++ name
-;;; Adding built-in foreign types requires adding a type pec to this table!
+;;; Adding built-in foreign types requires adding a type spec to this table!
 
-(defgeneric %lisp-type->lisp-name (lisp-type-kw))
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defmacro generate-type-spec-accessor-functions ()
-  `(progn
-     ;; type -> type spec
-     ,@(loop for spec across *foreign-type-spec-table*
-          for idx from 0 to (1- (length *foreign-type-spec-table*))
-          when spec
-	  collect
-	    `(defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
-               (elt *foreign-type-spec-table* ,idx)))
-     ))
+  (defgeneric %lisp-type->lisp-name (lisp-type-kw))
 
-(defmethod %lisp-type->type-spec (lisp-type-kw)
-  (error "Unknown FLI lisp type ~S - cannot determine type spec." lisp-type-kw))
+  (defmacro generate-type-spec-accessor-functions ()
+    `(progn
+       ;; type -> type spec
+       ,@(loop for spec across *foreign-type-spec-table*
+            for idx from 0 to (1- (length *foreign-type-spec-table*))
+            when spec
+            collect
+              `(defmethod %lisp-type->type-spec ((lisp-type-kw (eql ',(%lisp-symbol spec))))
+                 (elt *foreign-type-spec-table* ,idx)))
+       ))
+
+  (defmethod %lisp-type->type-spec (lisp-type-kw)
+    (error "Unknown FLI lisp type ~S - cannot determine type spec." lisp-type-kw))
+  ) ;; eval-when
 
 ;;; === T R A N S L A T O R    S U P O R T ===
 
@@ -137,9 +140,9 @@
     ;;(%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::+float+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
-    ;; #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
+    #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
 
-    ;; (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+void*+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+void*+)
 
     ;; TODO: CHECK & IMPLEMEMT !
     ;; (%set-llvm-type-symbol (%lisp-type->type-spec :time) 'cmp::+time_t+)
@@ -225,45 +228,47 @@
 ;;; This code has been invented on-the-fly by drmeister on 2016-10-13 ...
 ;;; I still marvel at how drmeister comes up with simple code... Thx!
 
-(defun split-list (list)
-  (do ((list list (rest (rest list)))
-       (left '() (list* (first list) left))
-       (right '() (if (endp (rest list)) right (list* (second list) right))))
-      ((endp list) (list (nreverse left) (nreverse right)))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
 
-(defun translator-name (prefix type)
-  (format nil "tr_~a_object_~a"
-          prefix
-          (string-downcase (string (%lisp-name (%lisp-type->type-spec type))))))
+  (defun translator-name (prefix type)
+    (format nil "tr_~a_object_~a"
+            prefix
+            (string-downcase (string (%lisp-name (%lisp-type->type-spec type))))))
 
-(defun process-arguments (arguments)
-  (let* ((splits (split-list (car arguments)))
-         (types-and-maybe-return-type (car splits))
-         (args (cadr splits))
-         (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
-         (return-type (if explicit-return-type
-                          (car (last types-and-maybe-return-type))
-                          :void))
-         (types (if explicit-return-type
-                    (butlast types-and-maybe-return-type 1)
-                    types-and-maybe-return-type)))
+  (defun split-list (list)
+    (do ((list list (rest (rest list)))
+         (left '() (list* (first list) left))
+         (right '() (if (endp (rest list)) right (list* (second list) right))))
+        ((endp list) (list (nreverse left) (nreverse right)))))
 
-    #|
-    (format *debug-io* "arguments = ~S~&" arguments)
-    (format *debug-io* "splits = ~S~&" splits)
-    (format *debug-io* "types-and-maybe-return-type = ~S~&" types-and-maybe-return-type)
-    (format *debug-io* "args = ~S~&" args)
-    (format *debug-io* "explicit-return-type = ~S~&" explicit-return-type)
-    (format *debug-io* "return-type = ~S~&" return-type)
-    (format *debug-io* "types = ~S~&" types)
-    |#
+  (defun process-arguments (arguments)
+    (let* ((splits (split-list (car arguments)))
+           (types-and-maybe-return-type (car splits))
+           (args (cadr splits))
+           (explicit-return-type (> (length types-and-maybe-return-type) (length args)))
+           (return-type (if explicit-return-type
+                            (car (last types-and-maybe-return-type))
+                            :void))
+           (types (if explicit-return-type
+                      (butlast types-and-maybe-return-type 1)
+                      types-and-maybe-return-type)))
 
-    (values (loop for type in types
-               for arg in args
-               collect `(core:foreign-call
-                         ,(translator-name "from" type)
-                         ,arg))
-            return-type)))
+      #| ;;; debug info output
+      (format *debug-io* "/Users/frgo/swdev/clasp/src/clasp/src/lisp/kernel/lsp/arguments = ~S~&" arguments)
+      (format *debug-io* "splits = ~S~&" splits)
+      (format *debug-io* "types-and-maybe-return-type = ~S~&" types-and-maybe-return-type)
+      (format *debug-io* "args = ~S~&" args)
+      (format *debug-io* "explicit-return-type = ~S~&" explicit-return-type)
+      (format *debug-io* "return-type = ~S~&" return-type)
+      (format *debug-io* "types = ~S~&" types)
+      |#
+
+      (values (loop for type in types
+                 for arg in args
+                 collect `(core:foreign-call
+                           ,(translator-name "from" type)
+                           ,arg))
+              return-type))))
 
 (defmacro %foreign-funcall (name &rest arguments)
   (multiple-value-bind (args return-type)
@@ -307,8 +312,8 @@
 
 (eval-when (:load-toplevel :execute :compile-toplevel)
   (generate-type-spec-accessor-functions)
-  (init-translators)
-  (generate-llvm-type-symbol-accessor-functions)
+  ;;(init-translators)
+  ;;(generate-llvm-type-symbol-accessor-functions)
   (generate-mem-ref-accessor-functions)
   (generate-mem-set-accessor-functions)
   (values))
@@ -328,7 +333,9 @@
             %foreign-funcall-pointer
             %load-foreign-library
             %close-foreign-library
-            %foreign-symbol-pointer)))
+            %foreign-symbol-pointer
+            callback
+            get-callback)))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -349,7 +356,6 @@
 ;;; need to be exported properly from cackage cmp
 ;;;
 
-#|
 (defmacro defcallback (name-and-options return-type-kw arguments &rest body)
   (let ((function-name (if (consp name-and-options)
                            (car name-and-options)
@@ -434,8 +440,6 @@
                                            (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
                                            "cl-result" nil)))
                            (llvm-sys:create-ret cmp::*irbuilder* c-result)))))))))))))
-
-|#
 
 (defmacro callback (sym)
   `(%dlsym (mangled-callback-name ',sym)))
