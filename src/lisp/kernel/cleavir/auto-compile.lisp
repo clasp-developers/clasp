@@ -34,10 +34,6 @@
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (setq core:*defun-inline-hook* 'defun-inline-hook)
   (setq core:*proclaim-hook* 'proclaim-hook))
-  
-(defparameter *simple-environment* nil)
-(defvar *code-walker* nil)
-(export '(*simple-environment* *code-walker*))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

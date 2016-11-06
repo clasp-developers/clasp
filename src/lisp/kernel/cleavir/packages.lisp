@@ -1,7 +1,7 @@
 (cl:in-package #:common-lisp-user)
 
 (defpackage #:ltv
-  (:use #:common-lisp #:cmp)
+  (:use #:common-lisp)
   (:export
    #:reference-literal
    #:compile-reference-to-load-time-value

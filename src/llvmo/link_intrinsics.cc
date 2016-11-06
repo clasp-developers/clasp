@@ -70,10 +70,20 @@ using namespace core;
 #pragma GCC visibility push(default)
 
 namespace llvmo {
+core::T_sp  global_arg0;
+core::T_sp  global_arg1;
+core::T_sp  global_arg2;
 void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp arg2) {
+  global_arg0 = arg0;
+  global_arg1 = arg1;
+  global_arg2 = arg2;
   switch (err) {
   case noFunctionBoundToSymbol:
-    SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % _rep_(arg0));
+    {
+      core::Symbol_sp sym(gc::As<core::Symbol_sp>(arg0));
+      SIMPLE_ERROR(BF("There is no function bound to the symbol %s") % sym->fullName());
+    }
+    break;
   case badKeywordArgument:
     SIMPLE_ERROR(BF("Bad keyword argument %s") % _rep_(arg0));
   case couldNotCoerceToClosure:
@@ -85,17 +95,17 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
   case unboundSymbolValue:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s is unbound") % sym->_Name->c_str());
+      SIMPLE_ERROR(BF("The symbol %s is unbound") % sym->fullName() );
     };
   case unboundSymbolFunction:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s has no function bound to it") % sym->_Name->c_str());
+      SIMPLE_ERROR(BF("The symbol %s has no function bound to it") % sym->fullName() );
     }
   case unboundSymbolSetfFunction:
     {
       core::Symbol_sp sym = gc::As<core::Symbol_sp>(arg0);
-      SIMPLE_ERROR(BF("The symbol %s has no setf function bound to it") % sym->_Name->c_str());
+      SIMPLE_ERROR(BF("The symbol %s has no setf function bound to it") % sym->fullName() );
     }
   default:
     SIMPLE_ERROR(BF("An intrinsicError %d was signaled and there needs to be a more descriptive error message for it in gctools::intrinsic_error arg0: %s arg1: %s arg2: %s") % err % _rep_(arg0) % _rep_(arg1) % _rep_(arg2));
