@@ -120,25 +120,10 @@ ALWAYS_INLINE void mv_lexicalFunctionRead(core::T_mv *resultP, int depth, int in
 }
 
 
-ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::T_sp &result = (*ltvP)[index];
+ALWAYS_INLINE core::T_sp *loadTimeValueReference(core::T_sp* vec, size_t index) {
+  core::T_sp &result = vec[index];
   return &result;
 }
-#if 0
-ALWAYS_INLINE core::Symbol_sp *loadTimeSymbolReference(core::LoadTimeValues_O **ltvPP, int index) {
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::Symbol_sp &result = ltvP->symbols_element(index);
-#ifdef DEBUG_LOAD_TIME_VALUES
-//        printf("%s:%d loadTimeSymbolReference@%p  index[%d]  result client@%p  value: %s\n", __FILE__, __LINE__, (*ltvPP), index, result.pbase(), _rep_(result).c_str());
-#endif
-  return &result;
-}
-#endif
-
-
 
 ALWAYS_INLINE void newTsp(core::T_sp *sharedP) {
   ASSERT(sharedP != NULL);
@@ -222,8 +207,10 @@ ALWAYS_INLINE void mv_symbolValueRead(core::T_mv *resultP, const core::Symbol_sp
 
 ALWAYS_INLINE T_O *va_symbolFunction(core::T_sp *symP) {
   core::Symbol_sp sym((gctools::Tagged)symP->raw_());
+//  printf("%s:%d:%s sym: %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(sym).c_str());
   if (!sym->fboundp()) intrinsic_error(llvmo::noFunctionBoundToSymbol, sym);
   core::Function_sp func((gc::Tagged)(sym)->_Function.theObject);
+//  printf("%s:%d:%s -> %p\n", __FILE__, __LINE__, __FUNCTION__, func.raw_());
   return func.raw_();
 }
 };
@@ -261,12 +248,8 @@ ALWAYS_INLINE T_O *cc_precalcValue(core::LoadTimeValues_O **tarray, size_t idx) 
   return res;
 }
 
-ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::LoadTimeValues_O **ltvPP, size_t index) {
-  ASSERT(ltvPP != NULL);
-  ASSERT(*ltvPP != NULL);
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::T_sp &result = ltvP->data_element(index);
+ALWAYS_INLINE core::T_O **cc_loadTimeValueReference(core::T_sp* vec, size_t index) {
+  core::T_sp &result = vec[index];
   return &result.rawRef_();
 }
 
@@ -421,10 +404,12 @@ ALWAYS_INLINE char *cc_getPointer(core::T_O *pointer_object) {
 extern "C" {
 
 ALWAYS_INLINE void setParentOfActivationFrameFromClosure(core::T_sp *resultP, core::T_O *closureRaw) {
+//  printf("%s:%d:%s  closureRaw = %p\n", __FILE__, __LINE__, __FUNCTION__, closureRaw);
   core::T_O* parentP;
   if (closureRaw != NULL ) {
     Closure_sp closure = Closure_sp((gctools::Tagged)closureRaw);
     T_sp activationFrame = closure->closedEnvironment();
+//    printf("%s:%d:%s     activationFrame = %p\n", __FILE__, __LINE__, __FUNCTION__, activationFrame.raw_());
     parentP =  activationFrame.raw_();
   } else {
     parentP = _Nil<core::T_O>().raw_();

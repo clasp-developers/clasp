@@ -36,11 +36,6 @@
 Set this to other IRBuilders to make code go where you want")
 
 
-(defvar *irbuilder-ltv-function-alloca* nil
-  "Maintains an IRBuilder for the load-time-value function alloca area")
-(defvar *irbuilder-ltv-function-body* nil
-  "Maintain an IRBuilder for the load-time-value body area")
-
 (defvar *irbuilder-function-alloca* nil
   "Maintains an IRBuilder for function alloca instructions")
 (defvar *irbuilder-function-body* nil
@@ -220,6 +215,10 @@ Boehm and MPS use a single pointer"
 (defvar +tsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+) nil))  ;; "T_sp"
 (defvar +tsp[0]+ (llvm-sys:array-type-get +tsp+ 0))
 (defvar +tsp[0]*+ (llvm-sys:type-get-pointer-to +tsp[0]+))
+(defvar +tsp[1]+ (llvm-sys:array-type-get +tsp+ 1))
+(defvar +tsp[1]*+ (llvm-sys:type-get-pointer-to +tsp[1]+))
+(defvar +tsp[2]+ (llvm-sys:array-type-get +tsp+ 2))
+(defvar +tsp[2]*+ (llvm-sys:type-get-pointer-to +tsp[2]+))
 (defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
@@ -544,7 +543,7 @@ and initialize it with an array consisting of one function pointer."
                  (progn (llvm-sys:get-or-insert-function module (llvm-sys:get-name orig-func) (llvm-sys:get-function-type orig-func))
                    (bformat t "The function %s is in intrinsics\n" name)
                    (llvm-sys:get-function module (llvm-sys:get-name orig-func)))
-                 (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
+                 (irc-function-create (llvm-sys:function-type-get return-ty args-ty varargs)
                                            'llvm-sys::External-linkage
                                            name
                                            module))))
@@ -553,12 +552,15 @@ and initialize it with an array consisting of one function pointer."
 
 ;;#+(or)
 (defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
-  (let ((fn (llvm-sys:function-create (llvm-sys:function-type-get return-ty args-ty varargs)
-				      'llvm-sys::External-linkage
-				      name
-				      module)))
-    (when does-not-throw (llvm-sys:set-does-not-throw fn))
-    (when does-not-return (llvm-sys:set-does-not-return fn))))
+  (let ((fnattrs nil))
+    (when does-not-throw (push 'llvm-sys:attribute-no-unwind fnattrs))
+    (when does-not-return (push 'llvm-sys:attribute-no-return fnattrs))
+    (push '("no-frame-pointer-elim" "false") fnattrs)
+    (push "no-frame-pointer-elim-non-leaf" fnattrs)
+    (cmp:irc-function-create (llvm-sys:function-type-get return-ty args-ty varargs)
+                             'llvm-sys::External-linkage
+                             name module
+                             :function-attributes fnattrs)))
 
 (defun primitive (module name return-ty args-ty &key varargs does-not-throw does-not-return )
   (mapc #'(lambda (x)
@@ -589,31 +591,31 @@ and initialize it with an array consisting of one function pointer."
 
 (defun define-primitives-in-module (module)
 
-  (primitive-nounwind module "ltvc_get_or_create_load_time_value_array" +void+ (list +ltv**+ +i8*+ +size_t+))
+  (primitive-nounwind module "ltvc_get_or_create_load_time_value_array" +void+ (list +i8*+ +size_t+))
   (primitive-nounwind module "ltvc_assign_source_file_info_handle" +void+ (list +i8*+ +i8*+ +size_t+ +i32+ +i32*+))
-  (primitive-nounwind module "ltvc_make_nil" +void+ (list +ltv**+ +size_t+))
-  (primitive-nounwind module "ltvc_make_t" +void+ (list +ltv**+ +size_t+))
-  (primitive-nounwind module "ltvc_make_ratio" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_cons" +void+ (list +ltv**+ +size_t+))
-  (primitive-nounwind module "ltvc_cons_fill" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_array" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_setf_row_major_aref" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_hash_table" +void+ (list +ltv**+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_setf_gethash" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_fixnum" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
-  (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_bignum" +void+ (list +ltv**+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_random_state" +void+ (list +ltv**+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_symbol" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_character" +void+ (list +ltv**+ +size_t+ +uintptr_t+))
-  (primitive-nounwind module "ltvc_make_base_string" +void+ (list +ltv**+ +size_t+ +i8*+))
-  (primitive-nounwind module "ltvc_make_pathname" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_package" +void+ (list +ltv**+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_built_in_class" +void+ (list +ltv**+ +size_t+ +size_t+))
-  (primitive-nounwind module "ltvc_make_float" +void+ (list +ltv**+ +size_t+ +float+))
-  (primitive-nounwind module "ltvc_make_double" +void+ (list +ltv**+ +size_t+ +double+))
-  (primitive-nounwind module "ltvc_make_complex" +void+ (list +ltv**+ +size_t+ +size_t+ +size_t+))
-  (primitive          module "ltvc_set_ltv_funcall" +void+ (list +ltv**+ +size_t+ +fn-prototype*+))
+  (primitive-nounwind module "ltvc_make_nil" +t*+ nil)
+  (primitive-nounwind module "ltvc_make_t" +t*+ nil)
+  (primitive-nounwind module "ltvc_make_ratio" +t*+ (list +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_cons" +t*+ (list +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_list" +t*+ (list +size_t+) :varargs t)
+  (primitive-nounwind module "ltvc_make_array" +t*+ (list +t*+ +t*+))
+  (primitive-nounwind module "ltvc_setf_row_major_aref" +t*+ (list +t*+ +size_t+ +t*+))
+  (primitive-nounwind module "ltvc_make_hash_table" +t*+ (list +t*+))
+  (primitive-nounwind module "ltvc_setf_gethash" +t*+ (list +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_fixnum" +t*+ (list +uintptr_t+))
+  (primitive-nounwind module "ltvc_make_package" +t*+ (list +t*+))
+  (primitive-nounwind module "ltvc_make_bignum" +t*+ (list +t*+))
+  (primitive-nounwind module "ltvc_make_random_state" +t*+ (list +t*+))
+  (primitive-nounwind module "ltvc_make_symbol" +t*+ (list +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_character" +t*+ (list +uintptr_t+))
+  (primitive-nounwind module "ltvc_make_base_string" +t*+ (list +i8*+))
+  (primitive-nounwind module "ltvc_make_pathname" +t*+ (list +t*+ +t*+ +t*+ +t*+ +t*+ +t*+))
+  (primitive-nounwind module "ltvc_make_package" +t*+ (list +t*+))
+  (primitive-nounwind module "ltvc_make_built_in_class" +t*+ (list +t*+))
+  (primitive-nounwind module "ltvc_make_float" +t*+ (list +float+))
+  (primitive-nounwind module "ltvc_make_double" +t*+ (list +double+))
+  (primitive-nounwind module "ltvc_make_complex" +t*+ (list +t*+ +t*+))
+  (primitive          module "ltvc_set_ltv_funcall" +t*+ (list +fn-prototype*+))
   (primitive          module "ltvc_funcall" +void+ (list +fn-prototype*+))
 
   
@@ -743,7 +745,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "llvm.ssub.with.overflow.i64" +{i64.i1}+ (list +i64+ +i64+))
   
   (primitive-nounwind module "copyLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +size_t+))
-  (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "loadTimeValueReference" +tsp*+ (list +tsp*+ +size_t+))
   (primitive-nounwind module "getLoadTimeValue" +void+ (list +tsp*-or-tmv*+ +ltv**+ +i32+))
   (primitive-nounwind module "dumpLoadTimeValues" +void+ (list +ltv**+))
 
@@ -776,11 +778,11 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_readCell" +t*+ (list +t*+))
   (primitive-nounwind module "cc_t_reference" +t**+ nil)
   (primitive-nounwind module "cc_nil_reference" +t**+ nil)
-  (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +ltv**+ +size_t+))
+  (primitive-nounwind module "cc_loadTimeValueReference" +t**+ (list +tsp*+ +size_t+))
   (primitive-nounwind module "cc_fetch" +t*+ (list +t*+ +size_t+))
   (primitive-nounwind module "cc_va_arg" +t*+ (list +VaList_S*+))
   (primitive-nounwind module "cc_copy_va_list" +void+ (list +size_t+ +t*[0]*+ +VaList_S*+))
-  (primitive-nounwind module "cc_register_roots" +void+ (list +t*+ +size_t+ ) :varargs t)
+  (primitive-nounwind module "cc_register_roots" +void+ (list +tsp*+ +size_t+ ) :varargs t)
   (primitive-nounwind module "cc_enclose" +t*+ (list +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive-nounwind module "cc_stack_enclose" +t*+ (list +i8*+ +t*+ +fn-prototype*+ +i32*+ +size_t+ +size_t+ +size_t+ +size_t+ ) :varargs t)
   (primitive-nounwind module "cc_saveThreadLocalMultipleValues" +void+ (list +tmv*+ +mv-struct*+))
@@ -848,10 +850,12 @@ It has appending linkage.")
 (defvar *gv-current-function-name* nil "Store the global value in the module of the current function name ")
 
 
-(defun quick-module-dump (module file-name-prefix)
+(defparameter *quick-module-index* 0)
+(defun quick-module-dump (module dir file-name)
   "Dump the module as a .ll file"
-  (let* ((output-name (bformat nil "%s-%s.ll" file-name-prefix (llvm-sys:module-id module)))
-         (fout (open output-name :direction :output)))
-    (unwind-protect
-         (llvm-sys:dump-module module fout)
-      (close fout))))
+  (if *debug-dump-module*
+      (let* ((output-name (bformat nil "%s/module-%05d-%s.ll" dir (incf *quick-module-index*) file-name))
+             (fout (open output-name :direction :output)))
+        (unwind-protect
+             (llvm-sys:dump-module module fout)
+          (close fout)))))

@@ -18,13 +18,12 @@
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
 (load "sys:kernel;cleavir;auto-compile.lisp")
-
-(setq cmp::*debug-dump-module* t)
-(compile-file "sys:tests;ti.lsp")
-
 (load "sys:kernel;cleavir;inline.lisp")
 
-(clasp-cleavir:cleavir-compile-file "sys:kernel;clos;std-slot-value.lsp")
+
+
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")
 
 
 

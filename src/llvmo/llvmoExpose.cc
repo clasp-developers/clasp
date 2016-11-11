@@ -611,6 +611,8 @@ namespace llvmo {
   CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::setName);
   CL_LISPIFY_NAME(getType);
   CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::getType);;
+  CL_LISPIFY_NAME(replaceAllUsesWith);
+  CL_EXTERN_DEFMETHOD(Value_O, &llvm::Value::replaceAllUsesWith);;
 
 }; // llvmo
 
@@ -1099,13 +1101,18 @@ CL_DEFMETHOD Function_sp ExecutionEngine_O::find_function_named(core::Str_sp nam
   return translate::to_object<llvm::Function *>::convert(this->wrappedPtr()->FindFunctionNamed(name->get().c_str()));
 }
 
-
-
-  CL_LISPIFY_NAME(clearAllGlobalMappings);
-  CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::clearAllGlobalMappings);
-  CL_LISPIFY_NAME(getDataLayout);
-  CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getDataLayout);
-
+CL_LISPIFY_NAME(clearAllGlobalMappings);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::clearAllGlobalMappings);
+CL_LISPIFY_NAME(getDataLayout);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getDataLayout);
+CL_LISPIFY_NAME(getPointerToGlobalIfAvailable_GlobalValue);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, (void*(llvm::ExecutionEngine::*)(const llvm::GlobalValue *))&llvm::ExecutionEngine::getPointerToGlobalIfAvailable);
+CL_LISPIFY_NAME(getPointerToGlobalIfAvailable_StringRef);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, (void*(llvm::ExecutionEngine::*)(llvm::StringRef))&llvm::ExecutionEngine::getPointerToGlobalIfAvailable);
+CL_LISPIFY_NAME(getGlobalValueAddress);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getGlobalValueAddress);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getDataLayout);
+CL_EXTERN_DEFMETHOD(ExecutionEngine_O, &llvm::ExecutionEngine::getOrEmitGlobalVariable);
 
 }; // llvmo
 
@@ -2026,6 +2033,21 @@ CL_DEFMETHOD llvm::InvokeInst *IRBuilder_O::CreateInvoke(llvm::Value *Callee, ll
   return this->wrappedPtr()->CreateInvoke(Callee, NormalDest, UnwindDest, array_ref_vector_Args, Name);
 }
 
+CL_LISPIFY_NAME(CreateConstGEP2_32);
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_32(llvm::Type* ty, llvm::Value* ptr, int idx0, int idx1, const llvm::Twine &Name) {
+  int uidx0 = static_cast<int>(idx0);
+  int uidx1 = static_cast<int>(idx1);
+  return this->wrappedPtr()->CreateConstGEP2_32(ty,ptr,uidx0, uidx1,Name);
+}
+
+CL_LISPIFY_NAME(CreateConstGEP2_64);
+CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name) {
+  size_t uidx0 = static_cast<size_t>(idx0);
+  size_t uidx1 = static_cast<size_t>(idx1);
+  return this->wrappedPtr()->CreateConstGEP2_64(Ptr,uidx0, uidx1,Name);
+}
+CL_EXTERN_DEFMETHOD(IRBuilder_O,&IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64);
+
 CL_LISPIFY_NAME("CreateInBoundsGEP");
 CL_DEFMETHOD llvm::Value *IRBuilder_O::CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name) {
   vector<llvm::Value *> vector_IdxList;
@@ -2168,8 +2190,8 @@ CL_EXTERN_DEFMETHOD(IRBuilder_O, (llvm::Value *(IRBuilder_O::ExternalType::*)(ll
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP1_64);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP1-64);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP1_64);
-  CL_LISPIFY_NAME(CreateConstGEP2-64);
-  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_64);
+//  CL_LISPIFY_NAME(CreateConstGEP2-64);
+//  CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstGEP2_64);
   CL_LISPIFY_NAME(CreateConstInBoundsGEP2-64);
   CL_EXTERN_DEFMETHOD(IRBuilder_O, &IRBuilder_O::ExternalType::CreateConstInBoundsGEP2_64);
   CL_LISPIFY_NAME(CreateStructGEP);
@@ -2447,6 +2469,11 @@ CL_DEFUN Function_sp llvm_sys__FunctionCreate(FunctionType_sp tysp, llvm::Global
   return funcsp;
 };
 
+CL_LISPIFY_NAME("setHasUWTable");
+CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setHasUWTable);
+CL_LISPIFY_NAME("setDoesNotThrow");
+CL_EXTERN_DEFMETHOD(Function_O,&llvm::Function::setDoesNotThrow);
+
 CL_LISPIFY_NAME("getArgumentList");
 CL_DEFMETHOD core::List_sp Function_O::getArgumentList() {
   ql::list l(_lisp);
@@ -2486,6 +2513,10 @@ CL_DEFMETHOD void Function_O::appendBasicBlock(BasicBlock_sp basicBlock) {
   CL_EXTERN_DEFMETHOD(Function_O, &llvm::Function::setPersonalityFn);
   CL_LISPIFY_NAME(addFnAttr);
   CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::Attribute::AttrKind)) & llvm::Function::addFnAttr);;
+//CL_LISPIFY_NAME(addFnAttr1String);
+//CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef)) & llvm::Function::addFnAttr);;
+CL_LISPIFY_NAME(addFnAttr2String);
+CL_EXTERN_DEFMETHOD(Function_O, (void (llvm::Function::*)(llvm::StringRef,llvm::StringRef)) & llvm::Function::addFnAttr);;
 ;
 
 

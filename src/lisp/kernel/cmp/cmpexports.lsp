@@ -6,6 +6,7 @@
           *irbuilder*
           +ltv*+
           irc-function-create
+          irc-bclasp-function-create
           +fn-prototype+
           *all-functions-for-one-compile*
           *cleavir-compile-file-hook*
@@ -18,6 +19,7 @@
           *debug-compile-file*
           *debug-dump-module*
           *generate-compile-file-load-time-values*
+          *load-time-initializer-environment*
           *gv-current-function-name*
           *gv-source-file-info-handle*
           *gv-source-namestring*
@@ -30,6 +32,7 @@
           *run-time-execution-engine*
           *run-time-literal-holder*
           *run-time-values-table-name*
+          *run-time-values-table*
           *run-time-values-table-global-var*
           *the-module*
           +cons-tag+
@@ -49,6 +52,10 @@
           +mv-struct+
           +size_t+
           +t*+
+          +tsp[0]+
+          +tsp+
+          +tsp[0]*+
+          +tsp*+
           +t**+
           calling-convention-args
           calling-convention-args.va-arg
@@ -117,6 +124,7 @@
           jit-constant-unique-string-ptr
           jit-function-name
           jit-make-global-string-ptr
+          make-boot-function-global-variable
           llvm-link
           link-intrinsics-module
           load-bitcode
@@ -134,7 +142,6 @@
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
-          with-ltv-function-codegen
           compile-reference-to-literal
           compile-reference-to-load-time-value
           ltv-global
@@ -150,8 +157,7 @@
           compile-error-if-wrong-number-of-arguments
           compile-error-if-too-many-arguments
           compile-throw-if-excess-keyword-arguments
-          *irbuilder-ltv-function-body*
-          *irbuilder-ltv-function-alloca*
+          *irbuilder-function-alloca*
           irc-get-cleanup-landing-pad-block
           *gv-source-debug-namestring*
           *source-debug-offset*
@@ -159,6 +165,15 @@
           irc-get-terminate-landing-pad-block
           irc-function-cleanup-and-return
           +RUN-AND-LOAD-TIME-VALUE-HOLDER-GLOBAL-VAR-TYPE+
+          ))
+
+;;; exports for runall
+(export '(
+          with-make-new-run-all
+          with-run-all-entry-codegen
+          with-run-all-body-codegen
+          ltv-global
+          generate-load-time-values
           ))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -169,6 +184,25 @@
 (in-package :literal)
 
 (export '(
+          next-value-table-holder-name
+          make-constant-call
+          make-constant-creator
+          run-all-add-node
+          constant-runtime-p
+          constant-runtime-index
+          constant-runtime-object
+          constant-creator-p
+          constant-creator-index
+          constant-creator-name
+          constant-creator-arguments
+          constant-side-effect-p
+          constant-side-effect-name
+          constant-side-effect-arguments
+          constant-call-p
+          constant-call-function
+          constant-call-source-pos-info
+          constant-call-holder
+          number-of-entries
           reference-literal
           compile-reference-to-symbol
           codegen-rtv
@@ -181,9 +215,10 @@
           compile-ltv-thunk
           load-time-value-reference
           get-load-time-value
-          *load-time-value-holder-global-var*
           copy-load-time-value
+          with-coalesce-ltv
           with-ltv
+          with-rtv
           )
         )
 

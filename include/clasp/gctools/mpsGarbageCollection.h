@@ -141,7 +141,7 @@ extern mps_res_t main_thread_roots_scan(mps_ss_t GC_SCAN_STATE, void *p, size_t 
 
 
 namespace gctools {
-  void mps_register_roots(gctools::Tagged* root_address, size_t num_roots);
+  void mps_register_roots(void* root_address, size_t num_roots);
 };
 
 namespace gctools {

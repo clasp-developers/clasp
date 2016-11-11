@@ -16,7 +16,7 @@
     (cond
       ((= index 0) (cmp:irc-create-call "cc_nil_value" nil "NIL"))
       ((= index 1) (cmp:irc-create-call "cc_t_value" nil "T"))
-      (t (cmp:irc-create-call "cc_precalcValue" (list (cmp:ltv-global) (%size_t index)) label)))))
+      (t (cmp:irc-create-call "cc_precalcValue" (list (ltv:ltv-global) (%size_t index)) label)))))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))
@@ -277,7 +277,7 @@
              (func (or (llvm-sys:get-function cmp:*the-module* intrinsic-name)
                        (let ((arg-types (make-list (length args) :initial-element cmp:+t*+))
                              (varargs nil))
-                         (setq func (llvm-sys:function-create
+                         (setq func (cmp:irc-function-create
                                      (llvm-sys:function-type-get cmp:+return_type+ arg-types varargs)
                                      'llvm-sys::External-linkage
                                      intrinsic-name
@@ -292,7 +292,7 @@
          (func (or (llvm-sys:get-function cmp:*the-module* foreign-name)
                    (let* ((arg-types (make-list (length arguments) :initial-element cmp:+t*+))
                           (varargs nil))
-                     (llvm-sys:function-create
+                     (cmp:irc-function-create
                       (llvm-sys:function-type-get cmp:+t*+ arg-types varargs)
                       'llvm-sys::External-linkage
                       foreign-name

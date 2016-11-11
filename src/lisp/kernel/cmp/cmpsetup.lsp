@@ -29,6 +29,7 @@
 (defvar *debug-attach-debugging-info-to-value-frames* t)
 
 
+
 ;; Use the DebugIRPass to add self referencing debugging informato to IR
 (defvar *debug-ir* nil)
 
@@ -44,6 +45,9 @@
 
 
 (defvar *debug-dump-module* nil)
+
+
+
 (defvar *debug-link-options* nil)
 
 

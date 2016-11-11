@@ -48,10 +48,10 @@ void rawHeaderDescribe(uintptr_t *rawheaderP) {
 };
 
 namespace gctools  {
-void boehm_register_roots(gctools::Tagged* root_address, size_t num_roots)
+void boehm_register_roots(void* root_address, size_t num_roots)
 {
-  gctools::Tagged* dest = reinterpret_cast<gctools::Tagged*>(GC_MALLOC_UNCOLLECTABLE(sizeof(gctools::Tagged)*num_roots));
-  std::memcpy(dest,root_address,sizeof(gctools::Tagged)*num_roots);
+  core::T_sp* dest = reinterpret_cast<core::T_sp*>(GC_MALLOC_UNCOLLECTABLE(sizeof(core::T_sp)*num_roots));
+  std::memcpy(dest,root_address,sizeof(core::T_sp)*num_roots);
 }
 
 }

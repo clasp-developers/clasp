@@ -1516,7 +1516,7 @@ CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
-CL_DOCSTRING("setf_findClass");
+CL_DOCSTRING("setf_find_class");
 CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
   if (!clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
@@ -1526,9 +1526,7 @@ CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool erro
   }
   HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
   T_sp oldClass = eval::funcall(cl::_sym_findClass, name, _Nil<T_O>());
-  if (clos__classp(oldClass)) {
-    SIMPLE_ERROR(BF("The built-in class associated to the CL specifier %s cannot be changed") % _rep_(name));
-  } else if (newValue.nilp()) {
+  if (newValue.nilp()) {
     ht->remhash(name);
   } else {
     ht->hash_table_setf_gethash(name, newValue);

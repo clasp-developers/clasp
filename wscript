@@ -236,7 +236,7 @@ class variant(object):
     def configure_for_release(self,cfg):
         cfg.define("_RELEASE_BUILD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O3', '-g' ])
-        cfg.env.append_value('CFLAGS', [ '-O3', '-g' ])
+        cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         if (os.getenv("CLASP_RELEASE_CXXFLAGS") != None):
             cfg.env.append_value('CXXFLAGS', os.getenv("CLASP_RELEASE_CXXFLAGS").split() )
         if (os.getenv("CLASP_RELEASE_LINKFLAGS") != None):
@@ -868,9 +868,10 @@ class run_aclasp(Task.Task):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
         cmd = [ self.inputs[0].abspath(),
                 "--ignore-image",
+#                "--feature", "no-implicit-compilation",
                 "--feature", "clasp-min",
-                "--feature", "clasp-builder",
                 "--feature", "debug-run-clang",
+                "--eval", '(load "source-dir:src;lisp;kernel;clasp-builder.lsp")',
                 "--eval", "(load-aclasp)",
                 "--"] +  self.bld.clasp_aclasp
         print("  run_aclasp cmd: %s" % cmd)
@@ -894,9 +895,10 @@ class compile_aclasp(Task.Task):
             cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--ignore-image",
+                      "--feature", "iclasp",
                       "--feature", "clasp-min",
-                      "--feature", "clasp-builder",
                       "--feature", "debug-run-clang",
+                      "--eval", '(load "source-dir:src;lisp;kernel;clasp-builder.lsp")',
                       "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_aclasp

@@ -136,7 +136,7 @@ When this is T a LOT of graphs will be generated.")
     (let* ((main-fn-name lambda-name) ;;(format nil "cl->~a" lambda-name))
 	   (cmp:*current-function-name* (cmp:jit-function-name main-fn-name))
 	   (cmp:*gv-current-function-name* (cmp:jit-make-global-string-ptr cmp:*current-function-name* "fn-name"))
-	   (fn (llvm-sys:function-create
+	   (fn (cmp:irc-function-create
 		cmp:+fn-prototype+
 		'llvm-sys:internal-linkage
 		(cmp:jit-function-name main-fn-name) ;cmp:*current-function-name*)
@@ -325,7 +325,7 @@ When this is T a LOT of graphs will be generated.")
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (result (cmp:irc-create-call "cc_precalcValue" (list (cmp:ltv-global) idx) label)))
+           (result (cmp:irc-create-call "cc_precalcValue" (list (ltv:ltv-global) idx) label)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -1075,7 +1075,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (cmp:cmp-log-dump cmp:*the-module*)
         (cmp:link-intrinsics-module cmp:*the-module*)
         (when cmp:*debug-dump-module*
-          (cmp:quick-module-dump cmp:*the-module* "/tmp/cclasp-compile-module-pre-optimize"))
+          (cmp:quick-module-dump cmp:*the-module* "/tmp" "cclasp-compile-module-pre-optimize"))
         (cmp:cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
         (if (not cmp:*run-time-execution-engine*)
             ;; SETUP THE *run-time-execution-engine* here for the first time
@@ -1113,7 +1113,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (core:*use-cleavir-compiler* t))
     (multiple-value-bind (fn kind #|| more ||#)
 	(compile-form form)
-      (cmp:with-ltv-function-codegen (result ltv-env)
+      (ltv:with-ltv-function-codegen (result ltv-env)
 	(cmp:irc-create-call "invokeTopLevelFunction"
                              (list
                               result 
@@ -1123,7 +1123,17 @@ that llvm function. This works like compile-lambda-function in bclasp."
                               (cmp:irc-size_t-*current-source-pos-info*-filepos)
                               (cmp:irc-size_t-*current-source-pos-info*-lineno)
                               (cmp:irc-size_t-*current-source-pos-info*-column)
-                              cmp:*load-time-value-holder-global-var*))))))
+                              ltv:*load-time-value-holder-global-var*))))))
+
+
+(defun cleavir-compile-file-entire-file (source-sin)
+  (let ((eof-value (gensym)))
+    (with-make-new-run-all (run-all-function)
+      (ltv:with-ltv 
+          (loop for form = (read source-sin nil eof-value)
+             until (eq form eof-value)
+             do (cleavir-compile-file-form form))
+        (cmp:make-boot-function-global-variable cmp:*the-module* run-all-function)))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
@@ -1140,9 +1150,9 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file (given-input-pathname &rest args)
   (let ((*debug-log-index* 0)
 	(cleavir-generate-ast:*compiler* 'cl:compile-file)
-        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-form)
+        (cmp:*cleavir-compile-file-hook* 'cleavir-compile-file-entire-file)
         (core:*use-cleavir-compiler* t))
-    (apply #'cmp::compile-file* #'cleavir-compile-file-form given-input-pathname args)))
+    (apply #'cmp::compile-file* #'cleavir-compile-file-entire-file given-input-pathname args)))
 
 (defmacro with-debug-compile-file ((log-file &key debug-log-on) &rest body)
   `(with-open-file (clasp-cleavir::*debug-log* ,log-file :direction :output)

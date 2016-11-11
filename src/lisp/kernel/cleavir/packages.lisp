@@ -6,6 +6,10 @@
    #:reference-literal
    #:compile-reference-to-load-time-value
    #:compile-reference-to-literal
+   #:with-ltv-function-codegen
+   #:with-ltv
+   #:ltv-global
+   #:*load-time-value-holder-global-var*
   )
   )
 

@@ -331,21 +331,26 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
+(defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
+(defvar *special-defun-symbol* (gensym "special-defun-symbol"))
+
 ;;; A temporary definition of defun - the real one is in evalmacros
-(si:fset 'defun
-         #'(lambda (def env)
-             (let ((name (second def))          ;cadr
-                   (lambda-list (third def))	; caddr
-                   (lambda-body (cdddr def)))   ; cdddr
-               (multiple-value-call
-                   (function (lambda (&optional (decl) (body) (doc) &rest rest)
-                     (declare (ignore rest))
-                     (if decl (setq decl (list (cons 'declare decl))))
-                     (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
-                       ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-                       (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
-                 (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
-         t)
+#+clasp-min
+(eval-when (:execute)
+  (si:fset 'defun
+           #'(lambda (def env)
+               (let ((name (second def))      ;cadr
+                     (lambda-list (third def)) ; caddr
+                     (lambda-body (cdddr def))) ; cdddr
+                 (multiple-value-call
+                     (function (lambda (&optional (decl) (body) (doc) &rest rest)
+                       (declare (ignore rest))
+                       (if decl (setq decl (list (cons 'declare decl))))
+                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+                         (ext::register-with-pde def `(let () ',*special-init-defun-symbol* ',name (si:fset ',name ,func nil nil ',lambda-list))))))
+                   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
+           t))
 
 (export '(defun))
 

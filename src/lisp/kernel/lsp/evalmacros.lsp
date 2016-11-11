@@ -149,18 +149,19 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                                                ,@doclist (block ,(si::function-block-name name) ,@body))))
                     ;;(bformat t "macro expansion of defun current-source-location -> %s\n" current-source-location)
                     ;;(bformat t "DEFUN global-function --> %s\n" global-function )
-                    `(let ((,fn ,global-function))
-                       ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
-                       ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
-                       (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
-                       ,@(si::expand-set-documentation name 'function doc-string)
-                       ,(and *defun-inline-hook*
-                             (funcall *defun-inline-hook* name global-function))
-                       ',name)))))
+                    `(let () ',*special-defun-symbol* ',name
+                          (let ((,fn ,global-function))
+                            ',*special-defun-symbol* ',name
+                            ;;(bformat t "Performing DEFUN   core:*current-source-pos-info* -> %s\n" core:*current-source-pos-info*)
+                            ,(ext:register-with-pde whole `(si::fset ',name ,fn nil t ',vl))
+                            (core:set-source-info ,fn ',(list 'core:current-source-file filepos lineno column))
+                            ,@(si::expand-set-documentation name 'function doc-string)
+                            ,(and *defun-inline-hook*
+                                  (funcall *defun-inline-hook* name global-function))
+                            ',name))))))
           t
           nil
           '(name lambda-list &body body))
-
 
 ;;;
 ;;; This is a no-op unless the compiler is installed

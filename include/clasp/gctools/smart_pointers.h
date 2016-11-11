@@ -178,6 +178,7 @@ public:
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
 
@@ -386,6 +387,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -700,6 +702,7 @@ public:
   inline bool objectp() const { return this->generalp() || this->consp(); };
   inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 };
 };
 
@@ -847,6 +850,7 @@ public:
   bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -972,7 +976,8 @@ public:
     return *(this->untag_object());
   };
 
-  core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
   bool _NULLp() const { return this->theObject == NULL; };
 
   template <class U>
@@ -1113,6 +1118,7 @@ public:
   };
 
   core::T_O *raw_() const { return reinterpret_cast<Type *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
   bool _NULLp() const { return this->theObject == NULL; };
 
   template <class U>

@@ -1030,6 +1030,7 @@ struct from_object<llvm::ArrayRef<llvm::Value *>> {
       _v.resize(vvals->length());
       for (int i(0), iEnd(vvals->length()); i < iEnd; ++i) {
         _v[i] = gc::As<llvmo::Value_sp>(vvals->elt(i))->wrappedPtr();
+        printf("%s:%d   Entry[%d] <-- %s\n", __FILE__, __LINE__, i, _rep_(vvals->elt(i)).c_str());
       }
       return;
     }
@@ -2317,6 +2318,8 @@ public:
 
 public:
   llvm::InvokeInst *CreateInvoke(llvm::Value *Callee, llvm::BasicBlock *NormalDest, llvm::BasicBlock *UnwindDest, core::List_sp Args, const llvm::Twine &Name = "");
+  llvm::Value* CreateConstGEP2_32(llvm::Type* ty, llvm::Value *ptr, int idx0, int idx1, const llvm::Twine &Name);
+  llvm::Value* CreateConstGEP2_64(llvm::Value *Ptr, size_t idx0, size_t idx1, const llvm::Twine &Name);
   llvm::Value *CreateInBoundsGEP(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
 
   llvm::Value *CreateExtractValue(llvm::Value *Ptr, core::List_sp IdxList, const llvm::Twine &Name = "");
