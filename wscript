@@ -437,6 +437,12 @@ def call_llvm_config(cfg, *args):
     assert len(result) > 0
     return result.strip().decode()
 
+def call_llvm_config_for_libs(cfg, *args):
+    print("call_llvm_config_for_libs  LLVM_CONFIG_BINARY_FOR_LIBS = %s" % cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
+    result = subprocess.Popen([cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS] + list(args), stdout = subprocess.PIPE).communicate()[0]
+    assert len(result) > 0
+    return result.strip().decode()
+
 def configure(cfg):
     def update_exe_search_path():
         externals = cfg.env.EXTERNALS_CLASP_DIR
@@ -463,6 +469,12 @@ def configure(cfg):
     cfg.check_waf_version(mini = '1.7.5')
     update_exe_search_path()
     cfg.env["LLVM_CONFIG_BINARY"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG")[0]
+    if (cfg.env.LLVM_CONFIG_DEBUG_PATH):
+        print("LLVM_CONFIG_DEBUG_PATH is defined: %s" % cfg.env.LLVM_CONFIG_DEBUG_PATH)
+        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.env.LLVM_CONFIG_DEBUG_PATH
+    else:
+        print("LLVM_CONFIG_DEBUG_PATH is not defined")
+        cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG_FOR_LIBS")[0]
     cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
     cfg.env["LLVM_BIN_DIR"] = call_llvm_config(cfg, "--bindir")
@@ -502,10 +514,11 @@ def configure(cfg):
         clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
     print("clasp_gc_filename = %s"%clasp_gc_filename)
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
-    llvm_lib_dir = call_llvm_config(cfg, "--libdir")
+    llvm_liblto_dir = call_llvm_config(cfg, "--libdir")
+    llvm_lib_dir = call_llvm_config_for_libs(cfg, "--libdir")
     print("llvm_lib_dir = %s" % llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = strip_libs(call_llvm_config(cfg, "--libs"))
+    llvm_libraries = strip_libs(call_llvm_config_for_libs(cfg, "--libs"))
     cfg.check_cxx(stlib = llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
     cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
     llvm_include_dir = call_llvm_config(cfg, "--includedir")
@@ -573,7 +586,7 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-Wl,-export_dynamic'])
         cfg.env.append_value('LINKFLAGS', ['-Wl,-stack_size,0x1000000'])
         lto_library_name = cfg.env.cxxshlib_PATTERN % "LTO"  # libLTO.<os-dep-extension>
-        lto_library = "%s/%s" % ( llvm_lib_dir, lto_library_name)
+        lto_library = "%s/%s" % ( llvm_liblto_dir, lto_library_name)
         cfg.env.append_value('LINKFLAGS',["-Wl,-lto_library,%s" % lto_library])
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
