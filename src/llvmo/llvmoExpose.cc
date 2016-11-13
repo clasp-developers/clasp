@@ -92,6 +92,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/core/symbolTable.h>
 
+llvm::Value* llvm_cast_error_ptr;
 namespace llvmo {
 
 
@@ -813,7 +814,7 @@ CL_DEFUN Value_sp llvm_sys__makeStringGlobal(Module_sp module, core::Str_sp sval
 // Define Value_O::__repr__ which is prototyped in llvmoExpose.lisp
   string Value_O::__repr__() const {
     stringstream ss;
-    ss << "#<" << this->_instanceClass()->classNameAsString() << " ";
+    ss << "#<" << this->_instanceClass()->classNameAsString() << "@" << (void*)this->wrappedPtr() << " ";
     string str;
     llvm::raw_string_ostream ro(str);
     if (this->wrappedPtr() == 0) {
@@ -2555,10 +2556,21 @@ CL_DEFMETHOD size_t BasicBlock_O::size() {
   return this->wrappedPtr()->size();
 }
 
+#ifdef DEBUG_DRAG
+llvm::BasicBlock* debug_BasicBlock_ptr = NULL;
+#endif
 CL_LISPIFY_NAME("BasicBlockBack");
 CL_DEFMETHOD Instruction_sp BasicBlock_O::back() {
-  llvm::Instruction &inst = this->wrappedPtr()->back();
-  return core::RP_Create_wrapped<Instruction_O, llvm::Instruction *>(&inst);
+  llvm::BasicBlock* bbp = this->wrappedPtr();
+#ifdef DEBUG_DRAG
+  debug_BasicBlock_ptr = bbp; // TODO: GET RID OF THIS, its for debugging
+#endif
+  llvm::Instruction &inst = bbp->back();
+  Instruction_sp instruction = core::RP_Create_wrapped<Instruction_O, llvm::Instruction *>(&inst);
+#ifdef DEBUG_DRAG
+  llvm::Instruction* test_instruction = instruction->wrappedPtr(); // TODO: GET RID OF THIS, its for debugging
+#endif
+  return instruction;
 }
 
 }; // llvmo

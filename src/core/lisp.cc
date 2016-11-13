@@ -951,15 +951,14 @@ T_sp Lisp_O::sourceDatabase() const {
   // be defined or bound to a package - in that case just say we are in the core package
   //
   T_sp cur;
-  if (IS_SYMBOL_UNDEFINED(_sym_STARsourceDatabaseSTAR)) {
+  if (_sym_STARsourceDatabaseSTAR.unboundp()) {
     return _Nil<T_O>();
   }
   if (!_sym_STARsourceDatabaseSTAR->specialP()) {
     return _Nil<T_O>();
   }
   cur = _sym_STARsourceDatabaseSTAR->symbolValue();
-  if (cur.nilp())
-    return cur;
+  if (cur.nilp()) return cur;
   return gc::As<SourceManager_sp>(cur);
 }
 

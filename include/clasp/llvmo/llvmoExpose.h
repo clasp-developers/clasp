@@ -719,20 +719,22 @@ struct from_object<llvm::TargetMachine *, std::true_type> {
 /* to_object translators */
 
 namespace translate {
-template <>
-struct to_object<llvm::TargetMachine *> {
-  static core::T_sp convert(llvm::TargetMachine *ptr) {
-    _G();
-    return ((core::RP_Create_wrapped<llvmo::TargetMachine_O, llvm::TargetMachine *>(ptr)));
-  }
+  template <>
+    struct to_object<llvm::TargetMachine *> {
+    static core::T_sp convert(llvm::TargetMachine *ptr) {
+      _G();
+      return ((core::RP_Create_wrapped<llvmo::TargetMachine_O, llvm::TargetMachine *>(ptr)));
+    }
+  };
 };
-};
-    ;
 
+extern llvm::Value* llvm_cast_error_ptr;
 template <typename T, typename U>
   T* llvm_cast(U* p) {
   if (!llvm::isa<T>(p)) {
-    SIMPLE_ERROR(BF("llvm_cast<T> argument of incompatible type!"));
+    // save the pointer in a global so we can take a look at it
+    llvm_cast_error_ptr = reinterpret_cast<llvm::Value*>(p);
+    SIMPLE_ERROR(BF("llvm_cast<T> argument of incompatible type - bad pointer stored in (void*)llvm_cast_error_ptr!"));
   }
   return reinterpret_cast<T*>(p);
 }

@@ -96,14 +96,12 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;; Turn off compiler debugging code once we are confident it works
 ;;;
 ;;;
-#-(or)
+#+(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
-  (defun is-debug-compiler-on () nil)
-  )
-
+  (defun is-debug-compiler-on () nil))
 
 (progn
   (defun is-debug-compiler-on ()
@@ -113,11 +111,11 @@ Options are :tagbody :go :all :eh-landing-pads
 	 (irc-intrinsic "debugPrintI32" (jit-constant-i32 ,num))
 	 nil))
   (defmacro cmp-log (fmt &rest args)
-    `(if (is-debug-compiler-on)
-	 (progn
-	   (bformat t "%s:%s " (source-file-name) (source-line-column))
-	   (bformat t ,fmt ,@args))
-	 nil))
+      `(if (is-debug-compiler-on)
+           (progn
+             (bformat t "CMP-LOG ")
+             (bformat t ,fmt ,@args))
+           nil)))
   (defmacro cmp-log-dump (fn-or-module)
     `(if (is-debug-compiler-on)
 	 (llvm-sys:dump ,fn-or-module)

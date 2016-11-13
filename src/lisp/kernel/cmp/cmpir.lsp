@@ -481,7 +481,7 @@
 (defun irc-basic-block-create (name &optional function)
   "Create a llvm::BasicBlock with (name) in the (function)"
   (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
-    (cmp-log "Created basic block <*block-name-prefix* = %s>  <name=%s>: %s\n" *block-name-prefix* name bb)
+    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s\n" *block-name-prefix* name bb)
     bb))
 
 (defun irc-get-insert-block ()
@@ -561,6 +561,8 @@
 
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
+    (cmp-log "irc-prev-inst-terminator-inst-p dumping current block:\n")
+    (cmp-log "    cur-block -> %s\n" cur-block)
     (if cur-block
 	(if (= (llvm-sys:basic-block-size cur-block) 0)
 	    nil
@@ -568,27 +570,20 @@
               (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block))))
 	nil)))
     
-
-
 (defun irc-br (block)
-  (unless block
-    (error "Destination block is nil!!!"))
-  (when (irc-prev-inst-terminator-inst-p)
-    (error "About to create a second branch from ~a" (irc-get-insert-block)))
+  (or block (error "Destination block is nil!!!"))
   (llvm-sys:create-br *irbuilder* block))
 
-
 (defun irc-branch-if-no-terminator-inst (block)
+;;; For now always create a branch - testing if the last instruction
+;;; is a terminator is not a good thing to do
+;;; and it's causing a crash
   (when (not (irc-prev-inst-terminator-inst-p))
-    (llvm-sys:create-br *irbuilder* block)))
-
-
+          (llvm-sys:create-br *irbuilder* block))
+  #+(or)(llvm-sys:create-br *irbuilder* block))
 
 (defun irc-add (lhs rhs &optional (label ""))
   (llvm-sys:create-add *irbuilder* lhs rhs label nil nil))
-
-
-
 
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))

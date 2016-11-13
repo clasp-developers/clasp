@@ -307,6 +307,8 @@ Return the same things that generate-llvm-function-from-code returns"
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
   (cmp-log "About to codegen-progn with forms: %s\n" forms)
+  (cmp-log "Dumping the module\n")
+  (cmp-log-dump *the-module*)
   (if forms
       (let ((temp-val (irc-alloca-tsp :label "temp")))
         (do* ((cur forms (cdr cur))
@@ -1442,8 +1444,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
 
-(defvar *x*)
-(defun compile-to-module-with-runall (definition env pathname)
+(defun compile-to-module-with-run-time-table (definition env pathname)
   (let* (fn function-kind wrapped-env lambda-name warnp failp
             (*load-time-value-holder-global-var*
              (llvm-sys:make-global-variable *the-module*
@@ -1463,9 +1464,9 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 (defun clasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
-      (compile-to-module-with-runall definition env pathname)
+      (compile-to-module-with-run-time-table definition env pathname)
     (when cmp:*debug-dump-module*
-      (quick-module-dump *the-module* "/tmp" "module-after-run-all"))
+      (quick-module-dump *the-module* "/tmp" "module-after-rtt"))
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (if (not *run-time-execution-engine*)
         ;; SETUP THE *run-time-execution-engine* here for the first time
@@ -1495,7 +1496,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
       #+(or)(progn
               (bformat t "constants-table = %s\n" constants-table)
               (bformat t "getGlobalValueAddress = %x\n" (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table)))
-              (setq *x* ordered-raw-constants-list)
               #+(or)(bformat t "table-address = %s\n" 
                              (llvm-sys:get-or-emit-global-variable
                               *run-time-execution-engine*
@@ -1532,6 +1532,8 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	(with-module (:module *the-module*
                               :source-namestring (namestring pathname)
                               :source-file-info-handle handle)
+          (cmp-log "Dumping module\n")
+          (cmp-log-dump *the-module*)
           (let ((*all-functions-for-one-compile* nil))
             (multiple-value-bind (compiled-function warnp failp)
                 (compile-with-hook compile-hook bind-to-name definition env pathname)
