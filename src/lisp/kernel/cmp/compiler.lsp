@@ -1065,7 +1065,7 @@ jump to blocks within this tagbody."
 ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
         (let* ((index (literal:new-table-index))
-               (value (literal:with-ltv (compile-load-time-value-thunk form))))
+               (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
           (literal:add-call "ltvc_ltv_funcall" index value)
           (literal:get-load-time-value result index))
 	(progn
