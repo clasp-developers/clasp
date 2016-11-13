@@ -298,10 +298,10 @@ the value is put into *default-load-time-value-vector* and its index is returned
         (*double-float-coalesce* (make-similarity-table #'eql))
         (*run-all-objects* nil)
         (*table-index* 0))
-    (let* ((top-level-fn (funcall body-fn))
+    (let* ((body-return-fn (funcall body-fn))
            (constants-nodes *run-all-objects*))
-      (or (llvm-sys:valuep top-level-fn)
-          (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk"))
+      (or (llvm-sys:valuep body-return-fn)
+          (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
       (labels ((ensure-llvm-value (obj)
                  "Lookup or create the llvm::Value for obj"
                  (or (gethash obj *llvm-values*)
@@ -358,8 +358,8 @@ the value is put into *default-load-time-value-vector* and its index is returned
                                                                 sorted-llvm-values))
                 (prog1 (cond
                          ((eq type :toplevel)
-                          (cmp:irc-create-call "ltvc_toplevel_funcall" (list top-level-fn)))
-                         ((eq type :ltv) top-level-fn)
+                          (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
+                         ((eq type :ltv) body-return-fn)
                          (t (error "bad type")))
                   (quick-module-dump *the-module* "/tmp" "c"))))))))))
 
@@ -368,7 +368,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
         (progn
           (incf *with-ltv-depth*)
           #+(or)(bformat t "Entering with-ltv depth %d\n" *with-ltv-depth*)
-          (do-with-ltv :ltv (lambda () (progn ,@body))))
+          (do-with-ltv :ltv (lambda () ,@body)))
      (progn
        #+(or)(bformat t "Leaving with-ltv depth %d\n" *with-ltv-depth*)
        (decf *with-ltv-depth*))))
@@ -378,7 +378,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
         (progn
           (incf *with-ltv-depth*)
           #+(or)(bformat t "Entering with-top-level-form depth %d\n" *with-ltv-depth*)
-          (do-with-ltv :toplevel (lambda () (progn ,@body))))
+          (do-with-ltv :toplevel (lambda () ,@body)))
      (progn
        #+(or)(bformat t "Leaving with-top-level-form depth %d\n" *with-ltv-depth*)
        (decf *with-ltv-depth*))))
@@ -571,6 +571,7 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
                 (codegen fn-result form fn-env)
                 (dbg-set-current-debug-location-here)))))
     (irc-verify-function fn t)
+    (or (llvm-sys:valuep fn) (error "compile-load-time-value-thunk must return an llvm::Function object - it will return ~a" fn))
     fn))
 
 
