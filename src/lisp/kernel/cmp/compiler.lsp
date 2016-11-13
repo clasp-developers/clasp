@@ -137,6 +137,10 @@ Could return more functions that provide lambda-list for swank for example"
 				    :parent-env env-around-lambda
 				    :function-form code)
 	       (cmp-log "Starting new function name: %s\n" name)
+               ;; The following injects a debugInspectT_sp at the start of the body
+               ;; it will print the address of the literal which must correspond to an entry in the
+               ;; load time values table
+               #+(or)(irc-create-call "debugInspectT_sp" (list (literal:compile-reference-to-literal :This-is-a-test)))
 	       (let ((arguments (llvm-sys:get-argument-list fn))
                      traceid)
                  (multiple-value-bind (closure argument-holder)
@@ -229,7 +233,7 @@ Return the same things that generate-llvm-function-from-code returns"
 					  :wrap-block wrap-block
 					  :block-name block-name)))))
 
-(defun codegen-closure (result lambda-or-lambda-block env #|&key (func-name-str "lambda")|#)
+(defun codegen-closure (result lambda-or-lambda-block env)
   "codegen a closure.  If result is defined then put the compiled function into result
 - otherwise return the cons of llvm-sys::Function_sp's that were compiled for the lambda"
   (assert-result-isa-llvm-value result)
@@ -254,7 +258,7 @@ Return the same things that generate-llvm-function-from-code returns"
                          funcs 
                          (irc-renv env)
                          lambda-list)
-          *all-functions-for-one-compile*))))
+          (values *all-functions-for-one-compile* compiled-fn lambda-name)))))
 
 (defun codegen-global-function-lookup (result sym env)
   (irc-intrinsic "symbolFunctionRead" result (irc-global-symbol sym env)))
@@ -303,6 +307,8 @@ Return the same things that generate-llvm-function-from-code returns"
 (defun codegen-progn (result forms env)
   "Evaluate forms discarding results but keep last one"
   (cmp-log "About to codegen-progn with forms: %s\n" forms)
+  (cmp-log "Dumping the module\n")
+  (cmp-log-dump *the-module*)
   (if forms
       (let ((temp-val (irc-alloca-tsp :label "temp")))
         (do* ((cur forms (cdr cur))
@@ -1055,30 +1061,18 @@ jump to blocks within this tagbody."
   (cmp-log "Starting codegen-load-time-value rest: %s\n" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
-    ;;; Currently if read-only-p is T there is no
-    ;;; coalescence performed - this could be added as an optimization
+;;; Currently if read-only-p is T there is no
+;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
-	(multiple-value-bind (index fn)
-	    (compile-ltv-thunk form)
-	  ;; Invoke the repl function here
-          (with-ltv-function-codegen (ltv-result ltv-env)
-            (irc-intrinsic "invokeTopLevelFunction" 
-                           ltv-result 
-                           fn
-                           (jit-constant-unique-string-ptr "load-time-value")
-                           *gv-source-file-info-handle*
-                           (irc-size_t-*current-source-pos-info*-filepos)
-                           (irc-size_t-*current-source-pos-info*-lineno)
-                           (irc-size_t-*current-source-pos-info*-column)
-                           *load-time-value-holder-global-var*))
-	  (get-load-time-value result index))
+        (let* ((index (literal:new-table-index))
+               (value (literal:with-ltv (compile-load-time-value-thunk form))))
+          (literal:add-call "ltvc_ltv_funcall" index value)
+          (literal:get-load-time-value result index))
 	(progn
 	  (cmp-log "About to generate load-time-value for COMPILE")
           ;;	  (break "Handle load-time-value for COMPILE")
 	  (let ((ltv (eval form)))
-	    (codegen-rtv result ltv env))))))
-
-
+	    (codegen-rtv result ltv))))))
 
 (defun split-vars-declares-forms (parts)
   (let ((vars (car parts))
@@ -1157,7 +1151,7 @@ jump to blocks within this tagbody."
     (let* ((func (or (llvm-sys:get-function *the-module* intrinsic-name)
                      (let ((arg-types (make-list (length args) :initial-element +t*+))
                            (varargs nil))
-                       (llvm-sys:function-create
+                       (irc-function-create
                         (llvm-sys:function-type-get +return_type+ arg-types varargs)
                         'llvm-sys::External-linkage
                         intrinsic-name
@@ -1186,7 +1180,7 @@ jump to blocks within this tagbody."
       (push (irc-smart-ptr-extract (irc-load temp-result)) args))
     (let* ((func (or (llvm-sys:get-function *the-module* foreign-name)
                      (let ((arg-types (make-list (length args) :initial-element +t*+)))
-                       (llvm-sys:function-create
+                       (irc-function-create
                         (llvm-sys:function-type-get +t*+ arg-types nil)
                         'llvm-sys::External-linkage
                         foreign-name
@@ -1256,6 +1250,7 @@ jump to blocks within this tagbody."
 
 ;;
 ;; Why does this duplicate so much functionality from codegen-literal
+#+(or)
 (defun codegen-atom (result obj env)
   "Generate code to generate the load-time-value of the atom "
   (if *generate-compile-file-load-time-values*
@@ -1277,7 +1272,7 @@ jump to blocks within this tagbody."
         (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
       ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
       ;; default module without coalescence.
-      (codegen-rtv result obj env)))
+      (codegen-rtv result obj)))
 
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt
@@ -1337,50 +1332,42 @@ jump to blocks within this tagbody."
 (defun compile-thunk (name form env)
   "Compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (let ((fn (with-new-function (fn
-                                fn-env
-                                result
-                                :function-name name
-                                :parent-env env
-                                :function-form form)
-	      (let* ((given-name (llvm-sys:get-name fn)))
-		;; Map the function argument names
-		(cmp-log "Creating repl function with name: %s\n" given-name)
-                ;;	(break "codegen repl form")
-                (dbg-set-current-debug-location-here)
-                (codegen result form fn-env)
-                (dbg-set-current-debug-location-here)
-                ))))
+  (let ((top-level-func (with-new-function (fn
+                                            fn-env
+                                            result
+                                            :function-name name
+                                            :parent-env env
+                                            :function-form form) 
+                          (let* ((given-name (llvm-sys:get-name fn)))
+                            ;; Map the function argument names
+                            (cmp-log "Creating repl function with name: %s\n" given-name)
+                            ;;	(break "codegen repl form")
+                            (dbg-set-current-debug-location-here)
+                            (codegen result form fn-env)
+                            (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")
-    (cmp-log-dump fn)
-    (irc-verify-function fn t)
-    fn))
-
-
-#||
-(defun compile-interpreted-function (name func)
-  "Compile an interpreted function, return the LLVM function and the environment that it should
-be wrapped with to make a closure"
-  (let ((code (get-code func))
-	(env (closed-environment func))
-	(fn-kind (function-kind func))
-	(lambda-list-handler (get-lambda-list-handler func)))
-    (dbg-set-current-debug-location-here)
-    (let ((fn (generate-llvm-function-from-code (symbol-name name) lambda-list-handler nil "" code env)))
-      (values fn fn-kind env))))
-||#
+    (cmp-log-dump top-level-func)
+    (irc-verify-function top-level-func t)
+    top-level-func))
 
 (defvar *optimizations-on* t)
-(defun do-optimization (module)
-  (when (and module *optimizations-on*)
+(defun do-optimization (module &optional (optimize-level :-O0) (size-level 1))
+  (declare (type (or null llvm-sys:module) module))
+  (when module
     (let* ((pass-manager-builder (llvm-sys:make-pass-manager-builder))
            (mpm (llvm-sys:make-pass-manager))
-           (fpm (llvm-sys:make-function-pass-manager module)))
-      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder 3)
-      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder 1)
+           (fpm (llvm-sys:make-function-pass-manager module))
+           (olevel (cond
+                     ((eq optimize-level :-O3) 3)
+                     ((eq optimize-level :-O2) 2)
+                     ((eq optimize-level :-O1) 1)
+                     ((eq optimize-level :-O0) 0)
+                     (t (error "Unsupported optimize-level ~a - only :-O3 :-O2 :-O1 :-O0 are allowed" optimize-level)))))
+      (llvm-sys:pass-manager-builder-setf-opt-level pass-manager-builder olevel)
+      (llvm-sys:pass-manager-builder-setf-size-level pass-manager-builder size-level)
       (llvm-sys:pass-manager-builder-setf-inliner pass-manager-builder (llvm-sys:create-always-inliner-legacy-pass))
       (llvm-sys:populate-function-pass-manager pass-manager-builder fpm)
-;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
+      ;;    (llvm-sys:populate-module-pass-manager pass-manager-builder mpm)
       (llvm-sys:populate-ltopass-manager pass-manager-builder mpm)
       (llvm-sys:do-initialization fpm)
       (let ((funcs (llvm-sys:module-get-function-list module)))
@@ -1391,6 +1378,7 @@ be wrapped with to make a closure"
 
 (defmacro with-module (( &key module
                               (optimize t)
+                              (optimize-level :-O3)
                               source-namestring
                               source-file-info-handle
                               source-debug-namestring
@@ -1409,19 +1397,39 @@ be wrapped with to make a closure"
      (multiple-value-prog1
          (with-irbuilder ((llvm-sys:make-irbuilder *llvm-context*))
            ,@body)
-       (when ,optimize (do-optimization ,module)))))
+       (when (and ,optimize ,optimize-level) (do-optimization ,module ,optimize-level )))))
 
+(defun generate-run-time-table (run-time-values)
+  "Put the constants in order they will appear in the table.
+Return the orderered-raw-constants-list and the constants-table GlobalVariable"
+  #+(or)(progn
+          (bformat t "run-time-values: vvvvvvv\n")
+          (literal::constant-list-dump run-time-values)
+          (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
+  (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
+         (ordered-raw-constant-list (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list))
+         (array-type (llvm-sys:array-type-get +tsp+ (length ordered-constant-list)))
+         (constant-table (llvm-sys:make-global-variable *the-module*
+                                                        array-type
+                                                        nil ; isConstant
+                                                        'llvm-sys:internal-linkage
+                                                        (llvm-sys:undef-value-get array-type)
+                                                        (literal:next-value-table-holder-name)))
+         (bitcast-constant-table (llvm-sys:create-bit-cast *irbuilder* constant-table +tsp[0]*+ "bitcast-table"))
+         #+(or)(holder-ptr (llvm-sys:create-geparray *irbuilder* constant-table (list (jit-constant-size_t 0) (jit-constant-size_t 0)) "table")))
+    #+(or)(progn
+            (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))
+            (bformat t "array-type = %s\n" array-type))
+    (quick-module-dump *the-module* "/tmp" "module-pre-replace")
+    (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
+    (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
+    (values ordered-raw-constant-list constant-table)))
 
-
-
-(defun clasp-compile* (bind-to-name &optional definition env pathname)
-  "Compile the definition"
-  (cmp-log "--- Entered clasp-compile*")
+(defun compile-to-module (form env pathname)
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
-      (with-debug-info-generator (:module *the-module* 
-                                          :pathname pathname)
+      (with-debug-info-generator (:module *the-module* :pathname pathname)
         (multiple-value-bind (llvm-function-from-lambda lambda-name)
-            (compile-lambda-function definition env)
+            (compile-lambda-function form env)
           (or llvm-function-from-lambda (error "There was no function returned by compile-lambda-function inner: ~a" llvm-function-from-lambda))
           (or lambda-name (error "Inner lambda-name is nil - this shouldn't happen"))
           (values llvm-function-from-lambda :function env lambda-name)))
@@ -1432,15 +1440,41 @@ be wrapped with to make a closure"
     (cmp-log-dump *the-module*)
     (link-intrinsics-module *the-module*)
     (when *debug-dump-module*
-      (quick-module-dump *the-module* "/tmp/compile-module-pre-optimize"))
+      (quick-module-dump *the-module* "/tmp" "compile-module-pre-optimize"))
+    (values fn function-kind wrapped-env lambda-name warnp failp)))
+
+
+(defun compile-to-module-with-run-time-table (definition env pathname)
+  (let* (fn function-kind wrapped-env lambda-name warnp failp
+            (*load-time-value-holder-global-var*
+             (llvm-sys:make-global-variable *the-module*
+                                            +tsp[0]+ ; type
+                                            nil      ; isConstant
+                                            'llvm-sys:internal-linkage
+                                            nil
+                                            (literal:next-value-table-holder-name)))
+            (constants-list
+             (with-rtv
+                 (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
+                   (compile-to-module definition env pathname)))))
+    (multiple-value-bind (ordered-raw-constants-list constants-table)
+        (generate-run-time-table constants-list)
+      (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table))))
+
+(defun clasp-compile* (bind-to-name &optional definition env pathname)
+  "Compile the definition"
+  (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
+      (compile-to-module-with-run-time-table definition env pathname)
+    (when cmp:*debug-dump-module*
+      (quick-module-dump *the-module* "/tmp" "module-after-rtt"))
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (if (not *run-time-execution-engine*)
-	;; SETUP THE *run-time-execution-engine* here for the first time
-	;; using the current module in *the-module*
-	;; At this point the *the-module* will become invalid because
-	;; the execution-engine will take ownership of it
-	(setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
-	(llvm-sys:add-module *run-time-execution-engine* *the-module*))
+        ;; SETUP THE *run-time-execution-engine* here for the first time
+        ;; using the current module in *the-module*
+        ;; At this point the *the-module* will become invalid because
+        ;; the execution-engine will take ownership of it
+        (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
+        (llvm-sys:add-module *run-time-execution-engine* *the-module*))
     ;; At this point the Module in *the-module* is invalid because the
     ;; execution-engine owns it
     (cmp-log "The execution-engine now owns the module\n")
@@ -1448,17 +1482,28 @@ be wrapped with to make a closure"
     (cmp-log "About to finalize-engine with fn %s\n" fn)
     (let* ((fn-name (llvm-sys:get-name fn)) ;; this is the name of the function - a string
            (cspi (ext:current-source-location))
-	   (compiled-function
-	    (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
-	     *run-time-execution-engine*
-	     lambda-name
-	     fn ;; This may not be valid anymore
-	     (irc-environment-activation-frame wrapped-env)
-	     core:*current-source-file-info*
-	     (core:source-pos-info-filepos cspi)
-	     (core:source-pos-info-lineno cspi)
-	     nil ; lambda-list, NIL for now - but this should be extracted from definition
-	     )))
+           (compiled-function
+            (llvm-sys:finalize-engine-and-register-with-gc-and-get-compiled-function
+             *run-time-execution-engine*
+             lambda-name
+             fn ;; This may not be valid anymore
+             (irc-environment-activation-frame wrapped-env)
+             core:*current-source-file-info*
+             (core:source-pos-info-filepos cspi)
+             (core:source-pos-info-lineno cspi)
+             nil #|lambda-list, NIL for now - but this should be extracted from definition|#))
+           (constants-table-address (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table))))
+      #+(or)(progn
+              (bformat t "constants-table = %s\n" constants-table)
+              (bformat t "getGlobalValueAddress = %x\n" (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table)))
+              #+(or)(bformat t "table-address = %s\n" 
+                             (llvm-sys:get-or-emit-global-variable
+                              *run-time-execution-engine*
+                              constants-table))
+              #+(or)(break "Check cmp::*x* - this is where we would get the *load-time-value-holder-name* out of the execution-engine")
+              (bformat t "compiler.lsp:1520 About to fill constants-table with %d entries\n" (length ordered-raw-constants-list)))
+      (gctools:register-roots constants-table-address ordered-raw-constants-list)
+      #+(or)(bformat t "Returned from gctools:register-roots\n")
       (values compiled-function warnp failp))))
 
 (defvar *compile-counter* 0)
@@ -1467,22 +1512,9 @@ be wrapped with to make a closure"
 (defun compile-with-hook (compile-hook name &optional definition env pathname)
   "Dispatch to clasp compiler or cleavir-clasp compiler if available.
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
-  (let ((compile-start-ns (core:clock-gettime-nanoseconds)))
-    (setf *compile-counter* (+ 1 *compile-counter*))
-    (unwind-protect
-         (progn
-           (if compile-hook
-               (progn
-                 (funcall compile-hook name definition env pathname))
-               (clasp-compile* name definition env pathname)))
-      (let* ((compile-end-ns (core:clock-gettime-nanoseconds))
-             (this-compile-ns (- compile-end-ns compile-start-ns)))
-        (setf *compile-duration-ns* (+ *compile-duration-ns* this-compile-ns))
-        (if core:*notify-on-compile*
-            (progn
-              (bformat t "Compiled name: %s\n  form: %s\n  Took: %8.3f seconds\n" 
-                       name definition (float (/ this-compile-ns 1000000000.0)))
-              (core:ihs-backtrace)))))))
+  (if compile-hook
+      (funcall compile-hook name definition env pathname)
+      (clasp-compile* name definition env pathname)))
 
 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)
@@ -1491,14 +1523,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
     (let ((*the-module* (create-run-time-module-for-compile)))
       (define-primitives-in-module *the-module*)
       ;; Link the C++ intrinsics into the module
-      (let* ((*run-time-values-table-global-var*
-	      (llvm-sys:make-global-variable *the-module*
-                                             +run-and-load-time-value-holder-global-var-type+
-					     nil
-					     'llvm-sys:external-linkage
-					     nil
-					     *run-time-values-table-name*))
-	     (pathname (if *load-pathname*
+      (let* ((pathname (if *load-pathname*
 			   (namestring *load-pathname*)
 			   "repl-code"))
 	     (handle (multiple-value-bind (the-source-file-info the-handle)
@@ -1507,16 +1532,14 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	(with-module (:module *the-module*
                               :source-namestring (namestring pathname)
                               :source-file-info-handle handle)
+          (cmp-log "Dumping module\n")
+          (cmp-log-dump *the-module*)
           (let ((*all-functions-for-one-compile* nil))
             (multiple-value-bind (compiled-function warnp failp)
                 (compile-with-hook compile-hook bind-to-name definition env pathname)
               (when bind-to-name
                 (let ((lambda-list (cadr definition)))
-                  #+(or)(format t "Setting function name: ~a definition: ~a~%" bind-to-name definition)
-                  #+(or)(format t "*all-functions-for-one-compile* -> ~a~%" *all-functions-for-one-compile*)
-                  (core:fset bind-to-name compiled-function nil t lambda-list)
-                  #+(or)(setf-symbol-function bind-to-name compiled-function)
-                  ))
+                  (core:fset bind-to-name compiled-function nil t lambda-list)))
               (values compiled-function warnp failp))))))))
 
 

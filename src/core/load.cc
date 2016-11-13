@@ -73,7 +73,6 @@ CL_DEFUN T_sp core__load_source(T_sp source, bool verbose, bool print, core::T_s
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, sfi);
   Pathname_sp pathname = cl__pathname(source);
   ASSERTF(pathname.objectp(), BF("Problem getting pathname of [%s] in loadSource") % _rep_(source));
-  ;
   Pathname_sp truename = cl__truename(source);
   ASSERTF(truename.objectp(), BF("Problem getting truename of [%s] in loadSource") % _rep_(source));
   ;
@@ -123,6 +122,11 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   bool not_a_filename = false;
 
   //        printf("%s:%d cl__load source= %s\n", __FILE__, __LINE__, _rep_(source).c_str());
+  if (verbose.notnilp()) {
+    eval::funcall(cl::_sym_format, _lisp->_true(),
+                  Str_O::create("~&;;; Loading ~s~%"),
+                  filename);
+  }
 
   /* If source is a stream, read conventional lisp code from it */
   if (cl__streamp(source)) {
@@ -194,11 +198,6 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
     }
   }
 NOT_A_FILENAME:
-  if (verbose.notnilp()) {
-    eval::funcall(cl::_sym_format, _lisp->_true(),
-                  Str_O::create("~&;;; Loading ~s~%"),
-                  filename);
-  }
   DynamicScopeManager scope(cl::_sym_STARpackageSTAR, cl__symbol_value(cl::_sym_STARpackageSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARreadtableSTAR, cl__symbol_value(cl::_sym_STARreadtableSTAR));
   scope.pushSpecialVariableAndSet(cl::_sym_STARloadPathnameSTAR, not_a_filename ? _Nil<T_O>() : source);

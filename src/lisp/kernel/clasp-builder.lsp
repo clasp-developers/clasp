@@ -164,7 +164,7 @@ Return files."
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
             (apply #'compile-file (probe-file source-path) :output-file bitcode-path
-                   :print t :verbose t :output-type :bitcode :type :kernel (entry-compile-file-options entry))
+                   :print t :verbose nil :output-type :bitcode :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
@@ -418,3 +418,6 @@ Compile the cclasp source code."
   (cmp:llvm-link (core:build-pathname #P"src/lisp/modules/asdf/asdf" :fasl)
                  :lisp-bitcode-files (list (core:build-pathname #P"src/lisp/modules/asdf/build/asdf" :bc))))
 (export '(compile-addons link-addons))
+
+(eval-when (:execute)
+  (bformat t "Loaded clasp-builder.lsp\n"))

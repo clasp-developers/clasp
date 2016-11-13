@@ -143,7 +143,6 @@ calling-convention-register-args
 *irbuilder*
 codegen-literal
 bclasp-compile-form
-with-ltv-function-codegen
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr
@@ -370,7 +369,6 @@ cmp-log
 *run-time-literal-holder*
 set-associated-funcs
 *all-functions-for-one-compile*
-with-ltv-function-codegen
 irc-intrinsic
 irc-renv
 jit-constant-unique-string-ptr

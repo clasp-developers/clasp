@@ -481,7 +481,7 @@
 (defun irc-basic-block-create (name &optional function)
   "Create a llvm::BasicBlock with (name) in the (function)"
   (let ((bb (llvm-sys:basic-block-create *llvm-context* (bformat nil "%s%s" *block-name-prefix* name) function)))
-    (cmp-log "Created basic block <*block-name-prefix* = %s>  <name=%s>: %s\n" *block-name-prefix* name bb)
+    (cmp-log "Created basic block  <*block-name-prefix* = %s>  <name=%s>: bb-> %s\n" *block-name-prefix* name bb)
     bb))
 
 (defun irc-get-insert-block ()
@@ -561,33 +561,29 @@
 
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
+    (cmp-log "irc-prev-inst-terminator-inst-p dumping current block:\n")
+    (cmp-log "    cur-block -> %s\n" cur-block)
     (if cur-block
-	(if (llvm-sys:basic-block-empty cur-block)
+	(if (= (llvm-sys:basic-block-size cur-block) 0)
 	    nil
-	    (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block)))
+            (progn
+              (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block))))
 	nil)))
     
-
-
 (defun irc-br (block)
-  (unless block
-    (error "Destination block is nil!!!"))
-  (when (irc-prev-inst-terminator-inst-p)
-    (error "About to create a second branch from ~a" (irc-get-insert-block)))
+  (or block (error "Destination block is nil!!!"))
   (llvm-sys:create-br *irbuilder* block))
 
-
 (defun irc-branch-if-no-terminator-inst (block)
+;;; For now always create a branch - testing if the last instruction
+;;; is a terminator is not a good thing to do
+;;; and it's causing a crash
   (when (not (irc-prev-inst-terminator-inst-p))
-    (llvm-sys:create-br *irbuilder* block)))
-
-
+          (llvm-sys:create-br *irbuilder* block))
+  #+(or)(llvm-sys:create-br *irbuilder* block))
 
 (defun irc-add (lhs rhs &optional (label ""))
   (llvm-sys:create-add *irbuilder* lhs rhs label nil nil))
-
-
-
 
 (defun irc-load (source &optional (label ""))
   (llvm-sys:create-load-value-twine *irbuilder* source label))
@@ -633,7 +629,9 @@
 
 (defparameter *exception-handler-cleanup-block* nil)
 (defparameter *exception-clause-types-to-handle* nil)
-
+(defparameter *default-function-attributes* '(llvm-sys:attribute-uwtable
+                                              ("no-frame-pointer-elim" "false")
+                                              "no-frame-pointer-elim-non-leaf"))
 (defmacro with-new-function (( ;; FN is bound to the function being created
 			      fn
 			      ;; FN-ENV is bound to the function environment
@@ -656,6 +654,8 @@
 			      parent-env
 			      ;; This is the form that will be compiled as the function code
 			      function-form
+                              ;; Set attributes - list of symbols, or string or string pairs
+                              (function-attributes *default-function-attributes* function-attributes-p )
 			      ;; This is the LLVM linkage - DONT USE "private" linkage - I encountered some
 			      ;; pretty subtle bugs with exception handling (I think) when I did that.
 			      ;; I currently use llvm-sys:internal-linkage or llvm-sys:external-linkage
@@ -669,12 +669,14 @@
   (let ((cleanup-block-gs (gensym "cleanup-block"))
 	(traceid-gs (gensym "traceid"))
 	(irbuilder-alloca (gensym))
+        (temp (gensym))
 	(irbuilder-body (gensym)))
     `(multiple-value-bind (,fn ,fn-env ,cleanup-block-gs #| ,traceid-gs |# ,irbuilder-alloca ,irbuilder-body ,result)
-	 (irc-function-create ,function-name ',function-form ,parent-env
-			      :function-type ,function-type
-			      :argument-names ,argument-names
-			      :linkage ,linkage)
+	 (irc-bclasp-function-create ,function-name ',function-form ,parent-env
+                                     :function-type ,function-type
+                                     :argument-names ,argument-names
+                                     :function-attributes ',function-attributes
+                                     :linkage ,linkage)
 ;;       (format t "cmpir.lsp:660 entering with-new-function~%")
        (let* ((*current-function* ,fn)
 	      (*current-function-name* (llvm-sys:get-name ,fn))
@@ -701,14 +703,29 @@
 		   (irc-function-cleanup-and-return ,fn-env ,result :return-void ,return-void))
 		 ,fn))))))))
 
+(defun irc-function-create (function-type linkage llvm-function-name module
+                            &key
+                              (function-attributes *default-function-attributes* function-attributes-p ))
+  (let* ((fn (llvm-sys:function-create function-type
+				       linkage
+				       llvm-function-name
+				       module)))
+    (dolist (temp function-attributes)
+      (cond
+        ((symbolp temp) (llvm-sys:add-fn-attr fn temp))
+        ((stringp temp) (llvm-sys:add-fn-attr2string fn temp ""))
+        ((and (consp temp) (stringp (car temp)) (stringp (cadr temp)))
+         (llvm-sys:add-fn-attr2string fn (car temp) (cadr temp)))
+        (error "Illegal function attribute ~a" temp)))
+    fn))
 
-
-
-(defun irc-function-create (lisp-function-name body env
-			    &key (function-type +fn-prototype+ function-type-p)
-			      ;; If the first argument is NOT meant to be a returned structure then set this to nil
-			      (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
-			      (linkage 'llvm-sys:internal-linkage))
+(defun irc-bclasp-function-create (lisp-function-name body env
+                                   &key
+                                     (function-type +fn-prototype+ function-type-p)
+                                     (function-attributes *default-function-attributes* function-attributes-p)
+                                     ;; If the first argument is NOT meant to be a returned structure then set this to nil
+                                     (argument-names '("result-ptr" "activation-frame-ptr") argument-names-p)
+                                     (linkage 'llvm-sys:internal-linkage))
   "Returns the new function, the lexical environment for the function 
 and the block that cleans up the function and rethrows exceptions,
 followed by the traceid for this function and then the current insert block,
@@ -717,10 +734,10 @@ and then the irbuilder-alloca, irbuilder-body."
     (when (not (and function-type-p argument-names-p))
       (error "If you provide one of function-type or argument-names you must provide both")))
   (let* ((llvm-function-name (jit-function-name lisp-function-name))
-	 (fn (llvm-sys:function-create function-type
-				       linkage
-				       llvm-function-name
-				       *the-module*))
+	 (fn (irc-function-create function-type
+                                  linkage
+                                  llvm-function-name
+                                  *the-module*))
 	 (func-env (make-function-container-environment env))
 	 cleanup-block traceid
 	 (irbuilder-cur (llvm-sys:make-irbuilder *llvm-context*))
@@ -1191,14 +1208,14 @@ If the *primitives* hashtable says that the function with (name) requires a firs
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
-  (compile-reference-to-symbol sym)
+  (literal:compile-reference-to-symbol sym)
   )
 
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
-  (compile-reference-to-symbol sym)
+  (literal:compile-reference-to-symbol sym)
   )
 
 

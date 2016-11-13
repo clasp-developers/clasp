@@ -41,8 +41,9 @@
                              :source-namestring "code-walk-using-bclasp")
         (with-debug-info-generator (:module module
                                             :pathname #P"/dev/null")
-          (with-ltv (ltv-init-fn)
-            (compile-in-env nil form env nil)))
+          (with-make-new-run-all (run-all-function)
+            (let ((fn (literal:with-ltv (compile-in-env nil form env nil))))
+              (irc-create-call "ltvc_toplevel_funcall" (list fn)))))
         (llvm-sys::module-delete module)))))
 
 (export 'code-walk-using-bclasp)

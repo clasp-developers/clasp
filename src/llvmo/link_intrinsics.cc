@@ -63,8 +63,6 @@ extern "C" {
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 
-#define DEBUG_FLOW_CONTROL 1
-
 using namespace core;
 
 #pragma GCC visibility push(default)
@@ -115,192 +113,24 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
 
 
 
-extern "C" {
-
-core::T_O* rltv_make_nil() {
-  return _Nil<core::T_O>().raw_();
-}
-
-core::T_O* rltv_make_t() {
-  return _lisp->_true().raw_();
-}
-
-gc::Tagged rltv_make_ratio(gc::Tagged num, gc::Tagged denom) {
-  return (gc::Tagged)core::Ratio_O::create(core::T_sp(num),core::T_sp(denom)).raw_();
-}
-
-gc::Tagged rltv_make_complex(gc::Tagged real, gc::Tagged imag) {
-  return (gc::Tagged)core::Complex_O::create(core::T_sp(real),core::T_sp(imag)).raw_();
-}
-
-
-gc::Tagged rltv_make_cons() {
-  return (gc::Tagged)core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>()).raw_();
-}
-
-void rltv_cons_fill( gc::Tagged tcons, gc::Tagged car, gc::Tagged cdr ) {
-  core::Cons_sp cons(tcons);
-  cons->rplaca(core::T_sp(car));
-  cons->rplacd(core::T_sp(cdr));
-}
-  
-
-gc::Tagged rltv_make_array(gc::Tagged tobj,
-                           gc::Tagged telement_type,
-                           gc::Tagged tdimensions ) {
-  core::T_sp element_type(telement_type);
-  core::List_sp dimensions = gctools::As<List_sp>(core::T_sp(tdimensions));
-  if (core::cl__length(dimensions) == 1) { // vector
-    return (gc::Tagged)core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type).raw_();
-  } else {
-    return (gc::Tagged)core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true()).raw_();
-  }
-}
-
-void rltv_setf_row_major_aref(gc::Tagged tobj,
-                              size_t row_major_index,
-                              gc::Tagged tvalue )
-{
-  core::Array_sp array = gc::As<core::Array_sp>(core::T_sp(tobj));
-  array->rowMajorAset(row_major_index,core::T_sp(tvalue));
-}
-  
-gc::Tagged rltv_make_hash_table(gc::Tagged tobj,
-                                gc::Tagged test) {
-  return (gc::Tagged)core::HashTable_O::create(core::T_sp(test)).raw_();
-}
-
-void rltv_setf_gethash(gc::Tagged tobj,
-                             gc::Tagged tkey,
-                             gc::Tagged tvalue) {
-  core::HashTable_sp hash_table = gctools::As<HashTable_sp>(core::T_sp(tobj));
-  hash_table->hash_table_setf_gethash(core::T_sp(tkey), core::T_sp(tvalue));
-}
-
-gc::Tagged rltv_make_fixnum(int64_t val) {
-  return (gc::Tagged)clasp_make_fixnum(val).raw_();
-}
-
-gc::Tagged rltv_make_bignum(gc::Tagged tbignum_string) {
-  core::Str_sp bignum_string = gctools::As<core::Str_sp>(core::T_sp(tbignum_string));
-  return (gc::Tagged)core::Bignum_O::make(bignum_string->get()).raw_();
-}
-
-gc::Tagged rltv_make_symbol(gc::Tagged tname,
-                            gc::Tagged tpackage ) {
-  core::T_sp package(tpackage);
-  core::Str_sp symbol_name = gctools::As<core::Str_sp>(core::T_sp(tname));
-  core::Symbol_sp sym;
-  if (package.notnilp()) {
-    sym = gctools::As<Package_sp>(package)->intern(symbol_name);
-  } else {
-    sym = core::Symbol_O::create(symbol_name);
-  }
-  return (gc::Tagged)sym.raw_();
-}
-
-gc::Tagged rltv_make_character(uintptr_t val) {
-  return (gc::Tagged)clasp_make_character(val).raw_();
-}
-
-gc::Tagged rltv_make_base_string(const char* str) {
-  return (gc::Tagged)core::Str_O::create(str).raw_();
-}
-
-gc::Tagged rltv_make_pathname(gc::Tagged thost,
-                              gc::Tagged tdevice,
-                              gc::Tagged tdirectory,
-                              gc::Tagged tname,
-                              gc::Tagged ttype,
-                              gc::Tagged tversion ) {
-  return (gc::Tagged)core::Pathname_O::makePathname(core::T_sp(thost),
-                                                    core::T_sp(tdevice),
-                                                    core::T_sp(tdirectory),
-                                                    core::T_sp(tname),
-                                                    core::T_sp(ttype),
-                                                    core::T_sp(tversion),
-                                                    kw::_sym_local,
-                                                    core::T_sp(thost).notnilp()).raw_();
-}
-
-gc::Tagged rltv_make_package(gc::Tagged tpackage_name ) {
-  core::Str_sp package_name = gctools::As<core::Str_sp>(core::T_sp(tpackage_name));
-  core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
-  if ( tpkg.nilp() ) {
-    // If we don't find the package - just make it
-    // a more comprehensive defpackage should be coming
-    tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
-  }
-  return (gc::Tagged)tpkg.raw_();
-}
-
-gc::Tagged rltv_make_random_state(gc::Tagged tstate) {
-  core::Str_sp state = gctools::As<core::Str_sp>(core::T_sp(tstate));
-  core::RandomState_sp random_state = core::RandomState_O::create();
-  random_state->random_state_set(state->get());
-  return (gc::Tagged)random_state.raw_();
-}
-
-gc::Tagged rltv_make_built_in_class(gc::Tagged tclass_name ) {
-  core::Symbol_sp class_name = gctools::As<core::Symbol_sp>(core::T_sp(tclass_name));
-  core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
-  if ( cl.nilp() ) {
-    SIMPLE_ERROR(BF("Could not find class %s") % class_name );
-  } else {
-    return (gc::Tagged)cl.raw_();
-  }
-}
-
-
-gc::Tagged rltv_make_float(float f) {
-  return (gc::Tagged)clasp_make_single_float(f).raw_();
-}
-
-gc::Tagged rltv_make_double(double f) {
-  return (gc::Tagged)clasp_make_double_float(f).raw_();
-}
-
-gc::Tagged rltv_set_ltv_funcall(fnLispCallingConvention fptr) {
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  return (gc::Tagged)ret.ret0;
-}
-
-void rltv_funcall(fnLispCallingConvention fptr) {
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-}
-};
 
 extern "C" {
 
-core::LoadTimeValues_O& ltvGet(core::LoadTimeValues_O** ltvPP)
-{
-  core::LoadTimeValues_O *tagged_ltvP = *ltvPP;
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  core::LoadTimeValues_O &ltv = *ltvP;
-  return ltv;
-}
 
-void register_tagged_roots(gctools::Tagged* root_address, size_t num_roots, ... ) {
+void cc_register_roots(core::T_sp* root_address, size_t num_roots, ... ) {
   va_list vl;
   va_start(vl,num_roots);
   for ( size_t i=0; i<num_roots; ++i ) {
-    root_address[i] = va_arg(vl,gctools::Tagged);
+    root_address[i] = core::T_sp(va_arg(vl,gctools::Tagged));
   }
   va_end(vl);
-#ifdef USE_MPS
-  gctools::mps_register_roots(root_address, num_roots);
-#endif
-#ifdef USE_BOEHM
-  gctools::boehm_register_roots(root_address,num_roots);
-#endif
+  register_roots_with_gc(root_address,num_roots);
 }
 
 void ltvc_get_or_create_load_time_value_array(core::LoadTimeValues_O **ltvPP, const char *moduleName, size_t numberOfLoadTimeValues) {
   core::LoadTimeValues_sp loadTimeValues = _lisp->getOrCreateLoadTimeValues(moduleName, numberOfLoadTimeValues);
   gctools::Tagged tagged = reinterpret_cast<gctools::Tagged>(loadTimeValues.raw_());
-  register_tagged_roots(reinterpret_cast<gctools::Tagged*>(ltvPP),1,tagged);
+  cc_register_roots(reinterpret_cast<core::T_sp*>(ltvPP),1,tagged);
 }
 
 
@@ -322,227 +152,190 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
 }
 
 
-void ltvc_make_nil(core::LoadTimeValues_O **ltvPP, size_t index)
+gctools::Tagged ltvc_make_nil()
 {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = _Nil<core::T_O>();
+  return _Nil<core::T_O>().tagged_();;
 }
 
-void ltvc_make_t(core::LoadTimeValues_O **ltvPP, size_t index)
+gctools::Tagged ltvc_make_t()
 {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = _lisp->_true();
+  return _lisp->_true().tagged_();
 }
 
 
-void ltvc_make_ratio(core::LoadTimeValues_O **ltvPP, size_t index,
-                     size_t num_index,
-                     size_t denom_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = core::Ratio_O::create(ltv[num_index],ltv[denom_index]);
+gctools::Tagged ltvc_make_ratio(gctools::Tagged num, gctools::Tagged denom ) {
+  return core::Ratio_O::create(core::T_sp(num),core::T_sp(denom)).tagged_();
 }
 
-void ltvc_make_complex(core::LoadTimeValues_O **ltvPP, size_t index,
-                     size_t real_index,
-                     size_t imag_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = core::Complex_O::create(ltv[real_index],ltv[imag_index]);
+gctools::Tagged ltvc_make_complex(gctools::Tagged real, gctools::Tagged imag) {
+  return core::Complex_O::create(core::T_sp(real),core::T_sp(imag)).tagged_();
 }
 
 
-void ltvc_make_cons(core::LoadTimeValues_O **ltvPP, size_t index) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = core::Cons_O::create(_Nil<core::T_O>(), _Nil<core::T_O>());
+gctools::Tagged ltvc_make_cons(gctools::Tagged car, gctools::Tagged cdr) {
+  return core::Cons_O::create(core::T_sp(car),core::T_sp(cdr)).tagged_();
 }
 
-void ltvc_cons_fill( core::LoadTimeValues_O **ltvPP, size_t index,
-                     size_t car_index,
-                     size_t cdr_index) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::Cons_sp cons = gctools::As<core::Cons_sp>(ltv[index]);
-  cons->rplaca(ltv[car_index]);
-  cons->rplacd(ltv[cdr_index]);
+gctools::Tagged ltvc_make_list(size_t num, ... ) {
+  core::T_sp first;
+  core::T_sp* cur = &first;
+  va_list va;
+  va_start(va,num);
+  for (; num; --num) {
+    gctools::Tagged p = va_arg(va, gctools::Tagged);
+    Cons_sp one = Cons_O::create(core::T_sp(p),_Nil<core::T_O>());
+    *cur = one;
+    cur = &one->_Cdr;
+  }
+  va_end(va);
+  return first.tagged_();
 }
+
   
 
-void ltvc_make_array(core::LoadTimeValues_O **ltvPP, size_t index,
-                     size_t element_type_index,
-                     size_t dimensions_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::T_sp element_type = ltv[element_type_index];
-  core::List_sp dimensions = gctools::As<List_sp>(ltv[dimensions_index]);
+gctools::Tagged ltvc_make_array(gctools::Tagged telement_type,
+                                gctools::Tagged tdimensions ) {
+  core::T_sp element_type(telement_type);
+  core::List_sp dimensions(tdimensions);
   if (core::cl__length(dimensions) == 1) // vector
   {
-    ltv[index] = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);
+    return core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type).tagged_();
   } else {
-    ltv[index] = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true());
+    return core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true()).tagged_();
   }
 }
 
-void ltvc_setf_row_major_aref(core::LoadTimeValues_O **ltvPP, size_t index,
+void ltvc_setf_row_major_aref(gctools::Tagged array_t,
                               size_t row_major_index,
-                              size_t value_index )
+                              gctools::Tagged value_t )
 {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::Array_sp array = gc::As<core::Array_sp>(ltv[index]);
-  array->rowMajorAset(row_major_index,ltv[value_index]);
+  core::Array_sp array = gc::As<core::Array_sp>(core::T_sp(array_t));
+  array->rowMajorAset(row_major_index,core::T_sp(value_t));
 }
   
-void ltvc_make_hash_table(core::LoadTimeValues_O **ltvPP, size_t index,
-                          size_t test_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = core::HashTable_O::create(ltv[test_index]);
+gctools::Tagged ltvc_make_hash_table(gctools::Tagged test_t ) {
+  return core::HashTable_O::create(core::T_sp(test_t)).tagged_();
 }
 
-void ltvc_setf_gethash(core::LoadTimeValues_O **ltvPP, size_t index,
-                       size_t key_index,
-                       size_t value_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::HashTable_sp hash_table = gctools::As<HashTable_sp>(ltv[index]);
-  core::T_sp key = ltv[key_index];
-  core::T_sp value = ltv[value_index];
+void ltvc_setf_gethash(gctools::Tagged hash_table_t,
+                       gctools::Tagged key_index_t,
+                       gctools::Tagged value_index_t ) {
+  core::HashTable_sp hash_table = gctools::As<HashTable_sp>(core::T_sp(hash_table_t));
+  core::T_sp key(key_index_t);
+  core::T_sp value(value_index_t);
   hash_table->hash_table_setf_gethash(key, value);
 }
 
-void ltvc_make_fixnum(core::LoadTimeValues_O **ltvPP, size_t index,
-                      int64_t val) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index].rawRef_() = clasp_make_fixnum(val).raw_();
+gctools::Tagged ltvc_make_fixnum(int64_t val) {
+  return clasp_make_fixnum(val).tagged_();
 }
 
-void ltvc_make_bignum(core::LoadTimeValues_O **ltvPP, size_t index,
-                      size_t bignum_string_index) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::Str_sp bignum_string = gctools::As<core::Str_sp>(ltv[bignum_string_index]);
-  ltv[index] = core::Bignum_O::make(bignum_string->get());
+gctools::Tagged ltvc_make_bignum(gctools::Tagged bignum_string_t) {
+  core::Str_sp bignum_string = gctools::As<core::Str_sp>(core::T_sp(bignum_string_t));
+  return core::Bignum_O::make(bignum_string->get()).tagged_();
 }
 
-
-void ltvc_make_symbol(core::LoadTimeValues_O **ltvPP, size_t index,
-                      size_t name_index,
-                      size_t package_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::T_sp package = ltv[package_index];
-  core::Str_sp symbol_name = gctools::As<core::Str_sp>(ltv[name_index]);
+gctools::Tagged ltvc_make_symbol(gctools::Tagged name_t,
+                                 gctools::Tagged package_t ) {
+  core::T_sp package(package_t);
+  core::Str_sp symbol_name(name_t);
   core::Symbol_sp sym;
   if (package.notnilp()) {
     sym = gctools::As<Package_sp>(package)->intern(symbol_name);
   } else {
     sym = core::Symbol_O::create(symbol_name);
   }
-  ltv[index] = sym;
+  return sym.tagged_();
 }
 
-void ltvc_make_character(core::LoadTimeValues_O **ltvPP, size_t index,
-                         uintptr_t val) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index].rawRef_() = clasp_make_character(val).raw_();//reinterpret_cast<core::T_O*>(val);
+gctools::Tagged ltvc_make_character(uintptr_t val) {
+  return clasp_make_character(val).tagged_();
 }
 
-void ltvc_make_base_string(core::LoadTimeValues_O **ltvPP, size_t index,
-                           const char* str) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = core::Str_O::create(str);
+gctools::Tagged ltvc_make_base_string(const char* str) {
+  return core::Str_O::create(str).tagged_();
 }
 
-void ltvc_make_pathname(core::LoadTimeValues_O **ltvPP, size_t index,
-                        size_t host_index,
-                        size_t device_index,
-                        size_t directory_index,
-                        size_t name_index,
-                        size_t type_index,
-                        size_t version_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = core::Pathname_O::makePathname(ltv[host_index],
-                                              ltv[device_index],
-                                              ltv[directory_index],
-                                              ltv[name_index],
-                                              ltv[type_index],
-                                              ltv[version_index],
-                                              kw::_sym_local,
-                                              ltv[host_index].notnilp());
+gctools::Tagged ltvc_make_pathname(gctools::Tagged host_t,
+                                   gctools::Tagged device_t,
+                                   gctools::Tagged directory_t,
+                                   gctools::Tagged name_t,
+                                   gctools::Tagged type_t,
+                                   gctools::Tagged version_t ) {
+  return core::Pathname_O::makePathname(core::T_sp(host_t),
+                                        core::T_sp(device_t),
+                                        core::T_sp(directory_t),
+                                        core::T_sp(name_t),
+                                        core::T_sp(type_t),
+                                        core::T_sp(version_t),
+                                        kw::_sym_local,
+                                        core::T_sp(host_t).notnilp()).tagged_();
 }
 
-void ltvc_make_package(core::LoadTimeValues_O **ltvPP, size_t index,
-                       size_t package_name_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::Str_sp package_name = gctools::As<core::Str_sp>(ltv[package_name_index]);
+gctools::Tagged ltvc_make_package(gctools::Tagged package_name_t ) {
+  core::Str_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
     // If we don't find the package - just make it
     // a more comprehensive defpackage should be coming
     tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
   }
-  ltv[index] = tpkg;
+  return tpkg.tagged_();
 }
 
-void ltvc_make_random_state(core::LoadTimeValues_O **ltvPP, size_t index,
-                            size_t random_state_string_index) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::Str_sp random_state_string = gctools::As<core::Str_sp>(ltv[random_state_string_index]);
+gctools::Tagged ltvc_make_random_state(gctools::Tagged random_state_string_t) {
+  core::Str_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
-  ltv[index] = rs;
+  return rs.tagged_();
 }
 
 
-void ltvc_make_built_in_class(core::LoadTimeValues_O **ltvPP, size_t index,
-                              size_t class_name_index ) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  core::Symbol_sp class_name = gctools::As<core::Symbol_sp>(ltv[class_name_index]);
+gctools::Tagged ltvc_make_built_in_class(gctools::Tagged class_name_t ) {
+  core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
   if ( cl.nilp() ) {
     SIMPLE_ERROR(BF("Could not find class %s") % class_name );
   } else {
-    ltv[index] = cl;
+    return cl.tagged_();
   }
 }
 
 
-void ltvc_make_float(core::LoadTimeValues_O **ltvPP, size_t index,
-                     float f) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = clasp_make_single_float(f);
+gctools::Tagged ltvc_make_float(float f) {
+  return clasp_make_single_float(f).tagged_();
 }
 
-void ltvc_make_double(core::LoadTimeValues_O **ltvPP, size_t index,
-                      double f) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
-  ltv[index] = clasp_make_double_float(f);
+gctools::Tagged ltvc_make_double(double f) {
+  return clasp_make_double_float(f).tagged_();
 }
 
 
-void ltvc_set_ltv_funcall(core::LoadTimeValues_O **ltvPP, size_t index,
-                          fnLispCallingConvention fptr) {
-  core::LoadTimeValues_O& ltv = ltvGet(ltvPP);
+gctools::Tagged ltvc_set_ltv_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  ltv[index].rawRef_() = ret.ret0;
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
 }
 
-void ltvc_funcall(fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
 }
 
-
-
-
-
-void dumpLoadTimeValues(core::LoadTimeValues_O *tagged_ltvP) {
-  core::LoadTimeValues_O *ltvP = gctools::untag_general<core::LoadTimeValues_O *>(tagged_ltvP);
-  ltvP->dump();
+gctools::Tagged ltvc_ltv_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
 }
 
+gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+}
 
 };
-
-
-
-
-
-
-
 
 extern "C" {
 
@@ -1217,7 +1010,8 @@ void throwCatchThrow(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, _rep_(*tagP).c_str(), frame);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
 #endif
     throw catchThrow;
@@ -1235,7 +1029,8 @@ void throwReturnFrom(core::T_sp *blockSymbolP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::ReturnFrom returnFrom(frame);
@@ -1251,7 +1046,8 @@ core::T_mv proto_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) 
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw returnFrom;
@@ -1281,7 +1077,8 @@ size_t pushCatchFrame(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed CatchThrow frame[%zu]\n", result);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1294,7 +1091,8 @@ size_t pushBlockFrame(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Block frame[%zu]\n", result);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1307,7 +1105,8 @@ size_t pushTagbodyFrame(core::ActivationFrame_sp *afP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Tagbody frame[%zu]\n", result);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1323,7 +1122,8 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, un
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing CatchThrow frame[%d]\n", ctExceptionP->getFrame());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw * ctExceptionP;
@@ -1354,7 +1154,8 @@ void throw_LexicalGo(int depth, int index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw lgo;
@@ -1370,7 +1171,8 @@ void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw dgo;
@@ -1387,7 +1189,8 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 	goExceptionP->decrementDepth();
 #ifdef DEBUG_FLOW_CONTROL
 	printf("Re-throwing core::Go depth[%d] index[%d]\n", goExceptionP->depth(), goExceptionP->index());
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+        if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+          printf("   %s\n", my_thread->exceptionStack().summary().c_str());
 #endif
 	throw *goExceptionP;
 #endif
@@ -1397,7 +1200,8 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::DynamicGo *goExceptionP = reinterpret_cast<core::DynamicGo *>(exceptionP);
@@ -1405,7 +1209,8 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d Matched DynamicGo  frame: %lu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
 #endif
     return goExceptionP->index();
@@ -1413,7 +1218,8 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw * goExceptionP;
@@ -1806,7 +1612,8 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_unwind targetFrame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::Unwind unwind(targetFrame, index);
@@ -1834,7 +1641,8 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   try {
@@ -1863,7 +1671,8 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__ );
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
 }
@@ -1878,7 +1687,8 @@ void cc_throw(T_O* tag, T_O* result_func)
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   T_mv result;
@@ -1901,7 +1711,8 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   int frame = my_thread->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
@@ -1912,7 +1723,8 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw catchThrow;
@@ -1942,7 +1754,8 @@ T_O *cc_pushLandingPadFrame() {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d pushLandingPadFrame pushed frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return gctools::tag_fixnum<core::T_O *>(index);
@@ -1954,7 +1767,8 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %lu\n", __FILE__, __LINE__, frameIndex);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   my_thread->exceptionStack().unwind(frameIndex);
@@ -1971,7 +1785,8 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     if (unwindP->getFrame() > thisFrame) {
       printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
     }
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   if (unwindP->getFrame() == thisFrame) {

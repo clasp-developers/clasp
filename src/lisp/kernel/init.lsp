@@ -340,21 +340,26 @@ as a VARIABLE doc and can be retrieved by (documentation 'NAME 'variable)."
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :core))
 
+(defvar *special-init-defun-symbol* (gensym "special-init-defun-symbol"))
+(defvar *special-defun-symbol* (gensym "special-defun-symbol"))
+
 ;;; A temporary definition of defun - the real one is in evalmacros
-(si:fset 'defun
-         #'(lambda (def env)
-             (let ((name (second def))          ;cadr
-                   (lambda-list (third def))	; caddr
-                   (lambda-body (cdddr def)))   ; cdddr
-               (multiple-value-call
-                   (function (lambda (&optional (decl) (body) (doc) &rest rest)
-                     (declare (ignore rest))
-                     (if decl (setq decl (list (cons 'declare decl))))
-                     (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
-                       ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
-                       (ext::register-with-pde def `(si:fset ',name ,func nil nil ',lambda-list)))))
-                 (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
-         t)
+#+clasp-min
+(eval-when (:execute)
+  (si:fset 'defun
+           #'(lambda (def env)
+               (let ((name (second def))      ;cadr
+                     (lambda-list (third def)) ; caddr
+                     (lambda-body (cdddr def))) ; cdddr
+                 (multiple-value-call
+                     (function (lambda (&optional (decl) (body) (doc) &rest rest)
+                       (declare (ignore rest))
+                       (if decl (setq decl (list (cons 'declare decl))))
+                       (let ((func `#'(lambda ,lambda-list ,@decl ,@doc (block ,name ,@body))))
+                         ;;(bformat t "PRIMITIVE DEFUN defun --> %s\n" func )
+                         (ext::register-with-pde def `(let () ',*special-init-defun-symbol* ',name (si:fset ',name ,func nil nil ',lambda-list))))))
+                   (si::process-declarations lambda-body nil #| No documentation until the real DEFUN is defined |#))))
+           t))
 
 (export '(defun))
 
@@ -780,7 +785,8 @@ the stage, the +application-name+ and the +bitcode-name+"
       (mapcar #'(lambda (entry)
                   (if (eq (car entry) 'cl:load)
                       (load (cadr entry))
-                      (eval (read-from-string (cdr entry)))))
+                      (let ((cmd (read-from-string (cdr entry))))
+                        (apply (car cmd) (cdr cmd)))))
               core:*extension-startup-loads*)))
 
 (export 'process-command-line-load-eval-sequence)
@@ -788,7 +794,8 @@ the stage, the +application-name+ and the +bitcode-name+"
   (mapcar #'(lambda (entry)
               (if (eq (car entry) :load)
                   (load (cdr entry))
-                (eval (read-from-string (cdr entry)))))
+                  (let ((cmd (read-from-string (cdr entry))))
+                    (apply (car cmd) (cdr cmd)))))
           core::*command-line-load-eval-sequence*))
 
 (export 'maybe-load-clasprc)
@@ -887,3 +894,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   (process-command-line-load-eval-sequence)
   (bformat t "Low level repl\n")
   (core:low-level-repl))
+
+#-(or bclasp cclasp)
+(eval-when (:execute :load-top-level)
+  (bformat t "init.lsp  \n!\n!\n! Hello from the bottom of init.lsp - for some reason execution is passing through here\n!\n!\n"))

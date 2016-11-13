@@ -190,6 +190,31 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
     return ensure_fixnum(next);
 }
 
+void register_roots_with_gc(core::T_sp* root_address, size_t num_roots ) {
+#ifdef USE_MPS
+  gctools::mps_register_roots(root_address, num_roots);
+#endif
+#ifdef USE_BOEHM
+  gctools::boehm_register_roots(root_address,num_roots);
+#endif
+}
+
+CL_LAMBDA(address args);
+CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
+  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
+  core::T_sp* constants_table = reinterpret_cast<core::T_sp*>(address);
+  size_t nargs = core::cl__length(args);
+//  printf("%s:%d:%s address=%p nargs=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
+//  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
+  size_t i = 0;
+  for ( auto c : args ) {
+    core::T_sp arg = oCar(c);
+    constants_table[i] = arg;
+//    printf("    arg[%lu] = %p | %s\n", i, arg.raw_(),  _rep_(arg).c_str());
+    ++i;
+  }
+  register_roots_with_gc(reinterpret_cast<core::T_sp*>(constants_table),nargs);
+}
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
   int stackMarker = 0;

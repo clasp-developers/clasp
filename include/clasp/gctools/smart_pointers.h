@@ -178,6 +178,7 @@ public:
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<core::T_O *>(p); }
 
@@ -386,6 +387,7 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
 
   /*! Return the raw smart_ptr value interpreted as a T_O* */
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -714,7 +716,8 @@ public:
     return result;
   };
   inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); };
- };
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
+};
 };
 
 namespace core {
@@ -860,7 +863,8 @@ namespace gctools {
      };
      bool sameAsKeyP() const { return tagged_sameAsKeyp(this->theObject); }
   /*! Return the raw smart_ptr value interpreted as a T_O* */
-     inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
      inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type *>(p); }
 
@@ -986,8 +990,9 @@ namespace gctools {
        return *(this->untag_object());
      };
 
-     core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
-     bool _NULLp() const { return this->theObject == NULL; };
+  inline core::T_O *raw_() const { return reinterpret_cast<core::T_O *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
+  bool _NULLp() const { return this->theObject == NULL; };
 
      template <class U>
        inline bool operator==(smart_ptr<U> const other) const {
@@ -1126,8 +1131,9 @@ namespace gctools {
        return *(this->untag_object());
      };
 
-     core::T_O *raw_() const { return reinterpret_cast<Type *>(this->theObject); }
-     bool _NULLp() const { return this->theObject == NULL; };
+  core::T_O *raw_() const { return reinterpret_cast<Type *>(this->theObject); }
+  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
+  bool _NULLp() const { return this->theObject == NULL; };
 
      template <class U>
        inline bool operator==(smart_ptr<U> const other) const {

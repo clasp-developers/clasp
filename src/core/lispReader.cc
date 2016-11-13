@@ -470,7 +470,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return _Nil<T_O>();
     // interpret failed symbols
-    SIMPLE_ERROR(BF("Could not interpret symbol state(%s) at %s symbol: [%s]") % stateString(state) % _rep_(clasp_file_position(sin)) % tokenStr(token, start - token.data()));
+    SIMPLE_ERROR(BF("Error encountered while reading source file %s at character position %s - Could not interpret symbol state(%s) symbol: [%s]") % _rep_(clasp_filename(sin,false)) % _rep_(clasp_file_position(sin)) % stateString(state) % tokenStr(token, start - token.data()));
     break;
   case tintt:
   case tintp:

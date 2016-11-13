@@ -136,7 +136,7 @@
 	     ,@body
 	     ))
 	 (progn
-	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*")
+	   (cmp-log "with-dbg-compile-unit not generating *dbg-compile-unit*\n")
 	   ,@body))))
 
 (defmacro with-dbg-file-descriptor ((source-pathname) &rest body)

@@ -4,7 +4,6 @@
 	  *load-time-value-holder-global-var*
 	  irc-intrinsic
 	  irc-branch-to-and-begin-block
-	  with-ltv-function-codegen
 	  +fn-prototype-argument-names+
 	  jit-function-name
 	  *the-module*

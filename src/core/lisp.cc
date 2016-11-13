@@ -951,15 +951,14 @@ T_sp Lisp_O::sourceDatabase() const {
   // be defined or bound to a package - in that case just say we are in the core package
   //
   T_sp cur;
-  if (IS_SYMBOL_UNDEFINED(_sym_STARsourceDatabaseSTAR)) {
+  if (_sym_STARsourceDatabaseSTAR.unboundp()) {
     return _Nil<T_O>();
   }
   if (!_sym_STARsourceDatabaseSTAR->specialP()) {
     return _Nil<T_O>();
   }
   cur = _sym_STARsourceDatabaseSTAR->symbolValue();
-  if (cur.nilp())
-    return cur;
+  if (cur.nilp()) return cur;
   return gc::As<SourceManager_sp>(cur);
 }
 
@@ -1190,7 +1189,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
   T_mv result = Values(_Nil<T_O>());
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
-    TRY() {
+    try {
       if (prompt) {
         stringstream prompts;
         prompts << std::endl
@@ -1249,19 +1248,16 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           }
         }
       }
-    }
-    catch (Condition &err) {
+    } catch (Condition &err) {
       // Catch condition from reader means just ask for another s-exp if
       // interactive and terminate if batch
       this->print(BF("%s:%d Caught Condition from reader\n") % __FILE__ % __LINE__);
       abort();
       //		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-    }
-    catch (DebuggerSaysAbortToRepl &abort) {
+    } catch (DebuggerSaysAbortToRepl &abort) {
       this->print(BF("%s:%d aborted to repl\n") % __FILE__ % __LINE__);
       // Do nothing
-    }
-    catch (HardError &err) {
+    } catch (HardError &err) {
       this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s") % err.message());
       IMPLEMENT_ME();
       //		this->enterDebugger();
@@ -1516,7 +1512,7 @@ CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
 
 CL_LAMBDA(new-value name);
 CL_DECLARE();
-CL_DOCSTRING("setf_findClass");
+CL_DOCSTRING("setf_find_class");
 CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool errorp, T_sp env) {
   if (!clos__classp(newValue)) {
     SIMPLE_ERROR(BF("Classes in cando have to be subclasses of Class unlike ECL which uses Instances to represent classes - while trying to (setf find-class) of %s you gave: %s") % _rep_(name) % _rep_(newValue));
@@ -1526,9 +1522,7 @@ CL_DEFUN Class_mv core__setf_find_class(T_sp newValue, Symbol_sp name, bool erro
   }
   HashTable_sp ht = gc::As<HashTable_sp>(_sym_STARclassNameHashTableSTAR->symbolValue());
   T_sp oldClass = eval::funcall(cl::_sym_findClass, name, _Nil<T_O>());
-  if (clos__classp(oldClass)) {
-    SIMPLE_ERROR(BF("The built-in class associated to the CL specifier %s cannot be changed") % _rep_(name));
-  } else if (newValue.nilp()) {
+  if (newValue.nilp()) {
     ht->remhash(name);
   } else {
     ht->hash_table_setf_gethash(name, newValue);

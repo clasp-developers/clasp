@@ -60,8 +60,6 @@
           compile-lambda-function
           bclasp-compile-form
           compile-form
-          reference-evaluated-function
-          compile-ltv-thunk
           compiler-error
           compiler-fatal-error
           compiler-message-file
@@ -126,7 +124,6 @@
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
-          with-ltv-function-codegen
           compile-reference-to-literal
           compile-reference-to-load-time-value
           ltv-global

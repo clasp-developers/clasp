@@ -56,8 +56,6 @@ THE SOFTWARE.
 
 
 
-
-
 namespace gctools {
   class GCObject;
   class GCLinkedList;
@@ -166,7 +164,7 @@ namespace gctools {
     unsigned long _rs;
   };
 
- void boehm_register_roots(gctools::Tagged* root_address, size_t num_roots);
+ void boehm_register_roots(void* root_address, size_t num_roots);
 
 };
 #endif // _clasp_boehmGarbageCollection_H

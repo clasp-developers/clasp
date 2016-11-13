@@ -56,7 +56,7 @@
                   ;; Get the type of the function
                   (function-type (llvm-sys:function-type-get return-type argument-types))
                   ;; Create a new llvm function in the current llvm Module cmp:*the-module*
-                  (new-func (llvm-sys:function-create function-type
+                  (new-func (irc-function-create function-type
                                                       'llvm-sys:external-linkage
                                                       mangled-function-name
                                                       cmp:*the-module*))

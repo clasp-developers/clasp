@@ -240,7 +240,7 @@ If this form has already been precalculated then just return the precalculated-v
            ;; COMPILE on the other hand evaluates the form and puts its
            ;; value in the run-time environment
            (let ((value (eval form)))
-             (cmp:codegen-rtv nil value nil)))))))
+             (cmp:codegen-rtv nil value)))))))
 
 
 (defun find-load-time-value-asts (ast)

@@ -64,14 +64,15 @@
                 (*compilation-unit-module-index* 0)
                 (*all-functions-for-one-compile* nil))
 	   (unwind-protect (do-compilation-unit closure)
-             (dolist (action *pending-actions*)
-               (funcall action)))))
+             (progn
+               (dolist (action *pending-actions*)
+               (funcall action))))))
 	(t
 	 (funcall closure))))
 
 (export 'do-compilation-unit)
 (defmacro with-compilation-unit ((&rest options) &body body)
- `(do-compilation-unit #'(lambda () ,@body) ,@options))
+  `(do-compilation-unit #'(lambda () ,@body) ,@options))
 
 
 
@@ -96,33 +97,32 @@
      (let* ((name (cadr (cadr form)))
 	    (is-macro (cadddr form))
 	    (header (if is-macro
-			"defmacro"
-			"defun")))
+			"DEFMACRO"
+			"DEFUN")))
        (bformat t ";    %s %s\n" header name)))
-    #+(or)((consp form)
-     (let* ((second-part (bformat nil "%s" (cadr form)))
-            (trimmed-second-part (if (> (length second-part) 32)
-                                     (bformat nil "%s..." (subseq second-part 0 32))
+    ((and (consp form)
+          (eq (first form) 'cl:let)
+          (and (let ((x (third form)))
+                 (and (consp x) (eq 'cl:quote (first x))
+                      (eq core::*special-defun-symbol* (second x))))))
+     (bformat t ";    DEFUN %s\n" (second (fourth form))))
+    ((and (consp form)
+          (eq (first form) 'core::do-defsetf))
+     (bformat t ";    DEFSETF %s\n" (third form)))
+    ((and (consp form)
+          (eq (first form) 'core::do-deftype))
+     (bformat t ";    DEFTYPE %s\n" (third form)))
+    ((and *compile-verbose* (consp form))
+     (let* ((second-part (bformat nil "%s %s %s" (second form) (third form) (fourth form)))
+            (trimmed-second-part (if (> (length second-part) 60)
+                                     (bformat nil "%s..." (subseq second-part 0 60))
                                      second-part)))
-       (bformat t";    %s %s\n" (car form) trimmed-second-part)))
-    (t nil)))
+       (bformat t";    %s %s\n" (car form) trimmed-second-part)))))
 
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (let ((fn (compile-thunk 'repl form nil)))
-    (with-ltv-function-codegen (result ltv-env)
-      (irc-intrinsic "invokeTopLevelFunction" 
-		     result 
-		     fn 
-		     (jit-constant-unique-string-ptr "top-level")
-                     *gv-source-file-info-handle*
-		     (irc-size_t-*current-source-pos-info*-filepos)
-		     (irc-size_t-*current-source-pos-info*-lineno)
-		     (irc-size_t-*current-source-pos-info*-column)
-		     *load-time-value-holder-global-var*
-                     ))))
-
+  (literal:with-top-level-form (compile-thunk 'repl form nil)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
@@ -142,10 +142,7 @@
       ;; Each subform is a top-level form
       (dolist (subform body)
 	(t1expr subform env))
-      (cmp-log "Done compiling body due to :load-toplevel\n")
-      )
-    ))
-
+      (cmp-log "Done compiling body due to :load-toplevel\n")))) 
 
 #+(or)(defun t1locally (rest env)
   (multiple-value-bind (declares code docstring specials)
@@ -234,7 +231,8 @@
            (t (compile-top-level form))))
     (pop core:*top-level-form-stack*)))
 
-(defun compile-file-t1expr (form compile-file-hook)
+
+(defun compile-file-form (form compile-file-hook)
   ;; If the Cleavir compiler hook is set up then use that
   ;; to generate code 
   (if compile-file-hook
@@ -297,8 +295,6 @@ and the pathname of the source file - this will also be used as the module initi
         (t (error "Illegal condition ~a" cond))))
     (values output-file warnings-p failures-p)))
 
-
-
 (defvar *debug-compile-file* nil)
 
 (defun compile-file-to-module (given-input-pathname output-path &key compile-file-hook type source-debug-namestring (source-debug-offset 0))
@@ -319,7 +315,6 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
               given-input-pathname))
          (input-pathname (probe-file given-input-pathname))
 	 (source-sin (open input-pathname :direction :input))
-	 (eof-value (gensym))
 	 (module (create-llvm-module-for-compile-file (namestring input-pathname)))
 	 (module-name (cf-module-name type given-input-pathname))
 	 warnings-p failure-p)
@@ -342,27 +337,31 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
             (with-debug-info-generator (:module *the-module*
                                                 :pathname *compile-file-truename*)
               (or *the-module* (error "*the-module* is NIL"))
-              (with-ltv (ltv-init-fn)
-                (loop
-                   (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
-                          (form (read source-sin nil eof-value)))
-                     (if (eq form eof-value)
-                         (return nil)
-                         (progn
-                           (if *debug-compile-file* (bformat t "compile-file: %s\n" form))
-                           (compile-file-t1expr form compile-file-hook)))))
-                (make-boot-function-global-variable *the-module* ltv-init-fn)
-                #+(or)(let ((main-fn (compile-main-function output-path ltv-init-fn )))
-                        (make-boot-function-global-variable *the-module* main-fn)
-                        #+(or)(add-main-function *the-module*))))
+              (let ((eof-value (gensym)))
+                (with-make-new-run-all (run-all-function)
+                  (irc-intrinsic "ltvc_assign_source_file_info_handle"
+                                 *gv-source-namestring*
+                                 *gv-source-debug-namestring*
+                                 (jit-constant-i64 *source-debug-offset*)
+                                 (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+                                 *gv-source-file-info-handle*)
+                  (with-coalesce-ltv
+                      (loop
+                         (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
+                                (form (read source-sin nil eof-value)))
+                           (when *debug-compile-file* (bformat t "compile-file: %s\n" form))
+                           (if (eq form eof-value)
+                               (return nil)
+                               (compile-file-form form compile-file-hook))))
+                    (make-boot-function-global-variable *the-module* run-all-function)))))
+            (if *debug-dump-module*
+                (quick-module-dump *the-module* "/tmp" "compile-file-module-pre-optimize"))
             (cmp-log "About to verify the module\n")
             (cmp-log-dump *the-module*)
-            (if *debug-dump-module*
-                (quick-module-dump *the-module* "/tmp/compile-file-module-pre-optimize"))
             (irc-verify-module-safe *the-module*))
           (if *debug-dump-module*
-           (quick-module-dump module "/tmp/compile-file-module-post-optimize"))))
-      module)))
+              (quick-module-dump module "/tmp" "compile-file-module-post-optimize")))
+        module))))
 
 
 (defun compile-file* (compile-file-hook

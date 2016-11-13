@@ -337,6 +337,9 @@ namespace gctools {
 
 int handleFatalCondition();
 
+ /* Register a list of roots with the current GC */
+ void register_roots_with_gc(core::T_sp* address, size_t num);
+ 
 /* Start up the garbage collector and the main function.
        The main function is wrapped within this function */
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize);

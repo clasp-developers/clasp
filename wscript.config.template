@@ -11,6 +11,9 @@
 # version constraints make that ideal sometimes unreachable.
 #EXTERNALS_CLASP_DIR = '/path/externals-clasp/'
 
+# To link to llvm debug libraries set a path to the llvm-config for the llvm debug build
+# LLVM_CONFIG_DEBUG_PATH = "/full/path/externals-clasp/build/debug/bin/llvm-config"
+
 # Where to install clasp. Defaults to '/usr/local/'.
 #INSTALL_PATH_PREFIX = '/opt/clasp/'
 

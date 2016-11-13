@@ -946,7 +946,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect try\n", __FILE__, __LINE__);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
     }
 #endif
     Closure_sp closure = protected_fn.asOrNull<core::Closure_O>();
@@ -957,7 +959,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(...) just caught\n", __FILE__, __LINE__);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
     }
 #endif
 // Save any return value that may be in the multiple value return array
@@ -979,7 +983,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d In funwind_protect catch(...)    about to rethrow\n", __FILE__, __LINE__);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      }
     }
 #endif
     throw;
@@ -987,7 +993,9 @@ CL_DEFUN T_mv core__funwind_protect(T_sp protected_fn, T_sp cleanup_fn) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In funwind_protect  normal exit\n", __FILE__, __LINE__);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   gctools::Vec0<T_sp> savemv;
@@ -1054,7 +1062,9 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag.raw_(), frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   try {
@@ -1084,7 +1094,9 @@ CL_DEFUN T_mv core__catch_function(T_sp tag, Function_sp thunk) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   return result;
@@ -1101,7 +1113,9 @@ CL_DEFUN void core__throw_function(T_sp tag, T_sp result_form) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose ) {
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    }
   }
 #endif
   T_mv result;
