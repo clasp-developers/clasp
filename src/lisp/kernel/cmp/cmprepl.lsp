@@ -35,14 +35,16 @@
 
 (defun bclasp-implicit-compile-repl-form (form &optional environment)
   (declare (core:lambda-name cmp-repl-implicit-compile))
-  (when *print-implicit-compile-form* 
-    (bformat t "Compiling form: %s\n" form))
-  (with-compilation-unit (:override t)
-    (multiple-value-bind (compiled-function warn fail)
-        (compile-in-env 'repl `(lambda () 
-                                 (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
-                                 ,form) environment nil)
-      (funcall compiled-function))))
+  (unwind-protect
+       (progn
+         (when *print-implicit-compile-form* 
+           (bformat t "Compiling form: %s\n" form))
+         (with-compilation-unit (:override t)
+           (multiple-value-bind (compiled-function warn fail)
+               (compile-in-env 'repl `(lambda () 
+                                        (declare (core:lambda-name from-bclasp-implicit-compile-repl-form))
+                                        ,form) environment nil)
+             (funcall compiled-function))))))
 
 ;;;
 ;;; Don't install the bootstrapping compiler as the implicit compiler when compiling cleavir
@@ -63,7 +65,7 @@
   (load "sys:kernel;cmp;compiler.lsp" :print t)
   (load "sys:kernel;cmp;compilefile.lsp" :print t))
 
-;;#+(or)
+#+(or)
 (eval-when (:execute)
   (bformat t "!\n!\n!\n! cmprepl.lsp has (setq cmp:*debug-dump-module* t)\n!\n!\n!  TURN IT OFF AGAIN\n!\n")
   (setq cmp:*debug-dump-module* t)

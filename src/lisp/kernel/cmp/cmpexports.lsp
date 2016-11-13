@@ -72,8 +72,6 @@
           compile-lambda-function
           bclasp-compile-form
           compile-form
-          reference-evaluated-function
-          compile-ltv-thunk
           compiler-error
           compiler-fatal-error
           compiler-message-file
@@ -184,6 +182,7 @@
 (in-package :literal)
 
 (export '(
+          add-call
           next-value-table-holder-name
           make-constant-call
           make-constant-creator
@@ -210,15 +209,17 @@
           codegen-quote
           compile-reference-to-load-time-value
           compile-reference-to-literal
-          compile-ltv-thunk
           ltv-global
-          compile-ltv-thunk
+          compile-load-time-value-thunk
+          new-table-index
           load-time-value-reference
           get-load-time-value
           copy-load-time-value
           with-coalesce-ltv
           with-ltv
           with-rtv
+          with-top-level-form
+          evaluate-function-into-load-time-value
           )
         )
 

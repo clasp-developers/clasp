@@ -38,14 +38,13 @@
       (bformat nil "%s-CONSTANTS-TABLE%d" suffix *value-table-id*)
       (bformat nil "CONSTANTS-TABLE%d" (incf *value-table-id*))))
 
-(eval-when (:execute :load-toplevel)
-  (defstruct constant-runtime index object)
-  (defstruct constant-creator index name arguments)
-  (defstruct constant-side-effect name arguments)
-  (defstruct constant-call function source-pos-info holder))
+(defstruct (constant-runtime (:type vector) :named) index object)
+(defstruct (constant-creator (:type vector) :named) index name arguments)
+(defstruct (constant-side-effect (:type vector) :named) name arguments)
+(defstruct (constant-call (:type vector) :named) function source-pos-info holder)
+
 
 (defun constant-table-entry-print (obj &optional (stream t))
-  (break "Trap")
   (cond
     ((constant-creator-p obj)
      (bformat stream "[%d] constant-creator -> (%s %s)\n" (constant-creator-index obj) (constant-creator-name obj) (constant-creator-arguments obj)))
@@ -69,12 +68,12 @@
 (defun run-all-nodes-in-order ()
   (reverse *run-all-objects*))
 
-(defun number-of-entries (nodes)
+(defun calculate-vector-size (nodes)
+  "Find the highest index and return 1+ that"
   (let ((num 0))
     (dolist (n nodes)
-      (when (constant-creator-p n)
-        (setq num (max (constant-creator-index n) num))))
-    num))
+      (setq num (max (car n) num)))
+    (1+ num)))
 
 ;;; ------------------------------------------------------------
 ;;;
@@ -105,11 +104,15 @@
 (defvar *double-float-coalesce*)
 (defvar *llvm-values*)
 
+(defvar *with-ltv-depth* 0)
+
 (defun new-table-index ()
   "Return the next ltv-index. If this is being invoked from COMPILE then
 the value is put into *default-load-time-value-vector* and its index is returned"
-  (prog1 *table-index*
-    (incf *table-index*)))
+  (let ((index *table-index*))
+    #+(or)(bformat t "new-table-index depth %4d - %d\n" *with-ltv-depth* index)
+    (incf *table-index*)
+    index))
 
 (defun add-call (name index &rest args)
   "Call the named function after converting fixnum args to llvm constants"
@@ -226,7 +229,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun ltv/mlf (object index read-only-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
-    (add-call "ltvc_set_ltv_funcall" index (compile-form create))
+    (add-call "ltvc_funcall" index (compile-form create))
     (when initialize
       (add-side-effect-call "ltvc_funcall" (compile-form initialize)))))
 
@@ -266,87 +269,119 @@ the value is put into *default-load-time-value-vector* and its index is returned
   `(let ()
      (progn ,@body)))
 
-(defmacro with-ltv (&body body)
-  `(let ((*llvm-values* (make-hash-table))
-         (cmp:*load-time-value-holder-global-var*
-          (llvm-sys:make-global-variable *the-module*
-                                         cmp:+tsp[0]+ ; type
-                                         nil          ; isConstant
-                                         'llvm-sys:internal-linkage
-                                         nil ; initializer
-                                         (literal:next-value-table-holder-name "dummy")))
-         (cmp:*generate-compile-file-load-time-values* t)
-         (*everything-else-coalesce* (make-hash-table :test #'eq))
-         (*ratio-coalesce* (make-similarity-table #'eql))
-         (*cons-coalesce* (make-similarity-table #'eq))
-         (*complex-coalesce* (make-similarity-table #'eql))
-         (*array-coalesce* (make-similarity-table #'eq))
-         (*hash-table-coalesce* (make-similarity-table #'eq))
-         (*fixnum-coalesce* (make-similarity-table #'eql))
-         (*bignum-coalesce* (make-similarity-table #'eql))
-         (*symbol-coalesce* (make-similarity-table #'eq))
-         (*character-coalesce* (make-similarity-table #'eql))
-         (*string-coalesce* (make-similarity-table #'equal))
-         (*pathname-coalesce* (make-similarity-table #'equal))
-         (*package-coalesce* (make-similarity-table #'eq))
-         (*built-in-class-coalesce* (make-similarity-table #'eq))
-         (*single-float-coalesce* (make-similarity-table #'eql))
-         (*double-float-coalesce* (make-similarity-table #'eql))
-         (*run-all-objects* nil)
-         (*table-index* 0))
-     (let* ((top-level-fn (progn ,@body))
-            (constants-nodes *run-all-objects*))
-       (labels ((ensure-llvm-value (obj)
-                  "Lookup or create the llvm::Value for obj"
-                  (or (gethash obj *llvm-values*)
-                      (setf (gethash obj *llvm-values*)
-                            (irc-create-call (literal:constant-creator-name obj)
-                                             (fix-args (literal:constant-creator-arguments obj))))))
-                (fix-args (args)
-                  "Convert the args from Lisp form into llvm::Value*'s"
-                  (mapcar (lambda (x)
-                            (cond
-                              ((fixnump x) (jit-constant-size_t x))
-                              ((stringp x) (jit-constant-unique-string-ptr x))
-                              ((literal:constant-creator-p x) (ensure-llvm-value x))
-                              (t x))) ;;(error "Illegal run-all entry ~a" x))))
-                          args)))
-         (with-run-all-body-codegen (result)
-           (let ((unsorted-values nil))
-             (dolist (node constants-nodes)
-               #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-               (cond
-                 ((literal:constant-creator-p node)
-                  (let ((val (ensure-llvm-value node)))
-                    (push (cons (literal:constant-creator-index node) val) unsorted-values)))
-                 ((literal:constant-side-effect-p node)
-                  (irc-create-call (literal:constant-side-effect-name node)
-                                   (fix-args (literal:constant-side-effect-arguments node))))
-                 (t (error "Unknown run-all node ~a" node))))
-             (let* ((sorted-llvm-values (mapcar (lambda (x) (cdr x))
-                                                (sort unsorted-values #'< :key #'car)))
-                    (array-type (llvm-sys:array-type-get cmp:+tsp+ (literal:number-of-entries constants-nodes)))
-                    (correct-size-holder (progn
-                                           (quick-module-dump *the-module* "/tmp" "a")
-                                           (prog1
-                                               (llvm-sys:make-global-variable *the-module*
-                                                                              array-type
-                                                                              nil ; isConstant
-                                                                              'llvm-sys:internal-linkage
-                                                                              (llvm-sys:undef-value-get array-type)
-                                                                              (literal:next-value-table-holder-name))
-                                             (quick-module-dump *the-module* "/tmp" "b"))))
-                    (bitcast-correct-size-holder (llvm-sys:create-bit-cast *irbuilder* correct-size-holder cmp:+tsp[0]*+ "bitcast-table"))
-                    (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
-                                                          (list (cmp:jit-constant-size_t 0)
-                                                                (cmp:jit-constant-size_t 0)) "table")))
-               (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
-               (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*) ;
-               (cmp:irc-create-call "cc_register_roots" (list* (llvm-sys:create-pointer-cast cmp:*irbuilder* correct-size-holder cmp:+tsp*+ "")
-                                                               (cmp:jit-constant-size_t (length sorted-llvm-values))
-                                                               sorted-llvm-values))
-               (cmp:irc-create-call "ltvc_funcall" (list top-level-fn))
-               (quick-module-dump *the-module* "/tmp" "c"))))))))
+(defun do-with-ltv (type body-fn)
+  (let ((*llvm-values* (make-hash-table))
+        (cmp:*load-time-value-holder-global-var*
+         (llvm-sys:make-global-variable *the-module*
+                                        cmp:+tsp[0]+ ; type
+                                        nil          ; isConstant
+                                        'llvm-sys:internal-linkage
+                                        (llvm-sys:undef-value-get cmp:+tsp[0]+)
+                                        ;; nil ; initializer
+                                        (literal:next-value-table-holder-name "dummy")))
+        (cmp:*generate-compile-file-load-time-values* t)
+        (*everything-else-coalesce* (make-hash-table :test #'eq))
+        (*ratio-coalesce* (make-similarity-table #'eql))
+        (*cons-coalesce* (make-similarity-table #'eq))
+        (*complex-coalesce* (make-similarity-table #'eql))
+        (*array-coalesce* (make-similarity-table #'eq))
+        (*hash-table-coalesce* (make-similarity-table #'eq))
+        (*fixnum-coalesce* (make-similarity-table #'eql))
+        (*bignum-coalesce* (make-similarity-table #'eql))
+        (*symbol-coalesce* (make-similarity-table #'eq))
+        (*character-coalesce* (make-similarity-table #'eql))
+        (*string-coalesce* (make-similarity-table #'equal))
+        (*pathname-coalesce* (make-similarity-table #'equal))
+        (*package-coalesce* (make-similarity-table #'eq))
+        (*built-in-class-coalesce* (make-similarity-table #'eq))
+        (*single-float-coalesce* (make-similarity-table #'eql))
+        (*double-float-coalesce* (make-similarity-table #'eql))
+        (*run-all-objects* nil)
+        (*table-index* 0))
+    (let* ((top-level-fn (funcall body-fn))
+           (constants-nodes *run-all-objects*))
+      (or (llvm-sys:valuep top-level-fn)
+          (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk"))
+      (labels ((ensure-llvm-value (obj)
+                 "Lookup or create the llvm::Value for obj"
+                 (or (gethash obj *llvm-values*)
+                     (setf (gethash obj *llvm-values*)
+                           (irc-create-call (literal:constant-creator-name obj)
+                                            (fix-args (literal:constant-creator-arguments obj))
+                                            (bformat nil "ltv[%d/%d]" *with-ltv-depth* (constant-creator-index obj))))))
+               (fix-args (args)
+                 "Convert the args from Lisp form into llvm::Value*'s"
+                 (mapcar (lambda (x)
+                           (cond
+                             ((fixnump x) (jit-constant-size_t x))
+                             ((stringp x) (jit-constant-unique-string-ptr x))
+                             ((literal:constant-creator-p x) (ensure-llvm-value x))
+                             (t x))) ;;(error "Illegal run-all entry ~a" x))))
+                         args)))
+        (with-run-all-body-codegen (result)
+          (let ((unsorted-values nil))
+            (dolist (node constants-nodes)
+              #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+              (cond
+                ((literal:constant-creator-p node)
+                 (let ((val (ensure-llvm-value node)))
+                   (push (cons (literal:constant-creator-index node) val) unsorted-values)))
+                ((literal:constant-side-effect-p node)
+                 (irc-create-call (literal:constant-side-effect-name node)
+                                  (fix-args (literal:constant-side-effect-arguments node))))
+                (t (error "Unknown run-all node ~a" node))))
+            #+(or)(bformat t "Length of unsorted values: %s\n" (length unsorted-values))
+            #+(or)(dolist (x unsorted-values)
+                    (bformat t "unsorted-values: %s\n" x))
+            (let* ((num-entries (length unsorted-values))
+                   (sorted-values (sort unsorted-values #'< :key #'car))
+                   (sorted-llvm-values (mapcar (lambda (x) (cdr x)) sorted-values)))
+              (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ num-entries))
+                     (correct-size-holder (progn
+                                            (quick-module-dump *the-module* "/tmp" "a")
+                                            (prog1
+                                                (llvm-sys:make-global-variable *the-module*
+                                                                               array-type
+                                                                               nil ; isConstant
+                                                                               'llvm-sys:internal-linkage
+                                                                               (llvm-sys:undef-value-get array-type)
+                                                                               (literal:next-value-table-holder-name))
+                                              (quick-module-dump *the-module* "/tmp" "b"))))
+                     (bitcast-correct-size-holder (llvm-sys:create-bit-cast *irbuilder* correct-size-holder cmp:+tsp[0]*+ "bitcast-table"))
+                     (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
+                                                           (list (cmp:jit-constant-size_t 0)
+                                                                 (cmp:jit-constant-size_t 0)) "table")))
+                (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
+                (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*) ;
+                (cmp:irc-create-call "cc_register_roots" (list* (llvm-sys:create-pointer-cast cmp:*irbuilder* correct-size-holder cmp:+tsp*+ "")
+                                                                (cmp:jit-constant-size_t num-entries)
+                                                                sorted-llvm-values))
+                (prog1 (cond
+                         ((eq type :toplevel)
+                          (cmp:irc-create-call "ltvc_toplevel_funcall" (list top-level-fn)))
+                         ((eq type :ltv) top-level-fn)
+                         (t (error "bad type")))
+                  (quick-module-dump *the-module* "/tmp" "c"))))))))))
+
+(defmacro with-ltv ( &body body)
+  `(unwind-protect
+        (progn
+          (incf *with-ltv-depth*)
+          #+(or)(bformat t "Entering with-ltv depth %d\n" *with-ltv-depth*)
+          (do-with-ltv :ltv (lambda () (progn ,@body))))
+     (progn
+       #+(or)(bformat t "Leaving with-ltv depth %d\n" *with-ltv-depth*)
+       (decf *with-ltv-depth*))))
+
+(defmacro with-top-level-form ( &body body)
+  `(unwind-protect
+        (progn
+          (incf *with-ltv-depth*)
+          #+(or)(bformat t "Entering with-top-level-form depth %d\n" *with-ltv-depth*)
+          (do-with-ltv :toplevel (lambda () (progn ,@body))))
+     (progn
+       #+(or)(bformat t "Leaving with-top-level-form depth %d\n" *with-ltv-depth*)
+       (decf *with-ltv-depth*))))
 
 
 (defmacro with-rtv (&body body)
@@ -382,9 +417,8 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (funcall creator object index read-only-p)
             index)))))
 
-(defun reference-evaluated-function (fn)
-  (let ((index (new-table-index)))
-    (add-call "ltvc_set_ltv_funcall" index fn))
+(defun evaluate-function-into-load-time-value (fn index)
+  (add-call "ltvc_set_ltv_funcall" index fn)
   index)
 
 
@@ -495,10 +529,11 @@ run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
   (let ((lts-idx (reference-literal symbol t)))
     (load-time-value-reference (ltv-global) lts-idx (pretty-load-time-name symbol lts-idx))))
 
-(defun codegen-rtv (result sym env)
-  "bclasp calls this to get copy the run-time-value for sym into result"
-  (let ((idx (run-time-reference-literal sym t)))
-    (copy-load-time-value result *run-time-values-table-global-var* idx)
+(defun codegen-rtv (result obj)
+  "bclasp calls this to get copy the run-time-value for obj into result"
+  (let* ((data (run-time-reference-literal obj t))
+         (idx (constant-runtime-index data)))
+    (copy-load-time-value result (ltv-global) idx) ;;*run-time-values-table-global-var* idx)
     idx))
 
 (defun codegen-literal (result object env)
@@ -523,29 +558,20 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
     (compile-reference-to-load-time-value ltv-idx (pretty-load-time-name literal ltv-idx))))
 
 
-;; Should be bclasp-compile-ltv-thunk
-(defun compile-ltv-thunk (form)
+;; Should be bclasp-compile-load-time-value-thunk
+(defun compile-load-time-value-thunk (form)
   "bclasp compile the form into an llvm function and return that function"
   (dbg-set-current-debug-location-here)
-  (let* ((ltv-index (new-table-index))
-	 (fn (with-new-function (fn fn-env fn-result
-				    :function-name 'bclasp-top-level-form
-				    :parent-env nil
-				    :function-form form)
-	       (let* ((given-name (llvm-sys:get-name fn)))
-		 ;; Map the function argument names
-		 (cmp-log "Creating ltv thunk with name: %s\n" given-name)
-		 (let ((ltv-result (load-time-value-reference
-                                    cmp:*load-time-value-holder-global-var*
-                                    ltv-index)))
-                   ;;		   (break "codegen ltv thunk form")
-		   (dbg-set-current-debug-location-here)
-		   (codegen ltv-result form fn-env)
-		   (irc-intrinsic "copyTsp" fn-result ltv-result)
-		   (dbg-set-current-debug-location-here))))))
-    (cmp-log-dump fn)
+  (let ((fn (with-new-function (fn fn-env fn-result
+                                   :function-name 'bclasp-top-level-form
+                                   :parent-env nil
+                                   :function-form form)
+              (let* ((given-name (llvm-sys:get-name fn)))
+                (dbg-set-current-debug-location-here)
+                (codegen fn-result form fn-env)
+                (dbg-set-current-debug-location-here)))))
     (irc-verify-function fn t)
-    (values ltv-index fn)))
+    fn))
 
 
 
@@ -589,10 +615,6 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
   #+(or)(llvm-sys:constant-expr-get-in-bounds-get-element-ptr nil holder (list (jit-constant-size_t 0) (jit-constant-size_t index))))|#
 
 (defun get-load-time-value (result index &optional (holder cmp:*load-time-value-holder-global-var*))
-  #+(or)(irc-intrinsic "getLoadTimeValue"
-                 result
-                 holder
-                 (jit-constant-i32 index))
   (let ((ref (load-time-value-reference holder index )))
     (irc-store (irc-load ref) result)))
 

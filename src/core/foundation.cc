@@ -256,7 +256,7 @@ namespace llvm_interface {
 ::llvm_interface::llvmAddSymbolCallbackType addSymbol = NULL;
 };
 
-void dbg_hook(const char *error) {
+NOINLINE void dbg_hook(const char *error) {
   // Do nothing
   // set a break point here to catch every error
   //
@@ -288,11 +288,7 @@ void lisp_pollSignals() {
   SET_SIGNAL(0);
   if (signo == SIGINT) {
     printf("You pressed Ctrl+C\n");
-    try {
-      core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
-    } catch (...) {
-      throw;
-    }
+    core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
       //    core__invoke_internal_debugger(_Nil<core::T_O>());
     printf("Resuming after Ctrl+C\n");
   } else if (signo == SIGCHLD) {
@@ -1584,7 +1580,7 @@ struct ErrorSimpleDepthCounter {
   }
 };
 
-void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
+NOINLINE void lisp_error_simple(const char *functionName, const char *fileName, int lineNumber, const boost::format &fmt) {
   if (telemetry::global_telemetry_search)
     telemetry::global_telemetry_search->flush();
   stringstream ss;

@@ -63,8 +63,6 @@ extern "C" {
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/gctools/gc_interface.fwd.h>
 
-#define DEBUG_FLOW_CONTROL 1
-
 using namespace core;
 
 #pragma GCC visibility push(default)
@@ -319,9 +317,22 @@ gctools::Tagged ltvc_set_ltv_funcall(fnLispCallingConvention fptr) {
   return reinterpret_cast<gctools::Tagged>(ret.ret0);
 }
 
-void ltvc_funcall(fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+}
+
+gctools::Tagged ltvc_ltv_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+}
+
+gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
 }
 
 };
@@ -999,7 +1010,8 @@ void throwCatchThrow(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d Throwing core::CatchThrow exception tag[%s] frame: %d\n", __FILE__, __LINE__, _rep_(*tagP).c_str(), frame);
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
 #endif
     throw catchThrow;
@@ -1017,7 +1029,8 @@ void throwReturnFrom(core::T_sp *blockSymbolP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::ReturnFrom exception frame[%d]\n", frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::ReturnFrom returnFrom(frame);
@@ -1033,7 +1046,8 @@ core::T_mv proto_blockHandleReturnFrom(unsigned char *exceptionP, size_t frame) 
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::ReturnFrom exception frame[%d]\n", returnFrom.getFrame());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw returnFrom;
@@ -1063,7 +1077,8 @@ size_t pushCatchFrame(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed CatchThrow frame[%zu]\n", result);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1076,7 +1091,8 @@ size_t pushBlockFrame(core::T_sp *tagP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Block frame[%zu]\n", result);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1089,7 +1105,8 @@ size_t pushTagbodyFrame(core::ActivationFrame_sp *afP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Pushed Tagbody frame[%zu]\n", result);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return result;
@@ -1105,7 +1122,8 @@ core::T_mv proto_ifCatchFrameMatchesStoreResultElseRethrow(size_t catchFrame, un
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing CatchThrow frame[%d]\n", ctExceptionP->getFrame());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw * ctExceptionP;
@@ -1136,7 +1154,8 @@ void throw_LexicalGo(int depth, int index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::Go depth[%d] index[%d]\n", depth, index);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw lgo;
@@ -1152,7 +1171,8 @@ void throwDynamicGo(size_t depth, size_t index, core::ActivationFrame_sp *afP) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Throwing core::DynamicGo tagbodyIdP[%zu] index[%zu]\n", dgo.getFrame(), dgo.index());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw dgo;
@@ -1169,7 +1189,8 @@ int tagbodyLexicalGoIndexElseRethrow(char *exceptionP) {
 	goExceptionP->decrementDepth();
 #ifdef DEBUG_FLOW_CONTROL
 	printf("Re-throwing core::Go depth[%d] index[%d]\n", goExceptionP->depth(), goExceptionP->index());
-        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+        if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+          printf("   %s\n", my_thread->exceptionStack().summary().c_str());
 #endif
 	throw *goExceptionP;
 #endif
@@ -1179,7 +1200,8 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d tagbodyDynamicGoIndexElseRethrow  frame: %lu\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::DynamicGo *goExceptionP = reinterpret_cast<core::DynamicGo *>(exceptionP);
@@ -1187,7 +1209,8 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
     if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
       printf("%s:%d Matched DynamicGo  frame: %lu  index: %lu\n", __FILE__, __LINE__, goExceptionP->getFrame(), goExceptionP->index());
-      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+      if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+        printf("   %s\n", my_thread->exceptionStack().summary().c_str());
     }
 #endif
     return goExceptionP->index();
@@ -1195,7 +1218,8 @@ size_t tagbodyDynamicGoIndexElseRethrow(char *exceptionP, size_t frame) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("Re-throwing core::DynamicGo frame[%zu] index[%zu]\n", goExceptionP->getFrame(), goExceptionP->index());
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw * goExceptionP;
@@ -1588,7 +1612,8 @@ void cc_unwind(T_O *targetFrame, size_t index) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d In cc_unwind targetFrame: %ld  index: %lu\n", __FILE__, __LINE__, gc::untag_fixnum(targetFrame), index);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   core::Unwind unwind(targetFrame, index);
@@ -1616,7 +1641,8 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_catch tag@%p thisFrame: %d\n", __FILE__, __LINE__, tag, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   try {
@@ -1645,7 +1671,8 @@ void cc_catch(core::T_mv* resultP, T_O* tag, T_O* thunk)
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d  After cc_catch unwind\n", __FILE__, __LINE__ );
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
 }
@@ -1660,7 +1687,8 @@ void cc_throw(T_O* tag, T_O* result_func)
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_throw     throwing CatchThrow to reach targetFrame[%d]\n", __FILE__, __LINE__, frame);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   T_mv result;
@@ -1683,7 +1711,8 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d In cc_tag tag@%p\n\n", __FILE__, __LINE__, tag);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   int frame = my_thread->exceptionStack().findKey(CatchFrame, LCC_TO_SMART_PTR(tag));
@@ -1694,7 +1723,8 @@ void cc_throw(T_O *tag) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp() ) {
     printf("%s:%d in cc_throw throwing CatchThrow to reach frame: %d   core::CatchThrow typeinfo@%p\n", __FILE__, __LINE__, frame, &typeid(core::CatchThrow));
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   throw catchThrow;
@@ -1724,7 +1754,8 @@ T_O *cc_pushLandingPadFrame() {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d pushLandingPadFrame pushed frame: %lu  core::Unwind typeinfo@%p\n", __FILE__, __LINE__, index, (void *)&typeid(core::Unwind));
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   return gctools::tag_fixnum<core::T_O *>(index);
@@ -1736,7 +1767,8 @@ void cc_popLandingPadFrame(T_O *frameFixnum) {
 #ifdef DEBUG_FLOW_CONTROL
   if (core::_sym_STARdebugFlowControlSTAR->symbolValue().notnilp()) {
     printf("%s:%d  popLandingPadFrame   About to unwind exceptionStack to frame: %lu\n", __FILE__, __LINE__, frameIndex);
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   my_thread->exceptionStack().unwind(frameIndex);
@@ -1753,7 +1785,8 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char *exceptionP, core::T_O *thi
     if (unwindP->getFrame() > thisFrame) {
       printf("- - - - - THERE IS A SERIOUS PROBLEM - THE TARGET FRAME HAS BEEN BYPASSED\n");
     }
-    printf("   %s\n", my_thread->exceptionStack().summary().c_str());
+    if (core::_sym_STARdebugFlowControlSTAR->symbolValue() == kw::_sym_verbose )
+      printf("   %s\n", my_thread->exceptionStack().summary().c_str());
   }
 #endif
   if (unwindP->getFrame() == thisFrame) {

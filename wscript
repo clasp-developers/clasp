@@ -881,7 +881,7 @@ class run_aclasp(Task.Task):
         print("In run_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
         cmd = [ self.inputs[0].abspath(),
                 "--ignore-image",
-#                "--feature", "no-implicit-compilation",
+                "--feature", "no-implicit-compilation",
                 "--feature", "clasp-min",
                 "--feature", "debug-run-clang",
                 "--eval", '(load "source-dir:src;lisp;kernel;clasp-builder.lsp")',
@@ -908,10 +908,9 @@ class compile_aclasp(Task.Task):
             cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--ignore-image",
-                      "--feature", "iclasp",
                       "--feature", "clasp-min",
                       "--feature", "debug-run-clang",
-                      "--eval", '(load "source-dir:src;lisp;kernel;clasp-builder.lsp")',
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                       "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_aclasp
@@ -937,11 +936,13 @@ class compile_bclasp(Task.Task):
             cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-                      "--feature", "clasp-builder",
+#                      "--feature", "clasp-builder",
                       "--feature", "debug-run-clang",
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                       "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_bclasp
+        print("cmd = %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout

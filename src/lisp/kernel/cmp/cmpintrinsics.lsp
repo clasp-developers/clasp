@@ -615,8 +615,9 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "ltvc_make_float" +t*+ (list +float+))
   (primitive-nounwind module "ltvc_make_double" +t*+ (list +double+))
   (primitive-nounwind module "ltvc_make_complex" +t*+ (list +t*+ +t*+))
-  (primitive          module "ltvc_set_ltv_funcall" +t*+ (list +fn-prototype*+))
-  (primitive          module "ltvc_funcall" +void+ (list +fn-prototype*+))
+  (primitive          module "ltvc_funcall" +t*+ (list +fn-prototype*+))
+  (primitive          module "ltvc_ltv_funcall" +t*+ (list +fn-prototype*+))
+  (primitive          module "ltvc_toplevel_funcall" +t*+ (list +fn-prototype*+))
 
   
   

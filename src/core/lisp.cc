@@ -1190,7 +1190,7 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
   T_mv result = Values(_Nil<T_O>());
   DynamicScopeManager scope(_sym_STARcurrentSourceFileInfoSTAR, core__source_file_info(stream));
   while (1) {
-    TRY() {
+    try {
       if (prompt) {
         stringstream prompts;
         prompts << std::endl
@@ -1249,19 +1249,16 @@ T_mv Lisp_O::readEvalPrint(T_sp stream, T_sp environ, bool printResults, bool pr
           }
         }
       }
-    }
-    catch (Condition &err) {
+    } catch (Condition &err) {
       // Catch condition from reader means just ask for another s-exp if
       // interactive and terminate if batch
       this->print(BF("%s:%d Caught Condition from reader\n") % __FILE__ % __LINE__);
       abort();
       //		this->reportConditionAndTerminateProgramIfBatch(err.conditionObject());
-    }
-    catch (DebuggerSaysAbortToRepl &abort) {
+    } catch (DebuggerSaysAbortToRepl &abort) {
       this->print(BF("%s:%d aborted to repl\n") % __FILE__ % __LINE__);
       // Do nothing
-    }
-    catch (HardError &err) {
+    } catch (HardError &err) {
       this->print(BF("Should never happen - catch and convert to Condition below - HardError: %s") % err.message());
       IMPLEMENT_ME();
       //		this->enterDebugger();

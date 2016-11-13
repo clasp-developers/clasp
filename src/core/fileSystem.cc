@@ -383,7 +383,7 @@ void DirectoryIterator_O::setupCurrentIterator() {
   if (this->_CurrentIterator != NULL) {
     delete (this->_CurrentIterator);
   }
-  TRY() {
+  try {
     this->_CurrentIterator = new boost_filesystem::directory_iterator(this->_Path->getPath());
   }
   catch (boost_filesystem::filesystem_error &err) {
@@ -482,7 +482,7 @@ void RecursiveDirectoryIterator_O::setupCurrentIterator() {
   if (this->_CurrentIterator != NULL) {
     delete (this->_CurrentIterator);
   }
-  TRY() {
+  try {
     this->_CurrentIterator = new boost_filesystem::recursive_directory_iterator(this->_Path->getPath());
   }
   catch (boost_filesystem::filesystem_error &err) {

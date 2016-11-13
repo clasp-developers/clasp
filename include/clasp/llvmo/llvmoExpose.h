@@ -729,6 +729,14 @@ struct to_object<llvm::TargetMachine *> {
 };
     ;
 
+template <typename T, typename U>
+  T* llvm_cast(U* p) {
+  if (!llvm::isa<T>(p)) {
+    SIMPLE_ERROR(BF("llvm_cast<T> argument of incompatible type!"));
+  }
+  return reinterpret_cast<T*>(p);
+}
+
 namespace llvmo {
 FORWARD(PassManagerBase);
 FORWARD(LLVMTargetMachine);
@@ -738,7 +746,7 @@ class LLVMTargetMachine_O : public TargetMachine_O {
   typedef llvm::LLVMTargetMachine *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -785,7 +793,7 @@ class FunctionPass_O : public Pass_O {
   typedef llvm::FunctionPass *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -827,7 +835,7 @@ class ModulePass_O : public Pass_O {
   typedef llvm::ModulePass *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -869,7 +877,7 @@ class ImmutablePass_O : public ModulePass_O {
   typedef llvm::ImmutablePass *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -1145,7 +1153,7 @@ class User_O : public Value_O {
   typedef llvm::User *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -1324,7 +1332,7 @@ class Constant_O : public User_O {
   typedef llvm::Constant *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -1391,7 +1399,7 @@ class ConstantArray_O : public Constant_O {
 
 private:
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
 #if 0
 	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
@@ -1417,7 +1425,7 @@ class BlockAddress_O : public Constant_O {
 
 private:
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
 #if 0
 	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
@@ -1443,7 +1451,7 @@ class ConstantDataSequential_O : public Constant_O {
 
 private:
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
 #if 0
 	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
@@ -1468,7 +1476,7 @@ class ConstantDataArray_O : public ConstantDataSequential_O {
 
 private:
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
 #if 0
 	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
@@ -1494,7 +1502,7 @@ class ConstantExpr_O : public Constant_O {
 
 private:
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
 #if 0
 	    if (this->_ptr != NULL && this->_PtrIsOwned ) delete this->_ptr;
@@ -1523,7 +1531,7 @@ private:
   bool _PtrIsOwned;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     if (this->_ptr != NULL && this->_PtrIsOwned)
       delete this->_ptr;
@@ -1552,7 +1560,7 @@ public:
   static GlobalVariable_sp make(Module_sp module, Type_sp type, bool isConstant, core::Symbol_sp linkage, /*Constant_sp*/ core::T_sp initializer, core::Str_sp name, /*GlobalVariable_sp*/ core::T_sp insertBefore, core::Symbol_sp threadLocalMode);
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -1611,7 +1619,7 @@ public:
   }
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -1684,7 +1692,7 @@ public:
   }
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -1916,7 +1924,7 @@ public:
   static FunctionPassManager_sp make(llvm::Module *module);
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     if (this->_ptr != NULL)
       delete this->_ptr;
@@ -1970,7 +1978,7 @@ public:
   static PassManager_sp make();
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return /*dynamic_*/reinterpret_cast<ExternalType*>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     if (this->_ptr != NULL)
       delete this->_ptr;
@@ -2027,7 +2035,7 @@ public:
   }
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2094,7 +2102,7 @@ public:
   }
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2249,7 +2257,7 @@ public:
   }
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2340,7 +2348,7 @@ class Instruction_O : public User_O {
   typedef llvm::Instruction *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2387,7 +2395,7 @@ class StoreInst_O : public Instruction_O {
   typedef llvm::StoreInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2429,7 +2437,7 @@ class FenceInst_O : public Instruction_O {
   typedef llvm::FenceInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2471,7 +2479,7 @@ class AtomicCmpXchgInst_O : public Instruction_O {
   typedef llvm::AtomicCmpXchgInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2513,7 +2521,7 @@ class AtomicRMWInst_O : public Instruction_O {
   typedef llvm::AtomicRMWInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2555,7 +2563,7 @@ class PHINode_O : public Instruction_O {
   typedef llvm::PHINode *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2597,7 +2605,7 @@ class CallInst_O : public Instruction_O {
   typedef llvm::CallInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2639,7 +2647,7 @@ class LandingPadInst_O : public Instruction_O {
   typedef llvm::LandingPadInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2681,7 +2689,7 @@ class UnaryInstruction_O : public Instruction_O {
   typedef llvm::UnaryInstruction *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2702,7 +2710,7 @@ class AllocaInst_O : public UnaryInstruction_O {
   typedef llvm::AllocaInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2743,7 +2751,7 @@ class VAArgInst_O : public UnaryInstruction_O {
   typedef llvm::VAArgInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2785,7 +2793,7 @@ class LoadInst_O : public UnaryInstruction_O {
   typedef llvm::LoadInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2827,7 +2835,7 @@ class TerminatorInst_O : public Instruction_O {
   typedef llvm::TerminatorInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2848,7 +2856,7 @@ class BranchInst_O : public TerminatorInst_O {
   typedef llvm::BranchInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2890,7 +2898,7 @@ class SwitchInst_O : public TerminatorInst_O {
   typedef llvm::SwitchInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2934,7 +2942,7 @@ class IndirectBrInst_O : public TerminatorInst_O {
   typedef llvm::IndirectBrInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -2976,7 +2984,7 @@ class InvokeInst_O : public TerminatorInst_O {
   typedef llvm::InvokeInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3018,7 +3026,7 @@ class ResumeInst_O : public TerminatorInst_O {
   typedef llvm::ResumeInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3060,7 +3068,7 @@ class UnreachableInst_O : public TerminatorInst_O {
   typedef llvm::UnreachableInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3102,7 +3110,7 @@ class ReturnInst_O : public TerminatorInst_O {
   typedef llvm::ReturnInst *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3144,8 +3152,8 @@ class ConstantFP_O : public Constant_O {
   typedef llvm::ConstantFP *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3182,8 +3190,8 @@ class ConstantInt_O : public Constant_O {
   typedef llvm::ConstantInt *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3219,8 +3227,8 @@ class ConstantStruct_O : public Constant_O {
   typedef llvm::ConstantStruct *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3256,8 +3264,8 @@ class UndefValue_O : public Constant_O {
   typedef llvm::UndefValue *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3293,8 +3301,8 @@ class ConstantPointerNull_O : public Constant_O {
   typedef llvm::ConstantPointerNull *PointerToExternalType;
 
 public:
-  PointerToExternalType wrappedPtr() { return dynamic_cast<PointerToExternalType>(this->_ptr); };
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() { return llvm_cast<ExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3480,7 +3488,7 @@ protected:
   PointerToExternalType _ptr;
 
 public:
-  PointerToExternalType wrappedPtr() const { return dynamic_cast<PointerToExternalType>(this->_ptr); };
+  PointerToExternalType wrappedPtr() const { return llvm_cast<ExternalType>(this->_ptr); };
   void set_wrapped(PointerToExternalType ptr) {
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
@@ -3621,6 +3629,7 @@ public:
   ~BasicBlock_O() {}
 
   bool empty();
+  size_t size();
   Instruction_sp back();
 
 }; // BasicBlock_O

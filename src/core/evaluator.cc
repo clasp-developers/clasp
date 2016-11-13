@@ -186,7 +186,10 @@ CL_DEFUN T_mv cl__eval(T_sp form) {
     return eval::funcall(core::_sym_STAReval_with_env_hookSTAR->symbolValue(), form, _Nil<T_O>());
   }
 };
-#if 1
+
+
+
+
 // fast funcall
 CL_LAMBDA(function-desig &va-rest args);
 CL_DECLARE();
@@ -197,6 +200,12 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   if (func.nilp()) {
     ERROR_UNDEFINED_FUNCTION(function_desig);
   }
+  if (func.unboundp()) {
+    if (function_desig.nilp()) SIMPLE_ERROR(BF("The function designator was NIL"));
+    if (function_desig.unboundp()) SIMPLE_ERROR(BF("The function designator was UNBOUND"));
+    SIMPLE_ERROR(BF("The function %s was unbound") % _rep_(function_desig));
+  }
+
 #ifdef _DEBUG_BUILD
   VaList_S debug_valist(*args);
   core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
@@ -204,29 +213,6 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   T_mv res = funcall_consume_valist_(func, args);
   return res;
 }
-#else
-// slow funcall
-CL_LAMBDA(function-desig &rest args);
-CL_DECLARE();
-CL_DOCSTRING("See CLHS: funcall");
-CL_DEFUN T_mv cl__funcall(T_sp function_desig, List_sp args) {
-  //    printf("%s:%d cl__funcall should be inlined after the compiler starts up\n", __FILE__, __LINE__ );
-  Function_sp func = coerce::functionDesignator(function_desig);
-  if (func.nilp()) {
-    ERROR_UNDEFINED_FUNCTION(function_desig);
-  }
-  STACK_FRAME(buff, passArgs, cl__length(args));
-  int idx(0);
-  for (auto cur : args) {
-    passArgs[idx] = oCar(cur).raw_();
-    ++idx;
-  }
-  VaList_S vargs_struct(passArgs);
-  VaList_sp vargs(&vargs_struct);
-  T_mv res = eval::apply_consume_VaList(func, vargs);
-  return res;
-}
-#endif
 
 CL_LAMBDA(arg);
 CL_DECLARE();
@@ -1206,7 +1192,6 @@ T_mv sp_returnFrom(List_sp args, T_sp environment) {
   throw returnFrom;
 }
 
-#if 1
 T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
   T_mv result = Values(_Nil<T_O>());
@@ -1214,37 +1199,23 @@ T_mv sp_unwindProtect(List_sp args, T_sp environment) {
   try {
     // Evaluate the protected form
     result = eval::evaluate(oCar(args), environment);
-    // Save the return values
-    result.saveToVec0(save);
-    // Evaluate the unwind forms --
-    // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
-    eval::sp_progn(oCdr(args), environment);
   } catch (...) {
+    T_mv tresult;
+    tresult.readFromMultipleValue0();
+    tresult.saveToVec0(save);
     eval::sp_progn(oCdr(args), environment);
+    tresult.loadFromVec0(save);
+    tresult.saveToMultipleValue0();
     throw;
   }
+  // Save the return values
+  result.saveToVec0(save);
+  // Evaluate the cleanup forms --
+  eval::sp_progn(oCdr(args), environment);
+  // Restore the return values
   result.loadFromVec0(save);
   return result;
 }
-#else
-T_mv sp_unwindProtect(List_sp args, T_sp environment) {
-  T_mv result = Values(_Nil<T_O>());
-  VectorObjects_sp save(VectorObjects_O::create());
-  try {
-    // Evaluate the protected form
-    result = eval::evaluate(oCar(args), environment);
-    // Save the return values
-    multipleValuesSaveToVector(result, save);
-    // Evaluate the unwind forms --
-    // THIS IS REALLY, REALLY WRONG - it shouldn't be protected here
-    eval::sp_progn(oCdr(args), environment);
-  } catch (...) {
-    eval::sp_progn(oCdr(args), environment);
-    throw;
-  }
-  return multipleValuesLoadFromVector(save);
-}
-#endif
 
 T_mv sp_catch(List_sp args, T_sp environment) {
   ASSERT(environment.generalp());
@@ -1724,49 +1695,6 @@ T_mv sp_symbolMacrolet(List_sp args, T_sp env) {
 #endif
 }
 
-T_mv handleConditionInEvaluate(T_sp environment) {
-  T_mv result;
-  try {
-    throw;
-  } catch (Condition &cond) {
-    THROW_HARD_ERROR(BF("Figure out what should happen here"));
-#if 0
-		try
-		{
-		    THROW(_lisp->error(cond.conditionObject()/*,environment */));
-		}
-		catch (DebuggerSaysContinue& debuggerSaysResume)
-		{
-		    T_mv resumeResult = debuggerSaysResume.returnObject();
-		    LOG(BF("Execution will resume with return value[%s]") % resumeResult->__repr__() );
-		    return resumeResult;
-		}
-		catch (HardError& err)
-		{
-		    // Convert the HardError into a Condition
-		    SIMPLE_ERROR(BF("HARD_ERROR: %s") % err.message() );
-		}
-//		catch (...) { throw;}
-		;
-#endif
-  } catch (HardError &err) {
-    // Convert the HardError into a Condition
-    SIMPLE_ERROR(BF("HARD_ERROR: %s") % err.message());
-  }
-#if 0
-	    catch (DebuggerSaysContinue& debuggerSaysResume)
-	    {
-		T_mv resumeResult = debuggerSaysResume.returnObject();
-		LOG(BF("Execution will resume with return value[%s]") % resumeResult->__repr__() );
-		return resumeResult;
-	    }
-#endif
-  catch (const std::exception &exc) {
-    SIMPLE_ERROR(BF("std::exception--> %s") % exc.what());
-  }
-  SIMPLE_ERROR(BF("Failed to handle exception"));
-}
-
 /*! Returns NIL if no function is found */
 T_sp lookupFunction(T_sp functionDesignator, T_sp env) {
   ASSERTF(functionDesignator, BF("In apply, the head function designator is UNDEFINED"));
@@ -1846,18 +1774,10 @@ T_mv evaluate_atom(T_sp exp, T_sp environment) {
         MULTIPLE_VALUES_CONTEXT();
         texpr = cl__macroexpand(sym, environment);
       }
-      try {
-        result = eval::evaluate(texpr, environment);
-      } catch (...) {
-        result = handleConditionInEvaluate(environment);
-      };
+      result = eval::evaluate(texpr, environment);
       return (result);
     }
-    try {
-      result = af_interpreter_lookup_variable(sym, environment);
-    } catch (...) {
-      result = handleConditionInEvaluate(environment);
-    }
+    result = af_interpreter_lookup_variable(sym, environment);
     return (result);
   }
   LOG(BF(" Its the self returning object: %s") % exp->__repr__());
@@ -1868,25 +1788,6 @@ T_mv evaluate_lambdaHead(List_sp headCons, List_sp form, T_sp environment) {
   T_mv result;
   if (oCar(headCons) == cl::_sym_lambda) {
     IMPLEMENT_MEF(BF("Handle lambda better"));
-#if 0
-      ASSERTF(oCar(headCons)==cl::_sym_lambda,BF("Illegal head %s - must be a LAMBDA expression") % _rep_(headCons) );
-		//
-		// The head is a cons with a non-symbol for a head, evaluate it
-		//
-      {
-        if ( _lisp->isSingleStepOn() )
-        {
-          IMPLEMENT_ME();
-#if 0
-          LispDebugger::step();
-#endif
-        }
-        ValueFrame_sp evaluatedArgs(ValueFrame_O::create(cl__length(oCdr(form)),_Nil<ActivationFrame_O>()));
-        evaluateIntoActivationFrame(evaluatedArgs,oCdr(form),environment);
-        try { result = eval::applyToActivationFrame(headCons,evaluatedArgs);}
-        catch (...) { result = handleConditionInEvaluate(environment);};
-      }
-#endif
   } else {
     SIMPLE_ERROR(BF("Illegal form: %s") % _rep_(form));
   }
@@ -1899,22 +1800,14 @@ T_mv evaluate_specialForm(SpecialForm_sp specialForm, List_sp form, T_sp environ
 
 T_mv evaluate_cond(List_sp form, T_sp environment) {
   T_mv result;
-  try {
-    result = interpret::interpreter_cond(oCdr(form), environment);
-  } catch (...) {
-    result = handleConditionInEvaluate(environment);
-  }
-  ASSERTNOTNULL(result);
+  result = interpret::interpreter_cond(oCdr(form), environment);
+//  ASSERTNOTNULL(result);
   return (result);
 }
 
 T_mv evaluate_case(List_sp form, T_sp environment) {
   T_mv result;
-  try {
-    result = interpret::interpreter_case(oCdr(form), environment);
-  } catch (...) {
-    result = handleConditionInEvaluate(environment);
-  }
+  result = interpret::interpreter_case(oCdr(form), environment);
   ASSERTNOTNULL(result);
   return (result);
 }
@@ -1922,11 +1815,7 @@ T_mv evaluate_case(List_sp form, T_sp environment) {
 T_mv evaluate_multipleValueSetq(List_sp form, T_sp environment) {
   T_mv result;
   SYMBOL_EXPORT_SC_(ClPkg, multipleValueSetq);
-  try {
-    result = interpret::interpreter_multipleValueSetq(oCdr(form), environment);
-  } catch (...) {
-    result = handleConditionInEvaluate(environment);
-  }
+  result = interpret::interpreter_multipleValueSetq(oCdr(form), environment);
   ASSERTNOTNULL(result);
   return (result);
 }
@@ -1934,11 +1823,7 @@ T_mv evaluate_multipleValueSetq(List_sp form, T_sp environment) {
 T_mv evaluate_prog1(List_sp form, T_sp environment) {
   T_mv result;
   SYMBOL_EXPORT_SC_(ClPkg, prog1);
-  try {
-    result = interpret::interpreter_prog1(oCdr(form), environment);
-  } catch (...) {
-    result = handleConditionInEvaluate(environment);
-  }
+  result = interpret::interpreter_prog1(oCdr(form), environment);
   ASSERTNOTNULL(result);
   return (result);
 }
@@ -2137,6 +2022,7 @@ T_mv t1Evaluate(T_sp exp, T_sp environment) {
     } catch (...) {
       // Pop the form from the core:*top-level-form-stack*
       _sym_STARtop_level_form_stackSTAR->setf_symbolValue(oCdr(_sym_STARtop_level_form_stackSTAR->symbolValue()));
+      throw;
     }
   }
   if (_sym_STARdebugEvalSTAR && _sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
@@ -2219,8 +2105,6 @@ T_mv evaluate(T_sp exp, T_sp environment) {
 		       - done here the macros are expanded again and again and again
 		    */
       T_sp expanded = _Nil<T_O>();
-      try {
-#if 1
         if (_sym_STARinterpreterTraceSTAR->symbolValue().notnilp()) {
           if (gc::As<HashTable_sp>(_sym_STARinterpreterTraceSTAR->symbolValue())->gethash(headSym).notnilp()) {
             InterpreterTrace itrace;
@@ -2233,17 +2117,10 @@ T_mv evaluate(T_sp exp, T_sp environment) {
         } else {
           expanded = cl__macroexpand(form, environment);
         }
-#else
-        expanded = cl__macroexpand(form, environment);
-#endif
         if (_evaluateVerbosity > 0) {
           string es = _rep_(expanded);
           printf("core::eval::evaluate expression is macro - expanded --> %s\n", es.c_str());
         }
-      } catch (Condition &cond) {
-        THROW_HARD_ERROR(BF("Figure out what to do from here"));
-        //			_lisp->error(cond.conditionObject()/*,environment*/);
-      }; // catch (...) {throw;};
       result = eval::evaluate(expanded, environment);
       goto DONE;
     }
@@ -2363,35 +2240,14 @@ T_mv evaluateListReturnLast(List_sp args, T_sp environment) {
   T_sp inObj;
   T_mv outObj;
   outObj = Values(_Nil<T_O>());
-  {
-    _BLOCK_TRACE("Evaluating...");
     // Iterate through each car in exp and
     // evaluate it (handling Nil objects and results)
     // and string the results into a linked list
     //
     //
-    for (auto p : args) {
-      inObj = oCar(p);
-      LOG(BF("Pushing code onto the backTrace: <%s>") % p->__repr__());
-      {
-        TRY() {
-          outObj = eval::evaluate(inObj, environment); // used to use newEnvironment
-        }
-        catch (Condition &err) {
-          THROW_HARD_ERROR(BF("Figure out what to do here"));
-#if 0
-            TRY()
-            {
-              _lisp->error(err.conditionObject() /*,environment */);
-            }
-            catch (DebuggerSaysContinue& dc)
-            {
-              outObj = dc.returnObject();
-            }
-#endif
-        }
-      }
-    }
+  for (auto p : args) {
+    inObj = oCar(p);
+    outObj = eval::evaluate(inObj, environment); // used to use newEnvironment
   }
   return outObj;
 }

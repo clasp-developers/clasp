@@ -562,9 +562,10 @@
 (defun irc-prev-inst-terminator-inst-p ()
   (let ((cur-block (irc-get-insert-block)))
     (if cur-block
-	(if (llvm-sys:basic-block-empty cur-block)
+	(if (= (llvm-sys:basic-block-size cur-block) 0)
 	    nil
-	    (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block)))
+            (progn
+              (llvm-sys:terminator-inst-p (llvm-sys:basic-block-back cur-block))))
 	nil)))
     
 

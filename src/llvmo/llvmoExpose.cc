@@ -1502,7 +1502,7 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::Str_sp kind, MDNode_sp mdnode
 
 CL_LISPIFY_NAME("terminatorInstP");
 CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
-  return llvm::TerminatorInst::classof(this->wrappedPtr());
+  return this->wrappedPtr()->isTerminator();
 }
 
 }; // llvmo
@@ -2548,6 +2548,11 @@ CL_EXTERN_DEFUN( &llvm::BasicBlock::Create );
 CL_LISPIFY_NAME("BasicBlockEmpty");
 CL_DEFMETHOD bool BasicBlock_O::empty() {
   return this->wrappedPtr()->empty();
+}
+
+CL_LISPIFY_NAME("BasicBlock-size");
+CL_DEFMETHOD size_t BasicBlock_O::size() {
+  return this->wrappedPtr()->size();
 }
 
 CL_LISPIFY_NAME("BasicBlockBack");

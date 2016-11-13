@@ -64,14 +64,15 @@
                 (*compilation-unit-module-index* 0)
                 (*all-functions-for-one-compile* nil))
 	   (unwind-protect (do-compilation-unit closure)
-             (dolist (action *pending-actions*)
-               (funcall action)))))
+             (progn
+               (dolist (action *pending-actions*)
+               (funcall action))))))
 	(t
 	 (funcall closure))))
 
 (export 'do-compilation-unit)
 (defmacro with-compilation-unit ((&rest options) &body body)
- `(do-compilation-unit #'(lambda () ,@body) ,@options))
+  `(do-compilation-unit #'(lambda () ,@body) ,@options))
 
 
 
@@ -121,7 +122,7 @@
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (literal:with-ltv (compile-thunk 'repl form nil)))
+  (literal:with-top-level-form (compile-thunk 'repl form nil)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"

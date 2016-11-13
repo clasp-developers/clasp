@@ -59,8 +59,6 @@ extern "C" {
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 
-#define DEBUG_FLOW_CONTROL 1
-
 using namespace core;
 
 #pragma GCC visibility push(default)

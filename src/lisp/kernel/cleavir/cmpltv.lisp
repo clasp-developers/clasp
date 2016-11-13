@@ -472,7 +472,7 @@ run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
       (codegen-rts/symbol result obj env)))
 
 
-(defun codegen-rtv (result sym env)
+(defun codegen-rtv (result sym)
   "bclasp calls this to get copy the run-time-value for sym into result"
   (let ((idx (run-time-reference-literal sym t)))
     (copy-load-time-value result *run-time-values-table-global-var* idx)

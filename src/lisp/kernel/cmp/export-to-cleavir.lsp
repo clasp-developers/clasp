@@ -60,8 +60,6 @@
           compile-lambda-function
           bclasp-compile-form
           compile-form
-          reference-evaluated-function
-          compile-ltv-thunk
           compiler-error
           compiler-fatal-error
           compiler-message-file

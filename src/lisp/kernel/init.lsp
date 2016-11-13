@@ -776,7 +776,8 @@ the stage, the +application-name+ and the +bitcode-name+"
       (mapcar #'(lambda (entry)
                   (if (eq (car entry) 'cl:load)
                       (load (cadr entry))
-                      (eval (read-from-string (cdr entry)))))
+                      (let ((cmd (read-from-string (cdr entry))))
+                        (apply (car cmd) (cdr cmd)))))
               core:*extension-startup-loads*)))
 
 (export 'process-command-line-load-eval-sequence)
@@ -784,7 +785,8 @@ the stage, the +application-name+ and the +bitcode-name+"
   (mapcar #'(lambda (entry)
               (if (eq (car entry) :load)
                   (load (cdr entry))
-                (eval (read-from-string (cdr entry)))))
+                  (let ((cmd (read-from-string (cdr entry))))
+                    (apply (car cmd) (cdr cmd)))))
           core::*command-line-load-eval-sequence*))
 
 (export 'maybe-load-clasprc)
@@ -883,3 +885,7 @@ the stage, the +application-name+ and the +bitcode-name+"
   (process-command-line-load-eval-sequence)
   (bformat t "Low level repl\n")
   (core:low-level-repl))
+
+#-(or bclasp cclasp)
+(eval-when (:execute :load-top-level)
+  (bformat t "init.lsp  \n!\n!\n! Hello from the bottom of init.lsp - for some reason execution is passing through here\n!\n!\n"))

@@ -1059,33 +1059,18 @@ jump to blocks within this tagbody."
   (cmp-log "Starting codegen-load-time-value rest: %s\n" rest)
   (let* ((form (car rest))
 	 (read-only-p (cadr rest)))
-    ;;; Currently if read-only-p is T there is no
-    ;;; coalescence performed - this could be added as an optimization
+;;; Currently if read-only-p is T there is no
+;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
-	(multiple-value-bind (index fn)
-	    (compile-ltv-thunk form)
-	  ;; Invoke the repl function here
-          (literal:run-all-add-node (make-run-all-call :function fn
-                                                       :source-pos-info *current-source-pos-info*))
-#|          (with-run-all-body-codegen (ltv-result)
-            (irc-intrinsic "invokeTopLevelFunction" 
-                           ltv-result 
-                           fn
-                           (jit-constant-unique-string-ptr "load-time-value")
-                           *gv-source-file-info-handle*
-                           (irc-size_t-*current-source-pos-info*-filepos)
-                           (irc-size_t-*current-source-pos-info*-lineno)
-                           (irc-size_t-*current-source-pos-info*-column)
-                           *load-time-value-holder-global-var*))
-|#
-	  (get-load-time-value result index))
+        (let* ((index (literal:new-table-index))
+               (value (literal:with-ltv (compile-load-time-value-thunk form))))
+          (literal:add-call "ltvc_ltv_funcall" index value)
+          (literal:get-load-time-value result index))
 	(progn
 	  (cmp-log "About to generate load-time-value for COMPILE")
           ;;	  (break "Handle load-time-value for COMPILE")
 	  (let ((ltv (eval form)))
-	    (codegen-rtv result ltv env))))))
-
-
+	    (codegen-rtv result ltv))))))
 
 (defun split-vars-declares-forms (parts)
   (let ((vars (car parts))
@@ -1285,7 +1270,7 @@ jump to blocks within this tagbody."
         (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
       ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
       ;; default module without coalescence.
-      (codegen-rtv result obj env)))
+      (codegen-rtv result obj)))
 
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt

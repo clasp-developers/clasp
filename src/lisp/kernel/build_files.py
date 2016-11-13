@@ -63,6 +63,7 @@ def aclasp(wrappers):
 
 def bclasp(wrappers):
     files = aclasp(wrappers) + [
+        "src/lisp/kernel/tag/bclasp-start",
         "src/lisp/kernel/cmp/cmpwalk",
         "src/lisp/kernel/lsp/assert",
         "src/lisp/kernel/lsp/sharpmacros",
