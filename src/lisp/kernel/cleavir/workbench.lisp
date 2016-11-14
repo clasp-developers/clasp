@@ -27,7 +27,7 @@
 
 
 
-(clasp-cleavir:cleavir-compile 'foo '(lambda (x) (car (the cons x))) :debug t)
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x) (car x)))
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x y) (declare (fixnum x y)) (if (< x y) 1 2)) :debug t)
 
 
@@ -263,7 +263,7 @@ clasp-cleavir::*hir-types*
    (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;foundation.lsp")
    (trace cleavir-ir:delete-instruction)
    (trace cleavir-remove-useless-instructions:remove-useless-instructions)
-   (trace clasp-cleavir::cleavir-compile-t1expr)
+   (trace clasp-cleavir::cclasp-compile*)
    (apropos "delete-instruction")
 
    (apropos "compiled-function")
@@ -952,22 +952,22 @@ clasp-cleavir::*hir-types*
 
 
      (let ((cmp:*debug-dump-module* t)
-           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cclasp-compile*))
        (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad.bc" )))
 
      (let ((cmp:*debug-dump-module* t)
-           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cclasp-compile*))
        (compile 'badthrow (list "TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad01.bc" )))
 
      (getpid)
      (fdefinition 'badthrow)#<COMMON-LISP:COMPILED-FUNCTION CORE::UNNAMED-LAMBDA :address 0x11c778080>
 
      (let ((cmp:*debug-dump-module* t)
-           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cclasp-compile*))
        (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad03.bc" )))
 
      (let ((cmp:*debug-dump-module* t)
-           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cclasp-compile*))
        (compile 'badthrow (list "cl->TOP-LEVEL" t "/Users/meister/Development/clasp/src/tests/lisp/bad04.bc" )))
 
      (fdefinition 'badthrow)
@@ -978,7 +978,7 @@ clasp-cleavir::*hir-types*
 
 
      (let ((cmp:*debug-dump-module* t)
-           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cleavir-compile-t1expr))
+           (cmp:*cleavir-compile-hook* #'clasp-cleavir:my-cclasp-compile*))
        (compile 'goodthrow (list "COMMON-LISP:LAMBDA" nil "/Users/meister/Development/clasp/src/tests/lisp/good01.bc" )))
 
      (defun zzz ()
@@ -991,11 +991,11 @@ clasp-cleavir::*hir-types*
 
      (goodthrow)
 
-     (fdefinition 'clasp-cleavir:my-cleavir-compile-t1expr)
+     (fdefinition 'clasp-cleavir:my-cclasp-compile*)
 
      (in-package :clasp-cleavir)
-     (defun my-cleavir-compile-t1expr (name info env pathname)
-       (format t "In my-cleavir-compile-t1expr~%")
+     (defun my-cclasp-compile* (name info env pathname)
+       (format t "In my-cclasp-compile*~%")
        (let ((cleavir-generate-ast:*compiler* 'cl:compile)
              (main-name (first info))
              (run-setup (second info))
@@ -1028,7 +1028,7 @@ clasp-cleavir::*hir-types*
                      nil)))
                (unless (compiled-function-p setup-function)
                  (format t "Whoah cleavir-clasp compiled code eval --> ~s~%" compiled-function)
-                 (return-from my-cleavir-compile-t1expr (values nil t)))
+                 (return-from my-cclasp-compile* (values nil t)))
                (if run-setup
                    (let ((enclosed-function (funcall setup-function cmp:*run-time-literal-holder*)))
                      (format t "Ran the setup function~%")

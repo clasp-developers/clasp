@@ -2,17 +2,17 @@
 
 
 (defvar *debug-cleavir* nil
-  "Controls if graphs are generated as forms are being compiled.")
+  "controls if graphs are generated as forms are being compiled.")
 (defvar *debug-cleavir-literals* nil
-  "Controls if cleavir debugging is carried out on literal compilation. 
-When this is T a LOT of graphs will be generated.")
+  "controls if cleavir debugging is carried out on literal compilation. 
+when this is t a lot of graphs will be generated.")
 
 ;;;
-;;; The first argument to this function is an instruction that has a
-;;; single successor.  Whether a GO is required at the end of this
+;;; the first argument to this function is an instruction that has a
+;;; single successor.  whether a go is required at the end of this
 ;;; function is determined by the code layout algorithm.  
 ;;; 
-;;; The inputs are forms to be evaluated.  The outputs are symbols
+;;; the inputs are forms to be evaluated.  the outputs are symbols
 ;;; that are names of variables.
 (defgeneric translate-simple-instruction (instruction return-value inputs outputs abi))
 
@@ -37,16 +37,16 @@ When this is T a LOT of graphs will be generated.")
       (let ((var (gethash datum *vars*)))
 	(when (null var)
 	  (cond
-	    ;; Do nothing for values-location - there is only one
+	    ;; do nothing for values-location - there is only one
 	    ((typep datum 'cleavir-ir:values-location)
-	     #+(or)(setf var (alloca-mv-struct (string (gensym "V")))) )
+	     #+(or)(setf var (alloca-mv-struct (string (gensym "v")))) )
 	    ((typep datum 'cleavir-ir:immediate-input)
 	     (setf var (%size_t (cleavir-ir:value datum))))
 	    ((typep datum 'cleavir-ir:dynamic-lexical-location)
 	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
 	    ((typep datum 'cleavir-ir:static-lexical-location)
 	     (setf var (alloca-t* (string (cleavir-ir:name datum)))))
-            (t (error "Add support to translate datum: ~a~%" datum)))
+            (t (error "add support to translate datum: ~a~%" datum)))
 	  (setf (gethash datum *vars*) var))
 	var)))
 
@@ -72,7 +72,7 @@ When this is T a LOT of graphs will be generated.")
   (destructuring-bind (first last owner) basic-block
     (declare (ignore owner))
     (cc-dbg-when *debug-log*
-			 (format *debug-log* "- - - -  BEGIN layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
+			 (format *debug-log* "- - - -  begin layout-basic-block  owner: ~a~%" (cc-mir:describe-mir owner))
 			 (loop for instruction = first
 			    then (first (cleavir-ir:successors instruction))
 			    until (eq instruction last)
@@ -152,7 +152,7 @@ When this is T a LOT of graphs will be generated.")
       (llvm-sys:add-fn-attr fn 'llvm-sys:attribute-uwtable)
       (push fn cmp:*all-functions-for-one-compile*)
       (cc-dbg-when *debug-log*
-		   (format *debug-log* "------------ BEGIN layout-procedure ~a~%" (llvm-sys:get-name fn))
+		   (format *debug-log* "------------ begin layout-procedure ~a~%" (llvm-sys:get-name fn))
 		   (format *debug-log* "   basic-blocks for procedure~%")
 		   (dolist (bb basic-blocks)
 		     (destructuring-bind (first last owner) bb
@@ -165,30 +165,30 @@ When this is T a LOT of graphs will be generated.")
       (let ((args (llvm-sys:get-argument-list fn)))
 	(mapcar #'(lambda (arg argname) (llvm-sys:set-name arg argname))
 		(llvm-sys:get-argument-list fn) cmp:+fn-prototype-argument-names+)
-	;; Set the first argument attribute to be sret
+	;; set the first argument attribute to be sret
 	#+(or)(if args
                   (let ((attribute-set (llvm-sys:attribute-set-get cmp:*llvm-context* 1 (list 'llvm-sys:attribute-struct-ret))))
                     (llvm-sys:add-attr (first args) attribute-set))))
-      ;; Create a basic-block for every remaining tag
+      ;; create a basic-block for every remaining tag
       (loop for block in rest
 	 for instruction = (first block)
 	 do (progn
-	      #+(or)(format t "Creating basic block for rest instruction: ~a~%" instruction)
+	      #+(or)(format t "creating basic block for rest instruction: ~a~%" instruction)
 	      (setf (gethash instruction *tags*) (cmp:irc-basic-block-create "tag"))))
       (llvm-sys:set-insert-point-basic-block *entry-irbuilder* entry-block)
-      ;; HYPOTHESIS: bind variables for every var owned by this
-      ;; initial instruction and that are NOT outputs of the initial
-      ;; instruction (passed arguments)  I think I should use passed arguments
+      ;; hypothesis: bind variables for every var owned by this
+      ;; initial instruction and that are not outputs of the initial
+      ;; instruction (passed arguments)  i think i should use passed arguments
       ;; to create allocas for them.
       (cmp:with-irbuilder (*entry-irbuilder*)
         ;; make sure no landing pads are used from outer functions
         (cmp:with-landing-pad nil 
           (setq return-value (alloca-return_type))
-          ;; In case of a non-local exit, zero out the number of returned
+          ;; in case of a non-local exit, zero out the number of returned
           ;; values
           (with-return-values (return-values return-value abi)
             (%store (%size_t 0) (number-of-return-values return-values)))
-          (cmp:with-dbg-function ("repl-FIX"
+          (cmp:with-dbg-function ("repl-fix"
                                   :linkage-name (llvm-sys:get-name fn)
                                   :function fn
                                   :function-type cmp:+fn-prototype+
@@ -220,18 +220,19 @@ When this is T a LOT of graphs will be generated.")
             (loop for block in rest
                for instruction = (first block)
                do (progn
-                    #+(or)(format t "Laying out basic block: ~a~%" block)
-                    #+(or)(format t "Inserting basic block for instruction: ~a~%" instruction)
+                    #+(or)(format t "laying out basic block: ~a~%" block)
+                    #+(or)(format t "inserting basic block for instruction: ~a~%" instruction)
                     (cmp:irc-begin-block (gethash instruction *tags*))
                     (layout-basic-block block return-value abi))))
-          ;; Finish up by jumping from the entry block to the body block
+          ;; finish up by jumping from the entry block to the body block
           (cmp:with-irbuilder (*entry-irbuilder*)
             (cmp:irc-low-level-trace :flow)
             (cmp:irc-br body-block))
           (cc-dbg-when *debug-log*
-                       (format *debug-log* "----------END layout-procedure ~a~%" (llvm-sys:get-name fn)))
-          (values fn :function-kind nil lambda-name))))))
+                       (format *debug-log* "----------end layout-procedure ~a~%" (llvm-sys:get-name fn)))
+          (values fn lambda-name))))))
 
+(defparameter *forms*)
 (defun translate (initial-instruction &optional (abi *abi-x86-64*))
   (let* (#+use-ownerships(ownerships
 			  (cleavir-hir-transformations:compute-ownerships initial-instruction)))
@@ -252,8 +253,15 @@ When this is T a LOT of graphs will be generated.")
        (let ((mir-pathname (make-pathname :name (format nil "mir~a" *debug-log-index*) :type "dot" :defaults (pathname *debug-log*))))
 	 (cleavir-ir-graphviz:draw-flowchart initial-instruction (namestring mir-pathname))
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
-      (prog1 (layout-procedure initial-instruction abi )
-        (cmp:irc-verify-module-safe cmp:*the-module*)))))
+      (multiple-value-bind (function lambda-name)
+          (layout-procedure initial-instruction abi)
+        (let ((forms (cleavir-ir:forms initial-instruction)))
+          (setq *forms* forms)
+          (break "Check out clasp-cleavir::*forms*"))
+        ;; Generate the run-all code here
+        (cmp:irc-verify-module-safe cmp:*the-module*)
+        ;;; figure out what to return
+        ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -325,7 +333,7 @@ When this is T a LOT of graphs will be generated.")
   (let ((idx (first inputs)))
     (cmp:irc-low-level-trace :flow)
     (let* ((label (format nil "~s" (clasp-cleavir-hir:precalc-value-instruction-original-object instruction)))
-           (result (cmp:irc-create-call "cc_precalcValue" (list (ltv:ltv-global) idx) label)))
+           (result (cmp:irc-create-call "cc_precalcValue" (list (cmp:ltv-global) idx) label)))
       (llvm-sys:create-store cmp:*irbuilder* result (first outputs) nil))))
 
 (defmethod translate-simple-instruction
@@ -508,7 +516,7 @@ When this is T a LOT of graphs will be generated.")
   (format t "         *current-source-pos-info*: ~a~%" core:*current-source-pos-info*)
 ||#
   (let* ((enter-instruction (cleavir-ir:code instruction)))
-    (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
+    (multiple-value-bind (enclosed-function lambda-name)
 	(layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
 	     (ltv-lambda-name (%literal-value lambda-name (format nil "lambda-name->~a" lambda-name)))
@@ -533,7 +541,7 @@ When this is T a LOT of graphs will be generated.")
   (declare (ignore inputs))
   (cmp:irc-low-level-trace :flow)
   (let* ((enter-instruction (cleavir-ir:code instruction)))
-    (multiple-value-bind (enclosed-function function-kind unknown-ret lambda-name)
+    (multiple-value-bind (enclosed-function lambda-name)
         (layout-procedure enter-instruction abi)
       (let* ((loaded-inputs (mapcar (lambda (x) (cmp:irc-load x "cell")) inputs))
              (stack-allocated-closure-space (alloca-i8 (core:closure-with-slots-size (length inputs)) "stack-allocated-closure"))
@@ -985,6 +993,7 @@ COMPILE-FILE will use the default *clasp-env*."
     (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
     hir))
 
+#+(or)
 (defun compile-lambda-form-to-llvm-function (lambda-form)
   "Compile a lambda-form into an llvm-function and return
 that llvm function. This works like compile-lambda-function in bclasp."
@@ -1018,7 +1027,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
                (incf *debug-log-index*)
                (format *debug-log* "====== STARTING TO LOG A NEW FORM - INDEX: ~d~%" *debug-log-index*)
 	       (format *debug-log* "==== STARTING!!!!!   Form: ~a~%" form))
-  (prog1
+  (multiple-value-prog1
       (handler-bind
           ((cleavir-env:no-variable-info
             (lambda (condition)
@@ -1043,11 +1052,11 @@ that llvm function. This works like compile-lambda-function in bclasp."
     (cc-dbg-when *debug-log*
                  (format *debug-log* "==== ENDING!!!!!   Form: ~a~%" form))))
 
-;; Set this to T to watch cleavir-compile-t1expr run
+;; Set this to T to watch cclasp-compile* run
 (defvar *cleavir-compile-verbose* nil)
 (export '*cleavir-compile-verbose*)
 (in-package :clasp-cleavir)
-(defun cleavir-compile-t1expr (name form env pathname)
+(defun cclasp-compile* (name form env pathname)
   (when *cleavir-compile-verbose*
     (format *trace-output* "Cleavir compiling t1expr: ~s~%" form)
     (format *trace-output* "          in environment: ~s~%" env ))
@@ -1063,7 +1072,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 ;;;	  (declare (ignore condition))
             #+verbose-compiler(warn "Condition: ~a" condition)
             (invoke-restart 'cleavir-generate-ast::consider-global))))
-      (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp)
+      (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
           ;; The following test and true form should be removed`
           (cmp:with-debug-info-generator (:module cmp:*the-module* :pathname pathname)
             (let ((mir (compile-form-to-mir form env))
@@ -1102,7 +1111,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
                  nil)))
           (unless (compiled-function-p setup-function)
             (format t "cleavir-clasp compiled code but it didn't result in a compiled-function - eval --> ~s~%" setup-function)
-            (return-from cleavir-compile-t1expr (values nil t)))
+            (return-from cclasp-compile* (values nil t)))
           (let ((enclosed-function (funcall setup-function)))
             ;;(format t "*all-functions-for-one-compile* -> ~s~%" cmp:*all-functions-for-one-compile*)
             ;;(cmp:set-associated-funcs enclosed-function cmp:*all-functions-for-one-compile*)
@@ -1113,23 +1122,25 @@ that llvm function. This works like compile-lambda-function in bclasp."
         (core:*use-cleavir-compiler* t))
     (multiple-value-bind (fn kind #|| more ||#)
 	(compile-form form)
-      (ltv:with-ltv-function-codegen (result ltv-env)
-	(cmp:irc-create-call "invokeTopLevelFunction"
-                             (list
-                              result 
-                              fn 
-                              (cmp:jit-constant-unique-string-ptr "top-level")
-                              cmp:*gv-source-file-info-handle*
-                              (cmp:irc-size_t-*current-source-pos-info*-filepos)
-                              (cmp:irc-size_t-*current-source-pos-info*-lineno)
-                              (cmp:irc-size_t-*current-source-pos-info*-column)
-                              ltv:*load-time-value-holder-global-var*))))))
+      (error "What do we do here in cleavir-compile-file-form")
+      #+(or)(literal:with-ltv-function-codegen (result ltv-env)
+              (cmp:irc-create-call "invokeTopLevelFunction"
+                                   (list
+                                    result 
+                                    fn 
+                                    (cmp:jit-constant-unique-string-ptr "top-level")
+                                    cmp:*gv-source-file-info-handle*
+                                    (cmp:irc-size_t-*current-source-pos-info*-filepos)
+                                    (cmp:irc-size_t-*current-source-pos-info*-lineno)
+                                    (cmp:irc-size_t-*current-source-pos-info*-column)
+                                    ltv:*load-time-value-holder-global-var*))))))
 
 
+#+(or)
 (defun cleavir-compile-file-entire-file (source-sin)
   (let ((eof-value (gensym)))
     (with-make-new-run-all (run-all-function)
-      (ltv:with-ltv 
+      (literal:with-ltv 
           (loop for form = (read source-sin nil eof-value)
              until (eq form eof-value)
              do (cleavir-compile-file-form form))
@@ -1139,7 +1150,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)
         (core:*use-cleavir-compiler* t)
 	(cmp:*all-functions-for-one-compile* nil))
-    (cmp:compile-in-env name form env #'cleavir-compile-t1expr)))
+    (cmp:compile-in-env name form env #'cclasp-compile*)))
         
 	
 (defun cleavir-compile (name form &key (debug *debug-cleavir*))
