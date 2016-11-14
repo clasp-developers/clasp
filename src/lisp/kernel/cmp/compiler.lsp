@@ -1399,6 +1399,7 @@ jump to blocks within this tagbody."
            ,@body)
        (when (and ,optimize ,optimize-level) (do-optimization ,module ,optimize-level )))))
 
+#+(or)
 (defun generate-run-time-table (run-time-values)
   "Put the constants in order they will appear in the table.
 Return the orderered-raw-constants-list and the constants-table GlobalVariable"
@@ -1420,7 +1421,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     #+(or)(progn
             (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))
             (bformat t "array-type = %s\n" array-type))
-    (quick-module-dump *the-module* "/tmp" "module-pre-replace")
+    #+(or)(quick-module-dump *the-module* "compile-prereplace")
     (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
     (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
     (values ordered-raw-constant-list constant-table)))
@@ -1439,34 +1440,21 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
     (link-intrinsics-module *the-module*)
-    (when *debug-dump-module*
-      (quick-module-dump *the-module* "/tmp" "compile-module-pre-optimize"))
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
-
 (defun compile-to-module-with-run-time-table (definition env pathname)
-  (let* (fn function-kind wrapped-env lambda-name warnp failp
-            (*load-time-value-holder-global-var*
-             (llvm-sys:make-global-variable *the-module*
-                                            +tsp[0]+ ; type
-                                            nil      ; isConstant
-                                            'llvm-sys:internal-linkage
-                                            nil
-                                            (literal:next-value-table-holder-name)))
-            (constants-list
-             (with-rtv
-                 (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
-                   (compile-to-module definition env pathname)))))
+  (let* (fn function-kind wrapped-env lambda-name warnp failp)
     (multiple-value-bind (ordered-raw-constants-list constants-table)
-        (generate-run-time-table constants-list)
+        (literal:with-rtv
+            (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
+              (compile-to-module definition env pathname)))
       (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table))))
 
-(defun clasp-compile* (bind-to-name &optional definition env pathname)
+(defun bclasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
       (compile-to-module-with-run-time-table definition env pathname)
-    (when cmp:*debug-dump-module*
-      (quick-module-dump *the-module* "/tmp" "module-after-rtt"))
+    #+(or)(quick-module-dump *the-module* "after-rtt")
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (if (not *run-time-execution-engine*)
         ;; SETUP THE *run-time-execution-engine* here for the first time
@@ -1514,7 +1502,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (if compile-hook
       (funcall compile-hook name definition env pathname)
-      (clasp-compile* name definition env pathname)))
+      (bclasp-compile* name definition env pathname)))
 
 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)

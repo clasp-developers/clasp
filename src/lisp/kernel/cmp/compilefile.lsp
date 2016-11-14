@@ -354,16 +354,13 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                (return nil)
                                (compile-file-form form compile-file-hook))))
                     (make-boot-function-global-variable *the-module* run-all-function)))))
-            (if *debug-dump-module*
-                (quick-module-dump *the-module* "/tmp" "compile-file-module-pre-optimize"))
             (cmp-log "About to verify the module\n")
             (cmp-log-dump *the-module*)
-            (irc-verify-module-safe *the-module*))
-          (if *debug-dump-module*
-              (quick-module-dump module "/tmp" "compile-file-module-post-optimize")))
-        module))))
+            (irc-verify-module-safe *the-module*)
+            (quick-module-dump *the-module* "preoptimize"))
+          module)))))
 
-
+(defvar *compile-file-output-pathname* nil)
 (defun compile-file* (compile-file-hook
                       given-input-pathname
                       &key
@@ -392,6 +389,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
 	  (*compile-verbose* verbose))
       ;; Do the different kind of compile-file here
       (let* ((output-path (compile-file-pathname given-input-pathname :output-file output-file :output-type output-type ))
+             (*compile-file-output-pathname* output-path)
 	     (module (compile-file-to-module given-input-pathname output-path 
 					     :type type 
 					     :source-debug-namestring source-debug-namestring 

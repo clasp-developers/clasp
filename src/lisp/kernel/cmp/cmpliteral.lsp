@@ -334,19 +334,17 @@ the value is put into *default-load-time-value-vector* and its index is returned
             #+(or)(dolist (x unsorted-values)
                     (bformat t "unsorted-values: %s\n" x))
             (let* ((num-entries (length unsorted-values))
+                   (table-entries (calculate-vector-size unsorted-values))
                    (sorted-values (sort unsorted-values #'< :key #'car))
                    (sorted-llvm-values (mapcar (lambda (x) (cdr x)) sorted-values)))
-              (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ num-entries))
-                     (correct-size-holder (progn
-                                            (quick-module-dump *the-module* "/tmp" "a")
-                                            (prog1
-                                                (llvm-sys:make-global-variable *the-module*
-                                                                               array-type
-                                                                               nil ; isConstant
-                                                                               'llvm-sys:internal-linkage
-                                                                               (llvm-sys:undef-value-get array-type)
-                                                                               (literal:next-value-table-holder-name))
-                                              (quick-module-dump *the-module* "/tmp" "b"))))
+              (unless (= num-entries table-entries) (error "The number of entries in the constants-table ~a do not match the (1+ highest-index) ~a" num-entries table-entries))
+              (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ table-entries))
+                     (correct-size-holder (llvm-sys:make-global-variable *the-module*
+                                                                         array-type
+                                                                         nil ; isConstant
+                                                                         'llvm-sys:internal-linkage
+                                                                         (llvm-sys:undef-value-get array-type)
+                                                                         (literal:next-value-table-holder-name)))
                      (bitcast-correct-size-holder (llvm-sys:create-bit-cast *irbuilder* correct-size-holder cmp:+tsp[0]*+ "bitcast-table"))
                      (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
                                                            (list (cmp:jit-constant-size_t 0)
@@ -354,14 +352,13 @@ the value is put into *default-load-time-value-vector* and its index is returned
                 (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
                 (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*) ;
                 (cmp:irc-create-call "cc_register_roots" (list* (llvm-sys:create-pointer-cast cmp:*irbuilder* correct-size-holder cmp:+tsp*+ "")
-                                                                (cmp:jit-constant-size_t num-entries)
+                                                                (cmp:jit-constant-size_t table-entries)
                                                                 sorted-llvm-values))
-                (prog1 (cond
-                         ((eq type :toplevel)
-                          (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
-                         ((eq type :ltv) body-return-fn)
-                         (t (error "bad type")))
-                  (quick-module-dump *the-module* "/tmp" "c"))))))))))
+                (cond
+                  ((eq type :toplevel)
+                   (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
+                  ((eq type :ltv) body-return-fn)
+                  (t (error "bad type")))))))))))
 
 (defmacro with-ltv ( &body body)
   `(unwind-protect
@@ -387,10 +384,41 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defmacro with-rtv (&body body)
   `(let ((cmp:*generate-compile-file-load-time-values* nil)
          (*table-index* 0)
+         (*load-time-value-holder-global-var*
+          (llvm-sys:make-global-variable *the-module*
+                                         +tsp[0]+ ; type
+                                         nil      ; isConstant
+                                         'llvm-sys:internal-linkage
+                                         nil
+                                         (literal:next-value-table-holder-name)))
          (*run-time-coalesce* (make-hash-table :test #'eq))
          (*run-all-objects* nil))
      (progn ,@body)
-     (reverse *run-all-objects*)))
+     (let ((run-time-values *run-all-objects*))
+       "Put the constants in order they will appear in the table.
+Return the orderered-raw-constants-list and the constants-table GlobalVariable"
+       #+(or)(progn
+               (bformat t "run-time-values: vvvvvvv\n")
+               (literal::constant-list-dump run-time-values)
+               (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
+       (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
+              (ordered-raw-constant-list (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list))
+              (array-type (llvm-sys:array-type-get +tsp+ (length ordered-constant-list)))
+              (constant-table (llvm-sys:make-global-variable *the-module*
+                                                             array-type
+                                                             nil ; isConstant
+                                                             'llvm-sys:internal-linkage
+                                                             (llvm-sys:undef-value-get array-type)
+                                                             (literal:next-value-table-holder-name)))
+              (bitcast-constant-table (llvm-sys:create-bit-cast *irbuilder* constant-table +tsp[0]*+ "bitcast-table"))
+              #+(or)(holder-ptr (llvm-sys:create-geparray *irbuilder* constant-table (list (jit-constant-size_t 0) (jit-constant-size_t 0)) "table")))
+         #+(or)(progn
+                 (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))
+                 (bformat t "array-type = %s\n" array-type))
+         #+(or)(quick-module-dump *the-module* "prereplace")
+         (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
+         (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
+         (values ordered-raw-constant-list constant-table)))))
 
 (defun load-time-reference-literal (object read-only-p)
   (multiple-value-bind (similarity creator)
@@ -510,13 +538,15 @@ the value is put into *default-load-time-value-vector* and its index is returned
 ;;; ------------------------------------------------------------
 
 (defun reference-literal (object &optional read-only-p)
-  (if (generate-load-time-values)
-      (let* ((data (load-time-reference-literal object read-only-p)))
-        (let ((index (constant-creator-index data)))
-          index))
-      (let ((data (run-time-reference-literal object read-only-p)))
-        (let ((index (constant-runtime-index data)))
-          index))))
+  (let ((cmp:*compile-file-debug-dump-module* nil)
+        (cmp:*compile-debug-dump-module* nil))
+    (if (generate-load-time-values)
+        (let* ((data (load-time-reference-literal object read-only-p)))
+          (let ((index (constant-creator-index data)))
+            index))
+        (let ((data (run-time-reference-literal object read-only-p)))
+          (let ((index (constant-runtime-index data)))
+            index)))))
 
 ;;; ------------------------------------------------------------
 ;;;

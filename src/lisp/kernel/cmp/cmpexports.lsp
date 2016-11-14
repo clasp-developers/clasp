@@ -1,7 +1,10 @@
 (in-package :cmp)
 (export '(
           *debug-link-options* ;; A list of strings to inject into link commands
-          *debug-dump-module*  ;; Dump intermediate modules
+          *compile-file-debug-dump-module*  ;; Dump intermediate modules
+          *compile-debug-dump-module*  ;; Dump intermediate modules
+          compile-file-quick-module-dump
+          compile-quick-module-dump
           quick-module-dump
           *irbuilder*
           +ltv*+
@@ -17,7 +20,6 @@
           *current-function*
           *current-function-name*
           *debug-compile-file*
-          *debug-dump-module*
           *generate-compile-file-load-time-values*
           *load-time-initializer-environment*
           *gv-current-function-name*

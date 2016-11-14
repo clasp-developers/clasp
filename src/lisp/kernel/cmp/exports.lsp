@@ -353,7 +353,6 @@ with-debug-info-generator
 cmp-log
 cmp-log-dump
 *the-module*
-*debug-dump-module*
 *the-module*
 cmp-log
 *run-time-execution-engine*
@@ -375,7 +374,6 @@ jit-constant-unique-string-ptr
 *gv-source-file-info-handle*
 *load-time-value-holder-global-var*
 *cleavir-compile-hook*
-*debug-dump-module*
 *all-functions-for-one-compile*
 *cleavir-compile-file-hook*
 *run-time-literal-holder*
