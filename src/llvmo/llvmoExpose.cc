@@ -1426,6 +1426,9 @@ namespace llvmo {
 CL_LISPIFY_NAME(constant-expr-get-in-bounds-get-element-ptr);
 CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList) {
   GC_ALLOCATE(Constant_O, res);
+  if (element_type==NULL) {
+    SIMPLE_ERROR(BF("You must provide a type for ConstantExpr_O::getInBoundsGetElementPtr"));
+  }
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : idxList) {
     vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
