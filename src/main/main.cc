@@ -293,6 +293,10 @@ int main( int argc, char *argv[] )
     set_exe_name( basename( (char *) exename.c_str() ) );
   }
 
+  // - SET THE APPLICATION NAME
+
+  set_program_name();
+
   // - SET STACK SIZE
 
   rlimit rl;
@@ -340,7 +344,8 @@ int main( int argc, char *argv[] )
 
   // SAY HELLO
 
-  fprintf( stderr, "%s (%s:%d) - started with stack size set to %llu bytes.\n", exe_name().c_str(), __FILE__, __LINE__, rl_new.rlim_max );
+  // fprintf( stderr, "%s (%s:%d) - started with stack size set to %llu bytes.\n", exe_name().c_str(), __FILE__, __LINE__, rl_new.rlim_max );
+
   fflush( stderr );
 
   // - COMMAND LINE OPTONS HANDLING
