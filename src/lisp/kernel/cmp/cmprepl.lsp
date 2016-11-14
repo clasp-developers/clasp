@@ -58,7 +58,8 @@
 #-(or cleavir no-implicit-compilation)
 (setq *implicit-compile-hook* #'bclasp-implicit-compile-repl-form)
 
-#+(and clasp-min (not no-implicit-compilation))
+;;#+(and clasp-min (not no-implicit-compilation))
+#+(or)
 (eval-when (:execute)
   ;; Load the compiler and the file compiler in aclasp
   ;; lets see if that speeds up the compilation
