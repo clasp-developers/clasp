@@ -885,7 +885,7 @@ class run_aclasp(Task.Task):
                 "--feature", "no-implicit-compilation",
                 "--feature", "clasp-min",
                 "--feature", "debug-run-clang",
-                "--eval", '(load "source-dir:src;lisp;kernel;clasp-builder.lsp")',
+                "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                 "--eval", "(load-aclasp)",
                 "--"] +  self.bld.clasp_aclasp
         print("  run_aclasp cmd: %s" % cmd)
@@ -912,6 +912,7 @@ class compile_aclasp(Task.Task):
                       "--feature", "clasp-min",
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
+                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
                       "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_aclasp
@@ -937,9 +938,9 @@ class compile_bclasp(Task.Task):
             cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-#                      "--feature", "clasp-builder",
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
+                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
                       "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_bclasp
@@ -964,8 +965,8 @@ class compile_cclasp(Task.Task):
             cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
-                      "--feature", "clasp-builder",
                       "--feature", "debug-run-clang",
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_cclasp
@@ -984,9 +985,9 @@ class recompile_cclasp(Task.Task):
         if not os.path.isfile(other_clasp):
             raise Exception("To use the recompile targets you need to provide a working clasp executable. See wscript.config and/or set the CLASP env variable.")
         cmd = [ other_clasp ]
-        cmd = cmd + [ "--feature", "clasp-builder",
-                      "--feature", "debug-run-clang",
+        cmd = cmd + [ "--feature", "debug-run-clang",
                       "--resource-dir", "%s/%s/%s" % (self.bld.path.abspath(),out,self.bld.variant_obj.variant_dir()),
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
                       "--eval", "(recompile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_cclasp_no_wrappers
@@ -1009,8 +1010,8 @@ class compile_addons(Task.Task):
             cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
-                      "--feature", "clasp-builder",
                       "--feature", "debug-run-clang",
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")'
                       "--eval", "(core:compile-addons)",
                       "--eval", "(core:link-addons)",
                       "--eval", "(quit)" ]
