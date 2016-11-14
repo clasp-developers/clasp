@@ -62,6 +62,15 @@
 (eval-when (:execute :compile-toplevel :load-toplevel)
   (core::select-package :cmp))
 (export '(llvm-link link-bitcode-modules))
+(sys:*make-special '*compile-file-debug-dump-module*)
+(if (boundp '*compile-file-debug-dump-module*)
+    nil
+    (setq *compile-file-debug-dump-module* nil))
+(sys:*make-special '*compile-debug-dump-module*)
+(if (boundp '*compile-debug-dump-module*)
+    nil
+    (setq *compile-debug-dump-module* nil))
+(export '(*compile-file-debug-dump-module* *compile-debug-dump-module*))
 (use-package :core)
 
 (eval-when (:execute :compile-toplevel :load-toplevel)
@@ -786,7 +795,7 @@ the stage, the +application-name+ and the +bitcode-name+"
               (if (eq (car entry) :load)
                   (load (cdr entry))
                   (let ((cmd (read-from-string (cdr entry))))
-                    (apply (car cmd) (cdr cmd)))))
+                    (eval cmd))))
           core::*command-line-load-eval-sequence*))
 
 (export 'maybe-load-clasprc)
