@@ -43,7 +43,8 @@
                                             :pathname #P"/dev/null")
           (with-make-new-run-all (run-all-function)
             (let ((fn (literal:with-top-level-form (compile-thunk 'walk-thunk form env))))
-              (irc-create-call "ltvc_toplevel_funcall" (list fn)))))
+              ;; Do nothing (irc-create-call "ltvc_toplevel_funcall" (list fn))
+              )))
         (llvm-sys::module-delete module)))))
 
 (export 'code-walk-using-bclasp)

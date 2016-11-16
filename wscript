@@ -521,7 +521,7 @@ def configure(cfg):
     llvm_libraries = strip_libs(call_llvm_config_for_libs(cfg, "--libs"))
     cfg.check_cxx(stlib = llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
     cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
-    llvm_include_dir = call_llvm_config(cfg, "--includedir")
+    llvm_include_dir = call_llvm_config_for_libs(cfg, "--includedir")
     print("llvm_include_dir = %s" % llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
@@ -592,6 +592,8 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
+    cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
+    cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
@@ -901,7 +903,7 @@ class compile_aclasp(Task.Task):
         return "compile_aclasp"
     def run(self):
         print("In compile_aclasp %s -> %s" % (self.inputs[0],self.outputs[0]))
-        cmd = [self.inputs[0].abspath()]
+        cmd = [ self.inputs[0].abspath()]
         if (self.bld.debug_on ):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
@@ -912,7 +914,8 @@ class compile_aclasp(Task.Task):
                       "--feature", "clasp-min",
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
+#                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
+#                      "--eval", '(setq cmp:*compile-debug-dump-module* t)',
                       "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_aclasp
@@ -940,7 +943,7 @@ class compile_bclasp(Task.Task):
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
                       "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
+#                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
                       "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_bclasp

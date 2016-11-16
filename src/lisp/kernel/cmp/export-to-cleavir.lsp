@@ -106,7 +106,7 @@
           jit-constant-size_t
           jit-constant-unique-string-ptr
           jit-function-name
-          jit-make-global-string-ptr
+          jit-make-global-string
           llvm-link
           link-intrinsics-module
           load-bitcode

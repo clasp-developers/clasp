@@ -318,7 +318,7 @@
               (col column))
           (depreciated)
           #+(or)(irc-intrinsic "trace_setLineNumberColumnForIHSTop"
-                         *gv-source-namestring*
+                         (irc-constant-string-ptr *gv-source-namestring*)
                          *gv-source-file-info-handle*
                          (jit-constant-i64 filepos)
                          (jit-constant-i32 ln) 
@@ -359,10 +359,12 @@
 	   (irc-intrinsic "debugPrintI32" ,sym-msg ,obj))))))
 ||#
 
+#+(or)
 (defun debug-generate-source-code (form)
   (let ((all-code (bformat nil "%s" form)))
     ;; TODO:  Return only the first XXX characters of all-code
-    (jit-make-global-string-ptr (subseq all-code 0 80))))
+    (jit-make-global-string (subseq all-code 0 80))
+    (error "This doesn't return a pointer since I changed jit-make-global-string to return the global var")))
 
 
 

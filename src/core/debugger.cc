@@ -87,13 +87,13 @@ T_sp LispDebugger::invoke() {
        && cl::_sym_STARfeaturesSTAR->symbolValue()
        && cl::_sym_STARfeaturesSTAR->symbolValue().consp()
        && !gctools::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_interactive)) {
-    printf("This is not an interactive list and the low-level debugger was entered - aborting\n");
+    printf("This is not an interactive session and the low-level debugger was entered - aborting\n");
     abort();
   }
   ++global_low_level_debugger_depth;
-  if ( global_low_level_debugger_depth > 20 ) {
-    printf("This is not an interactive list and the low-level debugger was entered - aborting\n");
-    abort();
+  if ( global_low_level_debugger_depth > 10 ) {
+    printf("This is not an interactive session and the low-level debugger was entered too many times - exiting\n");
+    exit(1);
   }    
   //	DebuggerIHF debuggerStack(my_thread->invocationHistoryStack(),_Nil<ActivationFrame_O>());
   if (this->_Condition.notnilp()) {

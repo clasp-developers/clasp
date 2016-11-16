@@ -46,7 +46,7 @@
 		   (let* ((given-name (llvm-sys:get-name main-fn)))
 		     (irc-low-level-trace)
 		     (cmp-log "About to add invokeMainFunction for ltv-manager-fn\n")
-		     (irc-intrinsic "invokeMainFunction" *gv-source-namestring* ltv-manager-fn)
+		     (irc-intrinsic "invokeMainFunction" (irc-constant-string-ptr *gv-source-namestring*) ltv-manager-fn)
                      (irc-intrinsic "cc_setTmvToNil" fn-result)))))
     ;;    (cmp-log-dump main-fn)
     (cmp-log "Done compile-main-function")
@@ -122,7 +122,10 @@
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (literal:with-top-level-form (compile-thunk 'repl form nil)))
+  (literal:with-top-level-form
+      (progn
+        (multiple-value-prog1 (compile-thunk 'repl form nil)
+        ))))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"
@@ -339,12 +342,13 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
               (or *the-module* (error "*the-module* is NIL"))
               (let ((eof-value (gensym)))
                 (with-make-new-run-all (run-all-function)
-                  (irc-intrinsic "ltvc_assign_source_file_info_handle"
-                                 *gv-source-namestring*
-                                 *gv-source-debug-namestring*
-                                 (jit-constant-i64 *source-debug-offset*)
-                                 (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
-                                 *gv-source-file-info-handle*)
+                  (with-run-all-body-codegen ;;(result)
+                      (irc-intrinsic "ltvc_assign_source_file_info_handle"
+                                     (irc-constant-string-ptr *gv-source-namestring*)
+                                     (irc-constant-string-ptr *gv-source-debug-namestring*)
+                                     (jit-constant-i64 *source-debug-offset*)
+                                     (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
+                                     *gv-source-file-info-handle*))
                   (with-coalesce-ltv
                       (loop
                          (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))

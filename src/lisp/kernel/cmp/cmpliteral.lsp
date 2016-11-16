@@ -273,10 +273,10 @@ the value is put into *default-load-time-value-vector* and its index is returned
   (let ((*llvm-values* (make-hash-table))
         (cmp:*load-time-value-holder-global-var*
          (llvm-sys:make-global-variable *the-module*
-                                        cmp:+tsp[0]+ ; type
-                                        nil          ; isConstant
+                                        cmp:+tsp[DUMMY]+ ; type
+                                        nil              ; isConstant
                                         'llvm-sys:internal-linkage
-                                        (llvm-sys:undef-value-get cmp:+tsp[0]+)
+                                        (llvm-sys:undef-value-get cmp:+tsp[DUMMY]+)
                                         ;; nil ; initializer
                                         (literal:next-value-table-holder-name "dummy")))
         (cmp:*generate-compile-file-load-time-values* t)
@@ -318,47 +318,51 @@ the value is put into *default-load-time-value-vector* and its index is returned
                              ((literal:constant-creator-p x) (ensure-llvm-value x))
                              (t x))) ;;(error "Illegal run-all entry ~a" x))))
                          args)))
-        (with-run-all-body-codegen (result)
-          (let ((unsorted-values nil))
-            (dolist (node constants-nodes)
-              #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-              (cond
-                ((literal:constant-creator-p node)
-                 (let ((val (ensure-llvm-value node)))
-                   (push (cons (literal:constant-creator-index node) val) unsorted-values)))
-                ((literal:constant-side-effect-p node)
-                 (irc-create-call (literal:constant-side-effect-name node)
-                                  (fix-args (literal:constant-side-effect-arguments node))))
-                (t (error "Unknown run-all node ~a" node))))
-            #+(or)(bformat t "Length of unsorted values: %s\n" (length unsorted-values))
-            #+(or)(dolist (x unsorted-values)
-                    (bformat t "unsorted-values: %s\n" x))
-            (let* ((num-entries (length unsorted-values))
-                   (table-entries (calculate-vector-size unsorted-values))
-                   (sorted-values (sort unsorted-values #'< :key #'car))
-                   (sorted-llvm-values (mapcar (lambda (x) (cdr x)) sorted-values)))
-              (unless (= num-entries table-entries) (error "The number of entries in the constants-table ~a do not match the (1+ highest-index) ~a" num-entries table-entries))
-              (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ table-entries))
-                     (correct-size-holder (llvm-sys:make-global-variable *the-module*
-                                                                         array-type
-                                                                         nil ; isConstant
-                                                                         'llvm-sys:internal-linkage
-                                                                         (llvm-sys:undef-value-get array-type)
-                                                                         (literal:next-value-table-holder-name)))
-                     (bitcast-correct-size-holder (llvm-sys:create-bit-cast *irbuilder* correct-size-holder cmp:+tsp[0]*+ "bitcast-table"))
-                     (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
-                                                           (list (cmp:jit-constant-size_t 0)
-                                                                 (cmp:jit-constant-size_t 0)) "table")))
-                (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
-                (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*) ;
-                (cmp:irc-create-call "cc_register_roots" (list* (llvm-sys:create-pointer-cast cmp:*irbuilder* correct-size-holder cmp:+tsp*+ "")
-                                                                (cmp:jit-constant-size_t table-entries)
-                                                                sorted-llvm-values))
+        (with-run-all-body-codegen      ;(result)
+            (let ((unsorted-values nil))
+              (dolist (node constants-nodes)
+                #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
                 (cond
-                  ((eq type :toplevel)
-                   (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
-                  ((eq type :ltv) body-return-fn)
-                  (t (error "bad type")))))))))))
+                  ((literal:constant-creator-p node)
+                   (let ((val (ensure-llvm-value node)))
+                     (push (cons (literal:constant-creator-index node) val) unsorted-values)))
+                  ((literal:constant-side-effect-p node)
+                   (irc-create-call (literal:constant-side-effect-name node)
+                                    (fix-args (literal:constant-side-effect-arguments node))))
+                  (t (error "Unknown run-all node ~a" node))))
+              #+(or)(bformat t "Length of unsorted values: %s\n" (length unsorted-values))
+              #+(or)(dolist (x unsorted-values)
+                      (bformat t "unsorted-values: %s\n" x))
+              (let* ((num-entries (length unsorted-values))
+                     (table-entries (calculate-vector-size unsorted-values))
+                     (sorted-values (sort unsorted-values #'< :key #'car))
+                     (sorted-llvm-values (mapcar (lambda (x) (cdr x)) sorted-values)))
+                (unless (= num-entries table-entries) (error "The number of entries in the constants-table ~a do not match the (1+ highest-index) ~a" num-entries table-entries))
+                (when (> table-entries 0)
+                  ;; We have a new table, replace the old one and generate code to register the new one
+                  ;; and gc roots tabl
+                  (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ table-entries))
+                         (correct-size-holder (llvm-sys:make-global-variable *the-module*
+                                                                             array-type
+                                                                             nil ; isConstant
+                                                                             'llvm-sys:internal-linkage
+                                                                             (llvm-sys:undef-value-get array-type)
+                                                                             (literal:next-value-table-holder-name)))
+                         (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:+tsp[DUMMY]*+ "bitcast-table"))
+                         (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
+                                                               (list (cmp:jit-constant-size_t 0)
+                                                                     (cmp:jit-constant-size_t 0)) "table")))
+                    (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
+                    (cmp:irc-create-call "cc_register_roots" (list* (irc-pointer-cast correct-size-holder cmp:+tsp*+ "")
+                                                                    (cmp:jit-constant-size_t table-entries)
+                                                                    sorted-llvm-values)))
+                  ;; Erase the dummy holder
+                  (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*) ;
+                  (cond
+                    ((eq type :toplevel)
+                     (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
+                    ((eq type :ltv) body-return-fn)
+                    (t (error "bad type")))))))))))
 
 (defmacro with-ltv ( &body body)
   `(unwind-protect
@@ -410,12 +414,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
                                                              'llvm-sys:internal-linkage
                                                              (llvm-sys:undef-value-get array-type)
                                                              (literal:next-value-table-holder-name)))
-              (bitcast-constant-table (llvm-sys:create-bit-cast *irbuilder* constant-table +tsp[0]*+ "bitcast-table"))
-              #+(or)(holder-ptr (llvm-sys:create-geparray *irbuilder* constant-table (list (jit-constant-size_t 0) (jit-constant-size_t 0)) "table")))
+              (bitcast-constant-table (irc-bit-cast constant-table +tsp[0]*+ "bitcast-table")))
          #+(or)(progn
                  (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))
-                 (bformat t "array-type = %s\n" array-type))
-         #+(or)(quick-module-dump *the-module* "prereplace")
+                 (bformat t "array-type = %s\n" array-type)) 
          (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
          (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
          (values ordered-raw-constant-list constant-table)))))
