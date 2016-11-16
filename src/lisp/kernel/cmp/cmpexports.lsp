@@ -1,7 +1,10 @@
 (in-package :cmp)
 (export '(
           *debug-link-options* ;; A list of strings to inject into link commands
-          *debug-dump-module*  ;; Dump intermediate modules
+          *compile-file-debug-dump-module*  ;; Dump intermediate modules
+          *compile-debug-dump-module*  ;; Dump intermediate modules
+          compile-file-quick-module-dump
+          compile-quick-module-dump
           quick-module-dump
           *irbuilder*
           +ltv*+
@@ -17,7 +20,6 @@
           *current-function*
           *current-function-name*
           *debug-compile-file*
-          *debug-dump-module*
           *generate-compile-file-load-time-values*
           *load-time-initializer-environment*
           *gv-current-function-name*
@@ -57,6 +59,8 @@
           +tsp[0]*+
           +tsp*+
           +t**+
+          +tsp[DUMMY]+
+          +tsp[DUMMY]*+
           calling-convention-args
           calling-convention-args.va-arg
           calling-convention-va-list
@@ -90,6 +94,8 @@
           irc-branch-to-and-begin-block
           irc-cond-br
           irc-create-call
+          irc-bit-cast
+          irc-pointer-cast
           irc-create-invoke
           irc-create-invoke-default-unwind
           irc-create-landing-pad
@@ -110,6 +116,8 @@
           irc-preserve-exception-info
           irc-renv
           irc-ret-void
+          irc-ret
+          irc-undef-value-get
           irc-store
           irc-switch
           irc-unreachable
@@ -121,7 +129,7 @@
           jit-constant-size_t
           jit-constant-unique-string-ptr
           jit-function-name
-          jit-make-global-string-ptr
+          jit-make-global-string
           make-boot-function-global-variable
           llvm-link
           link-intrinsics-module
@@ -157,6 +165,7 @@
           compile-throw-if-excess-keyword-arguments
           *irbuilder-function-alloca*
           irc-get-cleanup-landing-pad-block
+          irc-constant-string-ptr
           *gv-source-debug-namestring*
           *source-debug-offset*
           *source-debug-use-lineno*

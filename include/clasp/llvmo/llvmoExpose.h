@@ -2265,7 +2265,7 @@ public:
     this->_ptr = ptr;
   }
   static IRBuilderBase_sp create(llvm::IRBuilderBase *ptr);
-  ;
+  core::T_sp getInsertPointInstruction();
   IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
   ~IRBuilderBase_O() {
     if (_ptr != NULL) { /* delete _ptr;*/
@@ -2355,6 +2355,9 @@ public:
     /*        if (this->_ptr != NULL ) delete this->_ptr; */
     this->_ptr = ptr;
   }
+  core::T_sp getNextNode(); // instruction or nil
+  core::T_sp getPrevNode(); // instruction or nil
+  core::T_sp getParent(); // basic block or nil
   Instruction_O() : Base(){};
   ~Instruction_O() {}
 

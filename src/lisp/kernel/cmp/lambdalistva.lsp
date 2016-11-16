@@ -78,8 +78,7 @@
          (let ((closure (cmp-lookup-function head evaluate-env)))
 	   (irc-low-level-trace :flow)
            (irc-funcall result closure (reverse args))
-	   (irc-low-level-trace :flow))
-         ))
+	   (irc-low-level-trace :flow))))
       ((and (consp head) (eq head 'lambda))
        (error "Handle lambda applications"))
       (t (compiler-error form "Illegal head for form %s" head)))))
@@ -105,7 +104,7 @@
     (let ((cmp (irc-icmp-slt nargs lv-required-number-of-arguments "enough-args")))
       (irc-cond-br cmp error-block cont-block)
       (irc-begin-block error-block)
-      (irc-create-call "va_notEnoughArgumentsException" (list *gv-current-function-name* nargs lv-required-number-of-arguments ))
+      (irc-create-call "va_notEnoughArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) nargs lv-required-number-of-arguments ))
       (irc-unreachable)
       (irc-begin-block cont-block)
       )))
@@ -121,7 +120,7 @@
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
     (compile-error-if-not-enough-arguments given-number-of-arguments required-number-of-arguments)
-    (irc-create-call "va_tooManyArgumentsException" (list *gv-current-function-name* given-number-of-arguments required-number-of-arguments))
+    (irc-create-call "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments required-number-of-arguments))
     (irc-unreachable)
     (irc-begin-block cont-block)
     ))
@@ -135,7 +134,7 @@
 	 (cmp (irc-icmp-sgt given-number-of-arguments maximum-number-of-arguments "max-num-args")))
     (irc-cond-br cmp error-block cont-block)
     (irc-begin-block error-block)
-    (irc-create-call "va_tooManyArgumentsException" (list *gv-current-function-name* given-number-of-arguments maximum-number-of-arguments))
+    (irc-create-call "va_tooManyArgumentsException" (list (irc-constant-string-ptr *gv-current-function-name*) given-number-of-arguments maximum-number-of-arguments))
     (irc-unreachable)
     (irc-begin-block cont-block)
     ))
@@ -367,7 +366,7 @@ will put a value into target-ref."
                        (irc-intrinsic "cc_gatherRestArguments"
                                       (calling-convention-nargs args)
                                       (calling-convention-va-list args)
-                                      entry-arg-idx *gv-current-function-name* )))))
+                                      entry-arg-idx (irc-constant-string-ptr *gv-current-function-name*) )))))
 
 (defun compile-key-arguments-parse-arguments (keyargs
 					      lambda-list-allow-other-keys
@@ -407,7 +406,6 @@ will put a value into target-ref."
 		 (possible-kw-block (irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (irc-basic-block-create "advance-arg-idx-block"))
 		 (bad-kw-block (irc-basic-block-create "bad-kw-block"))
-                 (use-kw-block (irc-basic-block-create "use-kw-block"))
 		 (good-kw-block (irc-basic-block-create "good-kw-block"))
 		 )
 	    (irc-cond-br eq-aok-ref-and-arg-ref aok-block possible-kw-block)
@@ -424,8 +422,8 @@ will put a value into target-ref."
 		    (init-form (caddr cur-key-arg) (caddr cur-key-arg))
 		    (flag (cadddr cur-key-arg) (cadddr cur-key-arg))
 		    (idx 0 (1+ idx))
-		    (next-kw-test-block (irc-basic-block-create "next-kw-block")
-					(irc-basic-block-create "next-kw-block")) )
+		    #+(or)(next-kw-test-block (irc-basic-block-create "next-kw-test-block")
+                                              (irc-basic-block-create "next-kw-test-block")) )
 		   ((endp cur-key-arg))
 		(irc-branch-to-and-begin-block (irc-basic-block-create (bformat nil "kw-%s-test" key)))
 		(irc-low-level-trace)
@@ -434,7 +432,7 @@ will put a value into target-ref."
                        (no-kw-match (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 0)))
 		       (matched-kw-block (irc-basic-block-create "matched-kw-block"))
 		       (not-seen-before-kw-block (irc-basic-block-create "not-seen-before-kw-block"))
-                       )
+                       (next-kw-test-block (irc-basic-block-create "next-kw-test-block")))
 		  (irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
 		  (irc-begin-block matched-kw-block)
 		  (let ((kw-seen-already (irc-icmp-eq test-kw-and-arg (jit-constant-size_t 2))))
@@ -558,17 +556,11 @@ will put a value into target-ref."
       (irc-low-level-trace)
       arg-idx)))
 
-
-
-
-
-(defun compile-throw-if-excess-keyword-arguments ( args ;; nargs va-list
-                                                  arg-idx)
-  (irc-intrinsic "va_ifExcessKeywordArgumentsException" *gv-current-function-name* (calling-convention-nargs args) (calling-convention-va-list args) arg-idx))
-
-
-
-
+(defun compile-throw-if-excess-keyword-arguments ( args arg-idx)
+  (irc-create-call "va_ifExcessKeywordArgumentsException"
+                   (list (irc-constant-string-ptr *gv-current-function-name*)
+                         (calling-convention-nargs args)
+                         (calling-convention-va-list args) arg-idx)))
 
 (defun compile-aux-arguments (auxargs old-env new-env)
   (let ((aux-arguments-block (irc-basic-block-create "process-aux-arguments")))

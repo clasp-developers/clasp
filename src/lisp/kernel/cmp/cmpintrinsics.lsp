@@ -227,6 +227,8 @@ Boehm and MPS use a single pointer"
 (defvar +tsp[1]*+ (llvm-sys:type-get-pointer-to +tsp[1]+))
 (defvar +tsp[2]+ (llvm-sys:array-type-get +tsp+ 2))
 (defvar +tsp[2]*+ (llvm-sys:type-get-pointer-to +tsp[2]+))
+(defvar +tsp[DUMMY]+ (llvm-sys:array-type-get +tsp+ 65536))
+(defvar +tsp[DUMMY]*+ (llvm-sys:type-get-pointer-to +tsp[DUMMY]+))
 (defvar +tsp*+ (llvm-sys:type-get-pointer-to +tsp+))
 (defvar +tsp**+ (llvm-sys:type-get-pointer-to +tsp*+))
 
@@ -312,14 +314,12 @@ Boehm and MPS use a single pointer"
 ;;; Read the next argument from the va_list
 ;;; Everytime the arg-idx is incremented, this function must be called.
 ;;; The arg-idx is not used but it is passed because I used to index into an array
-  (defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
-    (declare (ignore arg-idx))
-    (let ((label (if (and target-idx core::*enable-print-pretty*)
-                     (bformat nil "arg-%d" target-idx)
-                     "rawarg")))
-      (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
-  ;;    (llvm-sys:create-vaarg *irbuilder* (calling-convention-va-list cc) +t*+ label)))
-;;;    (llvm-sys:create-geparray *irbuilder* (calling-convention-impl-args cc) (list (jit-constant-size_t 0) idx) label)))
+(defun calling-convention-args.va-arg (cc arg-idx &optional target-idx)
+  (declare (ignore arg-idx))
+  (let ((label (if (and target-idx core::*enable-print-pretty*)
+                   (bformat nil "arg-%d" target-idx)
+                   "rawarg")))
+    (irc-intrinsic "cc_va_arg" (calling-convention-va-list cc))))
 
   (defvar *register-arg-types* nil)
   (defvar *register-arg-names* nil)
@@ -389,18 +389,18 @@ Boehm and MPS use a single pointer"
   (defun add-global-ctor-function (module main-function)
     "Create a function with the name core:+clasp-ctor-function-name+ and
 have it call the main-function"
-    (let ((*the-module* module))
-      (let ((fn (with-new-function
-                    (ctor-func func-env result
-                               :function-name core:+clasp-ctor-function-name+
-                               :parent-env nil
-                               :linkage 'llvm-sys:internal-linkage
-                               :function-type +fn-ctor+
-                               :return-void t
-                               :argument-names +fn-ctor-argument-names+ )
-                  (let* ((bc-bf (llvm-sys:create-bit-cast *irbuilder* main-function +fn-prototype*+ "fnptr-pointer")))
-                    (irc-intrinsic "cc_register_startup_function" bc-bf)))))
-        fn)))
+  (let ((*the-module* module))
+    (let ((fn (with-new-function
+                  (ctor-func func-env result
+                             :function-name core:+clasp-ctor-function-name+
+                             :parent-env nil
+                             :linkage 'llvm-sys:internal-linkage
+                             :function-type +fn-ctor+
+                             :return-void t
+                             :argument-names +fn-ctor-argument-names+ )
+                (let* ((bc-bf (irc-bit-cast main-function +fn-prototype*+ "fnptr-pointer")))
+                  (irc-intrinsic "cc_register_startup_function" bc-bf)))))
+      fn)))
 
   (defun find-global-ctor-function (module)
     (let ((ctor (llvm-sys:get-function module core:+clasp-ctor-function-name+)))
@@ -412,21 +412,22 @@ have it call the main-function"
       (if global
           (llvm-sys:erase-from-parent global))))
 
-  (defun add-llvm.global_ctors (module priority global-ctor-function)
-    (or global-ctor-function (error "global-ctor-function must not be NIL"))
-    (llvm-sys:make-global-variable module
-                                   +global-ctors-struct[1]+
-                                   nil
-                                   'llvm-sys:appending-linkage
-                                   (llvm-sys:constant-array-get
-                                    +global-ctors-struct[1]+
-                                    (list
-                                     (llvm-sys:constant-struct-get +global-ctors-struct+
-                                                                   (list
-                                                                    (jit-constant-i32 priority)
-                                                                    global-ctor-function
-                                                                    (llvm-sys:constant-pointer-null-get +i8*+)))))
-                                   "llvm.global_ctors")))
+(defun add-llvm.global_ctors (module priority global-ctor-function)
+  (or global-ctor-function (error "global-ctor-function must not be NIL"))
+  (llvm-sys:make-global-variable
+   module
+   +global-ctors-struct[1]+
+   nil
+   'llvm-sys:appending-linkage
+   (llvm-sys:constant-array-get
+    +global-ctors-struct[1]+
+    (list
+     (llvm-sys:constant-struct-get +global-ctors-struct+
+                                   (list
+                                    (jit-constant-i32 priority)
+                                    global-ctor-function
+                                    (llvm-sys:constant-pointer-null-get +i8*+)))))
+   "llvm.global_ctors"))
 
 (defun make-boot-function-global-variable (module func-ptr)
   "* Arguments
@@ -541,22 +542,6 @@ and initialize it with an array consisting of one function pointer."
 ;;; An attempt to inline specific functions from intrinsics.cc
 ;;;
 
-#+(or)
-(defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
-  (unless *intrinsics-module*
-    (setf *intrinsics-module* (llvm-sys:parse-bitcode-file (namestring (truename (cmp::build-intrinsics-bitcode-pathname :compile))) cmp:*llvm-context*)))
-  (when *intrinsics-module* (bformat t "Loaded intrinsics.cc\n"))
-  (let* ((orig-func (llvm-sys:get-function *intrinsics-module* name))
-         (fn (if orig-func
-                 (progn (llvm-sys:get-or-insert-function module (llvm-sys:get-name orig-func) (llvm-sys:get-function-type orig-func))
-                   (bformat t "The function %s is in intrinsics\n" name)
-                   (llvm-sys:get-function module (llvm-sys:get-name orig-func)))
-                 (irc-function-create (llvm-sys:function-type-get return-ty args-ty varargs)
-                                           'llvm-sys::External-linkage
-                                           name
-                                           module))))
-    (when does-not-throw (llvm-sys:set-does-not-throw fn))
-    (when does-not-return (llvm-sys:set-does-not-return fn))))
 
 ;;#+(or)
 (defun create-primitive-function (module name return-ty args-ty varargs does-not-throw does-not-return)
@@ -857,11 +842,65 @@ It has appending linkage.")
 
 
 (defparameter *quick-module-index* 0)
-(defun quick-module-dump (module dir file-name)
+(defun compile-file-quick-module-dump (module file-name-modifier)
   "Dump the module as a .ll file"
-  (if *debug-dump-module*
-      (let* ((output-name (bformat nil "%s/module-%05d-%s.ll" dir (incf *quick-module-index*) file-name))
-             (fout (open output-name :direction :output)))
-        (unwind-protect
-             (llvm-sys:dump-module module fout)
-          (close fout)))))
+  (if *compile-file-debug-dump-module*
+      (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
+             (output-path (make-pathname
+                           :name (concatenate
+                                  'string
+                                  (pathname-name *compile-file-output-pathname*)
+                                  "-" name-suffix)
+                           :type "ll"
+                           :defaults *compile-file-output-pathname*)))
+        (ensure-directories-exist output-path)
+        (let* ((output-name (namestring output-path))
+               (fout (open output-name :direction :output)))
+          (unwind-protect
+               (llvm-sys:dump-module module fout)
+            (close fout))))))
+
+
+(defun compile-quick-module-dump (module file-name-modifier)
+  "Dump the module as a .ll file"
+  (if *compile-debug-dump-module*
+      (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
+             (output-path (make-pathname
+                           :name name-suffix
+                           :directory '(:absolute "tmp")
+                           :type "ll")))
+        (ensure-directories-exist output-path)
+        (let* ((output-name (namestring output-path))
+               (fout (open output-name :direction :output)))
+          (unwind-protect
+               (llvm-sys:dump-module module fout)
+            (close fout))))))
+
+
+(defun quick-module-dump (module name-modifier)
+  (if *compile-file-output-pathname*
+      (compile-file-quick-module-dump module name-modifier)
+      (compile-quick-module-dump module name-modifier)))
+
+
+(defmacro log-module ((info) &rest body)
+  `(progn
+     (llvm-sys:sanity-check-module *the-module* 2)
+     (quick-module-dump *the-module* ,(bformat nil "%s-begin" info))
+     (multiple-value-prog1 (progn ,@body)
+       (llvm-sys:sanity-check-module *the-module* 2)
+       (quick-module-dump *the-module* ,(bformat nil "%s-end" info)))))
+
+(defun quick-message (file-name-modifier msg &rest args)
+  (if *compile-file-debug-dump-module*
+      (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
+             (output-path (make-pathname
+                           :name (concatenate
+                                  'string
+                                  (pathname-name *compile-file-output-pathname*)
+                                  "-" name-suffix)
+                           :type "txt"
+                           :defaults *compile-file-output-pathname*)))
+        (ensure-directories-exist output-path)
+        (with-open-file (fout output-path :direction :output)
+          (apply #'bformat fout msg args)))))

@@ -21,7 +21,7 @@
 	  *current-function*
 	  *gv-current-function-name*
 	  *current-function-name*
-	  jit-make-global-string-ptr
+	  jit-make-global-string
 	  *run-time-literal-holder*
 	  cmp-log
 	  cmp-log-dump
@@ -30,7 +30,6 @@
 	  irc-environment-activation-frame
 	  *run-time-values-table-name*
 	  *all-functions-for-one-compile*
-	  *debug-dump-module*
 	  irc-intrinsic-args
 	  set-associated-funcs
 	  *block-name-prefix*

@@ -81,7 +81,7 @@
                      (cmp:irc-create-call "cc_gatherRestArguments" 
                                           (list (cmp:calling-convention-nargs args)
                                                 (cmp:calling-convention-va-list args)
-                                                arg-idx cmp:*gv-current-function-name*))))
+                                                arg-idx (cmp:irc-constant-string-ptr cmp:*gv-current-function-name*)))))
            (rest-alloca (translate-datum rest-var)))
       (%store rest rest-alloca)
       rest-alloca)))

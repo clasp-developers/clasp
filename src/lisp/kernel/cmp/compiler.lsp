@@ -1221,29 +1221,33 @@ jump to blocks within this tagbody."
   "A compiler macro function, macro function or a regular function"
   (assert-result-isa-llvm-value result)
   (dbg-set-current-source-pos form)
-  (cond
-    ;; A compiler macro
-    ((and (symbolp (car form))
-          (not (core:lexical-function (car form) env))
-          (not (core:lexical-macro-function (car form) env))
-          (not (core:declared-global-notinline-p (car form)))
-          (let ((expansion (core:compiler-macroexpand form env)))
-            (if (eq expansion form)
-                nil
-                (progn
-                  (codegen result expansion env)
-                  t)))))
-    ;; A regular macro
-    ((and (symbolp (car form))
-          (not (core:lexical-function (car form) env))
-          (macro-function (car form) env))
-     (multiple-value-bind (expansion expanded-p)
-         (macroexpand form env)
-       (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
-       (irc-low-level-trace)
-       (codegen result expansion env)))
-     ;; It's a regular function call
-    (t (codegen-call result form env))))
+  (prog1
+      (cond
+        ;; A compiler macro
+        ((and (symbolp (car form))
+              (not (core:lexical-function (car form) env))
+              (not (core:lexical-macro-function (car form) env))
+              (not (core:declared-global-notinline-p (car form)))
+              (let ((expansion (core:compiler-macroexpand form env)))
+                (if (eq expansion form)
+                    nil
+                    (progn
+                      (codegen result expansion env) 
+                      t)))))
+        ;; A regular macro
+        ((and (symbolp (car form))
+              (not (core:lexical-function (car form) env))
+              (macro-function (car form) env))
+         (multiple-value-bind (expansion expanded-p)
+             (macroexpand form env)
+           (cmp-log "MACROEXPANDed form[%s] expanded to [%s]\n" form expansion )
+           (irc-low-level-trace)
+           (codegen result expansion env) 
+           ))
+        ;; It's a regular function call
+        (t
+         (codegen-call result form env))) 
+    ))
 
 
 
@@ -1291,7 +1295,7 @@ jump to blocks within this tagbody."
 
 (defun codegen (result form env)
   (declare (optimize (debug 3)))
-  (assert-result-isa-llvm-value result)
+  (assert-result-isa-llvm-value result) 
   (multiple-value-bind (source-directory source-filename lineno column)
       (dbg-set-current-source-pos form)
     (let* ((*current-form* form)
@@ -1303,23 +1307,25 @@ jump to blocks within this tagbody."
       ;; with the current form and environment
       (when *code-walker*
         (setq form (funcall *code-walker* form env)))
-      (if (atom form)
-          (if (symbolp form)
-              (codegen-symbol-value result form env)
-              (codegen-literal result form env))
-          (let ((head (car form))
-                (rest (cdr form)))
-            (cmp-log "About to codegen special-operator or application for: %s\n" form)
-            ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
-            (cond
-              ((treat-as-special-operator-p head)
-               (codegen-special-operator result head rest env))
-              ((and head (consp head) (eq (car head) 'cl:lambda))
-               (codegen result `(funcall ,head ,@rest) env))
-              ((and head (symbolp head))
-               (codegen-application result form env))
-              (t
-               (error "Handle codegen of cons: ~a" form))))))))
+      (prog1
+          (if (atom form)
+              (if (symbolp form)
+                  (codegen-symbol-value result form env)
+                  (codegen-literal result form env))
+              (let ((head (car form))
+                    (rest (cdr form)))
+                (cmp-log "About to codegen special-operator or application for: %s\n" form)
+                ;;  (trace-linenumber-column (walk-to-find-parse-pos form) env)
+                (cond
+                  ((treat-as-special-operator-p head)
+                   (codegen-special-operator result head rest env))
+                  ((and head (consp head) (eq (car head) 'cl:lambda))
+                   (codegen result `(funcall ,head ,@rest) env))
+                  ((and head (symbolp head))
+                   (codegen-application result form env))
+                  (t
+                   (error "Handle codegen of cons: ~a" form))))) 
+        ))))
 
 ;;------------------------------------------------------------
 ;;
@@ -1342,7 +1348,7 @@ jump to blocks within this tagbody."
                             ;; Map the function argument names
                             (cmp-log "Creating repl function with name: %s\n" given-name)
                             ;;	(break "codegen repl form")
-                            (dbg-set-current-debug-location-here)
+                            (dbg-set-current-debug-location-here) 
                             (codegen result form fn-env)
                             (dbg-set-current-debug-location-here)))))
     (cmp-log "Dumping the repl function\n")
@@ -1386,8 +1392,8 @@ jump to blocks within this tagbody."
                               (source-debug-use-lineno t)) &rest body)
   `(let* ((*the-module* ,module)
  	  #+(or)(*generate-load-time-values* t)
-	  (*gv-source-namestring* (jit-make-global-string-ptr ,source-namestring "source-namestring"))
-	  (*gv-source-debug-namestring* (jit-make-global-string-ptr (if ,source-debug-namestring
+	  (*gv-source-namestring* (jit-make-global-string ,source-namestring "source-namestring"))
+	  (*gv-source-debug-namestring* (jit-make-global-string (if ,source-debug-namestring
 									,source-debug-namestring
 									,source-namestring) "source-debug-namestring"))
 	  (*source-debug-offset* ,source-debug-offset)
@@ -1399,6 +1405,7 @@ jump to blocks within this tagbody."
            ,@body)
        (when (and ,optimize ,optimize-level) (do-optimization ,module ,optimize-level )))))
 
+#+(or)
 (defun generate-run-time-table (run-time-values)
   "Put the constants in order they will appear in the table.
 Return the orderered-raw-constants-list and the constants-table GlobalVariable"
@@ -1420,7 +1427,6 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     #+(or)(progn
             (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))
             (bformat t "array-type = %s\n" array-type))
-    (quick-module-dump *the-module* "/tmp" "module-pre-replace")
     (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
     (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
     (values ordered-raw-constant-list constant-table)))
@@ -1439,35 +1445,22 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
     (cmp-log "fn --> %s\n" fn)
     (cmp-log-dump *the-module*)
     (link-intrinsics-module *the-module*)
-    (when *debug-dump-module*
-      (quick-module-dump *the-module* "/tmp" "compile-module-pre-optimize"))
     (values fn function-kind wrapped-env lambda-name warnp failp)))
 
-
 (defun compile-to-module-with-run-time-table (definition env pathname)
-  (let* (fn function-kind wrapped-env lambda-name warnp failp
-            (*load-time-value-holder-global-var*
-             (llvm-sys:make-global-variable *the-module*
-                                            +tsp[0]+ ; type
-                                            nil      ; isConstant
-                                            'llvm-sys:internal-linkage
-                                            nil
-                                            (literal:next-value-table-holder-name)))
-            (constants-list
-             (with-rtv
-                 (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
-                   (compile-to-module definition env pathname)))))
+  (let* (fn function-kind wrapped-env lambda-name warnp failp)
     (multiple-value-bind (ordered-raw-constants-list constants-table)
-        (generate-run-time-table constants-list)
+        (literal:with-rtv
+            (multiple-value-setq (fn function-kind wrapped-env lambda-name warnp failp)
+              (compile-to-module definition env pathname)))
       (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table))))
 
-(defun clasp-compile* (bind-to-name &optional definition env pathname)
+(defun bclasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
       (compile-to-module-with-run-time-table definition env pathname)
-    (when cmp:*debug-dump-module*
-      (quick-module-dump *the-module* "/tmp" "module-after-rtt"))
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
+    (quick-module-dump *the-module* "preoptimize")
     (if (not *run-time-execution-engine*)
         ;; SETUP THE *run-time-execution-engine* here for the first time
         ;; using the current module in *the-module*
@@ -1514,7 +1507,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 We could do more fancy things here - like if cleavir-clasp fails, use the clasp compiler as backup."
   (if compile-hook
       (funcall compile-hook name definition env pathname)
-      (clasp-compile* name definition env pathname)))
+      (bclasp-compile* name definition env pathname)))
 
 
 (defun compile-in-env (bind-to-name &optional definition env compile-hook &aux conditions)

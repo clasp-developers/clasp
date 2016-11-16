@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/Function.h>
+#include </Users/meister/Development/externals-clasp/llvm39ToT/lib/IR/ConstantsContext.h>
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
@@ -78,6 +79,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/compiler.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/str.h>
 #include <clasp/core/vectorObjectsWithFillPtr.h>
@@ -159,10 +161,67 @@ CL_DEFUN core::T_mv llvm_sys__link_in_module(Linker_sp linker, Module_sp module)
 
 namespace llvmo {
 
+CL_DEFUN Instruction_sp llvm_sys__create_invoke_instruction_append_to_basic_block(llvm::Function* func, llvm::BasicBlock* normal_dest, llvm::BasicBlock* unwind_dest, core::List_sp args, core::Str_sp label, llvm::BasicBlock* append_bb) {
+  printf("%s:%d In create_invoke_instruction\n", __FILE__, __LINE__ );
+  // Get the arguments
+  vector<llvm::Value*> llvm_args;
+  for ( auto cur : args ) {
+    Value_sp arg = gc::As<Value_sp>(oCar(cur));
+    llvm_args.push_back(arg->wrappedPtr());
+  }
+  llvm::InvokeInst* llvm_invoke = llvm::InvokeInst::Create(func,normal_dest,unwind_dest,llvm_args,label->get(),append_bb);
+  Instruction_sp invoke = Instruction_O::create();
+  invoke->set_wrapped(llvm_invoke);
+  return invoke;
+}
 
+CL_DEFUN void llvm_sys__dump_instruction_pointers(llvm::Instruction* I)
+{
+  if (I == NULL) {
+    printf("%s:%d  Instruction is NULL\n", __FILE__, __LINE__ );
+  } else {
+    auto prev = I->getPrevNode();
+    auto next = I->getNextNode();
+    const char* opcode = I->getOpcodeName();
+    printf("%s:%d Instruction %15s @%p  prev@%p  next@%p\n", __FILE__, __LINE__, opcode, (void*)&I, (void*)prev, (void*)next);
+  }
+}
 
-;
+CL_DEFUN void llvm_sys__dump_instruction_list(BasicBlock_sp cbb)
+{
+  llvm::BasicBlock* bb = cbb->wrappedPtr();
+  if (bb==NULL) {
+    printf("%s:%d The instruction list is empty\n", __FILE__, __LINE__ );
+    return;
+  }
+//  printf("%s:%d  bb->end()->getPrev() = @%p\n", __FILE__, __LINE__, bb->end()->getPrev());
+  printf("%s:%d  &(bb->back())  = @%p\n", __FILE__, __LINE__, (void*)&(bb->back()));
+  printf("%s:%d  Dumping instruction list\n", __FILE__, __LINE__);
+  for ( auto &I : *bb ) {
+    auto prev = I.getPrevNode();
+    auto next = I.getNextNode();
+    const char* opcode = I.getOpcodeName();
+    printf("%s:%d Instruction %15s @%p  prev@%p  next@%p\n", __FILE__, __LINE__, opcode, (void*)&I, (void*)prev, (void*)next);
+  }
+}
 
+CL_DEFUN void llvm_sys__sanity_check_module(Module_sp module, int depth)
+{
+  llvm::Module* modP = module->wrappedPtr();
+  if (modP) {
+    llvm::Module& mod = *modP;
+    for ( auto &F : mod ) {
+      if ( depth > 0 ) {
+        for ( auto &B : F ) {
+          if (depth > 1) {
+            for ( auto &I : B )
+              /*nothing*/;
+          }
+        }
+      }
+    }
+  }
+}
 }; // llvmo
 
 namespace llvmo {
@@ -994,10 +1053,13 @@ CL_DEFMETHOD GlobalVariable_sp Module_O::getOrCreateUniquedStringGlobalVariable(
   if (it.nilp()) {
     llvm::Module *M = this->wrappedPtr();
     llvm::LLVMContext &context = M->getContext();
-    llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(context, value);
-    GV = new llvm::GlobalVariable(*M, StrConstant->getType(),
-                                  true, llvm::GlobalValue::InternalLinkage,
-                                  StrConstant);
+    llvm::Constant *StrConstant = llvm::ConstantDataArray::getString(context, value,true);
+    GV = new llvm::GlobalVariable(*M,
+                                  StrConstant->getType(),
+                                  true,
+                                  llvm::GlobalValue::PrivateLinkage,
+                                  StrConstant,
+                                  "");
     GV->setName(name);
     GV->setUnnamedAddr(llvm::GlobalValue::UnnamedAddr::Global);
     //	    GlobalVariableStringHolder holder;
@@ -1426,32 +1488,41 @@ namespace llvmo {
 CL_LISPIFY_NAME(constant-expr-get-in-bounds-get-element-ptr);
 CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* element_type, Constant_sp constant, core::List_sp idxList) {
   GC_ALLOCATE(Constant_O, res);
+  if (element_type==NULL) {
+    SIMPLE_ERROR(BF("You must provide a type for ConstantExpr_O::getInBoundsGetElementPtr"));
+  }
   vector<llvm::Constant *> vector_IdxList;
   for (auto cur : idxList) {
     vector_IdxList.push_back(gc::As<Constant_sp>(oCar(cur))->wrappedPtr());
   }
+
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
-  llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(element_type,constant->wrappedPtr(), array_ref_vector_IdxList);
+  llvm::Constant* llvm_constant = constant->wrappedPtr();
+  llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(element_type,llvm_constant, array_ref_vector_IdxList);
+#if 1
+  string str;
+  llvm::raw_string_ostream ro(str);
+  ro << "Input-type: ";
+  element_type->print(ro);
+  ro << " Input-Constant: ";
+  llvm_constant->print(ro);
+  ro << " Result: " << ro.str();
+  llvm_res->print(ro);
+  llvm::Type* gep_result_element_type = llvm::cast<llvm::GetElementPtrConstantExpr>(llvm_res)->getResultElementType();
+  llvm::Type* gep_source_element_type = llvm::cast<llvm::GetElementPtrConstantExpr>(llvm_res)->getSourceElementType();
+  ro << " Result-source_element_type = ";
+  gep_source_element_type->print(ro);
+  ro << " Result-result_element_type = ";
+  gep_result_element_type->print(ro);
+  if (gep_source_element_type->getArrayNumElements() != gep_result_element_type->getArrayNumElements()) {
+    BFORMAT_T(BF("%s:%d %s\n") % __FILE__ % __LINE__ % ro.str());
+  }
+#endif
   res->set_wrapped(llvm_res);
   return res;
 }
-
-
-
-;
-
 }; // llvmo
-namespace llvmo {
-}
 
-namespace llvmo {
-
-
-;
-
-}; // llvmo
-namespace llvmo {
-}
 
 namespace llvmo {
 
@@ -1500,6 +1571,11 @@ CL_DEFMETHOD void Instruction_O::setMetadata(core::Str_sp kind, MDNode_sp mdnode
 
 ;
 
+
+CL_LISPIFY_NAME("insertAfter");
+CL_EXTERN_DEFMETHOD(Instruction_O,&llvm::Instruction::insertAfter);
+CL_LISPIFY_NAME("insertBefore");
+CL_EXTERN_DEFMETHOD(Instruction_O,&llvm::Instruction::insertBefore);
 
 CL_LISPIFY_NAME("terminatorInstP");
 CL_DEFMETHOD bool Instruction_O::terminatorInstP() const {
@@ -1986,6 +2062,18 @@ CL_DEFMETHOD InsertPoint_sp IRBuilderBase_O::saveIP() {
   llvm::IRBuilderBase::InsertPoint ip = this->wrappedPtr()->saveIP();
   InsertPoint_sp oip = InsertPoint_O::create(ip);
   return oip;
+}
+
+CL_LISPIFY_NAME("getInsertPointInstruction");
+CL_DEFMETHOD core::T_sp IRBuilderBase_O::getInsertPointInstruction() {
+  llvm::BasicBlock::iterator ip = this->wrappedPtr()->GetInsertPoint();
+  llvm::Instruction* ins = llvm::cast<llvm::Instruction>(ip);
+  if (ins!=NULL) {
+    Instruction_sp isp = Instruction_O::create();
+    isp->set_wrapped(ins);
+    return isp;
+  }
+  return _Nil<core::T_O>();
 }
 
 CL_LISPIFY_NAME("SetCurrentDebugLocation");

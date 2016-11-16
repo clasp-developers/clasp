@@ -219,29 +219,30 @@ No DIBuilder is defined for the default module")
       (t (error "Add support for size_t sizeof = ~a" sizeof-size_t)))))
 
 
-(defun jit-constant-unique-string-ptr (sn &optional (label "unique-str"))
+(defun jit-constant-unique-string-ptr (str &optional (label "unique-str"))
   "Get or create a unique string within the module and return a GEP i8* pointer to it"
   (or *the-module* (error "jit-constant-unique-string-ptr *the-module* is NIL"))
-  (let* ((sn-gv (llvm-sys:get-or-create-uniqued-string-global-variable
-                *the-module* sn
-                (bformat nil "str-%s" sn)))
-         #+(or)(sn-gv-ty (llvm-sys:get-type sn-gv)))
-    #+(or)(bformat t "About to create-const-gep2-32 for %s\n" sn-gv)
-    (let ((sn-value-ptr (llvm-sys:create-const-gep2-64 *irbuilder* sn-gv 0 0 "sn")))
-      sn-value-ptr)))
+  (let* ((str-gv (llvm-sys:get-or-create-uniqued-string-global-variable
+                 *the-module* str
+                 (bformat nil "str-%s" str))))
+    (llvm-sys:create-const-gep2-64 *irbuilder* str-gv 0 0 "str")))
 
 
-(defun jit-make-global-string-ptr (str &optional (label "global-str"))
+(defun jit-make-global-string (str &optional (label "global-str"))
   "A function for creating unique strings within the module - return an LLVM pointer to the string"
   (or *the-module* (error "jit-make-global-string-ptr *the-module* is NIL"))
-  (let ((unique-string-global-variable (llvm-sys:get-or-create-uniqued-string-global-variable *the-module* str (bformat nil ":::global-str-%s" str))))
-    (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
-     nil
-     unique-string-global-variable
-     (list (jit-constant-i32 0) (jit-constant-i32 0)))
-    )
-)
-
+  (let* ((unique-string-global-variable
+          (llvm-sys:get-or-create-uniqued-string-global-variable
+           *the-module* str (bformat nil ":::global-str-%s" str)))
+         (string-type (llvm-sys:array-type-get (llvm-sys:type-get-int8-ty *llvm-context*) (1+ (length str)))))
+    unique-string-global-variable))
+#|
+    (let ((gep (llvm-sys:constant-expr-get-in-bounds-get-element-ptr
+                string-type
+                unique-string-global-variable
+                (list (jit-constant-i32 0) (jit-constant-i32 0)))))
+      gep)))
+|#
 
 
 
