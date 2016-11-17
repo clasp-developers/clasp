@@ -365,25 +365,12 @@ the value is put into *default-load-time-value-vector* and its index is returned
                     (t (error "bad type")))))))))))
 
 (defmacro with-ltv ( &body body)
-  `(unwind-protect
-        (progn
-          (incf *with-ltv-depth*)
-          #+(or)(bformat t "Entering with-ltv depth %d\n" *with-ltv-depth*)
-          (do-with-ltv :ltv (lambda () ,@body)))
-     (progn
-       #+(or)(bformat t "Leaving with-ltv depth %d\n" *with-ltv-depth*)
-       (decf *with-ltv-depth*))))
+  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
+     (do-with-ltv :ltv (lambda () ,@body))))
 
 (defmacro with-top-level-form ( &body body)
-  `(unwind-protect
-        (progn
-          (incf *with-ltv-depth*)
-          #+(or)(bformat t "Entering with-top-level-form depth %d\n" *with-ltv-depth*)
-          (do-with-ltv :toplevel (lambda () ,@body)))
-     (progn
-       #+(or)(bformat t "Leaving with-top-level-form depth %d\n" *with-ltv-depth*)
-       (decf *with-ltv-depth*))))
-
+  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
+     (do-with-ltv :toplevel (lambda () ,@body))))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices

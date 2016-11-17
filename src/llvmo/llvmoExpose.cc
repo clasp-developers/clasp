@@ -44,7 +44,6 @@ THE SOFTWARE.
 #include <llvm/IR/Constants.h>
 #include <llvm/IR/GlobalVariable.h>
 #include <llvm/IR/Function.h>
-#include </Users/meister/Development/externals-clasp/llvm39ToT/lib/IR/ConstantsContext.h>
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Instructions.h>
