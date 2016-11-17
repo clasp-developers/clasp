@@ -1052,10 +1052,8 @@ jump to blocks within this tagbody."
       (irc-low-level-trace)
       (irc-intrinsic "throwCatchThrow" tag-store))))
 
-
-
-
-
+(defun codegen-quote (result rest env)
+  (codegen-literal result (car rest) env))
 
 (defun codegen-load-time-value (result rest env)
   (cmp-log "Starting codegen-load-time-value rest: %s\n" rest)
@@ -1067,12 +1065,9 @@ jump to blocks within this tagbody."
         (let* ((index (literal:new-table-index))
                (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
           (literal:add-call "ltvc_ltv_funcall" index value)
-          (literal:get-load-time-value result index))
-	(progn
-	  (cmp-log "About to generate load-time-value for COMPILE")
-          ;;	  (break "Handle load-time-value for COMPILE")
-	  (let ((ltv (eval form)))
-	    (codegen-rtv result ltv))))))
+          (irc-store (literal:constants-table-value index) result))
+        (let ((ltv (eval form)))
+          (codegen-rtv result ltv)))))
 
 (defun split-vars-declares-forms (parts)
   (let ((vars (car parts))
@@ -1455,17 +1450,27 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
               (compile-to-module definition env pathname)))
       (values fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table))))
 
+(defun describe-constants-table (constants-table)
+  (bformat t "constants-table = %s\n" constants-table)
+  (bformat t "getGlobalValueAddress = %x\n" (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table)))
+  (bformat t "table-address = %s\n" 
+           (llvm-sys:get-or-emit-global-variable
+            *run-time-execution-engine*
+            constants-table))
+  #+(or)(break "Check cmp::*x* - this is where we would get the *load-time-value-holder-name* out of the execution-engine")
+  (bformat t "compiler.lsp:1520 About to fill constants-table with %d entries\n" (length ordered-raw-constants-list)))
+
 (defun bclasp-compile* (bind-to-name &optional definition env pathname)
   "Compile the definition"
   (multiple-value-bind (fn function-kind wrapped-env lambda-name warnp failp ordered-raw-constants-list constants-table)
       (compile-to-module-with-run-time-table definition env pathname)
     (cmp-log "About to test and maybe set up the *run-time-execution-engine*\n")
     (quick-module-dump *the-module* "preoptimize")
+    ;; SETUP THE *run-time-execution-engine* here for the first time
+    ;; using the current module in *the-module*
+    ;; At this point the *the-module* will become invalid because
+    ;; the execution-engine will take ownership of it
     (if (not *run-time-execution-engine*)
-        ;; SETUP THE *run-time-execution-engine* here for the first time
-        ;; using the current module in *the-module*
-        ;; At this point the *the-module* will become invalid because
-        ;; the execution-engine will take ownership of it
         (setq *run-time-execution-engine* (create-run-time-execution-engine *the-module*))
         (llvm-sys:add-module *run-time-execution-engine* *the-module*))
     ;; At this point the Module in *the-module* is invalid because the
@@ -1484,19 +1489,10 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
              core:*current-source-file-info*
              (core:source-pos-info-filepos cspi)
              (core:source-pos-info-lineno cspi)
-             nil #|lambda-list, NIL for now - but this should be extracted from definition|#))
-           (constants-table-address (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table))))
-      #+(or)(progn
-              (bformat t "constants-table = %s\n" constants-table)
-              (bformat t "getGlobalValueAddress = %x\n" (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table)))
-              #+(or)(bformat t "table-address = %s\n" 
-                             (llvm-sys:get-or-emit-global-variable
-                              *run-time-execution-engine*
-                              constants-table))
-              #+(or)(break "Check cmp::*x* - this is where we would get the *load-time-value-holder-name* out of the execution-engine")
-              (bformat t "compiler.lsp:1520 About to fill constants-table with %d entries\n" (length ordered-raw-constants-list)))
-      (gctools:register-roots constants-table-address ordered-raw-constants-list)
-      #+(or)(bformat t "Returned from gctools:register-roots\n")
+             nil #|lambda-list, NIL for now - but this should be extracted from definition|#)))
+      (when constants-table
+        (let ((constants-table-address (llvm-sys:get-global-value-address *run-time-execution-engine* (llvm-sys:get-name constants-table))))
+          (gctools:register-roots constants-table-address ordered-raw-constants-list)))
       (values compiled-function warnp failp))))
 
 (defvar *compile-counter* 0)

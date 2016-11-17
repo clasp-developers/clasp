@@ -1,18 +1,5 @@
 (cl:in-package #:common-lisp-user)
 
-(defpackage #:ltv
-  (:use #:common-lisp)
-  (:export
-   #:reference-literal
-   #:compile-reference-to-load-time-value
-   #:compile-reference-to-literal
-   #:with-ltv-function-codegen
-   #:with-ltv
-   #:ltv-global
-   #:*load-time-value-holder-global-var*
-  )
-  )
-
 (defpackage #:cclasp-build
   (:use #:common-lisp #:core)
   (:export

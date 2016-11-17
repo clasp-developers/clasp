@@ -3,9 +3,8 @@
           *debug-link-options* ;; A list of strings to inject into link commands
           *compile-file-debug-dump-module*  ;; Dump intermediate modules
           *compile-debug-dump-module*  ;; Dump intermediate modules
-          compile-file-quick-module-dump
-          compile-quick-module-dump
           quick-module-dump
+          quick-message-dump
           *irbuilder*
           +ltv*+
           irc-function-create
@@ -67,6 +66,7 @@
           calling-convention-nargs
           calling-convention-register-args
           calling-convention-write-registers-to-multiple-values
+          describe-constants-table
           cmp-log
           cmp-log-dump
           codegen-rtv
@@ -101,6 +101,7 @@
           irc-create-landing-pad
           irc-exception-typeid*
           irc-generate-terminate-code
+          irc-smart-ptr-extract
           irc-size_t-*current-source-pos-info*-filepos
           irc-size_t-*current-source-pos-info*-column
           irc-size_t-*current-source-pos-info*-lineno
@@ -149,7 +150,6 @@
           with-irbuilder
           with-landing-pad
           compile-reference-to-literal
-          compile-reference-to-load-time-value
           ltv-global
           bclasp-compile
           bclasp-compile-file
@@ -212,18 +212,16 @@
           constant-call-holder
           number-of-entries
           reference-literal
-          compile-reference-to-symbol
+          load-time-reference-literal
           codegen-rtv
           codegen-literal
           codegen-quote
-          compile-reference-to-load-time-value
           compile-reference-to-literal
           ltv-global
           compile-load-time-value-thunk
           new-table-index
-          load-time-value-reference
-          get-load-time-value
-          copy-load-time-value
+          constants-table-reference
+          constants-table-value
           with-coalesce-ltv
           with-ltv
           with-rtv
