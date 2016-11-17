@@ -878,12 +878,52 @@ It has appending linkage.")
 
 
 (defun quick-module-dump (module name-modifier)
+  "If called under COMPILE-FILE the modules are dumped into the
+same directory as the COMPILE-FILE output.  If called under COMPILE
+they are dumped into /tmp"
   (if *compile-file-output-pathname*
       (compile-file-quick-module-dump module name-modifier)
       (compile-quick-module-dump module name-modifier)))
 
 
+(defun compile-file-quick-message (file-name-modifier msg args)
+  (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
+         (output-path (make-pathname
+                       :name (concatenate
+                              'string
+                              (pathname-name *compile-file-output-pathname*)
+                              "-" name-suffix)
+                       :type "txt"
+                       :defaults *compile-file-output-pathname*)))
+    (ensure-directories-exist output-path)
+    (with-open-file (fout output-path :direction :output)
+      (apply #'bformat fout msg args))))
+
+(defun compile-quick-message (file-name-modifier msg args)
+  (if *compile-debug-dump-module*
+      (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
+             (output-path (make-pathname
+                           :name name-suffix
+                           :directory '(:absolute "tmp")
+                           :type "txt")))
+        (ensure-directories-exist output-path)
+        (let* ((output-name (namestring output-path))
+               (fout (open output-name :direction :output)))
+          (unwind-protect
+               (llvm-sys:dump-module module fout)
+            (close fout))))))
+
+
+(defun quick-message (file-name-modifier msg &rest args)
+  "Write a message into a file and write it to the same directory 
+as quick-module-dump would write it"
+  (if *compile-file-debug-dump-module*
+      (compile-file-quick-message file-name-modifier msg args)
+      (compile-quick-message file-name-modifier msg args)))
+
 (defmacro log-module ((info) &rest body)
+  "Wrap quick-module-dump around a block of code so that the module
+is dumped to a file before the block and after the block."
   `(progn
      (llvm-sys:sanity-check-module *the-module* 2)
      (quick-module-dump *the-module* ,(bformat nil "%s-begin" info))
@@ -891,16 +931,3 @@ It has appending linkage.")
        (llvm-sys:sanity-check-module *the-module* 2)
        (quick-module-dump *the-module* ,(bformat nil "%s-end" info)))))
 
-(defun quick-message (file-name-modifier msg &rest args)
-  (if *compile-file-debug-dump-module*
-      (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
-             (output-path (make-pathname
-                           :name (concatenate
-                                  'string
-                                  (pathname-name *compile-file-output-pathname*)
-                                  "-" name-suffix)
-                           :type "txt"
-                           :defaults *compile-file-output-pathname*)))
-        (ensure-directories-exist output-path)
-        (with-open-file (fout output-path :direction :output)
-          (apply #'bformat fout msg args)))))

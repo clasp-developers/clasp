@@ -5,18 +5,16 @@
     (literal:reference-literal value read-only-p)))
 
 (defun %literal-ref (value &optional read-only-p)
-  (let ((index (%literal-index value read-only-p)))
-    (cond
-      ((= index 0) (cmp:irc-create-call "cc_nil_reference" nil "&NIL"))
-      ((= index 1) (cmp:irc-create-call "cc_t_reference" nil "&T"))
-      (t (literal:compile-reference-to-load-time-value index)))))
+  (let* ((index (%literal-index value read-only-p))
+         (gep (llvm-sys:create-const-gep2-64 cmp:*irbuilder* 
+                                             (cmp:ltv-global)
+                                             0 index
+                                             (bformat nil "values-table[%d]" index))))
+    gep))
 
 (defun %literal-value (value &optional label)
-  (let ((index (%literal-index value t)))
-    (cond
-      ((= index 0) (cmp:irc-create-call "cc_nil_value" nil "NIL"))
-      ((= index 1) (cmp:irc-create-call "cc_t_value" nil "T"))
-      (t (cmp:irc-create-call "cc_precalcValue" (list (cmp:ltv-global) (%size_t index)) label)))))
+  (let ((ref (%literal-ref value)))
+    (cmp::irc-smart-ptr-extract (cmp:irc-load ref))))
 
 (defun %i1 (num)
   (cmp:jit-constant-i1 num))

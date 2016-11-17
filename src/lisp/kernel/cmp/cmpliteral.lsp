@@ -70,7 +70,7 @@
 
 (defun calculate-vector-size (nodes)
   "Find the highest index and return 1+ that"
-  (let ((num 0))
+  (let ((num -1))
     (dolist (n nodes)
       (setq num (max (car n) num)))
     (1+ num)))
@@ -386,6 +386,13 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 
 (defmacro with-rtv (&body body)
+  "Evaluate the code in the body in an environment where run-time values are assigned integer indices
+(starting from *table-index* into a constants table and the run-time values are accumulated in *run-all-objects*.
+References to the run-time values are relative to the *load-time-value-holder-global-var*.
+Once the body has evaluated, if there were run-time values accumulated then sort them by index and construct a new
+global variable that can hold them all and replace every use of *load-time-value-holder-global-var* with this new constants-table.
+Then erase the global variable in *load-time-value-holder-global-var* whether or not run time values were found
+and  return the sorted values and the constant-table (or (values nil nil)."
   `(let ((cmp:*generate-compile-file-load-time-values* nil)
          (*table-index* 0)
          (*load-time-value-holder-global-var*
@@ -398,29 +405,31 @@ the value is put into *default-load-time-value-vector* and its index is returned
          (*run-time-coalesce* (make-hash-table :test #'eq))
          (*run-all-objects* nil))
      (progn ,@body)
-     (let ((run-time-values *run-all-objects*))
+     (let* ((run-time-values *run-all-objects*)
+            (num-elements (length run-time-values))
+            (ordered-raw-constant-list nil)
+            (constant-table nil))
        "Put the constants in order they will appear in the table.
 Return the orderered-raw-constants-list and the constants-table GlobalVariable"
        #+(or)(progn
                (bformat t "run-time-values: vvvvvvv\n")
                (literal::constant-list-dump run-time-values)
                (bformat t "Number of run-time-values: %d\n" (length run-time-values)))
-       (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
-              (ordered-raw-constant-list (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list))
-              (array-type (llvm-sys:array-type-get +tsp+ (length ordered-constant-list)))
-              (constant-table (llvm-sys:make-global-variable *the-module*
-                                                             array-type
-                                                             nil ; isConstant
-                                                             'llvm-sys:internal-linkage
-                                                             (llvm-sys:undef-value-get array-type)
-                                                             (literal:next-value-table-holder-name)))
-              (bitcast-constant-table (irc-bit-cast constant-table +tsp[0]*+ "bitcast-table")))
-         #+(or)(progn
-                 (bformat t "Number of ordered-raw-constant-list: %d\n" (length ordered-raw-constant-list))
-                 (bformat t "array-type = %s\n" array-type)) 
-         (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table)
-         (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
-         (values ordered-raw-constant-list constant-table)))))
+       (when (> num-elements 0)
+         (let* ((ordered-constant-list (sort run-time-values #'< :key #'constant-runtime-index))
+                (array-type (llvm-sys:array-type-get +tsp+ (length ordered-constant-list))))
+           (setf ordered-raw-constant-list
+                 (mapcar (lambda (x) (constant-runtime-object x)) ordered-constant-list)
+                 constant-table (llvm-sys:make-global-variable *the-module*
+                                                               array-type
+                                                               nil ; isConstant
+                                                               'llvm-sys:internal-linkage
+                                                               (llvm-sys:undef-value-get array-type)
+                                                               (literal:next-value-table-holder-name)))
+           (let ((bitcast-constant-table (irc-bit-cast constant-table +tsp[0]*+ "bitcast-table")))
+             (llvm-sys:replace-all-uses-with *load-time-value-holder-global-var* bitcast-constant-table))))
+       (llvm-sys:erase-from-parent *load-time-value-holder-global-var*)
+       (values ordered-raw-constant-list constant-table))))
 
 (defun load-time-reference-literal (object read-only-p)
   (multiple-value-bind (similarity creator)
@@ -540,6 +549,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 ;;; ------------------------------------------------------------
 
 (defun reference-literal (object &optional read-only-p)
+  "Return an index for the literal object in a constants-table"
   (let ((cmp:*compile-file-debug-dump-module* nil)
         (cmp:*compile-debug-dump-module* nil))
     (if (generate-load-time-values)
@@ -555,17 +565,16 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 ;;; functions that are called by bclasp and cclasp that might
 ;;;  be refactored to simplify the API
 
-(defun compile-reference-to-symbol (symbol)
-  "Generate a reference to a load-time-symbol or 
-run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
-  (let ((lts-idx (reference-literal symbol t)))
-    (load-time-value-reference (ltv-global) lts-idx (pretty-load-time-name symbol lts-idx))))
+(defun compile-reference-to-literal (literal)
+  "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
+  (let ((ltv-idx (reference-literal literal t)))
+    (constants-table-reference ltv-idx (pretty-load-time-name literal ltv-idx))))
 
 (defun codegen-rtv (result obj)
   "bclasp calls this to get copy the run-time-value for obj into result"
   (let* ((data (run-time-reference-literal obj t))
          (idx (constant-runtime-index data)))
-    (copy-load-time-value result (ltv-global) idx) ;;*run-time-values-table-global-var* idx)
+    (irc-store (literal:constants-table-value idx) result)
     idx))
 
 (defun codegen-literal (result object env)
@@ -573,21 +582,9 @@ run-time-symbol depending if called from COMPILE-FILE or COMPILE respectively"
 If it isn't NIL then copy the literal from its index in the LTV into result."
   (let ((index (reference-literal object t)))
     (when result
-      (copy-load-time-value result (cmp:ltv-global) index))
+      (irc-store (constants-table-value index) result))
     index))
         
-(defun codegen-quote (result rest env)
-  (cmp-log "codegen-quote: %s\n" rest )
-  (codegen-literal result (car rest) env))
-
-(defun compile-reference-to-load-time-value (idx &optional (name "value"))
-  (load-time-value-reference (ltv-global) idx name))
-
-(defun compile-reference-to-literal (literal)
-  "Generate a reference to a load-time-value or run-time-value literal depending if called from COMPILE-FILE or COMPILE respectively"
-  (let ((ltv-idx (reference-literal literal t)))
-    (unless (fixnump ltv-idx) (error "Could not compile-reference-to-literal: ~a" literal))
-    (compile-reference-to-load-time-value ltv-idx (pretty-load-time-name literal ltv-idx))))
 
 
 ;; Should be bclasp-compile-load-time-value-thunk
@@ -613,47 +610,15 @@ If it isn't NIL then copy the literal from its index in the LTV into result."
 ;;; Access load-time-values
 ;;;
 
-(defun load-time-value-reference (holder index &optional (label "ltv"))
-  #+(or)(let ((vec-args (make-array 2 :initial-contents (list (jit-constant-size_t 0) (jit-constant-size_t index)))))
-    (bformat t "vec-args %s\n" vec-args)
-    (llvm-sys:create-geparray *irbuilder* holder vec-args (bformat nil "values-table[%d]" index)))
+(defun constants-table-reference (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
   (llvm-sys:create-const-gep2-64 *irbuilder* holder 0 index (bformat nil "values-table[%d]" index)))
-#|  #+(or)(let* ((tagged-ltv-ptr (irc-load holder "tagged-ltv-ptr"))
-               (tagged-ltv-intptr_t (irc-ptr-to-int tagged-ltv-ptr +intptr_t+ "tagged-ltv-intptr_t"))
-               (general-pointer-tag (cdr (assoc :general-tag cmp::+cxx-data-structures-info+)))
-               (ltvo-address (llvm-sys:create-add *irbuilder* tagged-ltv-intptr_t (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo_address"))
-               (ltvo-objects-offset (cdr (assoc :load-time-values-objects-offset cmp::+cxx-data-structures-info+)))
-               (ltvo-objects-address (llvm-sys:create-add *irbuilder* ltvo-address (jit-constant-uintptr_t ltvo-objects-offset) "ltvo_objects_address"))
-               (tagged-ltvo-objects-smart-ptr (irc-load (irc-int-to-ptr ltvo-objects-address +tsp*+) "tagged-ltvo-objects-ptr"))
-               (tagged-ltvo-objects-ptr (irc-smart-ptr-extract tagged-ltvo-objects-smart-ptr "tagged-ltvo-objects-ptr"))
-               (tagged-ltvo-objects-addr (irc-ptr-to-int tagged-ltvo-objects-ptr +uintptr_t+ "tagged-ltvo-objects-addr"))
-               (ltvo-objects-addr (irc-add tagged-ltvo-objects-addr (jit-constant-uintptr_t (- general-pointer-tag)) "ltvo-objects-addr"))
-               (data0-offset (cdr (assoc :gcvector-data0-offset cmp::+cxx-data-structures-info+)))
-               (element-size (cdr (assoc 'core:tsp cmp::+cxx-data-structures-info+)))
-               (offset (+ data0-offset (* element-size index)))
-               (entry-uintptr_t (irc-add ltvo-objects-addr (jit-constant-uintptr_t offset) "entry-uintptr_t"))
-               (entry-ptr (irc-int-to-ptr entry-uintptr_t +tsp*+ (bformat nil "entry[%d]-ptr" index))))
-          #+(or)(let ((orig (irc-intrinsic "loadTimeValueReference" holder (jit-constant-size_t index) label)))
-                  (irc-int-to-ptr (irc-intrinsic "debug_match_two_uintptr_t"
-                                                 (irc-ptr-to-int entry-ptr +uintptr_t+)
-                                                 (irc-ptr-to-int orig +uintptr_t+))
-                                  +tsp*+))
-          entry-ptr)
-  #+(or)(let ((holder-ptr (llvm-sys:create-geparray *irbuilder* holder (list (jit-constant-size_t 0) (jit-constant-size_t 0)) "table")))
-          (irc-intrinsic "loadTimeValueReference" holder-ptr (jit-constant-size_t index) label))
-  #+(or)(let ((vec-args (make-array 2 :initial-contents (list (jit-constant-size_t 0) (jit-constant-size_t index)))))
-          (bformat t "vec-args %s\n" vec-args)
-          (llvm-sys:create-geparray *irbuilder* holder vec-args (bformat nil "values-table[%d]" index)))
-  (llvm-sys:create-const-in-bounds-gep2-64 *irbuilder* holder index 0 (bformat nil "values-table[%d]" index))
-  #+(or)(llvm-sys:constant-expr-get-in-bounds-get-element-ptr nil holder (list (jit-constant-size_t 0) (jit-constant-size_t index))))|#
 
-(defun get-load-time-value (result index &optional (holder cmp:*load-time-value-holder-global-var*))
-  (let ((ref (load-time-value-reference holder index )))
+(defun constants-table-value (index &optional (label "ltv") (holder cmp:*load-time-value-holder-global-var*))
+  (cmp:irc-load (constants-table-reference index label holder)))
+
+(defun copy-constants-table-value (result index
+                                   &optional (holder cmp:*load-time-value-holder-global-var*))
+  (let ((ref (constants-table-reference index "copy-constants-table-value" holder )))
     (irc-store (irc-load ref) result)))
-
-(defun copy-load-time-value (result holder index)
-  #+(or)(irc-intrinsic "copyLoadTimeValue" result holder (jit-constant-size_t index))
-  (get-load-time-value result index holder)
-  )
 
 

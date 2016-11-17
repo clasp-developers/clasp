@@ -45,7 +45,7 @@
       ;;    (break "About to codegen attach-debugging-info")
       (when symbol-names
 	(let* ((ltv-idx (codegen-literal nil symbol-names env))
-	       (ltv-ref (compile-reference-to-load-time-value ltv-idx)))
+	       (ltv-ref (literal:constants-table-reference ltv-idx)))
 	  (irc-intrinsic "attachDebuggingInfoToValueFrame" af ltv-ref))))))
 
 
@@ -1240,15 +1240,13 @@ If the *primitives* hashtable says that the function with (name) requires a firs
 
 (defun irc-global-symbol (sym env)
   "Return an llvm GlobalValue for a symbol"
-  (literal:compile-reference-to-symbol sym)
-  )
+  (literal:compile-reference-to-literal sym))
 
 
 (defun irc-global-setf-symbol (sym env)
   "Return an llvm GlobalValue for a function name of the form (setf XXXX).
    Pass XXXX as the sym to this function."
-  (literal:compile-reference-to-symbol sym)
-  )
+  (literal:compile-reference-to-literal sym))
 
 
 

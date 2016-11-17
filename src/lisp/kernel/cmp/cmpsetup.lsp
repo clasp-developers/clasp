@@ -47,11 +47,7 @@
 (defvar *compile-file-debug-dump-module* nil)
 (defvar *compile-debug-dump-module* nil)
 
-
-
 (defvar *debug-link-options* nil)
-
-
 
 
 ;; Generate a bitcode file for the llvm-ir prior to running optimization passes on it
@@ -97,13 +93,13 @@ Options are :tagbody :go :all :eh-landing-pads
 ;;; Turn off compiler debugging code once we are confident it works
 ;;;
 ;;;
-#+(or)
 (progn
   (defmacro debug-print-i32 (num) nil)
   (defmacro cmp-log-dump (fn) nil)
   (defmacro cmp-log (fmt &rest args ) nil)
   (defun is-debug-compiler-on () nil))
 
+#+(or)
 (progn
   (defun is-debug-compiler-on ()
     *debug-compiler*)

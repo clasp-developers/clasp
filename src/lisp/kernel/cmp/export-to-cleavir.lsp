@@ -124,7 +124,6 @@
           with-irbuilder
           with-landing-pad
           compile-reference-to-literal
-          compile-reference-to-load-time-value
           ltv-global
           bclasp-compile
           bclasp-compile-file

@@ -592,8 +592,9 @@ def configure(cfg):
         cfg.env.append_value('LINKFLAGS', ['-lc++'])
         cfg.env.append_value('LINKFLAGS', ['-stdlib=libc++'])
     cfg.env.append_value('INCLUDES', ['/usr/include'] )
-    cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
-    cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
+    if (cfg.env.ADDRESS_SANITIZER):
+        cfg.env.append_value('CXXFLAGS', ['-fsanitize=address'] )
+        cfg.env.append_value('LINKFLAGS', ['-fsanitize=address'])
     cfg.env.append_value('CXXFLAGS', ['-Wno-macro-redefined'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-deprecated-register'] )
     cfg.env.append_value('CXXFLAGS', ['-Wno-expansion-to-defined'] )
@@ -942,9 +943,8 @@ class compile_bclasp(Task.Task):
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
-#                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
-                      "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0],
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")', 
+                      "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_bclasp
         print("cmd = %s" % cmd)
@@ -969,10 +969,11 @@ class compile_cclasp(Task.Task):
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")'
+                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")",
                       "--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
                       "--eval", "(quit)",
                       "--" ] + self.bld.clasp_cclasp
+        print("compile_cclasp cmd: %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout

@@ -27,3 +27,6 @@
 # This is how you can specify non-standard locations
 #INCLUDES = "/opt/boost_1_62_0/include"
 #LINKFLAGS = ["-L/opt/boost_1_62_0/lib", "-Wl,-rpath=/opt/boost_1_62_0/lib"]
+
+# This turns on build with address sanitizer
+# ADDRESS_SANITIZER = True
