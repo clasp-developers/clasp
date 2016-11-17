@@ -220,7 +220,7 @@ If this form has already been precalculated then just return the precalculated-v
   (let ((form (cleavir-ast:form ast))
 	(read-only-p (cleavir-ast:read-only-p ast)))
     #+(or)(when read-only-p
-      (warn "Handle compilation of the ltv ~a with read-only-p NIL" form))
+            (warn "Handle compilation of the ltv ~a with read-only-p NIL" form))
     (cond
       ((and (consp form) (eq (first form) 'QUOTE))
        (let* ((constant (cadr form))
@@ -235,8 +235,13 @@ If this form has already been precalculated then just return the precalculated-v
        (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
            ;; COMPLE-FILE will generate a function for the form in the Module
            ;; and arrange for it's evaluation at load time
-           (let ((fn (cmp:compile-form form)))
-             (cmp::reference-evaluated-function fn))
+           ;; and to make its result available as a value
+           (let* ((index (literal:new-table-index))
+                  (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
+             (literal:add-call "ltvc_ltv_funcall" index value)
+             index) ;; bclasp uses--> (cmp:irc-store (literal:constants-table-value index) result))
+           #+(or)(let ((fn (cmp:compile-form form)))
+                   (cmp::reference-evaluated-function fn))
            ;; COMPILE on the other hand evaluates the form and puts its
            ;; value in the run-time environment
            (let ((value (eval form)))

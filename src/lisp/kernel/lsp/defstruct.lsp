@@ -39,11 +39,14 @@
            ;; If TYPE is NIL,
            ;;  the slot is at the offset in the structure-body.
 	   (fset access-function #'(lambda (x)
+                                     #+clasp(declare (core:lambda-name struct-accessor))
 				     (sys:structure-ref x name offset))))
           ((subtypep type '(OR LIST VECTOR))
 	   ;; If TYPE is VECTOR, (VECTOR ... ) or LIST, ELT is used.
            (fset access-function
-		 #'(lambda (x) (elt x offset))))
+		 #'(lambda (x)
+                     #+clasp(declare (core:lambda-name struct-accessor))
+                     (elt x offset))))
           (t (error "~S is an illegal structure type." type)))
     (cond (read-only
 	   (fmakunbound `(setf ,access-function))
@@ -62,12 +65,15 @@
   (do-defsetf access-function
     (cond ((or (eq type 'list) (eq type 'vector))
 	   #'(lambda (newvalue struct)
+               #+clasp(declare (core:lambda-name setf-structure-ref))
 	       `(sys::elt-set ,struct ,index ,newvalue)))
 	  ((consp type)
 	   #'(lambda (newvalue struct)
+               #+clasp(declare (core:lambda-name setf-structure-ref))
 	       `(si::aset (the ,type ,struct) ,index ,newvalue)))
 	  (t
 	   #'(lambda (newvalue struct)
+               #+clasp(declare (core:lambda-name setf-structure-ref))
 	       `(sys::structure-set ,struct ',type ,index ,newvalue))))))
 
 (defun process-boa-lambda-list (slot-names slot-descriptions boa-list assertions)
@@ -198,12 +204,14 @@
   (declare (si::c-local))
   (cond ((null type)
 	 #'(lambda (x)
+             #+clasp(declare (core:lambda-name structure-predicate))
 	     (structure-subtype-p x name)))
         ((or (eq type 'VECTOR)
              (and (consp type) (eq (car type) 'VECTOR)))
          ;; The name is at the NAME-OFFSET in the vector.
          (unless named (error "The structure should be named."))
 	 #'(lambda (x)
+             #+clasp(declare (core:lambda-name structure-predicate))
 	     (and (vectorp x)
 		  (> (length x) name-offset)
 		  ;; AKCL has (aref (the (vector t) x).)
@@ -214,8 +222,10 @@
          (unless named (error "The structure should be named."))
          (if (= name-offset 0)
 	     #'(lambda (x)
+                 #+clasp(declare (core:lambda-name structure-predicate))
 		 (and (consp x) (eq (car x) name)))
 	     #'(lambda (x)
+                 #+clasp(declare (core:lambda-name structure-predicate))
 		 (do ((i name-offset (1- i))
 		      (y x (cdr y)))
 		     ((= i 0) (and (consp y) (eq (car y) name)))
