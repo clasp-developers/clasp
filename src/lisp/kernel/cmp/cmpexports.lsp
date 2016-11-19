@@ -191,7 +191,7 @@
 (in-package :literal)
 
 (export '(
-          add-call
+          add-creator
           next-value-table-holder-name
           make-constant-call
           make-constant-creator

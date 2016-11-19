@@ -38,19 +38,10 @@
       (bformat nil "%s-CONSTANTS-TABLE%d" suffix *value-table-id*)
       (bformat nil "CONSTANTS-TABLE%d" (incf *value-table-id*))))
 
-(defstruct (constant-runtime (:type vector) :named) index object)
 (defstruct (constant-creator (:type vector) :named) index name arguments)
-(defstruct (constant-side-effect (:type vector) :named) name arguments)
 (defstruct (constant-call (:type vector) :named) function source-pos-info holder)
-
-
-(defun constant-table-entry-print (obj &optional (stream t))
-  (cond
-    ((constant-creator-p obj)
-     (bformat stream "[%d] constant-creator -> (%s %s)\n" (constant-creator-index obj) (constant-creator-name obj) (constant-creator-arguments obj)))
-    ((constant-runtime-p obj)
-     (bformat stream "[%d] constant-runtime -> a %s value: %s\n" (constant-runtime-index obj) (type-of (constant-runtime-object obj)) (constant-runtime-object obj)))
-    (t (bformat stream "Add support to constant-table-entry-print: %s\n" obj))))
+(defstruct (constant-side-effect (:type vector) :named) name arguments)
+(defstruct (constant-runtime (:type vector) :named) index object)
 
 (defun constant-list-dump (constant-list)
   (dolist (e constant-list)
@@ -86,7 +77,6 @@
 ;;;
 ;;;
 
-(defvar *everything-else-coalesce*)
 (defvar *ratio-coalesce*)
 (defvar *cons-coalesce*)
 (defvar *complex-coalesce*)
@@ -102,6 +92,8 @@
 (defvar *built-in-class-coalesce*)
 (defvar *single-float-coalesce*)
 (defvar *double-float-coalesce*)
+(defvar *identity-coalesce*)
+(defvar *constant-index-to-constant-creator*)
 (defvar *llvm-values*)
 
 (defvar *with-ltv-depth* 0)
@@ -114,11 +106,12 @@ the value is put into *default-load-time-value-vector* and its index is returned
     (incf *table-index*)
     index))
 
-(defun add-call (name index &rest args)
+(defun add-creator (name index &rest args)
   "Call the named function after converting fixnum args to llvm constants"
-  (let ((rao (make-constant-creator :index index :name name :arguments args)))
-    (run-all-add-node rao)
-    rao))
+  (let ((creator (make-constant-creator :index index :name name :arguments args)))
+    (setf (gethash index *constant-index-to-constant-creator*) creator)
+    (run-all-add-node creator)
+    creator))
 
 (defun add-side-effect-call (name &rest args)
   "Call the named function after converting fixnum args to llvm constants"
@@ -127,33 +120,33 @@ the value is put into *default-load-time-value-vector* and its index is returned
     rase))
 
 (defun ltv/nil (object index read-only-p)
-  (add-call "ltvc_make_nil" index))
+  (add-creator "ltvc_make_nil" index))
 
 (defun ltv/t (object index read-only-p)
-  (add-call "ltvc_make_t" index))
+  (add-creator "ltvc_make_t" index))
 
 (defun ltv/ratio (ratio index read-only-p)
-  (add-call "ltvc_make_ratio" index
+  (add-creator "ltvc_make_ratio" index
             (load-time-reference-literal (numerator ratio) read-only-p)
             (load-time-reference-literal (denomenator ratio) read-only-p)))
 
 (defun ltv/cons (cons index read-only-p)
   (if (core:proper-list-p cons)
-      (apply 'add-call "ltvc_make_list" index
+      (apply 'add-creator "ltvc_make_list" index
              (length cons) (mapcar (lambda (x)
                                      (load-time-reference-literal x read-only-p))
                                    cons))
-      (add-call "ltvc_make_cons" index
+      (add-creator "ltvc_make_cons" index
                 (load-time-reference-literal (car cons) read-only-p)
                 (load-time-reference-literal (cdr cons) read-only-p))))
 
 (defun ltv/complex (complex index read-only-p)
-  (add-call "ltvc_make_complex" index
+  (add-creator "ltvc_make_complex" index
             (load-time-reference-literal (realpart complex) read-only-p)
             (load-time-reference-literal (imagpart complex) read-only-p)))
 
 (defun ltv/array (array index read-only-p)
-  (let ((val (add-call "ltvc_make_array" index
+  (let ((val (add-creator "ltvc_make_array" index
                        (load-time-reference-literal (array-element-type array) read-only-p)
                        (load-time-reference-literal (array-dimensions array) read-only-p))))
     (let* ((total-size (if (array-has-fill-pointer-p array)
@@ -165,7 +158,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
     val))
 
 (defun ltv/hash-table (hash-table index read-only-p)
-  (let ((ht (add-call "ltvc_make_hash_table" index
+  (let ((ht (add-creator "ltvc_make_hash_table" index
                       (load-time-reference-literal (hash-table-test hash-table) read-only-p))))
     (maphash (lambda (key val)
                (add-side-effect-call "ltvc_setf_gethash" ht
@@ -175,32 +168,32 @@ the value is put into *default-load-time-value-vector* and its index is returned
     ht))
 
 (defun ltv/fixnum (fixnum index read-only-p)
-  (add-call "ltvc_make_fixnum" index fixnum))
+  (add-creator "ltvc_make_fixnum" index fixnum))
 
 (defun ltv/bignum (bignum index read-only-p)
   (let ((bn-str (format nil "~a" bignum)))
-    (add-call "ltvc_make_bignum" index (load-time-reference-literal bn-str read-only-p))))
+    (add-creator "ltvc_make_bignum" index (load-time-reference-literal bn-str read-only-p))))
 
 (defun ltv/random-state (random-state index read-only-p)
   (let ((rs-str (format nil "~a" (core:random-state-get random-state))))
-    (add-call "ltvc_make_random_state" index (load-time-reference-literal rs-str read-only-p))))
+    (add-creator "ltvc_make_random_state" index (load-time-reference-literal rs-str read-only-p))))
 
 (defun ltv/symbol (symbol index read-only-p)
   (let ((pkg (symbol-package symbol))
         (sym-str (symbol-name symbol)))
-    (add-call "ltvc_make_symbol" index
+    (add-creator "ltvc_make_symbol" index
               (load-time-reference-literal sym-str read-only-p)
               (load-time-reference-literal pkg read-only-p))))
 
 (defun ltv/character (char index read-only-p)
-  (add-call "ltvc_make_character" index
+  (add-creator "ltvc_make_character" index
             (jit-constant-i64 (char-code char))))
 
 (defun ltv/base-string (str index read-only-p)
-    (add-call "ltvc_make_base_string" index str))
+    (add-creator "ltvc_make_base_string" index str))
 
 (defun ltv/pathname (pathname index read-only-p)
-  (add-call "ltvc_make_pathname" index
+  (add-creator "ltvc_make_pathname" index
             (load-time-reference-literal (pathname-host pathname) read-only-p)
             (load-time-reference-literal (pathname-device pathname) read-only-p)
             (load-time-reference-literal (pathname-directory pathname) read-only-p)
@@ -209,34 +202,34 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (load-time-reference-literal (pathname-version pathname) read-only-p)))
 
 (defun ltv/package (package index read-only-p)
-  (add-call "ltvc_make_package" index
+  (add-creator "ltvc_make_package" index
             (load-time-reference-literal (package-name package) read-only-p)))
 
 (defun ltv/built-in-class (class index read-only-p)
-  (add-call "ltvc_class" index
+  (add-creator "ltvc_class" index
             (load-time-reference-literal (class-name class) read-only-p)))
 
 (defun ltv/single-float (single index read-only-p)
   (let* ((constant (llvm-sys:make-apfloat-float single))
          (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
-    (add-call "ltvc_make_float" index constant-ap-arg)))
+    (add-creator "ltvc_make_float" index constant-ap-arg)))
 
 (defun ltv/double-float (double index read-only-p)
   (let* ((constant (llvm-sys:make-apfloat-double double))
          (constant-ap-arg (llvm-sys:constant-fp-get *llvm-context* constant)))
-    (add-call "ltvc_make_double" index constant-ap-arg)))
+    (add-creator "ltvc_make_double" index constant-ap-arg)))
 
 (defun ltv/mlf (object index read-only-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
-    (add-call "ltvc_funcall" index (compile-form create))
-    (when initialize
-      (add-side-effect-call "ltvc_funcall" (compile-form initialize)))))
+    (prog1 (add-creator "ltvc_funcall" index (compile-form create))
+      (when initialize
+        (add-side-effect-call "ltvc_funcall" (compile-form initialize))))))
 
-(defun object-similarity-table-and-creator (object)
+(defun object-similarity-table-and-creator (object read-only-p)
   (cond
-    ((null object) (values *everything-else-coalesce* #'ltv/nil))
-    ((eq t object) (values *everything-else-coalesce* #'ltv/t))
+    ((null object) (values *identity-coalesce* #'ltv/nil))
+    ((eq t object) (values *identity-coalesce* #'ltv/t))
     ((consp object) (values *cons-coalesce* #'ltv/cons))
     ((fixnump object) (values *fixnum-coalesce* #'ltv/fixnum))
     ((characterp object) (values *character-coalesce* #'ltv/character))
@@ -244,16 +237,16 @@ the value is put into *default-load-time-value-vector* and its index is returned
     ((symbolp object) (values *symbol-coalesce* #'ltv/symbol))
     ((double-float-p object) (values *double-float-coalesce* #'ltv/double-float))
     ((core:ratio-p object) (values *ratio-coalesce* #'ltv/ratio))
-    ((stringp  object) (values *string-coalesce* #'ltv/base-string))
+    ((stringp  object) (values (if read-only-p *identity-coalesce* *string-coalesce*) #'ltv/base-string))
     ((arrayp object) (values *array-coalesce* #'ltv/array))
     ((hash-table-p object) (values *hash-table-coalesce* #'ltv/hash-table))
     ((bignump object) (values *bignum-coalesce* #'ltv/bignum))
     ((pathnamep object) (values *pathname-coalesce* #'ltv/pathname))
     ((packagep object) (values *package-coalesce* #'ltv/package))
     ((complexp object) (values *complex-coalesce* #'ltv/complex))
-    ((random-state-p object) (values *everything-else-coalesce* #'ltv/random-state))
+    ((random-state-p object) (values *identity-coalesce* #'ltv/random-state))
     ((core:built-in-class-p object) (values *built-in-class-coalesce* #'ltv/built-in-class))
-    ((typep object '(or standard-object structure-object condition class)) (values *everything-else-coalesce* #'ltv/mlf))
+    ((typep object '(or standard-object structure-object condition class)) (values *identity-coalesce* #'ltv/mlf))
     (t (error "Handle object ~a" object))))
 
 (defun make-similarity-table (test)
@@ -280,7 +273,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                                         ;; nil ; initializer
                                         (literal:next-value-table-holder-name "dummy")))
         (cmp:*generate-compile-file-load-time-values* t)
-        (*everything-else-coalesce* (make-hash-table :test #'eq))
+        (*identity-coalesce* (make-hash-table :test #'eq))
         (*ratio-coalesce* (make-similarity-table #'eql))
         (*cons-coalesce* (make-similarity-table #'eq))
         (*complex-coalesce* (make-similarity-table #'eql))
@@ -296,6 +289,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
         (*built-in-class-coalesce* (make-similarity-table #'eq))
         (*single-float-coalesce* (make-similarity-table #'eql))
         (*double-float-coalesce* (make-similarity-table #'eql))
+        (*constant-index-to-constant-creator* (make-hash-table :test #'eql))
         (*run-all-objects* nil)
         (*table-index* 0))
     (let* ((body-return-fn (funcall body-fn))
@@ -327,8 +321,11 @@ the value is put into *default-load-time-value-vector* and its index is returned
                    (let ((val (ensure-llvm-value node)))
                      (push (cons (literal:constant-creator-index node) val) unsorted-values)))
                   ((literal:constant-side-effect-p node)
-                   (irc-create-call (literal:constant-side-effect-name node)
-                                    (fix-args (literal:constant-side-effect-arguments node))))
+                   (let* ((fn-name (literal:constant-side-effect-name node))
+                          (args (literal:constant-side-effect-arguments node))
+                          (fix-args (fix-args args)))
+                     (irc-create-call fn-name fix-args)
+                     #+(or)(bformat t "SIDE_EFFECT %s %s\n" fn-name fix-args)))
                   (t (error "Unknown run-all node ~a" node))))
               #+(or)(bformat t "Length of unsorted values: %s\n" (length unsorted-values))
               #+(or)(dolist (x unsorted-values)
@@ -420,17 +417,14 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
 
 (defun load-time-reference-literal (object read-only-p)
   (multiple-value-bind (similarity creator)
-      (object-similarity-table-and-creator object)
-    (if read-only-p
-        (let* ((existing (find-similar object similarity)))
-          (or existing
-              (let* ((index (new-table-index))
-                     (new-obj (funcall creator object index read-only-p)))
-                (add-similar object new-obj similarity)
-                new-obj)))
-        (let* ((index (new-table-index))
-               (new-obj (funcall creator object index read-only-p)))
-          new-obj))))
+      (object-similarity-table-and-creator object read-only-p)
+    (let ((existing (find-similar object similarity)))
+      (if existing
+          (gethash existing *constant-index-to-constant-creator*)
+          (let ((index (new-table-index)))
+            (add-similar object index similarity)
+            (setf (gethash index *constant-index-to-constant-creator*) creator)
+            (funcall creator object index read-only-p))))))
 
 #+(or)
 (defun load-time-reference-literal (object read-only-p)
@@ -444,7 +438,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
             index)))))
 
 (defun evaluate-function-into-load-time-value (fn index)
-  (add-call "ltvc_set_ltv_funcall" index fn)
+  (add-creator "ltvc_set_ltv_funcall" index fn)
   index)
 
 

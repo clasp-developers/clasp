@@ -1064,7 +1064,7 @@ jump to blocks within this tagbody."
     (if *generate-compile-file-load-time-values*
         (let* ((index (literal:new-table-index))
                (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-          (literal:add-call "ltvc_ltv_funcall" index value)
+          (literal:add-creator "ltvc_ltv_funcall" index value)
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (codegen-rtv result ltv)))))
