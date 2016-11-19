@@ -917,13 +917,23 @@ void debugInspectTPtr(core::T_O *tP) {
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
 }
 
+void debugInspectTPtr_detailed(core::T_O *tP) {
+  core::T_sp obj = gctools::smart_ptr<core::T_O>((gc::Tagged)tP);
+  printf("debugInspectTPtr@%p  obj.px_ref()=%p: %s\n", (void *)tP, obj.raw_(), _rep_(obj).c_str());
+  printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
+  core::T_sp val((gctools::Tagged)tP);
+  if (core::HashTable_sp htval = val.asOrNull<core::HashTable_O>() ) {
+    htval->hash_table_dump(core::make_fixnum(0),_Nil<core::T_O>());
+  }
+}
+
 void debugInspectT_mv(core::T_mv *objP) {
   MultipleValues &mv = lisp_multipleValues();
   size_t size = mv.getSize();
   printf("debugInspect_return_type T_mv.val0@%p  T_mv.nvals=%d mvarray.size=%zu\n", (*objP).raw_(), (*objP).number_of_values(), size);
   size = std::max(size, (size_t)(*objP).number_of_values());
   for (size_t i(0); i < size; ++i) {
-    printf("[%zu]->%p ", i, mv.valueGet(i, size).raw_());
+    printf("[%zu]->%p : %s\n", i, mv.valueGet(i, size).raw_(), _rep_(core::T_sp((gc::Tagged)mv.valueGet(i,size).raw_())).c_str());
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);
@@ -938,7 +948,7 @@ void debugInspect_return_type(gctools::return_type rt) {
   printf("debugInspect_return_type rt.ret0@%p  rt.nvals=%zu mvarray.size=%zu\n", rt.ret0, rt.nvals, size);
   size = std::max(size, rt.nvals);
   for (size_t i(0); i < size; ++i) {
-    printf("[%zu]->%p ", i, mv.valueGet(i, size).raw_());
+    printf("[%zu]->%p : %s\n", i, mv.valueGet(i, size).raw_(), _rep_(core::T_sp((gc::Tagged)mv.valueGet(i,size).raw_())).c_str());
   }
   printf("\n");
   printf("%s:%d Insert breakpoint here if you want to inspect object\n", __FILE__, __LINE__);

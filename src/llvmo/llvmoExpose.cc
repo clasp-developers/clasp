@@ -1498,7 +1498,7 @@ CL_DEFUN Constant_sp ConstantExpr_O::getInBoundsGetElementPtr(llvm::Type* elemen
   llvm::ArrayRef<llvm::Constant *> array_ref_vector_IdxList(vector_IdxList);
   llvm::Constant* llvm_constant = constant->wrappedPtr();
   llvm::Constant *llvm_res = llvm::ConstantExpr::getInBoundsGetElementPtr(element_type,llvm_constant, array_ref_vector_IdxList);
-#if 1
+#if 0
   string str;
   llvm::raw_string_ostream ro(str);
   ro << "Input-type: ";
