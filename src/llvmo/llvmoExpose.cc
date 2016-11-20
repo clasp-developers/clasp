@@ -2087,15 +2087,13 @@ CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocation(DebugLoc_sp loc) {
   //	printf("                       new DebugLocation: %d\n", dlnew.getLine() );
 }
 
-#if 0
 CL_LISPIFY_NAME("SetCurrentDebugLocationToLineColumnScope");
-CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DebugInfo_sp scope) {
+CL_DEFMETHOD void IRBuilderBase_O::SetCurrentDebugLocationToLineColumnScope(int line, int col, DINode_sp scope) {
   this->_CurrentDebugLocationSet = true;
   llvm::MDNode *mdnode = scope->operator llvm::MDNode *();
   llvm::DebugLoc dl = llvm::DebugLoc::get(line, col, mdnode);
   this->wrappedPtr()->SetCurrentDebugLocation(dl);
 }
-#endif
 
 }; // llvmo
 

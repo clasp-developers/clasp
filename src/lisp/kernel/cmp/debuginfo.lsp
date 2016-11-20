@@ -28,7 +28,7 @@
 
 (defconstant +file.dbg+ :file.dbg)
 
-(defvar *dbg-generate-dwarf* nil)
+(defvar *dbg-generate-dwarf* t)
 (defvar *dbg-compile-unit* )
 (defvar *dbg-current-file* )
 (defvar *dbg-current-function*)
@@ -67,9 +67,11 @@
   (let ((arg-array (llvm-sys:get-or-create-type-array
 		    *the-module-dibuilder*
 		    (list
-		     (llvm-sys:create-basic-type *the-module-dibuilder* "int" 32 32 llvm-sys:+dw-ate-signed-fixed+)
+		     (llvm-sys:create-basic-type *the-module-dibuilder* "int" 64 llvm-sys:+dw-ate-signed-fixed+)
 		     ))))
-    (llvm-sys:create-subroutine-type *the-module-dibuilder* difile arg-array 0 )))
+    (llvm-sys:create-subroutine-type *the-module-dibuilder* arg-array
+                                     (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))
+                                     0)))
 
 
 (defvar *dibuilder-type-hash-table* nil
@@ -117,17 +119,18 @@
 		  (,file-name (dbg-filename* ,path))
 		  (,dir-name (directory-namestring ,path))
 		  (*dbg-compile-unit* (llvm-sys:create-compile-unit
-				       *the-module-dibuilder*
-				       llvm-sys:dw-lang-c  ;; llvm-sys:dw-lang-common-lisp
-				       ,file-name
-				       ,dir-name
-				       "clasp Common Lisp compiler" ; producer
-				       nil ; isOptimized
-				       "-v" ; compiler flags
-				       1    ; run-time version
-				       "split-name.log" ; splitname
-                                       :full-debug
-                                       t
+				       *the-module-dibuilder* ; dibuilder
+				       llvm-sys:dw-lang-c ; 1 llvm-sys:dw-lang-common-lisp
+				       ,file-name         ; 2 file
+				       ,dir-name          ; 3 dir
+				       "clasp Common Lisp compiler" ; 4 producer
+				       nil  ; 5 isOptimized
+				       "-v" ; 6 compiler flags
+				       1    ; 7 RV run-time version
+				       "the-split-name.log" ; 8 splitname
+                                       :line-tables-only ; 9 DebugEmissionKind (:full-debug :line-tables-only)
+                                       0 ; 10 DWOld
+                                       t ; 11 SplitDebugInlining
 				       )))
 	     (cmp-log "with-dbg-compile-unit *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
 	     (cmp-log "with-dbg-compile-unit source-pathname: %s\n" ,source-pathname)
@@ -181,21 +184,20 @@
                (walk-form-for-source-info ,form)
              (let* ((*dbg-current-function*
                      (llvm-sys:create-function
-                      *the-module-dibuilder*
-                      *dbg-current-file* ; *dbg-compile-unit*	; function scope
-                      ,linkage-name      ; function name
-                      ,linkage-name      ; mangled function name
-                      *dbg-current-file* ; file where function is defined
-                      ,lineno            ; lineno
-                      (dbg-create-function-type *dbg-current-file* ,function-type) ; function-type
-                      nil ; isLocalToUnit - true if this function is not externally visible
-                      t ; isDefinition - true if this is a function definition
-                      ,lineno ; scopeLine - set to the beginning of the scope this starts
-                      0       ; flags
-                      nil   ; isOptimized - true if optimization is on
-                      ,function		; llvm:Function pointer
-                      nil               ; TParam = 0
-                      nil               ; Decl = 0
+                      *the-module-dibuilder* ; 0 DIBuilder
+                      *dbg-current-file* ; 1 function scope
+                      ,linkage-name      ; 2 function name
+                      ,linkage-name      ; 3 mangled function name
+                      *dbg-current-file* ; 4 file where function is defined
+                      ,lineno            ; 5 lineno
+                      (dbg-create-function-type *dbg-current-file* ,function-type) ; 6 function-type
+                      nil ; 7 isLocalToUnit - true if this function is not externally visible
+                      t ; 8 isDefinition - true if this is a function definition
+                      ,lineno ; 9 scopeLine - set to the beginning of the scope this starts
+                      (core:enum-logical-or llvm-sys:diflags-enum '(llvm-sys:diflags-zero))    ; 10 flags
+                      nil   ; 11 isOptimized - true if optimization is on
+                      nil               ; 12 TParam = 0
+                      nil               ; 13 Decl = 0
                       ))
                     (*dbg-current-scope* *dbg-current-function*))
                (cmp-log "with-dbg-function *dbg-compile-unit*: %s\n" *dbg-compile-unit*)
@@ -244,10 +246,9 @@
     (cmp-log "dbg-set-current-source-pos on form: %s\n" form)
     (multiple-value-bind (source-dir source-file filepos line-number column)
         (walk-form-for-source-info form)
-      (warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
-      #+(or)(llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
-      #+(or)(values source-dir source-file line-number column)
-      (values))))
+      #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
+      (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* line-number column *dbg-current-scope*)
+      (values source-dir source-file line-number column))))
 
 (defun dbg-set-current-source-pos-for-irbuilder (form irbuilder)
   (with-irbuilder (irbuilder)
@@ -266,10 +267,10 @@
     (unless scope
       (setq scope (mdnode-file-descriptor filename pathname))
       (core::hash-table-setf-gethash *llvm-metadata* scope-name scope))
-    #+(or)(let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
+    (let ((debugloc (llvm-sys:debug-loc-get lineno column scope)))
 	    (llvm-sys:set-current-debug-location *irbuilder* debugloc))
-      (warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
-      #+(or)(llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
+    #+(or)(warn "Dwarf metadata is not currently being generated - the llvm-sys:set-current-debug-location-to-line-column-scope call is disabled")
+    (llvm-sys:set-current-debug-location-to-line-column-scope *irbuilder* lineno column scope)
     ))
 
 (defvar *current-file-metadata-node* nil
@@ -306,6 +307,7 @@
   (print "dbg-set-invocation-history-stack-top-environment"))
 
 (defun dbg-set-invocation-history-stack-top-source-pos (form)
+  #+(or)(progn
   #+trace-source-manager(progn
                           (print (list "Dumping backtrace and core:*source-database*" core:*source-database*))
                           (core:ihs-backtrace)
@@ -323,7 +325,7 @@
                          (jit-constant-i64 filepos)
                          (jit-constant-i32 ln) 
                          (jit-constant-i32 col)))
-        nil))))
+        nil)))))
 
 
 

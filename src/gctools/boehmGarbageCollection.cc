@@ -50,8 +50,8 @@ void rawHeaderDescribe(uintptr_t *rawheaderP) {
 namespace gctools  {
 void boehm_register_roots(void* root_address, size_t num_roots)
 {
-  core::T_sp* dest = reinterpret_cast<core::T_sp*>(GC_MALLOC_UNCOLLECTABLE(sizeof(core::T_sp)*num_roots));
-  std::memcpy(dest,root_address,sizeof(core::T_sp)*num_roots);
+  void* high_address_plus_1 = reinterpret_cast<void*>(reinterpret_cast<char*>(root_address)+num_roots*sizeof(core::T_sp));
+  GC_add_roots(root_address,high_address_plus_1);
 }
 
 }

@@ -151,6 +151,18 @@ string SymbolToEnumConverter_O::__repr__() const {
   return ss.str();
 }
 
+CL_LAMBDA("converter symbols");
+CL_DEFUN Fixnum core__enum_logical_or(SymbolToEnumConverter_sp converter, List_sp symbols) {
+  Fixnum flags = 0;
+  for ( auto cur : symbols ) {
+    Symbol_sp sym = gctools::As<Symbol_sp>(oCar(cur));
+    Fixnum one_enum = unbox_fixnum(gc::As<Fixnum_sp>(converter->_SymbolToEnum->gethash(sym)));
+    flags |= one_enum;
+  }
+  return flags;
+}
+
+
 void SymbolToEnumConverter_O::initialize() {
   this->Base::initialize();
   this->_EnumToSymbol = HashTableEql_O::create_default();

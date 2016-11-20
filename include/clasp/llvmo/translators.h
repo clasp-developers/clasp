@@ -73,26 +73,51 @@ template <>
 struct to_object<llvm::StringRef> {
   static core::T_sp convert(const llvm::StringRef &sr) { return core::Str_O::create(sr.data(), sr.size()); }
 };
- 
-#if 0
+
+ template <>
+   struct from_object<llvm::DINode::DIFlags> {
+   typedef llvm::DINode::DIFlags DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.fixnump()) {
+       llvm::DINode::DIFlags f = static_cast<llvm::DINode::DIFlags>(o.unsafe_fixnum());
+       this->_v = f;
+       return;
+     }
+     SIMPLE_ERROR(BF("Only fixnums can be converted to llvm::DINode::DIFlags"));
+   }
+ };
+
+  template <>
+   struct from_object<llvm::DITemplateParameterArray> {
+   typedef llvm::DITemplateParameterArray DeclareType;
+   DeclareType _v;
+   from_object(core::T_sp o) {
+     if (o.nilp()) {
+       this->_v = nullptr;
+       return;
+     }
+     SIMPLE_ERROR(BF("Only NIL is supported for DITemplateParameterArray at this point"));
+   }
+ };
+
 template <>
-struct from_object<llvm::DIBuilder::DebugEmissionKind> {
-  typedef llvm::DIBuilder::DebugEmissionKind DeclareType;
+struct from_object<llvm::DICompileUnit::DebugEmissionKind> {
+  typedef llvm::DICompileUnit::DebugEmissionKind DeclareType;
   DeclareType _v;
   from_object(core::T_sp o) {
     if (core::Symbol_sp sym = o.asOrNull<core::Symbol_O>()) {
       if (sym == kw::_sym_FullDebug) {
-        this->_v = llvm::DIBuilder::FullDebug;
+        this->_v = llvm::DICompileUnit::FullDebug;
         return;
       } else if (sym == kw::_sym_LineTablesOnly) {
-        this->_v = llvm::DIBuilder::LineTablesOnly;
+        this->_v = llvm::DICompileUnit::LineTablesOnly;
         return;
       }
     }
     SIMPLE_ERROR(BF("You must pass :full-debug or :line-tables-only, only those are valid DebugEmissionKind"));
   }
 };
-#endif
  
 template <>
 struct from_object<llvm::ArrayRef<std::string>> {
