@@ -75,6 +75,7 @@ THE SOFTWARE.
 #include <clasp/core/external_wrappers.h>
 #include <clasp/core/wrappers.h>
 
+
 namespace llvmo {
 
 CL_LAMBDA(module);
@@ -85,6 +86,59 @@ CL_DEFUN DIBuilder_sp DIBuilder_O::make(Module_sp module) {
   me->set_wrapped(new llvm::DIBuilder(*(module->wrappedPtr())));
   return me;
 };
+
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsZero); // Use it as zero value.
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsPrivate);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsProtected);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsPublic);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsFwdDecl);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsAppleBlock);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsBlockByrefStruct);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsVirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsArtificial);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsExplicit);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsPrototyped);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsObjcClassComplete);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsObjectPointer);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsVector);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsStaticMember);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsLValueReference);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsRValueReference);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsExternalTypeRef);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsSingleInheritance);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsMultipleInheritance);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsVirtualInheritance);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsIntroducedVirtual);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsBitField);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsNoReturn);
+SYMBOL_EXPORT_SC_(LlvmoPkg, DIFlagsEnum);
+CL_BEGIN_ENUM(llvm::DINode::DIFlags,_sym_DIFlagsEnum,"DIFlagsEnum");
+CL_VALUE_ENUM(_sym_DIFlagsZero,llvm::DINode::FlagZero); // Use it as zero value.
+CL_VALUE_ENUM(_sym_DIFlagsPrivate,llvm::DINode::FlagPrivate);
+CL_VALUE_ENUM(_sym_DIFlagsProtected,llvm::DINode::FlagProtected);
+CL_VALUE_ENUM(_sym_DIFlagsPublic,llvm::DINode::FlagPublic);
+CL_VALUE_ENUM(_sym_DIFlagsFwdDecl,llvm::DINode::FlagFwdDecl);
+CL_VALUE_ENUM(_sym_DIFlagsAppleBlock,llvm::DINode::FlagAppleBlock);
+CL_VALUE_ENUM(_sym_DIFlagsBlockByrefStruct,llvm::DINode::FlagBlockByrefStruct);
+CL_VALUE_ENUM(_sym_DIFlagsVirtual,llvm::DINode::FlagVirtual);
+CL_VALUE_ENUM(_sym_DIFlagsArtificial,llvm::DINode::FlagArtificial);
+CL_VALUE_ENUM(_sym_DIFlagsExplicit,llvm::DINode::FlagExplicit);
+CL_VALUE_ENUM(_sym_DIFlagsPrototyped,llvm::DINode::FlagPrototyped);
+CL_VALUE_ENUM(_sym_DIFlagsObjcClassComplete,llvm::DINode::FlagObjcClassComplete);
+CL_VALUE_ENUM(_sym_DIFlagsObjectPointer,llvm::DINode::FlagObjectPointer);
+CL_VALUE_ENUM(_sym_DIFlagsVector,llvm::DINode::FlagVector);
+CL_VALUE_ENUM(_sym_DIFlagsStaticMember,llvm::DINode::FlagStaticMember);
+CL_VALUE_ENUM(_sym_DIFlagsLValueReference,llvm::DINode::FlagLValueReference);
+CL_VALUE_ENUM(_sym_DIFlagsRValueReference,llvm::DINode::FlagRValueReference);
+CL_VALUE_ENUM(_sym_DIFlagsExternalTypeRef,llvm::DINode::FlagExternalTypeRef);
+CL_VALUE_ENUM(_sym_DIFlagsSingleInheritance,llvm::DINode::FlagSingleInheritance);
+CL_VALUE_ENUM(_sym_DIFlagsMultipleInheritance,llvm::DINode::FlagMultipleInheritance);
+CL_VALUE_ENUM(_sym_DIFlagsVirtualInheritance,llvm::DINode::FlagVirtualInheritance);
+CL_VALUE_ENUM(_sym_DIFlagsIntroducedVirtual,llvm::DINode::FlagIntroducedVirtual);
+CL_VALUE_ENUM(_sym_DIFlagsBitField,llvm::DINode::FlagBitField);
+CL_VALUE_ENUM(_sym_DIFlagsNoReturn,llvm::DINode::FlagNoReturn);
+CL_END_ENUM(_sym_DIFlagsEnum);
+
 
 CL_LISPIFY_NAME(createCompileUnit);
 CL_EXTERN_DEFMETHOD(DIBuilder_O,&llvm::DIBuilder::createCompileUnit);

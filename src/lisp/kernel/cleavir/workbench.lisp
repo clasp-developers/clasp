@@ -6,7 +6,7 @@
 ;;;  --- Testing defun-inline-hook
 
 (time (compile-file "sys:modules;asdf;build;asdf.lisp"))
-
+(print "Hello")
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)
@@ -21,6 +21,9 @@
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
 (time (asdf:load-system "clasp-cleavir"))
+
+(clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp")
+
 
 (time (require :clasp-cleavir))
 

@@ -1,9 +1,15 @@
-;;(declaim (notinline car))
-(declaim (inline car))
-(LET* ((temp-list '())
-          (Y (IF temp-list
-                 (PROG1 (CAR (TRULY-THE CONS temp-list))
-                   (SETQ temp-list (CDR temp-list)))
-                 99)))
-     (DECLARE (IGNORABLE temp-list ))
-     (print (list "Should be 99 --> " Y)))
+
+(eval-when (:compile-toplevel :load-toplevel)
+  (defclass foo ()
+    ((thing :initarg :thing :accessor thing)))
+
+  (defmethod make-load-form ((self foo) &optional environment)
+    (values
+     `(make-instance ',(class-of self))
+     `(setf (thing ,self) ,self)))
+
+  (defparameter *foo* (make-instance 'foo))
+  (setf (thing *foo*) *foo*))
+
+(defun get-foo ()
+  #.*foo*)
