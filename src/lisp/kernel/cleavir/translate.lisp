@@ -1115,8 +1115,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)
         (core:*use-cleavir-compiler* t))
-    (literal:with-top-level-form
-        (compile-form form))))
+    (literal:with-top-level-form (compile-form form))))
 
 (defun cclasp-compile-in-env (name form &optional env)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile)

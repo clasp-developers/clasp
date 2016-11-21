@@ -222,9 +222,9 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun ltv/mlf (object index read-only-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
-    (prog1 (add-creator "ltvc_set_ltv_funcall" index (compile-form create))
+    (prog1 (add-creator "ltvc_set_mlf_creator_funcall" index (compile-form create))
       (when initialize
-        (add-side-effect-call "ltvc_funcall" (compile-form initialize))))))
+        (add-side-effect-call "ltvc_mlf_init_funcall" (compile-form initialize))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
   (cond
@@ -260,12 +260,19 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 
 (defun do-with-ltv (type body-fn)
+  "Evaluate body-fn in an environment where load-time-values, literals and constants are
+compiled into a DSL of creators and side-effects that can be used to generate calls
+in the RUN-ALL function to recreate those objects in a constants-table.
+The body-fn must return an llvm::Function object that results from compiling code that
+can be arranged to be evaluated in the RUN-ALL function and that will use all of the values in
+the constants-table."
   (let* ((*run-all-objects* nil)
          (body-return-fn (funcall body-fn))
          (constants-nodes (nreverse *run-all-objects*)))
     (or (llvm-sys:valuep body-return-fn)
         (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
     (with-run-all-body-codegen
+        ;; Generate code for the constants-table DSL
         (labels ((ensure-llvm-value (obj)
                    "Lookup or create the llvm::Value for obj"
                    (or (gethash obj *llvm-values*)
@@ -306,6 +313,17 @@ the value is put into *default-load-time-value-vector* and its index is returned
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-with-ltv :ltv (lambda () ,@body))))
 
+(defmacro with-load-time-value (&body body)
+  "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
+Return the index of the load-time-value"
+  (let ((ltv-func (gensym))
+        (index (gensym)))
+    `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
+            (,index (new-table-index))
+            (,ltv-func (do-with-ltv :ltv (lambda () ,@body))))
+       (evaluate-function-into-load-time-value ,index ,ltv-func)
+       ,index)))
+       
 (defmacro with-top-level-form ( &body body)
   `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
      (do-with-ltv :toplevel (lambda () ,@body))))
@@ -445,7 +463,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
             (funcall creator object index read-only-p)
             index)))))
 
-(defun evaluate-function-into-load-time-value (fn index)
+(defun evaluate-function-into-load-time-value (index fn)
   (add-creator "ltvc_set_ltv_funcall" index fn)
   index)
 

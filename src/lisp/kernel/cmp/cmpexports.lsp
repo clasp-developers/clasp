@@ -225,6 +225,7 @@
           constants-table-reference
           constants-table-value
           with-ltv
+          with-load-time-value
           with-rtv
           with-top-level-form
           with-constants-table

@@ -318,6 +318,21 @@ gctools::Tagged ltvc_make_double(gctools::ConstantsTable* holder, size_t index, 
   return holder->set(index,val.tagged_());
 }
 
+gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::ConstantsTable* holder, size_t index, fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  core::T_sp res((gctools::Tagged)ret.ret0);
+  core::T_sp val = res;
+  return holder->set(index,val.tagged_());
+}
+
+gctools::Tagged ltvc_mlf_init_funcall(fnLispCallingConvention fptr) {
+  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
+  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
+  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+}
+
+// This is exactly like the one above - is it necessary?
 gctools::Tagged ltvc_set_ltv_funcall(gctools::ConstantsTable* holder, size_t index, fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
@@ -326,17 +341,6 @@ gctools::Tagged ltvc_set_ltv_funcall(gctools::ConstantsTable* holder, size_t ind
   return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_funcall(fnLispCallingConvention fptr) {
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0);
-}
-
-gctools::Tagged ltvc_ltv_funcall(fnLispCallingConvention fptr) {
-  core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
-  LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0);
-}
 
 gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();

@@ -122,10 +122,7 @@
 (defun compile-top-level (form)
   (when *compile-print*
     (describe-form form))
-  (literal:with-top-level-form
-      (progn
-        (multiple-value-prog1 (compile-thunk 'repl form nil)
-        ))))
+  (literal:with-top-level-form (compile-thunk 'repl form nil)))
 
 (defun t1progn (rest env)
   "All forms in progn at top level are top level forms"

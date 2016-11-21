@@ -1062,9 +1062,11 @@ jump to blocks within this tagbody."
 ;;; Currently if read-only-p is T there is no
 ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
-        (let* ((index (literal:new-table-index))
-               (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-          (literal:add-creator "ltvc_ltv_funcall" index value)
+        #+(or)(let* ((index (literal:new-table-index))
+                     (ltv-func (literal:with-ltv (literal:compile-load-time-value-thunk form))))
+                (literal:evaluate-function-into-load-time-value index ltv-func)
+                (irc-store (literal:constants-table-value index) result))
+        (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (codegen-rtv result ltv)))))
