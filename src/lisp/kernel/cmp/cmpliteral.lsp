@@ -262,7 +262,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun do-with-ltv (type body-fn)
   (let* ((*run-all-objects* nil)
          (body-return-fn (funcall body-fn))
-         (constants-nodes *run-all-objects*))
+         (constants-nodes (nreverse *run-all-objects*)))
     (or (llvm-sys:valuep body-return-fn)
         (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
     (with-run-all-body-codegen

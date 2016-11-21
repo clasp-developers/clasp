@@ -238,7 +238,6 @@ If this form has already been precalculated then just return the precalculated-v
            ;; and to make its result available as a value
            (let* ((index (literal:new-table-index))
                   (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-             (warn "Why am I calling ltvc_ltv_funcall next!!!!?!?!?!?!")
              (literal:add-creator "ltvc_ltv_funcall" index value)
              index) ;; bclasp uses--> (cmp:irc-store (literal:constants-table-value index) result))
            #+(or)(let ((fn (cmp:compile-form form)))
