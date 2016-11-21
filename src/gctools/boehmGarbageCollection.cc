@@ -48,14 +48,28 @@ void rawHeaderDescribe(uintptr_t *rawheaderP) {
 };
 
 namespace gctools  {
+#if 0
+// This doesn't work because Boehm has an arbitrary 2048 limit on the number
+// of root sets
 void boehm_register_roots(void* root_address, size_t num_roots)
 {
-  void* high_address_plus_1 = reinterpret_cast<void*>(reinterpret_cast<char*>(root_address)+num_roots*sizeof(core::T_sp));
+  void* high_address_plus_1 = reinterpret_cast<void*>(reinterpret_cast<char*>(root_address)+num_roots*sizeof(core::T_sp) + 1);
   GC_add_roots(root_address,high_address_plus_1);
 }
+#endif
 
-}
+void* boehm_create_shadow_table(size_t nargs)
+{
+  // Boehm uses a shadow table in the UNCOLLECTABLE space
+  // Allocate the table and fill it with UNBOUND
+  core::T_sp* shadow_mem = reinterpret_cast<core::T_sp*>(GC_MALLOC_UNCOLLECTABLE(nargs*sizeof(core::T_sp)));
+  for (size_t ii(0); ii<nargs; ++ii) {
+    shadow_mem[ii] = _Unbound<core::T_O>();
+  }
+  return reinterpret_cast<void*>(shadow_mem);
+};
 
+};
 
 extern "C" {
 void client_describe(void *taggedClient) {

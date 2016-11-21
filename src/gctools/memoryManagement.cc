@@ -190,30 +190,41 @@ CL_DEFUN core::Fixnum gctools__next_header_kind()
     return ensure_fixnum(next);
 }
 
-void register_roots_with_gc(core::T_sp* root_address, size_t num_roots ) {
+void register_constants_table(ConstantsTable* constants_table, core::T_sp* root_address, size_t num_roots ) {
+  core::T_sp* shadow_mem = NULL;
+#ifdef USE_BOEHM
+  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(num_roots));
+#endif
 #ifdef USE_MPS
   gctools::mps_register_roots(root_address, num_roots);
 #endif
-#ifdef USE_BOEHM
-  gctools::boehm_register_roots(root_address,num_roots);
-#endif
+  new(constants_table) ConstantsTable(shadow_mem,root_address,num_roots);
 }
 
 CL_LAMBDA(address args);
 CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
-  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
-  core::T_sp* constants_table = reinterpret_cast<core::T_sp*>(address);
+  core::T_sp* shadow_mem = NULL;
   size_t nargs = core::cl__length(args);
+#ifdef USE_BOEHM
+  shadow_mem = reinterpret_cast<core::T_sp*>(boehm_create_shadow_table(nargs));
+#endif
+  // Get the address of the memory space in the llvm::Module
+  uintptr_t address = translate::from_object<uintptr_t>(taddress)._v;
+  core::T_sp* module_mem = reinterpret_cast<core::T_sp*>(address);
 //  printf("%s:%d:%s address=%p nargs=%lu\n", __FILE__, __LINE__, __FUNCTION__, (void*)address, nargs);
 //  printf("%s:%d:%s constants-table contents: vvvvv\n", __FILE__, __LINE__, __FUNCTION__ );
+  // Create a ConstantsTable structure to write the constants with
+  ConstantsTable ct(reinterpret_cast<void*>(shadow_mem),reinterpret_cast<void*>(module_mem),nargs);
   size_t i = 0;
   for ( auto c : args ) {
     core::T_sp arg = oCar(c);
-    constants_table[i] = arg;
-//    printf("    arg[%lu] = %p | %s\n", i, arg.raw_(),  _rep_(arg).c_str());
+    ct.set(i,arg.tagged_());
     ++i;
   }
-  register_roots_with_gc(reinterpret_cast<core::T_sp*>(constants_table),nargs);
+#ifdef USE_MPS
+  // MPS registers the roots and doesn't need a shadow table
+  mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
+#endif
 }
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -275,4 +286,14 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
   telemetry::global_telemetry_search->close();
   return exitCode;
 }
+
+Tagged ConstantsTable::set(size_t index, Tagged val) {
+#ifdef USE_BOEHM
+  // shadow_memory is only used by Boehm
+  reinterpret_cast<core::T_sp*>(this->_shadow_memory)[index] = core::T_sp(val);
+#endif
+  reinterpret_cast<core::T_sp*>(this->_module_memory)[index] = core::T_sp(val);
+  return val;
+}
+
 };

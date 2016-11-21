@@ -60,6 +60,8 @@
           +t**+
           +tsp[DUMMY]+
           +tsp[DUMMY]*+
+          +constants-table+
+          +constants-table*+
           calling-convention-args
           calling-convention-args.va-arg
           calling-convention-va-list
@@ -222,10 +224,10 @@
           new-table-index
           constants-table-reference
           constants-table-value
-          with-coalesce-ltv
           with-ltv
           with-rtv
           with-top-level-form
+          with-constants-table
           evaluate-function-into-load-time-value
           )
         )

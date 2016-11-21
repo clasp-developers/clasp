@@ -349,7 +349,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
                                      (jit-constant-i64 *source-debug-offset*)
                                      (jit-constant-i32 (if *source-debug-use-lineno* 1 0))
                                      *gv-source-file-info-handle*))
-                  (with-coalesce-ltv
+                  (with-constants-table
                       (loop
                          (let* ((top-source-pos-info (core:input-stream-source-pos-info source-sin))
                                 (form (read source-sin nil eof-value)))
