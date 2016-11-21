@@ -581,7 +581,8 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
   "bclasp calls this to get copy the run-time-value for obj into result"
   (let* ((data (run-time-reference-literal obj t))
          (idx (constant-runtime-index data)))
-    (irc-store (literal:constants-table-value idx) result)
+    (when result
+      (irc-store (literal:constants-table-value idx) result))
     idx))
 
 (defun codegen-literal (result object env)
