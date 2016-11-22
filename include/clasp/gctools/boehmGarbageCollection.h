@@ -146,6 +146,9 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 
 
 
+namespace gctools {
+  void* boehm_create_constants_table(size_t nargs);
+};
 
 namespace gctools {
 /*! Initialize the memory pool system and call the startup function which
@@ -164,7 +167,6 @@ namespace gctools {
     unsigned long _rs;
   };
 
- void boehm_register_roots(void* root_address, size_t num_roots);
 
 };
 #endif // _clasp_boehmGarbageCollection_H

@@ -1062,9 +1062,11 @@ jump to blocks within this tagbody."
 ;;; Currently if read-only-p is T there is no
 ;;; coalescence performed - this could be added as an optimization
     (if *generate-compile-file-load-time-values*
-        (let* ((index (literal:new-table-index))
-               (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-          (literal:add-creator "ltvc_ltv_funcall" index value)
+        #+(or)(let* ((index (literal:new-table-index))
+                     (ltv-func (literal:with-ltv (literal:compile-load-time-value-thunk form))))
+                (literal:evaluate-function-into-load-time-value index ltv-func)
+                (irc-store (literal:constants-table-value index) result))
+        (let ((index (literal:with-load-time-value (literal:compile-load-time-value-thunk form))))
           (irc-store (literal:constants-table-value index) result))
         (let ((ltv (eval form)))
           (codegen-rtv result ltv)))))
@@ -1246,32 +1248,6 @@ jump to blocks within this tagbody."
 
 
 
-
-;;
-;; Why does this duplicate so much functionality from codegen-literal
-#+(or)
-(defun codegen-atom (result obj env)
-  "Generate code to generate the load-time-value of the atom "
-  (if *generate-compile-file-load-time-values*
-      (cond
-        ((null obj) (codegen-ltv/nil result))
-        ((integerp obj) (codegen-ltv/integer result obj))
-        ((stringp obj) (codegen-ltv/string result obj))
-        ((pathnamep obj) (codegen-ltv/pathname result obj))
-        ((packagep obj) (codegen-ltv/package result obj))
-        ((core:built-in-class-p obj) (codegen-ltv/built-in-class result obj env))
-        ((floatp obj) (codegen-ltv/float result obj))
-        ((core:ratio-p obj) (codegen-ltv/container result obj env))
-        ((complexp obj) (codegen-ltv/container result obj env))
-        ;; symbol would be here
-        ((characterp obj) (codegen-ltv/character result obj))
-        ((arrayp obj) (codegen-ltv/array result obj env))
-        ;; cons would be here
-        ((hash-table-p obj) (codegen-ltv/container result obj env))
-        (t (error "In codegen-atom add support to codegen the atom type ~a - value: ~a" (class-name (class-of obj)) obj )))
-      ;; Below is how we compile atoms for COMPILE - literal objects are passed into the
-      ;; default module without coalescence.
-      (codegen-rtv result obj)))
 
 ;;; Return true if the symbol should be treated as a special operator
 ;;; Special operators that are handled as macros are exempt

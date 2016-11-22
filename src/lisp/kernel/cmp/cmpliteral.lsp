@@ -29,7 +29,7 @@
 ;;;;   to the value returned.
 ;;;; * (CALL handle) calls the function denoted by HANDLE (returned from COMPILE-FORM)
 
-
+(defvar *constants-table-holder*)
 (defvar *value-table-id* 0)
 (defun next-value-table-holder-name (&optional suffix)
   (if suffix
@@ -222,9 +222,9 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun ltv/mlf (object index read-only-p)
   (multiple-value-bind (create initialize)
       (make-load-form object)
-    (prog1 (add-creator "ltvc_funcall" index (compile-form create))
+    (prog1 (add-creator "ltvc_set_mlf_creator_funcall" index (compile-form create))
       (when initialize
-        (add-side-effect-call "ltvc_funcall" (compile-form initialize))))))
+        (add-side-effect-call "ltvc_mlf_init_funcall" (compile-form initialize))))))
 
 (defun object-similarity-table-and-creator (object read-only-p)
   (cond
@@ -258,12 +258,87 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun add-similar (object index table)
   (setf (gethash object table) index))
 
-(defmacro with-coalesce-ltv (&body body)
-  `(let ()
-     (progn ,@body)))
 
 (defun do-with-ltv (type body-fn)
-  (let ((*llvm-values* (make-hash-table))
+  "Evaluate body-fn in an environment where load-time-values, literals and constants are
+compiled into a DSL of creators and side-effects that can be used to generate calls
+in the RUN-ALL function to recreate those objects in a constants-table.
+The body-fn must return an llvm::Function object that results from compiling code that
+can be arranged to be evaluated in the RUN-ALL function and that will use all of the values in
+the constants-table."
+  (let* ((*run-all-objects* nil)
+         (body-return-fn (funcall body-fn))
+         (constants-nodes (nreverse *run-all-objects*)))
+    (or (llvm-sys:valuep body-return-fn)
+        (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
+    (with-run-all-body-codegen
+        ;; Generate code for the constants-table DSL
+        (labels ((ensure-llvm-value (obj)
+                   "Lookup or create the llvm::Value for obj"
+                   (or (gethash obj *llvm-values*)
+                       (setf (gethash obj *llvm-values*)
+                             (irc-create-call (literal:constant-creator-name obj)
+                                              (list*
+                                               *constants-table-holder*
+                                               (cmp:jit-constant-size_t (constant-creator-index obj))
+                                               (fix-args (constant-creator-arguments obj)))
+                                              (bformat nil "CONTAB[%d]" (constant-creator-index obj))))))
+                 (fix-args (args)
+                   "Convert the args from Lisp form into llvm::Value*'s"
+                   (mapcar (lambda (x)
+                             (cond
+                               ((fixnump x) (jit-constant-size_t x))
+                               ((stringp x) (jit-constant-unique-string-ptr x))
+                               ((literal:constant-creator-p x) (ensure-llvm-value x))
+                               (t x))) ;;(error "Illegal run-all entry ~a" x))))
+                           args)))
+          (dolist (node constants-nodes)
+            #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
+            (cond
+              ((literal:constant-creator-p node)
+               (ensure-llvm-value node))
+              ((literal:constant-side-effect-p node)
+               (let* ((fn-name (literal:constant-side-effect-name node))
+                      (args (literal:constant-side-effect-arguments node))
+                      (fix-args (fix-args args)))
+                 (irc-create-call fn-name fix-args)))
+              (t (error "Unknown run-all node ~a" node)))))
+      (cond
+        ((eq type :toplevel)
+         (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
+        ((eq type :ltv) body-return-fn)
+        (t (error "bad type"))))))
+
+(defmacro with-ltv ( &body body)
+  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
+     (do-with-ltv :ltv (lambda () ,@body))))
+
+(defmacro with-load-time-value (&body body)
+  "Evaluate the body and then arrange to evaluate the generated function into a load-time-value.
+Return the index of the load-time-value"
+  (let ((ltv-func (gensym))
+        (index (gensym)))
+    `(let* ((*with-ltv-depth* (1+ *with-ltv-depth*))
+            (,index (new-table-index))
+            (,ltv-func (do-with-ltv :ltv (lambda () ,@body))))
+       (evaluate-function-into-load-time-value ,index ,ltv-func)
+       ,index)))
+       
+(defmacro with-top-level-form ( &body body)
+  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
+     (do-with-ltv :toplevel (lambda () ,@body))))
+
+
+
+(defun do-with-constants-table (body-fn)
+  (let ((*constants-table-holder*
+         (llvm-sys:make-global-variable *the-module*
+                                        cmp:+constants-table+ ; type
+                                        nil ; isConstant
+                                        'llvm-sys:internal-linkage
+                                        (llvm-sys:undef-value-get cmp:+constants-table+)
+                                        ;; nil ; initializer
+                                        "constants-table"))
         (cmp:*load-time-value-holder-global-var*
          (llvm-sys:make-global-variable *the-module*
                                         cmp:+tsp[DUMMY]+ ; type
@@ -272,7 +347,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
                                         (llvm-sys:undef-value-get cmp:+tsp[DUMMY]+)
                                         ;; nil ; initializer
                                         (next-value-table-holder-name "dummy")))
-        (real-name (next-value-table-holder-name))
+        (*llvm-values* (make-hash-table))
         (cmp:*generate-compile-file-load-time-values* t)
         (*identity-coalesce* (make-hash-table :test #'eq))
         (*ratio-coalesce* (make-similarity-table #'eql))
@@ -291,75 +366,34 @@ the value is put into *default-load-time-value-vector* and its index is returned
         (*single-float-coalesce* (make-similarity-table #'eql))
         (*double-float-coalesce* (make-similarity-table #'eql))
         (*constant-index-to-constant-creator* (make-hash-table :test #'eql))
-        (*run-all-objects* nil)
-        (*table-index* 0))
-    (let* ((body-return-fn (funcall body-fn))
-           (constants-nodes *run-all-objects*))
-      (or (llvm-sys:valuep body-return-fn)
-          (error "The body of with-ltv MUST return a compiled llvm::Function object resulting from compiling a thunk - instead it returned: ~a" body-return-fn))
-      (with-run-all-body-codegen
-          (let* ((table-entries (calculate-table-size constants-nodes)))
-            (when (> table-entries 0)
-              ;; We have a new table, replace the old one and generate code to register the new one
-              ;; and gc roots tabl
-              (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ table-entries))
-                     (correct-size-holder (llvm-sys:make-global-variable *the-module*
-                                                                         array-type
-                                                                         nil ; isConstant
-                                                                         'llvm-sys:internal-linkage
-                                                                         (llvm-sys:undef-value-get array-type)
-                                                                         real-name))
-                     (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:+tsp[DUMMY]*+ "bitcast-table"))
-                     (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
-                                                           (list (cmp:jit-constant-size_t 0)
-                                                                 (cmp:jit-constant-size_t 0)) "table")))
-                (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
-                (cmp:irc-create-call "cc_allocate_roots" (list (irc-pointer-cast correct-size-holder cmp:+tsp*+ "")
-                                                                (cmp:jit-constant-size_t table-entries)))
-                ;; Erase the dummy holder
-                (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*) ;
-                (labels ((ensure-llvm-value (obj)
-                           "Lookup or create the llvm::Value for obj"
-                           (or (gethash obj *llvm-values*)
-                               (setf (gethash obj *llvm-values*)
-                                     (irc-create-call (literal:constant-creator-name obj)
-                                                      (list*
-                                                       (llvm-sys:create-const-gep2-64 *irbuilder* correct-size-holder 0 (constant-creator-index obj) "gep" )
-                                                       (fix-args (constant-creator-arguments obj)))
-                                                      (bformat nil "%s[%d]" real-name (constant-creator-index obj))))))
-                         (fix-args (args)
-                           "Convert the args from Lisp form into llvm::Value*'s"
-                           (mapcar (lambda (x)
-                                     (cond
-                                       ((fixnump x) (jit-constant-size_t x))
-                                       ((stringp x) (jit-constant-unique-string-ptr x))
-                                       ((literal:constant-creator-p x) (ensure-llvm-value x))
-                                       (t x))) ;;(error "Illegal run-all entry ~a" x))))
-                                   args)))
-                  (dolist (node constants-nodes)
-                    #+(or)(bformat t "generate-run-all-code  generating node: %s\n" node)
-                    (cond
-                      ((literal:constant-creator-p node)
-                       (ensure-llvm-value node))
-                      ((literal:constant-side-effect-p node)
-                       (let* ((fn-name (literal:constant-side-effect-name node))
-                              (args (literal:constant-side-effect-arguments node))
-                              (fix-args (fix-args args)))
-                         (irc-create-call fn-name fix-args)))
-                      (t (error "Unknown run-all node ~a" node)))))
-                (cond
-                  ((eq type :toplevel)
-                   (cmp:irc-create-call "ltvc_toplevel_funcall" (list body-return-fn)))
-                  ((eq type :ltv) body-return-fn)
-                  (t (error "bad type"))))))))))
+        (*table-index* 0)
+        (real-name (next-value-table-holder-name)))
+    (funcall body-fn)
+    (let* ((table-entries *table-index*))
+      (when (> table-entries 0)
+        ;; We have a new table, replace the old one and generate code to register the new one
+        ;; and gc roots tabl
+        (let* ((array-type (llvm-sys:array-type-get cmp:+tsp+ table-entries))
+               (correct-size-holder (llvm-sys:make-global-variable *the-module*
+                                                                   array-type
+                                                                   nil ; isConstant
+                                                                   'llvm-sys:internal-linkage
+                                                                   (llvm-sys:undef-value-get array-type)
+                                                                   real-name))
+               (bitcast-correct-size-holder (irc-bit-cast correct-size-holder cmp:+tsp[DUMMY]*+ "bitcast-table"))
+               (holder-ptr (llvm-sys:create-geparray *irbuilder* correct-size-holder
+                                                     (list (cmp:jit-constant-size_t 0)
+                                                           (cmp:jit-constant-size_t 0)) "table")))
+          (llvm-sys:replace-all-uses-with cmp:*load-time-value-holder-global-var* bitcast-correct-size-holder)
+          (with-run-all-entry-codegen
+              (cmp:irc-create-call "cc_allocate_roots" (list *constants-table-holder*
+                                                             (irc-pointer-cast correct-size-holder cmp:+tsp*+ "")
+                                                             (cmp:jit-constant-size_t table-entries))))
+          ;; Erase the dummy holder
+          (llvm-sys:erase-from-parent cmp:*load-time-value-holder-global-var*))))))
 
-(defmacro with-ltv ( &body body)
-  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-with-ltv :ltv (lambda () ,@body))))
-
-(defmacro with-top-level-form ( &body body)
-  `(let ((*with-ltv-depth* (1+ *with-ltv-depth*)))
-     (do-with-ltv :toplevel (lambda () ,@body))))
+(defmacro with-constants-table (&body body)
+  `(do-with-constants-table (lambda () ,@body)))
 
 (defmacro with-rtv (&body body)
   "Evaluate the code in the body in an environment where run-time values are assigned integer indices
@@ -429,7 +463,7 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
             (funcall creator object index read-only-p)
             index)))))
 
-(defun evaluate-function-into-load-time-value (fn index)
+(defun evaluate-function-into-load-time-value (index fn)
   (add-creator "ltvc_set_ltv_funcall" index fn)
   index)
 
@@ -547,7 +581,8 @@ Return the orderered-raw-constants-list and the constants-table GlobalVariable"
   "bclasp calls this to get copy the run-time-value for obj into result"
   (let* ((data (run-time-reference-literal obj t))
          (idx (constant-runtime-index data)))
-    (irc-store (literal:constants-table-value idx) result)
+    (when result
+      (irc-store (literal:constants-table-value idx) result))
     idx))
 
 (defun codegen-literal (result object env)

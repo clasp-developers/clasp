@@ -131,6 +131,11 @@ size_t global_sizeof_fwd;
 
 namespace gctools {
 void mps_register_roots(void* root_address, size_t num_roots) {
+  // First flush the memory
+  mem = reinterpret_cast<core::T_sp*>(root_address);
+  for (size_t ii(0); ii<nargs; ++ii) {
+    mem[ii] = _Unbound<core::T_O>();
+  }
   mps_root_t* mps_root = reinterpret_cast<mps_root_t>(malloc(sizeof(mps_root_t)));
   mps_root_create_area_tagged(mps_root,_global_arena,mps_rank_exact(),
                               MPS_RM_CONST, reinterpret_cast<void*>(root_address),

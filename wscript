@@ -846,6 +846,7 @@ class link_executable(Task.Task):
                     self.env['LDFLAGS']  + \
                     libraries_as_link_flags(self.env.STLIB_ST,self.env.STLIB) + \
                     libraries_as_link_flags(self.env.LIB_ST,self.env.LIB) + [
+                        "-v",
                         "-flto=thin",
                         "-o",
                         self.outputs[0].abspath(),
@@ -864,6 +865,7 @@ class link_executable(Task.Task):
                         self.outputs[0].abspath()]
         else:
             self.fatal("Illegal DEST_OS: %s" % self.env['DEST_OS'])
+        print("link_executable cmd = %s" % cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout

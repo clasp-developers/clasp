@@ -117,11 +117,8 @@ void intrinsic_error(ErrorCode err, core::T_sp arg0, core::T_sp arg1, core::T_sp
 extern "C" {
 
 
-void cc_allocate_roots(core::T_sp* root_address, size_t num_roots ) {
-  for ( size_t i=0; i<num_roots; ++i ) {
-    root_address[i] = _Nil<core::T_O>();
-  }
-  register_roots_with_gc(root_address,num_roots);
+void cc_allocate_roots(gctools::ConstantsTable* holder, core::T_sp* root_address, size_t num_roots ) {
+  register_constants_table(holder,root_address,num_roots);
 }
 
 
@@ -142,36 +139,36 @@ void ltvc_assign_source_file_info_handle(const char *moduleName, const char *sou
 }
 
 
-gctools::Tagged ltvc_make_nil(core::T_sp* dest)
+gctools::Tagged ltvc_make_nil(gctools::ConstantsTable* holder, size_t index)
 {
-  *dest = _Nil<core::T_O>();
-  return dest->tagged_();
+  core::T_sp val = _Nil<core::T_O>();
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_t(core::T_sp* dest)
+gctools::Tagged ltvc_make_t(gctools::ConstantsTable* holder, size_t index)
 {
-  *dest = _lisp->_true();
-  return dest->tagged_();
+  core::T_sp val = _lisp->_true();
+  return holder->set(index,val.tagged_());
 }
 
 
-gctools::Tagged ltvc_make_ratio(core::T_sp* dest, gctools::Tagged num, gctools::Tagged denom ) {
-  *dest = core::Ratio_O::create(core::T_sp(num),core::T_sp(denom));
-  return dest->tagged_();
+gctools::Tagged ltvc_make_ratio(gctools::ConstantsTable* holder, size_t index, gctools::Tagged num, gctools::Tagged denom ) {
+  core::T_sp val = core::Ratio_O::create(core::T_sp(num),core::T_sp(denom));
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_complex(core::T_sp* dest, gctools::Tagged real, gctools::Tagged imag) {
-  *dest = core::Complex_O::create(core::T_sp(real),core::T_sp(imag));
-  return dest->tagged_();
+gctools::Tagged ltvc_make_complex(gctools::ConstantsTable* holder, size_t index, gctools::Tagged real, gctools::Tagged imag) {
+  core::T_sp val = core::Complex_O::create(core::T_sp(real),core::T_sp(imag));
+  return holder->set(index,val.tagged_());
 }
 
 
-gctools::Tagged ltvc_make_cons(core::T_sp* dest, gctools::Tagged car, gctools::Tagged cdr) {
-  *dest = core::Cons_O::create(core::T_sp(car),core::T_sp(cdr));
-  return dest->tagged_();
+gctools::Tagged ltvc_make_cons(gctools::ConstantsTable* holder, size_t index, gctools::Tagged car, gctools::Tagged cdr) {
+  core::T_sp val = core::Cons_O::create(core::T_sp(car),core::T_sp(cdr));
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_list(core::T_sp* dest, size_t num, ... ) {
+gctools::Tagged ltvc_make_list(gctools::ConstantsTable* holder, size_t index, size_t num, ... ) {
   core::T_sp first;
   core::T_sp* cur = &first;
   va_list va;
@@ -183,25 +180,25 @@ gctools::Tagged ltvc_make_list(core::T_sp* dest, size_t num, ... ) {
     cur = &one->_Cdr;
   }
   va_end(va);
-  *dest = first;
-  return dest->tagged_();
+  core::T_sp val = first;
+  return holder->set(index,val.tagged_());
 }
 
   
 
-gctools::Tagged ltvc_make_array(core::T_sp* dest,
+gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
                                 gctools::Tagged telement_type,
                                 gctools::Tagged tdimensions ) {
   core::T_sp element_type(telement_type);
   core::List_sp dimensions(tdimensions);
+  core::T_sp val;
   if (core::cl__length(dimensions) == 1) // vector
   {
-    *dest = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);
-    return dest->tagged_();
+    val = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);
   } else {
-    *dest = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true());
-    return dest->tagged_();
+    val = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true());
   }
+  return holder->set(index,val.tagged_());
 }
 
 void ltvc_setf_row_major_aref(gctools::Tagged array_t,
@@ -212,8 +209,9 @@ void ltvc_setf_row_major_aref(gctools::Tagged array_t,
   array->rowMajorAset(row_major_index,core::T_sp(value_t));
 }
   
-gctools::Tagged ltvc_make_hash_table(gctools::Tagged test_t ) {
-  return core::HashTable_O::create(core::T_sp(test_t)).tagged_();
+gctools::Tagged ltvc_make_hash_table(gctools::ConstantsTable* holder, size_t index,
+                                gctools::Tagged test_t ) {
+  return holder->set(index,core::HashTable_O::create(core::T_sp(test_t)).tagged_());
 }
 
 void ltvc_setf_gethash(gctools::Tagged hash_table_t,
@@ -225,18 +223,18 @@ void ltvc_setf_gethash(gctools::Tagged hash_table_t,
   hash_table->hash_table_setf_gethash(key, value);
 }
 
-gctools::Tagged ltvc_make_fixnum(core::T_sp* dest, int64_t val) {
-  *dest = clasp_make_fixnum(val);
-  return dest->tagged_();
+gctools::Tagged ltvc_make_fixnum(gctools::ConstantsTable* holder, size_t index, int64_t val) {
+  core::T_sp v = clasp_make_fixnum(val);
+  return holder->set(index,v.tagged_());
 }
 
-gctools::Tagged ltvc_make_bignum(core::T_sp* dest, gctools::Tagged bignum_string_t) {
+gctools::Tagged ltvc_make_bignum(gctools::ConstantsTable* holder, size_t index, gctools::Tagged bignum_string_t) {
   core::Str_sp bignum_string = gctools::As<core::Str_sp>(core::T_sp(bignum_string_t));
-  *dest = core::Bignum_O::make(bignum_string->get());
-  return dest->tagged_();
+  core::T_sp val = core::Bignum_O::make(bignum_string->get());
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_symbol(core::T_sp* dest, gctools::Tagged name_t,
+gctools::Tagged ltvc_make_symbol(gctools::ConstantsTable* holder, size_t index, gctools::Tagged name_t,
                                  gctools::Tagged package_t ) {
   core::T_sp package(package_t);
   core::Str_sp symbol_name(name_t);
@@ -246,27 +244,27 @@ gctools::Tagged ltvc_make_symbol(core::T_sp* dest, gctools::Tagged name_t,
   } else {
     sym = core::Symbol_O::create(symbol_name);
   }
-  *dest = sym;
-  return dest->tagged_();
+  core::T_sp val = sym;
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_character(core::T_sp* dest, uintptr_t val) {
-  *dest = clasp_make_character(val);
-  return dest->tagged_();
+gctools::Tagged ltvc_make_character(gctools::ConstantsTable* holder, size_t index, uintptr_t val) {
+  core::T_sp v = clasp_make_character(val);
+  return holder->set(index,v.tagged_());
 }
 
-gctools::Tagged ltvc_make_base_string(core::T_sp* dest, const char* str) {
-  *dest = core::Str_O::create(str);
-  return dest->tagged_();
+gctools::Tagged ltvc_make_base_string(gctools::ConstantsTable* holder, size_t index, const char* str) {
+  core::T_sp v = core::Str_O::create(str);
+  return holder->set(index,v.tagged_());
 }
 
-gctools::Tagged ltvc_make_pathname(core::T_sp* dest, gctools::Tagged host_t,
+gctools::Tagged ltvc_make_pathname(gctools::ConstantsTable* holder, size_t index, gctools::Tagged host_t,
                                    gctools::Tagged device_t,
                                    gctools::Tagged directory_t,
                                    gctools::Tagged name_t,
                                    gctools::Tagged type_t,
                                    gctools::Tagged version_t ) {
-  *dest = core::Pathname_O::makePathname(core::T_sp(host_t),
+  core::T_sp val = core::Pathname_O::makePathname(core::T_sp(host_t),
                                         core::T_sp(device_t),
                                         core::T_sp(directory_t),
                                         core::T_sp(name_t),
@@ -274,10 +272,10 @@ gctools::Tagged ltvc_make_pathname(core::T_sp* dest, gctools::Tagged host_t,
                                         core::T_sp(version_t),
                                         kw::_sym_local,
                                               core::T_sp(host_t).notnilp());
-  return dest->tagged_();
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_package(core::T_sp* dest, gctools::Tagged package_name_t ) {
+gctools::Tagged ltvc_make_package(gctools::ConstantsTable* holder, size_t index, gctools::Tagged package_name_t ) {
   core::Str_sp package_name(package_name_t);
   core::T_sp tpkg = _lisp->findPackage(package_name->get(),false);
   if ( tpkg.nilp() ) {
@@ -285,60 +283,64 @@ gctools::Tagged ltvc_make_package(core::T_sp* dest, gctools::Tagged package_name
     // a more comprehensive defpackage should be coming
     tpkg = _lisp->makePackage(package_name->get(),std::list<std::string>(), std::list<std::string>());
   }
-  *dest = tpkg;
-  return dest->tagged_();
+  core::T_sp val = tpkg;
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_random_state(core::T_sp* dest, gctools::Tagged random_state_string_t) {
+gctools::Tagged ltvc_make_random_state(gctools::ConstantsTable* holder, size_t index, gctools::Tagged random_state_string_t) {
   core::Str_sp random_state_string(random_state_string_t);
   core::RandomState_sp rs = core::RandomState_O::create();
   rs->random_state_set(random_state_string->get());
-  *dest = rs;
-  return dest->tagged_();
+  core::T_sp val = rs;
+  return holder->set(index,val.tagged_());
 }
 
 
-gctools::Tagged ltvc_make_built_in_class(core::T_sp* dest, gctools::Tagged class_name_t ) {
+gctools::Tagged ltvc_make_built_in_class(gctools::ConstantsTable* holder, size_t index, gctools::Tagged class_name_t ) {
   core::Symbol_sp class_name(class_name_t);
   core::T_sp cl = core::cl__find_class(class_name, true, _Nil<core::T_O>());
   if ( cl.nilp() ) {
     SIMPLE_ERROR(BF("Could not find class %s") % class_name );
   } else {
-    *dest = cl;
-    return dest->tagged_();
+    core::T_sp val = cl;
+    return holder->set(index,val.tagged_());
   }
 }
 
 
-gctools::Tagged ltvc_make_float(core::T_sp* dest, float f) {
-  *dest = clasp_make_single_float(f);
-  return dest->tagged_();
+gctools::Tagged ltvc_make_float(gctools::ConstantsTable* holder, size_t index, float f) {
+  core::T_sp val = clasp_make_single_float(f);
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_make_double(core::T_sp* dest, double f) {
-  *dest = clasp_make_double_float(f);
-  return dest->tagged_();
+gctools::Tagged ltvc_make_double(gctools::ConstantsTable* holder, size_t index, double f) {
+  core::T_sp val = clasp_make_double_float(f);
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_set_ltv_funcall(core::T_sp* dest, fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_set_mlf_creator_funcall(gctools::ConstantsTable* holder, size_t index, fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
   core::T_sp res((gctools::Tagged)ret.ret0);
-  *dest = res;
-  return dest->tagged_();
+  core::T_sp val = res;
+  return holder->set(index,val.tagged_());
 }
 
-gctools::Tagged ltvc_funcall(fnLispCallingConvention fptr) {
+gctools::Tagged ltvc_mlf_init_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
   return reinterpret_cast<gctools::Tagged>(ret.ret0);
 }
 
-gctools::Tagged ltvc_ltv_funcall(fnLispCallingConvention fptr) {
+// This is exactly like the one above - is it necessary?
+gctools::Tagged ltvc_set_ltv_funcall(gctools::ConstantsTable* holder, size_t index, fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();
   LCC_RETURN ret = fptr(LCC_PASS_ARGS0_VA_LIST(NULL));
-  return reinterpret_cast<gctools::Tagged>(ret.ret0);
+  core::T_sp res((gctools::Tagged)ret.ret0);
+  core::T_sp val = res;
+  return holder->set(index,val.tagged_());
 }
+
 
 gctools::Tagged ltvc_toplevel_funcall(fnLispCallingConvention fptr) {
   core::T_O *lcc_arglist = _Nil<core::T_O>().raw_();

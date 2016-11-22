@@ -297,6 +297,13 @@ struct GCInfo {
 
 #include <clasp/gctools/smart_pointers.h>
 
+
+namespace core {
+  class T_O;
+  typedef gctools::smart_ptr<T_O> T_sp;
+};
+
+
 namespace gctools {
 template <typename T>
 void *SmartPtrToBasePtr(smart_ptr<T> obj) {
@@ -337,8 +344,6 @@ namespace gctools {
 
 int handleFatalCondition();
 
- /* Register a list of roots with the current GC */
- void register_roots_with_gc(core::T_sp* address, size_t num);
  
 /* Start up the garbage collector and the main function.
        The main function is wrapped within this function */
@@ -357,5 +362,33 @@ void client_validate(void *taggedClient);
 void header_describe(gctools::Header_s* headerP);
 };
 
+
+namespace gctools {
+
+  struct ConstantsTable {
+    void* _shadow_memory;
+    void* _module_memory;
+    size_t _num_entries;
+
+    ConstantsTable(void* shadow_mem, void* module_mem, size_t num_entries) {
+      this->_shadow_memory = shadow_mem;
+      this->_module_memory = module_mem;
+      this->_num_entries = num_entries;
+    }
+    gctools::Tagged set(size_t index, gctools::Tagged val);
+
+
+
+#if 0
+ /* Register a list of roots with the current GC */
+    void register_roots_with_gc(core::T_sp* address, size_t num);
+#endif
+
+
+  };
+  
+  void register_constants_table(ConstantsTable* constants_table, core::T_sp* root_address, size_t num_roots);
+};
+      
 
 //#endif // _clasp_memoryManagement_H
