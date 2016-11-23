@@ -105,6 +105,10 @@ public:
   virtual bool plusp_() const { return ((this->_value > 0)); }
   virtual bool minusp_() const { return ((this->_value < 0)); }
 
+  virtual Number_sp negate_() const {
+    return Integer_O::create(-this->_value);
+  }
+
   virtual Number_sp oneMinus_() const {
     return Integer_O::create(this->_value - 1);
   }

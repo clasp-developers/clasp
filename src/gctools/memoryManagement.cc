@@ -80,6 +80,7 @@ kind_t global_next_header_kind = (kind_t)KIND_max+1;
 
 namespace gctools {
 
+
 size_t global_alignup_sizeof_header;
 
 MonitorAllocations global_monitorAllocations;
@@ -90,6 +91,7 @@ void monitorAllocation(kind_t k, size_t sz) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
   }
   global_monitorAllocations.counter++;
+
 }
 
 void handle_signals(int signo) {
@@ -128,6 +130,17 @@ void setupSignals() {
   if (signal(SIGABRT, handle_signals) == SIG_ERR) {
     printf("failed to register SIGABRT signal-handler with kernel\n");
   }
+#if 0
+#ifdef _TARGET_OS_LINUX
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+#endif
+#ifdef _TARGET_OS_DARWIN
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+#endif
+  if (signal(SIGFPE, handle_signals) == SIG_ERR) {
+    printf("failed to register SIGFPE signal-handler with kernel\n");
+  }
+#endif
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
@@ -222,7 +235,7 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
     ++i;
   }
 #ifdef USE_MPS
-  // MPS registers the roots and doesn't need a shadow table
+  // MPS registers the roots with the GC and doesn't need a shadow table
   mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
 #endif
 }
@@ -295,5 +308,4 @@ Tagged ConstantsTable::set(size_t index, Tagged val) {
   reinterpret_cast<core::T_sp*>(this->_module_memory)[index] = core::T_sp(val);
   return val;
 }
-
 };
