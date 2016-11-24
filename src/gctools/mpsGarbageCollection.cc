@@ -51,7 +51,7 @@ templated_class_jump_table_index, jump_table_index, NULL
 //#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
-
+#include SYMBOLS_SCRAPED_INC_H
 #ifdef USE_MPS
 
 #include <clasp/core/object.h>
