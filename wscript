@@ -85,6 +85,13 @@ def sync_submodules(cfg):
     os.system("echo This is where I sync submodules")
     os.system("git submodule sync")
 
+def dump_command(cmd):
+    cmdstr = StringIO()
+    for x in cmd[:-1]:
+        cmdstr.write("%s \\\n" % repr(x))
+    cmdstr.write("%s\n" % cmd[-1])
+    print("command ========\n%s\n" % cmdstr.getvalue())
+    
 def libraries_as_link_flags(fmt,libs):
     all_libs = []
     for x in libs:
@@ -243,6 +250,7 @@ class variant(object):
             cfg.env.append_value('LINKFLAGS', os.getenv("CLASP_RELEASE_LINKFLAGS").split())
     def configure_for_debug(self,cfg):
         cfg.define("_DEBUG_BUILD",1)
+        cfg.define("DEBUG_GUARD",1)
         cfg.env.append_value('CXXFLAGS', [ '-O0', '-g' ])
         cfg.env.append_value('CFLAGS', [ '-O0', '-g' ])
         if (os.getenv("CLASP_DEBUG_CXXFLAGS") != None):
@@ -910,18 +918,21 @@ class compile_aclasp(Task.Task):
         if (self.bld.debug_on ):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
-        if (not self.bld.interactive ):
-            cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--ignore-image",
                       "--feature", "clasp-min",
                       "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")',
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
 #                      "--eval", '(setq cmp:*compile-file-debug-dump-module* t)',
-#                      "--eval", '(setq cmp:*compile-debug-dump-module* t)',
-                      "--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
-                      "--eval", "(quit)",
-                      "--" ] + self.bld.clasp_aclasp
+#                      "--eval", '(setq cmp:*compile-debug-dump-module* t)'
+        if (self.bld.command ):
+            cmd = cmd + [ "--eval", "(load-aclasp)" ]
+        else:
+            cmd = cmd + ["--eval", "(compile-aclasp :output-file #P\"%s\")" % self.outputs[0],
+                         "--eval", "(quit)" ]
+        cmd = cmd + [ "--" ] + self.bld.clasp_aclasp
+        if (self.bld.command ):
+            dump_command(cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -940,16 +951,18 @@ class compile_bclasp(Task.Task):
         if (self.bld.debug_on ):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
-        if (not self.bld.interactive ):
-            cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
-                      "--eval", '(load "sys:kernel;clasp-builder.lsp")', 
-                      "--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
-                      "--eval", "(quit)",
-                      "--" ] + self.bld.clasp_bclasp
-        print("cmd = %s" % cmd)
+                      "--eval", '(load "sys:kernel;clasp-builder.lsp")' ]
+        if (self.bld.command ):
+            cmd = cmd + [ "--eval", "(load-bclasp)" ]
+        else:
+            cmd = cmd + ["--eval", "(compile-bclasp :output-file #P\"%s\")" % self.outputs[0] ,
+                         "--eval", "(quit)" ]
+        cmd = cmd + [ "--" ] + self.bld.clasp_bclasp
+        if (self.bld.command ):
+            dump_command(cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -966,16 +979,18 @@ class compile_cclasp(Task.Task):
         if (self.bld.debug_on ):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
-        if (not self.bld.interactive ):
-            cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--image", self.inputs[1].abspath(),
                       "--feature", "debug-run-clang",
-                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")",
-                      "--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
-                      "--eval", "(quit)",
-                      "--" ] + self.bld.clasp_cclasp
-        print("compile_cclasp cmd: %s" % cmd)
+                      "--eval", "(load \"sys:kernel;clasp-builder.lsp\")" ]
+        if (self.bld.command ):
+            cmd = cmd + [ "--eval", "(load-cclasp)" ]
+        else:
+            cmd = cmd + ["--eval", "(compile-cclasp :output-file #P\"%s\")" % self.outputs[0],
+                         "--eval", "(quit)" ]
+        cmd = cmd + [ "--" ] + self.bld.clasp_cclasp
+        if (self.bld.command ):
+            dump_command(cmd)
         return self.exec_command(cmd)
     def exec_command(self, cmd, **kw):
         kw['stdout'] = sys.stdout
@@ -1012,8 +1027,6 @@ class compile_addons(Task.Task):
         if (self.bld.debug_on ):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
-        if (not self.bld.interactive ):
-            cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
                       "--feature", "debug-run-clang",
@@ -1038,8 +1051,6 @@ class compile_module(Task.Task):
         if (self.bld.debug_on ):
             cmd = cmd + [ '--feature', 'exit-backtrace',
                           '--feature', 'pause-pid' ]
-        if (not self.bld.interactive ):
-            cmd = cmd + [ '--non-interactive' ]
         cmd = cmd + [ "--norc",
                       "--feature", "ignore-extensions",
                       "--feature", "debug-run-clang",
@@ -1089,6 +1100,7 @@ class link_bitcode(Task.Task):
         for f in self.inputs:
             all_inputs.write(' %s' % f.abspath())
         cmd = "" + self.env.LLVM_AR_BINARY + " ru %s %s" % (self.outputs[0], all_inputs.getvalue())
+#        print("link_bitcode cmd = %s" % cmd)
         return self.exec_command(cmd)
     def __str__(self):
         return "link_bitcode - linking all object(bitcode) files."
@@ -1213,7 +1225,7 @@ def init(ctx):
                         cmd = name + '_' + s + variant
                         stage = s
                         debug_on = False
-                        interactive = False
+                        command = False
                     class tmp(y):
                         if (debug_char==None):
                             variant = gc
@@ -1222,16 +1234,16 @@ def init(ctx):
                         cmd = "debug_" + name + '_' + s + variant
                         stage = s
                         debug_on = True
-                        interactive = False
+                        command = False
                     class tmp(y):
                         if (debug_char==None):
                             variant = gc
                         else:
                             variant = gc+'_'+debug_char
-                        cmd = "interactiveDebug_" + name + '_' + s + variant
+                        cmd = "command_" + name + '_' + s + variant
                         stage = s
-                        debug_on = True
-                        interactive = True
+                        debug_on = False
+                        command = True
             class tmp(BuildContext):
                 if (debug_char==None):
                     variant = gc
@@ -1240,7 +1252,7 @@ def init(ctx):
                 cmd = 'rebuild_c'+variant
                 stage = 'rebuild'
                 debug_on = True
-                interactive = True
+                command = False
             class tmp(BuildContext):
                 if (debug_char==None):
                     variant = gc
@@ -1249,7 +1261,7 @@ def init(ctx):
                 cmd = 'dangerzone_c'+variant
                 stage = 'dangerzone'
                 debug_on = True
-                interactive = True
+                command = False
 
 #def buildall(ctx):
 #    import waflib.Options

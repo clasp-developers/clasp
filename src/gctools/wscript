@@ -1,6 +1,8 @@
 def build(bld):
     for name in [
             'gc_interface',
+            'boehmGarbageCollection',
+            'mpsGarbageCollection',
             'source_info',
             'gc_boot',
             'gcFunctions',
