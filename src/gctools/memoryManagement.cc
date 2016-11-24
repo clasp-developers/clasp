@@ -70,6 +70,7 @@ kind_t global_next_header_kind = (kind_t)KIND_max+1;
 #endif
 };
 
+#if 0
 #ifdef USE_BOEHM
 #include "boehmGarbageCollection.cc"
 #endif
@@ -77,9 +78,9 @@ kind_t global_next_header_kind = (kind_t)KIND_max+1;
 #if defined(USE_MPS)
 #include "mpsGarbageCollection.cc"
 #endif
+#endif
 
 namespace gctools {
-
 
 size_t global_alignup_sizeof_header;
 
@@ -91,7 +92,6 @@ void monitorAllocation(kind_t k, size_t sz) {
     core::core__clib_backtrace(global_monitorAllocations.backtraceDepth);
   }
   global_monitorAllocations.counter++;
-
 }
 
 void handle_signals(int signo) {

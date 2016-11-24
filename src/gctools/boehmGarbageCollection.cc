@@ -25,7 +25,9 @@ THE SOFTWARE.
 */
 /* -^- */
 
+
 #include <clasp/core/foundation.h>
+#ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/gctools/gctoolsPackage.h>
@@ -97,3 +99,4 @@ void client_validate(void *taggedClient)
 }
 
 };
+#endif // whole file #ifdef USE_BOEHM

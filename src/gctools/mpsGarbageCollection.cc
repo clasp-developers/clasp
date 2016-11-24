@@ -51,6 +51,9 @@ templated_class_jump_table_index, jump_table_index, NULL
 //#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
+
+#ifdef USE_MPS
+
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/str.h>
@@ -130,20 +133,47 @@ size_t global_sizeof_fwd;
 };
 
 namespace gctools {
-void mps_register_roots(void* root_address, size_t num_roots) {
-  // First flush the memory
-  mem = reinterpret_cast<core::T_sp*>(root_address);
-  for (size_t ii(0); ii<nargs; ++ii) {
-    mem[ii] = _Unbound<core::T_O>();
-  }
-  mps_root_t* mps_root = reinterpret_cast<mps_root_t>(malloc(sizeof(mps_root_t)));
-  mps_root_create_area_tagged(mps_root,_global_arena,mps_rank_exact(),
-                              MPS_RM_CONST, reinterpret_cast<void*>(root_address),
-                              reinterpret_cast<void*>(reinterpret_cast<char*>(root_address)+num_roots*sizeof(core::T_sp)),
-                              gctools::pointer_tag_mask,gctools::pointer_tag_eq);
-}
+struct root_list {
+  mps_root_t _root;
+  root_list* _next;
+  root_list(mps_root_t root, root_list* next) :_root(root), _next(next) {};
 };
 
+root_list* global_root_list = NULL;
+
+void mps_register_roots(void* roots_begin, size_t num_roots) {
+  mps_root_t mps_root;
+  mps_res_t res;
+  void* roots_end = reinterpret_cast<void*>(reinterpret_cast<char*>(roots_begin)+num_roots*sizeof(core::T_sp));
+  printf("%s:%d About to mps_root_create_area_tagged %lu roots -> roots_begin@%p roots_end@%p\n", __FILE__, __LINE__, num_roots, roots_begin, roots_end );
+  res = mps_root_create_area_tagged(&mps_root,
+                                    _global_arena,
+                                    mps_rank_exact(),
+                                    0, // DLM suggested this because MPS_RM_PROT will have problems with two roots on same memory page
+                                    roots_begin,
+                                    roots_end,
+                                    mps_scan_area_tagged,
+                                    gctools::pointer_tag_mask,
+                                    gctools::pointer_tag_eq);
+  if ( res != MPS_RES_OK ) {
+    SIMPLE_ERROR(BF("Could not mps_root_create_area_tagged - error: %d") % res );
+  }
+  // Save the root list in a linked list
+  root_list* rl = new root_list(mps_root, global_root_list);
+  global_root_list = rl;
+}
+
+// Delete all of the mps roots.
+// This happens in reverse order of how they were created because - you know - linked list.
+void delete_my_roots() {
+  root_list* rl = global_root_list;
+  while (rl) {
+    mps_root_destroy(rl->_root);
+    rl = rl->_next;
+  }
+  global_root_list = NULL;
+};
+};
 namespace gctools {
 
 #ifdef DEBUG_GUARD
@@ -159,7 +189,7 @@ void Header_s::validate() const {
     abort();
   } else if ( this->kindP() ) {
     if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
       telemetry::global_telemetry_flush();
       abort();
     }
@@ -169,13 +199,13 @@ void Header_s::validate() const {
       abort();
     }
     if ( this->tail_start & 0xffffffffff000000 ) {
-      printf("%s:%d   header->tail_start is not a reasonable value -> %p\n", this->tail_start);
+      printf("%s:%d   header->tail_start is not a reasonable value -> %x\n", __FILE__,__LINE__, this->tail_start);
     }
     if ( this->tail_size & 0xffffffffff000000 ) {
-      printf("%s:%d   header->tail_size is not a reasonable value -> %p\n", this->tail_size);
+      printf("%s:%d   header->tail_size is not a reasonable value -> %x\n", __FILE__, __LINE__, this->tail_size);
     }
     if ( this->data[0] != 0xDEADBEEF01234567 ) {
-      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],this->data[0],0xDEADBEEF01234567 );
+      printf("%s:%d  INVALID object  this->data[0]@%p->%p != %p\n", __FILE__, __LINE__, &this->data[0],(void*)this->data[0],(void*)0xDEADBEEF01234567 );
       telemetry::global_telemetry_flush();
       abort();
     }
@@ -189,7 +219,7 @@ void Header_s::validate() const {
     }
   } else if ( this->fwdP() ) {
     if ( this->guard != 0x0FEEAFEEBFEECFEED) {
-      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, this->guard );
+      printf("%s:%d  INVALID object  this->guard is bad value->%p\n", __FILE__, __LINE__, (void*)this->guard );
       telemetry::global_telemetry_flush();
       abort();
     }
@@ -224,10 +254,10 @@ void rawHeaderDescribe(uintptr_t *headerP) {
     printf("  0x%p : 0x%lu\n", headerP, *headerP);
     printf("  0x%p : 0x%lu\n", (headerP+1), *(headerP+1));
 #ifdef DEBUG_GUARD
-    printf("  0x%p : 0x%p\n", (headerP+2), *(headerP+2));
-    printf("  0x%p : 0x%p\n", (headerP+3), *(headerP+3));
-    printf("  0x%p : 0x%p\n", (headerP+4), *(headerP+4));
-    printf("  0x%p : 0x%p\n", (headerP+5), *(headerP+5));
+    printf("  0x%p : 0x%p\n", (headerP+2), (void*)*(headerP+2));
+    printf("  0x%p : 0x%p\n", (headerP+3), (void*)*(headerP+3));
+    printf("  0x%p : 0x%p\n", (headerP+4), (void*)*(headerP+4));
+    printf("  0x%p : 0x%p\n", (headerP+5), (void*)*(headerP+5));
 #endif    
     gctools::GCKindEnum kind = (gctools::GCKindEnum)((*headerP) >> 2);
     printf(" Kind tag - kind: %d", kind);
@@ -391,7 +421,7 @@ GC_RESULT cons_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
       } else if (cons->padP()) {
         client = (char *)(client) + cons->padSize();
       } else {
-        printf("Bad object in cons_scan");
+        printf("%s:%d CONS in cons_scan (it's not a CONS or any of MPS fwd/pad1/pad2 car=%p cdr=%p\n", __FILE__, __LINE__, cons->_Car.raw_(), cons->_Cdr.raw_());
         abort();
       }
     };
@@ -750,8 +780,6 @@ void run_quick_tests()
 #define LENGTH(array) (sizeof(array) / sizeof(array[0]))
 
 int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-
-  
   if (Alignment() == 16) {
     //            printf("%s:%d WARNING   Alignment is 16 - it should be 8 - check the Alignment() function\n!\n!\n!\n!\n",__FILE__,__LINE__);
   }
@@ -1045,9 +1073,9 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   if (res != MPS_RES_OK)
     GC_RESULT_ERROR(res, "Could not create scan root");
 
-  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
+//  mps_register_root(reinterpret_cast<gctools::Tagged*>(&globalTaggedRunTimeValues));
 
-  _ThreadLocalStack.allocateStack(gc::thread_local_cl_stack_min_size);
+  threadLocalStack()->allocateStack(gc::thread_local_cl_stack_min_size);
 
 #ifdef RUNNING_GC_BUILDER
   printf("%s:%d mps-prep version of clasp started up\n", __FILE__, __LINE__);
@@ -1068,8 +1096,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
 #endif
   processMpsMessages();
 
-  _ThreadLocalStack.deallocateStack();
-
+  delete_my_roots();
+  threadLocalStack()->deallocateStack();
   mps_root_destroy(global_scan_root);
   mps_root_destroy(global_stack_root);
   mps_thread_dereg(global_thread);
@@ -1153,3 +1181,5 @@ void check_all_clients() {
 }
 
 };
+
+#endif // whole file #ifdef USE_MPS

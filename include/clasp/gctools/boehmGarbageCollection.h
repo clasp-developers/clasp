@@ -147,7 +147,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 
 
 namespace gctools {
-  void* boehm_create_constants_table(size_t nargs);
+  void* boehm_create_shadow_table(size_t nargs);
 };
 
 namespace gctools {

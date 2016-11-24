@@ -414,7 +414,7 @@ namespace gctools {
       has the type: int startup(int argc, char* argv[]) just like main.
       Also pass an optional object-format for MPS
     */
-int initializeMemoryPoolSystem(MainFunctionType startup, int argc, char *argv[], mps_fmt_auto_header_s *mps_fmt, bool mpiEnabled, int mpiRank, int mpiSize);
+  int initializeMemoryPoolSystem(MainFunctionType startup, int argc, char *argv[], bool mpiEnabled, int mpiRank, int mpiSize);
 
 /*! Search the heap and the stack for an address and print hits
       This can't currently be called from within obj_skip - so it's not
