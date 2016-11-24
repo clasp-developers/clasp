@@ -1175,7 +1175,6 @@ def scrape_task_generator(self):
         if ( task.__class__.__name__ == 'cxx' ):
             for node in task.inputs:
                 sif_node = node.change_ext('.sif')
-                print("create_task scrape node=%s  sif_node=%s" % (node,sif_node))
                 self.create_task('scrape_with_preproc_scan',node,[sif_node])
                 all_sif_files.append(sif_node)
             for node in task.outputs:

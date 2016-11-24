@@ -30,7 +30,6 @@ THE SOFTWARE.
 //#include <clasp/core/object.h>
 //#include <clasp/core/numbers.h>
 #include <clasp/gctools/gctoolsPackage.h>
-#include SYMBOLS_SCRAPED_INC_H
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 

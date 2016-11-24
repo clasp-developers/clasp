@@ -51,8 +51,6 @@ templated_class_jump_table_index, jump_table_index, NULL
 //#define MPS_LOVEMORE 1
 
 #include <clasp/core/foundation.h>
-#include SYMBOLS_SCRAPED_INC_H
-#ifdef USE_MPS
 
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
@@ -66,6 +64,8 @@ templated_class_jump_table_index, jump_table_index, NULL
 #include <clasp/gctools/globals.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/gctools/gc_interface.fwd.h>
+
+#ifdef USE_MPS
 
 extern "C" {
 #include "clasp/mps/code/mpscawl.h" // MVFF pool
