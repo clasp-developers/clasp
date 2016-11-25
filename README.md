@@ -11,18 +11,27 @@ Clasp is a new [Common Lisp](https://common-lisp.net/) implementation that seaml
 * Lots of bug fixes and stability improvements.
 
 ## Getting Clasp
-Precompiled and prepackaged versions of Clasp will be available for a limited number of distributions. Check the [releases](https://github.com/drmeister/clasp/releases) to see if there is something available for you.
-
-At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source if a pre-made package is not available or workable for you. In case you cannot get it to compile even with the instructions below, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
+At the moment, Clasp is supported on Linux and Mac OS X. On these systems, you should be able to build it from source. In case you cannot get it to compile even with the instructions below, the quickest way to get help is to either [file an issue](#reporting-problems), or to [chat with us directly](#irc).
 
 Building on most systems will take around 4GB of RAM and ~2 hours with a relatively modern processor, so be prepared to watch a movie or do some other useful work until Clasp is all done.
 
+In the future, precompiled and prepackaged versions of Clasp will be available for a limited number of distributions. Check the [releases](https://github.com/drmeister/clasp/releases) to see if there is something available for you.
+
+### Building Externals-Clasp
+Currently, no systems provide the advanced version of llvm/clang [external dependencies](#external-dependencies) as required by Clasp, so you must compile them.
+
+Clone [externals-clasp](https://github.com/drmeister/externals-clasp) to a directory on your system. Follow the directions to build it.
+
+This will take some time to complete; maybe play a round of pinball or [chat on IRC for a bit](#irc).
+
+Next, copy `clasp/wscript.config.template` (a Python source file) to `clasp/wscript.config` and uncomment the line containing ` ##export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp` and change it to the directory where your externals-clasp is situated. Next, go to the instructions for building on linux or OS X. 
+
+
+
 ### Building on Linux
-For most distributions that have the listed [dependencies](#external-dependencies) available as packages, the compilation should be straightforward. Simply clone Clasp and run `make` from the root of it.
 
-If the system is too dumb to find some of the dependencies or fails for other reasons, you might have to manually adjust configuration variables. For this, copy `local.config.template` to `local.config` and edit it as appropriate. If you lack the required dependencies, try [compiling with externals-clasp](#building-with-externals-clasp).
-
-The compilation output will be in the `build/clasp` directory. To launch Clasp, run `build/clasp/bin/clasp_boehm_o`.
+Run ```./waf update_submodules configure``` and then ```./waf build_cboehm```.
+The compilation output will be in the `build` directory. To launch Clasp, run `build/clasp`.
 
 Clasp has been successfully built on
 
@@ -37,30 +46,18 @@ Clasp has been successfully built on
 ### Building on OS X
 First you will need what is listed for OS X under the [dependencies](#external-dependencies). Next you need an additional step that is documented [on the wiki](https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang). The rest of the procedure is the same as for [building with externals-clasp](#building-with-externals-clasp).
 
-The compilation output will be in the `build/clasp` directory. To launch Clasp, run `build/clasp/MacOS/clasp_boehm_o`.
-
-Aug 30 2016 - you need Xcode8-beta6 to build on OS X.  Install it and then run "xcode-select --install".
-Hopefully soon with the next Xcode release and new LLVM release I'll be able to eliminate all of this.
-
-### Building With Externals-Clasp
-If your system does not provide the [external dependencies](#external-dependencies) as required by Clasp, you can use this approach instead, which will compile them for you.
-
-Clone [externals-clasp](https://github.com/drmeister/externals-clasp) to a directory on your system. Follow the directions to build it.
-
-Next, copy `clasp/local.config.template` to `clasp/local.config` and uncomment the line containing ` ##export EXTERNALS_SOURCE_DIR = $(HOME)/Development/externals-clasp` and change it to the directory where your externals-clasp is situated. Next, simply run `make` from the clasp top directory. This will take some time to complete; maybe play a round of pinball or [chat on IRC for a bit](#irc).
+Run ```./waf update_submodules configure``` and then ```./waf build_cboehm```.
+The compilation output will be in the `build` directory. To launch Clasp, run `build/clasp`.
 
 ### External Dependencies
 #### Linux
 Simply install the appropriate packages with your package manager.
 
-* **llvm** 3.6
-* **clang** 3.6, including headers.
+* **llvm** 4.0 (use externals-clasp)
+* **clang** 4.0 (use externals-clasp)
 * **boost**
-* **autoreconf** (dh-autoreconf on Ubuntu)
 * **gmp** 6.0.0, compiled with --enable-cxx
-* **expat** 2.0.1
 * **zlib** 1.2.8
-* **readline** 6.2
 
 #### OS X
 Use either [brew](http://brew.sh/) or [ports](https://www.macports.org/) to install the dependencies besides Xcode. Make sure the binaries are in your `PATH`.
