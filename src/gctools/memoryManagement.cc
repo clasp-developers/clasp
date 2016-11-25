@@ -241,7 +241,7 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
 }
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
-  int stackMarker = 0;
+  void* stackMarker = NULL;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
 //  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
