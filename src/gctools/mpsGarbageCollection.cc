@@ -141,20 +141,30 @@ struct root_list {
 
 root_list* global_root_list = NULL;
 
+};
+
+extern "C" {
+// The following is defined in mygc.c
+mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
+                                 void* base, void* limit,
+                                 void* closure);
+};
+
+namespace gctools {
 void mps_register_roots(void* roots_begin, size_t num_roots) {
   mps_root_t mps_root;
   mps_res_t res;
   void* roots_end = reinterpret_cast<void*>(reinterpret_cast<char*>(roots_begin)+num_roots*sizeof(core::T_sp));
-  printf("%s:%d About to mps_root_create_area_tagged %lu roots -> roots_begin@%p roots_end@%p\n", __FILE__, __LINE__, num_roots, roots_begin, roots_end );
+//  printf("%s:%d About to mps_root_create_area_tagged %lu roots -> roots_begin@%p roots_end@%p\n", __FILE__, __LINE__, num_roots, roots_begin, roots_end );
   res = mps_root_create_area_tagged(&mps_root,
                                     _global_arena,
                                     mps_rank_exact(),
                                     0, // DLM suggested this because MPS_RM_PROT will have problems with two roots on same memory page
                                     roots_begin,
                                     roots_end,
-                                    mps_scan_area_tagged,
-                                    gctools::pointer_tag_mask,
-                                    gctools::pointer_tag_eq);
+                                    clasp_scan_area_tagged,
+                                    gctools::tag_mask,  // #b111
+                                    0 ); // DLM says this will be ignored
   if ( res != MPS_RES_OK ) {
     SIMPLE_ERROR(BF("Could not mps_root_create_area_tagged - error: %d") % res );
   }

@@ -454,6 +454,7 @@ def call_llvm_config_for_libs(cfg, *args):
 def configure(cfg):
     def update_exe_search_path():
         externals = cfg.env.EXTERNALS_CLASP_DIR
+        print("externals = |%s|" % externals)
         assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
         path = os.getenv("PATH").split(os.pathsep)
         extarnals_bin_dir = os.path.join(externals, "build/release/bin/")
