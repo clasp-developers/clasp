@@ -44,7 +44,7 @@ Clasp has been successfully built on
 * **Arch**
 
 ### Building on OS X
-First you will need what is listed for OS X under the [dependencies](#external-dependencies). Next you need an additional step that is documented [on the wiki](https://github.com/drmeister/clasp/wiki/Building-Clasp-on-OS-X-requires-using-the-open-source-version-of-Clang). The rest of the procedure is the same as for [building with externals-clasp](#building-with-externals-clasp).
+First you will need what is listed for OS X under the [dependencies](#external-dependencies). The rest of the procedure is the same as for [building with externals-clasp](#building-with-externals-clasp).
 
 Run ```./waf update_submodules configure``` and then ```./waf build_cboehm```.
 The compilation output will be in the `build` directory. To launch Clasp, run `build/clasp`.
