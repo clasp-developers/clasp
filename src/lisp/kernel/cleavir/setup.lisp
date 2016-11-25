@@ -7,7 +7,6 @@
 ;;; Save top level forms for source tracking
 (defmethod cleavir-generate-ast::convert-form :around (form info env system)
   (let ((core:*top-level-form-stack* (cons form core:*top-level-form-stack*)))
-    (warn "cleavir-generate-ast::convert-form stack: ~a form: ~a source-location: ~a" (length core:*top-level-form-stack*) form (ext:current-source-location))
     (call-next-method)))
 
 (defmethod cleavir-generate-ast:convert-constant-to-immediate ((n integer) environment clasp)
