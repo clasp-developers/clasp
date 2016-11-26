@@ -428,6 +428,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
   ;; Use the *cleavir-compile-file-hook* to determine which compiler to use
   ;; if nil == bclasp
   ;; if #'clasp-cleavir:cleavir-compile-file-form  == cclasp
+  (gctools:garbage-collect)
   (apply #'compile-file* *cleavir-compile-file-hook* args))
 
 
