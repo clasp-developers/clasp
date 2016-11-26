@@ -641,9 +641,21 @@ void mpsDeallocateStack(gctools::GCStack *stack) {
 
 extern "C" {
 
-int processMpsMessages(void) {
-  int messages(0);
-  int mFinalize(0);
+size_t global_finalization_requests = 0;
+void my_mps_finalize(void* client) {
+  mps_finalize(_global_arena,&client);
+  ++globalMpsMetrics.finalizationRequests;
+  ++global_finalization_requests;
+  if (global_finalization_requests>16) {
+    size_t finalizations;
+    processMpsMessages(finalizations);
+    global_finalization_requests = 0;
+  }
+}
+
+size_t processMpsMessages(size_t& finalizations) {
+  size_t messages(0);
+  finalizations = 0;
   int mGcStart(0);
   int mGc(0);
   core::Number_sp startTime = gc::As<core::Number_sp>(core::cl__get_internal_run_time());
@@ -670,7 +682,7 @@ int processMpsMessages(void) {
                 printf("    clock: %lu\n", (unsigned long)mps_message_clock(_global_arena, message));
 #endif
     } else if (type == mps_message_type_finalization()) {
-      ++mFinalize;
+      ++finalizations;
       //                printf("%s:%d mps_message_type_finalization received\n", __FILE__, __LINE__);
       mps_addr_t ref_o;
       mps_message_finalization_ref(&ref_o, gctools::_global_arena, message);

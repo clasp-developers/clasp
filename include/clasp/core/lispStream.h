@@ -267,8 +267,14 @@ public:
 };
 };
 
-namespace core {
+template <>
+struct gctools::GCInfo<core::Stream_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
+namespace core {
 SMART(Stream);
 class Stream_O : public General_O {
   LISP_CLASS(core, ClPkg, Stream_O, "stream",General_O);
@@ -302,12 +308,6 @@ public:
   virtual int column() const;
 };
 };
-template <>
-struct gctools::GCInfo<core::Stream_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 namespace core {
 SMART(Stream);
@@ -335,7 +335,16 @@ public: // Functions here
   virtual string __repr__() const;
   T_sp filename() const { return this->_Filename; };
 }; // FileStream class
+};
 
+template <>
+struct gctools::GCInfo<core::IOFileStream_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 class IOFileStream_O : public FileStream_O {
   friend int &IOFileStreamDescriptor(T_sp);
   LISP_CLASS(core, CorePkg, IOFileStream_O, "iofile-stream",FileStream_O);
@@ -362,15 +371,16 @@ public:
   int fileDescriptor() const { return this->_FileDescriptor; };
 };
 };
+
 template <>
-struct gctools::GCInfo<core::IOFileStream_O> {
+struct gctools::GCInfo<core::IOStreamStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {
-class IOStreamStream_O : public FileStream_O {
+  class IOStreamStream_O : public FileStream_O {
   friend FILE *&IOStreamStreamFile(T_sp strm);
   LISP_CLASS(core, CorePkg, IOStreamStream_O, "iostream-stream",FileStream_O);
   //    DECLARE_ARCHIVE();
@@ -395,12 +405,7 @@ public:
   FILE *file() const { return this->_File; };
 };
 }; // core namespace
-template <>
-struct gctools::GCInfo<core::IOStreamStream_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
+
 
 namespace core {
 class StringStream_O : public AnsiStream_O {
@@ -416,6 +421,16 @@ public: // ctor/dtor for classes with shared virtual base
 public: // Functions here
 };      // StringStream class
 
+};
+
+template <>
+struct gctools::GCInfo<core::StringOutputStream_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+namespace core {
 class StringOutputStream_O : public StringStream_O {
   friend StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp);
   LISP_CLASS(core, CorePkg, StringOutputStream_O, "string-output-stream",StringStream_O);
@@ -434,13 +449,13 @@ public: // Functions here
   StrWithFillPtr_sp getAndReset();
 }; // StringStream class
 };
+
 template <>
-struct gctools::GCInfo<core::StringOutputStream_O> {
+struct gctools::GCInfo<core::StringInputStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace core {
 class StringInputStream_O : public StringStream_O {
   friend gctools::Fixnum &StringInputStreamInputPosition(T_sp strm);
@@ -463,13 +478,13 @@ public: // Functions here
   static T_sp make(const string &str);
 }; // StringStream class
 };
+
 template <>
-struct gctools::GCInfo<core::StringInputStream_O> {
+struct gctools::GCInfo<core::SynonymStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace core {
 class SynonymStream_O : public AnsiStream_O {
   friend Symbol_sp &SynonymStreamSymbol(T_sp strm);
@@ -478,7 +493,6 @@ class SynonymStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   SynonymStream_O() : _SynonymSymbol(_Nil<Symbol_O>()){};
-  virtual ~SynonymStream_O(){};
 
 GCPROTECTED: // instance variables here
   Symbol_sp _SynonymSymbol;
@@ -494,10 +508,11 @@ public: // Functions here
 }; // SynonymStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::SynonymStream_O> {
+struct gctools::GCInfo<core::TwoWayStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -509,7 +524,6 @@ class TwoWayStream_O : public AnsiStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   TwoWayStream_O() : _In(_Nil<T_O>()), _Out(_Nil<T_O>()){};
-  virtual ~TwoWayStream_O(){};
 GCPROTECTED: // instance variables here
   T_sp _In;
   T_sp _Out;
@@ -521,13 +535,13 @@ public:
 }; // TwoWayStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::TwoWayStream_O> {
+struct gctools::GCInfo<core::BroadcastStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
-
 namespace core {
 FORWARD(BroadcastStream);
 class BroadcastStream_O : public AnsiStream_O {
@@ -544,10 +558,11 @@ public: // Functions here
 };      // BroadcastStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::BroadcastStream_O> {
+struct gctools::GCInfo<core::ConcatenatedStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -565,10 +580,11 @@ public: // Functions here
 };      // ConcatenatedStream class
 
 }; // core namespace
+
 template <>
-struct gctools::GCInfo<core::ConcatenatedStream_O> {
+struct gctools::GCInfo<core::EchoStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -587,12 +603,6 @@ GCPRIVATE: // instance variables here
 
 public: // Functions here
 };      // EchoStream class
-};
-template <>
-struct gctools::GCInfo<core::EchoStream_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {

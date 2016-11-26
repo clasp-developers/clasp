@@ -123,7 +123,15 @@ CL_DEFMETHOD   bool isAbsolute() const { return this->_Path.is_absolute(); };
 
   DEFAULT_CTOR_DTOR(Path_O);
 };
+};
+template <>
+struct gctools::GCInfo<core::DirectoryIterator_O> {
+  static bool constexpr NeedsInitialization = true;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
 
+namespace core{
 SMART(DirectoryIterator);
 class DirectoryIterator_O : public Iterator_O {
   LISP_CLASS(core, CorePkg, DirectoryIterator_O, "DirectoryIterator",Iterator_O);
@@ -156,11 +164,12 @@ public:
 };
 
 template <>
-struct gctools::GCInfo<core::DirectoryIterator_O> {
+struct gctools::GCInfo<core::RecursiveDirectoryIterator_O> {
   static bool constexpr NeedsInitialization = true;
   static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
+
 
 namespace core {
 SMART(RecursiveDirectoryIterator);
@@ -194,12 +203,6 @@ public:
   explicit RecursiveDirectoryIterator_O() : Base(), _CurrentIterator(NULL){};
   virtual ~RecursiveDirectoryIterator_O(); // nontrivial
 };
-};
-template <>
-struct gctools::GCInfo<core::RecursiveDirectoryIterator_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 namespace core {

@@ -430,8 +430,8 @@ void mpsDeallocateStack(GCStack *stack);
 
 extern "C" {
 
-/*! Return the number of messages processed */
-extern int processMpsMessages(void);
+/*! Return the number of messages processed and the number of finalization messages */
+extern size_t processMpsMessages(size_t& finalizations);
 };
 
 #endif // _clasp_memoryPoolSystem_H

@@ -487,8 +487,11 @@ should not be managed by the GC */
 
 typedef void (*BoehmFinalizerFn)(void *obj, void *data);
 
-namespace gctools {
+extern "C" {
+void my_mps_finalize(void* client);
+};
 
+namespace gctools {
 #ifdef USE_BOEHM
 template <class OT>
 void BoehmFinalizer(void *base, void *data) {
@@ -497,6 +500,7 @@ void BoehmFinalizer(void *base, void *data) {
   obj->~OT();
 }
 #endif
+
 
 template <class OT, bool Needed = true>
 struct GCObjectFinalizer {
@@ -512,9 +516,8 @@ struct GCObjectFinalizer {
 //            printf("%s:%d Just completed finalize sp@%p sp.px_ref()@%p\n", __FILE__, __LINE__, &sp, sp.px_ref());
 #endif
 #ifdef USE_MPS
-    void *client = &*sp; // SmartPtrToBasePtr(sp);
-    mps_finalize(_global_arena, &client);
-    ++globalMpsMetrics.finalizationRequests;
+    // Defined in mpsGarbageCollection.cc
+    my_mps_finalize(&*sp);
 #endif
   };
 };
