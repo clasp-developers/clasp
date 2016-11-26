@@ -643,8 +643,8 @@ extern "C" {
 
 size_t global_finalization_requests = 0;
 void my_mps_finalize(void* client) {
-  mps_finalize(_global_arena,&client);
-  ++globalMpsMetrics.finalizationRequests;
+  mps_finalize(gctools::_global_arena,&client);
+  ++gctools::globalMpsMetrics.finalizationRequests;
   ++global_finalization_requests;
   if (global_finalization_requests>16) {
     size_t finalizations;
@@ -709,9 +709,10 @@ namespace gctools {
 void test_mps_allocation() {
   int numAllocations = 10000;
   printf("Starting test_mps_allocation -> allocating %d objects\n", numAllocations);
+  size_t finalizations;
   for (int i = 0; i < numAllocations; ++i) {
     core::Str_sp ss = core::Str_O::create("Hi there, this is a test");
-    processMpsMessages();
+    processMpsMessages(finalizations);
   }
   printf("Done test_mps_allocation - allocated %d objects\n", numAllocations);
 }
@@ -1116,7 +1117,8 @@ int initializeMemoryPoolSystem(MainFunctionType startupFn, int argc, char *argv[
   exit_code = 0;
   #endif
 #endif
-  processMpsMessages();
+  size_t finalizations;
+  processMpsMessages(finalizations);
 
   delete_my_roots();
   threadLocalStack()->deallocateStack();
