@@ -70,12 +70,14 @@ kind_t global_next_header_kind = (kind_t)KIND_max+1;
 #endif
 };
 
+#if 0
 #ifdef USE_BOEHM
 #include "boehmGarbageCollection.cc"
 #endif
 
 #if defined(USE_MPS)
 #include "mpsGarbageCollection.cc"
+#endif
 #endif
 
 namespace gctools {
@@ -128,6 +130,17 @@ void setupSignals() {
   if (signal(SIGABRT, handle_signals) == SIG_ERR) {
     printf("failed to register SIGABRT signal-handler with kernel\n");
   }
+#if 0
+#ifdef _TARGET_OS_LINUX
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+#endif
+#ifdef _TARGET_OS_DARWIN
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW);
+#endif
+  if (signal(SIGFPE, handle_signals) == SIG_ERR) {
+    printf("failed to register SIGFPE signal-handler with kernel\n");
+  }
+#endif
   llvm::install_fatal_error_handler(fatal_error_handler, NULL);
 }
 
@@ -222,13 +235,13 @@ CL_DEFUN void gctools__register_roots(core::T_sp taddress, core::List_sp args) {
     ++i;
   }
 #ifdef USE_MPS
-  // MPS registers the roots and doesn't need a shadow table
+  // MPS registers the roots with the GC and doesn't need a shadow table
   mps_register_roots(reinterpret_cast<void*>(module_mem),nargs);
 #endif
 }
 
 int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char *argv[], size_t stackMax, bool mpiEnabled, int mpiRank, int mpiSize) {
-  int stackMarker = 0;
+  void* stackMarker = NULL;
   gctools::_global_stack_marker = (const char*)&stackMarker;
   gctools::_global_stack_max_size = stackMax;
 //  printf("%s:%d       global_stack_marker = %p\n", __FILE__, __LINE__, gctools::_global_stack_marker );
@@ -295,5 +308,4 @@ Tagged ConstantsTable::set(size_t index, Tagged val) {
   reinterpret_cast<core::T_sp*>(this->_module_memory)[index] = core::T_sp(val);
   return val;
 }
-
 };

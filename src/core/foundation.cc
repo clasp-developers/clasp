@@ -293,6 +293,9 @@ void lisp_pollSignals() {
     printf("Resuming after Ctrl+C\n");
   } else if (signo == SIGCHLD) {
       //            printf("A child terminated\n");
+  } else if (signo == SIGFPE) {
+    printf("%s:%d A floating point error occurred\n", __FILE__, __LINE__);
+    core__invoke_internal_debugger(_Nil<core::T_O>());
   } else if (signo == SIGABRT) {
     printf("ABORT was called!!!!!!!!!!!!\n");
     core__invoke_internal_debugger(_Nil<core::T_O>());

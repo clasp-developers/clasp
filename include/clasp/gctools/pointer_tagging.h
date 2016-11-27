@@ -164,18 +164,18 @@ void initialize_smart_pointers();
 /*! Pointer and immediate value tagging is set up here */
 /* FIXNUM's have the lsb set to zero - this allows addition and comparison to be fast */
 /* The rest of the bits are the fixnum */
- static const uintptr_t tag_mask    = BOOST_BINARY(111);
- static const uintptr_t fixnum_tag  = BOOST_BINARY(000); // x000 means fixnum
- static const uintptr_t fixnum_mask = BOOST_BINARY(111);
+ static const uintptr_t tag_mask    = ZERO_TAG_MASK; // BOOST_BINARY(111);
+static const uintptr_t fixnum_tag  = BOOST_BINARY(000); // x000 means fixnum
+static const uintptr_t fixnum_mask = BOOST_BINARY(111);
 /*! The pointer tags, that point to objects that the GC manages are general_tag and cons_tag
 Robert Strandh suggested a separate tag for CONS cells so that there would be a quick CONSP test
 for a CONS cell*/
- static const uintptr_t ptr_mask    = ~BOOST_BINARY(111);
- static const uintptr_t general_tag =  BOOST_BINARY(001); // means a GENERAL pointer
- static const uintptr_t cons_tag    =  BOOST_BINARY(011);    // means a CONS cell pointer
+ static const uintptr_t ptr_mask    = ~ZERO_TAG_MASK;
+  static const uintptr_t general_tag =  POINTER_GENERAL_TAG; // BOOST_BINARY(001); // means a GENERAL pointer
+  static const uintptr_t cons_tag    =  POINTER_CONS_TAG; // BOOST_BINARY(011);    // means a CONS cell pointer
                                                         /*! A test for pointers has the form (potential_ptr&pointer_tag_mask)==pointer_tag_eq */
- static const uintptr_t pointer_tag_mask = BOOST_BINARY(101);
- static const uintptr_t pointer_tag_eq   = BOOST_BINARY(001);
+  static const uintptr_t pointer_tag_mask = POINTER_TAG_MASK; // BOOST_BINARY(101);
+  static const uintptr_t pointer_tag_eq   = POINTER_TAG_EQ; // BOOST_BINARY(001);
  /*! code_tag is a tag for a raw code in memory - remove the tag and call the resulting pointer
 */
  static const uintptr_t unused0_tag = BOOST_BINARY(010);
@@ -183,18 +183,16 @@ for a CONS cell*/
 
  /*! gc_tag is used for headerless objects to indicate that this word is
 used by the garbage collector */
- static const uintptr_t gc_tag = BOOST_BINARY(111);
-
-/*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to
+ static const uintptr_t gc_tag = ZERO_TAG_MASK; //BOOST_BINARY(111);
+ 
+/*! valist_tag is a tag for va_list(s) on the stack, it is used by Clasp to 
 iterate over variable numbers of arguments passed to functions.
 Pointers with this tag are NOT moved in memory, the objects valist_tag'd pointers
 point to are only ever on the stack.
 I hack the va_list structure in X86_64 ABI dependent ways and I will abstract all of the
 ABI dependent behavior into a single header file so that it can be implemented for other
 ABI's  */
- static const uintptr_t valist_tag = BOOST_BINARY(101); // means a valist
-
-
+static const uintptr_t valist_tag = BOOST_BINARY(101); // means a valist
                                                        /*! Immediate value tags */
  static const uintptr_t immediate_mask   = BOOST_BINARY(11111);
  static const uintptr_t character_tag    = BOOST_BINARY(00110); // Character

@@ -32,6 +32,13 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/strWithFillPtr.fwd.h>
 
+template <>
+struct gctools::GCInfo<core::StrWithFillPtr_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 
 class StrWithFillPtr_O : public Str_O {
@@ -121,12 +128,6 @@ public:
 inline void clasp_string_push_extend(StrWithFillPtr_sp str, Fixnum c) {
   str->pushCharExtend(c);
 }
-};
-template <>
-struct gctools::GCInfo<core::StrWithFillPtr_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 

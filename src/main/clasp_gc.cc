@@ -10799,7 +10799,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::String_O::static_class);
  SMART_PTR_FIX(core::LoadTimeValues_O::static_class_symbol);
  SMART_PTR_FIX(core::Instance_O::static_class_symbol);
- SIMPLE_POINTER_FIX(globalTaggedRunTimeValues);
+// SIMPLE_POINTER_FIX(globalTaggedRunTimeValues);
  SMART_PTR_FIX(core::LogicalPathname_O::static_class);
  SMART_PTR_FIX(llvmo::Linker_O::static_class_symbol);
  SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class_symbol);

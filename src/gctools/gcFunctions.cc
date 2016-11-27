@@ -18,6 +18,7 @@ int gcFunctions_after;
 #include <stdint.h>
 
 #include <clasp/core/object.h>
+#include <clasp/core/bformat.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/builtInClass.h>
@@ -670,15 +671,22 @@ CL_DEFUN void gctools__garbage_collect() {
 //        printf("%s:%d Starting garbage collection of arena\n", __FILE__, __LINE__ );
 #ifdef USE_MPS
   mps_arena_collect(_global_arena);
-  processMpsMessages();
+  size_t finalizations;
+  processMpsMessages(finalizations);
   mps_arena_release(_global_arena);
 #endif
   //        printf("Garbage collection done\n");
 };
 
-CL_DEFUN void gctools__cleanup() {
+CL_DOCSTRING("Process finalizers");
+CL_LAMBDA(&optional verbose)
+CL_DEFUN void gctools__cleanup(bool verbose) {
 #ifdef USE_MPS
-  processMpsMessages();
+  size_t finalizations;
+  size_t messages = processMpsMessages(finalizations);
+  if (verbose) {
+    BFORMAT_T(BF("Processed %lu finalization messages and %lu total messages\n") % messages % finalizations );
+  }
 #endif
 };
 

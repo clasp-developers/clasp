@@ -569,24 +569,6 @@ SYMBOL_EXPORT_SC_(AstToolingPkg, onStartOfTranslationUnit);
 SYMBOL_EXPORT_SC_(AstToolingPkg, onEndOfTranslationUnit);
 };
 
-#if 0
-typedef clbind::Wrapper<clang::tooling::CompilationDatabase> CompilationDatabase_wrapper;
-typedef clbind::Wrapper<clang::tooling::JSONCompilationDatabase> JSONCompilationDatabase_wrapper;
-typedef clbind::Wrapper<clang::tooling::ClangTool> ClangTool_wrapper;
-typedef clbind::Wrapper<clang::FrontendAction> FrontendAction_wrapper;
-typedef clbind::Wrapper<clang::SourceLocation, std::unique_ptr<clang::SourceLocation>> SourceLocation_unique_ptr_wrapper;
-typedef clbind::Wrapper<clang::PresumedLoc, std::unique_ptr<clang::PresumedLoc>> PresumedLoc_unique_ptr_wrapper;
-typedef clbind::Wrapper<clang::SourceRange, std::unique_ptr<clang::SourceRange>> SourceRange_unique_ptr_wrapper;
-typedef clbind::Wrapper<clang::CharSourceRange, std::unique_ptr<clang::CharSourceRange>> CharSourceRange_unique_ptr_wrapper;
-typedef clbind::Wrapper<clang::tooling::ArgumentsAdjuster> ArgumentsAdjuster_wrapper;
-typedef clbind::Wrapper<clang::ast_matchers::dynamic::VariantValue, std::unique_ptr<clang::ast_matchers::dynamic::VariantValue>> VariantValue_wrapvper;
-typedef clbind::Wrapper<clang::ast_matchers::dynamic::VariantMatcher, std::unique_ptr<clang::ast_matchers::dynamic::VariantMatcher>> VariantMatcher_wrapper;
-typedef clbind::Wrapper<clang::ast_matchers::BoundNodes, std::unique_ptr<clang::ast_matchers::BoundNodes>> BoundNodes_wrapper;
-typedef clbind::Wrapper<clang::tooling::Replacement, std::unique_ptr<clang::tooling::Replacement>> Replacement_unique_ptr_wrapper;
-typedef clbind::Wrapper<clang::tooling::Range, std::unique_ptr<clang::tooling::Range>> Range_unique_ptr_wrapper;
-typedef clbind::Wrapper<clang::tooling::CompileCommand, std::unique_ptr<clang::tooling::CompileCommand>> CompileCommand_unique_ptr_wrapper;
-#endif
-
 namespace asttooling {
 
 #define ARGS_ast_tooling__clangVersionString "()"
@@ -737,6 +719,7 @@ CL_DEFUN void ast_tooling__testDerivable(clang::ast_matchers::MatchFinder::Match
 #endif
 };
 
+
 namespace asttooling {
 
 /*Return the field offset in bits */
@@ -763,6 +746,40 @@ size_t getRecordSize(clang::ASTContext* context, clang::RecordDecl* record)
 //  printf("Returning size=%lu\n", size);
   return size;
 }
+};
+
+SYMBOL_EXPORT_SC_(KeywordPkg,windows);
+SYMBOL_EXPORT_SC_(KeywordPkg,gnu);
+SYMBOL_EXPORT_SC_(KeywordPkg,auto_detect);
+
+namespace translate {
+template <>
+struct from_object<clang::tooling::JSONCommandLineSyntax> {
+  typedef clang::tooling::JSONCommandLineSyntax DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    if (o==kw::_sym_windows) {
+      this->_v = clang::tooling::JSONCommandLineSyntax::Windows;
+      return;
+    } else if (o==kw::_sym_gnu) {
+      this->_v = clang::tooling::JSONCommandLineSyntax::Gnu;
+      return;
+    } else if (o==kw::_sym_auto_detect) {
+      this->_v = clang::tooling::JSONCommandLineSyntax::AutoDetect;
+      return;
+    }
+    SIMPLE_ERROR(BF("syntax parameter must be one of :auto-detect, :gnu, or :windows - was passed %s") % _rep_(o));
+  };
+};
+};
+
+namespace asttooling {
+CL_DEFUN core::T_mv ast_tooling__wrapped_JSONCompilationDatabase_loadFromFile(core::T_sp FilePath, core::Symbol_sp ssyntax ) {
+  clang::tooling::JSONCommandLineSyntax syntax = translate::from_object<clang::tooling::JSONCommandLineSyntax>(ssyntax)._v;
+  std::string ErrorMessage;
+  std::unique_ptr<clang::tooling::JSONCompilationDatabase> result = clang::tooling::JSONCompilationDatabase::loadFromFile(gc::As<core::Str_sp>(FilePath)->get(),ErrorMessage,syntax);
+  return Values(translate::to_object<clang::tooling::JSONCompilationDatabase*,translate::adopt_pointer>::convert(result.release()), core::Str_O::create(ErrorMessage));
+}
 
 
 void initialize_clangTooling() {
@@ -775,11 +792,20 @@ void initialize_clangTooling() {
      class_<clang::tooling::CompilationDatabase>("CompilationDatabase", no_default_constructor)
      .def("getAllFiles", &clang::tooling::CompilationDatabase::getAllFiles)
      .def("getCompileCommands", &clang::tooling::CompilationDatabase::getCompileCommands)
-     .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands),
+     .def("getAllCompileCommands", &clang::tooling::CompilationDatabase::getAllCompileCommands)
+#if 0
+     .enum_<clang::tooling::JSONCommandLineSyntax>(asttooling::_sym_STARJSONCommandLineSyntaxSTAR)
+     [value("Windows",clang::tooling::JSONCommandLineSyntax::Windows),
+      value("Gnu",clang::tooling::JSONCommandLineSyntax::Gnu),
+      value("AutoDetect",clang::tooling::JSONCommandLineSyntax::AutoDetect)]
+#endif
+     ,
      class_<clang::tooling::JSONCompilationDatabase, bases<clang::tooling::CompilationDatabase>>("JSONCompilationDatabase", no_default_constructor),
-     def("JSONCompilationDatabase-loadFromFile",
-         &clang::tooling::JSONCompilationDatabase::loadFromFile,
-         policies<adopt<result>, pureOutValue<2>>()),
+#if 1
+     def("JSONCompilationDatabase-loadFromFile", &clang::tooling::JSONCompilationDatabase::loadFromFile,
+         policies<adopt<result> ,outValue<2> /*This was used when exposing the original clang function, the wrapped one doesn't have a second string parameter */ >())
+     ,
+#endif
      class_<clang::ASTConsumer>("Clang-ASTConsumer", no_default_constructor),
      class_<clang::LangOptions>("LangOptions", no_default_constructor),
      class_<clang::Lexer>("Lexer", no_default_constructor),

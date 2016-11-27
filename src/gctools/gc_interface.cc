@@ -691,10 +691,14 @@ void obj_finalize(mps_addr_t client) {
 extern "C" {
 mps_res_t main_thread_roots_scan(mps_ss_t ss, void *gc__p, size_t gc__s) {
   MPS_SCAN_BEGIN(GC_SCAN_STATE) {
+#if 0
+    // We don't scan global load-time-value tables any more here
+    // they are added as tables of roots as they are created
     GC_TELEMETRY0(telemetry::label_root_scan_start);
     for (auto &it : global_roots) {
       POINTER_FIX(it);
     }
+#endif
 #ifndef RUNNING_GC_BUILDER
 #define GC_GLOBALS
 #include CLASP_GC_FILENAME

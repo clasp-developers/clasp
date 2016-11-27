@@ -51,7 +51,7 @@ public:
   void dump() const { printf("%d ", x); };
 };
 
-void gctools__cleanup();
+void gctools__cleanup(bool verbose);
 
 void initialize_bootstrap_kinds();
 };

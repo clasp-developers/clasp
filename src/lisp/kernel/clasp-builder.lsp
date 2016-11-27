@@ -359,7 +359,10 @@ Return files."
                      ,@body)))
             t)
 
-(export '(compile-bclasp))
+(defun load-bclasp (&key (system (command-line-arguments-as-list)))
+  (load-system #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/bclasp" :interp t :system system))
+
+(export '(load-bclasp compile-bclasp))
 (defun compile-bclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (bclasp-features)
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t :system system))
@@ -391,6 +394,10 @@ Compile the cclasp source code."
 (defun recompile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (if clean (clean-system #P"src/lisp/kernel/tag/start" :no-prompt t))
   (compile-cclasp* output-file system))
+
+(defun load-cclasp (&key (system (command-line-arguments-as-list)))
+  (load-system #P"src/lisp/kernel/tag/bclasp" #P"src/lisp/kernel/tag/cclasp" :interp t :system system))
+(export '(load-cclasp))
 
 (defun compile-cclasp (&key clean (output-file (build-common-lisp-bitcode-pathname)) (system (command-line-arguments-as-list)))
   (cclasp-features)

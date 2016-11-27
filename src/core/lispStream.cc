@@ -180,8 +180,7 @@ StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp strm) {
 }
 
 Fixnum &StringFillp(StrWithFillPtr_sp s) {
-  StrWithFillPtr_sp ss = gc::As<StrWithFillPtr_sp>(s);
-  return ss->_FillPointer;
+  return s->_FillPointer;
 }
 
 gctools::Fixnum &StringInputStreamInputPosition(T_sp strm) {
@@ -1556,8 +1555,11 @@ str_out_element_type(T_sp strm) {
   return cl::_sym_character;
 }
 
+StrWithFillPtr_sp global_str;
 T_sp str_out_get_position(T_sp strm) {
-  return Integer_O::create((gc::Fixnum)(StringFillp(StringOutputStreamOutputString(strm))));
+  StrWithFillPtr_sp str = StringOutputStreamOutputString(strm);
+  global_str = str;
+  return Integer_O::create((gc::Fixnum)(StringFillp(str)));
 }
 
 static T_sp
