@@ -616,8 +616,6 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "ltvc_set_ltv_funcall" +t*+ (list +constants-table*+ +size_t+ +fn-prototype*+))
   (primitive          module "ltvc_toplevel_funcall" +t*+ (list +fn-prototype*+))
 
-
-
   (primitive-nounwind module "newFunction_sp" +void+ (list +Function_sp*+))
   (primitive-nounwind module "newTsp" +void+ (list +tsp*+))
   (primitive-nounwind module "copyTsp" +void+ (list +tsp*-or-tmv*+ +tsp*+))
@@ -631,7 +629,6 @@ and initialize it with an array consisting of one function pointer."
 
   (primitive-nounwind module "isTrue" +i32+ (list +tsp*+))
   (primitive-nounwind module "isBound" +i32+ (list +tsp*+))
-
 
   (primitive-nounwind module "internSymbol_tsp" +void+ (list +tsp*+ +i8*+ +i8*+))
   (primitive-nounwind module "makeSymbol_tsp" +void+ (list +tsp*+ +i8*+))
@@ -807,18 +804,92 @@ and initialize it with an array consisting of one function pointer."
   (primitive-nounwind module "cc_pushLandingPadFrame" +t*+ nil)
   (primitive-nounwind module "cc_popLandingPadFrame" +void+ (list +t*+))
   (primitive          module "cc_landingpadUnwindMatchFrameElseRethrow" +size_t+ (list +i8*+ +t*+))
+
+  ;; === CLASP-FFI TRANSLATORS ===
+
+  (primitive          module "tr_from_object_short" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_short" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_unsigned_short" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_unsigned_short" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_int" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_unsigned_int" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_unsigned_int" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_long" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_long" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_unsigned_long" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_unsigned_long" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_int8" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int8" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint8" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint8" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_int16" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int16" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint16" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint16" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_int32" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int32" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint32" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint32" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_int64" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int64" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint64" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint64" +t*+ (list +t*+))
+
+  ;;(primitive          module "tr_from_object_int128" +t*+ (list +t*+))
+  ;;(primitive          module "tr_to_object_int128" +t*+ (list +t*+))
+  ;;(primitive          module "tr_from_object_uint128" +t*+ (list +t*+))
+  ;;(primitive          module "tr_to_object_uint128" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_long_long" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_long_long" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_unsigned_long_long" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_unsigned_long_long" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_size" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_size" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_ssize" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_ssize" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_ptrdiff" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_ptrdiff" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_time" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_time" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_char" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_char" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_unsigned_char" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_unsigned_char" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_float" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_float" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_double" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_double" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_long_double" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_long_double" +t*+ (list +t*+))
+
+  (primitive          module "tr_from_object_pointer" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_pointer" +t*+ (list +t*+))
+
+  ;; === END OF TRANSLATORS ===
+
   )
-
-
-
 
 ;;------------------------------------------------------------
 ;;
 ;; Setup dynamic variables
 ;;
 ;;
-
-
 
 (defvar *compile-file-pathname* nil "Store the path-name of the currently compiled file")
 (defvar *compile-file-truename* nil "Store the truename of the currently compiled file")
@@ -919,7 +990,7 @@ they are dumped into /tmp"
 
 
 (defun quick-message (file-name-modifier msg &rest args)
-  "Write a message into a file and write it to the same directory 
+  "Write a message into a file and write it to the same directory
 as quick-module-dump would write it"
   (if *compile-file-debug-dump-module*
       (compile-file-quick-message file-name-modifier msg args)
@@ -934,4 +1005,3 @@ is dumped to a file before the block and after the block."
      (multiple-value-prog1 (progn ,@body)
        (llvm-sys:sanity-check-module *the-module* 2)
        (quick-module-dump *the-module* ,(bformat nil "%s-end" info)))))
-
