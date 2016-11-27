@@ -411,6 +411,15 @@ namespace translate {
     }
   };
 
+  template <>
+    struct to_object<long double> {
+    typedef long double GivenType;
+    static core::T_sp convert(GivenType v) {
+      core::LongFloat_sp oi = core::LongFloat_O::create(v);
+      return oi;
+    }
+  };
+
   // *** STRING TRANSLATION ***
 
   // --- FROM-OBJECT STRING TRANSLATORS ---

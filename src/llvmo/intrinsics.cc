@@ -623,44 +623,49 @@ ALWAYS_INLINE core::T_sp mk_char( char v )
 // These functions are part of the Foreign Language Interface and are
 // referenced from the FLI functions in fli.cc.
 
-// The following conversation happened on 2016-11-05:
-//
-// 02:31 <drmeister> For example, the from_object_uint64 could be written in a
-//                   more efficient way given type inference.
-// 02:31 <drmeister> Currently from_object_uint64(core::T_O* obj) { uint64_t x
-//                   = translate::from_object<uint64_t>(... obj ...); }
-// 02:32 <drmeister> The from_object<uint64_t>(...) translator has a runtime
-//                   test if obj is a fixnum or a bignum.
-// 02:32 <drmeister> With type inference the CL code might already know that
-//                   obj is a fixnum and so the test is unnecessary.
-// 02:34 <drmeister> The better way to do this would be to implement a
-//                   from_object translator to uint64 in Common Lisp.
-// 02:34 <drmeister> (defun from-object-uint64 (o) (if (fixnump o)
-//                   (from-fixnum-uint64 o) (from-bignum-uint64 o)))
-// 02:35 <drmeister> Then you implement the C++ functions from_fixnum_uint64
-//                   and from_bignum_uint64
-// 02:35 <drmeister> Something like from_object_int8   doesn't need this
-//                   because the argument will always be a Common Lisp
-//                   fixnum.
-// 02:37 <drmeister> I don't think there are any changes like this that need
-//                   to be made to the to_object translators.
-// 02:38 <drmeister> And it's only the from_object translators where there is
-//                   any possibility that the 'object' passed to the
-//                   from_object_xxx translator can be anything other than a
-//                   single type.
-// 02:39 <drmeister> But if there is a run-time test for the type of the
-//                   passed object other than a sanity check (and that should
-//                   be an ASSERT so it's compiled out in production code)
-//                   then the from_object_xxx translator should be broken into
-//                   a from_type1_xxx translator and from_type2_xxx
-//                   translator.
-// 02:40 <drmeister> I think this only applies to C++ integer types that are
-//                   larger than 61 bits/can fit in a Common Lisp fixnum.
-//
-// => This still leaves the following questions::
-// 1. What should the API / function signatures look like for from_object_...
-//    functions?
-// 2. WHhat should be returned by these functions?
+// ----------------------------------------------------------------------------
+// HELPER FUNCTIONS FOR TRANSLATORS
+// ----------------------------------------------------------------------------
+
+// ALWAYS_INLINE void memcpy_with_endianness_honored( void * target, void * source, size_t num )
+// {
+//   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//   // THIS IS A POTENTIALLY DANGEROUS FUNCTION AS IT COPIES MEMORY FROM SOURCE
+//   // TO TAERGET ADDRESS - NO MEMORY BOUNDS CHECKING IS DONE HERE !!!!!!!!!!!!
+//   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//   static unsigned char ac_buf[ BUFSIZ ];
+//   std::memset( ac_buf, 0, BUFSIZ );
+
+//   if( num > BUFSIZ )
+//   {
+//     SIMPLE_ERROR(BF("memcpy_with_endianness_honored (%s:%d): Nr of bytes to be copied (%d) exceeds max nr allowed nr of bytes(%d)!") % num % BUFIZ);
+//   }
+
+//   memcpy( ac_buf, source, num );
+
+// #if ( __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ )
+
+//   for( int i = 0; i < num; i++ )
+//   {
+//     *(target + i) = *(ac_buf + i);
+//   }
+
+// #endif
+
+// #if ( __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ )
+
+//   for( int i = 0; i < num; i++ )
+//   {
+//     *(target + i) = *(ac_buf + (num - i - 1));
+//   }
+
+// #endif
+
+// #error "Byte order %d not supported !" __BYTE_ORDER__
+
+//   return;
+// }
 
 // ----------------------------------------------------------------------------
 // FIXNUM
@@ -707,6 +712,30 @@ ALWAYS_INLINE core::T_O* to_object_short( short x )
 }
 
 ALWAYS_INLINE core::T_O* tr_to_object_short( core::T_O* raw_ )
+{
+  return tr_to_object_fixnum( raw_ );
+}
+
+// ----------------------------------------------------------------------------
+// UNSIGNED SHORT
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE unsigned short from_object_unsigned_short( core::T_O* obj )
+{
+  return (unsigned short) from_object_fixnum( obj );
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_short( core::T_O* obj )
+{
+  return tr_from_object_fixnum( obj );
+}
+
+ALWAYS_INLINE core::T_O* to_object_unsigned_short( short x )
+{
+  return to_object_fixnum( (gctools::Fixnum) x );
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_unsigned_short( core::T_O* raw_ )
 {
   return tr_to_object_fixnum( raw_ );
 }
@@ -1178,6 +1207,144 @@ ALWAYS_INLINE core::T_O* tr_to_object_char( core::T_O* raw_ )
   char * ptr = (char *) raw_ ;
   char c = * ptr;
   return to_object_char( c );
+}
+
+// ----------------------------------------------------------------------------
+// UNSIGNED CHAR
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE unsigned char from_object_unsigned_char( core::T_O* obj )
+{
+  unsigned char x = translate::from_object< unsigned char >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_unsigned_char( core::T_O* obj )
+{
+  return reinterpret_cast< core::T_O * >( from_object_unsigned_char( obj ) );
+}
+
+ALWAYS_INLINE core::T_O* to_object_unsigned_char( unsigned char x )
+{
+  return translate::to_object< unsigned char >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_unsigned_char( core::T_O* raw_ )
+{
+  unsigned char * ptr = (unsigned char *) raw_ ;
+  unsigned char c = * ptr;
+  return to_object_unsigned_char( c );
+}
+
+// ----------------------------------------------------------------------------
+// FLOAT
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE float from_object_float( core::T_O* obj )
+{
+  float x = translate::from_object< float >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_float( core::T_O* obj )
+{
+  static float x =  from_object_float( obj );
+  return reinterpret_cast< core::T_O * >( &x );
+}
+
+ALWAYS_INLINE core::T_O* to_object_float( float x )
+{
+  return translate::to_object< float >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_float( core::T_O* raw_ )
+{
+  float * ptr = (float *) raw_ ;
+  float f = * ptr;
+  return to_object_float( f );
+}
+
+// ----------------------------------------------------------------------------
+// DOUBLE
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE double from_object_double( core::T_O* obj )
+{
+  double x = translate::from_object< double >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_double( core::T_O* obj )
+{
+  static double x =  from_object_double( obj );
+  return reinterpret_cast< core::T_O * >( &x );
+}
+
+ALWAYS_INLINE core::T_O* to_object_double( double x )
+{
+  return translate::to_object< double >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_double( core::T_O* raw_ )
+{
+  double * ptr = (double *) raw_ ;
+  double d = * ptr;
+  return to_object_double( d );
+}
+
+// ----------------------------------------------------------------------------
+// LONG DOUBLE
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE long double from_object_long_double( core::T_O* obj )
+{
+  long double x = translate::from_object< long double >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_long_double( core::T_O* obj )
+{
+  static long double x =  from_object_long_double( obj );
+  return reinterpret_cast< core::T_O * >( &x );
+}
+
+ALWAYS_INLINE core::T_O* to_object_long_double( long double x )
+{
+  return translate::to_object< long double >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_long_double( core::T_O* raw_ )
+{
+  long double * ptr = (long double *) raw_ ;
+  long double d = * ptr;
+  return to_object_long_double( d );
+}
+
+// ----------------------------------------------------------------------------
+// POINTER
+// ----------------------------------------------------------------------------
+
+ALWAYS_INLINE void * from_object_pointer( core::T_O* obj )
+{
+  void * x = translate::from_object< void * >(gctools::smart_ptr<core::T_O>((gctools::Tagged) obj ))._v;
+  return x;
+}
+
+ALWAYS_INLINE core::T_O* tr_from_object_pointer( core::T_O* obj )
+{
+  void * x = from_object_pointer( obj );
+  return reinterpret_cast< core::T_O * >( x );
+}
+
+ALWAYS_INLINE core::T_O* to_object_pointer( void * x )
+{
+  return translate::to_object< void * >::convert(x).raw_();
+}
+
+ALWAYS_INLINE core::T_O* tr_to_object_pointer( core::T_O* raw_ )
+{
+  void * ptr = (void *) raw_ ;
+  return to_object_pointer( ptr );
 }
 
 // === END OF CORE TRANSLATORS ===

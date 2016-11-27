@@ -169,8 +169,26 @@ struct register_foreign_type {
                     core::Symbol_sp lisp_symbol,
                     const std::string &cxx_name ) {
 
-    size_t size = sizeof(T);
-    size_t alignment = std::alignment_of<T>::value;
+    size_t size = 0;
+    size_t alignment = 0;
+
+    try
+    {
+      size = sizeof(T);
+    }
+    catch( ... )
+    {
+      // leave size set to 0
+    }
+
+    try
+    {
+      alignment = std::alignment_of<T>::value;
+    }
+    catch( ... )
+    {
+      // leave alignment set to 0
+    }
 
     // For corrent naming we need to replace all '-' by '_' and make
     // sure we're all lowercase (will be done in Lisp) in lisp_name.
@@ -315,6 +333,8 @@ inline void register_foreign_types( void ) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,size,size_t,kw::_sym_size,"size");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ssize,ssize_t,kw::_sym_ssize,"ssize");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,ptrdiff,ptrdiff_t,kw::_sym_ptrdiff,"ptrdiff");
+
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,void,void *,kw::_sym_void,"void");
 
   //  - 1.2 : ASSIGN FOREGN TYPE SPEC TABLE TO GLOBAL SYMBOL
 
