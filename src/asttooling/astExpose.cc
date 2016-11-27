@@ -796,13 +796,13 @@ void initialize_astExpose() {
   pkg->shadow(core::Str_O::create("TYPE"));
   package(ClangAstPkg)[ //,{"CAST"},{"CL","CORE","AST-TOOLING"}) [
     class_<clang::Decl>("Decl", no_default_constructor)
-        .def("getGlobalID", &clang::Decl::getGlobalID)
-        .def("isImplicit", &clang::Decl::isImplicit)
-        .def("setImplicit", &clang::Decl::setImplicit)
-        .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
-        .def("getLocStart", &clang::Decl::getLocStart)
-        .def("getLocEnd", &clang::Decl::getLocEnd)
-    .def("getAccess",&clang::Decl::getAccess)
+     .def("getGlobalID", &clang::Decl::getGlobalID)
+     .def("isImplicit", &clang::Decl::isImplicit)
+     .def("setImplicit", &clang::Decl::setImplicit)
+     .def("dump", (void (clang::Decl::*)() const) & clang::Decl::dump)
+     .def("getLocStart", &clang::Decl::getLocStart)
+     .def("getLocEnd", &clang::Decl::getLocEnd)
+     .def("getAccess",&clang::Decl::getAccess)
     .enum_<clang::AccessSpecifier>(asttooling::_sym_STARclangAccessSpecifierSTAR)[
       value("AS_public", clang::AS_public),
       value("AS_protected", clang::AS_protected),
