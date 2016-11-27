@@ -164,7 +164,7 @@ redeye-prep:
 	./waf -j $(PJOBS) build_impsprep build_cboehmdc
 
 redeye-run:
-	(./build/clasp -f ignore-extensions \
+	(./build/boehmdc/iclasp-boehmdc -i ./build/boehmdc/cclasp-boehmdc-image.fasl -f ignore-extensions \
 			-e "(require :clasp-analyzer)" \
 			-e "(defparameter *compile-commands* \"`pwd`/build/mpsprep/compile_commands.json\")" \
 			-e "(time (clasp-analyzer:search/generate-code (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database (pathname *compile-commands*))))" \

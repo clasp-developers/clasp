@@ -405,21 +405,20 @@ Find directories that look like them and replace the ones defined in the constan
 
 
 (defconstant +isystem-dir+ 
-  #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
   #+target-os-linux "/usr/include/clang/3.6/include"
   "Define the -isystem command line option for Clang compiler runs")
 
 (defconstant +resource-dir+ 
-  #+target-os-darwin "/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"
+  #+target-os-darwin "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0"  ; Used
   #+target-os-linux (format nil "/home/meister/Dev/externals-clasp/build/release/bin/../lib/clang/~a.0" (ext::llvm-short-version))
-  #+(or)"/home/meister/Development/externals-clasp/build/release/lib/clang/3.6.2"
   "Define the -resource-dir command line option for Clang compiler runs")
 (defconstant +additional-arguments+
-  #+target-os-darwin (vector
-                      "-I/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
-                      "-I/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                      #+(or)"-I/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include"
-                      "-I/Applications/Xcode-beta.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
+  #+target-os-darwin (vector "GARBAGE2")
+  #+(or)(vector
+         "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include"
+         "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+         "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks")
   #-target-os-darwin (vector
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3"
                       #+(or)"-I/home/meister/local/gcc-4.8.3/include/c++/4.8.3/x86_64-redhat-linux"
@@ -550,8 +549,9 @@ Otherwise the value of convert-relative-includes-to-absolute is used.
 * Description
 Load the compilation database and return it. If source-path-identifier is defined then every match will have it's source location checked to see if the 
 it contains the string source-path-identifier.  So /a/b/c/d.cc will match /b/"
-  (let* ((db (ast-tooling:jsoncompilation-database-load-from-file
-              (namestring (or (probe-file pathname) (error "Could not find file: ~a" pathname)))))
+  (let* ((db (ast-tooling:wrapped-jsoncompilation-database-load-from-file
+              (namestring (or (probe-file pathname) (error "Could not find file: ~a" pathname)))
+              :auto-detect))
          (all-files (map 'list #'identity (ast-tooling:get-all-files db)))
          (ctd (make-instance 'compilation-tool-database
                              :clang-database db
@@ -957,7 +957,7 @@ for the node corresponding to tag in match-info."
 	    (,rep-gs (new-replacement (source-manager ,match-info) ,rep-range-gs ,rep-src-gs)))
        (if *match-refactoring-tool*
            (let ((,replacements-gs (ast-tooling:get-replacements *match-refactoring-tool*)))
-             (ast-tooling:replacements-insert ,replacements-gs ,rep-gs))
+             (ast-tooling:replacements-add ,replacements-gs ,rep-gs))
            (format t "Replacing: ~a~%     with: ~a~%" (clang-tool:mtag-source ,match-info ,tag) ,rep-src-gs)))))
 
 
