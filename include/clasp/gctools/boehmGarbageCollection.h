@@ -110,7 +110,9 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
 #endif
 #endif
       };
-
+#if defined(DEBUG_GUARD)
+    #error "Boehm cannot be compiled with DEBUG_GUARD - turn it off"
+#endif
   public:
     kind_t Kind;
 #ifdef BIG_BOEHM_HEADER
