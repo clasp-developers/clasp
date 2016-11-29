@@ -146,3 +146,41 @@
                         (setf remaining-dspecs r-dspecs)))
 	  (values (cons item-specific-dspecs itemized-dspecs)
 		  remaining-dspecs)))))
+
+;;; Copied from Robert Strandh's sicl/Code/Cleavir/Generate-AST/utilities.lisp 
+;;; ENV is an environment that is known to contain information about
+;;; the variable VARIABLE, but we don't know whether it is special or
+;;; lexical.  VALUE-AST is an AST that computes the value to be given
+;;; to VARIABLE.  NEXT-AST is an AST that represents the computation
+;;; to take place after the variable has been given its value.  If the
+;;; variable is special, this function creates a BIND-AST with
+;;; NEXT-AST as its body.  If the variable is lexical, this function
+;;; creates a PROGN-AST with two ASTs in it.  The first one is a
+;;; SETQ-AST that assigns the value to the variable, and the second
+;;; one is the NEXT-AST.
+(defun set-or-bind-variable (variable value-ast next-ast env)
+  (let ((info (clcenv:variable-info env variable)))
+    (assert (not (null info)))
+    (if (typep info 'clcenv:special-variable-info)
+	(let ((global-env (clcenv:global-environment env)))
+	  (convert-special-binding
+	   variable value-ast next-ast global-env))
+	(make-progn-ast :form-asts
+                        (list (make-setq-ast
+                               :lhs-ast (clcenv:info-identity info)
+                               :value-ast value-ast)
+                              next-ast)))))
+
+;;; translated from Robert Strandh's sicl/Code/Cleavir/Generate-AST/utilities.lisp
+(defun convert-special-binding
+    (variable value-ast next-ast global-env)
+  (let* ((function-name 'cleavir-primop:call-with-variable-bound)
+	 (info (clcenv:function-info global-env function-name)))
+    (assert (not (null info)))
+    (make-call-ast
+     :callee-ast
+     (convert-global-function info global-env)
+     :argument-asts
+     (list (make-load-time-value-ast :form `',variable :read-only-p t)
+	   value-ast
+	   (make-function-ast :body-ast next-ast :lambda-list '())))))
