@@ -811,10 +811,10 @@ namespace clcenv {
   core::T_sp global_environment(core::T_sp environment);
 
 
-  core::T_mv variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env );
+  core::T_mv clcenv__variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env );
 
-  Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env );
-  Entry_sp augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs);
+  Entry_sp clcenv__augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env );
+  Entry_sp clcenv__augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs);
 };
 #endif
 

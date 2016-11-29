@@ -674,7 +674,7 @@ clc::Ast_sp SpecialOperatorInfo_O::convert_form(ARGS_form_env_rest)
 
 namespace clcenv {
 
-Entry_sp augment_environment_with_declaration(core::List_sp canonicalized_declaration_specifier,
+CL_DEFUN Entry_sp clcenv__augment_environment_with_declaration(core::List_sp canonicalized_declaration_specifier,
                                               Entry_sp environment )
 {
   core::T_sp head = oCar(canonicalized_declaration_specifier);
@@ -718,17 +718,17 @@ Entry_sp augment_environment_with_declaration(core::List_sp canonicalized_declar
 
 // Augment the environment with a list of canonicalized declartion
 // specifiers.
-Entry_sp augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs)
+CL_DEFUN Entry_sp clcenv__augment_environment_with_declarations(Entry_sp environment, core::List_sp canonicalized_dspecs)
 {
   Entry_sp new_env = environment;
   for ( auto spec : canonicalized_dspecs ) {
-    new_env = augment_environment_with_declaration(spec,new_env);
+    new_env = clcenv__augment_environment_with_declaration(spec,new_env);
   }
   return new_env;
 }
 
 
-bool special_declaration_p(core::List_sp declarations, core::T_sp variable)
+CL_DEFUN bool clcenv__special_declaration_p(core::List_sp declarations, core::T_sp variable)
 {
   for ( auto cur : declarations ) {
     core::List_sp one = oCar(cur);
@@ -742,23 +742,39 @@ bool special_declaration_p(core::List_sp declarations, core::T_sp variable)
   return false;
 }
 
-core::T_mv variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env )
+CL_DEFUN core::T_mv clcenv__variable_is_special_p(core::T_sp variable, core::List_sp declarations, Entry_sp env )
 {
   VariableInfo_sp existing_var_info = variable_info(env,variable);
   if ( SpecialVariableInfo_sp svi = existing_var_info.asOrNull<SpecialVariableInfo_O>() ) {
     return Values(_lisp->_true(), svi->_GlobalP );
-  } else if ( special_declaration_p(declarations,variable) ) {
+  } else if ( clcenv__special_declaration_p(declarations,variable) ) {
     return Values(_lisp->_true(), _Nil<core::T_O>() );
   } else {
     return Values(_Nil<core::T_O>(),_Nil<core::T_O>());
   }
 }
 
-#if 0
-Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env )
+
+CL_DEFUN core::T_sp clcenv__declared_type(core::List_sp declarations)
+{
+  ql::list result;
+  result << cl::_sym_and;
+  for ( auto cur : declarations ) {
+    core::T_sp declaration = oCar(cur);
+    if ( oCar(declaration) == cl::_sym_type ) {
+      result << oCadr(declaration);
+    }
+  }
+  return result.cons();
+}
+
+SYMBOL_EXPORT_SC_(CompPkg,make_lexical_ast);
+SYMBOL_EXPORT_SC_(KeywordPkg,name);
+    
+CL_DEFUN Entry_sp clcenv__augment_environment_with_variable(core::T_sp variable, core::List_sp declarations, Entry_sp env, Entry_sp orig_env )
 {
   Entry_sp new_env = env;
-  core::T_mv special_p__globally_p = variable_is_special_p(variable,declarations,orig_env);
+  core::T_mv special_p__globally_p = clcenv__variable_is_special_p(variable,declarations,orig_env);
   bool special_p = special_p__globally_p.notnilp();
   bool globally_p = special_p__globally_p.second().notnilp();
   if ( special_p ) {
@@ -766,19 +782,18 @@ Entry_sp augment_environment_with_variable(core::T_sp variable, core::List_sp de
       new_env = add_special_variable(new_env,variable);
     }
   } else {
-    clc::Ast_sp var_ast = make_LexicalAst(variable);
+    core::T_sp var_ast = core::eval::funcall(comp::_sym_make_lexical_ast, kw::_sym_name, variable); // make_LexicalAst(variable);
     new_env = add_lexical_variable(new_env,variable,var_ast);
   }
-  core::T_sp type = declared_type(declarations);
+  core::T_sp type = clcenv__declared_type(declarations);
   if ( !(core::cl__equal(type,core::Cons_O::create(cl::_sym_and))) ) {
     new_env = add_variable_type(new_env,variable,type);
   }
-  if ( core::cl__member(cl::_sym_dynamic_extent,declarations,cl::_sym_car->function(),cl::_sym_eq->function(),_Nil<core::T_O>()).notnilp()) {
+  if ( core::cl__member(cl::_sym_dynamic_extent,declarations,cl::_sym_car->symbolFunction(),cl::_sym_eq->symbolFunction(),_Nil<core::T_O>()).notnilp()) {
     new_env = add_variable_dynamic_extent(new_env,core::Cons_O::createList(cl::_sym_quote,cl::_sym_variable));
   }
   return new_env;
 };
-#endif
 
 
 }

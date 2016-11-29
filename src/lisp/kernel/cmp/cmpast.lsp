@@ -23,9 +23,41 @@
 (defstruct (tagbody-ast (:type vector) :named) item-asts)
 (defstruct (lexical-ast (:type vector) :named) name)
 (defstruct (setq-ast (:type vector) :named) lhs-ast value-ast)
+(defstruct (call-ast (:type vector) :named) callee-ast argument-asts)
+(defstruct (function-ast (:type vector) :named) lambda-list body-ast)
+
+(defun function-ast-children (ast)
+  (cons (function-ast-body-ast ast)
+        (mapcan (lambda (entry)
+                  (cond
+                   ((symbolp entry) nil)
+                   ((consp entry)
+                    (if (= (length entry) 2)
+                        entry
+                        (cdr entry)))
+                   (t (list entry))))
+                (function-ast-lambda-list entry))))
 
 
-
+(defun ast-children (ast)
+  (cond
+    ((if-ast-p ast)
+     (list (if-ast-test-ast ast) (if-ast-then-ast ast) (if-ast-else-ast ast)))
+    ((block-ast-p ast)
+     (list (block-ast-body-ast ast)))
+    ((return-from-ast-p ast)
+     (list (return-from-ast-form-ast ast)))
+    ((load-time-value-ast-p ast) nil)
+    ((progn-ast-p ast) (progn-ast-form-asts ast))
+    ((tag-ast-p ast) nil)
+    ((go-ast-p ast) nil)
+    ((tagbody-ast-p ast) (tagbody-ast-item-asts ast))
+    ((lexical-ast-p ast) nil)
+    ((setq-ast-p ast) (list (setq-ast-lhs-ast ast) (setq-ast-value-ast ast)))
+    ((call-ast-p ast) (cons (call-ast-callee-ast ast) (call-ast-argument-asts ast)))
+    ((function-ast-p ast) (function-ast-children ast))
+    (t (error "Add support to ast-children for ~a" (type-of ast)))))
+  
 #+(or)(defun raw (thing) thing)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -147,6 +179,16 @@
       (format t "init-form-cur -> ~a~%" init-form-cur)
       (push (make-setq-ast :lhs-ast temp-ast :value-ast converted) result))))
 
+;;; Copied from Robert Strandh's sicl/Code/Cleavir/Generate-AST/convert-special.lisp
+;;; Given two lists of equal length, pair the items so that the items
+;;; in LIST1 are stored in the CAR of the resulting CONS cells, and
+;;; the items in LIST2 are stored in the CDR of the resulting CONS
+;;; cells.  The order is preserved from the original lists.
+(defun pair-items (list1 list2)
+  (mapcar #'cons list1 list2))
+
+
+;;; Translated from Robert Strandh's sicl/Code/Cleavir/Generate-AST/convert-special.lisp
 (defun convert-let (form env)
   (db (let bindings . body ) form
       (declare (ignore let))
@@ -167,6 +209,53 @@
                             rdspecs
                             forms
                             env)))))))))
+
+;;; Copied from Robert Strandh's sicl/Code/Cleavir/Generate-AST/convert-special.lisp
+;;;
+;;; For converting LET, we use a method that is very close to the
+;;; exact wording of the Common Lisp HyperSpec, in that we first
+;;; evaluate the INIT-FORMs in the original environment and save the
+;;; resulting values.  We save those resulting values in
+;;; freshly-created lexical variables.  Then we bind each original
+;;; variable, either by using a SETQ-AST or a BIND-AST according to
+;;; whether the variable to be bound is lexical or special.
+
+;;; BINDINGS is a list of CONS cells.  The CAR of each CONS cell is a
+;;; variable to be bound.  The CDR of each CONS cell is a LEXICAL-AST
+;;; that corresponds to a lexical variable holding the result of the
+;;; computation of the initial value for that variable.  IDSPECS is a
+;;; list with the same length as BINDINGS of itemized canonicalized
+;;; declaration specifiers.  Each item in the list is a list of
+;;; canonicalized declaration specifiers associated with the
+;;; corresponding variable in the BINDINGS list.  RDSPECS is a list of
+;;; remaining canonicalized declaration specifiers that apply to the
+;;; environment in which the FORMS are to be processed.
+(defun process-remaining-let-bindings (bindings idspecs rdspecs forms env)
+  (if (null bindings)
+      ;; We ran out of bindings.  We must build an AST for the body of
+      ;; the function.
+      (let ((new-env (clcenv:augment-environment-with-declarations env rdspecs)))
+	(process-progn (convert-sequence forms new-env)))
+      (destructuring-bind (var . lexical-ast) (first bindings)
+	(let* (;; We enter the new variable into the environment and
+	       ;; then we process remaining parameters and ultimately
+	       ;; the body of the function.
+	       (new-env (clcenv:augment-environment-with-variable
+			 var (first idspecs) env env))
+	       ;; We compute the AST of the remaining computation by
+	       ;; recursively calling this same function with the
+	       ;; remaining bindings (if any) and the environment that
+	       ;; we obtained by augmenting the original one with the
+	       ;; parameter variable.
+	       (next-ast (process-remaining-let-bindings (rest bindings)
+							 (rest idspecs)
+							 rdspecs
+							 forms
+							 new-env)))
+	  ;; All that is left to do now, is to construct the AST to
+	  ;; return by using the new variable and the AST of the
+	  ;; remaining computation as components.
+	  (set-or-bind-variable var lexical-ast next-ast new-env)))))
 
 
 
