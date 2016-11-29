@@ -992,7 +992,6 @@ COMPILE-FILE will use the default *clasp-env*."
     (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
     hir))
 
-#+(or)
 (defun compile-lambda-form-to-llvm-function (lambda-form)
   "Compile a lambda-form into an llvm-function and return
 that llvm function. This works like compile-lambda-function in bclasp."
@@ -1007,8 +1006,7 @@ that llvm function. This works like compile-lambda-function in bclasp."
              mir))))
     (or function-enter-instruction (error "Could not find enter-instruction for enclosed function in ~a" lambda-form))
     (translate function-enter-instruction)))
-          
-        
+
 (defun find-first-enclosed-enter-instruction (mir)
   (block first-function
     (cleavir-ir:map-instructions-with-owner
@@ -1016,7 +1014,6 @@ that llvm function. This works like compile-lambda-function in bclasp."
        (when (and (eq mir owner)
                   (typep i 'cleavir-ir:enclose-instruction))
          (return-from first-function (cleavir-ir:code instruction)))))))
-
    
 (defparameter *debug-final-gml* nil)
 (defparameter *debug-final-next-id* 0)
