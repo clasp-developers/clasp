@@ -255,11 +255,12 @@ when this is t a lot of graphs will be generated.")
 	 (format *debug-log* "Wrote mir to: ~a~%" (namestring mir-pathname))))
       (multiple-value-bind (function lambda-name)
           (layout-procedure initial-instruction abi)
-        (let ((forms (cleavir-ir:forms initial-instruction)))
-          ;; Generate the run-all code here
-          (cmp:irc-verify-module-safe cmp:*the-module*)
+        (values function lambda-name)
+        #+(or)(let ((forms (cleavir-ir:forms initial-instruction)))
+                ;; Generate the run-all code here
+                (cmp:irc-verify-module-safe cmp:*the-module*)
 ;;; figure out what to return
-          (values function lambda-name forms))))))
+                (values function lambda-name forms))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
