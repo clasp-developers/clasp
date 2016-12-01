@@ -207,7 +207,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 
 (defun ltv/built-in-class (class index read-only-p)
   (add-creator "ltvc_make_built_in_class" index
-            (load-time-reference-literal (class-name class) read-only-p)))
+               (load-time-reference-literal (class-name class) read-only-p)))
 
 (defun ltv/single-float (single index read-only-p)
   (let* ((constant (llvm-sys:make-apfloat-float single))

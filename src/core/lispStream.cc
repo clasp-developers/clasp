@@ -43,7 +43,7 @@ THE SOFTWARE.
     Heavily modified by Christian Schafmeister 2014
 */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <stdio.h>
 #include <fcntl.h>
 #include <clasp/core/common.h>

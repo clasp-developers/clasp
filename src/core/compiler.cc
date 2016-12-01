@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 // #define EXPOSE_DLOPEN
 // #define EXPOSE_DLLOAD
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN

@@ -170,7 +170,7 @@ THE SOFTWARE.
 
 #ifdef DEBUG_ASSERTS
 #define ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(_args) {\
-    core::T_O* e = reinterpret_cast<core::T_O**>(reinterpret_cast<core::VaList_S*>(gctools::untag_valist(_args))->_Args->reg_save_area)[LCC_CLOSURE_REGISTER]; \
+    gctools::Tagged e = reinterpret_cast<gctools::Tagged*>(reinterpret_cast<core::VaList_S*>(gctools::untag_valist(_args))->_Args->reg_save_area)[LCC_CLOSURE_REGISTER]; \
     if (!(e && gctools::tagged_generalp(e))) { \
       printf("%s:%d Closure is not defined\n", __FILE__, __LINE__ ); \
       abort(); \
@@ -332,9 +332,17 @@ inline bool dump_VaList_S_ptr(VaList_S* args) {
     
                        
 
-
-template <typename FuncType>
-inline gctools::return_type funcall_consume_valist_(FuncType func, VaList_sp args) {
+/*! Call a function object with args in a VaList_sp and consume the valist.
+The Callee can NOT use args after this call.
+Note: Since we don't have the full Function_O class definition when this
+header is compiled (and we don't want to #include it because of all the problems
+that will cause) I made this a template function where you pass the function
+type as a template argument.  Call it like this...
+funcall_consume_valist_<core::Function_O>(tagged_func_ptr,valist_args)
+*/
+template <typename Func_O_Type>
+inline gctools::return_type funcall_consume_valist_(gc::Tagged func_tagged,
+                                                    VaList_sp args) {
   core::T_O *arg0;
   core::T_O *arg1;
   core::T_O *arg2;
@@ -344,15 +352,14 @@ inline gctools::return_type funcall_consume_valist_(FuncType func, VaList_sp arg
   LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg1, args, current_arg_index+1);
   LCC_VA_LIST_ABSOLUTE_INDEXED_ARG(arg2, args, current_arg_index+2);
   size_t nargs = LCC_VA_LIST_TOTAL_NUMBER_OF_ARGUMENTS(args)-current_arg_index;
-  T_O* func_raw = func.raw_();
-  T_O* args_raw = args.raw_();
-  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(args.raw_());
-  gctools::return_type res = (*func).invoke_va_list(func_raw, 
-                                                    args_raw,
-                                                    nargs,
-                                                    arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
-                                                    arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
-                                                    arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
+  ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(args.tagged_());
+  Func_O_Type* func_object_ptr = reinterpret_cast<Func_O_Type*>(gctools::untag_general(func_tagged));
+  gctools::return_type res = func_object_ptr->invoke_va_list(reinterpret_cast<core::T_O*>(func_tagged),
+                                                             reinterpret_cast<core::T_O*>(args.tagged_()),
+                                                             nargs,
+                                                             arg0,  // LCC_VA_LIST_REGISTER_ARG0(args),
+                                                             arg1,  // LCC_VA_LIST_REGISTER_ARG1(args),
+                                                             arg2); //LCC_VA_LIST_REGISTER_ARG2(args) );
   return res;
 }
 #endif // #ifdef LCC_PROTOTYPES

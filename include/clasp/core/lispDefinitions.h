@@ -27,8 +27,6 @@ THE SOFTWARE.
 #ifndef lispDefinitions_H
 #define lispDefinitions_H
 
-#define DEBUG_LEVEL_FULL
-
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 //#i n c l u d e "vector3.h"

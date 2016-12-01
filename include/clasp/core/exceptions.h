@@ -523,7 +523,7 @@ void debugSuppressMessages(bool s);
 // char*	internal=BufferPrintf( const char* fmt, ... );
 
 #ifdef DEBUG_ON
-#error "TURN OFF DEBUG_ON"
+//#error "TURN OFF DEBUG_ON"
 #define TESTMEMORY()
 
 #define HARD_BREAK_POINT() __asm int 3;
@@ -679,7 +679,6 @@ extern string _stackTraceAsString();
   LOG_CXX_FUNCTION_INVOCATION(); \
   _PROFILE_FUNCTION();
 
-#error "TURN CALLSTACK_ON off"
 #define _OF() _G();
 #define _lisp_BLOCK_TRACEF(__f) \
   {} // core::_StackTrace _B_stackTrace(__FILE__,"LexicalScope",__LINE__,0,DEBUG_CPP_BLOCK,__f)

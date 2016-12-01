@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -974,12 +974,6 @@ IS-MACRO defines if the function is a macro or not.
 PRETTY-PRINT was inherited from ecl - I don't know what its for.  
 LAMBDA-LIST passes the lambda-list.)doc");
 CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp pretty_print, T_sp lambda_list, T_sp lambda_list_p) {
-#ifdef DEBUG_DRAG
-  if (_sym_STARdebug_fsetSTAR->symbolValue().isTrue()) {
-    printf("%s:%d FSET called with\n   functionName: %s\n   function: %s\n   is_macro: %s\n   pretty_print: %s\n   lambda_list: %s\n   lambda_list_p: %s\n",
-           __FILE__, __LINE__, _rep_(functionName).c_str(), _rep_(functor).c_str(), _rep_(is_macro).c_str(), _rep_(pretty_print).c_str(), _rep_(lambda_list).c_str(), _rep_(lambda_list_p).c_str());
-  }
-#endif // DEBUG_DRAG
   if ( NamedFunction_sp functionObject = functor.asOrNull<NamedFunction_O>() ) {
     if (is_macro.isTrue()) {
       functionObject->set_kind(kw::_sym_macro);

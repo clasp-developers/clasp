@@ -182,26 +182,15 @@ typedef std::size_t class_id;
 #define MULTIPLE_VALUES_LIMIT 64
 
 #ifdef SOURCE_DEBUG
-#ifdef DEBUG_LEVEL_FULL_REFCOUNT //[
-#define DEBUG_ON 1
-#define CALLSTACK_ON 1
-#define REFCOUNTDEBUG 1
-#else                   //][
-#ifdef DEBUG_LEVEL_FULL //[
-#define DEBUG_ON 1
-#define CALLSTACK_ON 1
-#define DEBUG_ASSERTS 1
-#else                     //][
-#ifdef DEBUG_LEVEL_SILENT //[
-#define CALLSTACK_SILENT 1
-//#undef	DEBUG_ON
-#else  //][
-//#undef	CALLSTACK_ON
-//#undef	CALLSTACK_SILENT
-//#undef	DEBUG_ON
-#endif //]
-#endif //]
-#endif //]
+ #ifdef DEBUG_LEVEL_FULL //[
+  #define DEBUG_ON 1
+  #define CALLSTACK_ON 1
+  #define DEBUG_ASSERTS 1
+ #else                     //][
+  #ifdef DEBUG_LEVEL_SILENT //[
+   #define CALLSTACK_SILENT 1
+  #endif //]
+ #endif //]
 #endif
 
 /*! Use this in initializeCandoPrimitives to define a function
