@@ -206,7 +206,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
             (load-time-reference-literal (package-name package) read-only-p)))
 
 (defun ltv/built-in-class (class index read-only-p)
-  (add-creator "ltvc_class" index
+  (add-creator "ltvc_make_built_in_class" index
             (load-time-reference-literal (class-name class) read-only-p)))
 
 (defun ltv/single-float (single index read-only-p)
