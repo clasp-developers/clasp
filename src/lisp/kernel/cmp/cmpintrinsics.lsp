@@ -44,9 +44,10 @@ Set this to other IRBuilders to make code go where you want")
 ;; Create types
 ;;
 
-(defvar +float+ (llvm-sys:type-get-float-ty *llvm-context*))
-(defvar +double+ (llvm-sys:type-get-double-ty *llvm-context*))
-#+long-float (defvar +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
+;; OPEN / TODO:
+;; - ptrdiff_t
+;; - ssize_t
+;; - time_t
 
 (defvar +i1+ (llvm-sys:type-get-int1-ty *llvm-context*))
 
@@ -62,15 +63,19 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +i32*+ (llvm-sys:type-get-pointer-to +i32+))
 (defvar +i32**+ (llvm-sys:type-get-pointer-to +i32*+))
 
-(defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*)) ;; -> LONG
+(defvar +i64+ (llvm-sys:type-get-int64-ty *llvm-context*)) ;; -> LONG, LONG LONG
 (defvar +i64*+ (llvm-sys:type-get-pointer-to +i64+))
 (defvar +i64**+ (llvm-sys:type-get-pointer-to +i64*+))
 
-(defvar +i128+ (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> LONG LONG
+(defvar +i128+ (llvm-sys:type-get-int128-ty *llvm-context*)) ;; -> NOT USED !!!
 
 (defvar +fixnum+ (if (member :address-model-64 *features*) ;; -> FIXNUM
                      +i64+
                      (error "Add support for non 64-bit address model")))
+
+(defvar +float+ (llvm-sys:type-get-float-ty *llvm-context*))
+(defvar +double+ (llvm-sys:type-get-double-ty *llvm-context*))
+#+long-float (defvar +long-float+ (llvm-sys:type-get-long-float-ty *llvm-context*))
 
 (defvar +size_t+
   (let ((sizeof-size_t (cdr (assoc 'core:size-t (llvm-sys:cxx-data-structures-info)))))
@@ -84,133 +89,133 @@ Set this to other IRBuilders to make code go where you want")
 (defvar +void+ (llvm-sys:type-get-void-ty *llvm-context*))
 (defvar +void*+ (llvm-sys:type-get-pointer-to +void+))
 
-  (defvar +vtable*+ +i8*+)
+(defvar +vtable*+ +i8*+)
 
-  ;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
-  (defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
-  (defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
-  (defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
+;;(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) "exception-struct" nil))
+(defvar +exception-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i32+) nil))
+(defvar +{i32.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i1+) nil))
+(defvar +{i64.i1}+ (llvm-sys:struct-type-get *llvm-context* (list +i64+ +i1+) nil))
 
-  (defvar +fn-ctor+
-    (llvm-sys:function-type-get +void+ nil)
-    "A ctor void ()* function prototype")
-  (defvar +fn-ctor-argument-names+ nil)
-  (defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
-    "A pointer to the ctor function prototype")
-
-
-  (defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
-  (defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
-    "An array of pointers to the global-ctors-struct")
+(defvar +fn-ctor+
+  (llvm-sys:function-type-get +void+ nil)
+  "A ctor void ()* function prototype")
+(defvar +fn-ctor-argument-names+ nil)
+(defvar +fn-ctor*+ (llvm-sys:type-get-pointer-to +fn-ctor+)
+  "A pointer to the ctor function prototype")
 
 
+(defvar +global-ctors-struct+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +fn-ctor*+ +i8*+) nil))
+(defvar +global-ctors-struct[1]+ (llvm-sys:array-type-get +global-ctors-struct+ 1)
+  "An array of pointers to the global-ctors-struct")
 
-  (defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
 
-  (defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))
-    (let ((find (assoc name info)))
-      (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
-      (cdr find)))
-  (defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
-  (defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
-  (defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
-  (defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
-  (defvar +valist-tag+ (get-cxx-data-structure-info :valist-tag))
-  (defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
-  (defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
-  (defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
-  (defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
-  (defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
-  (defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
-  (defvar +alignment+ (get-cxx-data-structure-info :alignment))
-  (export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
-            +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
-            +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
-  (defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
-  (defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
-  (defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
-  (defvar +intptr_t+
-    (cond
-      ((= 8 +uintptr_t-size+) +i64+)
-      ((= 4 +uintptr_t-size+) +i32+)
-      (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-  (defvar +uintptr_t+
-    (cond
-      ((= 8 +uintptr_t-size+) +i64+)
-      ((= 4 +uintptr_t-size+) +i32+)
-      (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
-  (defun make-uintptr_t (x)
-    (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
-    (cond
-      ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
-      ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
-      (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+
+(defvar +cxx-data-structures-info+ (llvm-sys:cxx-data-structures-info))
+
+(defun get-cxx-data-structure-info (name &optional (info +cxx-data-structures-info+))
+  (let ((find (assoc name info)))
+    (or find (error "Could not find ~a in cxx-data-structures-info --> ~s~%" name info))
+    (cdr find)))
+(defvar +fixnum-mask+ (get-cxx-data-structure-info :fixnum-mask))
+(defvar +tag-mask+ (get-cxx-data-structure-info :tag-mask))
+(defvar +immediate-mask+ (get-cxx-data-structure-info :immediate-mask))
+(defvar +cons-tag+ (get-cxx-data-structure-info :cons-tag))
+(defvar +valist-tag+ (get-cxx-data-structure-info :valist-tag))
+(defvar +fixnum-tag+ (get-cxx-data-structure-info :fixnum-tag))
+(defvar +character-tag+ (get-cxx-data-structure-info :character-tag))
+(defvar +single-float-tag+ (get-cxx-data-structure-info :single-float-tag))
+(defvar +general-tag+ (get-cxx-data-structure-info :general-tag))
+(defvar +VaList_S-size+ (get-cxx-data-structure-info :VaList_S-size))
+(defvar +void*-size+ (get-cxx-data-structure-info :void*-size))
+(defvar +alignment+ (get-cxx-data-structure-info :alignment))
+(export '(+fixnum-mask+ +tag-mask+ +immediate-mask+
+          +cons-tag+ +fixnum-tag+ +character-tag+ +single-float-tag+
+          +general-tag+ +VaList_S-size+ +void*-size+ +alignment+ ))
+(defvar +cons-car-offset+ (get-cxx-data-structure-info :cons-car-offset))
+(defvar +cons-cdr-offset+ (get-cxx-data-structure-info :cons-cdr-offset))
+(defvar +uintptr_t-size+ (get-cxx-data-structure-info :uintptr_t-size))
+(defvar +intptr_t+
+  (cond
+    ((= 8 +uintptr_t-size+) +i64+)
+    ((= 4 +uintptr_t-size+) +i32+)
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+(defvar +uintptr_t+
+  (cond
+    ((= 8 +uintptr_t-size+) +i64+)
+    ((= 4 +uintptr_t-size+) +i32+)
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
+(defun make-uintptr_t (x)
+  (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a +i64+" x))
+  (cond
+    ((= 8 +uintptr_t-size+) (jit-constant-i64 x))
+    ((= 4 +uintptr_t-size+) (jit-constant-i32 x))
+    (t (error "Add support for size uintptr_t = ~a" sizeof-uintptr_t))))
 
 ;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH VaList_S
 
-  (defun build-list-of-pointers (size type)
-    (multiple-value-bind (num-pointers remainder)
-        (floor size +void*-size+)
-      (unless (= remainder 0)
-        (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
-               type size +void*-size+))
-      (make-list num-pointers :initial-element +i8*+)))
+(defun build-list-of-pointers (size type)
+  (multiple-value-bind (num-pointers remainder)
+      (floor size +void*-size+)
+    (unless (= remainder 0)
+      (error "The ~a size ~a is not a multiple of sizeof(void*) ~a"
+             type size +void*-size+))
+    (make-list num-pointers :initial-element +i8*+)))
 
-  (defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
+(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (build-list-of-pointers +VaList_S-size+ "VaList") nil))
 ;;;(defvar +VaList_S+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ +va_list+) nil)) ;; +size_t+ +t*+ +bool+) nil))
-  (defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
+(defvar +VaList_S*+ (llvm-sys:type-get-pointer-to +VaList_S+))
 
-  (defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
-  (defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
-  (defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
+(defvar +sp-counted-base+ (llvm-sys:struct-type-get *llvm-context* (list +i32+ +i32+) nil)) ;; "sp-counted-base-ty"
+(defvar +sp-counted-base-ptr+ (llvm-sys:type-get-pointer-to +sp-counted-base+))
+(defvar +shared-count+ (llvm-sys:struct-type-get *llvm-context* (list +sp-counted-base-ptr+) nil)) ;; "shared_count"
 
-  ;;
-  ;; Setup setjmp_buf type
-  ;;
-  ;; setjmp_buf buffers consist of five words.
-  ;; Word 0 - Stores the frame-ptr (set by the library)
-  ;; Word 1 - Stores the longjmp destination address - we set this
-  ;; Word 2..4 - Three words for target specific data.
-  ;; I'm going to use Word 2.. to represent different things.
-  ;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
-  ;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
+;;
+;; Setup setjmp_buf type
+;;
+;; setjmp_buf buffers consist of five words.
+;; Word 0 - Stores the frame-ptr (set by the library)
+;; Word 1 - Stores the longjmp destination address - we set this
+;; Word 2..4 - Three words for target specific data.
+;; I'm going to use Word 2.. to represent different things.
+;; For TAGBODY/GO Word2 will contain an i32 and the rest is padding
+;; For BLOCK/RETURN-FROM Word2..4 will contain a T_mv pointer - it should fit
 
-  (defvar +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
-  (defvar +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
+(defvar +setjmp.buf+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +i8*+ +i8*+ +i8*+) nil))
+(defvar +setjmp.buf*+ (llvm-sys:type-get-pointer-to +setjmp.buf+))
 
-  ;;
-  ;; Setup smart-ptr constants
-  ;;
-  (multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
-      (smart-pointer-details)
-    (defvar +using-intrusive-reference-count+
-      (eq pointer-type 'core::intrusive-reference-counted-pointer))
-    (defvar +smart-ptr-px-offset+ pointer-px-offset))
+;;
+;; Setup smart-ptr constants
+;;
+(multiple-value-bind (pointer-type pointer-px-offset pointer-px-size)
+    (smart-pointer-details)
+  (defvar +using-intrusive-reference-count+
+    (eq pointer-type 'core::intrusive-reference-counted-pointer))
+  (defvar +smart-ptr-px-offset+ pointer-px-offset))
 
 
-  (defun smart-pointer-fields (data-ptr-type &rest additional-fields)
-    "List the types that make up a smart_ptr.
+(defun smart-pointer-fields (data-ptr-type &rest additional-fields)
+  "List the types that make up a smart_ptr.
 Boehm and MPS use a single pointer"
-    (list* data-ptr-type additional-fields))
+  (list* data-ptr-type additional-fields))
 
 
-  ;;
-  ;; If I use an opaque type then the symbol type gets duplicated and that causes
-  ;; problems - try just using an int
-  ;;(defvar +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
-  (defvar +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
-  (defvar +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
-  (defvar +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
-  (defvar +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
+;;
+;; If I use an opaque type then the symbol type gets duplicated and that causes
+;; problems - try just using an int
+;;(defvar +sym+ (llvm-sys:struct-type-get *llvm-context* nil nil)) ;; "Symbol_O"
+(defvar +sym+ (llvm-sys:type-get-int32-ty *llvm-context*))
+(defvar +sym-ptr+ (llvm-sys:type-get-pointer-to +sym+))
+(defvar +symsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +sym-ptr+) nil)) ;; "Sym_sp"
+(defvar +symsp*+ (llvm-sys:type-get-pointer-to +symsp+))
 
 
-  ;;
-  ;; Store a core::Function_sp pointer
-  ;;
-  (defvar +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
-  (defvar +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
-  (defvar +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
-  (defvar +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
+;;
+;; Store a core::Function_sp pointer
+;;
+(defvar +Function+ (llvm-sys:type-get-int32-ty *llvm-context*))
+(defvar +Function-ptr+ (llvm-sys:type-get-pointer-to +Function+))
+(defvar +Function_sp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +Function-ptr+) nil)) ;; "Cfn_sp"
+(defvar +Function_sp*+ (llvm-sys:type-get-pointer-to +Function_sp+))
 
 
 
@@ -236,82 +241,82 @@ Boehm and MPS use a single pointer"
 (defvar +constants-table+ (llvm-sys:struct-type-get *llvm-context* (list +i8*+ +i8*+ +size_t+) nil))
 (defvar +constants-table*+ (llvm-sys:type-get-pointer-to +constants-table+))
 
-  ;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
-  (defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
-  (defvar +return_type+ +tmv+)
-  (defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
-  (defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
+;; The definition of +tmv+ doesn't quite match T_mv because T_mv inherits from T_sp
+(defvar +tmv+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +t*+ +size_t+) nil))  ;; "T_mv"
+(defvar +return_type+ +tmv+)
+(defvar +tmv*+ (llvm-sys:type-get-pointer-to +tmv+))
+(defvar +tmv**+ (llvm-sys:type-get-pointer-to +tmv*+))
 
-  (defvar +gcvector-tsp+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +tsp+) nil))
-  (defvar +gcvector-symsp+ (llvm-sys:struct-type-get *llvm-context*(list +size_t+ +size_t+ +symsp+) nil))
-  (defvar +vec0-tsp+ (llvm-sys:struct-type-get *llvm-context*(list +gcvector-tsp+) nil))
-  (defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
+(defvar +gcvector-tsp+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +size_t+ +tsp+) nil))
+(defvar +gcvector-symsp+ (llvm-sys:struct-type-get *llvm-context*(list +size_t+ +size_t+ +symsp+) nil))
+(defvar +vec0-tsp+ (llvm-sys:struct-type-get *llvm-context*(list +gcvector-tsp+) nil))
+(defvar +vec0-symsp+ (llvm-sys:struct-type-get *llvm-context* (list +gcvector-symsp+) nil))
 
-  ;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
-  (defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ #+(or) +vec0-tsp+)  nil)) ;; "LoadTimeValue_O"
-  (defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
-  (defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
-  (defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
-  #+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
-  #+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
-
-
-  (defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
-  (defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
-  (defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
-  (defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
-  (defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
+;; Define the LoadTimeValue_O struct - right now just put in a dummy i32 - later put real fields here
+(defvar +ltv+ (llvm-sys:struct-type-get *llvm-context* (list +vtable*+ #+(or) +vec0-tsp+)  nil)) ;; "LoadTimeValue_O"
+(defvar +ltv*+ (llvm-sys:type-get-pointer-to +ltv+))
+(defvar +ltv**+ (llvm-sys:type-get-pointer-to +ltv*+))
+(defvar +ltvsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +ltv*+) nil))  ;; "LoadTimeValue_sp"
+#+(or)(defvar +ltvsp*+ (llvm-sys:type-get-pointer-to +ltvsp+))
+#+(or)(defvar +ltvsp**+ (llvm-sys:type-get-pointer-to +ltvsp*+))
 
 
+(defvar +mv-limit+ (cdr (assoc :multiple-values-limit (llvm-sys:cxx-data-structures-info))))
+(defvar +mv-values-array+ (llvm-sys:array-type-get +t*+ +mv-limit+))
+(defvar +mv-struct+ (llvm-sys:struct-type-get *llvm-context* (list +size_t+ +mv-values-array+) nil #|| is-packed ||#))
+(defvar +mv-struct*+ (llvm-sys:type-get-pointer-to +mv-struct+))
+(defvar +thread-info-struct+ (llvm-sys:struct-type-get *llvm-context* (list +mv-struct+) nil))
 
-  #+(or)(progn
-          (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
-          (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
-          (defvar +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
-          (defvar +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
-          )
 
-  ;; Substitute afsp* with tsp
-  (defvar +afsp+ +tsp+)
-  (defvar +afsp*+ +tsp*+)
+
+#+(or)(progn
+        (defvar +af+ (llvm-sys:struct-type-get *llvm-context* nil  nil)) ;; "ActivationFrame_O"
+        (defvar +af-ptr+ (llvm-sys:type-get-pointer-to +af+))
+        (defvar +afsp+ (llvm-sys:struct-type-get *llvm-context* (smart-pointer-fields +af-ptr+)  nil)) ;; "ActivationFrame_sp"
+        (defvar +afsp*+ (llvm-sys:type-get-pointer-to +afsp+))
+        )
+
+;; Substitute afsp* with tsp
+(defvar +afsp+ +tsp+)
+(defvar +afsp*+ +tsp*+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;;
-  ;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
-  ;; and names of the arguments passed in registers
-  ;;
-  ;; The last passed-arg is va-list
-  (defstruct (calling-convention-impl (:type vector))
-    valist
-    nargs
-    register-args ;; the last passed-arg is a va-list
-    )
+;;
+;; Set up the calling convention using core:+number-of-fixed-arguments+ to define the types
+;; and names of the arguments passed in registers
+;;
+;; The last passed-arg is va-list
+(defstruct (calling-convention-impl (:type vector))
+  valist
+  nargs
+  register-args ;; the last passed-arg is a va-list
+  )
 
-  ;; Parse the function arguments into a (values closed-env calling-convention)
-  (defun parse-function-arguments (arguments)
-    (let ((closed-env (first arguments))
-          (cc (make-calling-convention-impl
-               :valist (second arguments)
-               :nargs (third arguments) ;; The number of arguments
-               :register-args (nthcdr 3 arguments))))
-      (values closed-env cc)))
+;; Parse the function arguments into a (values closed-env calling-convention)
+(defun parse-function-arguments (arguments)
+  (let ((closed-env (first arguments))
+        (cc (make-calling-convention-impl
+             :valist (second arguments)
+             :nargs (third arguments) ;; The number of arguments
+             :register-args (nthcdr 3 arguments))))
+    (values closed-env cc)))
 
-  (defun calling-convention-nargs (cc)
-    (calling-convention-impl-nargs cc))
+(defun calling-convention-nargs (cc)
+  (calling-convention-impl-nargs cc))
 
-  (defun calling-convention-register-args (cc)
-    (calling-convention-impl-register-args cc))
+(defun calling-convention-register-args (cc)
+  (calling-convention-impl-register-args cc))
 
-  ;; If there is no va-list return nil - Why would this ever be so?
-  (defun calling-convention-va-list (cc)
-    (calling-convention-impl-valist cc))
+;; If there is no va-list return nil - Why would this ever be so?
+(defun calling-convention-va-list (cc)
+  (calling-convention-impl-valist cc))
 
 
-  (defun calling-convention-args.va-end (cc)
-    (irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))
+(defun calling-convention-args.va-end (cc)
+  (irc-intrinsic "llvm.va_end" (calling-convention-va-list cc)))
 
 ;;;
 ;;; Read the next argument from the va_list
@@ -807,79 +812,150 @@ and initialize it with an array consisting of one function pointer."
 
   ;; === CLASP-FFI TRANSLATORS ===
 
+  ;; !!! NOTE !!! => PORTING ISSUE/TODO !
+  ;; This implementation assumes the following associations:
+  ;;
+  ;; char      -> i8
+  ;; short     -> i16
+  ;; int       -> i32
+  ;; long      -> i64
+  ;; long long -> i64 (!)
+  ;; float     -> float
+  ;; doubls    -> double
+
+  ;; SHORT & UNSIGNED SHORT
   (primitive          module "tr_from_object_short" +t*+ (list +t*+))
   (primitive          module "tr_to_object_short" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_short" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_short" +t*+ (list +t*+))
+  (primitive          module "from_object_short" +t*+ (list +t*+))
+  (primitive          module "to_object_short" +t*+ (list +i16+))
+  (primitive          module "from_object_unsigned_short" +t*+ (list +t*+))
+  (primitive          module "to_object_unsigned_short" +t*+ (list +i16+))
 
+  ;; INT & UNSIGNED INT
   (primitive          module "tr_from_object_int" +t*+ (list +t*+))
   (primitive          module "tr_to_object_int" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_int" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_int" +t*+ (list +t*+))
+  (primitive          module "from_object_int" +t*+ (list +t*+))
+  (primitive          module "to_object_int" +t*+ (list +i32+))
+  (primitive          module "from_object_unsigned_int" +t*+ (list +t*+))
+  (primitive          module "to_object_unsigned_int" +t*+ (list +i32+))
 
+  ;; LONG & UNSIGNED LONG
   (primitive          module "tr_from_object_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_long" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_long" +t*+ (list +t*+))
+  (primitive          module "from_object_long" +t*+ (list +t*+))
+  (primitive          module "to_object_long" +t*+ (list +i64+))
+  (primitive          module "from_object_unsigned_long" +t*+ (list +t*+))
+  (primitive          module "to_object_unsigned_long" +t*+ (list +i64+))
 
   (primitive          module "tr_from_object_int8" +t*+ (list +t*+))
   (primitive          module "tr_to_object_int8" +t*+ (list +t*+))
   (primitive          module "tr_from_object_uint8" +t*+ (list +t*+))
   (primitive          module "tr_to_object_uint8" +t*+ (list +t*+))
+  (primitive          module "from_object_int8" +t*+ (list +t*+))
+  (primitive          module "to_object_int8" +t*+ (list +i8+))
+  (primitive          module "from_object_uint8" +t*+ (list +t*+))
+  (primitive          module "to_object_uint8" +t*+ (list +i8+))
 
   (primitive          module "tr_from_object_int16" +t*+ (list +t*+))
   (primitive          module "tr_to_object_int16" +t*+ (list +t*+))
   (primitive          module "tr_from_object_uint16" +t*+ (list +t*+))
   (primitive          module "tr_to_object_uint16" +t*+ (list +t*+))
+  (primitive          module "from_object_int16" +t*+ (list +t*+))
+  (primitive          module "to_object_int16" +t*+ (list +i16+))
+  (primitive          module "from_object_uint16" +t*+ (list +t*+))
+  (primitive          module "to_object_uint16" +t*+ (list +i16+))
 
   (primitive          module "tr_from_object_int32" +t*+ (list +t*+))
   (primitive          module "tr_to_object_int32" +t*+ (list +t*+))
   (primitive          module "tr_from_object_uint32" +t*+ (list +t*+))
   (primitive          module "tr_to_object_uint32" +t*+ (list +t*+))
+  (primitive          module "from_object_int32" +t*+ (list +t*+))
+  (primitive          module "to_object_int32" +t*+ (list +i32+))
+  (primitive          module "from_object_uint32" +t*+ (list +t*+))
+  (primitive          module "to_object_uint32" +t*+ (list +i32+))
 
   (primitive          module "tr_from_object_int64" +t*+ (list +t*+))
   (primitive          module "tr_to_object_int64" +t*+ (list +t*+))
   (primitive          module "tr_from_object_uint64" +t*+ (list +t*+))
   (primitive          module "tr_to_object_uint64" +t*+ (list +t*+))
+  (primitive          module "from_object_int64" +t*+ (list +t*+))
+  (primitive          module "to_object_int64" +t*+ (list +i64+))
+  (primitive          module "from_object_uint64" +t*+ (list +t*+))
+  (primitive          module "to_object_uint64" +t*+ (list +i64+))
 
+  ;; NOT USED
   ;;(primitive          module "tr_from_object_int128" +t*+ (list +t*+))
   ;;(primitive          module "tr_to_object_int128" +t*+ (list +t*+))
   ;;(primitive          module "tr_from_object_uint128" +t*+ (list +t*+))
   ;;(primitive          module "tr_to_object_uint128" +t*+ (list +t*+))
+  ;;(primitive          module "from_object_int128" +t*+ (list +t*+))
+  ;;(primitive          module "to_object_int128" +t*+ (list +i128+))
+  ;;(primitive          module "from_object_uint128" +t*+ (list +t*+))
+  ;;(primitive          module "to_object_uint128" +t*+ (list +i128+))
 
   (primitive          module "tr_from_object_long_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_long_long" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_long_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_long_long" +t*+ (list +t*+))
+  (primitive          module "from_object_long_long" +t*+ (list +t*+))
+  (primitive          module "to_object_long_long" +t*+ (list +i64+))
+  (primitive          module "from_object_unsigned_long_long" +t*+ (list +t*+))
+  (primitive          module "to_object_unsigned_long_long" +t*+ (list +i64+))
 
   (primitive          module "tr_from_object_size" +t*+ (list +t*+))
   (primitive          module "tr_to_object_size" +t*+ (list +t*+))
+  (primitive          module "from_object_size" +t*+ (list +t*+))
+  (primitive          module "to_object_size" +t*+ (list +size_t+))
 
   (primitive          module "tr_from_object_ssize" +t*+ (list +t*+))
   (primitive          module "tr_to_object_ssize" +t*+ (list +t*+))
+  (primitive          module "from_object_ssize" +t*+ (list +t*+))
+  (primitive          module "to_object_ssize" +t*+ (list +size_t+))
 
   (primitive          module "tr_from_object_ptrdiff" +t*+ (list +t*+))
   (primitive          module "tr_to_object_ptrdiff" +t*+ (list +t*+))
+  ;; (primitive          module "from_object_ptrdiff" +t*+ (list +t*+)) - FIXME !
+  ;; (primitive          module "to_object_ptrdiff" +t*+ (list +uintptr_t+)) - FIXME !
 
   (primitive          module "tr_from_object_time" +t*+ (list +t*+))
   (primitive          module "tr_to_object_time" +t*+ (list +t*+))
+  ;; (primitive          module "from_object_time" +t*+ (list +t*+)) - FIXME !
+  ;; (primitive          module "to_object_time" +t*+ (list +t*+)) - FIOXME !
 
   (primitive          module "tr_from_object_char" +t*+ (list +t*+))
   (primitive          module "tr_to_object_char" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_char" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_char" +t*+ (list +t*+))
+  (primitive          module "from_object_char" +t*+ (list +t*+))
+  (primitive          module "to_object_char" +t*+ (list +i8+))
+  (primitive          module "from_object_unsigned_char" +t*+ (list +t*+))
+  (primitive          module "to_object_unsigned_char" +t*+ (list +i8+))
 
   (primitive          module "tr_from_object_float" +t*+ (list +t*+))
   (primitive          module "tr_to_object_float" +t*+ (list +t*+))
+  (primitive          module "from_object_float" +t*+ (list +t*+))
+  (primitive          module "to_object_float" +t*+ (list +float+))
 
   (primitive          module "tr_from_object_double" +t*+ (list +t*+))
   (primitive          module "tr_to_object_double" +t*+ (list +t*+))
+  (primitive          module "from_object_double" +t*+ (list +t*+))
+  (primitive          module "to_object_double" +t*+ (list +double+))
 
   (primitive          module "tr_from_object_long_double" +t*+ (list +t*+))
   (primitive          module "tr_to_object_long_double" +t*+ (list +t*+))
+  #+long-float  (primitive          module "from_object_long_double" +t*+ (list +t*+))
+  #+long-float  (primitive          module "to_object_long_double" +t*+ (list +long-float+))
 
   (primitive          module "tr_from_object_pointer" +t*+ (list +t*+))
   (primitive          module "tr_to_object_pointer" +t*+ (list +t*+))
+  (primitive          module "from_object_pointer" +t*+ (list +t*+))
+  (primitive          module "to_object_pointer" +t*+ (list +void*+))
 
   ;; === END OF TRANSLATORS ===
 

@@ -134,7 +134,7 @@ namespace clasp_ffi {
 //   GLOBAL VARS
 // ---------------------------------------------------------------------------
 
-const std::string TO_OBJECT_FN_NAME_PREFIX( "tr_to_object_" );
+const std::string TO_OBJECT_FN_NAME_PREFIX( "to_object_" );
 const std::string FROM_OBJECT_FN_NAME_PREFIX( "tr_from_object_" );
 
 // ---------------------------------------------------------------------------
@@ -323,9 +323,9 @@ inline void register_foreign_types( void ) {
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int128,int128_t,kw::_sym_int128,"int128");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uint64,uint128_t,kw::_sym_uint128,"uint128");
 #endif
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,double,double,kw::_sym_double,"double");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,kw::_sym_single_float,"float");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,float,float,kw::_sym_float,"float");
-  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,single_float,float,kw::_sym_float,"float");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,double,double,kw::_sym_double,"double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,long_float,long double,kw::_sym_long_float,"long double");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,time,time_t,kw::_sym_time,"time");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,pointer,void *,kw::_sym_pointer,"pointer");
