@@ -125,7 +125,7 @@ CL_DEFUN T_sp cl__load(T_sp source, T_sp verbose, T_sp print, T_sp if_does_not_e
   if (verbose.notnilp()) {
     eval::funcall(cl::_sym_format, _lisp->_true(),
                   Str_O::create("~&;;; Loading ~s~%"),
-                  filename);
+                  source);
   }
 
   /* If source is a stream, read conventional lisp code from it */
