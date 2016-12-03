@@ -17,6 +17,13 @@ By <b>[Frank Goenninger][]</b> < <frank.goenninger@goenninger.net> >, [dg1sbg][]
 
 [dg1sbg]: https://github.com/dg1sbg
 
+### TODO / ISSUES
+
+<b>Feature requests concerning this document</b>
+
+`001`: Shinmera, 2016-12-03<br>
+frgo: I like to see a high-level overview that explains what kind of parts of Clasp that it connects to, how they work, and what the rationale is behind the design.
+
 ### Clasp is *fun* !
 A quote of [Dr. Christian E. Schafmeister][], [drmeister][] on Github, the ceator of Clasp, in #clasp on 2016-12-02:
 

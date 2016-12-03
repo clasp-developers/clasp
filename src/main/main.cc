@@ -81,7 +81,7 @@ THE SOFTWARE.
 // GLOBAL VARS
 // ---------------------------------------------------------------------------
 
-static const std::string CLASP_DEFAULT_PROGRAM_NAME( "CLASP");
+static const std::string CLASP_DEFAULT_PROGRAM_NAME( "clasp");
 static const std::string CLASP_DEFAULT_EXE_NAME( CLASP_DEFAULT_PROGRAM_NAME );
 
 static std::string g_exe_name;      // filename of the executable

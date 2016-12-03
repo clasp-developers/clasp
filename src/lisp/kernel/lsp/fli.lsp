@@ -150,7 +150,7 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :single-float) 'cmp::+float+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :float) 'cmp::+float+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
-    (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
+    #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
 
     (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+void*+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)

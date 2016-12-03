@@ -828,9 +828,9 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "tr_to_object_short" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_short" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_short" +t*+ (list +t*+))
-  (primitive          module "from_object_short" +t*+ (list +t*+))
+  (primitive          module "from_object_short" +i16+ (list +t*+))
   (primitive          module "to_object_short" +t*+ (list +i16+))
-  (primitive          module "from_object_unsigned_short" +t*+ (list +t*+))
+  (primitive          module "from_object_unsigned_short" +i16+ (list +t*+))
   (primitive          module "to_object_unsigned_short" +t*+ (list +i16+))
 
   ;; INT & UNSIGNED INT
@@ -838,7 +838,7 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "tr_to_object_int" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_int" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_int" +t*+ (list +t*+))
-  (primitive          module "from_object_int" +t*+ (list +t*+))
+  (primitive          module "from_object_int" +i32+ (list +t*+))
   (primitive          module "to_object_int" +t*+ (list +i32+))
   (primitive          module "from_object_unsigned_int" +t*+ (list +t*+))
   (primitive          module "to_object_unsigned_int" +t*+ (list +i32+))
@@ -848,76 +848,76 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "tr_to_object_long" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_long" +t*+ (list +t*+))
-  (primitive          module "from_object_long" +t*+ (list +t*+))
+  (primitive          module "from_object_long" +i64+ (list +t*+))
   (primitive          module "to_object_long" +t*+ (list +i64+))
-  (primitive          module "from_object_unsigned_long" +t*+ (list +t*+))
+  (primitive          module "from_object_unsigned_long" +i64+ (list +t*+))
   (primitive          module "to_object_unsigned_long" +t*+ (list +i64+))
 
-  (primitive          module "tr_from_object_int8" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_int8" +t*+ (list +t*+))
-  (primitive          module "tr_from_object_uint8" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_uint8" +t*+ (list +t*+))
-  (primitive          module "from_object_int8" +t*+ (list +t*+))
-  (primitive          module "to_object_int8" +t*+ (list +i8+))
-  (primitive          module "from_object_uint8" +t*+ (list +t*+))
-  (primitive          module "to_object_uint8" +t*+ (list +i8+))
-
-  (primitive          module "tr_from_object_int16" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_int16" +t*+ (list +t*+))
-  (primitive          module "tr_from_object_uint16" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_uint16" +t*+ (list +t*+))
-  (primitive          module "from_object_int16" +t*+ (list +t*+))
-  (primitive          module "to_object_int16" +t*+ (list +i16+))
-  (primitive          module "from_object_uint16" +t*+ (list +t*+))
-  (primitive          module "to_object_uint16" +t*+ (list +i16+))
-
-  (primitive          module "tr_from_object_int32" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_int32" +t*+ (list +t*+))
-  (primitive          module "tr_from_object_uint32" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_uint32" +t*+ (list +t*+))
-  (primitive          module "from_object_int32" +t*+ (list +t*+))
-  (primitive          module "to_object_int32" +t*+ (list +i32+))
-  (primitive          module "from_object_uint32" +t*+ (list +t*+))
-  (primitive          module "to_object_uint32" +t*+ (list +i32+))
-
-  (primitive          module "tr_from_object_int64" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_int64" +t*+ (list +t*+))
-  (primitive          module "tr_from_object_uint64" +t*+ (list +t*+))
-  (primitive          module "tr_to_object_uint64" +t*+ (list +t*+))
-  (primitive          module "from_object_int64" +t*+ (list +t*+))
-  (primitive          module "to_object_int64" +t*+ (list +i64+))
-  (primitive          module "from_object_uint64" +t*+ (list +t*+))
-  (primitive          module "to_object_uint64" +t*+ (list +i64+))
-
-  ;; NOT USED
-  ;;(primitive          module "tr_from_object_int128" +t*+ (list +t*+))
-  ;;(primitive          module "tr_to_object_int128" +t*+ (list +t*+))
-  ;;(primitive          module "tr_from_object_uint128" +t*+ (list +t*+))
-  ;;(primitive          module "tr_to_object_uint128" +t*+ (list +t*+))
-  ;;(primitive          module "from_object_int128" +t*+ (list +t*+))
-  ;;(primitive          module "to_object_int128" +t*+ (list +i128+))
-  ;;(primitive          module "from_object_uint128" +t*+ (list +t*+))
-  ;;(primitive          module "to_object_uint128" +t*+ (list +i128+))
-
+  ;; LONG LONG & UNSIGNED LONG LONG
   (primitive          module "tr_from_object_long_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_long_long" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_long_long" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_long_long" +t*+ (list +t*+))
-  (primitive          module "from_object_long_long" +t*+ (list +t*+))
+  (primitive          module "from_object_long_long" +i64+ (list +t*+))
   (primitive          module "to_object_long_long" +t*+ (list +i64+))
-  (primitive          module "from_object_unsigned_long_long" +t*+ (list +t*+))
+  (primitive          module "from_object_unsigned_long_long" +i64+ (list +t*+))
   (primitive          module "to_object_unsigned_long_long" +t*+ (list +i64+))
 
+  ;; INT8 & UINT8
+  (primitive          module "tr_from_object_int8" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int8" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint8" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint8" +t*+ (list +t*+))
+  (primitive          module "from_object_int8" +i8+ (list +t*+))
+  (primitive          module "to_object_int8" +t*+ (list +i8+))
+  (primitive          module "from_object_uint8" +i8+ (list +t*+))
+  (primitive          module "to_object_uint8" +t*+ (list +i8+))
+
+  ;; INT16 & UINT16
+  (primitive          module "tr_from_object_int16" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int16" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint16" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint16" +t*+ (list +t*+))
+  (primitive          module "from_object_int16" +i16+ (list +t*+))
+  (primitive          module "to_object_int16" +t*+ (list +i16+))
+  (primitive          module "from_object_uint16" +i16+ (list +t*+))
+  (primitive          module "to_object_uint16" +t*+ (list +i16+))
+
+  ;; INT32 & UINT32
+  (primitive          module "tr_from_object_int32" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int32" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint32" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint32" +t*+ (list +t*+))
+  (primitive          module "from_object_int32" +i32+ (list +t*+))
+  (primitive          module "to_object_int32" +t*+ (list +i32+))
+  (primitive          module "from_object_uint32" +i32+ (list +t*+))
+  (primitive          module "to_object_uint32" +t*+ (list +i32+))
+
+  ;; INT64 & UINT64
+  (primitive          module "tr_from_object_int64" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_int64" +t*+ (list +t*+))
+  (primitive          module "tr_from_object_uint64" +t*+ (list +t*+))
+  (primitive          module "tr_to_object_uint64" +t*+ (list +t*+))
+  (primitive          module "from_object_int64" +i64+ (list +t*+))
+  (primitive          module "to_object_int64" +t*+ (list +i64+))
+  (primitive          module "from_object_uint64" +i64+ (list +t*+))
+  (primitive          module "to_object_uint64" +t*+ (list +i64+))
+
+  ;; i128 HANDLING NOT IMPLEMENTED AS IT IS NOT USED
+
+  ;; SIZE_T
   (primitive          module "tr_from_object_size" +t*+ (list +t*+))
   (primitive          module "tr_to_object_size" +t*+ (list +t*+))
-  (primitive          module "from_object_size" +t*+ (list +t*+))
+  (primitive          module "from_object_size" +size_t+ (list +t*+))
   (primitive          module "to_object_size" +t*+ (list +size_t+))
 
+  ;; SSIZE_T
   (primitive          module "tr_from_object_ssize" +t*+ (list +t*+))
   (primitive          module "tr_to_object_ssize" +t*+ (list +t*+))
-  (primitive          module "from_object_ssize" +t*+ (list +t*+))
+  (primitive          module "from_object_ssize" +size_t+ (list +t*+))
   (primitive          module "to_object_ssize" +t*+ (list +size_t+))
 
+  ;; PTRDIFF_T, TIME_T
   (primitive          module "tr_from_object_ptrdiff" +t*+ (list +t*+))
   (primitive          module "tr_to_object_ptrdiff" +t*+ (list +t*+))
   ;; (primitive          module "from_object_ptrdiff" +t*+ (list +t*+)) - FIXME !
@@ -928,35 +928,38 @@ and initialize it with an array consisting of one function pointer."
   ;; (primitive          module "from_object_time" +t*+ (list +t*+)) - FIXME !
   ;; (primitive          module "to_object_time" +t*+ (list +t*+)) - FIOXME !
 
+  ;; CHAR & UNSIGNED CHAR
   (primitive          module "tr_from_object_char" +t*+ (list +t*+))
   (primitive          module "tr_to_object_char" +t*+ (list +t*+))
   (primitive          module "tr_from_object_unsigned_char" +t*+ (list +t*+))
   (primitive          module "tr_to_object_unsigned_char" +t*+ (list +t*+))
-  (primitive          module "from_object_char" +t*+ (list +t*+))
+  (primitive          module "from_object_char" +i8+ (list +t*+))
   (primitive          module "to_object_char" +t*+ (list +i8+))
-  (primitive          module "from_object_unsigned_char" +t*+ (list +t*+))
+  (primitive          module "from_object_unsigned_char" +i8+ (list +t*+))
   (primitive          module "to_object_unsigned_char" +t*+ (list +i8+))
 
+  ;; FLOAT, DOUBLE & LONG FLOAT
   (primitive          module "tr_from_object_float" +t*+ (list +t*+))
   (primitive          module "tr_to_object_float" +t*+ (list +t*+))
-  (primitive          module "from_object_float" +t*+ (list +t*+))
+  (primitive          module "from_object_float" +float+ (list +t*+))
   (primitive          module "to_object_float" +t*+ (list +float+))
-
   (primitive          module "tr_from_object_double" +t*+ (list +t*+))
   (primitive          module "tr_to_object_double" +t*+ (list +t*+))
-  (primitive          module "from_object_double" +t*+ (list +t*+))
+  (primitive          module "from_object_double" +double+ (list +t*+))
   (primitive          module "to_object_double" +t*+ (list +double+))
-
   (primitive          module "tr_from_object_long_double" +t*+ (list +t*+))
   (primitive          module "tr_to_object_long_double" +t*+ (list +t*+))
-  #+long-float  (primitive          module "from_object_long_double" +t*+ (list +t*+))
-  #+long-float  (primitive          module "to_object_long_double" +t*+ (list +long-float+))
+  #+long-float (primitive module "from_object_long_double" +long-float+ (list +t*+))
+  #+long-float (primitive module "to_object_long_double" +t*+ (list +long-float+))
 
+  ;; POINTER / VOID *
   (primitive          module "tr_from_object_pointer" +t*+ (list +t*+))
   (primitive          module "tr_to_object_pointer" +t*+ (list +t*+))
-  (primitive          module "from_object_pointer" +t*+ (list +t*+))
-  (primitive          module "to_object_pointer" +t*+ (list +void*+))
 
+  ;; THIS ERRORS OUT  ...
+  (format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" +void+ +void*+)
+  (primitive          module "from_object_pointer" +void*+ (list +t*+))
+  (primitive          module "to_object_pointer" +t*+ (list +void*+))
   ;; === END OF TRANSLATORS ===
 
   )
