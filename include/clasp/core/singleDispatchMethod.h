@@ -47,7 +47,7 @@ namespace core {
       ASSERT_FIRST_ARG_IS_VALIST();
       ASSERT_LCC_VA_LIST_CLOSURE_DEFINED(lcc_arglist);
       INCREMENT_FUNCTION_CALL_COUNTER(this);
-      return funcall_consume_valist_(this->_body,LCC_ARG0_VALIST());
+      return funcall_consume_valist_<core::Function_O>(this->_body.tagged_(),LCC_ARG0_VALIST());
     };
   };
 

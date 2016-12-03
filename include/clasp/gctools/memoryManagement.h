@@ -227,7 +227,7 @@ namespace gctools {
   extern void monitorAllocation(kind_t k, size_t sz);
   extern uint64_t globalBytesAllocated;
 
-#ifdef TRACK_ALLOCATIONS
+#if defined(TRACK_ALLOCATIONS) && defined(DEBUG_SLOW)
   inline void monitor_allocation(kind_t k, size_t sz) {
     globalBytesAllocated += sz;
 #ifdef GC_MONITOR_ALLOCATIONS

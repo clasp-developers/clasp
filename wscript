@@ -551,12 +551,17 @@ def configure(cfg):
     else:
         raise Exception("Unknown OS %s"%cfg.env['DEST_OS'])
     cfg.define("PROGRAM_CLASP",1)
+# -----------------
+# defines that slow down program execution
+#  There are more defined in clasp/include/gctools/configure_memory.h
+    cfg.define("DEBUG_SLOW",1)    # Code runs slower due to checks - undefine to remove checks
+# ----------    
     cfg.define("CLASP_GIT_COMMIT",get_git_commit(cfg))
     cfg.define("CLASP_VERSION",get_clasp_version(cfg))
     cfg.define("CLBIND_DYNAMIC_LINK",1)
     cfg.define("DEBUG_CL_SYMBOLS",1)
+    cfg.define("SOURCE_DEBUG",1)
     cfg.define("USE_SOURCE_DATABASE",1)
-    cfg.define("DEBUG_DRAG",1)
     cfg.define("DEBUG_TRACE_INTERPRETED_CLOSURES",1)
 #    cfg.define("EXPAT",1)
     cfg.define("INCLUDED_FROM_CLASP",1)

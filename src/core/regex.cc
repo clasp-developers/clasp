@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #undef USEBOOSTPYTHON // currently including regex.h runs into problems with boost python
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>

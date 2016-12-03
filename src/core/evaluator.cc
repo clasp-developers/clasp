@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 //#include "core/foundation.h"
 #include <clasp/core/common.h>
 #include <clasp/core/corePackage.h>
@@ -114,13 +114,13 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_(func, valist);
+    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   } else if (gctools::tagged_valistp(lastArgRaw) && lenArgs == 1) {
 //    printf("%s:%d apply with one argument and its a valist\n", __FILE__, __LINE__ );
     VaList_sp valast((gc::Tagged)lastArgRaw);
     VaList_S valast_copy(*valast);
     VaList_sp valast_copy_sp(&valast_copy);
-    return funcall_consume_valist_(func, valast_copy_sp);
+    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valast_copy_sp);
   } else if (gctools::tagged_valistp(lastArgRaw)) {
     // The last argument is a VaList - so we need to create a new frame
     // to hold the contents of the two lists of arguments
@@ -145,7 +145,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);
-    return funcall_consume_valist_(func, valist);
+    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   } else if (gctools::tagged_consp(lastArgRaw)) {
     // Cons as last argument
     int lenFirst = args->remaining_nargs()-1;
@@ -168,7 +168,7 @@ CL_DEFUN T_mv cl__apply(T_sp head, VaList_sp args) {
     }
     VaList_S valist_struct(frame);
     VaList_sp valist(&valist_struct); // = frame.setupVaList(valist_struct);;
-    return funcall_consume_valist_(func, valist);
+    return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
   }
   eval::errorApplyLastArgumentNotList();
   UNREACHABLE();
@@ -210,7 +210,7 @@ CL_DEFUN T_mv cl__funcall(T_sp function_desig, VaList_sp args) {
   VaList_S debug_valist(*args);
   core::T_O* debug_lcc_valist = debug_valist.asTaggedPtr();
 #endif
-  T_mv res = funcall_consume_valist_(func, args);
+  T_mv res = funcall_consume_valist_<core::Function_O>(func.tagged_(), args);
   return res;
 }
 
@@ -1306,7 +1306,7 @@ T_mv sp_multipleValueCall(List_sp args, T_sp env) {
   }
   VaList_S valist_struct(fargs);
   VaList_sp valist(&valist_struct); // = valist_struct.fargs.setupVaList(valist_struct);
-  return funcall_consume_valist_(func, valist);
+  return funcall_consume_valist_<core::Function_O>(func.tagged_(), valist);
 }
 
 
@@ -2152,13 +2152,13 @@ T_mv evaluate(T_sp exp, T_sp environment) {
           printf("%s ", _rep_(T_sp((gc::Tagged)(*callArgs)[i])).c_str());
         }
         printf(" )\n");
-        result = funcall_consume_valist_(headFunc, valist);
+        result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
         printf("eval::evaluate Trace [%d] < (%s ...)\n", global_interpreter_trace_depth, _rep_(headSym).c_str());
       } else {
-        result = funcall_consume_valist_(headFunc, valist);
+        result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
       }
     } else {
-      result = funcall_consume_valist_(headFunc, valist);
+      result = funcall_consume_valist_<core::Function_O>(headFunc.tagged_(), valist);
     }
     goto DONE;
   }

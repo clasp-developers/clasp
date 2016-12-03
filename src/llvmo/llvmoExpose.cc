@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 
 //#include <llvm/Support/system_error.h>
 #include <clasp/core/foundation.h>
@@ -2641,20 +2641,11 @@ CL_DEFMETHOD size_t BasicBlock_O::size() {
   return this->wrappedPtr()->size();
 }
 
-#ifdef DEBUG_DRAG
-llvm::BasicBlock* debug_BasicBlock_ptr = NULL;
-#endif
 CL_LISPIFY_NAME("BasicBlockBack");
 CL_DEFMETHOD Instruction_sp BasicBlock_O::back() {
   llvm::BasicBlock* bbp = this->wrappedPtr();
-#ifdef DEBUG_DRAG
-  debug_BasicBlock_ptr = bbp; // TODO: GET RID OF THIS, its for debugging
-#endif
   llvm::Instruction &inst = bbp->back();
   Instruction_sp instruction = core::RP_Create_wrapped<Instruction_O, llvm::Instruction *>(&inst);
-#ifdef DEBUG_DRAG
-  llvm::Instruction* test_instruction = instruction->wrappedPtr(); // TODO: GET RID OF THIS, its for debugging
-#endif
   return instruction;
 }
 

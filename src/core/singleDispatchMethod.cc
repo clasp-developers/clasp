@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #include <clasp/core/common.h>
 #include <clasp/core/str.h>
 #include <clasp/core/environment.h>

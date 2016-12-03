@@ -26,7 +26,7 @@ THE SOFTWARE.
 /* -^- */
 #define DEBUG_LANDING_PAD 1
 
-#define DEBUG_LEVEL_FULL
+//#define DEBUG_LEVEL_FULL
 #ifdef USE_MPS
 extern "C" {
 #include <clasp/mps/code/mps.h>

@@ -76,7 +76,9 @@ void* boehm_create_shadow_table(size_t nargs)
 
 extern "C" {
 void client_describe(void *taggedClient) {
-  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
+  if (gctools::tagged_generalp(taggedClient)
+      || gctools::tagged_consp(taggedClient)
+      || gctools::tagged_valistp(taggedClient)) {
     printf("%s:%d  GC managed object - describing header\n", __FILE__, __LINE__);
     // Currently this assumes that Conses and General objects share the same header
     // this may not be true in the future
@@ -87,9 +89,11 @@ void client_describe(void *taggedClient) {
       gctools::rawHeaderDescribe(headerP);
     } else if (gctools::tagged_consp(taggedClient)) {
       printf("%s:%d A cons pointer\n", __FILE__, __LINE__ );
+    } else if (gctools::tagged_valistp(taggedClient)) {
+      printf("%s:%d A valist pointer\n", __FILE__, __LINE__ );
     }
   } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
+    printf("%s:%d %p is not any kind of tagged pointer - might be immediate value\n", __FILE__, __LINE__, taggedClient );
   };
 };
 
