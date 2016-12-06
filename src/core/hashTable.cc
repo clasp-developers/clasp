@@ -56,14 +56,14 @@ struct HashTableLocker {
   HashTableLocker() {
     if (LockDepth == 0) {
       //                printf("%s:%d clamping the arena\n", __FILE__, __LINE__ );
-      mps_arena_clamp(gctools::_global_arena);
+      mps_arena_clamp(global_arena);
     }
     ++LockDepth;
   };
   ~HashTableLocker() {
     if (LockDepth == 1) {
       //                printf("%s:%d releasing the arena\n", __FILE__, __LINE__ );
-      mps_arena_release(gctools::_global_arena);
+      mps_arena_release(global_arena);
     }
     --LockDepth;
   }
@@ -248,7 +248,7 @@ void HashTable_O::sxhash_eq(HashGenerator &hg, T_sp obj, LocationDependencyPtrT 
   if (obj.objectp()) {
     volatile void* address = &(*obj);
 #ifdef USE_MPS
-    if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+    if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
     hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
     return;
@@ -278,7 +278,7 @@ void HashTable_O::sxhash_eql(HashGenerator &hg, T_sp obj, LocationDependencyPtrT
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -333,7 +333,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -411,7 +411,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
   }
   volatile void* address = &(*obj);
 #ifdef USE_MPS
-  if (ld) mps_ld_add(ld, gctools::_global_arena, (mps_addr_t)address );
+  if (ld) mps_ld_add(ld, global_arena, (mps_addr_t)address );
 #endif
   hg.addPart((Fixnum)(((uintptr_t)address)>>gctools::tag_shift));
   return;
@@ -476,7 +476,7 @@ uint HashTable_O::resizeEmptyTable(uint sz) {
     sz = 4;
   this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), sz, false, cl::_sym_T_O);
 #ifdef USE_MPS
-  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena);
+  mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
 #endif
   return sz;
 }
@@ -542,7 +542,7 @@ List_sp HashTable_O::tableRef(T_sp key) {
   // Location dependency test if key is stale
   if (key.objectp()) {
     void *blockAddr = &(*key);
-    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), gctools::_global_arena, blockAddr)) {
+    if (mps_ld_isstale(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena, blockAddr)) {
       keyValueCons = this->rehash(false, key);
     }
   }

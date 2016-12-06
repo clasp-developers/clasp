@@ -132,7 +132,7 @@ public:
   void allocate(const value_type &initial_element, size_t capacity, ARGS &&... args) {
     GCTOOLS_ASSERTF(!(this->_Contents), BF("GCArray allocate called and array is already defined"));
     allocator_type alloc;
-    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCKind<impl_type>::Kind,capacity);
+    tagged_pointer_to_moveable implAddress = alloc.allocate_kind(GCStamp<impl_type>::TheStamp,GCKind<impl_type>::Kind,capacity);
     new (&*implAddress) GCArray_moveable<value_type>(initial_element, capacity, std::forward<ARGS>(args)...);
 #if 0
     for (size_t i(sizeof...(ARGS)); i < (sizeof...(ARGS)+numExtraArgs); ++i) {

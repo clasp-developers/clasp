@@ -124,6 +124,256 @@ word of every object in memory managed by the GC */
 
 };
 
+namespace gctools {
+  class GCObject {};
+};
+
+extern "C" {
+const char *obj_name(gctools::kind_t kind);
+extern void obj_dump_base(void *base);
+};
+
+
+
+namespace gctools {
+  extern int global_signalTrap;
+  extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
+  void do_pollSignals();
+
+#define SET_SIGNAL(s) { gctools::global_signalTrap = s; }
+  inline void poll_signals() { if (gctools::global_signalTrap) gctools::do_pollSignals();};
+};
+
+namespace gctools {
+/*! Allocate an atomic buffer with malloc */
+char *clasp_alloc_atomic(size_t buffer_size);
+/*! The buffer above must be deallocated using this call*/
+void clasp_dealloc(char *buffer);
+};
+
+
+namespace gctools {
+/*! GCKindEnum has one integer value for each type allocated by the GC.
+This value is written into the Header_s of every allocated object.
+Immediate (FIXNUM, SINGLE-FLOAT, CHARACTER)  and CONS have KIND values reserved.
+If USE_CXX_DYNAMIC_CAST is defined then GCKindEnum has only one value 
+and every header contains that KIND value (KIND_null)
+and C++ dynamic_cast<...> is used to determine IsA relationships.
+If USE_CXX_DYNAMIC_CAST is not defined then the GCKindEnum values calculated by
+the clasp-analyzer static analyzer they are used along with template functions that
+calculate IsA relationships using simple GCKindEnum range comparisons.
+*/
+
+#if defined(USE_CXX_DYNAMIC_CAST) || defined(RUNNING_GC_BUILDER)
+  typedef enum { KIND_null = 0,
+                 KIND_FIXNUM = 1,
+                 KIND_SINGLE_FLOAT = 2,
+                 KIND_CHARACTER = 3,
+                 KIND_CONS = 4,
+                 KIND_max = 4 } GCKindEnum; // minimally define this GCKind
+#else
+  typedef
+ #define GC_ENUM
+ #include CLASP_GC_FILENAME
+    GCKindEnum;
+ #undef GC_ENUM
+#endif
+
+};
+
+
+
+
+
+
+
+namespace gctools {
+  template <class T>
+    inline size_t sizeof_with_header();
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+//
+// Define Header and stuff that can exist in the header
+//
+//
+
+   /*! Stamp - an integer value less than that is written into the header.
+     See Header_s below for a description of the GC Header tag scheme.
+     Stamp needs to fit within a Fixnum.
+ */
+  typedef uintptr_t Stamp;
+
+/*!
+
+      A header is 8 bytes long and consists of one uintptr_t (8 bytes) value.
+      The header ends with a uintptr_t data[0], an array of uintptr_t which intrudes
+      into the client data.
+      The structure of the header is...
+                          stamp     kind      tag
+      64 bits total -> | 50 bits | 12 bits | 2 bits |
+      The (header) uintptr_t is a tagged value where the
+      two least significant bits are the tag.
+
+      The two least-significant bits of the header uintptr_t value describe the data.
+      1r00 == This is an illegal setting for the two lsbs.
+      1r01 == This tag indicates that the other bits in the header
+      represent a Kind value >> 2 (shifted right 2 bits).
+      1r10 == This tag indicates that the header contains a forwarding
+      pointer.    The following uintptr_t contains the length of
+      the block from the client pointer.
+      1r11 == This indicates that the header contains a pad; check the
+      bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
+
+      The KIND is a 12 bit value (up to 4095 different values, 0==no kind) that tells
+      the MPS GC what the layout of the object is and is used to determine
+      IsA relationships between classes.   4095 may seem like a small number of
+      classes but these are builtin classes with different GC memory layouts 
+      - hopefully it's enough.   Clasp by itself uses ~350.  Cando uses ~650.
+
+      The STAMP is a 50 bit value used by generic function dispatch.
+      Each time a standard-class is redefined a new STAMP is generated and that
+      is stamped into the header.
+    */
+
+ 
+  class Header_s {
+  public:
+    static const tagged_kind_t tag_mask   =  BOOST_BINARY(11);
+    static const tagged_kind_t invalid_tag=  BOOST_BINARY(00); // indicates not header
+    static const tagged_kind_t kind_tag   =  BOOST_BINARY(01); // KIND = tagged_value>>2
+    static const tagged_kind_t fwd_tag    =  BOOST_BINARY(10);
+    static const tagged_kind_t pad_mask   = BOOST_BINARY(111);
+    static const tagged_kind_t pad_test   = BOOST_BINARY(011);
+    static const int pad_shift = 3; // 3 bits for pad tag
+    static const tagged_kind_t pad_tag    = BOOST_BINARY(011);
+    static const tagged_kind_t pad1_tag   = BOOST_BINARY(111);
+    static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
+    // The kind mask stores 12 bits of info - up to 4096 different KINDs
+    //    These are C++ classes managed by the GC.
+    static const int kind_shift = 2;
+    static const tagged_kind_t kind_mask    = 0x3FFC; // BOOST_BINARY(11111111111100);
+    static const tagged_kind_t largest_possible_kind = kind_mask>>kind_shift;
+    static const int stamp_shift = 14;
+    static const tagged_kind_t kind_tag_mask = (kind_mask|tag_mask);
+    static const tagged_kind_t stamp_mask   = ~kind_tag_mask;
+    static const tagged_kind_t stamp_tag_mask = stamp_mask|tag_mask;
+    static const tagged_kind_t largest_possible_stamp = stamp_mask>>stamp_shift;
+  public:
+    tagged_kind_t header;
+#ifdef DEBUG_GUARD
+    tagged_kind_t guard;
+    int tail_start;
+    int tail_size;
+#endif
+    tagged_kind_t data[0]; // The 0th element intrudes into the client data
+  public:
+#ifndef DEBUG_GUARD
+  Header_s(Stamp s, kind_t k) : header((s<<stamp_shift)|(((kind_t)k) << kind_shift) | kind_tag) {};
+    void validate() const {};
+#else
+    inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
+  Header_s(Stamp s, kind_t k,size_t tstart, size_t tsize, size_t total_size) 
+    : header((s<<stamp_shift)|(((kind_t)k)<<kind_shift)|kind_tag),
+      tail_start(tstart),
+        tail_size(tsize),
+        guard(0x0FEEAFEEBDEADBEEF)
+        {
+          this->fill_tail();
+        };
+      void validate() const;
+#endif
+      bool invalidP() const { return (this->header & tag_mask) == invalid_tag; };
+      bool kindP() const { return (this->header & tag_mask) == kind_tag; };
+      bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
+      bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
+      bool padP() const { return (this->header & pad_mask) == pad_tag; };
+      bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
+  /*! No sanity checking done - this function assumes kindP == true */
+      GCKindEnum kind() const { return (GCKindEnum)((this->header&kind_mask) >> kind_shift); };
+  /*! setKind wipes out the stamp */
+      void setKind(GCKindEnum k) { this->header = (k << kind_shift) | kind_tag; };
+  /*! No sanity checking done - this function assumes fwdP == true */
+      void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
+  /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
+      void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
+      tagged_kind_t fwdSize() const { return this->data[0]; };
+  /*! This writes into the first tagged_kind_t sized word of the client data. */
+      void setFwdSize(size_t sz) { this->data[0] = sz; };
+  /*! Define the header as a pad, pass pad_tag or pad1_tag */
+      void setPad(tagged_kind_t p) { this->header = p; };
+  /*! Return the pad1 size */
+      tagged_kind_t pad1Size() const { return alignof(Header_s); };
+  /*! Return the size of the pad block - without the header */
+      tagged_kind_t padSize() const { return (this->data[0]); };
+  /*! This writes into the first tagged_kind_t sized word of the client data. */
+      void setPadSize(size_t sz) { this->data[0] = sz; };
+  /*! Write the stamp to the stamp bits */
+      void setStamp(gctools::Stamp stamp) { this->header = (this->header&kind_tag_mask)|(stamp << stamp_shift); };
+      tagged_kind_t getStamp() const { return (this->header>>stamp_shift); };
+      string description() const {
+        if (this->kindP()) {
+          std::stringstream ss;
+          ss << "Header=" << (void *)(this->header);
+          ss << "/";
+          ss << obj_name(this->kind());
+          return ss.str();
+        } else if (this->fwdP()) {
+          std::stringstream ss;
+          ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
+          return ss.str();
+        } else if (this->pad1P()) {
+          return "Pad1";
+        } else if (this->padP()) {
+          stringstream ss;
+          ss << "Pad/sz=" << this->padSize();
+          return ss.str();
+        }
+        stringstream ss;
+        ss << "IllegalHeader=";
+        ss << (void *)(this->header);
+        printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
+        return ss.str();
+        ;
+      }
+  };
+};
+
+// ------------------------------------------------------------
+//
+// Stamp
+//
+
+namespace gctools {
+  /* NextStamp(...) returns a unique Stamp value every time it is called.
+     They are generated when creating and redefining classes and
+     must be unique system-wide.  They are used for generic function dispatch.
+  */
+
+  /*! global_NextBuiltInStamp starts at KIND_max+1
+      See definition in memoryManagement.cc
+      This is so that it doesn't use any stamps that were set by the static analyzer. */
+  extern Stamp global_NextStamp;
+  /*! Return a new stamp for BuiltIn classes.
+      If given != KIND_null then simply return give as the stamp.
+      Otherwise return the global_NextBuiltInStamp and advance it
+      to the next one */
+  void OutOfStamps();
+  inline Stamp NextStamp(Stamp given = KIND_null) {
+    if ( given != KIND_null ) return given;
+    if (global_NextStamp < Header_s::largest_possible_stamp) {
+      return global_NextStamp++;
+    }
+    OutOfStamps();
+    abort();
+  }
+};
+
+
+
+
+
 #ifdef USE_BOEHM
 #include <clasp/gctools/boehmGarbageCollection.h>
 #endif
@@ -131,6 +381,8 @@ word of every object in memory managed by the GC */
 #ifdef USE_MPS
 #include <clasp/gctools/mpsGarbageCollection.h>
 #endif
+
+
 
 #include <clasp/gctools/cast.h>
 #include <clasp/gctools/tagged_cast.h>
@@ -272,6 +524,10 @@ namespace gctools {
 #endif // USE_CXX_DYNAMIC_CAST
 #endif
     };
+  template <typename T>
+    struct GCStamp {
+      static Stamp const TheStamp = static_cast<Stamp>(GCKind<T>::Kind);
+    };
 };
 
 namespace gctools {
@@ -305,6 +561,8 @@ namespace core {
 
 
 namespace gctools {
+  extern int global_pollTicksPerCleanup;
+
 template <typename T>
 void *SmartPtrToBasePtr(smart_ptr<T> obj) {
   void *ptr;
@@ -329,7 +587,7 @@ GCStack *threadLocalStack();
 
 #define GC_ALLOCATE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate_with_default_constructor()
 #define GC_ALLOCATE_VARIADIC(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::allocate(__VA_ARGS__)
-#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate()
+#define GC_ALLOCATE_UNCOLLECTABLE(_class_, _obj_, ...) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::root_allocate(__VA_ARGS__)
 
 #define GC_COPY(_class_, _obj_, _orig_) gctools::smart_ptr<_class_> _obj_ = gctools::GC<_class_>::copy(_orig_)
 

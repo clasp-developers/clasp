@@ -505,12 +505,6 @@ struct registered_class<T const>
 std::string program_name();
 
 namespace core {
-extern int global_signalTrap;
-extern bool global_debuggerOnSIGABRT; // If this is false then SIGABRT is processed normally and it will lead to termination of the program. See core__exit!
-void lisp_pollSignals();
-};
-#define SET_SIGNAL(s) { core::global_signalTrap = s; }
-#define POLL_SIGNALS() if (core::global_signalTrap) core::lisp_pollSignals();
 
 void lisp_errorDereferencedNonPointer(core::T_O *objP);
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP);
@@ -531,11 +525,12 @@ void __attribute__((noreturn)) lisp_errorCast(ObjPtrType objP) {
   lisp_errorBadCast(to_typ, from_typ, reinterpret_cast<core::T_O *>(objP));
   __builtin_unreachable();
 }
+};
 
 namespace core {
-class MultipleValues;
-MultipleValues &lisp_multipleValues();
-MultipleValues &lisp_callArgs();
+  class MultipleValues;
+  MultipleValues &lisp_multipleValues();
+  MultipleValues &lisp_callArgs();
 };
 
 extern void clasp_mps_debug_allocation(const char *poolName, void *base, void *objAddr, int size, int kind);
@@ -1321,13 +1316,6 @@ inline void clasp_disable_interrupts_env(const cl_env_ptr){};
 inline void clasp_enable_interrupts_env(const cl_env_ptr){};
 //    inline void clasp_disable_interrupts() {};
 //    inline void clasp_enable_interrupts() {};
-};
-
-namespace core {
-/*! Allocate an atomic buffer with malloc */
-char *clasp_alloc_atomic(size_t buffer_size);
-/*! The buffer above must be deallocated using this call*/
-void clasp_dealloc(char *buffer);
 };
 
 namespace core {

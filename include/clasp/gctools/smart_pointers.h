@@ -279,14 +279,14 @@ class smart_ptr /*: public tagged_ptr<T>*/ {
     inline smart_ptr<o_class> as() {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret) return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
     inline smart_ptr<o_class> as() const {
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret) return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
  
   template <class o_class>
@@ -556,7 +556,7 @@ inline To_SP AsOrNull(From_SP const &rhs) {
   // If the cast didn't work then signal a type error
   class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
   class_id this_typ = reg::registered_class<typename From_SP::Type>::id;
-  lisp_errorBadCast(expected_typ, this_typ, rhs.raw_());
+  core::lisp_errorBadCast(expected_typ, this_typ, rhs.raw_());
   // unreachable
   HARD_UNREACHABLE();
 };
@@ -634,7 +634,7 @@ public:
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
@@ -642,7 +642,7 @@ public:
     smart_ptr<o_class> ret = this->asOrNull<o_class>();
     if (ret)
       return ret;
-    lisp_errorCast<o_class, Type>(this->theObject);
+    core::lisp_errorCast<o_class, Type>(this->theObject);
   }
 
   template <class o_class>
@@ -1615,7 +1615,7 @@ public:
     }
     this->theObject = TaggedCast<U *, Type *>::castOrNULL(other.theObject);
     if (!this->theObject) {
-      lisp_errorCast<U *, Type *>(other.theObject);
+      core::lisp_errorCast<U *, Type *>(other.theObject);
     }
   }
 
@@ -1627,7 +1627,7 @@ public:
     }
     this->theObject = TaggedCast<U *, Type *>::castOrNULL(other.theObject);
     if (!this->theObject) {
-      lisp_errorCast<U *, Type *>(other.theObject);
+      core::lisp_errorCast<U *, Type *>(other.theObject);
     }
     return;
   }
@@ -1694,7 +1694,7 @@ public:
     if (!tagged_nilp(this->theObject))
       return smart_ptr<Type>(*this);
     class_id this_typ = reg::registered_class<Type>::id;
-    lisp_errorUnexpectedNil(this_typ);
+    core::lisp_errorUnexpectedNil(this_typ);
     HARD_UNREACHABLE();
   }
 };

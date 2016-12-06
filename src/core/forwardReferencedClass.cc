@@ -60,9 +60,11 @@ namespace core {
 void ForwardReferencedClass_O::initialize() {
   _OF();
   this->Base::initialize();
+#if 0
   this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
+#endif
 }
-
+#if 0
 void ForwardReferencedClass_O::setInstanceCoreClass(BuiltInClass_sp bic) {
   _OF();
   this->_InstanceCoreClass = bic;
@@ -72,5 +74,5 @@ void ForwardReferencedClass_O::defineYourSlotsFromBinderArchiveNode(ArchiveP nod
   _OF();
   IMPLEMENT_MEF(BF("Implement %s") % __FUNCTION__);
 }
-
+#endif
 }; /* core */

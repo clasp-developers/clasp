@@ -44,8 +44,8 @@ BuiltInClass_sp BuiltInClass_O::create(Symbol_sp instanceClassSymbol) {
   return ((oclass));
 }
 
-BuiltInClass_sp BuiltInClass_O::createUncollectable() {
-  GC_ALLOCATE_UNCOLLECTABLE(BuiltInClass_O, oclass);
+BuiltInClass_sp BuiltInClass_O::createUncollectable(gctools::Stamp is) {
+  GC_ALLOCATE_UNCOLLECTABLE(BuiltInClass_O, oclass, is);
   return ((oclass));
 }
 

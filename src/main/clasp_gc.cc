@@ -4657,22 +4657,22 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__FuncallableStandardClass_O, sizeof(core::FuncallableStandardClass_O), 0, "core::FuncallableStandardClass_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_BOOTSTRAP_core__StructureClass_O, sizeof(core::StructureClass_O), 0, "core::StructureClass_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__ForwardReferencedClass_O, sizeof(core::ForwardReferencedClass_O), 0, "core::ForwardReferencedClass_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::BuiltInClass_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::BuiltInClass_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CxxClass_O, sizeof(core::CxxClass_O), 0, "core::CxxClass_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CxxClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::CxxClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -5269,7 +5269,7 @@ public:
 { templated_kind, KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O, sizeof(clbind::ConstructorCreator_O), 0, "clbind::ConstructorCreator_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_mostDerivedClassSymbol), "_mostDerivedClassSymbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__InstanceCreator_O, sizeof(core::InstanceCreator_O), 0, "core::InstanceCreator_O" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_className), "_className" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_class), "_class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CxxObject_O, sizeof(core::CxxObject_O), 0, "core::CxxObject_O" },
 { class_kind, KIND_LISPALLOC_core__NativeVector_float_O, sizeof(core::NativeVector_float_O), 0, "core::NativeVector_float_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<float>>), offsetof(SAFE_TYPE_MACRO(core::NativeVector_float_O),_Vector._Vector._Contents), "_Vector._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
@@ -5948,361 +5948,361 @@ obj_finalize_KIND_ROOTCLASSALLOC_clbind__detail__class_map:
 {
     clbind::detail::class_map* obj_gc_safe = reinterpret_cast<clbind::detail::class_map*>(client);
     obj_gc_safe->~class_map();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__T_O:
 {
     core::T_O* obj_gc_safe = reinterpret_cast<core::T_O*>(client);
     obj_gc_safe->~T_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__VaList_dummy_O:
 {
     core::VaList_dummy_O* obj_gc_safe = reinterpret_cast<core::VaList_dummy_O*>(client);
     obj_gc_safe->~VaList_dummy_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Cons_O:
 {
     core::Cons_O* obj_gc_safe = reinterpret_cast<core::Cons_O*>(client);
     obj_gc_safe->~Cons_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__General_O:
 {
     core::General_O* obj_gc_safe = reinterpret_cast<core::General_O*>(client);
     obj_gc_safe->~General_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__MultiStringBuffer_O:
 {
     core::MultiStringBuffer_O* obj_gc_safe = reinterpret_cast<core::MultiStringBuffer_O*>(client);
     obj_gc_safe->~MultiStringBuffer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ReadTable_O:
 {
     core::ReadTable_O* obj_gc_safe = reinterpret_cast<core::ReadTable_O*>(client);
     obj_gc_safe->~ReadTable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Number_O:
 {
     core::Number_O* obj_gc_safe = reinterpret_cast<core::Number_O*>(client);
     obj_gc_safe->~Number_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Complex_O:
 {
     core::Complex_O* obj_gc_safe = reinterpret_cast<core::Complex_O*>(client);
     obj_gc_safe->~Complex_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Real_O:
 {
     core::Real_O* obj_gc_safe = reinterpret_cast<core::Real_O*>(client);
     obj_gc_safe->~Real_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Rational_O:
 {
     core::Rational_O* obj_gc_safe = reinterpret_cast<core::Rational_O*>(client);
     obj_gc_safe->~Rational_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Integer_O:
 {
     core::Integer_O* obj_gc_safe = reinterpret_cast<core::Integer_O*>(client);
     obj_gc_safe->~Integer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Bignum_O:
 {
     core::Bignum_O* obj_gc_safe = reinterpret_cast<core::Bignum_O*>(client);
     obj_gc_safe->~Bignum_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Fixnum_dummy_O:
 {
     core::Fixnum_dummy_O* obj_gc_safe = reinterpret_cast<core::Fixnum_dummy_O*>(client);
     obj_gc_safe->~Fixnum_dummy_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Ratio_O:
 {
     core::Ratio_O* obj_gc_safe = reinterpret_cast<core::Ratio_O*>(client);
     obj_gc_safe->~Ratio_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Float_O:
 {
     core::Float_O* obj_gc_safe = reinterpret_cast<core::Float_O*>(client);
     obj_gc_safe->~Float_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__DoubleFloat_O:
 {
     core::DoubleFloat_O* obj_gc_safe = reinterpret_cast<core::DoubleFloat_O*>(client);
     obj_gc_safe->~DoubleFloat_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LongFloat_O:
 {
     core::LongFloat_O* obj_gc_safe = reinterpret_cast<core::LongFloat_O*>(client);
     obj_gc_safe->~LongFloat_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SingleFloat_dummy_O:
 {
     core::SingleFloat_dummy_O* obj_gc_safe = reinterpret_cast<core::SingleFloat_dummy_O*>(client);
     obj_gc_safe->~SingleFloat_dummy_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ShortFloat_O:
 {
     core::ShortFloat_O* obj_gc_safe = reinterpret_cast<core::ShortFloat_O*>(client);
     obj_gc_safe->~ShortFloat_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FileStatus_O:
 {
     core::FileStatus_O* obj_gc_safe = reinterpret_cast<core::FileStatus_O*>(client);
     obj_gc_safe->~FileStatus_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__WeakHashTable_O:
 {
     core::WeakHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakHashTable_O*>(client);
     obj_gc_safe->~WeakHashTable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__WeakKeyHashTable_O:
 {
     core::WeakKeyHashTable_O* obj_gc_safe = reinterpret_cast<core::WeakKeyHashTable_O*>(client);
     obj_gc_safe->~WeakKeyHashTable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Environment_O:
 {
     core::Environment_O* obj_gc_safe = reinterpret_cast<core::Environment_O*>(client);
     obj_gc_safe->~Environment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ActivationFrame_O:
 {
     core::ActivationFrame_O* obj_gc_safe = reinterpret_cast<core::ActivationFrame_O*>(client);
     obj_gc_safe->~ActivationFrame_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__TagbodyFrame_O:
 {
     core::TagbodyFrame_O* obj_gc_safe = reinterpret_cast<core::TagbodyFrame_O*>(client);
     obj_gc_safe->~TagbodyFrame_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ValueFrame_O:
 {
     core::ValueFrame_O* obj_gc_safe = reinterpret_cast<core::ValueFrame_O*>(client);
     obj_gc_safe->~ValueFrame_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FunctionFrame_O:
 {
     core::FunctionFrame_O* obj_gc_safe = reinterpret_cast<core::FunctionFrame_O*>(client);
     obj_gc_safe->~FunctionFrame_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LexicalEnvironment_O:
 {
     core::LexicalEnvironment_O* obj_gc_safe = reinterpret_cast<core::LexicalEnvironment_O*>(client);
     obj_gc_safe->~LexicalEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__RuntimeVisibleEnvironment_O:
 {
     core::RuntimeVisibleEnvironment_O* obj_gc_safe = reinterpret_cast<core::RuntimeVisibleEnvironment_O*>(client);
     obj_gc_safe->~RuntimeVisibleEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FunctionValueEnvironment_O:
 {
     core::FunctionValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionValueEnvironment_O*>(client);
     obj_gc_safe->~FunctionValueEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ValueEnvironment_O:
 {
     core::ValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::ValueEnvironment_O*>(client);
     obj_gc_safe->~ValueEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__TagbodyEnvironment_O:
 {
     core::TagbodyEnvironment_O* obj_gc_safe = reinterpret_cast<core::TagbodyEnvironment_O*>(client);
     obj_gc_safe->~TagbodyEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CompileTimeEnvironment_O:
 {
     core::CompileTimeEnvironment_O* obj_gc_safe = reinterpret_cast<core::CompileTimeEnvironment_O*>(client);
     obj_gc_safe->~CompileTimeEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__UnwindProtectEnvironment_O:
 {
     core::UnwindProtectEnvironment_O* obj_gc_safe = reinterpret_cast<core::UnwindProtectEnvironment_O*>(client);
     obj_gc_safe->~UnwindProtectEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SymbolMacroletEnvironment_O:
 {
     core::SymbolMacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::SymbolMacroletEnvironment_O*>(client);
     obj_gc_safe->~SymbolMacroletEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FunctionContainerEnvironment_O:
 {
     core::FunctionContainerEnvironment_O* obj_gc_safe = reinterpret_cast<core::FunctionContainerEnvironment_O*>(client);
     obj_gc_safe->~FunctionContainerEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__StackValueEnvironment_O:
 {
     core::StackValueEnvironment_O* obj_gc_safe = reinterpret_cast<core::StackValueEnvironment_O*>(client);
     obj_gc_safe->~StackValueEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__BlockEnvironment_O:
 {
     core::BlockEnvironment_O* obj_gc_safe = reinterpret_cast<core::BlockEnvironment_O*>(client);
     obj_gc_safe->~BlockEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__MacroletEnvironment_O:
 {
     core::MacroletEnvironment_O* obj_gc_safe = reinterpret_cast<core::MacroletEnvironment_O*>(client);
     obj_gc_safe->~MacroletEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CatchEnvironment_O:
 {
     core::CatchEnvironment_O* obj_gc_safe = reinterpret_cast<core::CatchEnvironment_O*>(client);
     obj_gc_safe->~CatchEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__GlueEnvironment_O:
 {
     core::GlueEnvironment_O* obj_gc_safe = reinterpret_cast<core::GlueEnvironment_O*>(client);
     obj_gc_safe->~GlueEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Array_O:
 {
     core::Array_O* obj_gc_safe = reinterpret_cast<core::Array_O*>(client);
     obj_gc_safe->~Array_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ArrayObjects_O:
 {
     core::ArrayObjects_O* obj_gc_safe = reinterpret_cast<core::ArrayObjects_O*>(client);
     obj_gc_safe->~ArrayObjects_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ArrayDisplaced_O:
 {
     core::ArrayDisplaced_O* obj_gc_safe = reinterpret_cast<core::ArrayDisplaced_O*>(client);
     obj_gc_safe->~ArrayDisplaced_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Vector_O:
 {
     core::Vector_O* obj_gc_safe = reinterpret_cast<core::Vector_O*>(client);
     obj_gc_safe->~Vector_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__BitVector_O:
 {
     core::BitVector_O* obj_gc_safe = reinterpret_cast<core::BitVector_O*>(client);
     obj_gc_safe->~BitVector_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SimpleBitVector_O:
 {
     core::SimpleBitVector_O* obj_gc_safe = reinterpret_cast<core::SimpleBitVector_O*>(client);
     obj_gc_safe->~SimpleBitVector_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__BitVectorWithFillPtr_O:
 {
     core::BitVectorWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::BitVectorWithFillPtr_O*>(client);
     obj_gc_safe->~BitVectorWithFillPtr_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__VectorDisplaced_O:
 {
     core::VectorDisplaced_O* obj_gc_safe = reinterpret_cast<core::VectorDisplaced_O*>(client);
     obj_gc_safe->~VectorDisplaced_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__String_O:
 {
     core::String_O* obj_gc_safe = reinterpret_cast<core::String_O*>(client);
     obj_gc_safe->~String_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__Str_O:
 {
     core::Str_O* obj_gc_safe = reinterpret_cast<core::Str_O*>(client);
     obj_gc_safe->~Str_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__StrWithFillPtr_O:
 {
     core::StrWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::StrWithFillPtr_O*>(client);
     obj_gc_safe->~StrWithFillPtr_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__VectorObjects_O:
 {
     core::VectorObjects_O* obj_gc_safe = reinterpret_cast<core::VectorObjects_O*>(client);
     obj_gc_safe->~VectorObjects_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__VectorObjectsWithFillPtr_O:
 {
     core::VectorObjectsWithFillPtr_O* obj_gc_safe = reinterpret_cast<core::VectorObjectsWithFillPtr_O*>(client);
     obj_gc_safe->~VectorObjectsWithFillPtr_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Exposer_O:
 {
     core::Exposer_O* obj_gc_safe = reinterpret_cast<core::Exposer_O*>(client);
     obj_gc_safe->~Exposer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_asttooling__AsttoolingExposer_O:
 {
     asttooling::AsttoolingExposer_O* obj_gc_safe = reinterpret_cast<asttooling::AsttoolingExposer_O*>(client);
     obj_gc_safe->~AsttoolingExposer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CoreExposer_O:
 {
     core::CoreExposer_O* obj_gc_safe = reinterpret_cast<core::CoreExposer_O*>(client);
     obj_gc_safe->~CoreExposer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethod_O:
 {
     core::SingleDispatchMethod_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethod_O*>(client);
     obj_gc_safe->~SingleDispatchMethod_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__RandomState_O:
 {
     core::RandomState_O* obj_gc_safe = reinterpret_cast<core::RandomState_O*>(client);
     obj_gc_safe->~RandomState_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_TEMPLATED_LISPALLOC_core__WrappedPointer_O:
 {
@@ -6313,739 +6313,739 @@ obj_finalize_KIND_LISPALLOC_core__SequenceStepper_O:
 {
     core::SequenceStepper_O* obj_gc_safe = reinterpret_cast<core::SequenceStepper_O*>(client);
     obj_gc_safe->~SequenceStepper_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ConsStepper_O:
 {
     core::ConsStepper_O* obj_gc_safe = reinterpret_cast<core::ConsStepper_O*>(client);
     obj_gc_safe->~ConsStepper_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__VectorStepper_O:
 {
     core::VectorStepper_O* obj_gc_safe = reinterpret_cast<core::VectorStepper_O*>(client);
     obj_gc_safe->~VectorStepper_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DebugLoc_O:
 {
     llvmo::DebugLoc_O* obj_gc_safe = reinterpret_cast<llvmo::DebugLoc_O*>(client);
     obj_gc_safe->~DebugLoc_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Attribute_O:
 {
     llvmo::Attribute_O* obj_gc_safe = reinterpret_cast<llvmo::Attribute_O*>(client);
     obj_gc_safe->~Attribute_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__RegexMatch_O:
 {
     core::RegexMatch_O* obj_gc_safe = reinterpret_cast<core::RegexMatch_O*>(client);
     obj_gc_safe->~RegexMatch_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__WeakPointer_O:
 {
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
     obj_gc_safe->~WeakPointer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__StandardObject_O:
 {
     core::StandardObject_O* obj_gc_safe = reinterpret_cast<core::StandardObject_O*>(client);
     obj_gc_safe->~StandardObject_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__Metaobject_O:
 {
     core::Metaobject_O* obj_gc_safe = reinterpret_cast<core::Metaobject_O*>(client);
     obj_gc_safe->~Metaobject_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__Specializer_O:
 {
     core::Specializer_O* obj_gc_safe = reinterpret_cast<core::Specializer_O*>(client);
     obj_gc_safe->~Specializer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__Class_O:
 {
     core::Class_O* obj_gc_safe = reinterpret_cast<core::Class_O*>(client);
     obj_gc_safe->~Class_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__StdClass_O:
 {
     core::StdClass_O* obj_gc_safe = reinterpret_cast<core::StdClass_O*>(client);
     obj_gc_safe->~StdClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__StandardClass_O:
 {
     core::StandardClass_O* obj_gc_safe = reinterpret_cast<core::StandardClass_O*>(client);
     obj_gc_safe->~StandardClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FuncallableStandardClass_O:
 {
     core::FuncallableStandardClass_O* obj_gc_safe = reinterpret_cast<core::FuncallableStandardClass_O*>(client);
     obj_gc_safe->~FuncallableStandardClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__StructureClass_O:
 {
     core::StructureClass_O* obj_gc_safe = reinterpret_cast<core::StructureClass_O*>(client);
     obj_gc_safe->~StructureClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ForwardReferencedClass_O:
 {
     core::ForwardReferencedClass_O* obj_gc_safe = reinterpret_cast<core::ForwardReferencedClass_O*>(client);
     obj_gc_safe->~ForwardReferencedClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CxxClass_O:
 {
     core::CxxClass_O* obj_gc_safe = reinterpret_cast<core::CxxClass_O*>(client);
     obj_gc_safe->~CxxClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__BuiltInClass_O:
 {
     core::BuiltInClass_O* obj_gc_safe = reinterpret_cast<core::BuiltInClass_O*>(client);
     obj_gc_safe->~BuiltInClass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clbind__ClassRep_O:
 {
     clbind::ClassRep_O* obj_gc_safe = reinterpret_cast<clbind::ClassRep_O*>(client);
     obj_gc_safe->~ClassRep_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ExternalObject_O:
 {
     core::ExternalObject_O* obj_gc_safe = reinterpret_cast<core::ExternalObject_O*>(client);
     obj_gc_safe->~ExternalObject_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignData_O:
 {
     clasp_ffi::ForeignData_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignData_O*>(client);
     obj_gc_safe->~ForeignData_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Value_O:
 {
     llvmo::Value_O* obj_gc_safe = reinterpret_cast<llvmo::Value_O*>(client);
     obj_gc_safe->~Value_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Argument_O:
 {
     llvmo::Argument_O* obj_gc_safe = reinterpret_cast<llvmo::Argument_O*>(client);
     obj_gc_safe->~Argument_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__User_O:
 {
     llvmo::User_O* obj_gc_safe = reinterpret_cast<llvmo::User_O*>(client);
     obj_gc_safe->~User_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Instruction_O:
 {
     llvmo::Instruction_O* obj_gc_safe = reinterpret_cast<llvmo::Instruction_O*>(client);
     obj_gc_safe->~Instruction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__AtomicRMWInst_O:
 {
     llvmo::AtomicRMWInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicRMWInst_O*>(client);
     obj_gc_safe->~AtomicRMWInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__LandingPadInst_O:
 {
     llvmo::LandingPadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LandingPadInst_O*>(client);
     obj_gc_safe->~LandingPadInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__PHINode_O:
 {
     llvmo::PHINode_O* obj_gc_safe = reinterpret_cast<llvmo::PHINode_O*>(client);
     obj_gc_safe->~PHINode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__CallInst_O:
 {
     llvmo::CallInst_O* obj_gc_safe = reinterpret_cast<llvmo::CallInst_O*>(client);
     obj_gc_safe->~CallInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__StoreInst_O:
 {
     llvmo::StoreInst_O* obj_gc_safe = reinterpret_cast<llvmo::StoreInst_O*>(client);
     obj_gc_safe->~StoreInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__UnaryInstruction_O:
 {
     llvmo::UnaryInstruction_O* obj_gc_safe = reinterpret_cast<llvmo::UnaryInstruction_O*>(client);
     obj_gc_safe->~UnaryInstruction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__LoadInst_O:
 {
     llvmo::LoadInst_O* obj_gc_safe = reinterpret_cast<llvmo::LoadInst_O*>(client);
     obj_gc_safe->~LoadInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__AllocaInst_O:
 {
     llvmo::AllocaInst_O* obj_gc_safe = reinterpret_cast<llvmo::AllocaInst_O*>(client);
     obj_gc_safe->~AllocaInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__VAArgInst_O:
 {
     llvmo::VAArgInst_O* obj_gc_safe = reinterpret_cast<llvmo::VAArgInst_O*>(client);
     obj_gc_safe->~VAArgInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O:
 {
     llvmo::AtomicCmpXchgInst_O* obj_gc_safe = reinterpret_cast<llvmo::AtomicCmpXchgInst_O*>(client);
     obj_gc_safe->~AtomicCmpXchgInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__TerminatorInst_O:
 {
     llvmo::TerminatorInst_O* obj_gc_safe = reinterpret_cast<llvmo::TerminatorInst_O*>(client);
     obj_gc_safe->~TerminatorInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__UnreachableInst_O:
 {
     llvmo::UnreachableInst_O* obj_gc_safe = reinterpret_cast<llvmo::UnreachableInst_O*>(client);
     obj_gc_safe->~UnreachableInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__SwitchInst_O:
 {
     llvmo::SwitchInst_O* obj_gc_safe = reinterpret_cast<llvmo::SwitchInst_O*>(client);
     obj_gc_safe->~SwitchInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ReturnInst_O:
 {
     llvmo::ReturnInst_O* obj_gc_safe = reinterpret_cast<llvmo::ReturnInst_O*>(client);
     obj_gc_safe->~ReturnInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ResumeInst_O:
 {
     llvmo::ResumeInst_O* obj_gc_safe = reinterpret_cast<llvmo::ResumeInst_O*>(client);
     obj_gc_safe->~ResumeInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__BranchInst_O:
 {
     llvmo::BranchInst_O* obj_gc_safe = reinterpret_cast<llvmo::BranchInst_O*>(client);
     obj_gc_safe->~BranchInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__InvokeInst_O:
 {
     llvmo::InvokeInst_O* obj_gc_safe = reinterpret_cast<llvmo::InvokeInst_O*>(client);
     obj_gc_safe->~InvokeInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__IndirectBrInst_O:
 {
     llvmo::IndirectBrInst_O* obj_gc_safe = reinterpret_cast<llvmo::IndirectBrInst_O*>(client);
     obj_gc_safe->~IndirectBrInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__FenceInst_O:
 {
     llvmo::FenceInst_O* obj_gc_safe = reinterpret_cast<llvmo::FenceInst_O*>(client);
     obj_gc_safe->~FenceInst_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Constant_O:
 {
     llvmo::Constant_O* obj_gc_safe = reinterpret_cast<llvmo::Constant_O*>(client);
     obj_gc_safe->~Constant_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__BlockAddress_O:
 {
     llvmo::BlockAddress_O* obj_gc_safe = reinterpret_cast<llvmo::BlockAddress_O*>(client);
     obj_gc_safe->~BlockAddress_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__GlobalValue_O:
 {
     llvmo::GlobalValue_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalValue_O*>(client);
     obj_gc_safe->~GlobalValue_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__GlobalVariable_O:
 {
     llvmo::GlobalVariable_O* obj_gc_safe = reinterpret_cast<llvmo::GlobalVariable_O*>(client);
     obj_gc_safe->~GlobalVariable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Function_O:
 {
     llvmo::Function_O* obj_gc_safe = reinterpret_cast<llvmo::Function_O*>(client);
     obj_gc_safe->~Function_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantArray_O:
 {
     llvmo::ConstantArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantArray_O*>(client);
     obj_gc_safe->~ConstantArray_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantInt_O:
 {
     llvmo::ConstantInt_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantInt_O*>(client);
     obj_gc_safe->~ConstantInt_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataSequential_O:
 {
     llvmo::ConstantDataSequential_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataSequential_O*>(client);
     obj_gc_safe->~ConstantDataSequential_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataArray_O:
 {
     llvmo::ConstantDataArray_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantDataArray_O*>(client);
     obj_gc_safe->~ConstantDataArray_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantStruct_O:
 {
     llvmo::ConstantStruct_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantStruct_O*>(client);
     obj_gc_safe->~ConstantStruct_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantFP_O:
 {
     llvmo::ConstantFP_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantFP_O*>(client);
     obj_gc_safe->~ConstantFP_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__UndefValue_O:
 {
     llvmo::UndefValue_O* obj_gc_safe = reinterpret_cast<llvmo::UndefValue_O*>(client);
     obj_gc_safe->~UndefValue_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantPointerNull_O:
 {
     llvmo::ConstantPointerNull_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantPointerNull_O*>(client);
     obj_gc_safe->~ConstantPointerNull_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ConstantExpr_O:
 {
     llvmo::ConstantExpr_O* obj_gc_safe = reinterpret_cast<llvmo::ConstantExpr_O*>(client);
     obj_gc_safe->~ConstantExpr_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__BasicBlock_O:
 {
     llvmo::BasicBlock_O* obj_gc_safe = reinterpret_cast<llvmo::BasicBlock_O*>(client);
     obj_gc_safe->~BasicBlock_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__IRBuilderBase_O:
 {
     llvmo::IRBuilderBase_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilderBase_O*>(client);
     obj_gc_safe->~IRBuilderBase_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__IRBuilder_O:
 {
     llvmo::IRBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::IRBuilder_O*>(client);
     obj_gc_safe->~IRBuilder_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DIBuilder_O:
 {
     llvmo::DIBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::DIBuilder_O*>(client);
     obj_gc_safe->~DIBuilder_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Metadata_O:
 {
     llvmo::Metadata_O* obj_gc_safe = reinterpret_cast<llvmo::Metadata_O*>(client);
     obj_gc_safe->~Metadata_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ValueAsMetadata_O:
 {
     llvmo::ValueAsMetadata_O* obj_gc_safe = reinterpret_cast<llvmo::ValueAsMetadata_O*>(client);
     obj_gc_safe->~ValueAsMetadata_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__MDNode_O:
 {
     llvmo::MDNode_O* obj_gc_safe = reinterpret_cast<llvmo::MDNode_O*>(client);
     obj_gc_safe->~MDNode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DINode_O:
 {
     llvmo::DINode_O* obj_gc_safe = reinterpret_cast<llvmo::DINode_O*>(client);
     obj_gc_safe->~DINode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DIScope_O:
 {
     llvmo::DIScope_O* obj_gc_safe = reinterpret_cast<llvmo::DIScope_O*>(client);
     obj_gc_safe->~DIScope_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DICompileUnit_O:
 {
     llvmo::DICompileUnit_O* obj_gc_safe = reinterpret_cast<llvmo::DICompileUnit_O*>(client);
     obj_gc_safe->~DICompileUnit_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DILocalScope_O:
 {
     llvmo::DILocalScope_O* obj_gc_safe = reinterpret_cast<llvmo::DILocalScope_O*>(client);
     obj_gc_safe->~DILocalScope_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DISubprogram_O:
 {
     llvmo::DISubprogram_O* obj_gc_safe = reinterpret_cast<llvmo::DISubprogram_O*>(client);
     obj_gc_safe->~DISubprogram_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O:
 {
     llvmo::DILexicalBlockBase_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlockBase_O*>(client);
     obj_gc_safe->~DILexicalBlockBase_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlock_O:
 {
     llvmo::DILexicalBlock_O* obj_gc_safe = reinterpret_cast<llvmo::DILexicalBlock_O*>(client);
     obj_gc_safe->~DILexicalBlock_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DIType_O:
 {
     llvmo::DIType_O* obj_gc_safe = reinterpret_cast<llvmo::DIType_O*>(client);
     obj_gc_safe->~DIType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DIDerivedType_O:
 {
     llvmo::DIDerivedType_O* obj_gc_safe = reinterpret_cast<llvmo::DIDerivedType_O*>(client);
     obj_gc_safe->~DIDerivedType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DIBasicType_O:
 {
     llvmo::DIBasicType_O* obj_gc_safe = reinterpret_cast<llvmo::DIBasicType_O*>(client);
     obj_gc_safe->~DIBasicType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DISubroutineType_O:
 {
     llvmo::DISubroutineType_O* obj_gc_safe = reinterpret_cast<llvmo::DISubroutineType_O*>(client);
     obj_gc_safe->~DISubroutineType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DICompositeType_O:
 {
     llvmo::DICompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::DICompositeType_O*>(client);
     obj_gc_safe->~DICompositeType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DIFile_O:
 {
     llvmo::DIFile_O* obj_gc_safe = reinterpret_cast<llvmo::DIFile_O*>(client);
     obj_gc_safe->~DIFile_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__MDString_O:
 {
     llvmo::MDString_O* obj_gc_safe = reinterpret_cast<llvmo::MDString_O*>(client);
     obj_gc_safe->~MDString_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ExecutionEngine_O:
 {
     llvmo::ExecutionEngine_O* obj_gc_safe = reinterpret_cast<llvmo::ExecutionEngine_O*>(client);
     obj_gc_safe->~ExecutionEngine_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__APFloat_O:
 {
     llvmo::APFloat_O* obj_gc_safe = reinterpret_cast<llvmo::APFloat_O*>(client);
     obj_gc_safe->~APFloat_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBuilder_O:
 {
     llvmo::PassManagerBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBuilder_O*>(client);
     obj_gc_safe->~PassManagerBuilder_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Triple_O:
 {
     llvmo::Triple_O* obj_gc_safe = reinterpret_cast<llvmo::Triple_O*>(client);
     obj_gc_safe->~Triple_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__APInt_O:
 {
     llvmo::APInt_O* obj_gc_safe = reinterpret_cast<llvmo::APInt_O*>(client);
     obj_gc_safe->~APInt_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBase_O:
 {
     llvmo::PassManagerBase_O* obj_gc_safe = reinterpret_cast<llvmo::PassManagerBase_O*>(client);
     obj_gc_safe->~PassManagerBase_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__FunctionPassManager_O:
 {
     llvmo::FunctionPassManager_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPassManager_O*>(client);
     obj_gc_safe->~FunctionPassManager_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__PassManager_O:
 {
     llvmo::PassManager_O* obj_gc_safe = reinterpret_cast<llvmo::PassManager_O*>(client);
     obj_gc_safe->~PassManager_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__TargetMachine_O:
 {
     llvmo::TargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::TargetMachine_O*>(client);
     obj_gc_safe->~TargetMachine_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O:
 {
     llvmo::LLVMTargetMachine_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMTargetMachine_O*>(client);
     obj_gc_safe->~LLVMTargetMachine_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__TargetOptions_O:
 {
     llvmo::TargetOptions_O* obj_gc_safe = reinterpret_cast<llvmo::TargetOptions_O*>(client);
     obj_gc_safe->~TargetOptions_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Type_O:
 {
     llvmo::Type_O* obj_gc_safe = reinterpret_cast<llvmo::Type_O*>(client);
     obj_gc_safe->~Type_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__IntegerType_O:
 {
     llvmo::IntegerType_O* obj_gc_safe = reinterpret_cast<llvmo::IntegerType_O*>(client);
     obj_gc_safe->~IntegerType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__CompositeType_O:
 {
     llvmo::CompositeType_O* obj_gc_safe = reinterpret_cast<llvmo::CompositeType_O*>(client);
     obj_gc_safe->~CompositeType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__SequentialType_O:
 {
     llvmo::SequentialType_O* obj_gc_safe = reinterpret_cast<llvmo::SequentialType_O*>(client);
     obj_gc_safe->~SequentialType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__VectorType_O:
 {
     llvmo::VectorType_O* obj_gc_safe = reinterpret_cast<llvmo::VectorType_O*>(client);
     obj_gc_safe->~VectorType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__PointerType_O:
 {
     llvmo::PointerType_O* obj_gc_safe = reinterpret_cast<llvmo::PointerType_O*>(client);
     obj_gc_safe->~PointerType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ArrayType_O:
 {
     llvmo::ArrayType_O* obj_gc_safe = reinterpret_cast<llvmo::ArrayType_O*>(client);
     obj_gc_safe->~ArrayType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__StructType_O:
 {
     llvmo::StructType_O* obj_gc_safe = reinterpret_cast<llvmo::StructType_O*>(client);
     obj_gc_safe->~StructType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__FunctionType_O:
 {
     llvmo::FunctionType_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionType_O*>(client);
     obj_gc_safe->~FunctionType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__NamedMDNode_O:
 {
     llvmo::NamedMDNode_O* obj_gc_safe = reinterpret_cast<llvmo::NamedMDNode_O*>(client);
     obj_gc_safe->~NamedMDNode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Linker_O:
 {
     llvmo::Linker_O* obj_gc_safe = reinterpret_cast<llvmo::Linker_O*>(client);
     obj_gc_safe->~Linker_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Pass_O:
 {
     llvmo::Pass_O* obj_gc_safe = reinterpret_cast<llvmo::Pass_O*>(client);
     obj_gc_safe->~Pass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__FunctionPass_O:
 {
     llvmo::FunctionPass_O* obj_gc_safe = reinterpret_cast<llvmo::FunctionPass_O*>(client);
     obj_gc_safe->~FunctionPass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ModulePass_O:
 {
     llvmo::ModulePass_O* obj_gc_safe = reinterpret_cast<llvmo::ModulePass_O*>(client);
     obj_gc_safe->~ModulePass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__ImmutablePass_O:
 {
     llvmo::ImmutablePass_O* obj_gc_safe = reinterpret_cast<llvmo::ImmutablePass_O*>(client);
     obj_gc_safe->~ImmutablePass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O:
 {
     llvmo::TargetLibraryInfoWrapperPass_O* obj_gc_safe = reinterpret_cast<llvmo::TargetLibraryInfoWrapperPass_O*>(client);
     obj_gc_safe->~TargetLibraryInfoWrapperPass_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O:
 {
     llvmo::MCSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::MCSubtargetInfo_O*>(client);
     obj_gc_safe->~MCSubtargetInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O:
 {
     llvmo::TargetSubtargetInfo_O* obj_gc_safe = reinterpret_cast<llvmo::TargetSubtargetInfo_O*>(client);
     obj_gc_safe->~TargetSubtargetInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Module_O:
 {
     llvmo::Module_O* obj_gc_safe = reinterpret_cast<llvmo::Module_O*>(client);
     obj_gc_safe->~Module_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__EngineBuilder_O:
 {
     llvmo::EngineBuilder_O* obj_gc_safe = reinterpret_cast<llvmo::EngineBuilder_O*>(client);
     obj_gc_safe->~EngineBuilder_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__LLVMContext_O:
 {
     llvmo::LLVMContext_O* obj_gc_safe = reinterpret_cast<llvmo::LLVMContext_O*>(client);
     obj_gc_safe->~LLVMContext_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__Target_O:
 {
     llvmo::Target_O* obj_gc_safe = reinterpret_cast<llvmo::Target_O*>(client);
     obj_gc_safe->~Target_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LoadTimeValues_O:
 {
     core::LoadTimeValues_O* obj_gc_safe = reinterpret_cast<core::LoadTimeValues_O*>(client);
     obj_gc_safe->~LoadTimeValues_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Binder_O:
 {
     core::Binder_O* obj_gc_safe = reinterpret_cast<core::Binder_O*>(client);
     obj_gc_safe->~Binder_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__IntArray_O:
 {
     core::IntArray_O* obj_gc_safe = reinterpret_cast<core::IntArray_O*>(client);
     obj_gc_safe->~IntArray_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SourceManager_O:
 {
     core::SourceManager_O* obj_gc_safe = reinterpret_cast<core::SourceManager_O*>(client);
     obj_gc_safe->~SourceManager_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Record_O:
 {
     core::Record_O* obj_gc_safe = reinterpret_cast<core::Record_O*>(client);
     obj_gc_safe->~Record_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LightUserData_O:
 {
     core::LightUserData_O* obj_gc_safe = reinterpret_cast<core::LightUserData_O*>(client);
     obj_gc_safe->~LightUserData_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__UserData_O:
 {
     core::UserData_O* obj_gc_safe = reinterpret_cast<core::UserData_O*>(client);
     obj_gc_safe->~UserData_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DataLayout_O:
 {
     llvmo::DataLayout_O* obj_gc_safe = reinterpret_cast<llvmo::DataLayout_O*>(client);
     obj_gc_safe->~DataLayout_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_BOOTSTRAP_core__Symbol_O:
 {
     core::Symbol_O* obj_gc_safe = reinterpret_cast<core::Symbol_O*>(client);
     obj_gc_safe->~Symbol_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Null_O:
 {
     core::Null_O* obj_gc_safe = reinterpret_cast<core::Null_O*>(client);
     obj_gc_safe->~Null_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SourcePosInfo_O:
 {
     core::SourcePosInfo_O* obj_gc_safe = reinterpret_cast<core::SourcePosInfo_O*>(client);
     obj_gc_safe->~SourcePosInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Iterator_O:
 {
@@ -7056,193 +7056,193 @@ obj_finalize_KIND_LISPALLOC_core__DirectoryIterator_O:
 {
     core::DirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::DirectoryIterator_O*>(client);
     obj_gc_safe->~DirectoryIterator_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O:
 {
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     obj_gc_safe->~RecursiveDirectoryIterator_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Regex_O:
 {
     core::Regex_O* obj_gc_safe = reinterpret_cast<core::Regex_O*>(client);
     obj_gc_safe->~Regex_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__PosixTimeDuration_O:
 {
     core::PosixTimeDuration_O* obj_gc_safe = reinterpret_cast<core::PosixTimeDuration_O*>(client);
     obj_gc_safe->~PosixTimeDuration_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SymbolToEnumConverter_O:
 {
     core::SymbolToEnumConverter_O* obj_gc_safe = reinterpret_cast<core::SymbolToEnumConverter_O*>(client);
     obj_gc_safe->~SymbolToEnumConverter_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CandoException_O:
 {
     core::CandoException_O* obj_gc_safe = reinterpret_cast<core::CandoException_O*>(client);
     obj_gc_safe->~CandoException_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O:
 {
     clasp_ffi::ForeignTypeSpec_O* obj_gc_safe = reinterpret_cast<clasp_ffi::ForeignTypeSpec_O*>(client);
     obj_gc_safe->~ForeignTypeSpec_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Stream_O:
 {
     core::Stream_O* obj_gc_safe = reinterpret_cast<core::Stream_O*>(client);
     obj_gc_safe->~Stream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__AnsiStream_O:
 {
     core::AnsiStream_O* obj_gc_safe = reinterpret_cast<core::AnsiStream_O*>(client);
     obj_gc_safe->~AnsiStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FileStream_O:
 {
     core::FileStream_O* obj_gc_safe = reinterpret_cast<core::FileStream_O*>(client);
     obj_gc_safe->~FileStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__IOStreamStream_O:
 {
     core::IOStreamStream_O* obj_gc_safe = reinterpret_cast<core::IOStreamStream_O*>(client);
     obj_gc_safe->~IOStreamStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__IOFileStream_O:
 {
     core::IOFileStream_O* obj_gc_safe = reinterpret_cast<core::IOFileStream_O*>(client);
     obj_gc_safe->~IOFileStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ConcatenatedStream_O:
 {
     core::ConcatenatedStream_O* obj_gc_safe = reinterpret_cast<core::ConcatenatedStream_O*>(client);
     obj_gc_safe->~ConcatenatedStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__StringStream_O:
 {
     core::StringStream_O* obj_gc_safe = reinterpret_cast<core::StringStream_O*>(client);
     obj_gc_safe->~StringStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__StringInputStream_O:
 {
     core::StringInputStream_O* obj_gc_safe = reinterpret_cast<core::StringInputStream_O*>(client);
     obj_gc_safe->~StringInputStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__StringOutputStream_O:
 {
     core::StringOutputStream_O* obj_gc_safe = reinterpret_cast<core::StringOutputStream_O*>(client);
     obj_gc_safe->~StringOutputStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SynonymStream_O:
 {
     core::SynonymStream_O* obj_gc_safe = reinterpret_cast<core::SynonymStream_O*>(client);
     obj_gc_safe->~SynonymStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__EchoStream_O:
 {
     core::EchoStream_O* obj_gc_safe = reinterpret_cast<core::EchoStream_O*>(client);
     obj_gc_safe->~EchoStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__TwoWayStream_O:
 {
     core::TwoWayStream_O* obj_gc_safe = reinterpret_cast<core::TwoWayStream_O*>(client);
     obj_gc_safe->~TwoWayStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__BroadcastStream_O:
 {
     core::BroadcastStream_O* obj_gc_safe = reinterpret_cast<core::BroadcastStream_O*>(client);
     obj_gc_safe->~BroadcastStream_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Reader_O:
 {
     core::Reader_O* obj_gc_safe = reinterpret_cast<core::Reader_O*>(client);
     obj_gc_safe->~Reader_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SharpEqualWrapper_O:
 {
     core::SharpEqualWrapper_O* obj_gc_safe = reinterpret_cast<core::SharpEqualWrapper_O*>(client);
     obj_gc_safe->~SharpEqualWrapper_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Archive_O:
 {
     core::Archive_O* obj_gc_safe = reinterpret_cast<core::Archive_O*>(client);
     obj_gc_safe->~Archive_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SaveArchive_O:
 {
     core::SaveArchive_O* obj_gc_safe = reinterpret_cast<core::SaveArchive_O*>(client);
     obj_gc_safe->~SaveArchive_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SexpSaveArchive_O:
 {
     core::SexpSaveArchive_O* obj_gc_safe = reinterpret_cast<core::SexpSaveArchive_O*>(client);
     obj_gc_safe->~SexpSaveArchive_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LoadArchive_O:
 {
     core::LoadArchive_O* obj_gc_safe = reinterpret_cast<core::LoadArchive_O*>(client);
     obj_gc_safe->~LoadArchive_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SexpLoadArchive_O:
 {
     core::SexpLoadArchive_O* obj_gc_safe = reinterpret_cast<core::SexpLoadArchive_O*>(client);
     obj_gc_safe->~SexpLoadArchive_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__HashTable_O:
 {
     core::HashTable_O* obj_gc_safe = reinterpret_cast<core::HashTable_O*>(client);
     obj_gc_safe->~HashTable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__HashTableEq_O:
 {
     core::HashTableEq_O* obj_gc_safe = reinterpret_cast<core::HashTableEq_O*>(client);
     obj_gc_safe->~HashTableEq_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__HashTableEqualp_O:
 {
     core::HashTableEqualp_O* obj_gc_safe = reinterpret_cast<core::HashTableEqualp_O*>(client);
     obj_gc_safe->~HashTableEqualp_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__HashTableEql_O:
 {
     core::HashTableEql_O* obj_gc_safe = reinterpret_cast<core::HashTableEql_O*>(client);
     obj_gc_safe->~HashTableEql_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__HashTableEqual_O:
 {
     core::HashTableEqual_O* obj_gc_safe = reinterpret_cast<core::HashTableEqual_O*>(client);
     obj_gc_safe->~HashTableEqual_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Creator_O:
 {
@@ -7253,7 +7253,7 @@ obj_finalize_KIND_LISPALLOC_clbind__DummyCreator_O:
 {
     clbind::DummyCreator_O* obj_gc_safe = reinterpret_cast<clbind::DummyCreator_O*>(client);
     obj_gc_safe->~DummyCreator_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O:
 {
@@ -7264,385 +7264,385 @@ obj_finalize_KIND_LISPALLOC_core__InstanceCreator_O:
 {
     core::InstanceCreator_O* obj_gc_safe = reinterpret_cast<core::InstanceCreator_O*>(client);
     obj_gc_safe->~InstanceCreator_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CxxObject_O:
 {
     core::CxxObject_O* obj_gc_safe = reinterpret_cast<core::CxxObject_O*>(client);
     obj_gc_safe->~CxxObject_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__NativeVector_float_O:
 {
     core::NativeVector_float_O* obj_gc_safe = reinterpret_cast<core::NativeVector_float_O*>(client);
     obj_gc_safe->~NativeVector_float_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Info_O:
 {
     clcenv::Info_O* obj_gc_safe = reinterpret_cast<clcenv::Info_O*>(client);
     obj_gc_safe->~Info_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__FunctionInfo_O:
 {
     clcenv::FunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionInfo_O*>(client);
     obj_gc_safe->~FunctionInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O:
 {
     clcenv::LocalFunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LocalFunctionInfo_O*>(client);
     obj_gc_safe->~LocalFunctionInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O:
 {
     clcenv::GlobalFunctionInfo_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalFunctionInfo_O*>(client);
     obj_gc_safe->~GlobalFunctionInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__LambdaNameInfo_O:
 {
     clcenv::LambdaNameInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LambdaNameInfo_O*>(client);
     obj_gc_safe->~LambdaNameInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O:
 {
     clcenv::SpecialOperatorInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialOperatorInfo_O*>(client);
     obj_gc_safe->~SpecialOperatorInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O:
 {
     clcenv::GlobalMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalMacroInfo_O*>(client);
     obj_gc_safe->~GlobalMacroInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__LocalMacroInfo_O:
 {
     clcenv::LocalMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LocalMacroInfo_O*>(client);
     obj_gc_safe->~LocalMacroInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__OptimizeInfo_O:
 {
     clcenv::OptimizeInfo_O* obj_gc_safe = reinterpret_cast<clcenv::OptimizeInfo_O*>(client);
     obj_gc_safe->~OptimizeInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__BlockInfo_O:
 {
     clcenv::BlockInfo_O* obj_gc_safe = reinterpret_cast<clcenv::BlockInfo_O*>(client);
     obj_gc_safe->~BlockInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__VariableInfo_O:
 {
     clcenv::VariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::VariableInfo_O*>(client);
     obj_gc_safe->~VariableInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O:
 {
     clcenv::SpecialVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialVariableInfo_O*>(client);
     obj_gc_safe->~SpecialVariableInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O:
 {
     clcenv::SymbolMacroInfo_O* obj_gc_safe = reinterpret_cast<clcenv::SymbolMacroInfo_O*>(client);
     obj_gc_safe->~SymbolMacroInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O:
 {
     clcenv::ConstantVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::ConstantVariableInfo_O*>(client);
     obj_gc_safe->~ConstantVariableInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O:
 {
     clcenv::LexicalVariableInfo_O* obj_gc_safe = reinterpret_cast<clcenv::LexicalVariableInfo_O*>(client);
     obj_gc_safe->~LexicalVariableInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__NativeVector_int_O:
 {
     core::NativeVector_int_O* obj_gc_safe = reinterpret_cast<core::NativeVector_int_O*>(client);
     obj_gc_safe->~NativeVector_int_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DINodeArray_O:
 {
     llvmo::DINodeArray_O* obj_gc_safe = reinterpret_cast<llvmo::DINodeArray_O*>(client);
     obj_gc_safe->~DINodeArray_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__DITypeRefArray_O:
 {
     llvmo::DITypeRefArray_O* obj_gc_safe = reinterpret_cast<llvmo::DITypeRefArray_O*>(client);
     obj_gc_safe->~DITypeRefArray_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Entry_O:
 {
     clcenv::Entry_O* obj_gc_safe = reinterpret_cast<clcenv::Entry_O*>(client);
     obj_gc_safe->~Entry_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Inline_O:
 {
     clcenv::Inline_O* obj_gc_safe = reinterpret_cast<clcenv::Inline_O*>(client);
     obj_gc_safe->~Inline_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Closure_O:
 {
     clcenv::Closure_O* obj_gc_safe = reinterpret_cast<clcenv::Closure_O*>(client);
     obj_gc_safe->~Closure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O:
 {
     clcenv::FunctionDynamicExtent_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionDynamicExtent_O*>(client);
     obj_gc_safe->~FunctionDynamicExtent_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O:
 {
     clcenv::VariableDynamicExtent_O* obj_gc_safe = reinterpret_cast<clcenv::VariableDynamicExtent_O*>(client);
     obj_gc_safe->~VariableDynamicExtent_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacro_O:
 {
     clcenv::SymbolMacro_O* obj_gc_safe = reinterpret_cast<clcenv::SymbolMacro_O*>(client);
     obj_gc_safe->~SymbolMacro_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__FunctionIgnore_O:
 {
     clcenv::FunctionIgnore_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionIgnore_O*>(client);
     obj_gc_safe->~FunctionIgnore_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Function_O:
 {
     clcenv::Function_O* obj_gc_safe = reinterpret_cast<clcenv::Function_O*>(client);
     obj_gc_safe->~Function_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__LambdaName_O:
 {
     clcenv::LambdaName_O* obj_gc_safe = reinterpret_cast<clcenv::LambdaName_O*>(client);
     obj_gc_safe->~LambdaName_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Block_O:
 {
     clcenv::Block_O* obj_gc_safe = reinterpret_cast<clcenv::Block_O*>(client);
     obj_gc_safe->~Block_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariable_O:
 {
     clcenv::SpecialVariable_O* obj_gc_safe = reinterpret_cast<clcenv::SpecialVariable_O*>(client);
     obj_gc_safe->~SpecialVariable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariable_O:
 {
     clcenv::LexicalVariable_O* obj_gc_safe = reinterpret_cast<clcenv::LexicalVariable_O*>(client);
     obj_gc_safe->~LexicalVariable_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__GlobalEnvironment_O:
 {
     clcenv::GlobalEnvironment_O* obj_gc_safe = reinterpret_cast<clcenv::GlobalEnvironment_O*>(client);
     obj_gc_safe->~GlobalEnvironment_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Tag_O:
 {
     clcenv::Tag_O* obj_gc_safe = reinterpret_cast<clcenv::Tag_O*>(client);
     obj_gc_safe->~Tag_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__FunctionType_O:
 {
     clcenv::FunctionType_O* obj_gc_safe = reinterpret_cast<clcenv::FunctionType_O*>(client);
     obj_gc_safe->~FunctionType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Macro_O:
 {
     clcenv::Macro_O* obj_gc_safe = reinterpret_cast<clcenv::Macro_O*>(client);
     obj_gc_safe->~Macro_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__VariableType_O:
 {
     clcenv::VariableType_O* obj_gc_safe = reinterpret_cast<clcenv::VariableType_O*>(client);
     obj_gc_safe->~VariableType_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__VariableIgnore_O:
 {
     clcenv::VariableIgnore_O* obj_gc_safe = reinterpret_cast<clcenv::VariableIgnore_O*>(client);
     obj_gc_safe->~VariableIgnore_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clcenv__Optimize_O:
 {
     clcenv::Optimize_O* obj_gc_safe = reinterpret_cast<clcenv::Optimize_O*>(client);
     obj_gc_safe->~Optimize_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__NativeVector_double_O:
 {
     core::NativeVector_double_O* obj_gc_safe = reinterpret_cast<core::NativeVector_double_O*>(client);
     obj_gc_safe->~NativeVector_double_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__WeakKeyMapping_O:
 {
     core::WeakKeyMapping_O* obj_gc_safe = reinterpret_cast<core::WeakKeyMapping_O*>(client);
     obj_gc_safe->~WeakKeyMapping_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Cache_O:
 {
     core::Cache_O* obj_gc_safe = reinterpret_cast<core::Cache_O*>(client);
     obj_gc_safe->~Cache_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LambdaListHandler_O:
 {
     core::LambdaListHandler_O* obj_gc_safe = reinterpret_cast<core::LambdaListHandler_O*>(client);
     obj_gc_safe->~LambdaListHandler_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__InsertPoint_O:
 {
     llvmo::InsertPoint_O* obj_gc_safe = reinterpret_cast<llvmo::InsertPoint_O*>(client);
     obj_gc_safe->~InsertPoint_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SourceFileInfo_O:
 {
     core::SourceFileInfo_O* obj_gc_safe = reinterpret_cast<core::SourceFileInfo_O*>(client);
     obj_gc_safe->~SourceFileInfo_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SNode_O:
 {
     core::SNode_O* obj_gc_safe = reinterpret_cast<core::SNode_O*>(client);
     obj_gc_safe->~SNode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LeafSNode_O:
 {
     core::LeafSNode_O* obj_gc_safe = reinterpret_cast<core::LeafSNode_O*>(client);
     obj_gc_safe->~LeafSNode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__BranchSNode_O:
 {
     core::BranchSNode_O* obj_gc_safe = reinterpret_cast<core::BranchSNode_O*>(client);
     obj_gc_safe->~BranchSNode_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Path_O:
 {
     core::Path_O* obj_gc_safe = reinterpret_cast<core::Path_O*>(client);
     obj_gc_safe->~Path_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_asttooling__AstVisitor_O:
 {
     asttooling::AstVisitor_O* obj_gc_safe = reinterpret_cast<asttooling::AstVisitor_O*>(client);
     obj_gc_safe->~AstVisitor_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_llvmo__AttributeSet_O:
 {
     llvmo::AttributeSet_O* obj_gc_safe = reinterpret_cast<llvmo::AttributeSet_O*>(client);
     obj_gc_safe->~AttributeSet_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__StructureObject_O:
 {
     core::StructureObject_O* obj_gc_safe = reinterpret_cast<core::StructureObject_O*>(client);
     obj_gc_safe->~StructureObject_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O:
 {
     core::InvocationHistoryFrameIterator_O* obj_gc_safe = reinterpret_cast<core::InvocationHistoryFrameIterator_O*>(client);
     obj_gc_safe->~InvocationHistoryFrameIterator_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Package_O:
 {
     core::Package_O* obj_gc_safe = reinterpret_cast<core::Package_O*>(client);
     obj_gc_safe->~Package_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__DirectoryEntry_O:
 {
     core::DirectoryEntry_O* obj_gc_safe = reinterpret_cast<core::DirectoryEntry_O*>(client);
     obj_gc_safe->~DirectoryEntry_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Character_dummy_O:
 {
     core::Character_dummy_O* obj_gc_safe = reinterpret_cast<core::Character_dummy_O*>(client);
     obj_gc_safe->~Character_dummy_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Function_O:
 {
     core::Function_O* obj_gc_safe = reinterpret_cast<core::Function_O*>(client);
     obj_gc_safe->~Function_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__NamedFunction_O:
 {
     core::NamedFunction_O* obj_gc_safe = reinterpret_cast<core::NamedFunction_O*>(client);
     obj_gc_safe->~NamedFunction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SpecialForm_O:
 {
     core::SpecialForm_O* obj_gc_safe = reinterpret_cast<core::SpecialForm_O*>(client);
     obj_gc_safe->~SpecialForm_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Closure_O:
 {
     core::Closure_O* obj_gc_safe = reinterpret_cast<core::Closure_O*>(client);
     obj_gc_safe->~Closure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O:
 {
     core::CompiledFunction_O* obj_gc_safe = reinterpret_cast<core::CompiledFunction_O*>(client);
     obj_gc_safe->~CompiledFunction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__FunctionClosure_O:
 {
     core::FunctionClosure_O* obj_gc_safe = reinterpret_cast<core::FunctionClosure_O*>(client);
     obj_gc_safe->~FunctionClosure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ClosureWithSlots_O:
 {
     core::ClosureWithSlots_O* obj_gc_safe = reinterpret_cast<core::ClosureWithSlots_O*>(client);
     obj_gc_safe->~ClosureWithSlots_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O:
 {
@@ -7653,115 +7653,115 @@ obj_finalize_KIND_LISPALLOC_core__TranslationFunctor:
 {
     core::TranslationFunctor* obj_gc_safe = reinterpret_cast<core::TranslationFunctor*>(client);
     obj_gc_safe->~TranslationFunctor();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__MacroClosure_O:
 {
     core::MacroClosure_O* obj_gc_safe = reinterpret_cast<core::MacroClosure_O*>(client);
     obj_gc_safe->~MacroClosure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O:
 {
     core::SingleDispatchCxxEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchCxxEffectiveMethodFunction_O*>(client);
     obj_gc_safe->~SingleDispatchCxxEffectiveMethodFunction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__ClosureWithFrame_O:
 {
     core::ClosureWithFrame_O* obj_gc_safe = reinterpret_cast<core::ClosureWithFrame_O*>(client);
     obj_gc_safe->~ClosureWithFrame_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CompiledClosure_O:
 {
     core::CompiledClosure_O* obj_gc_safe = reinterpret_cast<core::CompiledClosure_O*>(client);
     obj_gc_safe->~CompiledClosure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__InterpretedClosure_O:
 {
     core::InterpretedClosure_O* obj_gc_safe = reinterpret_cast<core::InterpretedClosure_O*>(client);
     obj_gc_safe->~InterpretedClosure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O:
 {
     core::SingleDispatchMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchMethodFunction_O*>(client);
     obj_gc_safe->~SingleDispatchMethodFunction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__CxxMethodFunction_O:
 {
     core::CxxMethodFunction_O* obj_gc_safe = reinterpret_cast<core::CxxMethodFunction_O*>(client);
     obj_gc_safe->~CxxMethodFunction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O:
 {
     core::SingleDispatchEffectiveMethodFunction_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchEffectiveMethodFunction_O*>(client);
     obj_gc_safe->~SingleDispatchEffectiveMethodFunction_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O:
 {
     core::SingleDispatchGenericFunctionClosure_O* obj_gc_safe = reinterpret_cast<core::SingleDispatchGenericFunctionClosure_O*>(client);
     obj_gc_safe->~SingleDispatchGenericFunctionClosure_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Instance_O:
 {
     core::Instance_O* obj_gc_safe = reinterpret_cast<core::Instance_O*>(client);
     obj_gc_safe->~Instance_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Pointer_O:
 {
     core::Pointer_O* obj_gc_safe = reinterpret_cast<core::Pointer_O*>(client);
     obj_gc_safe->~Pointer_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_clbind__ClassRegistry_O:
 {
     clbind::ClassRegistry_O* obj_gc_safe = reinterpret_cast<clbind::ClassRegistry_O*>(client);
     obj_gc_safe->~ClassRegistry_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SmallMultimap_O:
 {
     core::SmallMultimap_O* obj_gc_safe = reinterpret_cast<core::SmallMultimap_O*>(client);
     obj_gc_safe->~SmallMultimap_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__Pathname_O:
 {
     core::Pathname_O* obj_gc_safe = reinterpret_cast<core::Pathname_O*>(client);
     obj_gc_safe->~Pathname_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__LogicalPathname_O:
 {
     core::LogicalPathname_O* obj_gc_safe = reinterpret_cast<core::LogicalPathname_O*>(client);
     obj_gc_safe->~LogicalPathname_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__PosixTime_O:
 {
     core::PosixTime_O* obj_gc_safe = reinterpret_cast<core::PosixTime_O*>(client);
     obj_gc_safe->~PosixTime_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__SmallMap_O:
 {
     core::SmallMap_O* obj_gc_safe = reinterpret_cast<core::SmallMap_O*>(client);
     obj_gc_safe->~SmallMap_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_ROOTCLASSALLOC_core__Lisp_O:
 {
     core::Lisp_O* obj_gc_safe = reinterpret_cast<core::Lisp_O*>(client);
     obj_gc_safe->~Lisp_O();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_:
 {
@@ -7821,19 +7821,19 @@ obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory:
 {
     asttooling::DerivableFrontendActionFactory* obj_gc_safe = reinterpret_cast<asttooling::DerivableFrontendActionFactory*>(client);
     obj_gc_safe->~DerivableFrontendActionFactory();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback:
 {
     asttooling::DerivableMatchCallback* obj_gc_safe = reinterpret_cast<asttooling::DerivableMatchCallback*>(client);
     obj_gc_safe->~DerivableMatchCallback();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction:
 {
     asttooling::DerivableASTFrontendAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableASTFrontendAction*>(client);
     obj_gc_safe->~DerivableASTFrontendAction();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__:
 {
@@ -7842,7 +7842,7 @@ obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction:
 {
     asttooling::DerivableSyntaxOnlyAction* obj_gc_safe = reinterpret_cast<asttooling::DerivableSyntaxOnlyAction*>(client);
     obj_gc_safe->~DerivableSyntaxOnlyAction();
-    return;
+    goto finalize_done;
 }
 obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__:
 {

@@ -46,10 +46,9 @@ class StdClass_O : public Class_O {
   LISP_CLASS(core, ClosPkg, StdClass_O, "STD-CLASS",Class_O);
 
 public:
-  StdClass_O(const StdClass_O &ss); //!< Copy constructor
+  //StdClass_O(const StdClass_O &ss); //!< Copy constructor
 
-  explicit StdClass_O() : Base(){};
-  virtual ~StdClass_O(){};
+  explicit StdClass_O(gctools::Stamp is) : Base(is){};
 };
 };
 

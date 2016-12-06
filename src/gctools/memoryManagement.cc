@@ -32,8 +32,11 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/debugger.h>
+#include <clasp/core/evaluator.h>
+#include <clasp/core/str.h>
 #include <clasp/gctools/telemetry.h>
 #include <clasp/gctools/gc_boot.h>
+#include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/memoryManagement.h>
 //#include "main/allHeaders.cc"
 
@@ -56,7 +59,72 @@ std::vector<Immediate_info> get_immediate_info() {
 };
 };
 
+
+
 namespace gctools {
+
+// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
+bool global_debuggerOnSIGABRT = true;
+#define INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP 16386
+int global_pollTicksPerCleanup = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
+int global_signalTrap = 0;
+int global_pollTicksGC = INITIAL_GLOBAL_POLL_TICKS_PER_CLEANUP;
+
+void do_pollSignals() {
+  int signo = global_signalTrap;
+  SET_SIGNAL(0);
+  if (signo == SIGINT) {
+    printf("You pressed Ctrl+C\n");
+    core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
+      //    core__invoke_internal_debugger(_Nil<core::T_O>());
+    printf("Resuming after Ctrl+C\n");
+  } else if (signo == SIGCHLD) {
+      //            printf("A child terminated\n");
+  } else if (signo == SIGFPE) {
+    printf("%s:%d A floating point error occurred\n", __FILE__, __LINE__);
+    core__invoke_internal_debugger(_Nil<core::T_O>());
+  } else if (signo == SIGABRT) {
+    printf("ABORT was called!!!!!!!!!!!!\n");
+    core__invoke_internal_debugger(_Nil<core::T_O>());
+      //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
+  }
+#ifdef USE_MPS
+  if (--global_pollTicksGC == 0 ) {
+    global_pollTicksGC = global_pollTicksPerCleanup;
+    gctools::gctools__cleanup();
+  }
+#endif
+}
+
+
+char *clasp_alloc_atomic(size_t buffer) {
+  return (char *)malloc(buffer);
+}
+
+void clasp_dealloc(char* buffer) {
+  if (buffer) {
+    free(buffer);
+  }
+}
+
+
+};
+
+
+
+
+namespace gctools {
+
+/*! See NextStamp(...) definition in memoryManagement.h.
+  global_NextBuiltInStamp starts at KIND_max+1
+  so that it doesn't use any stamps that correspond to KIND values
+   assigned by the static analyzer. */
+Stamp   global_NextStamp = KIND_max+1;
+
+void OutOfStamps() {
+    printf("%s:%d Hello future entity!  Congratulations! - you have run clasp long enough to run out of STAMPs - %lu are allowed - change the clasp header layout or add another word for the stamp\n", __FILE__, __LINE__, Header_s::largest_possible_stamp );
+    abort();
+}
 
 GCStack _ThreadLocalStack;
 const char *_global_stack_marker;
@@ -100,7 +168,7 @@ void handle_signals(int signo) {
   //
   SET_SIGNAL(signo);
   telemetry::global_telemetry_search->flush();
-  if (signo == SIGABRT && core::global_debuggerOnSIGABRT) {
+  if (signo == SIGABRT && global_debuggerOnSIGABRT) {
     printf("%s:%d Trapped SIGABRT - starting debugger\n", __FILE__, __LINE__);
     core::LispDebugger debugger(_Nil<core::T_O>());
     debugger.invoke();
@@ -286,6 +354,7 @@ int startupGarbageCollectorAndSystem(MainFunctionType startupFn, int argc, char 
 #endif
 
 #if defined(USE_BOEHM)
+  GC_set_java_finalization(1);
   GC_set_all_interior_pointers(1); // tagged pointers require this
                                    //printf("%s:%d Turning on interior pointers\n",__FILE__,__LINE__);
   GC_set_warn_proc(clasp_warn_proc);

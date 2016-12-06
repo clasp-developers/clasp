@@ -2099,7 +2099,7 @@ so that they don't have to be constantly recalculated"
     (format fout "    ~A* ~A = reinterpret_cast<~A*>(client);~%" key +ptr-name+ key)
 ;;    (format fout "    ~A* ~A = BasePtrToMostDerivedPtr<~A>(base);~%" key +ptr-name+ key)
     (format fout "    ~A->~~~A();~%" +ptr-name+ cn)
-    (format fout "    return;~%"))))
+    (format fout "    goto finalize_done;~%"))))
 
 
 (defun deallocator-for-lispallocs (dest enum anal)

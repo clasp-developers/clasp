@@ -94,14 +94,9 @@ namespace core {
   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, 1);
 }
 
-template <typename RT, typename... ARGS>
-void af_def(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
-  Symbol_sp symbol = lispify_intern(name, packageName);
-  SourcePosInfo_sp spi = lisp_createSourcePosInfo(sourceFile, 0, sourceLine);
-  BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
-  lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
-}
 
+
+// this is used in gc_interface.cc expose_function
  template <typename RT, typename... ARGS>
 void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS...), const string &arguments = "", const string &declares = "", const string &docstring = "", const string &sourceFile = "", int sourceLine = 0) {
   Symbol_sp symbol = _lisp->intern(name, packageName);
@@ -109,7 +104,6 @@ void wrap_function(const string &packageName, const string &name, RT (*fp)(ARGS.
   BuiltinClosure_sp f = gctools::GC<VariadicFunctor<RT(ARGS...)>>::allocate(symbol, kw::_sym_function, fp, SOURCE_POS_INFO_FIELDS(spi));
   lisp_defun(symbol, packageName, f, arguments, declares, docstring, sourceFile, sourceLine, true, sizeof...(ARGS));
 }
-
 
 };
 
@@ -231,7 +225,11 @@ public:
 #endif
     if (makerName != "") {
       // use make-<className>
-      af_def(OT::static_packageName(), makerName, &new_LispObject<OT>);
+      std::string magic_maker_name = core::magic_name(makerName,OT::static_packageName());
+      std::string pkg_part;
+      std::string symbol_part;
+      core::colon_split( magic_maker_name, pkg_part, symbol_part);
+      wrap_function(pkg_part,symbol_part, &new_LispObject<OT>);
     }
   }
 
@@ -254,9 +252,15 @@ public:
   // non-const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...),
-              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
-    Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
+              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true)
+  {
+    std::string pkgName;
+    std::string symbolName;
+    core::colon_split(name,pkgName,symbolName);
+    if (pkgName == "") {
+      pkgName = symbol_packageName(this->_ClassSymbol);
+    }
+    Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...)>>::allocate(symbol, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;
@@ -265,9 +269,15 @@ public:
   // const function dispatch on parameter 0
   template <typename RT, class... ARGS>
   class_ &def(string const &name, RT (OT::*mp)(ARGS...) const,
-              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true) {
-    _G();
-    Symbol_sp symbol = lispify_intern(name, symbol_packageName(this->_ClassSymbol));
+              string const &lambda_list = "", const string &declares = "", const string &docstring = "", bool autoExport = true)
+  {
+    std::string pkgName;
+    std::string symbolName;
+    core::colon_split(name,pkgName,symbolName);
+    if (pkgName == "") {
+      pkgName = symbol_packageName(this->_ClassSymbol);
+    }
+    Symbol_sp symbol = _lisp->intern(symbolName,pkgName);
     BuiltinClosure_sp m = gc::GC<VariadicMethoid<0, RT (OT::*)(ARGS...) const>>::allocate(symbol, mp);
     lisp_defineSingleDispatchMethod(symbol, this->_ClassSymbol, m, 0, lambda_list, declares, docstring, autoExport, sizeof...(ARGS)+1);
     return *this;

@@ -155,7 +155,7 @@ CL_DEFUN void core__dump_class_ids()
 {
   reg::dump_class_ids();
 }
-};
+
 
 
 void lisp_errorIllegalDereference(void *v) {
@@ -201,7 +201,7 @@ void lisp_errorUnexpectedType(class_id expectedTyp, class_id givenTyp, core::T_O
 
 void lisp_errorBadCastToFixnum(class_id from_typ, core::T_O *objP) {
   class_id to_typ = reg::registered_class<core::Fixnum_I>::id;
-  lisp_errorUnexpectedType(to_typ, from_typ, objP);
+  core::lisp_errorUnexpectedType(to_typ, from_typ, objP);
 }
 
 void lisp_errorBadCast(class_id toType, class_id fromType, core::T_O *objP) {
@@ -235,6 +235,7 @@ void lisp_errorUnexpectedNil(class_id expectedTyp) {
   TYPE_ERROR(_Nil<core::T_O>(), expectedSym);
 }
 
+};
 namespace boost {
 using namespace core;
 void assertion_failed(char const *expr, char const *function, char const *file, long line) {
@@ -276,52 +277,6 @@ void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
 };
 
 namespace core {
-
-// false == SIGABRT invokes debugger, true == terminate (used in core__exit)
-bool global_debuggerOnSIGABRT = true;
-
-int global_signalTrap = 0;
-int global_pollTicksGC = 0;
-
-void lisp_pollSignals() {
-  int signo = core::global_signalTrap;
-  SET_SIGNAL(0);
-  if (signo == SIGINT) {
-    printf("You pressed Ctrl+C\n");
-    core::eval::funcall(cl::_sym_break, core::Str_O::create("Break on Ctrl+C"));
-      //    core__invoke_internal_debugger(_Nil<core::T_O>());
-    printf("Resuming after Ctrl+C\n");
-  } else if (signo == SIGCHLD) {
-      //            printf("A child terminated\n");
-  } else if (signo == SIGFPE) {
-    printf("%s:%d A floating point error occurred\n", __FILE__, __LINE__);
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-  } else if (signo == SIGABRT) {
-    printf("ABORT was called!!!!!!!!!!!!\n");
-    core__invoke_internal_debugger(_Nil<core::T_O>());
-      //    core:eval::funcall(cl::_sym_break,core::Str_O::create("ABORT was called"));
-  }
-#if 0
-#ifdef USE_MPS
-  ++global_pollTicksGC;
-  if (core::_sym_STARpollTicksPerGcSTAR && !core::_sym_STARpollTicksPerGcSTAR.unboundp() && !core::_sym_STARpollTicksPerGcSTAR->symbolValueUnsafe().unboundp() && global_pollTicksGC >= unbox_fixnum(core::_sym_STARpollTicksPerGcSTAR->symbolValue())) {
-    global_pollTicksGC = 0;
-    gctools::gctools__cleanup();
-  }
-#endif
-#endif
-}
-
-
-char *clasp_alloc_atomic(size_t buffer) {
-  return (char *)malloc(buffer);
-}
-
-void clasp_dealloc(char *buffer) {
-  if (buffer) {
-    free(buffer);
-  }
-}
 
 List_sp clasp_grab_rest_args(va_list args, int nargs) {
   ql::list l;

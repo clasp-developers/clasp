@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>
+#include <clasp/core/str.h>
 #include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/evaluator.h>
@@ -111,7 +112,6 @@ CL_DEFUN T_sp core__allocate_raw_class(T_sp orig, T_sp tMetaClass, int slots, T_
   SIMPLE_ERROR(BF("I don't know how to make class named %s with metaclass %s") % _rep_(className) % _rep_(tMetaClass));
 };
 
-Class_O::Class_O() : Class_O::Base(), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator(){};
 
 void Class_O::initializeSlots(int slots) {
   if (slots < Class_O::NumberOfClassSlots) {
@@ -140,7 +140,7 @@ gc::Nilable<Class_sp> identifyCxxDerivableAncestorClass(Class_sp aClass) {
 
 void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   // If this class already has an allocator then leave it alone
-  if (this->hasCreator()) return;
+  if (this->has_creator()) return;
   Class_sp aCxxDerivableAncestorClass_unsafe; // Danger!  Unitialized!
   for (auto cur : superclasses) {
     T_sp tsuper = oCar(cur);
@@ -161,6 +161,7 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
         }
       }
     } else if ( Instance_sp iSuperClass = tsuper.asOrNull<Instance_O>() ) {
+      SIMPLE_ERROR(BF("In Clasp, Instances are never Classes - so this error should never occur.  If it does - figure out why tsuper is an Instance"));
       // I don't think I do anything here
       // If aCxxDerivableAncestorClass_unsafe is left unchanged then
       // an InstanceCreator_O will be created for this class.
@@ -168,12 +169,13 @@ void Class_O::inheritDefaultAllocator(List_sp superclasses) {
   }
   if (aCxxDerivableAncestorClass_unsafe) {
     // Here aCxxDerivableAncestorClass_unsafe has a value - so it's ok to dereference it
-    Creator_sp aCxxAllocator(aCxxDerivableAncestorClass_unsafe->getCreator());
+    Creator_sp aCxxAllocator(gctools::As<Creator_sp>(aCxxDerivableAncestorClass_unsafe->class_creator()));
     Creator_sp dup = aCxxAllocator->duplicateForClassName(this->name());
     this->setCreator(dup); // this->setCreator(dup.get());
   } else {
+    // I think this is the most common outcome - 
 //    printf("%s:%d   Creating an InstanceCreator_O for the class: %s\n", __FILE__, __LINE__, _rep_(this->name()).c_str());
-    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->name());
+    InstanceCreator_sp instanceAllocator = gc::GC<InstanceCreator_O>::allocate(this->asSmartPtr());
     //gctools::StackRootedPointer<InstanceCreator> instanceAllocator(new InstanceCreator(this->name()));
     this->setCreator(instanceAllocator); // this->setCreator(instanceAllocator.get());
   }
@@ -192,7 +194,7 @@ string Class_O::classNameAsString() const {
 
 T_sp Class_O::allocate_newNil() {
   ASSERTF(this->_theCreator, BF("The class %s does not have a creator defined") % this->classNameAsString() );
-  T_sp newObject = this->_theCreator->allocate();
+  T_sp newObject = this->_theCreator->creator_allocate();
   return newObject;
 }
 
@@ -257,7 +259,7 @@ string Class_O::dumpInfo() {
   for (auto cc : this->directSuperclasses()) {
     ss << "Base class: " << gc::As<Class_sp>(oCar(cc))->instanceClassName() << std::endl;
   }
-  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->getCreator()) << std::endl;
+  ss << boost::format("this.instanceCreator* = %p") % (void *)(&*this->class_creator()) << std::endl;
   return ss.str();
 }
 
@@ -476,7 +478,7 @@ void Class_O::describe(T_sp stream) {
       ss << (BF("directSuperclasses: %s\n") % gc::As<Class_sp>(oCar(cc))->instanceClassName().c_str()).str();
     }
   }
-  ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->getCreator().raw_())).str();
+  ss << (BF(" this.instanceCreator* = %p\n") % (void *)(this->class_creator().raw_())).str();
   ss << (BF("cxxClassP[%d]  cxxDerivableClassP[%d]   primaryCxxDerivableClassP[%d]\n") % this->cxxClassP() % this->cxxDerivableClassP() % this->primaryCxxDerivableClassP()).str();
   clasp_write_string(ss.str(), stream);
 }

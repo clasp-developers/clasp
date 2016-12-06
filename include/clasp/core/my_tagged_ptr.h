@@ -1,3 +1,21 @@
+
+
+
+
+
+
+
+#error "DEPRECIATED"
+
+
+
+
+
+
+
+
+
+
 /*
     File: my_tagged_ptr.h
 */

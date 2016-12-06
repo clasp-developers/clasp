@@ -81,13 +81,13 @@ void	BuiltInClass_O::initialize()
 }
 
 
-
+#if 0
 BuiltInClass_sp BuiltInClass_O::getInstanceCoreClass() const
 {
   _OF();
   return this->sharedThis<BuiltInClass_O>();
 }
-
+#endif
 
 
 
@@ -129,7 +129,7 @@ void	StandardClass_O::initialize()
   this->Base::initialize();
   //    this->_InstanceVariableNames = _Nil<T_O>();
   this->_SlotSpecifiers.clear();
-  this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
+//  this->_InstanceCoreClass = _Nil<BuiltInClass_O>();
 }
 
 StandardClass_sp StandardClass_O::create(Lisp_sp lisp,Symbol_sp name, uint instanceClassId)
@@ -137,7 +137,7 @@ StandardClass_sp StandardClass_O::create(Lisp_sp lisp,Symbol_sp name, uint insta
   GC_ALLOCATE(StandardClass_O, oclass);
   oclass->_Name = name;
   oclass->_InstanceClassId = instanceClassId;
-  oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
+//  oclass->_InstanceCoreClass = _Nil<BuiltInClass_O>();
   return oclass;
 }
 
@@ -171,6 +171,7 @@ Cons_sp StandardClass_O::classListDesignator(T_sp baseClassesDesignator, Lisp_sp
 
 
 
+#if 0
 BuiltInClass_sp StandardClass_O::getInstanceCoreClass() const
 {
   _OF();
@@ -182,6 +183,7 @@ void StandardClass_O::setInstanceCoreClass(BuiltInClass_sp mc)
   _OF();
   this->_InstanceCoreClass = mc;
 }
+#endif
 
 void	StandardClass_O::describe()
 {
@@ -203,7 +205,7 @@ string StandardClass_O::dumpInfo()
 {
   stringstream ss;
   ss << this->Base::dumpInfo();
-  ss << "CoreBuiltInClass: " << this->_InstanceCoreClass->getPackagedName() << std::endl;
+//  ss << "CoreBuiltInClass: " << this->_InstanceCoreClass->getPackagedName() << std::endl;
   return ss.str();
 }
 

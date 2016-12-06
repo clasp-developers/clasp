@@ -3577,7 +3577,7 @@ io_stream_close(T_sp strm) {
   failed = safe_fclose(f);
   unlikely_if(failed)
       cannot_close(strm);
-  clasp_dealloc(StreamBuffer(strm));
+  gctools::clasp_dealloc(StreamBuffer(strm));
   StreamBuffer(strm) = NULL;
   IOStreamStreamFile(strm) = NULL;
   return generic_close(strm);
@@ -4090,7 +4090,7 @@ T_sp core__set_buffering_mode(T_sp stream, T_sp buffer_mode_symbol) {
 
     if (buffer_mode != _IONBF) {
       cl_index buffer_size = BUFSIZ;
-      char *new_buffer = clasp_alloc_atomic(buffer_size);
+      char *new_buffer = gctools::clasp_alloc_atomic(buffer_size);
       StreamBuffer(stream) = new_buffer;
       setvbuf(fp, new_buffer, buffer_mode, buffer_size);
     } else
@@ -4098,6 +4098,7 @@ T_sp core__set_buffering_mode(T_sp stream, T_sp buffer_mode_symbol) {
   }
   return stream;
 }
+
 
 T_sp clasp_make_stream_from_FILE(T_sp fname, FILE *f, enum StreamMode smm,
                                  gctools::Fixnum byte_size, int flags, T_sp external_format) {
@@ -5809,9 +5810,18 @@ namespace core {
 namespace core {
 
 Stream_O::~Stream_O() {
-  clasp_dealloc(this->_Buffer);
+  gctools::clasp_dealloc(this->_Buffer);
   this->_Buffer = NULL;
 };
+
+IOStreamStream_O::~IOStreamStream_O() {
+    stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr());
+}
+
+IOFileStream_O::~IOFileStream_O() {
+  stream_dispatch_table(this->asSmartPtr()).close(this->asSmartPtr());
+}
+
 
 T_sp Stream_O::filename() const {
   return _Nil<T_O>();
@@ -5859,6 +5869,7 @@ T_sp StringInputStream_O::make(const string &str) {
   Str_sp s = str_create(str);
   return cl__make_string_input_stream(s, make_fixnum(0), _Nil<T_O>());
 }
+
 
 T_sp IOFileStream_O::make(const string &name, int fd, enum StreamMode smm, T_sp elementType, T_sp externalFormat) {
   Str_sp sname = Str_O::create(name);

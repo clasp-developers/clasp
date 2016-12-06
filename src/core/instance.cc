@@ -89,11 +89,11 @@ T_sp Instance_O::oinstancepSTAR() const {
 /*! See ECL>>instance.d>>si_allocate_instance */
 T_sp Instance_O::allocateInstance(T_sp theClass, int numberOfSlots) {
   Class_sp cl = gc::As<Class_sp>(theClass);
-  if (!cl->hasCreator()) {
+  if (!cl->has_creator()) {
     IMPLEMENT_MEF(BF("Handle no allocator class: %s slots: %d") % _rep_(theClass) % numberOfSlots);
   }
-  Creator_sp allocator = (cl->getCreator());
-  T_sp obj = allocator->allocate();
+  Creator_sp creator = gctools::As<Creator_sp>(cl->class_creator());
+  T_sp obj = creator->creator_allocate();
   ASSERT(obj);
   ASSERT(obj.notnilp());
   if (obj.generalp()) {
