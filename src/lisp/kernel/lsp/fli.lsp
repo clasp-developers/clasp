@@ -152,8 +152,12 @@
     (%set-llvm-type-symbol (%lisp-type->type-spec :double) 'cmp::+double+)
     #+long-float (%set-llvm-type-symbol (%lisp-type->type-spec :long-float) 'cmp::+long-float+)
 
-    (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+void*+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :pointer) 'cmp::+i64*+)
     (%set-llvm-type-symbol (%lisp-type->type-spec :void) 'cmp::+void+)
+
+    (%set-llvm-type-symbol (%lisp-type->type-spec :char) 'cmp::+i8+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :unsigned-char) 'cmp::+i8+)
+    (%set-llvm-type-symbol (%lisp-type->type-spec :uchar) 'cmp::+i8+)
 
     ;; TODO: CHECK & IMPLEMEMT !
     ;; (%set-llvm-type-symbol (%lisp-type->type-spec :time) 'cmp::+time_t+)
@@ -345,8 +349,9 @@
 ;;; === F O R E I G N   G L O B A L S ===
 
 (declaim (inline %foreign-symbol-pointer))
-(defun %foreign-symbol-pointer (name)
+(defun %foreign-symbol-pointer (name module)
   "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
+  (declare (ignore module))
   (%dlsym name))
 
 ;;;----------------------------------------------------------------------------
@@ -381,9 +386,8 @@
 ;;;
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
-  (format *debug-io* "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
-          name-and-options return-type-kw argument-symbols argument-type-kws body)
-  (break)
+  ;;(format *debug-io* "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
+  ;;     name-and-options return-type-kw argument-symbols argument-type-kws body )
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
           (destructuring-bind (name &key convention)

@@ -135,7 +135,7 @@ namespace clasp_ffi {
 // ---------------------------------------------------------------------------
 
 const std::string TO_OBJECT_FN_NAME_PREFIX( "to_object_" );
-const std::string FROM_OBJECT_FN_NAME_PREFIX( "tr_from_object_" );
+const std::string FROM_OBJECT_FN_NAME_PREFIX( "from_object_" );
 
 // ---------------------------------------------------------------------------
 //   FORWARD DECLARATIONS
@@ -296,6 +296,7 @@ inline void register_foreign_types( void ) {
 
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,char,char,kw::_sym_char,"char");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_char,unsigned char,kw::_sym_unsigned_char,"unsigned char");
+  CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,uchar,unsigned char,kw::_sym_uchar,"unsigned char");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,short,short,kw::_sym_short,"short");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,unsigned_short,unsigned short,kw::_sym_unsigned_short,"short");
   CLASP_CORE_FLI_REGISTER_FOREIGN_TYPE(sp_tst,n_index++,int,int,kw::_sym_int,"int");

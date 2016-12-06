@@ -815,13 +815,19 @@ and initialize it with an array consisting of one function pointer."
   ;; !!! NOTE !!! => PORTING ISSUE/TODO !
   ;; This implementation assumes the following associations:
   ;;
-  ;; char      -> i8
-  ;; short     -> i16
-  ;; int       -> i32
-  ;; long      -> i64
-  ;; long long -> i64 (!)
-  ;; float     -> float
-  ;; doubls    -> double
+  ;; C++          -> LLVM         (!)
+  ;; --------------------------------
+  ;; char         -> i8
+  ;; short        -> i16
+  ;; int          -> i32
+  ;; long         -> i64
+  ;; long long    -> i64          (!)
+  ;; float        -> float
+  ;; doubls       -> double
+  ;; long double  -> long float   (!)
+  ;; size_t       -> size_t
+  ;; ssize_t      -> size_t       (!)
+  ;; void *       -> i64*         (!)
 
   ;; SHORT & UNSIGNED SHORT
   (primitive          module "tr_from_object_short" +t*+ (list +t*+))
@@ -956,10 +962,10 @@ and initialize it with an array consisting of one function pointer."
   (primitive          module "tr_from_object_pointer" +t*+ (list +t*+))
   (primitive          module "tr_to_object_pointer" +t*+ (list +t*+))
 
-  ;; THIS ERRORS OUT  ...
-  (format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" +void+ +void*+)
-  (primitive          module "from_object_pointer" +void*+ (list +t*+))
-  (primitive          module "to_object_pointer" +t*+ (list +void*+))
+  ;;(format *debug-io* "~%*** +VOID+ = ~S, +VOID*+ = ~S~%" +void+ +void*+)
+  ;; Note: using +void*+ causes an error - so we use +i64*+ instead here!
+  (primitive          module "from_object_pointer" +i64*+ (list +t*+))
+  (primitive          module "to_object_pointer" +t*+ (list +i64*+))
   ;; === END OF TRANSLATORS ===
 
   )
