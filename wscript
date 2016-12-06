@@ -457,7 +457,7 @@ def configure(cfg):
         print("externals = |%s|" % externals)
         assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
         path = os.getenv("PATH").split(os.pathsep)
-        externals_bin_dir = os.path.join(externals, "build/release/bin/").encode('ascii','ignore')
+        externals_bin_dir = os.path.join(externals.encode('ascii','ignore'), "build/release/bin/").encode('ascii','ignore')
         path.insert(0, externals_bin_dir)
         cfg.environ["PATH"] = os.pathsep.join(path)
         print("PATH has been prefixed with '%s'" % externals_bin_dir)
