@@ -270,7 +270,7 @@ public:
 template <>
 struct gctools::GCInfo<core::Stream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -340,7 +340,7 @@ public: // Functions here
 template <>
 struct gctools::GCInfo<core::IOFileStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -351,6 +351,7 @@ class IOFileStream_O : public FileStream_O {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOFileStream_O(){};
+  ~IOFileStream_O();
 
 private: // instance variables here
   int _FileDescriptor;
@@ -375,7 +376,7 @@ public:
 template <>
 struct gctools::GCInfo<core::IOStreamStream_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
+  static bool constexpr NeedsFinalization = true;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -386,7 +387,7 @@ namespace core {
   //    DECLARE_ARCHIVE();
 public: // Simple default ctor/dtor
   IOStreamStream_O(){};
-
+  ~IOStreamStream_O();
 private: // instance variables here
   FILE *_File;
 

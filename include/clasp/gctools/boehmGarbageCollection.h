@@ -31,57 +31,8 @@ THE SOFTWARE.
 #define GC_BASE_ADDRESS_FROM_SMART_PTR(_smartptr_) (dynamic_cast<void *>(_smartptr_.px_ref()))
 #define GC_BASE_ADDRESS_FROM_PTR(_ptr_) (const_cast<void *>(dynamic_cast<const void *>(_ptr_)))
 
-#define IGNORE(_ptr_)
-#define SMART_PTR_FIX(_ptr_)
-#define WEAK_SMART_PTR_FIX(_ptr_)
-#define GCHOLDER_SYMBOLMAP_FIX(_map_)
-#define GCHOLDER_STRINGMAP_FIX(_map_)
-#define GCHOLDER_VECTOR0_FIX(_vec_)
-#define GCHOLDER_UNORDEREDSET_FIX(_vec_)
-#define GCHOLDER_INDEXEDSYMBOLMAP_FIX(_map_)
-#define STLVECTOR_FIX(_set_)
-#define STLSET_FIX(_set_)
-#define STLMAP_SMART_FIRST_FIX(_map_)
-#define STLMAP_SMART_SECOND_FIX(_map_)
-#define STLMAP_SMART_FIRST_SECOND_FIX(_map_)
-#define STLMULTIMAP_SMART_FIRST_FIX(_map_)
-#define STLMULTIMAP_SMART_SECOND_FIX(_map_)
-#define STLMULTIMAP_SMART_FIRST_SECOND_FIX(_map_)
-#define STL_VECTOR_REQUIRED_ARGUMENT_FIX(_vec_)
-#define STL_VECTOR_OPTIONAL_ARGUMENT_FIX(_vec_)
-#define REST_ARGUMENT_FIX(_arg_)
-#define STL_VECTOR_KEYWORD_ARGUMENT_FIX(_vec_)
-#define STL_VECTOR_AUX_ARGUMENT_FIX(_vec_)
-
-
-
-
+#if 0  // header is defined in memoryManagement.h
 namespace gctools {
-  class GCObject;
-  class GCLinkedList;
-
-  class GCObject {};
-
-/*! GCKindEnum has one integer value for each type allocated by the GC.
-This value is written into the Header_s of every allocated object.
-If USE_CXX_DYNAMIC_CAST is defined then GCKindEnum has only one value and every Boehm header
-contains that value and C++ dynamic_cast<...> is used to determine IsA relationships.
-If USE_CXX_DYNAMIC_CAST is not defined then the GCKindEnum values calculated by
-the mps-interface.lsp static analyzer are used along with template functions that
-calculate IsA relationships using simple GCKindEnum range comparisons.
-*/
-
-#ifdef USE_CXX_DYNAMIC_CAST
-  typedef enum { KIND_null = 0,
-                 KIND_max } GCKindEnum; // minimally define this GCKind
-#else
-  typedef
-#define GC_ENUM
-#include CLASP_GC_FILENAME
-    GCKindEnum;
-#undef GC_ENUM
-#endif // #else USE_CXX_DYNAMIC_CAST
-
 //#define BIG_BOEHM_HEADER
 
 #ifdef USE_BOEHM_MEMORY_MARKER
@@ -145,7 +96,7 @@ calculate IsA relationships using simple GCKindEnum range comparisons.
     static size_t HeaderSize() { return sizeof(Header_s); };
   };
 };
-
+#endif
 
 
 namespace gctools {
@@ -168,6 +119,14 @@ namespace gctools {
     unsigned long _epoch;
     unsigned long _rs;
   };
+
+
+};
+
+namespace gctools {
+
+  void boehm_set_finalizer_list(gctools::Tagged object, gctools::Tagged finalizers );
+  void boehm_clear_finalizer_list(gctools::Tagged object);
 
 
 };

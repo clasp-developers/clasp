@@ -443,24 +443,24 @@ def get_clasp_version(cfg):
 def call_llvm_config(cfg, *args):
     result = subprocess.Popen([cfg.env.LLVM_CONFIG_BINARY] + list(args), stdout = subprocess.PIPE).communicate()[0]
     assert len(result) > 0
-    return result.strip().decode()
+    return result.strip().decode().encode('ascii','ignore')
 
 def call_llvm_config_for_libs(cfg, *args):
     print("call_llvm_config_for_libs  LLVM_CONFIG_BINARY_FOR_LIBS = %s" % cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
     result = subprocess.Popen([cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS] + list(args), stdout = subprocess.PIPE).communicate()[0]
     assert len(result) > 0
-    return result.strip().decode()
+    return result.strip().decode().encode('ascii','ignore')
 
 def configure(cfg):
     def update_exe_search_path():
-        externals = cfg.env.EXTERNALS_CLASP_DIR
+        externals = cfg.env.EXTERNALS_CLASP_DIR.encode('ascii','ignore')
         print("externals = |%s|" % externals)
         assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
         path = os.getenv("PATH").split(os.pathsep)
-        extarnals_bin_dir = os.path.join(externals, "build/release/bin/")
-        path.insert(0, extarnals_bin_dir)
+        externals_bin_dir = repr(os.path.join(repr(externals), "build/release/bin/"))
+        path.insert(0, externals_bin_dir)
         cfg.environ["PATH"] = os.pathsep.join(path)
-        print("PATH has been prefixed with '%s'" % extarnals_bin_dir)
+        print("PATH has been prefixed with '%s'" % externals_bin_dir)
         #print("Updated search path for binaries: '%s'" % cfg.environ["PATH"])
 
     def load_local_config():
@@ -1173,6 +1173,9 @@ class generated_headers(Task.Task):
 def scrape_task_generator(self):
     if ( not 'variant_obj' in self.bld.__dict__ ):
         return
+    if (self.bld.scrape == False):
+        print("Skipping scrape jobs")
+        return
     compiled_tasks = self.compiled_tasks
     all_sif_files = []
     all_o_files = []
@@ -1232,6 +1235,7 @@ def init(ctx):
                         stage = s
                         debug_on = False
                         command = False
+                        scrape = True
                     class tmp(y):
                         if (debug_char==None):
                             variant = gc
@@ -1241,6 +1245,17 @@ def init(ctx):
                         stage = s
                         debug_on = True
                         command = False
+                        scrape = True
+                    class tmp(y):
+                        if (debug_char==None):
+                            variant = gc
+                        else:
+                            variant = gc+'_'+debug_char
+                        cmd = "noscrape_" + name + '_' + s + variant
+                        stage = s
+                        debug_on = True
+                        command = False
+                        scrape = False
                     class tmp(y):
                         if (debug_char==None):
                             variant = gc
@@ -1250,6 +1265,7 @@ def init(ctx):
                         stage = s
                         debug_on = False
                         command = True
+                        scrape = True
             class tmp(BuildContext):
                 if (debug_char==None):
                     variant = gc
@@ -1259,6 +1275,7 @@ def init(ctx):
                 stage = 'rebuild'
                 debug_on = True
                 command = False
+                scrape = True
             class tmp(BuildContext):
                 if (debug_char==None):
                     variant = gc
@@ -1268,6 +1285,7 @@ def init(ctx):
                 stage = 'dangerzone'
                 debug_on = True
                 command = False
+                scrape = True
 
 #def buildall(ctx):
 #    import waflib.Options

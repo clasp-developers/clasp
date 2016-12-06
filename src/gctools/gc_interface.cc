@@ -539,123 +539,6 @@ GC_RESULT obj_scan(mps_ss_t ss, mps_addr_t client, mps_addr_t limit) {
 #endif // ifdef USE_MPS
 
 
-extern "C" {
-/*!
- * client_validate_internal
- *
- * Validate this client and the clients that it points to.
- */
-#if 0
-void client_validate_internal(void* tagged_client) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_VALIDATE_TABLE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE_TABLE
-#endif
-  if (!gctools::tagged_objectp(tagged_client)) return;
-  GCKindEnum kind;
-      // The client must have a valid header
-  void* client = gctools::untag_object(tagged_client);
-  DEBUG_THROW_IF_INVALID_CLIENT(client);
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-#ifdef DEBUG_VALIDATE_GUARD
-  header->validate();
-#endif
-  if (header->kindP()) {
-    kind = header->kind();
-    const Kind_layout& kind_layout = global_kind_layout[kind];
-    if (kind_layout.layout_operation == class_operation) {
-#ifndef RUNNING_GC_BUILDER
-      const Class_layout& class_layout = kind_layout.class_;
-      int num_fields = class_layout.number_of_fields;
-      Field_layout* field_layout_cur = class_layout.field_layout_start;
-      for ( int i=0; i<num_fields; ++i ) {
-        core::T_O* child_client = *(core::T_O**)((const char*)client + field_layout_cur->field_offset);
-        client_validate(child_client);
-        ++field_layout_cur;
-      }
-#endif RUNNING_GC_BUILDER
-    } else {
-          // Container or templated_class - special case - use jump table
-      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
-#ifndef RUNNING_GC_BUILDER
-      goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define SMART_PTR_VALIDATE(x) client_validate((x).rawRef_())
-#define TAGGED_POINTER_VALIDATE(x) client_validate((x).rawRef_())
-#define GC_OBJ_VALIDATE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE
-#undef SMART_PTR_VALIDATE
-#undef TAGGED_PTR_VALIDATE
-    VALIDATE_ADVANCE:
-#endif // #ifndef RUNNING_GC_BUILDER
-    }
-  }
-};
-#endif // #if 0
-
-/*!
- * client_validate_recursive
- *
- * Recursively walk the tagged pointers within this client and validate them.
- * Keep track of which tagged pointers have been seen using the _seen_ set.
- */
-#if 0
-void client_validate_recursive(void* tagged_client, std::set<void*>& seen) {
-#ifndef RUNNING_GC_BUILDER
-#define GC_OBJ_VALIDATE_TABLE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE_TABLE
-#endif
-  if ( !gctools::tagged_objectp(tagged_client) ) return;
-  GCKindEnum kind;
-      // The client must have a valid header
-  core::T_O* client = gctools::untag_object(tagged_client);
-  DEBUG_THROW_IF_INVALID_CLIENT(client);
-  gctools::Header_s *header = reinterpret_cast<gctools::Header_s *>(ClientPtrToBasePtr(client));
-#ifdef DEBUG_VALIDATE_GUARD
-  header->validate();
-#endif
-  if (header->kindP()) {
-    kind = header->kind();
-    const Kind_layout& kind_layout = global_kind_layout[kind];
-    if (kind_layout.layout_operation == class_operation) {
-#ifndef RUNNING_GC_BUILDER
-      const Class_layout& class_layout = kind_layout.class_;
-      int num_fields = class_layout.number_of_fields;
-      Field_layout* field_layout_cur = class_layout.field_layout_start;
-      for ( int i=0; i<num_fields; ++i ) {
-        core::T_O* child_client = *(core::T_O**)((const char*)client + field_layout_cur->field_offset);
-        if ( !seen.count(child_client) ) {
-          client_validate_recursive(child_client,seen);
-          seen.insert(child_client);
-        }
-        ++field_layout_cur;
-      }
-#endif RUNNING_GC_BUILDER
-    } else {
-          // Container or templated_class - special case - use jump table
-      size_t jump_table_index = global_kind_layout[kind].jump.jump_table_index;
-#ifndef RUNNING_GC_BUILDER
-      goto *(OBJ_VALIDATE_table[jump_table_index]);
-#define SMART_PTR_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
-#define TAGGED_POINTER_VALIDATE(x) {if (!seen.count(x.rawRef_())) { seen.insert((x).rawRef_()); client_validate_recursive((x).rawRef_(),seen);}};
-#define GC_OBJ_VALIDATE
-#include CLASP_GC_FILENAME
-#undef GC_OBJ_VALIDATE
-#undef SMART_PTR_VALIDATE
-#undef TAGGED_PTR_VALIDATE
-    VALIDATE_ADVANCE:
-#endif // #ifndef RUNNING_GC_BUILDER
-    }
-  }
-};
-#endif // #if 0
-};
-
-
-
-
 #ifdef USE_MPS
 extern "C" {
 /*! I'm using a format_header so MPS gives me the object-pointer */
@@ -663,6 +546,8 @@ extern "C" {
 void obj_finalize(mps_addr_t client) {
   // The client must have a valid header
   DEBUG_THROW_IF_INVALID_CLIENT(client);
+  mps_addr_t next_client = obj_skip(client);
+  size_t block_size = (char*)next_client-(char*)client;
   #ifndef RUNNING_GC_BUILDER
     #define GC_OBJ_FINALIZE_TABLE
     #include CLASP_GC_FILENAME
@@ -680,6 +565,10 @@ void obj_finalize(mps_addr_t client) {
     #include CLASP_GC_FILENAME
     #undef GC_OBJ_FINALIZE
   #endif // ifndef RUNNING_GC_BUILDER
+ finalize_done:
+  // Now replace the object with a pad object
+  header->setPadSize(block_size);
+  header->setPad(Header_s::pad_tag);
 }; // obj_finalize
 }; // extern "C"
   #undef GC_FINALIZE_METHOD
@@ -815,13 +704,13 @@ void allocate_symbols(core::BootStrapCoreSymbolMap* symbols)
 template <class TheClass, class Metaclass>
 NOINLINE  gc::smart_ptr<Metaclass> allocate_one_class()
 {
-  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable();
+  gc::smart_ptr<Metaclass> class_val = Metaclass::createUncollectable(gctools::NextStamp(gctools::GCKind<TheClass>::Kind));
   class_val->__setup_stage1_with_sharedPtr_lisp_sid(class_val,_lisp,TheClass::static_classSymbol());
   reg::lisp_associateClassIdWithClassSymbol(reg::registered_class<TheClass>::id,TheClass::static_classSymbol());
   TheClass::static_class = class_val;
   TheClass::static_Kind = gctools::GCKind<TheClass>::Kind;
   core::core__setf_find_class(class_val,TheClass::static_classSymbol(),true,_Nil<core::T_O>());
-  gctools::smart_ptr<core::LispObjectCreator<TheClass>> cb = gctools::GC<core::LispObjectCreator<TheClass>>::allocate();
+  gctools::smart_ptr<core::BuiltInObjectCreator<TheClass>> cb = gctools::GC<core::BuiltInObjectCreator<TheClass>>::allocate();
   TheClass::set_static_creator(cb);
   class_val->setCreator(TheClass::static_creator);
   return class_val;

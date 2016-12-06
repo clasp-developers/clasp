@@ -63,7 +63,7 @@ void WeakHashTable::initialize() {
   //  GCTOOLS_ASSERT((reinterpret_cast<uintptr_t>(this->_Keys->dependent) & 0x3) == 0);
   this->_Values->dependent = this->_Keys;
 #ifdef USE_MPS
-  mps_ld_reset(&this->_LocationDependency, _global_arena);
+  mps_ld_reset(&this->_LocationDependency, global_arena);
 #endif
 }
 
@@ -76,7 +76,7 @@ uint WeakHashTable::sxhashKey(const value_type &key
 #ifdef USE_MPS
   if (locationDependencyP && key.objectp()) {
     GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-    mps_ld_add(locationDependencyP, gctools::_global_arena, key.raw_());
+    mps_ld_add(locationDependencyP, global_arena, key.raw_());
   }
 #endif
   GCWEAK_LOG(BF("Calling lisp_hash for key: %p") % (void *)key.raw_());
@@ -135,9 +135,10 @@ int WeakHashTable::find(gctools::tagged_pointer<KeyBucketsType> keys, const valu
 #ifdef USE_BOEHM
     // Handle splatting
     if (!k.raw_()) {
-      keys->set(i, value_type((Tagged)gctools::tag_deleted<core::T_O *>()));
+      auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());
+      keys->set(i, deleted);
       ValueBucketsType *values = dynamic_cast<ValueBucketsType *>(&*keys->dependent);
-      (*values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O *>());
+      (*values)[i] = value_type(gctools::make_tagged_unbound<core::T_O*>());
     }
 #endif
     if (result == 0 && (k.deletedp())) {
@@ -165,7 +166,7 @@ int WeakHashTable::rehash(size_t newLength, const value_type &key, size_t &key_b
 		//new_values->dependent = new_keys;
 #ifdef USE_MPS
 		GCWEAK_LOG(BF("Calling mps_ld_reset"));
-		mps_ld_reset(&this->_LocationDependency,gctools::_global_arena);
+		mps_ld_reset(&this->_LocationDependency,global_arena);
 #endif
 		for (i = 0; i < length; ++i) {
 		    value_type& old_key = (*this->_Keys)[i];
@@ -255,7 +256,7 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
 
 #ifdef USE_MPS
     GCWEAK_LOG(BF("About to call mps_ld_isstale"));
-    if (mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_())) {
+    if (mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_())) {
       GCWEAK_LOG(BF("Key has gone stale"));
 #ifdef DEBUG_TRYSET
       if (alreadyThere)
@@ -303,14 +304,14 @@ int WeakHashTable::trySet(core::T_sp tkey, core::T_sp value) {
       }
 #endif // DEBUG_TRYSET
       GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
-      mps_ld_add(&this->_LocationDependency, gctools::_global_arena, key.raw_());
+      mps_ld_add(&this->_LocationDependency, global_arena, key.raw_());
     }
 #endif
   } else {
     GCWEAK_LOG(BF("else case - Returned from find with result = %d     (*this->_Keys)[b=%d] = %p") % result % b % (*this->_Keys)[b].raw_());
     GCWEAK_LOG(BF("Calling mps_ld_add for key: %p") % (void *)key.raw_());
 #ifdef USE_MPS
-    mps_ld_add(&this->_LocationDependency, gctools::_global_arena, key.raw_());
+    mps_ld_add(&this->_LocationDependency, global_arena, key.raw_());
 #endif
   }
   if ((*this->_Keys)[b].unboundp()) {
@@ -406,7 +407,7 @@ core::T_mv WeakHashTable::gethash(core::T_sp tkey, core::T_sp defaultValue) {
 		    GCWEAK_LOG(BF("Falling through"));
 		}
 #ifdef USE_MPS
-		if (key.objectp() && mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_() )) {
+		if (key.objectp() && mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_() )) {
 		    if (this->rehash( this->_Keys->length(), key, pos)) {
 			core::T_sp value((*this->_Values)[pos]);
 			if ( value.sameAsKeyP() ) {
@@ -466,7 +467,7 @@ void WeakHashTable::remhash(core::T_sp tkey) {
 		    (*this->_Keys)[b].deletedp() )
 		    {
 #ifdef USE_MPS
-			if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, gctools::_global_arena, key.raw_()))
+			if(key.objectp() && !mps_ld_isstale(&this->_LocationDependency, global_arena, key.raw_()))
 			    return;
 #endif
 			if(!this->rehash( (*this->_Keys).length(), key, b))
@@ -475,9 +476,10 @@ void WeakHashTable::remhash(core::T_sp tkey) {
 		if( !(*this->_Keys)[b].unboundp() &&
 		    !(*this->_Keys)[b].deletedp() )
 		    {
-			this->_Keys->set(b, value_type(gctools::tag_deleted<core::T_O*>())); //[b] = value_type(gctools::tagged_ptr<T_O>::tagged_deleted);
-			(*this->_Keys).setDeleted((*this->_Keys).deleted()+1);
-			(*this->_Values)[b] = value_type(gctools::tag_unbound<core::T_O*>());
+                      auto deleted = value_type(gctools::make_tagged_deleted<core::T_O*>());
+                      this->_Keys->set(b, deleted);
+                      (*this->_Keys).setDeleted((*this->_Keys).deleted()+1);
+                      (*this->_Values)[b] = value_type(gctools::make_tagged_unbound<core::T_O*>());
 		    }
   });
 }
@@ -486,13 +488,13 @@ void WeakHashTable::clrhash() {
   safeRun<void()>([this]() -> void {
 		size_t len = (*this->_Keys).length();
 		for ( size_t i(0); i<len; ++i ) {
-		    this->_Keys->set(i,value_type((Tagged)gctools::tag_unbound<core::T_O*>()));
-		    (*this->_Values)[i] = value_type((Tagged)gctools::tag_unbound<core::T_O*>());
+                  this->_Keys->set(i,value_type(gctools::make_tagged_deleted<core::T_O*>()));
+                  (*this->_Values)[i] = value_type(gctools::make_tagged_unbound<core::T_O*>());
 		}
 		(*this->_Keys).setUsed(0);
 		(*this->_Keys).setDeleted(0);
 #ifdef USE_MPS
-		mps_ld_reset(&this->_LocationDependency,gctools::_global_arena);
+		mps_ld_reset(&this->_LocationDependency,global_arena);
 #endif
   });
 };

@@ -14,6 +14,17 @@
 #ifdef USE_MPS
 #include <clasp/mps/code/mps.c>
 
+extern mps_arena_t global_arena;
+
+mps_pool_t clasp_pool_of_addr(void* vaddr)
+{
+  Pool pool_return;
+  Arena arena = (Arena)global_arena;
+  Addr addr = (Addr)vaddr;
+  PoolOfAddr(&pool_return,arena,addr);
+  return (mps_pool_t)pool_return;
+}
+
 
 mps_res_t clasp_scan_area_tagged(mps_ss_t ss,
                                  void* base, void* limit,

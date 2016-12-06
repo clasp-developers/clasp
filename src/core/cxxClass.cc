@@ -44,8 +44,8 @@ CxxClass_sp CxxClass_O::create(Symbol_sp instanceClassSymbol) {
   return ((oclass));
 }
 
-CxxClass_sp CxxClass_O::createUncollectable() {
-  GC_ALLOCATE_UNCOLLECTABLE(CxxClass_O, oclass);
+CxxClass_sp CxxClass_O::createUncollectable(gctools::Stamp is) {
+  GC_ALLOCATE_UNCOLLECTABLE(CxxClass_O, oclass, is);
   return ((oclass));
 }
 

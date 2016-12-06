@@ -33,6 +33,7 @@
   (multiple-value-bind (metaclass direct-superclasses options)
       (apply #'help-ensure-class rest)
     (declare (ignore direct-superclasses))
+    ;;; In Clasp make-instance of a class requires that a new stamp is chosen
     (setf class (apply #'make-instance metaclass :name name options))
     ;;
     ;; initialize the default allocator for the new class

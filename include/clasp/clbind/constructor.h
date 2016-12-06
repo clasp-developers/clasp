@@ -58,7 +58,8 @@ public:
   typedef ConstructorCreator_O TemplatedBase;
 public:
   typedef Wrapper<T, Pointer> WrapperType;
-  int _Kind;
+  gctools::Stamp _Stamp;
+  int _Kind;                // Replace Kind with Stamp
   int _duplicationLevel;
 
 public:
@@ -69,12 +70,16 @@ public:
   DefaultConstructorCreator_O() : ConstructorCreator_O(reg::lisp_classSymbol<T>())
 #ifndef USE_CXX_DYNAMIC_CAST
                                 ,
-                                _Kind(gctools::GCKind<WrapperType>::Kind)
+    _Kind(gctools::GCKind<WrapperType>::Kind)
 #endif
                                 ,
-                                _duplicationLevel(0){};
-  DefaultConstructorCreator_O(core::Symbol_sp cn, int kind, int dupnum)
-      : ConstructorCreator_O(cn), _Kind(kind), _duplicationLevel(dupnum){};
+                                _duplicationLevel(0){
+//    printf("%s:%d  Constructing DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCKind<WrapperType>::Kind);
+  };
+ DefaultConstructorCreator_O(core::Symbol_sp cn, int kind, int dupnum)
+   : ConstructorCreator_O(cn), _Kind(kind), _duplicationLevel(dupnum){
+//    printf("%s:%d  Constructing non trivial DefaultConstructorCreator_O with kind: %u\n", __FILE__, __LINE__, gctools::GCKind<WrapperType>::Kind);
+  };
 
   /*! If this is the allocator for the original Adapter class return true - otherwise false */
   virtual int duplicationLevel() const { return this->_duplicationLevel; };
@@ -87,7 +92,7 @@ public:
     }
     printf("%s", ss.str().c_str());
   }
-  core::T_sp allocate() {
+  core::T_sp creator_allocate() {
     T *naked_ptr(new T());
     //            printf("%s:%d - creating WrapperType\n", __FILE__,__LINE__);
     gctools::smart_ptr<WrapperType> retval = WrapperType::create(naked_ptr, reg::registered_class<T>::id);
@@ -95,6 +100,7 @@ public:
     return retval;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
+    printf("%s:%d  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
     core::Creator_sp allocator = gc::GC<DefaultConstructorCreator_O<T, Pointer>>::allocate(className, this->_Kind, this->_duplicationLevel + 1);
     return allocator;
   }
@@ -142,11 +148,12 @@ public:
     }
     printf("%s", ss.str().c_str());
   }
-  core::T_sp allocate() {
+  core::T_sp creator_allocate() {
     GC_ALLOCATE(T, obj);
     return obj;
   }
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {
+//    printf("%s:%d DerivableDefaultConstructorCreator_O  duplicateForClassName %s  this->_Kind = %u\n", __FILE__, __LINE__, _rep_(className).c_str(), this->_Kind);
     return gc::GC<DerivableDefaultConstructorCreator_O<T>>::allocate(className, this->_Kind, this->_duplicationLevel + 1);
   }
 };

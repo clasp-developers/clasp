@@ -56,8 +56,8 @@ namespace gctools {
 #ifdef DEBUG_MPS_UNDERSCANNING
 #define DEBUG_MPS_UNDERSCANNING_TESTS() \
   if ( global_underscanning ) { \
-    mps_arena_collect(_global_arena);     \
-    mps_arena_release(_global_arena); \
+    mps_arena_collect(global_arena);     \
+    mps_arena_release(global_arena); \
   }
 #else
 #define DEBUG_MPS_UNDERSCANNING_TESTS()
@@ -99,24 +99,6 @@ extern MpsMetrics globalMpsMetrics;
 #define GC_RESULT mps_res_t
 #define GC_SCAN_STATE_TYPE mps_ss_t
 #define GC_SCAN_STATE ss
-
-class GCObject {};
-
-#if !defined(RUNNING_GC_BUILDER)
-#define GC_ENUM
-typedef
-#include CLASP_GC_FILENAME //"main/clasp_gc.cc"
-    GCKindEnum;
-#undef GC_ENUM
-#else
-typedef enum { KIND_null,
-               KIND_max } GCKindEnum;
-#endif
-};
-
-extern "C" {
-const char *obj_name(gctools::kind_t kind);
-extern void obj_dump_base(void *base);
 };
 
 namespace gctools {
@@ -125,6 +107,8 @@ GC_RESULT obj_scan_helper(mps_ss_t _ss, mps_word_t _mps_zs, mps_word_t _mps_w, m
 };
 
 extern "C" {
+
+void my_mps_finalize(void* client);
 
 /*! Implemented in gc_interace.cc */
 mps_res_t obj_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit);
@@ -144,146 +128,15 @@ namespace gctools {
   void mps_register_roots(void* root_address, size_t num_roots);
 };
 
-namespace gctools {
-  template <class T>
-    inline size_t sizeof_with_header();
 
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-// ----------------------------------------------------------------------
-//
-// Define Header and stuff that can exist in the header
-//
-//
-
-/*!
-
-      A Header is 16 bytes long and consists of two uintptr_t (8 bytes) values.
-      The first uintptr_t is (header) the second uintptr_t is data[0].
-      The (header) uintptr_t is a tagged value where the
-      two least significant bits are the tag.
-
-      The two least-significant bits of the header uintptr_t value
-      describe the data.
-      1r00 == This is an illegal setting for the two lsbs.
-              This may be used to indicate that the real header is in the preceeding 16 bytes.
-      1r01 == This tag indicates that the other bits in the header
-      represent a Kind value >> 2 (shifted right 2 bits).
-      1r10 == This tag indicates that the header contains a forwarding
-      pointer.    The following uintptr_t contains the length of
-      the block from the client pointer.
-      1r11 == This indicates that the header contains a pad; check the
-      bit at 1r0100 to see if the pad is a pad1 (==0) or a pad (==1)
-    */
-
- 
-  class Header_s {
-  public:
-    static const tagged_kind_t tag_mask = BOOST_BINARY(11);
-    static const tagged_kind_t kind_tag = BOOST_BINARY(01); // KIND = tagged_value>>2
-    static const tagged_kind_t fwd_tag = BOOST_BINARY(10);
-    static const tagged_kind_t pad_mask = BOOST_BINARY(111);
-    static const tagged_kind_t pad_test = BOOST_BINARY(011);
-    static const tagged_kind_t pad_tag = BOOST_BINARY(011);
-    static const tagged_kind_t pad1_tag = BOOST_BINARY(111);
-    static const tagged_kind_t fwd_ptr_mask = ~tag_mask;
-  //        static const tagged_kind_t  fwd2_tag        = BOOST_BINARY(001);
-
-  public:
-    tagged_kind_t header;
-#ifdef DEBUG_GUARD
-    tagged_kind_t guard;
-    int tail_start;
-    int tail_size;
-#endif
-    tagged_kind_t data[1]; // After this is where the client pointer starts
-  public:
-#ifndef DEBUG_GUARD
-  Header_s(kind_t k) : header((((kind_t)k) << 2) | kind_tag)
-      ,data{0xDEADBEEF01234567} {};
-    void validate() const {};
-#else
-    inline void fill_tail() { memset((void*)(((char*)this)+this->tail_start),0xcc,this->tail_size);};
-  Header_s(kind_t k,size_t tstart, size_t tsize, size_t total_size) 
-    : header((((kind_t)k) << 2) | kind_tag),
-      data{0xDEADBEEF01234567},
-      tail_start(tstart),
-        tail_size(tsize),
-        guard(0x0FEEAFEEBFEECFEED)
-        {
-#if 0
-          if ( tstart == 88 && k == 31 ) {
-            printf("%s:%d @%p  tstart == %lu tsize=%lu k == %d total_size=%lu \n", __FILE__, __LINE__, (void*)this, tstart, tsize, k, total_size  );
-          }
-#endif
-          this->fill_tail();
-        };
-
-      void validate() const;
-#endif
-
-      bool invalidP() const { return (this->header & tag_mask) == 0; };
-      bool kindP() const { return (this->header & tag_mask) == kind_tag; };
-      bool fwdP() const { return (this->header & tag_mask) == fwd_tag; };
-      bool anyPadP() const { return (this->header & pad_test) == pad_tag; };
-      bool padP() const { return (this->header & pad_mask) == pad_tag; };
-      bool pad1P() const { return (this->header & pad_mask) == pad1_tag; };
-
-  /*! No sanity checking done - this function assumes kindP == true */
-      GCKindEnum kind() const { return (GCKindEnum)(this->header >> 2); };
-      void setKind(GCKindEnum k) { this->header = (k << 2) | kind_tag; };
-  /*! No sanity checking done - this function assumes fwdP == true */
-      void *fwdPointer() const { return reinterpret_cast<void *>(this->header & fwd_ptr_mask); };
-  /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
-      void setFwdPointer(void *ptr) { this->header = reinterpret_cast<tagged_kind_t>(ptr) | fwd_tag; };
-      tagged_kind_t fwdSize() const { return this->data[0]; };
-  /*! This writes into the first tagged_kind_t sized word of the client data. */
-      void setFwdSize(size_t sz) { this->data[0] = sz; };
-  /*! Define the header as a pad, pass pad_tag or pad1_tag */
-      void setPad(tagged_kind_t p) { this->header = p; };
-  /*! Return the pad1 size */
-      tagged_kind_t pad1Size() const { return alignof(Header_s); };
-  /*! Return the size of the pad block - without the header */
-      tagged_kind_t padSize() const { return ((uintptr_t*)this)[1]; };
-  /*! This writes into the first tagged_kind_t sized word of the client data. */
-      void setPadSize(size_t sz) { ((uintptr_t*)this)[1] = sz; };
-      string description() const {
-        if (this->kindP()) {
-          std::stringstream ss;
-          ss << "Header=" << (void *)(this->header);
-          ss << "/";
-          ss << obj_name(this->kind());
-          return ss.str();
-        } else if (this->fwdP()) {
-          std::stringstream ss;
-          ss << "Fwd/ptr=" << this->fwdPointer() << "/sz=" << this->fwdSize();
-          return ss.str();
-        } else if (this->pad1P()) {
-          return "Pad1";
-        } else if (this->padP()) {
-          stringstream ss;
-          ss << "Pad/sz=" << this->padSize();
-          return ss.str();
-        }
-        stringstream ss;
-        ss << "IllegalHeader=";
-        ss << (void *)(this->header);
-        printf("%s:%d Header->description() found an illegal header = %s\n", __FILE__, __LINE__, ss.str().c_str());
-        return ss.str();
-        ;
-      }
-  };
-};
-
+extern "C" {
+extern mps_arena_t global_arena;
+}
 
 namespace gctools {
 
 #define NON_MOVING_POOL_ALLOCATION_POINT global_non_moving_ap; //_global_mvff_allocation_point
 
-extern mps_arena_t _global_arena;
 
 extern mps_pool_t _global_amc_pool;
 extern mps_pool_t global_amc_cons_pool;

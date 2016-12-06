@@ -94,10 +94,11 @@ struct maybe_delete<OT, false> {
 namespace clbind {
 
 /*! Wrappers wrap external pointers - 
-      The wrapper does not own the pointer unless the HolderType is a std::unique_ptr or some other
+      The wrapper does not own the pointer unless the HolderType 
+      is a std::unique_ptr or some other
       smart_ptr type */
 template <class OT, class HolderType = OT *>
-class Wrapper : public core::WrappedPointer_O /*, public gctools::GC_MergeKinds*/ {
+  class Wrapper : public core::WrappedPointer_O {
 public:
   typedef core::WrappedPointer_O TemplatedBase;
 

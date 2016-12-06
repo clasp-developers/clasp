@@ -423,14 +423,14 @@ void ForeignData_O::allocate(core::T_sp kind, core::ForeignDataFlagEnum ownershi
   this->m_kind = kind;
   this->m_ownership_flags = ownership_flags;
   this->m_size = size;
-  this->m_raw_data = (void *)core::clasp_alloc_atomic(size);
+  this->m_raw_data = (void *)gctools::clasp_alloc_atomic(size);
   this->m_orig_data_ptr = this->m_raw_data;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 void ForeignData_O::free() {
-  core::clasp_dealloc( (char *)this->m_orig_data_ptr );
+  gctools::clasp_dealloc( (char *)this->m_orig_data_ptr );
   this->m_orig_data_ptr = nullptr;
   this->m_size          = 0;
 }

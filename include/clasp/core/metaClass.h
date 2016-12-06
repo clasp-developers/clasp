@@ -128,6 +128,8 @@ public:
   static const int NumberOfClassSlots = 20; // Corresponds to the number of entries in
 
 public:
+  /*! A Fixnum that represents the object stamp(aka KIND) of each instance of this class */
+  gctools::Stamp _instance_stamp; 
   /*! Mimic ECL Instance::sig */
   T_sp _Signature_ClassSlots;
   /*! Callback function to allocate instances */
@@ -153,9 +155,12 @@ public:
   /*! Setup the instance nil value */
   //	void setupInstanceNil();
 public:
+  CL_NAME("CORE:GET-INSTANCE-STAMP");
+  CL_DEFMETHOD Fixnum get_instance_stamp() const { return this->_instance_stamp;}
+  CL_NAME("CORE:REINITIALIZE-CLASS");
+  CL_DEFMETHOD virtual void reinitialize_class() { SUBIMP(); }; 
 private:
   void lowLevel_calculateClassPrecedenceList();
-
 public: // Mimic CLOS classes that are represented by Instance_O
   void initializeSlots(int slots);
 
@@ -179,9 +184,11 @@ public: // Mimic CLOS classes that are represented by Instance_O
 public:
   void inheritDefaultAllocator(List_sp directSuperclasses);
   void setCreator(Creator_sp cb) { this->_theCreator = cb; };
-  Creator_sp getCreator() const { return this->_theCreator; };
-CL_LISPIFY_NAME("core:hasCreator");
-CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
+
+  CL_NAME("CORE:CLASS-CREATOR");
+  CL_DEFMETHOD T_sp class_creator() const { return (bool)(this->_theCreator) ? gctools::As<core::T_sp>(this->_theCreator) : _Nil<core::T_O>(); };
+  CL_LISPIFY_NAME("CORE:HAS-CREATOR");
+  CL_DEFMETHOD   bool has_creator() const { return (bool)(this->_theCreator); };
 
   /*! I have GOT to clean up all this class-name stuff
 	  Reduce the clutter to one function to get the name and one to set the name */
@@ -261,7 +268,8 @@ CL_DEFMETHOD   bool hasCreator() const { return (bool)(this->_theCreator); };
           this class is the primary derivable C++ class */
   virtual bool primaryCxxDerivableClassP() const { return false; };
 
-  explicit Class_O();
+  explicit Class_O(gctools::Stamp is) : Class_O::Base(), _instance_stamp(is), _Signature_ClassSlots(_Unbound<T_O>()), _theCreator(){};
+
   virtual ~Class_O(){};
 };
 };

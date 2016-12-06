@@ -1382,7 +1382,7 @@ CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
 CL_DOCSTRING("exit");
 CL_DEFUN void core__exit(int exitValue) {
-  global_debuggerOnSIGABRT = false;
+  gctools::global_debuggerOnSIGABRT = false;
   if (exitValue != 0) {
     if ( core::_sym_STARexit_backtraceSTAR->symbolValue().notnilp() ) {
       core::core__clib_backtrace(999999);
@@ -1485,7 +1485,7 @@ CL_DEFUN T_mv core__getline(Str_sp prompt) {
 
 CL_LAMBDA(symbol &optional (errorp t) env);
 CL_DECLARE();
-CL_DOCSTRING("findClass");
+CL_DOCSTRING("find-class");
 CL_DEFUN Class_mv cl__find_class(Symbol_sp symbol, bool errorp, T_sp env) {
   if (_lisp->bootClassTableIsValid()) {
     return Values(_lisp->boot_findClass(symbol, errorp));

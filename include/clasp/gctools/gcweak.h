@@ -230,7 +230,7 @@ struct Buckets<T, U, WeakLinks> : public BucketsBase<T, U> {
 
   void set(size_t idx, const value_type &val) {
     if (!val.objectp()) {
-      THROW_HARD_ERROR(BF("Only objectp() objects can be added to Mapping"));
+      THROW_HARD_ERROR(BF("Only generalp() or consp() objects can be added to Mapping - you are trying to add a tagged pointer->%p") % (void*)val.tagged_());
     }
 #ifdef USE_BOEHM
     //	    printf("%s:%d ---- Buckets set idx: %zu   this->bucket[idx] = %p\n", __FILE__, __LINE__, idx, this->bucket[idx].raw_() );
@@ -412,7 +412,7 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
     if (!unboundOrDeletedOrSplatted(this->bucket)) {
-      printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
+      // printf("%s:%d Mapping register disappearing link\n", __FILE__, __LINE__);
       GCTOOLS_ASSERT(val.objectp());
       GC_general_register_disappearing_link(reinterpret_cast<void **>(&this->bucket.rawRef_()), reinterpret_cast<void *>(this->bucket.rawRef_()));
     }
@@ -422,7 +422,7 @@ struct Mapping<T, U, WeakLinks> : public MappingBase<T, U> {
 #ifdef USE_BOEHM
     GCTOOLS_ASSERT(this->bucket.objectp());
     if (!unboundOrDeletedOrSplatted(this->bucket)) {
-      printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
+      // printf("%s:%d Mapping unregister disappearing link\n", __FILE__, __LINE__);
       int result = GC_unregister_disappearing_link(reinterpret_cast<void **>(&this->bucket.rawRef_()));
       if (!result) {
         THROW_HARD_ERROR(BF("The link was not registered as a disappearing link!"));

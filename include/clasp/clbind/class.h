@@ -175,7 +175,7 @@ public:
   virtual void describe() const {
     printf("DummyCreator for: %s\n", this->_name.c_str());
   };
-  virtual core::T_sp allocate() {
+  virtual core::T_sp creator_allocate() {
     SIMPLE_ERROR(BF("This class cannot allocate instances"));
   } //return _Nil<core::T_O>(); };
   core::Creator_sp duplicateForClassName(core::Symbol_sp className) {

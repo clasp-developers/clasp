@@ -41,14 +41,15 @@
 /// MPS_RECOGNIZE_ZERO_TAG allows ( ZERO_TAG_MASK | ptr ) == 0 to be considered as a pointer
 //#define MPS_RECOGNIZE_ALL_TAGS   // Anything can be a pointer - overrides MPS_RECOGNIZE_ZERO_TAG
 #define MPS_RECOGNIZE_ZERO_TAG   // recognize #b000 as a tagged pointer
-#define ZERO_TAG_MASK 7 // goes with MPS_RECOGNIZE_ZERO_TAG
+#define ZERO_TAG_MASK 7          // goes with MPS_RECOGNIZE_ZERO_TAG
 
 // Match tags using (ptr&MATCH_TAG_MASK)==MATCH_TAG_EQ
 // These values are used in point
 #define POINTER_GENERAL_TAG 1
 #define POINTER_CONS_TAG    3
-#define POINTER_TAG_MASK 5
-#define POINTER_TAG_EQ 1
+  /*! A test for pointers has the form (potential_ptr&POINTER_TAG_MASK)==POINTER_TAG_EQ) */
+#define POINTER_TAG_MASK    1  
+#define POINTER_TAG_EQ      1
 
 ///------------------------------------------------------------
 /// USE_STATIC_ANALYZER_GLOBAL_SYMBOLS

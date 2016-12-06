@@ -96,15 +96,13 @@ class ClassRep_O : public core::BuiltInClass_O {
 public:
   bool cxxClassP() const { return true; };
   bool cxxDerivableClassP() const { return this->m_derivable; };
-  bool primaryCxxDerivableClassP() const { return this->getCreator()->duplicationLevel() == 0; };
+  bool primaryCxxDerivableClassP() const { return gctools::As<core::Creator_sp>(this->class_creator())->duplicationLevel() == 0; };
 
-  ClassRep_O() : m_derivable(false){};
+ ClassRep_O() : BuiltInClass_O(gctools::NextStamp()), m_derivable(false){};
 
   ClassRep_O(type_id const &type, const std::string &name, bool derivable);
 
   ClassRep_O(const std::string &name, bool derivable);
-
-  virtual ~ClassRep_O();
 
 public:
   static ClassRep_sp create(type_id const &mtype, const std::string &name, bool derivable) {

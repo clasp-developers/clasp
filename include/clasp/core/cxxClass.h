@@ -55,7 +55,7 @@ public:
   /*! The normal CxxClass creator used once the Lisp environment has been bootstrapped */
   static CxxClass_sp create(Symbol_sp instanceClassSymbol);
   /*! Create a CxxClass_sp that will always be considered a root object */
-  static CxxClass_sp createUncollectable();
+  static CxxClass_sp createUncollectable(gctools::Stamp is);
 
 public:
   virtual void describe(T_sp stream);
@@ -65,7 +65,7 @@ public:
   /*! Allocate and initialize an instance of this class
          */
   T_sp allocateAndInitialize();
-  explicit CxxClass_O(){};
+  explicit CxxClass_O(gctools::Stamp is) : Class_O(is) {};
   virtual ~CxxClass_O(){};
 };
 };

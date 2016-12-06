@@ -159,7 +159,10 @@
 	     (update-instance i)))))))
 
 (defun update-instance (x)
+  ;; Update the stamp of the class
+  #+clasp(core:header-stamp-set x (core:get-instance-stamp (class-of x)))
   (si::instance-sig-set x))
+
 (declaim (notinline update-instance))
 
 ;;;
