@@ -939,11 +939,6 @@ when this is t a lot of graphs will be generated.")
 (defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
-  ;;
-  ;; The type inference code - this is currently generating unsafe code
-  ;; to generate type safe code I would put c-t-i::thes->typeqs beforehand
-  ;; but to do that I need to support the funcall-no-return-instruction.
-  ;;
   (when *enable-type-inference*
     ;; Conditionally use type inference.
     (handler-case
@@ -952,7 +947,7 @@ when this is t a lot of graphs will be generated.")
             (let ((cleavir-ir-graphviz::*types* types))
               (draw-hir init-instr #P"/tmp/hir-before-prune-ti.dot")))
           ;; prune paths with redundant typeqs
-          (cleavir-type-inference::prune-typeqs init-instr types)
+          (cleavir-typed-transforms:prune-typeqs init-instr types)
           (when *debug-cleavir*
             (let ((cleavir-ir-graphviz::*types* types))
               (draw-hir init-instr #P"/tmp/hir-after-ti.dot"))))
@@ -961,7 +956,7 @@ when this is t a lot of graphs will be generated.")
               init-instr
               c))))
   ;; delete the-instruction and the-values-instruction
-  (cleavir-type-inference::delete-the init-instr)
+  (cleavir-typed-transforms:delete-the init-instr)
   ;; convert (typeq x fixnum) -> (fixnump x)
   ;;         (typeq x cons) -> (consp x)
   ;;         (typeq x YYY) -> (typep x 'YYY)

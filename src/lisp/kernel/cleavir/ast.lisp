@@ -166,12 +166,13 @@
 (defclass precalc-vector-function-ast (cleavir-ast:top-level-function-ast)
   ((%precalc-asts :initarg :precalc-asts :reader precalc-asts)))
 
-(defun make-precalc-vector-function-ast (body-ast precalc-asts forms)
+(defun make-precalc-vector-function-ast (body-ast precalc-asts forms policy)
   (make-instance 'precalc-vector-function-ast
 		 :body-ast body-ast
 		 :lambda-list nil
 		 :precalc-asts precalc-asts
-		 :forms forms))
+		 :forms forms
+                 :policy policy))
 
 (cleavir-io:define-save-info precalc-vector-function-ast
     (:precalc-asts precalc-asts))
@@ -250,6 +251,7 @@ If this form has already been precalculated then just return the precalculated-v
 (defun find-load-time-value-asts (ast)
   (let ((table (make-hash-table :test #'eq)))
     (labels ((traverse (ast parent)
+               (declare (core:lambda-name traverse))
 	       (unless (gethash ast table)
 		 (setf (gethash ast table) t)
 		 (if (typep ast 'cleavir-ast:load-time-value-ast)
@@ -270,7 +272,7 @@ If this form has already been precalculated then just return the precalculated-v
                         :index (generate-new-precalculated-value-index ast)
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
-     ast (mapcar #'first load-time-value-asts) forms)))
+     ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast))))
 
 
 
