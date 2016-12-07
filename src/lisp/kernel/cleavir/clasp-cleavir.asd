@@ -26,6 +26,7 @@
 		 (:file "ast")
 		 (:file "convert-form")
 		 (:file "convert-special")
+                 (:file "eliminate-ltvs")
 		 (:file "hir")
 		 (:file "introduce-invoke")
                  (:file "toplevel")

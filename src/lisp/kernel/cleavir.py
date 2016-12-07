@@ -153,6 +153,7 @@ cleavir_parts = [
     "src/lisp/kernel/cleavir/ast",
     "src/lisp/kernel/cleavir/convert-form",
     "src/lisp/kernel/cleavir/convert-special",
+    "src/lisp/kernel/cleavir/eliminate-ltvs",
     "src/lisp/kernel/cleavir/hir",
     "src/lisp/kernel/cleavir/introduce-invoke",
     "src/lisp/kernel/cleavir/toplevel",
