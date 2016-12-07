@@ -6,7 +6,6 @@
 ;;;  --- Testing defun-inline-hook
 
 (time (compile-file "sys:modules;asdf;build;asdf.lisp"))
-(print "Hello")
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)
@@ -19,6 +18,14 @@
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
+
+(apropos "load-time-value-is-constant-p")
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x) (declare (optimize (safety 1) (speed 0))) (car (the cons x))) :debug t)
+
+(clasp-cleavir:cleavir-compile nil '(lambda (x) (declare (optimize (safety 0) (speed 1))) (car (the cons x))) :debug t)
+
+(foo :x)
 
 (time (asdf:load-system "clasp-cleavir"))
 

@@ -404,11 +404,6 @@ when this is t a lot of graphs will be generated.")
 		 (format *debug-log* "     instruction --> ~a~%" call))))
 
 
-(defmethod translate-simple-instruction
-    ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs (abi abi-x86-64))
-  (cmp:irc-low-level-trace :flow)
-  (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)
-  (cmp:irc-unreachable))
 
 
 
@@ -818,6 +813,13 @@ when this is t a lot of graphs will be generated.")
   (cmp:irc-low-level-trace :flow)
   (llvm-sys:create-ret cmp:*irbuilder* (%load return-value)))
 
+(defmethod translate-branch-instruction
+    ((instruction cleavir-ir:funcall-no-return-instruction) return-value inputs outputs successors (abi abi-x86-64))
+  (declare (ignore successors))
+  (cmp:irc-low-level-trace :flow)
+  (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)
+  (cmp:irc-unreachable))
+
 
 (defmethod translate-branch-instruction
     ((instruction clasp-cleavir-hir:throw-instruction) return-value inputs outputs successors abi)
@@ -939,6 +941,9 @@ when this is t a lot of graphs will be generated.")
 (defparameter *enable-type-inference* t)
 
 (defun my-hir-transformations (init-instr implementation processor os)
+  (cleavir-typed-transforms:thes->typeqs init-instr)
+  (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-thes-typeqs.dot"))
   (when *enable-type-inference*
     ;; Conditionally use type inference.
     (handler-case

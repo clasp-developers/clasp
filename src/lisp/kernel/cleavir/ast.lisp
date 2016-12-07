@@ -215,37 +215,33 @@
 
 
 
-(defun generate-new-precalculated-value-index (ast)
+(defun generate-new-precalculated-value-index (form read-only-p)
   "Generates code for the form that places the result into a precalculated-vector and returns the precalculated-vector index.
 If this form has already been precalculated then just return the precalculated-value index"
-  (let ((form (cleavir-ast:form ast))
-	(read-only-p (cleavir-ast:read-only-p ast)))
-    #+(or)(when read-only-p
-            (warn "Handle compilation of the ltv ~a with read-only-p NIL" form))
-    (cond
-      ((and (consp form) (eq (first form) 'QUOTE))
-       (let* ((constant (cadr form))
-	      (constant-index (clasp-cleavir:%literal-index constant read-only-p)))
-	 constant-index))
-      ((symbolp form) (clasp-cleavir:%literal-index form read-only-p))
-      ((constantp form) (clasp-cleavir:%literal-index form read-only-p))
-      (t
-       ;; Currently read-only-p is ignored from here on
-       ;; OPTIMIZE - an optimization would be to coalesce
-       ;; the forms and their results
-       (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
-           ;; COMPLE-FILE will generate a function for the form in the Module
-           ;; and arrange for it's evaluation at load time
-           ;; and to make its result available as a value
-           #+(or)(let* ((index (literal:new-table-index))
-                        (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
-                   (literal:evaluate-function-into-load-time-value index ltv-func)
-                   index)
-           (literal:with-load-time-value (literal:compile-load-time-value-thunk form))
-           ;; COMPILE on the other hand evaluates the form and puts its
-           ;; value in the run-time environment
-           (let ((value (eval form)))
-             (cmp:codegen-rtv nil value)))))))
+  (cond
+    ((and (consp form) (eq (first form) 'QUOTE))
+     (let* ((constant (cadr form))
+            (constant-index (clasp-cleavir:%literal-index constant read-only-p)))
+       constant-index))
+    ((symbolp form) (clasp-cleavir:%literal-index form read-only-p))
+    ((constantp form) (clasp-cleavir:%literal-index form read-only-p))
+    (t
+     ;; Currently read-only-p is ignored from here on
+     ;; OPTIMIZE - an optimization would be to coalesce
+     ;; the forms and their results
+     (if (eq cleavir-generate-ast:*compiler* 'cl:compile-file)
+         ;; COMPLE-FILE will generate a function for the form in the Module
+         ;; and arrange for it's evaluation at load time
+         ;; and to make its result available as a value
+         #+(or)(let* ((index (literal:new-table-index))
+                      (value (literal:with-ltv (literal:compile-load-time-value-thunk form))))
+                 (literal:evaluate-function-into-load-time-value index ltv-func)
+                 index)
+         (literal:with-load-time-value (literal:compile-load-time-value-thunk form))
+         ;; COMPILE on the other hand evaluates the form and puts its
+         ;; value in the run-time environment
+         (let ((value (eval form)))
+           (cmp:codegen-rtv nil value))))))
 
 
 (defun find-load-time-value-asts (ast)
@@ -269,7 +265,8 @@ If this form has already been precalculated then just return the precalculated-v
                         load-time-value-asts)))
     (loop for (ast parent) in load-time-value-asts
        do (change-class ast 'precalc-value-reference-ast ; 'cleavir-ast:t-aref-ast
-                        :index (generate-new-precalculated-value-index ast)
+                        :index (generate-new-precalculated-value-index
+                                (cleavir-ast:form ast) (cleavir-ast:read-only-p ast))
                         :original-object (cleavir-ast:form ast)))
     (clasp-cleavir-ast:make-precalc-vector-function-ast
      ast (mapcar #'first load-time-value-asts) forms (cleavir-ast:policy ast))))
