@@ -429,35 +429,36 @@ def options(cfg):
     cfg.load('compiler_cxx')
     cfg.load('compiler_c')
 
-def run_git(cfg, *args):
-    proc = subprocess.Popen([cfg.env.GIT_BINARY, "rev-parse", "--short", "HEAD"], stdout = subprocess.PIPE, shell = False)
+def run_program(binary, *args):
+    # print("run_program for %s" % binary)
+    proc = subprocess.Popen([binary] + list(args), stdout = subprocess.PIPE, shell = False, universal_newlines = True)
     (stdout, err) = proc.communicate()
-    return stdout.strip()
+    return stdout
 
 def get_git_commit(cfg):
-    return run_git(cfg, "rev-parse", "--short", "HEAD")
+    return run_program(cfg.env.GIT_BINARY, "rev-parse", "--short", "HEAD").strip()
 
 def get_clasp_version(cfg):
-    return run_git(cfg, "describe", "--always")
+    return run_program(cfg.env.GIT_BINARY, "describe", "--always").strip()
 
-def call_llvm_config(cfg, *args):
-    result = subprocess.Popen([cfg.env.LLVM_CONFIG_BINARY] + list(args), stdout = subprocess.PIPE).communicate()[0]
+def run_llvm_config(cfg, *args):
+    result = run_program(cfg.env.LLVM_CONFIG_BINARY, *args)
     assert len(result) > 0
-    return result.strip().decode().encode('ascii','ignore')
+    return result.strip()
 
-def call_llvm_config_for_libs(cfg, *args):
-    print("call_llvm_config_for_libs  LLVM_CONFIG_BINARY_FOR_LIBS = %s" % cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
-    result = subprocess.Popen([cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS] + list(args), stdout = subprocess.PIPE).communicate()[0]
+def run_llvm_config_for_libs(cfg, *args):
+    print("run_llvm_config_for_libs LLVM_CONFIG_BINARY_FOR_LIBS = %s" % cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS)
+    result = run_program(cfg.env.LLVM_CONFIG_BINARY_FOR_LIBS, *args)
     assert len(result) > 0
-    return result.strip().decode().encode('ascii','ignore')
+    return result.strip()
 
 def configure(cfg):
     def update_exe_search_path():
-        externals = cfg.env.EXTERNALS_CLASP_DIR.encode('ascii','ignore')
+        externals = cfg.env.EXTERNALS_CLASP_DIR
         print("externals = |%s|" % externals)
         assert os.path.isdir(externals), "Please provide a valid EXTERNALS_CLASP_DIR instead of '%s'. See the wscript.config.template file." % externals
         path = os.getenv("PATH").split(os.pathsep)
-        externals_bin_dir = repr(os.path.join(repr(externals), "build/release/bin/"))
+        externals_bin_dir = os.path.join(externals, "build/release/bin/")
         path.insert(0, externals_bin_dir)
         cfg.environ["PATH"] = os.pathsep.join(path)
         print("PATH has been prefixed with '%s'" % externals_bin_dir)
@@ -486,8 +487,8 @@ def configure(cfg):
         cfg.env["LLVM_CONFIG_BINARY_FOR_LIBS"] = cfg.find_program("llvm-config", var = "LLVM_CONFIG_FOR_LIBS")[0]
     cfg.env["LLVM_AR_BINARY"] = cfg.find_program("llvm-ar", var = "LLVM_AR")[0]
     cfg.env["GIT_BINARY"] = cfg.find_program("git", var = "GIT")[0]
-    cfg.env["LLVM_BIN_DIR"] = call_llvm_config(cfg, "--bindir")
-    call_llvm_config(cfg, "--version") # make sure we fail early
+    cfg.env["LLVM_BIN_DIR"] = run_llvm_config(cfg, "--bindir")
+    run_llvm_config(cfg, "--version") # make sure we fail early
     # find a lisp for the scraper
     if not cfg.env.SCRAPER_LISP:
         cfg.env["SBCL"] = cfg.find_program("sbcl", var = "SBCL")[0]
@@ -523,14 +524,14 @@ def configure(cfg):
         clasp_gc_filename = "clasp_gc_%s.cc" % ("_".join(cfg.extensions_names))
     print("clasp_gc_filename = %s"%clasp_gc_filename)
     cfg.define("CLASP_GC_FILENAME",clasp_gc_filename)
-    llvm_liblto_dir = call_llvm_config(cfg, "--libdir")
-    llvm_lib_dir = call_llvm_config_for_libs(cfg, "--libdir")
+    llvm_liblto_dir = run_llvm_config(cfg, "--libdir")
+    llvm_lib_dir = run_llvm_config_for_libs(cfg, "--libdir")
     print("llvm_lib_dir = %s" % llvm_lib_dir)
     cfg.env.append_value('LINKFLAGS', ["-L%s" % llvm_lib_dir])
-    llvm_libraries = strip_libs(call_llvm_config_for_libs(cfg, "--libs"))
+    llvm_libraries = strip_libs(run_llvm_config_for_libs(cfg, "--libs"))
     cfg.check_cxx(stlib = llvm_libraries, cflags = '-Wall', uselib_store = 'LLVM', stlibpath = llvm_lib_dir )
     cfg.check_cxx(stlib=CLANG_LIBRARIES, cflags='-Wall', uselib_store='CLANG', stlibpath = llvm_lib_dir )
-    llvm_include_dir = call_llvm_config_for_libs(cfg, "--includedir")
+    llvm_include_dir = run_llvm_config_for_libs(cfg, "--includedir")
     print("llvm_include_dir = %s" % llvm_include_dir)
     cfg.env.append_value('CXXFLAGS', ['-I./', '-I' + llvm_include_dir])
     cfg.env.append_value('CFLAGS', ['-I./'])
