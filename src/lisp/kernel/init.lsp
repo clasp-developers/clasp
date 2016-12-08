@@ -892,29 +892,6 @@ the stage, the +application-name+ and the +bitcode-name+"
 
 (setq *top-level-command-hook* #'tpl-hook)
 
-
-(defun my-do-time (closure)
-  (let* ((real-start (get-internal-real-time))
-         (run-start (get-internal-run-time))
-         real-end
-         run-end)
-    (funcall closure)
-    (setq real-end (get-internal-real-time)
-          run-end (get-internal-run-time))
-    (bformat t "real time: %lf secs\nrun time : %lf secs\n"
-             (float (/ (- real-end real-start) internal-time-units-per-second))
-             (float (/ (- run-end run-start) internal-time-units-per-second)))))
-
-(core:*make-special 'my-time)
-(si:fset 'my-time
-           #'(lambda (def env)
-               (let ((form (cadr def)))
-                 `(my-do-time #'(lambda () ,form))))
-           t)
-(export 'my-time)
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Setup the build system for SICL
