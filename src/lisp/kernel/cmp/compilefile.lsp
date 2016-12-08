@@ -359,6 +359,7 @@ Compile a lisp source file into an LLVM module.  type can be :kernel or :user"
             (cmp-log-dump *the-module*)
             (irc-verify-module-safe *the-module*)
             (quick-module-dump *the-module* "preoptimize"))
+          (quick-module-dump module "postoptimize")
           module)))))
 
 (defvar *compile-file-output-pathname* nil)

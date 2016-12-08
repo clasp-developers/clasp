@@ -942,7 +942,6 @@ when this is t a lot of graphs will be generated.")
 
 (defun my-hir-transformations (init-instr implementation processor os)
   (cleavir-typed-transforms:thes->typeqs init-instr)
-  (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
   (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-thes-typeqs.dot"))
   (when *enable-type-inference*
     ;; Conditionally use type inference.
@@ -962,11 +961,14 @@ when this is t a lot of graphs will be generated.")
               c))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-typed-transforms:delete-the init-instr)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-delete-the.dot"))
   ;; convert (typeq x fixnum) -> (fixnump x)
   ;;         (typeq x cons) -> (consp x)
   ;;         (typeq x YYY) -> (typep x 'YYY)
   (cleavir-hir-transformations:eliminate-typeq init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-etq.dot"))
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-eliminate-typeq.dot"))
+  (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
+  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-eliminate-load-time-value-inputs.dot"))
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
   ;;  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-est.dot"))
