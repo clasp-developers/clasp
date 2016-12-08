@@ -286,7 +286,7 @@ ALWAYS_INLINE T_O *cc_unsafe_fdefinition(core::T_O *sym) {
 ALWAYS_INLINE T_O *cc_safe_fdefinition(core::T_O *sym) {
   core::Symbol_O *symP = reinterpret_cast<core::Symbol_O *>(gctools::untag_general<core::T_O *>(sym));
   T_O *sv = symP->_Function.raw_();
-  if (sv == gctools::global_tagged_Symbol_OP_unbound) {
+  unlikely_if (sv == gctools::global_tagged_Symbol_OP_unbound) {
     intrinsic_error(llvmo::unboundSymbolFunction, gc::smart_ptr<core::Symbol_O>((gc::Tagged)sym));
   }
   return symP->_Function.raw_();

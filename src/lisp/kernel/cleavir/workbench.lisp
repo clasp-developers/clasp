@@ -19,7 +19,37 @@
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
 
-(apropos "load-time-value-is-constant-p")
+(apropos "dump-module")
+
+(let ((compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp"))
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
+
+(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp")
+
+
+(in-package :core)
+(clasp-cleavir:cleavir-compile 'foo '(lambda (kind &optional stream)
+                                      (declare (type (member :linear :miser :fill :mandatory) kind)
+                                       (type (or stream (member t nil)) stream)
+                                       (values null)
+                                       (ext:check-arguments-type)
+                                       #.+ecl-safe-declarations+)
+                                      (let ((stream (case stream
+                                                      ((t) *terminal-io*)
+                                                      ((nil) *standard-output*)
+                                                      (t stream))))
+                                        (when (and (pretty-stream-p stream) *print-pretty*)
+                                          (enqueue-newline stream kind)))
+                                      nil)
+                               :debug t)
+
+
+
+
+
+
+
 
 (clasp-cleavir:cleavir-compile 'foo '(lambda (x) (declare (optimize (safety 1) (speed 0))) (car (the cons x))) :debug t)
 
