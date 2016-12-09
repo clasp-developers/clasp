@@ -3329,6 +3329,7 @@ Run searches in *tools* on the source files in the compilation database."
   (let ((tools (setup-tools compilation-tool-database))
         (all-jobs (clang-tool:source-namestrings compilation-tool-database)))
     (save-data all-jobs (merge-pathnames #P"project-all.dat" (clang-tool:main-pathname compilation-tool-database)))
+    (format t "compilation-tool-database: ~a~%" compilation-tool-database)
     (format t "all-jobs: ~a~%" all-jobs)
     (setf (clang-tool:multitool-results tools) (make-project))
     (clang-tool:batch-run-multitool tools
@@ -3351,7 +3352,7 @@ Convert -Iinclude to -I<main-sourcefile-pathname>/include. Uses dynamic variable
 
 
    
-(defun setup-clasp-analyzer-compilation-tool-database (pathname &key (selection-pattern ".*") source-path-identifier arguments-adjuster)
+(defun setup-clasp-analyzer-compilation-tool-database (pathname &key selection-pattern source-path-identifier arguments-adjuster)
   "* Arguments
 - pathname :: The pathname to the compilation database for clasp analyzer.
 - selection-pattern : A regex pattern for selecting a subset of the source files for testing.
@@ -3365,10 +3366,11 @@ If the source location of a match contains the string source-path-identifier the
                                      :convert-relative-includes-to-absolute nil
                                      :source-path-identifier source-path-identifier))
          (source-filenames (clang-tool:select-source-namestrings compilation-tool-database selection-pattern))
-         (regex-mps-dot-c (core:make-regex ".*mps\.c$"))
-         (removed-mps-dot-c (remove-if #'(lambda (x) (core:regex-matches regex-mps-dot-c x)) source-filenames))
+         (removed-mps-dot-c (remove-if #'(lambda (x) (string= (subseq x (- (length x) 2)) ".c")) source-filenames))
          (final-list removed-mps-dot-c))
     (format t "Searching list of files: ~a~%" final-list)
+    (unless final-list
+      (error "There are no files selected to search - source-filenames: ~a!!!!" source-filenames))
     (setf (clang-tool:source-namestrings compilation-tool-database) final-list)
     (push #'translate-include (clang-tool:arguments-adjuster-list compilation-tool-database))
     (when arguments-adjuster (push arguments-adjuster (clang-tool:arguments-adjuster-list compilation-tool-database)))

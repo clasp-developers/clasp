@@ -571,15 +571,16 @@ Return the pathname of the directory that contains the main source file. This is
   (translate-logical-pathname #P"source-dir:src/main/"))
 
 
-(defun select-source-namestrings (compilation-tool-database &optional (pattern ".*"))
+(defun select-source-namestrings (compilation-tool-database &optional (pattern nil))
   "* Arguments
 - compilation-tool-database :: The compilation database.
-- pattern :: A regex pattern for selecting file names from the database.
+- pattern :: A string for selecting file names from the database that contain that string.
 * Description
 Select a subset (or all) source file names from the compilation database and return them as a list."
-  (let ((re (core:make-regex pattern))
-        (list-names (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
-    (remove-if-not #'(lambda (x) (core:regex-matches re x)) list-names)))
+  (let ((list-names (map 'list #'identity (ast-tooling:get-all-files (clang-database compilation-tool-database)))))
+    (if pattern
+        (remove-if-not #'(lambda (x) (search pattern x)) list-names)
+        list-names)))
 
 
 (defparameter *match-refactoring-tool* nil)
@@ -749,7 +750,7 @@ c      (funcall (start-of-translation-unit-code self)))))
 
 
 (defclass source-loc-match-callback (code-match-callback)
-  ((comments-regex-list :accessor comments-regex-list :initarg :comments-regex-list)))
+  ((comments-substring-list :accessor comments-substring-list :initarg :comments-substring-list)))
 
 
 (defun source-loc-equal (match-info source-loc-match-callback node)
@@ -763,8 +764,8 @@ Return true if the node describes source code that matches source-loc-match-call
         one-matches)
     (if comment
         (progn
-          (dolist (comment-regex (comments-regex-list source-loc-match-callback))
-            (when (core:regex-matches comment-regex comment)
+          (dolist (comment-substring (comments-substring-list source-loc-match-callback))
+            (when (search comment-substring comment)
               (format t "Comment match: ~a  ~%" comment)
               (setq one-matches t)))
           one-matches)
@@ -1179,7 +1180,7 @@ Dump the matches - if :tag is supplied then dump the given tag, otherwise :whole
 (defun match-comments-loaded-asts (match-sexp &key match-comments code &allow-other-keys)
   "* Arguments
 - match-sexp :: A matcher in s-expression form.
-- match-comments :: A regular expression to match to comments.
+- match-comments :: A substring or list of substrings to match within comments.
 - code :: A function to run.
 * Description
 I'm guessing at what this function does!!!!!
@@ -1187,9 +1188,9 @@ Run the match-sexp on the loaded ASTs and for each match, extract the associated
 and match them to the match-comments regex.  If they match, run the code."
   (with-unmanaged-object (callback (make-instance
                                     'source-loc-match-callback
-                                    :comments-regex-list (if (atom match-comments)
-                                                             (list (core:make-regex match-comments))
-                                                             (mapcar #'(lambda (str) (core:make-regex str)) match-comments))
+                                    :comments-substring-list (if (atom match-comments)
+                                                             (list match-comments)
+                                                             match-comments)
                                     :code code))
     (let ((*match-source-location* nil))
       (time (run-matcher-on-loaded-asts match-sexp

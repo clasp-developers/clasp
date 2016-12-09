@@ -21,7 +21,7 @@
 
 (apropos "dump-module")
 
-(let ((compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp"))
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
 
 (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
 

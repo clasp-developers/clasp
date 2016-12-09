@@ -8,7 +8,7 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"lib:compile_commands.json"
-   :selection-pattern ".*gc_interface\.cc.*"))
+   :selection-pattern "gc_interface.cc"))
 
 (time (clasp-analyzer:search/generate-code *db*))
 
@@ -32,7 +32,7 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*hashTable.cc.*"))
+   :selection-pattern "hashTable.cc"))
 
 (clasp-analyzer:search/generate-code *db*)
 
@@ -91,7 +91,7 @@
 (defparameter *db*
   (clasp-analyzer:setup-clasp-analyzer-compilation-tool-database
    #P"app-resources:build-databases;clasp_compile_commands.json"
-   :selection-pattern ".*activationFrame.cc.*"))
+   :selection-pattern "activationFrame.cc"))
 
 (find "aNO-NAME" '("a" "b" "NO-NAME" "c") :test #'string=)
 (null (search "NO-NAME" "_PackageName.__r_.__first_.NO-NAME.__l.__cap_"))

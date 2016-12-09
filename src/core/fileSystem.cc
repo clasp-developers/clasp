@@ -38,7 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/ql.h>
-#include <clasp/core/useBoostRegex.h>
+//#include <clasp/core/useBoostRegex.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
@@ -60,7 +60,7 @@ void assertion_failed_msg(char const *expr, char const *msg,
 } // namespace boost
 
 namespace core {
-
+#if 0
 /*! Return a list of Path objects representing the contents of the directory
   that match the fileNameRegex */
 List_sp directory(Path_sp rpath, const string &fileNameRegex) {
@@ -87,6 +87,7 @@ List_sp directory(Path_sp rpath, const string &fileNameRegex) {
   }
   return oCdr(first);
 }
+#endif
 
 void rename_file(Path_sp rpath1, Path_sp rpath2) {
   return bf::rename(rpath1->getPath(), rpath2->getPath());

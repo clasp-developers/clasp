@@ -198,7 +198,6 @@
     class StructureClass_O;
     class Integer_O;
     class FunctionValueEnvironment_O;
-    class RegexMatch_O;
     class SingleDispatchCxxEffectiveMethodFunction_O;
     class WeakPointer_O;
     class ClosureWithFrame_O;
@@ -239,7 +238,6 @@
     class BlockEnvironment_O;
     class TranslationFunctor;
     class LongFloat_O;
-    class Regex_O;
     class StandardClass_O;
     class PosixTimeDuration_O;
     class SymbolToEnumConverter_O;
@@ -398,275 +396,273 @@ KIND_LISPALLOC_core__ConsStepper_O = 67,
 KIND_LISPALLOC_core__VectorStepper_O = 68,
 KIND_LISPALLOC_llvmo__DebugLoc_O = 69,
 KIND_LISPALLOC_llvmo__Attribute_O = 70,
-KIND_LISPALLOC_core__RegexMatch_O = 71,
-KIND_LISPALLOC_core__WeakPointer_O = 72,
-KIND_BOOTSTRAP_core__StandardObject_O = 73,
-KIND_BOOTSTRAP_core__Metaobject_O = 74,
-KIND_BOOTSTRAP_core__Specializer_O = 75,
-KIND_BOOTSTRAP_core__Class_O = 76,
-KIND_BOOTSTRAP_core__StdClass_O = 77,
-KIND_BOOTSTRAP_core__StandardClass_O = 78,
-KIND_LISPALLOC_core__FuncallableStandardClass_O = 79,
-KIND_BOOTSTRAP_core__StructureClass_O = 80,
-KIND_LISPALLOC_core__ForwardReferencedClass_O = 81,
-KIND_LISPALLOC_core__CxxClass_O = 82,
-KIND_BOOTSTRAP_core__BuiltInClass_O = 83,
-KIND_LISPALLOC_clbind__ClassRep_O = 84,
-KIND_LISPALLOC_core__ExternalObject_O = 85,
-KIND_LISPALLOC_clasp_ffi__ForeignData_O = 86,
-KIND_LISPALLOC_llvmo__Value_O = 87,
-KIND_LISPALLOC_llvmo__Argument_O = 88,
-KIND_LISPALLOC_llvmo__User_O = 89,
-KIND_LISPALLOC_llvmo__Instruction_O = 90,
-KIND_LISPALLOC_llvmo__AtomicRMWInst_O = 91,
-KIND_LISPALLOC_llvmo__LandingPadInst_O = 92,
-KIND_LISPALLOC_llvmo__PHINode_O = 93,
-KIND_LISPALLOC_llvmo__CallInst_O = 94,
-KIND_LISPALLOC_llvmo__StoreInst_O = 95,
-KIND_LISPALLOC_llvmo__UnaryInstruction_O = 96,
-KIND_LISPALLOC_llvmo__LoadInst_O = 97,
-KIND_LISPALLOC_llvmo__AllocaInst_O = 98,
-KIND_LISPALLOC_llvmo__VAArgInst_O = 99,
-KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O = 100,
-KIND_LISPALLOC_llvmo__TerminatorInst_O = 101,
-KIND_LISPALLOC_llvmo__UnreachableInst_O = 102,
-KIND_LISPALLOC_llvmo__SwitchInst_O = 103,
-KIND_LISPALLOC_llvmo__ReturnInst_O = 104,
-KIND_LISPALLOC_llvmo__ResumeInst_O = 105,
-KIND_LISPALLOC_llvmo__BranchInst_O = 106,
-KIND_LISPALLOC_llvmo__InvokeInst_O = 107,
-KIND_LISPALLOC_llvmo__IndirectBrInst_O = 108,
-KIND_LISPALLOC_llvmo__FenceInst_O = 109,
-KIND_LISPALLOC_llvmo__Constant_O = 110,
-KIND_LISPALLOC_llvmo__BlockAddress_O = 111,
-KIND_LISPALLOC_llvmo__GlobalValue_O = 112,
-KIND_LISPALLOC_llvmo__GlobalVariable_O = 113,
-KIND_LISPALLOC_llvmo__Function_O = 114,
-KIND_LISPALLOC_llvmo__ConstantArray_O = 115,
-KIND_LISPALLOC_llvmo__ConstantInt_O = 116,
-KIND_LISPALLOC_llvmo__ConstantDataSequential_O = 117,
-KIND_LISPALLOC_llvmo__ConstantDataArray_O = 118,
-KIND_LISPALLOC_llvmo__ConstantStruct_O = 119,
-KIND_LISPALLOC_llvmo__ConstantFP_O = 120,
-KIND_LISPALLOC_llvmo__UndefValue_O = 121,
-KIND_LISPALLOC_llvmo__ConstantPointerNull_O = 122,
-KIND_LISPALLOC_llvmo__ConstantExpr_O = 123,
-KIND_LISPALLOC_llvmo__BasicBlock_O = 124,
-KIND_LISPALLOC_llvmo__IRBuilderBase_O = 125,
-KIND_LISPALLOC_llvmo__IRBuilder_O = 126,
-KIND_LISPALLOC_llvmo__DIBuilder_O = 127,
-KIND_LISPALLOC_llvmo__Metadata_O = 128,
-KIND_LISPALLOC_llvmo__ValueAsMetadata_O = 129,
-KIND_LISPALLOC_llvmo__MDNode_O = 130,
-KIND_LISPALLOC_llvmo__DINode_O = 131,
-KIND_LISPALLOC_llvmo__DIScope_O = 132,
-KIND_LISPALLOC_llvmo__DICompileUnit_O = 133,
-KIND_LISPALLOC_llvmo__DILocalScope_O = 134,
-KIND_LISPALLOC_llvmo__DISubprogram_O = 135,
-KIND_LISPALLOC_llvmo__DILexicalBlockBase_O = 136,
-KIND_LISPALLOC_llvmo__DILexicalBlock_O = 137,
-KIND_LISPALLOC_llvmo__DIType_O = 138,
-KIND_LISPALLOC_llvmo__DIDerivedType_O = 139,
-KIND_LISPALLOC_llvmo__DIBasicType_O = 140,
-KIND_LISPALLOC_llvmo__DISubroutineType_O = 141,
-KIND_LISPALLOC_llvmo__DICompositeType_O = 142,
-KIND_LISPALLOC_llvmo__DIFile_O = 143,
-KIND_LISPALLOC_llvmo__MDString_O = 144,
-KIND_LISPALLOC_llvmo__ExecutionEngine_O = 145,
-KIND_LISPALLOC_llvmo__APFloat_O = 146,
-KIND_LISPALLOC_llvmo__PassManagerBuilder_O = 147,
-KIND_LISPALLOC_llvmo__Triple_O = 148,
-KIND_LISPALLOC_llvmo__APInt_O = 149,
-KIND_LISPALLOC_llvmo__PassManagerBase_O = 150,
-KIND_LISPALLOC_llvmo__FunctionPassManager_O = 151,
-KIND_LISPALLOC_llvmo__PassManager_O = 152,
-KIND_LISPALLOC_llvmo__TargetMachine_O = 153,
-KIND_LISPALLOC_llvmo__LLVMTargetMachine_O = 154,
-KIND_LISPALLOC_llvmo__TargetOptions_O = 155,
-KIND_LISPALLOC_llvmo__Type_O = 156,
-KIND_LISPALLOC_llvmo__IntegerType_O = 157,
-KIND_LISPALLOC_llvmo__CompositeType_O = 158,
-KIND_LISPALLOC_llvmo__SequentialType_O = 159,
-KIND_LISPALLOC_llvmo__VectorType_O = 160,
-KIND_LISPALLOC_llvmo__PointerType_O = 161,
-KIND_LISPALLOC_llvmo__ArrayType_O = 162,
-KIND_LISPALLOC_llvmo__StructType_O = 163,
-KIND_LISPALLOC_llvmo__FunctionType_O = 164,
-KIND_LISPALLOC_llvmo__NamedMDNode_O = 165,
-KIND_LISPALLOC_llvmo__Linker_O = 166,
-KIND_LISPALLOC_llvmo__Pass_O = 167,
-KIND_LISPALLOC_llvmo__FunctionPass_O = 168,
-KIND_LISPALLOC_llvmo__ModulePass_O = 169,
-KIND_LISPALLOC_llvmo__ImmutablePass_O = 170,
-KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O = 171,
-KIND_LISPALLOC_llvmo__MCSubtargetInfo_O = 172,
-KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O = 173,
-KIND_LISPALLOC_llvmo__Module_O = 174,
-KIND_LISPALLOC_llvmo__EngineBuilder_O = 175,
-KIND_LISPALLOC_llvmo__LLVMContext_O = 176,
-KIND_LISPALLOC_llvmo__Target_O = 177,
-KIND_LISPALLOC_core__LoadTimeValues_O = 178,
-KIND_LISPALLOC_core__Binder_O = 179,
-KIND_LISPALLOC_core__IntArray_O = 180,
-KIND_LISPALLOC_core__SourceManager_O = 181,
-KIND_LISPALLOC_core__Record_O = 182,
-KIND_LISPALLOC_core__LightUserData_O = 183,
-KIND_LISPALLOC_core__UserData_O = 184,
-KIND_LISPALLOC_llvmo__DataLayout_O = 185,
-KIND_BOOTSTRAP_core__Symbol_O = 186,
-KIND_LISPALLOC_core__Null_O = 187,
-KIND_LISPALLOC_core__SourcePosInfo_O = 188,
-KIND_TEMPLATED_LISPALLOC_core__Iterator_O = 189,
-KIND_LISPALLOC_core__DirectoryIterator_O = 190,
-KIND_LISPALLOC_core__RecursiveDirectoryIterator_O = 191,
-KIND_LISPALLOC_core__Regex_O = 192,
-KIND_LISPALLOC_core__PosixTimeDuration_O = 193,
-KIND_LISPALLOC_core__SymbolToEnumConverter_O = 194,
-KIND_LISPALLOC_core__CandoException_O = 195,
-KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O = 196,
-KIND_LISPALLOC_core__Stream_O = 197,
-KIND_LISPALLOC_core__AnsiStream_O = 198,
-KIND_LISPALLOC_core__FileStream_O = 199,
-KIND_LISPALLOC_core__IOStreamStream_O = 200,
-KIND_LISPALLOC_core__IOFileStream_O = 201,
-KIND_LISPALLOC_core__ConcatenatedStream_O = 202,
-KIND_LISPALLOC_core__StringStream_O = 203,
-KIND_LISPALLOC_core__StringInputStream_O = 204,
-KIND_LISPALLOC_core__StringOutputStream_O = 205,
-KIND_LISPALLOC_core__SynonymStream_O = 206,
-KIND_LISPALLOC_core__EchoStream_O = 207,
-KIND_LISPALLOC_core__TwoWayStream_O = 208,
-KIND_LISPALLOC_core__BroadcastStream_O = 209,
-KIND_LISPALLOC_core__Reader_O = 210,
-KIND_LISPALLOC_core__SharpEqualWrapper_O = 211,
-KIND_LISPALLOC_core__Archive_O = 212,
-KIND_LISPALLOC_core__SaveArchive_O = 213,
-KIND_LISPALLOC_core__SexpSaveArchive_O = 214,
-KIND_LISPALLOC_core__LoadArchive_O = 215,
-KIND_LISPALLOC_core__SexpLoadArchive_O = 216,
-KIND_LISPALLOC_core__HashTable_O = 217,
-KIND_LISPALLOC_core__HashTableEq_O = 218,
-KIND_LISPALLOC_core__HashTableEqualp_O = 219,
-KIND_LISPALLOC_core__HashTableEql_O = 220,
-KIND_LISPALLOC_core__HashTableEqual_O = 221,
-KIND_TEMPLATED_LISPALLOC_core__Creator_O = 222,
-KIND_LISPALLOC_clbind__DummyCreator_O = 223,
-KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O = 224,
-KIND_LISPALLOC_core__InstanceCreator_O = 225,
-KIND_LISPALLOC_core__CxxObject_O = 226,
-KIND_LISPALLOC_core__NativeVector_float_O = 227,
-KIND_LISPALLOC_clcenv__Info_O = 228,
-KIND_LISPALLOC_clcenv__FunctionInfo_O = 229,
-KIND_LISPALLOC_clcenv__LocalFunctionInfo_O = 230,
-KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O = 231,
-KIND_LISPALLOC_clcenv__LambdaNameInfo_O = 232,
-KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O = 233,
-KIND_LISPALLOC_clcenv__GlobalMacroInfo_O = 234,
-KIND_LISPALLOC_clcenv__LocalMacroInfo_O = 235,
-KIND_LISPALLOC_clcenv__OptimizeInfo_O = 236,
-KIND_LISPALLOC_clcenv__BlockInfo_O = 237,
-KIND_LISPALLOC_clcenv__VariableInfo_O = 238,
-KIND_LISPALLOC_clcenv__SpecialVariableInfo_O = 239,
-KIND_LISPALLOC_clcenv__SymbolMacroInfo_O = 240,
-KIND_LISPALLOC_clcenv__ConstantVariableInfo_O = 241,
-KIND_LISPALLOC_clcenv__LexicalVariableInfo_O = 242,
-KIND_LISPALLOC_core__NativeVector_int_O = 243,
-KIND_LISPALLOC_llvmo__DINodeArray_O = 244,
-KIND_LISPALLOC_llvmo__DITypeRefArray_O = 245,
-KIND_LISPALLOC_clcenv__Entry_O = 246,
-KIND_LISPALLOC_clcenv__Inline_O = 247,
-KIND_LISPALLOC_clcenv__Closure_O = 248,
-KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O = 249,
-KIND_LISPALLOC_clcenv__VariableDynamicExtent_O = 250,
-KIND_LISPALLOC_clcenv__SymbolMacro_O = 251,
-KIND_LISPALLOC_clcenv__FunctionIgnore_O = 252,
-KIND_LISPALLOC_clcenv__Function_O = 253,
-KIND_LISPALLOC_clcenv__LambdaName_O = 254,
-KIND_LISPALLOC_clcenv__Block_O = 255,
-KIND_LISPALLOC_clcenv__SpecialVariable_O = 256,
-KIND_LISPALLOC_clcenv__LexicalVariable_O = 257,
-KIND_LISPALLOC_clcenv__GlobalEnvironment_O = 258,
-KIND_LISPALLOC_clcenv__Tag_O = 259,
-KIND_LISPALLOC_clcenv__FunctionType_O = 260,
-KIND_LISPALLOC_clcenv__Macro_O = 261,
-KIND_LISPALLOC_clcenv__VariableType_O = 262,
-KIND_LISPALLOC_clcenv__VariableIgnore_O = 263,
-KIND_LISPALLOC_clcenv__Optimize_O = 264,
-KIND_LISPALLOC_core__NativeVector_double_O = 265,
-KIND_LISPALLOC_core__WeakKeyMapping_O = 266,
-KIND_LISPALLOC_core__Cache_O = 267,
-KIND_LISPALLOC_core__LambdaListHandler_O = 268,
-KIND_LISPALLOC_llvmo__InsertPoint_O = 269,
-KIND_LISPALLOC_core__SourceFileInfo_O = 270,
-KIND_LISPALLOC_core__SNode_O = 271,
-KIND_LISPALLOC_core__LeafSNode_O = 272,
-KIND_LISPALLOC_core__BranchSNode_O = 273,
-KIND_LISPALLOC_core__Path_O = 274,
-KIND_LISPALLOC_asttooling__AstVisitor_O = 275,
-KIND_LISPALLOC_llvmo__AttributeSet_O = 276,
-KIND_LISPALLOC_core__StructureObject_O = 277,
-KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O = 278,
-KIND_LISPALLOC_core__Package_O = 279,
-KIND_LISPALLOC_core__DirectoryEntry_O = 280,
-KIND_LISPALLOC_core__Character_dummy_O = 281,
-KIND_LISPALLOC_core__Function_O = 282,
-KIND_LISPALLOC_core__NamedFunction_O = 283,
-KIND_LISPALLOC_core__SpecialForm_O = 284,
-KIND_LISPALLOC_core__Closure_O = 285,
-KIND_LISPALLOC_core__CompiledFunction_O = 286,
-KIND_LISPALLOC_core__FunctionClosure_O = 287,
-KIND_LISPALLOC_core__ClosureWithSlots_O = 288,
-KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O = 289,
-KIND_LISPALLOC_core__TranslationFunctor = 290,
-KIND_LISPALLOC_core__MacroClosure_O = 291,
-KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O = 292,
-KIND_LISPALLOC_core__ClosureWithFrame_O = 293,
-KIND_LISPALLOC_core__CompiledClosure_O = 294,
-KIND_LISPALLOC_core__InterpretedClosure_O = 295,
-KIND_LISPALLOC_core__SingleDispatchMethodFunction_O = 296,
-KIND_LISPALLOC_core__CxxMethodFunction_O = 297,
-KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O = 298,
-KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O = 299,
-KIND_LISPALLOC_core__Instance_O = 300,
-KIND_LISPALLOC_core__Pointer_O = 301,
-KIND_LISPALLOC_clbind__ClassRegistry_O = 302,
-KIND_LISPALLOC_core__SmallMultimap_O = 303,
-KIND_LISPALLOC_core__Pathname_O = 304,
-KIND_LISPALLOC_core__LogicalPathname_O = 305,
-KIND_LISPALLOC_core__PosixTime_O = 306,
-KIND_LISPALLOC_core__SmallMap_O = 307,
-KIND_ROOTCLASSALLOC_core__Lisp_O = 308,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ = 309,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = 310,
-KIND_GCSTRING_gctools__GCString_moveable_char_ = 311,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ = 312,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 313,
-KIND_GCVECTOR_gctools__GCVector_moveable_float_ = 314,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ = 315,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ = 316,
-KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = 317,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ = 318,
-KIND_GCVECTOR_gctools__GCVector_moveable_double_ = 319,
-KIND_GCVECTOR_gctools__GCVector_moveable_int_ = 320,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = 321,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ = 322,
-KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 323,
-KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = 324,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ = 325,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = 326,
-KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 327,
-KIND_LISPALLOC_asttooling__DerivableMatchCallback = 328,
-KIND_LISPALLOC_asttooling__DerivableASTFrontendAction = 329,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = 330,
-KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction = 331,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 332,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ = 333,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ = 334,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = 335,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ = 336,
-KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ = 337,
-KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = 338,
-  KIND_max = 338
+KIND_LISPALLOC_core__WeakPointer_O = 71,
+KIND_BOOTSTRAP_core__StandardObject_O = 72,
+KIND_BOOTSTRAP_core__Metaobject_O = 73,
+KIND_BOOTSTRAP_core__Specializer_O = 74,
+KIND_BOOTSTRAP_core__Class_O = 75,
+KIND_BOOTSTRAP_core__StdClass_O = 76,
+KIND_BOOTSTRAP_core__StandardClass_O = 77,
+KIND_LISPALLOC_core__FuncallableStandardClass_O = 78,
+KIND_BOOTSTRAP_core__StructureClass_O = 79,
+KIND_LISPALLOC_core__ForwardReferencedClass_O = 80,
+KIND_LISPALLOC_core__CxxClass_O = 81,
+KIND_BOOTSTRAP_core__BuiltInClass_O = 82,
+KIND_LISPALLOC_clbind__ClassRep_O = 83,
+KIND_LISPALLOC_core__ExternalObject_O = 84,
+KIND_LISPALLOC_clasp_ffi__ForeignData_O = 85,
+KIND_LISPALLOC_llvmo__Value_O = 86,
+KIND_LISPALLOC_llvmo__Argument_O = 87,
+KIND_LISPALLOC_llvmo__User_O = 88,
+KIND_LISPALLOC_llvmo__Instruction_O = 89,
+KIND_LISPALLOC_llvmo__AtomicRMWInst_O = 90,
+KIND_LISPALLOC_llvmo__LandingPadInst_O = 91,
+KIND_LISPALLOC_llvmo__PHINode_O = 92,
+KIND_LISPALLOC_llvmo__CallInst_O = 93,
+KIND_LISPALLOC_llvmo__StoreInst_O = 94,
+KIND_LISPALLOC_llvmo__UnaryInstruction_O = 95,
+KIND_LISPALLOC_llvmo__LoadInst_O = 96,
+KIND_LISPALLOC_llvmo__AllocaInst_O = 97,
+KIND_LISPALLOC_llvmo__VAArgInst_O = 98,
+KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O = 99,
+KIND_LISPALLOC_llvmo__TerminatorInst_O = 100,
+KIND_LISPALLOC_llvmo__UnreachableInst_O = 101,
+KIND_LISPALLOC_llvmo__SwitchInst_O = 102,
+KIND_LISPALLOC_llvmo__ReturnInst_O = 103,
+KIND_LISPALLOC_llvmo__ResumeInst_O = 104,
+KIND_LISPALLOC_llvmo__BranchInst_O = 105,
+KIND_LISPALLOC_llvmo__InvokeInst_O = 106,
+KIND_LISPALLOC_llvmo__IndirectBrInst_O = 107,
+KIND_LISPALLOC_llvmo__FenceInst_O = 108,
+KIND_LISPALLOC_llvmo__Constant_O = 109,
+KIND_LISPALLOC_llvmo__BlockAddress_O = 110,
+KIND_LISPALLOC_llvmo__GlobalValue_O = 111,
+KIND_LISPALLOC_llvmo__GlobalVariable_O = 112,
+KIND_LISPALLOC_llvmo__Function_O = 113,
+KIND_LISPALLOC_llvmo__ConstantArray_O = 114,
+KIND_LISPALLOC_llvmo__ConstantInt_O = 115,
+KIND_LISPALLOC_llvmo__ConstantDataSequential_O = 116,
+KIND_LISPALLOC_llvmo__ConstantDataArray_O = 117,
+KIND_LISPALLOC_llvmo__ConstantStruct_O = 118,
+KIND_LISPALLOC_llvmo__ConstantFP_O = 119,
+KIND_LISPALLOC_llvmo__UndefValue_O = 120,
+KIND_LISPALLOC_llvmo__ConstantPointerNull_O = 121,
+KIND_LISPALLOC_llvmo__ConstantExpr_O = 122,
+KIND_LISPALLOC_llvmo__BasicBlock_O = 123,
+KIND_LISPALLOC_llvmo__IRBuilderBase_O = 124,
+KIND_LISPALLOC_llvmo__IRBuilder_O = 125,
+KIND_LISPALLOC_llvmo__DIBuilder_O = 126,
+KIND_LISPALLOC_llvmo__Metadata_O = 127,
+KIND_LISPALLOC_llvmo__ValueAsMetadata_O = 128,
+KIND_LISPALLOC_llvmo__MDNode_O = 129,
+KIND_LISPALLOC_llvmo__DINode_O = 130,
+KIND_LISPALLOC_llvmo__DIScope_O = 131,
+KIND_LISPALLOC_llvmo__DICompileUnit_O = 132,
+KIND_LISPALLOC_llvmo__DILocalScope_O = 133,
+KIND_LISPALLOC_llvmo__DISubprogram_O = 134,
+KIND_LISPALLOC_llvmo__DILexicalBlockBase_O = 135,
+KIND_LISPALLOC_llvmo__DILexicalBlock_O = 136,
+KIND_LISPALLOC_llvmo__DIType_O = 137,
+KIND_LISPALLOC_llvmo__DIDerivedType_O = 138,
+KIND_LISPALLOC_llvmo__DIBasicType_O = 139,
+KIND_LISPALLOC_llvmo__DISubroutineType_O = 140,
+KIND_LISPALLOC_llvmo__DICompositeType_O = 141,
+KIND_LISPALLOC_llvmo__DIFile_O = 142,
+KIND_LISPALLOC_llvmo__MDString_O = 143,
+KIND_LISPALLOC_llvmo__ExecutionEngine_O = 144,
+KIND_LISPALLOC_llvmo__APFloat_O = 145,
+KIND_LISPALLOC_llvmo__PassManagerBuilder_O = 146,
+KIND_LISPALLOC_llvmo__Triple_O = 147,
+KIND_LISPALLOC_llvmo__APInt_O = 148,
+KIND_LISPALLOC_llvmo__PassManagerBase_O = 149,
+KIND_LISPALLOC_llvmo__FunctionPassManager_O = 150,
+KIND_LISPALLOC_llvmo__PassManager_O = 151,
+KIND_LISPALLOC_llvmo__TargetMachine_O = 152,
+KIND_LISPALLOC_llvmo__LLVMTargetMachine_O = 153,
+KIND_LISPALLOC_llvmo__TargetOptions_O = 154,
+KIND_LISPALLOC_llvmo__Type_O = 155,
+KIND_LISPALLOC_llvmo__IntegerType_O = 156,
+KIND_LISPALLOC_llvmo__CompositeType_O = 157,
+KIND_LISPALLOC_llvmo__SequentialType_O = 158,
+KIND_LISPALLOC_llvmo__VectorType_O = 159,
+KIND_LISPALLOC_llvmo__PointerType_O = 160,
+KIND_LISPALLOC_llvmo__ArrayType_O = 161,
+KIND_LISPALLOC_llvmo__StructType_O = 162,
+KIND_LISPALLOC_llvmo__FunctionType_O = 163,
+KIND_LISPALLOC_llvmo__NamedMDNode_O = 164,
+KIND_LISPALLOC_llvmo__Linker_O = 165,
+KIND_LISPALLOC_llvmo__Pass_O = 166,
+KIND_LISPALLOC_llvmo__FunctionPass_O = 167,
+KIND_LISPALLOC_llvmo__ModulePass_O = 168,
+KIND_LISPALLOC_llvmo__ImmutablePass_O = 169,
+KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O = 170,
+KIND_LISPALLOC_llvmo__MCSubtargetInfo_O = 171,
+KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O = 172,
+KIND_LISPALLOC_llvmo__Module_O = 173,
+KIND_LISPALLOC_llvmo__EngineBuilder_O = 174,
+KIND_LISPALLOC_llvmo__LLVMContext_O = 175,
+KIND_LISPALLOC_llvmo__Target_O = 176,
+KIND_LISPALLOC_core__LoadTimeValues_O = 177,
+KIND_LISPALLOC_core__Binder_O = 178,
+KIND_LISPALLOC_core__IntArray_O = 179,
+KIND_LISPALLOC_core__SourceManager_O = 180,
+KIND_LISPALLOC_core__Record_O = 181,
+KIND_LISPALLOC_core__LightUserData_O = 182,
+KIND_LISPALLOC_core__UserData_O = 183,
+KIND_LISPALLOC_llvmo__DataLayout_O = 184,
+KIND_BOOTSTRAP_core__Symbol_O = 185,
+KIND_LISPALLOC_core__Null_O = 186,
+KIND_LISPALLOC_core__SourcePosInfo_O = 187,
+KIND_TEMPLATED_LISPALLOC_core__Iterator_O = 188,
+KIND_LISPALLOC_core__DirectoryIterator_O = 189,
+KIND_LISPALLOC_core__RecursiveDirectoryIterator_O = 190,
+KIND_LISPALLOC_core__PosixTimeDuration_O = 191,
+KIND_LISPALLOC_core__SymbolToEnumConverter_O = 192,
+KIND_LISPALLOC_core__CandoException_O = 193,
+KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O = 194,
+KIND_LISPALLOC_core__Stream_O = 195,
+KIND_LISPALLOC_core__AnsiStream_O = 196,
+KIND_LISPALLOC_core__FileStream_O = 197,
+KIND_LISPALLOC_core__IOStreamStream_O = 198,
+KIND_LISPALLOC_core__IOFileStream_O = 199,
+KIND_LISPALLOC_core__ConcatenatedStream_O = 200,
+KIND_LISPALLOC_core__StringStream_O = 201,
+KIND_LISPALLOC_core__StringInputStream_O = 202,
+KIND_LISPALLOC_core__StringOutputStream_O = 203,
+KIND_LISPALLOC_core__SynonymStream_O = 204,
+KIND_LISPALLOC_core__EchoStream_O = 205,
+KIND_LISPALLOC_core__TwoWayStream_O = 206,
+KIND_LISPALLOC_core__BroadcastStream_O = 207,
+KIND_LISPALLOC_core__Reader_O = 208,
+KIND_LISPALLOC_core__SharpEqualWrapper_O = 209,
+KIND_LISPALLOC_core__Archive_O = 210,
+KIND_LISPALLOC_core__SaveArchive_O = 211,
+KIND_LISPALLOC_core__SexpSaveArchive_O = 212,
+KIND_LISPALLOC_core__LoadArchive_O = 213,
+KIND_LISPALLOC_core__SexpLoadArchive_O = 214,
+KIND_LISPALLOC_core__HashTable_O = 215,
+KIND_LISPALLOC_core__HashTableEq_O = 216,
+KIND_LISPALLOC_core__HashTableEqualp_O = 217,
+KIND_LISPALLOC_core__HashTableEql_O = 218,
+KIND_LISPALLOC_core__HashTableEqual_O = 219,
+KIND_TEMPLATED_LISPALLOC_core__Creator_O = 220,
+KIND_LISPALLOC_clbind__DummyCreator_O = 221,
+KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O = 222,
+KIND_LISPALLOC_core__InstanceCreator_O = 223,
+KIND_LISPALLOC_core__CxxObject_O = 224,
+KIND_LISPALLOC_core__NativeVector_float_O = 225,
+KIND_LISPALLOC_clcenv__Info_O = 226,
+KIND_LISPALLOC_clcenv__FunctionInfo_O = 227,
+KIND_LISPALLOC_clcenv__LocalFunctionInfo_O = 228,
+KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O = 229,
+KIND_LISPALLOC_clcenv__LambdaNameInfo_O = 230,
+KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O = 231,
+KIND_LISPALLOC_clcenv__GlobalMacroInfo_O = 232,
+KIND_LISPALLOC_clcenv__LocalMacroInfo_O = 233,
+KIND_LISPALLOC_clcenv__OptimizeInfo_O = 234,
+KIND_LISPALLOC_clcenv__BlockInfo_O = 235,
+KIND_LISPALLOC_clcenv__VariableInfo_O = 236,
+KIND_LISPALLOC_clcenv__SpecialVariableInfo_O = 237,
+KIND_LISPALLOC_clcenv__SymbolMacroInfo_O = 238,
+KIND_LISPALLOC_clcenv__ConstantVariableInfo_O = 239,
+KIND_LISPALLOC_clcenv__LexicalVariableInfo_O = 240,
+KIND_LISPALLOC_core__NativeVector_int_O = 241,
+KIND_LISPALLOC_llvmo__DINodeArray_O = 242,
+KIND_LISPALLOC_llvmo__DITypeRefArray_O = 243,
+KIND_LISPALLOC_clcenv__Entry_O = 244,
+KIND_LISPALLOC_clcenv__Inline_O = 245,
+KIND_LISPALLOC_clcenv__Closure_O = 246,
+KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O = 247,
+KIND_LISPALLOC_clcenv__VariableDynamicExtent_O = 248,
+KIND_LISPALLOC_clcenv__SymbolMacro_O = 249,
+KIND_LISPALLOC_clcenv__FunctionIgnore_O = 250,
+KIND_LISPALLOC_clcenv__Function_O = 251,
+KIND_LISPALLOC_clcenv__LambdaName_O = 252,
+KIND_LISPALLOC_clcenv__Block_O = 253,
+KIND_LISPALLOC_clcenv__SpecialVariable_O = 254,
+KIND_LISPALLOC_clcenv__LexicalVariable_O = 255,
+KIND_LISPALLOC_clcenv__GlobalEnvironment_O = 256,
+KIND_LISPALLOC_clcenv__Tag_O = 257,
+KIND_LISPALLOC_clcenv__FunctionType_O = 258,
+KIND_LISPALLOC_clcenv__Macro_O = 259,
+KIND_LISPALLOC_clcenv__VariableType_O = 260,
+KIND_LISPALLOC_clcenv__VariableIgnore_O = 261,
+KIND_LISPALLOC_clcenv__Optimize_O = 262,
+KIND_LISPALLOC_core__NativeVector_double_O = 263,
+KIND_LISPALLOC_core__WeakKeyMapping_O = 264,
+KIND_LISPALLOC_core__Cache_O = 265,
+KIND_LISPALLOC_core__LambdaListHandler_O = 266,
+KIND_LISPALLOC_llvmo__InsertPoint_O = 267,
+KIND_LISPALLOC_core__SourceFileInfo_O = 268,
+KIND_LISPALLOC_core__SNode_O = 269,
+KIND_LISPALLOC_core__LeafSNode_O = 270,
+KIND_LISPALLOC_core__BranchSNode_O = 271,
+KIND_LISPALLOC_core__Path_O = 272,
+KIND_LISPALLOC_asttooling__AstVisitor_O = 273,
+KIND_LISPALLOC_llvmo__AttributeSet_O = 274,
+KIND_LISPALLOC_core__StructureObject_O = 275,
+KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O = 276,
+KIND_LISPALLOC_core__Package_O = 277,
+KIND_LISPALLOC_core__DirectoryEntry_O = 278,
+KIND_LISPALLOC_core__Character_dummy_O = 279,
+KIND_LISPALLOC_core__Function_O = 280,
+KIND_LISPALLOC_core__NamedFunction_O = 281,
+KIND_LISPALLOC_core__SpecialForm_O = 282,
+KIND_LISPALLOC_core__Closure_O = 283,
+KIND_LISPALLOC_core__CompiledFunction_O = 284,
+KIND_LISPALLOC_core__FunctionClosure_O = 285,
+KIND_LISPALLOC_core__ClosureWithSlots_O = 286,
+KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O = 287,
+KIND_LISPALLOC_core__TranslationFunctor = 288,
+KIND_LISPALLOC_core__MacroClosure_O = 289,
+KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O = 290,
+KIND_LISPALLOC_core__ClosureWithFrame_O = 291,
+KIND_LISPALLOC_core__CompiledClosure_O = 292,
+KIND_LISPALLOC_core__InterpretedClosure_O = 293,
+KIND_LISPALLOC_core__SingleDispatchMethodFunction_O = 294,
+KIND_LISPALLOC_core__CxxMethodFunction_O = 295,
+KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O = 296,
+KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O = 297,
+KIND_LISPALLOC_core__Instance_O = 298,
+KIND_LISPALLOC_core__Pointer_O = 299,
+KIND_LISPALLOC_clbind__ClassRegistry_O = 300,
+KIND_LISPALLOC_core__SmallMultimap_O = 301,
+KIND_LISPALLOC_core__Pathname_O = 302,
+KIND_LISPALLOC_core__LogicalPathname_O = 303,
+KIND_LISPALLOC_core__PosixTime_O = 304,
+KIND_LISPALLOC_core__SmallMap_O = 305,
+KIND_ROOTCLASSALLOC_core__Lisp_O = 306,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_ = 307,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__ = 308,
+KIND_GCSTRING_gctools__GCString_moveable_char_ = 309,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_ = 310,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__ = 311,
+KIND_GCVECTOR_gctools__GCVector_moveable_float_ = 312,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_ = 313,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_ = 314,
+KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___ = 315,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_ = 316,
+KIND_GCVECTOR_gctools__GCVector_moveable_double_ = 317,
+KIND_GCVECTOR_gctools__GCVector_moveable_int_ = 318,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__ = 319,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_ = 320,
+KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___ = 321,
+KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__ = 322,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_ = 323,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__ = 324,
+KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory = 325,
+KIND_LISPALLOC_asttooling__DerivableMatchCallback = 326,
+KIND_LISPALLOC_asttooling__DerivableASTFrontendAction = 327,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__ = 328,
+KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction = 329,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__ = 330,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_ = 331,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__ = 332,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__ = 333,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_ = 334,
+KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_ = 335,
+KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__ = 336,
+  KIND_max = 336
 }
 #endif // defined(GC_ENUM)
 #if defined(GC_DYNAMIC_CAST)
@@ -674,16 +670,16 @@ template <typename FP> struct Cast<llvmo::VAArgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 99 99 
-      return (kindVal == 99);
+      // low high --> 98 98 
+      return (kindVal == 98);
   };
 };
 template <typename FP> struct Cast<core::LoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 215 216 
-      return ((215 <= kindVal) && (kindVal <= 216));
+      // low high --> 213 214 
+      return ((213 <= kindVal) && (kindVal <= 214));
   };
 };
 template <typename FP> struct Cast<core::Ratio_O*,FP> {
@@ -698,8 +694,8 @@ template <typename FP> struct Cast<core::FunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 287 299 
-      return ((287 <= kindVal) && (kindVal <= 299));
+      // low high --> 285 297 
+      return ((285 <= kindVal) && (kindVal <= 297));
   };
 };
 template <typename FP> struct Cast<core::VectorObjects_O*,FP> {
@@ -714,16 +710,16 @@ template <typename FP> struct Cast<clcenv::Optimize_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 264 264 
-      return (kindVal == 264);
+      // low high --> 262 262 
+      return (kindVal == 262);
   };
 };
 template <typename FP> struct Cast<clcenv::VariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 238 242 
-      return ((238 <= kindVal) && (kindVal <= 242));
+      // low high --> 236 240 
+      return ((236 <= kindVal) && (kindVal <= 240));
   };
 };
 template <typename FP> struct Cast<core::CoreExposer_O*,FP> {
@@ -746,56 +742,56 @@ template <typename FP> struct Cast<llvmo::Target_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 177 177 
-      return (kindVal == 177);
+      // low high --> 176 176 
+      return (kindVal == 176);
   };
 };
 template <typename FP> struct Cast<llvmo::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 164 164 
-      return (kindVal == 164);
+      // low high --> 163 163 
+      return (kindVal == 163);
   };
 };
 template <typename FP> struct Cast<clcenv::LocalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 235 235 
-      return (kindVal == 235);
+      // low high --> 233 233 
+      return (kindVal == 233);
   };
 };
 template <typename FP> struct Cast<llvmo::ConstantExpr_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 123 123 
-      return (kindVal == 123);
+      // low high --> 122 122 
+      return (kindVal == 122);
   };
 };
 template <typename FP> struct Cast<llvmo::LLVMContext_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 176 176 
-      return (kindVal == 176);
+      // low high --> 175 175 
+      return (kindVal == 175);
   };
 };
 template <typename FP> struct Cast<core::Lisp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 308 308 
-      return (kindVal == 308);
+      // low high --> 306 306 
+      return (kindVal == 306);
   };
 };
 template <typename FP> struct Cast<llvmo::TargetSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 173 173 
-      return (kindVal == 173);
+      // low high --> 172 172 
+      return (kindVal == 172);
   };
 };
 template <typename FP> struct Cast<core::ShortFloat_O*,FP> {
@@ -810,40 +806,40 @@ template <typename FP> struct Cast<core::SmallMap_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 307 307 
-      return (kindVal == 307);
+      // low high --> 305 305 
+      return (kindVal == 305);
   };
 };
 template <typename FP> struct Cast<llvmo::FenceInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 109 109 
-      return (kindVal == 109);
+      // low high --> 108 108 
+      return (kindVal == 108);
   };
 };
 template <typename FP> struct Cast<clcenv::VariableIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 263 263 
-      return (kindVal == 263);
+      // low high --> 261 261 
+      return (kindVal == 261);
   };
 };
 template <typename FP> struct Cast<core::PosixTime_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 306 306 
-      return (kindVal == 306);
+      // low high --> 304 304 
+      return (kindVal == 304);
   };
 };
 template <typename FP> struct Cast<core::Pathname_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 304 305 
-      return ((304 <= kindVal) && (kindVal <= 305));
+      // low high --> 302 303 
+      return ((302 <= kindVal) && (kindVal <= 303));
   };
 };
 template <typename FP> struct Cast<core::LexicalEnvironment_O*,FP> {
@@ -858,16 +854,16 @@ template <typename FP> struct Cast<core::MacroClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 291 291 
-      return (kindVal == 291);
+      // low high --> 289 289 
+      return (kindVal == 289);
   };
 };
 template <typename FP> struct Cast<clcenv::VariableType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 262 262 
-      return (kindVal == 262);
+      // low high --> 260 260 
+      return (kindVal == 260);
   };
 };
 template <typename FP> struct Cast<core::CatchEnvironment_O*,FP> {
@@ -882,16 +878,16 @@ template <typename FP> struct Cast<core::BroadcastStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 209 209 
-      return (kindVal == 209);
+      // low high --> 207 207 
+      return (kindVal == 207);
   };
 };
 template <typename FP> struct Cast<core::Instance_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 300 300 
-      return (kindVal == 300);
+      // low high --> 298 298 
+      return (kindVal == 298);
   };
 };
 template <typename FP> struct Cast<core::VectorStepper_O*,FP> {
@@ -906,8 +902,8 @@ template <typename FP> struct Cast<llvmo::DIScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 132 143 
-      return ((132 <= kindVal) && (kindVal <= 143));
+      // low high --> 131 142 
+      return ((131 <= kindVal) && (kindVal <= 142));
   };
 };
 template <typename FP> struct Cast<core::WeakKeyHashTable_O*,FP> {
@@ -922,35 +918,19 @@ template <typename FP> struct Cast<llvmo::IndirectBrInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 108 108 
-      return (kindVal == 108);
+      // low high --> 107 107 
+      return (kindVal == 107);
   };
 };
 template <typename FP> struct Cast<core::InterpretedClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 295 295 
-      return (kindVal == 295);
+      // low high --> 293 293 
+      return (kindVal == 293);
   };
 };
 template <typename FP> struct Cast<llvmo::EngineBuilder_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 175 175 
-      return (kindVal == 175);
-  };
-};
-template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 122 122 
-      return (kindVal == 122);
-  };
-};
-template <typename FP> struct Cast<llvmo::Module_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -958,39 +938,23 @@ template <typename FP> struct Cast<llvmo::Module_O*,FP> {
       return (kindVal == 174);
   };
 };
+template <typename FP> struct Cast<llvmo::ConstantPointerNull_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 121 121 
+      return (kindVal == 121);
+  };
+};
+template <typename FP> struct Cast<llvmo::Module_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 173 173 
+      return (kindVal == 173);
+  };
+};
 template <typename FP> struct Cast<core::SmallMultimap_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 303 303 
-      return (kindVal == 303);
-  };
-};
-template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 305 305 
-      return (kindVal == 305);
-  };
-};
-template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 265 265 
-      return (kindVal == 265);
-  };
-};
-template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 302 302 
-      return (kindVal == 302);
-  };
-};
-template <typename FP> struct Cast<core::Pointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -998,71 +962,79 @@ template <typename FP> struct Cast<core::Pointer_O*,FP> {
       return (kindVal == 301);
   };
 };
+template <typename FP> struct Cast<core::LogicalPathname_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 303 303 
+      return (kindVal == 303);
+  };
+};
+template <typename FP> struct Cast<core::NativeVector_double_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 263 263 
+      return (kindVal == 263);
+  };
+};
+template <typename FP> struct Cast<clbind::ClassRegistry_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 300 300 
+      return (kindVal == 300);
+  };
+};
+template <typename FP> struct Cast<core::Pointer_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 299 299 
+      return (kindVal == 299);
+  };
+};
 template <typename FP> struct Cast<core::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 282 300 
-      return ((282 <= kindVal) && (kindVal <= 300));
+      // low high --> 280 298 
+      return ((280 <= kindVal) && (kindVal <= 298));
   };
 };
 template <typename FP> struct Cast<core::HashTableEqual_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 221 221 
-      return (kindVal == 221);
+      // low high --> 219 219 
+      return (kindVal == 219);
   };
 };
 template <typename FP> struct Cast<core::Character_dummy_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 281 281 
-      return (kindVal == 281);
+      // low high --> 279 279 
+      return (kindVal == 279);
   };
 };
 template <typename FP> struct Cast<core::DirectoryEntry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 280 280 
-      return (kindVal == 280);
+      // low high --> 278 278 
+      return (kindVal == 278);
   };
 };
 template <typename FP> struct Cast<llvmo::MCSubtargetInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 172 173 
-      return ((172 <= kindVal) && (kindVal <= 173));
+      // low high --> 171 172 
+      return ((171 <= kindVal) && (kindVal <= 172));
   };
 };
 template <typename FP> struct Cast<llvmo::MDString_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 144 144 
-      return (kindVal == 144);
-  };
-};
-template <typename FP> struct Cast<core::Class_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 76 84 
-      return ((76 <= kindVal) && (kindVal <= 84));
-  };
-};
-template <typename FP> struct Cast<core::FuncallableStandardClass_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 79 79 
-      return (kindVal == 79);
-  };
-};
-template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -1070,36 +1042,60 @@ template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
       return (kindVal == 143);
   };
 };
+template <typename FP> struct Cast<core::Class_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 75 83 
+      return ((75 <= kindVal) && (kindVal <= 83));
+  };
+};
+template <typename FP> struct Cast<core::FuncallableStandardClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 78 78 
+      return (kindVal == 78);
+  };
+};
+template <typename FP> struct Cast<llvmo::DIFile_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 142 142 
+      return (kindVal == 142);
+  };
+};
 template <typename FP> struct Cast<llvmo::Pass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 167 171 
-      return ((167 <= kindVal) && (kindVal <= 171));
+      // low high --> 166 170 
+      return ((166 <= kindVal) && (kindVal <= 170));
   };
 };
 template <typename FP> struct Cast<llvmo::Linker_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 166 166 
-      return (kindVal == 166);
+      // low high --> 165 165 
+      return (kindVal == 165);
   };
 };
 template <typename FP> struct Cast<clcenv::Entry_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 246 264 
-      return ((246 <= kindVal) && (kindVal <= 264));
+      // low high --> 244 262 
+      return ((244 <= kindVal) && (kindVal <= 262));
   };
 };
 template <typename FP> struct Cast<llvmo::TerminatorInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 101 108 
-      return ((101 <= kindVal) && (kindVal <= 108));
+      // low high --> 100 107 
+      return ((100 <= kindVal) && (kindVal <= 107));
   };
 };
 template <typename FP> struct Cast<core::FunctionFrame_O*,FP> {
@@ -1114,96 +1110,96 @@ template <typename FP> struct Cast<llvmo::UndefValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 121 121 
-      return (kindVal == 121);
+      // low high --> 120 120 
+      return (kindVal == 120);
   };
 };
 template <typename FP> struct Cast<core::TwoWayStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 208 208 
-      return (kindVal == 208);
+      // low high --> 206 206 
+      return (kindVal == 206);
   };
 };
 template <typename FP> struct Cast<core::IOFileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 201 201 
-      return (kindVal == 201);
+      // low high --> 199 199 
+      return (kindVal == 199);
   };
 };
 template <typename FP> struct Cast<clcenv::LexicalVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 242 242 
-      return (kindVal == 242);
+      // low high --> 240 240 
+      return (kindVal == 240);
   };
 };
 template <typename FP> struct Cast<llvmo::NamedMDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 165 165 
-      return (kindVal == 165);
+      // low high --> 164 164 
+      return (kindVal == 164);
   };
 };
 template <typename FP> struct Cast<llvmo::ArrayType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 162 162 
-      return (kindVal == 162);
+      // low high --> 161 161 
+      return (kindVal == 161);
   };
 };
 template <typename FP> struct Cast<core::RecursiveDirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 191 191 
-      return (kindVal == 191);
+      // low high --> 190 190 
+      return (kindVal == 190);
   };
 };
 template <typename FP> struct Cast<llvmo::TargetLibraryInfoWrapperPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 171 171 
-      return (kindVal == 171);
+      // low high --> 170 170 
+      return (kindVal == 170);
   };
 };
 template <typename FP> struct Cast<llvmo::Type_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 156 164 
-      return ((156 <= kindVal) && (kindVal <= 164));
+      // low high --> 155 163 
+      return ((155 <= kindVal) && (kindVal <= 163));
   };
 };
 template <typename FP> struct Cast<llvmo::AtomicCmpXchgInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 100 100 
-      return (kindVal == 100);
+      // low high --> 99 99 
+      return (kindVal == 99);
   };
 };
 template <typename FP> struct Cast<llvmo::AllocaInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 98 98 
-      return (kindVal == 98);
+      // low high --> 97 97 
+      return (kindVal == 97);
   };
 };
 template <typename FP> struct Cast<core::Package_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 279 279 
-      return (kindVal == 279);
+      // low high --> 277 277 
+      return (kindVal == 277);
   };
 };
 template <typename FP> struct Cast<core::Fixnum_dummy_O*,FP> {
@@ -1218,16 +1214,16 @@ template <typename FP> struct Cast<llvmo::BasicBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 124 124 
-      return (kindVal == 124);
+      // low high --> 123 123 
+      return (kindVal == 123);
   };
 };
 template <typename FP> struct Cast<llvmo::CompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 158 163 
-      return ((158 <= kindVal) && (kindVal <= 163));
+      // low high --> 157 162 
+      return ((157 <= kindVal) && (kindVal <= 162));
   };
 };
 template <typename FP> struct Cast<core::CompileTimeEnvironment_O*,FP> {
@@ -1242,8 +1238,8 @@ template <typename FP> struct Cast<llvmo::PassManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 152 152 
-      return (kindVal == 152);
+      // low high --> 151 151 
+      return (kindVal == 151);
   };
 };
 template <typename FP> struct Cast<core::TagbodyEnvironment_O*,FP> {
@@ -1258,16 +1254,16 @@ template <typename FP> struct Cast<core::IOStreamStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 200 200 
-      return (kindVal == 200);
+      // low high --> 198 198 
+      return (kindVal == 198);
   };
 };
 template <typename FP> struct Cast<core::InvocationHistoryFrameIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 278 278 
-      return (kindVal == 278);
+      // low high --> 276 276 
+      return (kindVal == 276);
   };
 };
 template <typename FP> struct Cast<core::StrWithFillPtr_O*,FP> {
@@ -1282,8 +1278,8 @@ template <typename FP> struct Cast<core::StructureObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 277 277 
-      return (kindVal == 277);
+      // low high --> 275 275 
+      return (kindVal == 275);
   };
 };
 template <typename FP> struct Cast<core::ValueEnvironment_O*,FP> {
@@ -1298,24 +1294,24 @@ template <typename FP> struct Cast<llvmo::AttributeSet_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 276 276 
-      return (kindVal == 276);
+      // low high --> 274 274 
+      return (kindVal == 274);
   };
 };
 template <typename FP> struct Cast<core::BuiltInClass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 83 84 
-      return ((83 <= kindVal) && (kindVal <= 84));
+      // low high --> 82 83 
+      return ((82 <= kindVal) && (kindVal <= 83));
   };
 };
 template <typename FP> struct Cast<core::CxxClass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 82 82 
-      return (kindVal == 82);
+      // low high --> 81 81 
+      return (kindVal == 81);
   };
 };
 template <typename FP> struct Cast<core::SingleFloat_dummy_O*,FP> {
@@ -1330,48 +1326,48 @@ template <typename FP> struct Cast<llvmo::DITypeRefArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 245 245 
-      return (kindVal == 245);
+      // low high --> 243 243 
+      return (kindVal == 243);
   };
 };
 template <typename FP> struct Cast<core::DirectoryIterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 190 190 
-      return (kindVal == 190);
+      // low high --> 189 189 
+      return (kindVal == 189);
   };
 };
 template <typename FP> struct Cast<core::SexpLoadArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 216 216 
-      return (kindVal == 216);
+      // low high --> 214 214 
+      return (kindVal == 214);
   };
 };
 template <typename FP> struct Cast<llvmo::DINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 131 143 
-      return ((131 <= kindVal) && (kindVal <= 143));
+      // low high --> 130 142 
+      return ((130 <= kindVal) && (kindVal <= 142));
   };
 };
 template <typename FP> struct Cast<core::StringOutputStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 205 205 
-      return (kindVal == 205);
+      // low high --> 203 203 
+      return (kindVal == 203);
   };
 };
 template <typename FP> struct Cast<asttooling::AstVisitor_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 275 275 
-      return (kindVal == 275);
+      // low high --> 273 273 
+      return (kindVal == 273);
   };
 };
 template <typename FP> struct Cast<core::Vector_O*,FP> {
@@ -1386,88 +1382,88 @@ template <typename FP> struct Cast<core::Path_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 274 274 
-      return (kindVal == 274);
+      // low high --> 272 272 
+      return (kindVal == 272);
   };
 };
 template <typename FP> struct Cast<core::NamedFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 283 299 
-      return ((283 <= kindVal) && (kindVal <= 299));
+      // low high --> 281 297 
+      return ((281 <= kindVal) && (kindVal <= 297));
   };
 };
 template <typename FP> struct Cast<llvmo::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 114 114 
-      return (kindVal == 114);
+      // low high --> 113 113 
+      return (kindVal == 113);
   };
 };
 template <typename FP> struct Cast<llvmo::InvokeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 107 107 
-      return (kindVal == 107);
+      // low high --> 106 106 
+      return (kindVal == 106);
   };
 };
 template <typename FP> struct Cast<core::SNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 271 273 
-      return ((271 <= kindVal) && (kindVal <= 273));
+      // low high --> 269 271 
+      return ((269 <= kindVal) && (kindVal <= 271));
   };
 };
 template <typename FP> struct Cast<core::SourceFileInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 270 270 
-      return (kindVal == 270);
+      // low high --> 268 268 
+      return (kindVal == 268);
   };
 };
 template <typename FP> struct Cast<clcenv::Macro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 261 261 
-      return (kindVal == 261);
+      // low high --> 259 259 
+      return (kindVal == 259);
   };
 };
 template <typename FP> struct Cast<llvmo::InsertPoint_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 269 269 
-      return (kindVal == 269);
+      // low high --> 267 267 
+      return (kindVal == 267);
   };
 };
 template <typename FP> struct Cast<core::ForwardReferencedClass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 81 81 
-      return (kindVal == 81);
+      // low high --> 80 80 
+      return (kindVal == 80);
   };
 };
 template <typename FP> struct Cast<core::HashTableEql_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 220 220 
-      return (kindVal == 220);
+      // low high --> 218 218 
+      return (kindVal == 218);
   };
 };
 template <typename FP> struct Cast<core::LambdaListHandler_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 268 268 
-      return (kindVal == 268);
+      // low high --> 266 266 
+      return (kindVal == 266);
   };
 };
 template <typename FP> struct Cast<core::ArrayDisplaced_O*,FP> {
@@ -1482,96 +1478,96 @@ template <typename FP> struct Cast<core::Cache_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 267 267 
-      return (kindVal == 267);
+      // low high --> 265 265 
+      return (kindVal == 265);
   };
 };
 template <typename FP> struct Cast<llvmo::TargetOptions_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 155 155 
-      return (kindVal == 155);
+      // low high --> 154 154 
+      return (kindVal == 154);
   };
 };
 template <typename FP> struct Cast<core::Metaobject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 74 84 
-      return ((74 <= kindVal) && (kindVal <= 84));
+      // low high --> 73 83 
+      return ((73 <= kindVal) && (kindVal <= 83));
   };
 };
 template <typename FP> struct Cast<llvmo::PointerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 161 161 
-      return (kindVal == 161);
+      // low high --> 160 160 
+      return (kindVal == 160);
   };
 };
 template <typename FP> struct Cast<clcenv::GlobalMacroInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 234 234 
-      return (kindVal == 234);
+      // low high --> 232 232 
+      return (kindVal == 232);
   };
 };
 template <typename FP> struct Cast<core::WeakKeyMapping_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 266 266 
-      return (kindVal == 266);
+      // low high --> 264 264 
+      return (kindVal == 264);
   };
 };
 template <typename FP> struct Cast<core::CxxObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 226 265 
-      return ((226 <= kindVal) && (kindVal <= 265));
+      // low high --> 224 263 
+      return ((224 <= kindVal) && (kindVal <= 263));
   };
 };
 template <typename FP> struct Cast<core::InstanceCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 225 225 
-      return (kindVal == 225);
+      // low high --> 223 223 
+      return (kindVal == 223);
   };
 };
 template <typename FP> struct Cast<llvmo::DICompositeType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 142 142 
-      return (kindVal == 142);
+      // low high --> 141 141 
+      return (kindVal == 141);
   };
 };
 template <typename FP> struct Cast<core::General_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 9 307 
-      return ((9 <= kindVal) && (kindVal <= 307));
+      // low high --> 9 305 
+      return ((9 <= kindVal) && (kindVal <= 305));
   };
 };
 template <typename FP> struct Cast<core::Creator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 222 225 
-      return ((222 <= kindVal) && (kindVal <= 225));
+      // low high --> 220 223 
+      return ((220 <= kindVal) && (kindVal <= 223));
   };
 };
 template <typename FP> struct Cast<llvmo::BranchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 106 106 
-      return (kindVal == 106);
+      // low high --> 105 105 
+      return (kindVal == 105);
   };
 };
 template <typename FP> struct Cast<core::MacroletEnvironment_O*,FP> {
@@ -1586,32 +1582,32 @@ template <typename FP> struct Cast<core::HashTable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 217 221 
-      return ((217 <= kindVal) && (kindVal <= 221));
+      // low high --> 215 219 
+      return ((215 <= kindVal) && (kindVal <= 219));
   };
 };
 template <typename FP> struct Cast<llvmo::DILexicalBlockBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 136 137 
-      return ((136 <= kindVal) && (kindVal <= 137));
+      // low high --> 135 136 
+      return ((135 <= kindVal) && (kindVal <= 136));
   };
 };
 template <typename FP> struct Cast<core::Archive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 212 216 
-      return ((212 <= kindVal) && (kindVal <= 216));
+      // low high --> 210 214 
+      return ((210 <= kindVal) && (kindVal <= 214));
   };
 };
 template <typename FP> struct Cast<clcenv::FunctionType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 260 260 
-      return (kindVal == 260);
+      // low high --> 258 258 
+      return (kindVal == 258);
   };
 };
 template <typename FP> struct Cast<core::Cons_O*,FP> {
@@ -1626,131 +1622,35 @@ template <typename FP> struct Cast<core::SharpEqualWrapper_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 211 211 
-      return (kindVal == 211);
+      // low high --> 209 209 
+      return (kindVal == 209);
   };
 };
 template <typename FP> struct Cast<core::SingleDispatchGenericFunctionClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 299 299 
-      return (kindVal == 299);
+      // low high --> 297 297 
+      return (kindVal == 297);
   };
 };
 template <typename FP> struct Cast<core::Reader_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 210 210 
-      return (kindVal == 210);
+      // low high --> 208 208 
+      return (kindVal == 208);
   };
 };
 template <typename FP> struct Cast<core::Stream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 197 209 
-      return ((197 <= kindVal) && (kindVal <= 209));
+      // low high --> 195 207 
+      return ((195 <= kindVal) && (kindVal <= 207));
   };
 };
 template <typename FP> struct Cast<clasp_ffi::ForeignTypeSpec_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 196 196 
-      return (kindVal == 196);
-  };
-};
-template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 96 99 
-      return ((96 <= kindVal) && (kindVal <= 99));
-  };
-};
-template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 273 273 
-      return (kindVal == 273);
-  };
-};
-template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 259 259 
-      return (kindVal == 259);
-  };
-};
-template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 151 151 
-      return (kindVal == 151);
-  };
-};
-template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 298 298 
-      return (kindVal == 298);
-  };
-};
-template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 204 204 
-      return (kindVal == 204);
-  };
-};
-template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 153 154 
-      return ((153 <= kindVal) && (kindVal <= 154));
-  };
-};
-template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 244 244 
-      return (kindVal == 244);
-  };
-};
-template <typename FP> struct Cast<core::CandoException_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 195 195 
-      return (kindVal == 195);
-  };
-};
-template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 113 113 
-      return (kindVal == 113);
-  };
-};
-template <typename FP> struct Cast<core::EchoStream_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 207 207 
-      return (kindVal == 207);
-  };
-};
-template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -1758,7 +1658,71 @@ template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
       return (kindVal == 194);
   };
 };
-template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
+template <typename FP> struct Cast<llvmo::UnaryInstruction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 95 98 
+      return ((95 <= kindVal) && (kindVal <= 98));
+  };
+};
+template <typename FP> struct Cast<core::BranchSNode_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 271 271 
+      return (kindVal == 271);
+  };
+};
+template <typename FP> struct Cast<clcenv::Tag_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 257 257 
+      return (kindVal == 257);
+  };
+};
+template <typename FP> struct Cast<llvmo::FunctionPassManager_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 150 150 
+      return (kindVal == 150);
+  };
+};
+template <typename FP> struct Cast<core::SingleDispatchEffectiveMethodFunction_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 296 296 
+      return (kindVal == 296);
+  };
+};
+template <typename FP> struct Cast<core::StringInputStream_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 202 202 
+      return (kindVal == 202);
+  };
+};
+template <typename FP> struct Cast<llvmo::TargetMachine_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 152 153 
+      return ((152 <= kindVal) && (kindVal <= 153));
+  };
+};
+template <typename FP> struct Cast<llvmo::DINodeArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 242 242 
+      return (kindVal == 242);
+  };
+};
+template <typename FP> struct Cast<core::CandoException_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -1766,31 +1730,23 @@ template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
       return (kindVal == 193);
   };
 };
-template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
+template <typename FP> struct Cast<llvmo::GlobalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 258 258 
-      return (kindVal == 258);
+      // low high --> 112 112 
+      return (kindVal == 112);
   };
 };
-template <typename FP> struct Cast<core::StandardClass_O*,FP> {
+template <typename FP> struct Cast<core::EchoStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 78 78 
-      return (kindVal == 78);
+      // low high --> 205 205 
+      return (kindVal == 205);
   };
 };
-template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 241 241 
-      return (kindVal == 241);
-  };
-};
-template <typename FP> struct Cast<core::Regex_O*,FP> {
+template <typename FP> struct Cast<core::SymbolToEnumConverter_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -1798,44 +1754,76 @@ template <typename FP> struct Cast<core::Regex_O*,FP> {
       return (kindVal == 192);
   };
 };
+template <typename FP> struct Cast<core::PosixTimeDuration_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 191 191 
+      return (kindVal == 191);
+  };
+};
+template <typename FP> struct Cast<clcenv::GlobalEnvironment_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 256 256 
+      return (kindVal == 256);
+  };
+};
+template <typename FP> struct Cast<core::StandardClass_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 77 77 
+      return (kindVal == 77);
+  };
+};
+template <typename FP> struct Cast<clcenv::ConstantVariableInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 239 239 
+      return (kindVal == 239);
+  };
+};
 template <typename FP> struct Cast<llvmo::PassManagerBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 150 152 
-      return ((150 <= kindVal) && (kindVal <= 152));
+      // low high --> 149 151 
+      return ((149 <= kindVal) && (kindVal <= 151));
   };
 };
 template <typename FP> struct Cast<core::Iterator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 189 191 
-      return ((189 <= kindVal) && (kindVal <= 191));
+      // low high --> 188 190 
+      return ((188 <= kindVal) && (kindVal <= 190));
   };
 };
 template <typename FP> struct Cast<clbind::ClassRep_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 84 84 
-      return (kindVal == 84);
+      // low high --> 83 83 
+      return (kindVal == 83);
   };
 };
 template <typename FP> struct Cast<llvmo::IRBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 126 126 
-      return (kindVal == 126);
+      // low high --> 125 125 
+      return (kindVal == 125);
   };
 };
 template <typename FP> struct Cast<llvmo::StoreInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 95 95 
-      return (kindVal == 95);
+      // low high --> 94 94 
+      return (kindVal == 94);
   };
 };
 template <typename FP> struct Cast<core::LongFloat_O*,FP> {
@@ -1850,8 +1838,8 @@ template <typename FP> struct Cast<core::TranslationFunctor*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 290 290 
-      return (kindVal == 290);
+      // low high --> 288 288 
+      return (kindVal == 288);
   };
 };
 template <typename FP> struct Cast<core::BlockEnvironment_O*,FP> {
@@ -1866,32 +1854,32 @@ template <typename FP> struct Cast<llvmo::ResumeInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 105 105 
-      return (kindVal == 105);
+      // low high --> 104 104 
+      return (kindVal == 104);
   };
 };
 template <typename FP> struct Cast<llvmo::DISubroutineType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 141 141 
-      return (kindVal == 141);
+      // low high --> 140 140 
+      return (kindVal == 140);
   };
 };
 template <typename FP> struct Cast<llvmo::DIType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 138 142 
-      return ((138 <= kindVal) && (kindVal <= 142));
+      // low high --> 137 141 
+      return ((137 <= kindVal) && (kindVal <= 141));
   };
 };
 template <typename FP> struct Cast<clcenv::SpecialOperatorInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 233 233 
-      return (kindVal == 233);
+      // low high --> 231 231 
+      return (kindVal == 231);
   };
 };
 template <typename FP> struct Cast<core::Float_O*,FP> {
@@ -1906,8 +1894,8 @@ template <typename FP> struct Cast<clcenv::LambdaNameInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 232 232 
-      return (kindVal == 232);
+      // low high --> 230 230 
+      return (kindVal == 230);
   };
 };
 template <typename FP> struct Cast<core::VectorObjectsWithFillPtr_O*,FP> {
@@ -1922,48 +1910,48 @@ template <typename FP> struct Cast<llvmo::MDNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 130 143 
-      return ((130 <= kindVal) && (kindVal <= 143));
+      // low high --> 129 142 
+      return ((129 <= kindVal) && (kindVal <= 142));
   };
 };
 template <typename FP> struct Cast<core::SourcePosInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 188 188 
-      return (kindVal == 188);
+      // low high --> 187 187 
+      return (kindVal == 187);
   };
 };
 template <typename FP> struct Cast<clcenv::GlobalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 231 231 
-      return (kindVal == 231);
+      // low high --> 229 229 
+      return (kindVal == 229);
   };
 };
 template <typename FP> struct Cast<llvmo::LLVMTargetMachine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 154 154 
-      return (kindVal == 154);
+      // low high --> 153 153 
+      return (kindVal == 153);
   };
 };
 template <typename FP> struct Cast<llvmo::ReturnInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 104 104 
-      return (kindVal == 104);
+      // low high --> 103 103 
+      return (kindVal == 103);
   };
 };
 template <typename FP> struct Cast<llvmo::APInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 149 149 
-      return (kindVal == 149);
+      // low high --> 148 148 
+      return (kindVal == 148);
   };
 };
 template <typename FP> struct Cast<core::ConsStepper_O*,FP> {
@@ -1978,16 +1966,16 @@ template <typename FP> struct Cast<llvmo::Triple_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 148 148 
-      return (kindVal == 148);
+      // low high --> 147 147 
+      return (kindVal == 147);
   };
 };
 template <typename FP> struct Cast<clcenv::BlockInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 237 237 
-      return (kindVal == 237);
+      // low high --> 235 235 
+      return (kindVal == 235);
   };
 };
 template <typename FP> struct Cast<core::DoubleFloat_O*,FP> {
@@ -2002,48 +1990,48 @@ template <typename FP> struct Cast<core::NativeVector_int_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 243 243 
-      return (kindVal == 243);
+      // low high --> 241 241 
+      return (kindVal == 241);
   };
 };
 template <typename FP> struct Cast<core::Symbol_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 186 187 
-      return ((186 <= kindVal) && (kindVal <= 187));
+      // low high --> 185 186 
+      return ((185 <= kindVal) && (kindVal <= 186));
   };
 };
 template <typename FP> struct Cast<llvmo::DataLayout_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 185 185 
-      return (kindVal == 185);
+      // low high --> 184 184 
+      return (kindVal == 184);
   };
 };
 template <typename FP> struct Cast<core::LightUserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 183 184 
-      return ((183 <= kindVal) && (kindVal <= 184));
+      // low high --> 182 183 
+      return ((182 <= kindVal) && (kindVal <= 183));
   };
 };
 template <typename FP> struct Cast<core::T_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 6 307 
-      return ((6 <= kindVal) && (kindVal <= 307));
+      // low high --> 6 305 
+      return ((6 <= kindVal) && (kindVal <= 305));
   };
 };
 template <typename FP> struct Cast<core::Null_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 187 187 
-      return (kindVal == 187);
+      // low high --> 186 186 
+      return (kindVal == 186);
   };
 };
 template <typename FP> struct Cast<asttooling::AsttoolingExposer_O*,FP> {
@@ -2058,16 +2046,16 @@ template <typename FP> struct Cast<llvmo::PassManagerBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 147 147 
-      return (kindVal == 147);
+      // low high --> 146 146 
+      return (kindVal == 146);
   };
 };
 template <typename FP> struct Cast<core::Specializer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 75 84 
-      return ((75 <= kindVal) && (kindVal <= 84));
+      // low high --> 74 83 
+      return ((74 <= kindVal) && (kindVal <= 83));
   };
 };
 template <typename FP> struct Cast<core::StackValueEnvironment_O*,FP> {
@@ -2082,51 +2070,27 @@ template <typename FP> struct Cast<llvmo::ConstantFP_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 120 120 
-      return (kindVal == 120);
+      // low high --> 119 119 
+      return (kindVal == 119);
   };
 };
 template <typename FP> struct Cast<llvmo::LoadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 97 97 
-      return (kindVal == 97);
+      // low high --> 96 96 
+      return (kindVal == 96);
   };
 };
 template <typename FP> struct Cast<llvmo::APFloat_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 146 146 
-      return (kindVal == 146);
+      // low high --> 145 145 
+      return (kindVal == 145);
   };
 };
 template <typename FP> struct Cast<core::Record_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 182 182 
-      return (kindVal == 182);
-  };
-};
-template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 240 240 
-      return (kindVal == 240);
-  };
-};
-template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 213 214 
-      return ((213 <= kindVal) && (kindVal <= 214));
-  };
-};
-template <typename FP> struct Cast<core::SourceManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -2134,7 +2098,23 @@ template <typename FP> struct Cast<core::SourceManager_O*,FP> {
       return (kindVal == 181);
   };
 };
-template <typename FP> struct Cast<core::IntArray_O*,FP> {
+template <typename FP> struct Cast<clcenv::SymbolMacroInfo_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 238 238 
+      return (kindVal == 238);
+  };
+};
+template <typename FP> struct Cast<core::SaveArchive_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 211 212 
+      return ((211 <= kindVal) && (kindVal <= 212));
+  };
+};
+template <typename FP> struct Cast<core::SourceManager_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
@@ -2142,12 +2122,20 @@ template <typename FP> struct Cast<core::IntArray_O*,FP> {
       return (kindVal == 180);
   };
 };
+template <typename FP> struct Cast<core::IntArray_O*,FP> {
+  inline static bool isA(FP client) {
+      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
+      int kindVal = header->kind();
+      // low high --> 179 179 
+      return (kindVal == 179);
+  };
+};
 template <typename FP> struct Cast<clcenv::OptimizeInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 236 236 
-      return (kindVal == 236);
+      // low high --> 234 234 
+      return (kindVal == 234);
   };
 };
 template <typename FP> struct Cast<clbind::detail::class_map*,FP> {
@@ -2170,24 +2158,24 @@ template <typename FP> struct Cast<core::LeafSNode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 272 272 
-      return (kindVal == 272);
+      // low high --> 270 270 
+      return (kindVal == 270);
   };
 };
 template <typename FP> struct Cast<llvmo::Constant_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 110 123 
-      return ((110 <= kindVal) && (kindVal <= 123));
+      // low high --> 109 122 
+      return ((109 <= kindVal) && (kindVal <= 122));
   };
 };
 template <typename FP> struct Cast<core::Binder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 179 179 
-      return (kindVal == 179);
+      // low high --> 178 178 
+      return (kindVal == 178);
   };
 };
 template <typename FP> struct Cast<core::String_O*,FP> {
@@ -2210,24 +2198,24 @@ template <typename FP> struct Cast<core::SynonymStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 206 206 
-      return (kindVal == 206);
+      // low high --> 204 204 
+      return (kindVal == 204);
   };
 };
 template <typename FP> struct Cast<core::LoadTimeValues_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 178 178 
-      return (kindVal == 178);
+      // low high --> 177 177 
+      return (kindVal == 177);
   };
 };
 template <typename FP> struct Cast<core::ExternalObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 85 177 
-      return ((85 <= kindVal) && (kindVal <= 177));
+      // low high --> 84 176 
+      return ((84 <= kindVal) && (kindVal <= 176));
   };
 };
 template <typename FP> struct Cast<core::SimpleBitVector_O*,FP> {
@@ -2242,24 +2230,24 @@ template <typename FP> struct Cast<core::StandardObject_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 73 84 
-      return ((73 <= kindVal) && (kindVal <= 84));
+      // low high --> 72 83 
+      return ((72 <= kindVal) && (kindVal <= 83));
   };
 };
 template <typename FP> struct Cast<llvmo::DILocalScope_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 134 137 
-      return ((134 <= kindVal) && (kindVal <= 137));
+      // low high --> 133 136 
+      return ((133 <= kindVal) && (kindVal <= 136));
   };
 };
 template <typename FP> struct Cast<llvmo::ImmutablePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 170 171 
-      return ((170 <= kindVal) && (kindVal <= 171));
+      // low high --> 169 170 
+      return ((169 <= kindVal) && (kindVal <= 170));
   };
 };
 template <typename FP> struct Cast<core::RuntimeVisibleEnvironment_O*,FP> {
@@ -2274,8 +2262,8 @@ template <typename FP> struct Cast<core::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 285 299 
-      return ((285 <= kindVal) && (kindVal <= 299));
+      // low high --> 283 297 
+      return ((283 <= kindVal) && (kindVal <= 297));
   };
 };
 template <typename FP> struct Cast<core::ValueFrame_O*,FP> {
@@ -2290,8 +2278,8 @@ template <typename FP> struct Cast<core::SingleDispatchMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 296 297 
-      return ((296 <= kindVal) && (kindVal <= 297));
+      // low high --> 294 295 
+      return ((294 <= kindVal) && (kindVal <= 295));
   };
 };
 template <typename FP> struct Cast<core::VaList_dummy_O*,FP> {
@@ -2306,72 +2294,64 @@ template <typename FP> struct Cast<llvmo::StructType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 163 163 
-      return (kindVal == 163);
+      // low high --> 162 162 
+      return (kindVal == 162);
   };
 };
 template <typename FP> struct Cast<core::ClosureWithFrame_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 293 295 
-      return ((293 <= kindVal) && (kindVal <= 295));
+      // low high --> 291 293 
+      return ((291 <= kindVal) && (kindVal <= 293));
   };
 };
 template <typename FP> struct Cast<core::WeakPointer_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 72 72 
-      return (kindVal == 72);
+      // low high --> 71 71 
+      return (kindVal == 71);
   };
 };
 template <typename FP> struct Cast<llvmo::ExecutionEngine_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 145 145 
-      return (kindVal == 145);
+      // low high --> 144 144 
+      return (kindVal == 144);
   };
 };
 template <typename FP> struct Cast<clcenv::LexicalVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 257 257 
-      return (kindVal == 257);
+      // low high --> 255 255 
+      return (kindVal == 255);
   };
 };
 template <typename FP> struct Cast<core::SingleDispatchCxxEffectiveMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 292 292 
-      return (kindVal == 292);
+      // low high --> 290 290 
+      return (kindVal == 290);
   };
 };
 template <typename FP> struct Cast<clcenv::SpecialVariable_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 256 256 
-      return (kindVal == 256);
+      // low high --> 254 254 
+      return (kindVal == 254);
   };
 };
 template <typename FP> struct Cast<llvmo::ConstantDataArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 118 118 
-      return (kindVal == 118);
-  };
-};
-template <typename FP> struct Cast<core::RegexMatch_O*,FP> {
-  inline static bool isA(FP client) {
-      gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
-      int kindVal = header->kind();
-      // low high --> 71 71 
-      return (kindVal == 71);
+      // low high --> 117 117 
+      return (kindVal == 117);
   };
 };
 template <typename FP> struct Cast<core::FunctionValueEnvironment_O*,FP> {
@@ -2386,16 +2366,16 @@ template <typename FP> struct Cast<clbind::ConstructorCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 224 224 
-      return (kindVal == 224);
+      // low high --> 222 222 
+      return (kindVal == 222);
   };
 };
 template <typename FP> struct Cast<core::BuiltinClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 289 291 
-      return ((289 <= kindVal) && (kindVal <= 291));
+      // low high --> 287 289 
+      return ((287 <= kindVal) && (kindVal <= 289));
   };
 };
 template <typename FP> struct Cast<core::Integer_O*,FP> {
@@ -2410,16 +2390,16 @@ template <typename FP> struct Cast<core::StructureClass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 80 80 
-      return (kindVal == 80);
+      // low high --> 79 79 
+      return (kindVal == 79);
   };
 };
 template <typename FP> struct Cast<llvmo::IntegerType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 157 157 
-      return (kindVal == 157);
+      // low high --> 156 156 
+      return (kindVal == 156);
   };
 };
 template <typename FP> struct Cast<llvmo::Attribute_O*,FP> {
@@ -2434,8 +2414,8 @@ template <typename FP> struct Cast<core::HashTableEqualp_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 219 219 
-      return (kindVal == 219);
+      // low high --> 217 217 
+      return (kindVal == 217);
   };
 };
 template <typename FP> struct Cast<llvmo::DebugLoc_O*,FP> {
@@ -2458,24 +2438,24 @@ template <typename FP> struct Cast<llvmo::DICompileUnit_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 133 133 
-      return (kindVal == 133);
+      // low high --> 132 132 
+      return (kindVal == 132);
   };
 };
 template <typename FP> struct Cast<llvmo::VectorType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 160 160 
-      return (kindVal == 160);
+      // low high --> 159 159 
+      return (kindVal == 159);
   };
 };
 template <typename FP> struct Cast<core::StdClass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 77 79 
-      return ((77 <= kindVal) && (kindVal <= 79));
+      // low high --> 76 78 
+      return ((76 <= kindVal) && (kindVal <= 78));
   };
 };
 template <typename FP> struct Cast<core::SequenceStepper_O*,FP> {
@@ -2490,24 +2470,24 @@ template <typename FP> struct Cast<llvmo::DILexicalBlock_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 137 137 
-      return (kindVal == 137);
+      // low high --> 136 136 
+      return (kindVal == 136);
   };
 };
 template <typename FP> struct Cast<llvmo::Metadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 128 144 
-      return ((128 <= kindVal) && (kindVal <= 144));
+      // low high --> 127 143 
+      return ((127 <= kindVal) && (kindVal <= 143));
   };
 };
 template <typename FP> struct Cast<llvmo::User_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 89 123 
-      return ((89 <= kindVal) && (kindVal <= 123));
+      // low high --> 88 122 
+      return ((88 <= kindVal) && (kindVal <= 122));
   };
 };
 template <typename FP> struct Cast<core::WrappedPointer_O*,FP> {
@@ -2522,8 +2502,8 @@ template <typename FP> struct Cast<core::UserData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 184 184 
-      return (kindVal == 184);
+      // low high --> 183 183 
+      return (kindVal == 183);
   };
 };
 template <typename FP> struct Cast<core::RandomState_O*,FP> {
@@ -2538,72 +2518,72 @@ template <typename FP> struct Cast<core::ClosureWithSlots_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 288 288 
-      return (kindVal == 288);
+      // low high --> 286 286 
+      return (kindVal == 286);
   };
 };
 template <typename FP> struct Cast<clcenv::Block_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 255 255 
-      return (kindVal == 255);
+      // low high --> 253 253 
+      return (kindVal == 253);
   };
 };
 template <typename FP> struct Cast<llvmo::SequentialType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 159 162 
-      return ((159 <= kindVal) && (kindVal <= 162));
+      // low high --> 158 161 
+      return ((158 <= kindVal) && (kindVal <= 161));
   };
 };
 template <typename FP> struct Cast<llvmo::ConstantStruct_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 119 119 
-      return (kindVal == 119);
+      // low high --> 118 118 
+      return (kindVal == 118);
   };
 };
 template <typename FP> struct Cast<llvmo::CallInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 94 94 
-      return (kindVal == 94);
+      // low high --> 93 93 
+      return (kindVal == 93);
   };
 };
 template <typename FP> struct Cast<llvmo::SwitchInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 103 103 
-      return (kindVal == 103);
+      // low high --> 102 102 
+      return (kindVal == 102);
   };
 };
 template <typename FP> struct Cast<core::SexpSaveArchive_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 214 214 
-      return (kindVal == 214);
+      // low high --> 212 212 
+      return (kindVal == 212);
   };
 };
 template <typename FP> struct Cast<clcenv::LambdaName_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 254 254 
-      return (kindVal == 254);
+      // low high --> 252 252 
+      return (kindVal == 252);
   };
 };
 template <typename FP> struct Cast<clcenv::Function_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 253 253 
-      return (kindVal == 253);
+      // low high --> 251 251 
+      return (kindVal == 251);
   };
 };
 template <typename FP> struct Cast<core::TagbodyFrame_O*,FP> {
@@ -2634,24 +2614,24 @@ template <typename FP> struct Cast<clcenv::FunctionIgnore_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 252 252 
-      return (kindVal == 252);
+      // low high --> 250 250 
+      return (kindVal == 250);
   };
 };
 template <typename FP> struct Cast<core::StringStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 203 205 
-      return ((203 <= kindVal) && (kindVal <= 205));
+      // low high --> 201 203 
+      return ((201 <= kindVal) && (kindVal <= 203));
   };
 };
 template <typename FP> struct Cast<llvmo::DIBuilder_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 127 127 
-      return (kindVal == 127);
+      // low high --> 126 126 
+      return (kindVal == 126);
   };
 };
 template <typename FP> struct Cast<core::Array_O*,FP> {
@@ -2666,24 +2646,24 @@ template <typename FP> struct Cast<llvmo::ConstantDataSequential_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 117 118 
-      return ((117 <= kindVal) && (kindVal <= 118));
+      // low high --> 116 117 
+      return ((116 <= kindVal) && (kindVal <= 117));
   };
 };
 template <typename FP> struct Cast<llvmo::ConstantInt_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 116 116 
-      return (kindVal == 116);
+      // low high --> 115 115 
+      return (kindVal == 115);
   };
 };
 template <typename FP> struct Cast<core::CompiledClosure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 294 294 
-      return (kindVal == 294);
+      // low high --> 292 292 
+      return (kindVal == 292);
   };
 };
 template <typename FP> struct Cast<core::Environment_O*,FP> {
@@ -2698,8 +2678,8 @@ template <typename FP> struct Cast<llvmo::ValueAsMetadata_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 129 129 
-      return (kindVal == 129);
+      // low high --> 128 128 
+      return (kindVal == 128);
   };
 };
 template <typename FP> struct Cast<core::ActivationFrame_O*,FP> {
@@ -2714,8 +2694,8 @@ template <typename FP> struct Cast<clcenv::SymbolMacro_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 251 251 
-      return (kindVal == 251);
+      // low high --> 249 249 
+      return (kindVal == 249);
   };
 };
 template <typename FP> struct Cast<core::Str_O*,FP> {
@@ -2730,48 +2710,48 @@ template <typename FP> struct Cast<llvmo::UnreachableInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 102 102 
-      return (kindVal == 102);
+      // low high --> 101 101 
+      return (kindVal == 101);
   };
 };
 template <typename FP> struct Cast<core::ConcatenatedStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 202 202 
-      return (kindVal == 202);
+      // low high --> 200 200 
+      return (kindVal == 200);
   };
 };
 template <typename FP> struct Cast<clcenv::VariableDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 250 250 
-      return (kindVal == 250);
+      // low high --> 248 248 
+      return (kindVal == 248);
   };
 };
 template <typename FP> struct Cast<llvmo::PHINode_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 93 93 
-      return (kindVal == 93);
+      // low high --> 92 92 
+      return (kindVal == 92);
   };
 };
 template <typename FP> struct Cast<llvmo::Instruction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 90 109 
-      return ((90 <= kindVal) && (kindVal <= 109));
+      // low high --> 89 108 
+      return ((89 <= kindVal) && (kindVal <= 108));
   };
 };
 template <typename FP> struct Cast<clcenv::LocalFunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 230 230 
-      return (kindVal == 230);
+      // low high --> 228 228 
+      return (kindVal == 228);
   };
 };
 template <typename FP> struct Cast<core::Rational_O*,FP> {
@@ -2786,32 +2766,32 @@ template <typename FP> struct Cast<core::AnsiStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 198 209 
-      return ((198 <= kindVal) && (kindVal <= 209));
+      // low high --> 196 207 
+      return ((196 <= kindVal) && (kindVal <= 207));
   };
 };
 template <typename FP> struct Cast<core::SpecialForm_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 284 284 
-      return (kindVal == 284);
+      // low high --> 282 282 
+      return (kindVal == 282);
   };
 };
 template <typename FP> struct Cast<llvmo::ConstantArray_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 115 115 
-      return (kindVal == 115);
+      // low high --> 114 114 
+      return (kindVal == 114);
   };
 };
 template <typename FP> struct Cast<core::CxxMethodFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 297 297 
-      return (kindVal == 297);
+      // low high --> 295 295 
+      return (kindVal == 295);
   };
 };
 template <typename FP> struct Cast<core::WeakHashTable_O*,FP> {
@@ -2834,16 +2814,16 @@ template <typename FP> struct Cast<llvmo::DISubprogram_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 135 135 
-      return (kindVal == 135);
+      // low high --> 134 134 
+      return (kindVal == 134);
   };
 };
 template <typename FP> struct Cast<llvmo::DIBasicType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 140 140 
-      return (kindVal == 140);
+      // low high --> 139 139 
+      return (kindVal == 139);
   };
 };
 template <typename FP> struct Cast<core::FileStatus_O*,FP> {
@@ -2858,32 +2838,32 @@ template <typename FP> struct Cast<llvmo::GlobalValue_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 112 114 
-      return ((112 <= kindVal) && (kindVal <= 114));
+      // low high --> 111 113 
+      return ((111 <= kindVal) && (kindVal <= 113));
   };
 };
 template <typename FP> struct Cast<llvmo::LandingPadInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 92 92 
-      return (kindVal == 92);
+      // low high --> 91 91 
+      return (kindVal == 91);
   };
 };
 template <typename FP> struct Cast<clcenv::SpecialVariableInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 239 239 
-      return (kindVal == 239);
+      // low high --> 237 237 
+      return (kindVal == 237);
   };
 };
 template <typename FP> struct Cast<llvmo::IRBuilderBase_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 125 126 
-      return ((125 <= kindVal) && (kindVal <= 126));
+      // low high --> 124 125 
+      return ((124 <= kindVal) && (kindVal <= 125));
   };
 };
 template <typename FP> struct Cast<core::SymbolMacroletEnvironment_O*,FP> {
@@ -2898,8 +2878,8 @@ template <typename FP> struct Cast<llvmo::Value_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 87 124 
-      return ((87 <= kindVal) && (kindVal <= 124));
+      // low high --> 86 123 
+      return ((86 <= kindVal) && (kindVal <= 123));
   };
 };
 template <typename FP> struct Cast<core::Number_O*,FP> {
@@ -2922,8 +2902,8 @@ template <typename FP> struct Cast<clcenv::Info_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 228 242 
-      return ((228 <= kindVal) && (kindVal <= 242));
+      // low high --> 226 240 
+      return ((226 <= kindVal) && (kindVal <= 240));
   };
 };
 template <typename FP> struct Cast<core::UnwindProtectEnvironment_O*,FP> {
@@ -2946,32 +2926,32 @@ template <typename FP> struct Cast<clcenv::FunctionDynamicExtent_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 249 249 
-      return (kindVal == 249);
+      // low high --> 247 247 
+      return (kindVal == 247);
   };
 };
 template <typename FP> struct Cast<core::CompiledFunction_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 286 286 
-      return (kindVal == 286);
+      // low high --> 284 284 
+      return (kindVal == 284);
   };
 };
 template <typename FP> struct Cast<clcenv::Closure_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 248 248 
-      return (kindVal == 248);
+      // low high --> 246 246 
+      return (kindVal == 246);
   };
 };
 template <typename FP> struct Cast<core::NativeVector_float_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 227 227 
-      return (kindVal == 227);
+      // low high --> 225 225 
+      return (kindVal == 225);
   };
 };
 template <typename FP> struct Cast<core::ArrayObjects_O*,FP> {
@@ -2986,24 +2966,24 @@ template <typename FP> struct Cast<llvmo::ModulePass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 169 171 
-      return ((169 <= kindVal) && (kindVal <= 171));
+      // low high --> 168 170 
+      return ((168 <= kindVal) && (kindVal <= 170));
   };
 };
 template <typename FP> struct Cast<llvmo::DIDerivedType_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 139 139 
-      return (kindVal == 139);
+      // low high --> 138 138 
+      return (kindVal == 138);
   };
 };
 template <typename FP> struct Cast<llvmo::Argument_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 88 88 
-      return (kindVal == 88);
+      // low high --> 87 87 
+      return (kindVal == 87);
   };
 };
 template <typename FP> struct Cast<core::Complex_O*,FP> {
@@ -3018,8 +2998,8 @@ template <typename FP> struct Cast<llvmo::BlockAddress_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 111 111 
-      return (kindVal == 111);
+      // low high --> 110 110 
+      return (kindVal == 110);
   };
 };
 template <typename FP> struct Cast<core::BitVector_O*,FP> {
@@ -3034,48 +3014,48 @@ template <typename FP> struct Cast<llvmo::FunctionPass_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 168 168 
-      return (kindVal == 168);
+      // low high --> 167 167 
+      return (kindVal == 167);
   };
 };
 template <typename FP> struct Cast<llvmo::AtomicRMWInst_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 91 91 
-      return (kindVal == 91);
+      // low high --> 90 90 
+      return (kindVal == 90);
   };
 };
 template <typename FP> struct Cast<core::FileStream_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 199 201 
-      return ((199 <= kindVal) && (kindVal <= 201));
+      // low high --> 197 199 
+      return ((197 <= kindVal) && (kindVal <= 199));
   };
 };
 template <typename FP> struct Cast<clcenv::Inline_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 247 247 
-      return (kindVal == 247);
+      // low high --> 245 245 
+      return (kindVal == 245);
   };
 };
 template <typename FP> struct Cast<clcenv::FunctionInfo_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 229 235 
-      return ((229 <= kindVal) && (kindVal <= 235));
+      // low high --> 227 233 
+      return ((227 <= kindVal) && (kindVal <= 233));
   };
 };
 template <typename FP> struct Cast<core::HashTableEq_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 218 218 
-      return (kindVal == 218);
+      // low high --> 216 216 
+      return (kindVal == 216);
   };
 };
 template <typename FP> struct Cast<core::MultiStringBuffer_O*,FP> {
@@ -3090,16 +3070,16 @@ template <typename FP> struct Cast<clasp_ffi::ForeignData_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 86 86 
-      return (kindVal == 86);
+      // low high --> 85 85 
+      return (kindVal == 85);
   };
 };
 template <typename FP> struct Cast<clbind::DummyCreator_O*,FP> {
   inline static bool isA(FP client) {
       gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(ClientPtrToBasePtr(client));
       int kindVal = header->kind();
-      // low high --> 223 223 
-      return (kindVal == 223);
+      // low high --> 221 221 
+      return (kindVal == 221);
   };
 };
 #endif // defined(GC_DYNAMIC_CAST)
@@ -3696,10 +3676,6 @@ template <> class gctools::GCKind<clcenv::ConstantVariableInfo_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_clcenv__ConstantVariableInfo_O ;
 };
-template <> class gctools::GCKind<core::Regex_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__Regex_O ;
-};
 template <> class gctools::GCKind<llvmo::PassManagerBase_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__PassManagerBase_O ;
@@ -4019,10 +3995,6 @@ public:
 template <> class gctools::GCKind<llvmo::ConstantDataArray_O> {
 public:
   static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_llvmo__ConstantDataArray_O ;
-};
-template <> class gctools::GCKind<core::RegexMatch_O> {
-public:
-  static gctools::GCKindEnum const Kind = gctools::KIND_LISPALLOC_core__RegexMatch_O ;
 };
 template <> class gctools::GCKind<core::FunctionValueEnvironment_O> {
 public:
@@ -4632,56 +4604,53 @@ public:
 // not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::VectorStepper_O),_Index), "_Index" }, // public: (NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_llvmo__DebugLoc_O, sizeof(llvmo::DebugLoc_O), 0, "llvmo::DebugLoc_O" },
 { class_kind, KIND_LISPALLOC_llvmo__Attribute_O, sizeof(llvmo::Attribute_O), 0, "llvmo::Attribute_O" },
-{ class_kind, KIND_LISPALLOC_core__RegexMatch_O, sizeof(core::RegexMatch_O), 0, "core::RegexMatch_O" },
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_CopyOfTextToMatch.__r_.__first_.NO-NAME.__l.__cap_), "_CopyOfTextToMatch.__r_.__first_.NO-NAME.__l.__cap_" }, // public: (NIL NIL NIL T T T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_CopyOfTextToMatch.__r_.__first_.NO-NAME.__l.__size_), "_CopyOfTextToMatch.__r_.__first_.NO-NAME.__l.__size_" }, // public: (NIL NIL NIL T T T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_unsigned_char, sizeof(unsigned char), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_CopyOfTextToMatch.__r_.__first_.NO-NAME.__s.NO-NAME.__size_), "_CopyOfTextToMatch.__r_.__first_.NO-NAME.__s.NO-NAME.__size_" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_char, sizeof(char), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_CopyOfTextToMatch.__r_.__first_.NO-NAME.__s.NO-NAME.__lx), "_CopyOfTextToMatch.__r_.__first_.NO-NAME.__s.NO-NAME.__lx" }, // public: (NIL NIL NIL T T T T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_Match.m_null.matched), "_Match.m_null.matched" }, // public: (NIL NIL T) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype_int, sizeof(int), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_Match.m_last_closed_paren), "_Match.m_last_closed_paren" }, // public: (NIL NIL) fixable: NIL good-name: T
-// not-exposing {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RegexMatch_O),_Match.m_is_singular), "_Match.m_is_singular" }, // public: (NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__WeakPointer_O, sizeof(core::WeakPointer_O), 0, "core::WeakPointer_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::WeakPointer>), offsetof(SAFE_TYPE_MACRO(core::WeakPointer_O),_WeakObject.pointer), "_WeakObject.pointer" }, // public: (T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_BOOTSTRAP_core__StandardObject_O, sizeof(core::StandardObject_O), 0, "core::StandardObject_O" },
 { class_kind, KIND_BOOTSTRAP_core__Metaobject_O, sizeof(core::Metaobject_O), 0, "core::Metaobject_O" },
 { class_kind, KIND_BOOTSTRAP_core__Specializer_O, sizeof(core::Specializer_O), 0, "core::Specializer_O" },
 { class_kind, KIND_BOOTSTRAP_core__Class_O, sizeof(core::Class_O), 0, "core::Class_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::Class_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::Class_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::Class_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::Class_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_BOOTSTRAP_core__StdClass_O, sizeof(core::StdClass_O), 0, "core::StdClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StdClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StdClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::StdClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::StdClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_BOOTSTRAP_core__StandardClass_O, sizeof(core::StandardClass_O), 0, "core::StandardClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StandardClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__FuncallableStandardClass_O, sizeof(core::FuncallableStandardClass_O), 0, "core::FuncallableStandardClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::FuncallableStandardClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_BOOTSTRAP_core__StructureClass_O, sizeof(core::StructureClass_O), 0, "core::StructureClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::StructureClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__ForwardReferencedClass_O, sizeof(core::ForwardReferencedClass_O), 0, "core::ForwardReferencedClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::BuiltInClass_O>), offsetof(SAFE_TYPE_MACRO(core::ForwardReferencedClass_O),_InstanceCoreClass), "_InstanceCoreClass" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CxxClass_O, sizeof(core::CxxClass_O), 0, "core::CxxClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::CxxClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::CxxClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::CxxClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::CxxClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_BOOTSTRAP_core__BuiltInClass_O, sizeof(core::BuiltInClass_O), 0, "core::BuiltInClass_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(core::BuiltInClass_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltInClass_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(core::BuiltInClass_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::BuiltInClass_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_clbind__ClassRep_O, sizeof(clbind::ClassRep_O), 0, "clbind::ClassRep_O" },
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_instance_stamp), "_instance_stamp" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::T_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_Signature_ClassSlots), "_Signature_ClassSlots" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Creator_O>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_theCreator), "_theCreator" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(clbind::ClassRep_O),_MetaClassSlots._Vector._Contents), "_MetaClassSlots._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
@@ -4889,6 +4858,7 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(llvmo::TargetSubtargetInfo_O),_Class), "_Class" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_llvmo__Module_O, sizeof(llvmo::Module_O), 0, "llvmo::Module_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Class), "_Class" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, ctype_unsigned_long, sizeof(unsigned long), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_Id), "_Id" }, // public: (T) fixable: NIL good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEqual_O>), offsetof(SAFE_TYPE_MACRO(llvmo::Module_O),_UniqueGlobalVariableStrings), "_UniqueGlobalVariableStrings" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_llvmo__EngineBuilder_O, sizeof(llvmo::EngineBuilder_O), 0, "llvmo::EngineBuilder_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(llvmo::EngineBuilder_O),_Class), "_Class" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
@@ -4902,7 +4872,6 @@ public:
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(llvmo::Target_O),_Class), "_Class" }, // public: (NIL) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__LoadTimeValues_O, sizeof(core::LoadTimeValues_O), 0, "core::LoadTimeValues_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::T_O>>>), offsetof(SAFE_TYPE_MACRO(core::LoadTimeValues_O),_Objects._Vector._Contents), "_Objects._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
-// {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<gctools::smart_ptr<core::Symbol_O>>>), offsetof(SAFE_TYPE_MACRO(core::LoadTimeValues_O),_Symbols._Vector._Contents), "_Symbols._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__Binder_O, sizeof(core::Binder_O), 0, "core::Binder_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::HashTableEq_O>), offsetof(SAFE_TYPE_MACRO(core::Binder_O),_Bindings), "_Bindings" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::VectorObjects_O>), offsetof(SAFE_TYPE_MACRO(core::Binder_O),_Values), "_Values" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
@@ -4947,7 +4916,6 @@ public:
 { class_kind, KIND_LISPALLOC_core__RecursiveDirectoryIterator_O, sizeof(core::RecursiveDirectoryIterator_O), 0, "core::RecursiveDirectoryIterator_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Path_O>), offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_Path), "_Path" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
  {  fixed_field, ctype__Bool, sizeof(_Bool), offsetof(SAFE_TYPE_MACRO(core::RecursiveDirectoryIterator_O),_EnterHidden), "_EnterHidden" }, // public: (T) fixable: NIL good-name: T
-{ class_kind, KIND_LISPALLOC_core__Regex_O, sizeof(core::Regex_O), 0, "core::Regex_O" },
 { class_kind, KIND_LISPALLOC_core__PosixTimeDuration_O, sizeof(core::PosixTimeDuration_O), 0, "core::PosixTimeDuration_O" },
 // not-exposing {  fixed_field, ctype_long_long, sizeof(long long), offsetof(SAFE_TYPE_MACRO(core::PosixTimeDuration_O),_Duration.ticks_.value_), "_Duration.ticks_.value_" }, // public: (NIL NIL NIL) fixable: NIL good-name: T
 { class_kind, KIND_LISPALLOC_core__SymbolToEnumConverter_O, sizeof(core::SymbolToEnumConverter_O), 0, "core::SymbolToEnumConverter_O" },
@@ -5269,7 +5237,7 @@ public:
 { templated_kind, KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O, sizeof(clbind::ConstructorCreator_O), 0, "clbind::ConstructorCreator_O" },
  {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(clbind::ConstructorCreator_O),_mostDerivedClassSymbol), "_mostDerivedClassSymbol" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__InstanceCreator_O, sizeof(core::InstanceCreator_O), 0, "core::InstanceCreator_O" },
- {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Symbol_O>), offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_class), "_class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
+ {  fixed_field, SMART_PTR_OFFSET, sizeof(gctools::smart_ptr<core::Class_O>), offsetof(SAFE_TYPE_MACRO(core::InstanceCreator_O),_class), "_class" }, // public: (T) fixable: SMART-PTR-FIX good-name: T
 { class_kind, KIND_LISPALLOC_core__CxxObject_O, sizeof(core::CxxObject_O), 0, "core::CxxObject_O" },
 { class_kind, KIND_LISPALLOC_core__NativeVector_float_O, sizeof(core::NativeVector_float_O), 0, "core::NativeVector_float_O" },
  {  fixed_field, TAGGED_POINTER_OFFSET, sizeof(gctools::tagged_pointer<gctools::GCVector_moveable<float>>), offsetof(SAFE_TYPE_MACRO(core::NativeVector_float_O),_Vector._Vector._Contents), "_Vector._Vector._Contents" }, // public: (T T T) fixable: TAGGED-POINTER-FIX good-name: T
@@ -6339,12 +6307,6 @@ obj_finalize_KIND_LISPALLOC_llvmo__Attribute_O:
     obj_gc_safe->~Attribute_O();
     goto finalize_done;
 }
-obj_finalize_KIND_LISPALLOC_core__RegexMatch_O:
-{
-    core::RegexMatch_O* obj_gc_safe = reinterpret_cast<core::RegexMatch_O*>(client);
-    obj_gc_safe->~RegexMatch_O();
-    goto finalize_done;
-}
 obj_finalize_KIND_LISPALLOC_core__WeakPointer_O:
 {
     core::WeakPointer_O* obj_gc_safe = reinterpret_cast<core::WeakPointer_O*>(client);
@@ -7062,12 +7024,6 @@ obj_finalize_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O:
 {
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     obj_gc_safe->~RecursiveDirectoryIterator_O();
-    goto finalize_done;
-}
-obj_finalize_KIND_LISPALLOC_core__Regex_O:
-{
-    core::Regex_O* obj_gc_safe = reinterpret_cast<core::Regex_O*>(client);
-    obj_gc_safe->~Regex_O();
     goto finalize_done;
 }
 obj_finalize_KIND_LISPALLOC_core__PosixTimeDuration_O:
@@ -7937,274 +7893,272 @@ static void* OBJ_FINALIZE_table[] = {
   /* 68 */ &&obj_finalize_KIND_LISPALLOC_core__VectorStepper_O,
   /* 69 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DebugLoc_O,
   /* 70 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Attribute_O,
-  /* 71 */ &&obj_finalize_KIND_LISPALLOC_core__RegexMatch_O,
-  /* 72 */ &&obj_finalize_KIND_LISPALLOC_core__WeakPointer_O,
-  /* 73 */ &&obj_finalize_KIND_BOOTSTRAP_core__StandardObject_O,
-  /* 74 */ &&obj_finalize_KIND_BOOTSTRAP_core__Metaobject_O,
-  /* 75 */ &&obj_finalize_KIND_BOOTSTRAP_core__Specializer_O,
-  /* 76 */ &&obj_finalize_KIND_BOOTSTRAP_core__Class_O,
-  /* 77 */ &&obj_finalize_KIND_BOOTSTRAP_core__StdClass_O,
-  /* 78 */ &&obj_finalize_KIND_BOOTSTRAP_core__StandardClass_O,
-  /* 79 */ &&obj_finalize_KIND_LISPALLOC_core__FuncallableStandardClass_O,
-  /* 80 */ &&obj_finalize_KIND_BOOTSTRAP_core__StructureClass_O,
-  /* 81 */ &&obj_finalize_KIND_LISPALLOC_core__ForwardReferencedClass_O,
-  /* 82 */ &&obj_finalize_KIND_LISPALLOC_core__CxxClass_O,
-  /* 83 */ &&obj_finalize_KIND_BOOTSTRAP_core__BuiltInClass_O,
-  /* 84 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRep_O,
-  /* 85 */ &&obj_finalize_KIND_LISPALLOC_core__ExternalObject_O,
-  /* 86 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
-  /* 87 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Value_O,
-  /* 88 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Argument_O,
-  /* 89 */ &&obj_finalize_KIND_LISPALLOC_llvmo__User_O,
-  /* 90 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Instruction_O,
-  /* 91 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
-  /* 92 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LandingPadInst_O,
-  /* 93 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PHINode_O,
-  /* 94 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CallInst_O,
-  /* 95 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StoreInst_O,
-  /* 96 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
-  /* 97 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LoadInst_O,
-  /* 98 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AllocaInst_O,
-  /* 99 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VAArgInst_O,
-  /* 100 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
-  /* 101 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TerminatorInst_O,
-  /* 102 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnreachableInst_O,
-  /* 103 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SwitchInst_O,
-  /* 104 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ReturnInst_O,
-  /* 105 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ResumeInst_O,
-  /* 106 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BranchInst_O,
-  /* 107 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InvokeInst_O,
-  /* 108 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
-  /* 109 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FenceInst_O,
-  /* 110 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Constant_O,
-  /* 111 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BlockAddress_O,
-  /* 112 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalValue_O,
-  /* 113 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalVariable_O,
-  /* 114 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Function_O,
-  /* 115 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantArray_O,
-  /* 116 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantInt_O,
-  /* 117 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
-  /* 118 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
-  /* 119 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantStruct_O,
-  /* 120 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantFP_O,
-  /* 121 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UndefValue_O,
-  /* 122 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
-  /* 123 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantExpr_O,
-  /* 124 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BasicBlock_O,
-  /* 125 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
-  /* 126 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilder_O,
-  /* 127 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBuilder_O,
-  /* 128 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Metadata_O,
-  /* 129 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
-  /* 130 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDNode_O,
-  /* 131 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINode_O,
-  /* 132 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIScope_O,
-  /* 133 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompileUnit_O,
-  /* 134 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILocalScope_O,
-  /* 135 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubprogram_O,
-  /* 136 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
-  /* 137 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
-  /* 138 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIType_O,
-  /* 139 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIDerivedType_O,
-  /* 140 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBasicType_O,
-  /* 141 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubroutineType_O,
-  /* 142 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompositeType_O,
-  /* 143 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIFile_O,
-  /* 144 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDString_O,
-  /* 145 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
-  /* 146 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APFloat_O,
-  /* 147 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
-  /* 148 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Triple_O,
-  /* 149 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APInt_O,
-  /* 150 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBase_O,
-  /* 151 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
-  /* 152 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManager_O,
-  /* 153 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetMachine_O,
-  /* 154 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
-  /* 155 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetOptions_O,
-  /* 156 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Type_O,
-  /* 157 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IntegerType_O,
-  /* 158 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CompositeType_O,
-  /* 159 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SequentialType_O,
-  /* 160 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VectorType_O,
-  /* 161 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PointerType_O,
-  /* 162 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ArrayType_O,
-  /* 163 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StructType_O,
-  /* 164 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionType_O,
-  /* 165 */ &&obj_finalize_KIND_LISPALLOC_llvmo__NamedMDNode_O,
-  /* 166 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Linker_O,
-  /* 167 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Pass_O,
-  /* 168 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPass_O,
-  /* 169 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ModulePass_O,
-  /* 170 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ImmutablePass_O,
-  /* 171 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 172 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
-  /* 173 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
-  /* 174 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Module_O,
-  /* 175 */ &&obj_finalize_KIND_LISPALLOC_llvmo__EngineBuilder_O,
-  /* 176 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMContext_O,
-  /* 177 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Target_O,
-  /* 178 */ &&obj_finalize_KIND_LISPALLOC_core__LoadTimeValues_O,
-  /* 179 */ &&obj_finalize_KIND_LISPALLOC_core__Binder_O,
-  /* 180 */ &&obj_finalize_KIND_LISPALLOC_core__IntArray_O,
-  /* 181 */ &&obj_finalize_KIND_LISPALLOC_core__SourceManager_O,
-  /* 182 */ &&obj_finalize_KIND_LISPALLOC_core__Record_O,
-  /* 183 */ &&obj_finalize_KIND_LISPALLOC_core__LightUserData_O,
-  /* 184 */ &&obj_finalize_KIND_LISPALLOC_core__UserData_O,
-  /* 185 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DataLayout_O,
-  /* 186 */ &&obj_finalize_KIND_BOOTSTRAP_core__Symbol_O,
-  /* 187 */ &&obj_finalize_KIND_LISPALLOC_core__Null_O,
-  /* 188 */ &&obj_finalize_KIND_LISPALLOC_core__SourcePosInfo_O,
-  /* 189 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
-  /* 190 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryIterator_O,
-  /* 191 */ &&obj_finalize_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
-  /* 192 */ &&obj_finalize_KIND_LISPALLOC_core__Regex_O,
-  /* 193 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTimeDuration_O,
-  /* 194 */ &&obj_finalize_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
-  /* 195 */ &&obj_finalize_KIND_LISPALLOC_core__CandoException_O,
-  /* 196 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
-  /* 197 */ &&obj_finalize_KIND_LISPALLOC_core__Stream_O,
-  /* 198 */ &&obj_finalize_KIND_LISPALLOC_core__AnsiStream_O,
-  /* 199 */ &&obj_finalize_KIND_LISPALLOC_core__FileStream_O,
-  /* 200 */ &&obj_finalize_KIND_LISPALLOC_core__IOStreamStream_O,
-  /* 201 */ &&obj_finalize_KIND_LISPALLOC_core__IOFileStream_O,
-  /* 202 */ &&obj_finalize_KIND_LISPALLOC_core__ConcatenatedStream_O,
-  /* 203 */ &&obj_finalize_KIND_LISPALLOC_core__StringStream_O,
-  /* 204 */ &&obj_finalize_KIND_LISPALLOC_core__StringInputStream_O,
-  /* 205 */ &&obj_finalize_KIND_LISPALLOC_core__StringOutputStream_O,
-  /* 206 */ &&obj_finalize_KIND_LISPALLOC_core__SynonymStream_O,
-  /* 207 */ &&obj_finalize_KIND_LISPALLOC_core__EchoStream_O,
-  /* 208 */ &&obj_finalize_KIND_LISPALLOC_core__TwoWayStream_O,
-  /* 209 */ &&obj_finalize_KIND_LISPALLOC_core__BroadcastStream_O,
-  /* 210 */ &&obj_finalize_KIND_LISPALLOC_core__Reader_O,
-  /* 211 */ &&obj_finalize_KIND_LISPALLOC_core__SharpEqualWrapper_O,
-  /* 212 */ &&obj_finalize_KIND_LISPALLOC_core__Archive_O,
-  /* 213 */ &&obj_finalize_KIND_LISPALLOC_core__SaveArchive_O,
-  /* 214 */ &&obj_finalize_KIND_LISPALLOC_core__SexpSaveArchive_O,
-  /* 215 */ &&obj_finalize_KIND_LISPALLOC_core__LoadArchive_O,
-  /* 216 */ &&obj_finalize_KIND_LISPALLOC_core__SexpLoadArchive_O,
-  /* 217 */ &&obj_finalize_KIND_LISPALLOC_core__HashTable_O,
-  /* 218 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEq_O,
-  /* 219 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqualp_O,
-  /* 220 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEql_O,
-  /* 221 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqual_O,
-  /* 222 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
-  /* 223 */ &&obj_finalize_KIND_LISPALLOC_clbind__DummyCreator_O,
-  /* 224 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
-  /* 225 */ &&obj_finalize_KIND_LISPALLOC_core__InstanceCreator_O,
-  /* 226 */ &&obj_finalize_KIND_LISPALLOC_core__CxxObject_O,
-  /* 227 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_float_O,
-  /* 228 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Info_O,
-  /* 229 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionInfo_O,
-  /* 230 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
-  /* 231 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
-  /* 232 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
-  /* 233 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
-  /* 234 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
-  /* 235 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
-  /* 236 */ &&obj_finalize_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
-  /* 237 */ &&obj_finalize_KIND_LISPALLOC_clcenv__BlockInfo_O,
-  /* 238 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableInfo_O,
-  /* 239 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
-  /* 240 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
-  /* 241 */ &&obj_finalize_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
-  /* 242 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
-  /* 243 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_int_O,
-  /* 244 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINodeArray_O,
-  /* 245 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
-  /* 246 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Entry_O,
-  /* 247 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Inline_O,
-  /* 248 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Closure_O,
-  /* 249 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
-  /* 250 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
-  /* 251 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacro_O,
-  /* 252 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
-  /* 253 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Function_O,
-  /* 254 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaName_O,
-  /* 255 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Block_O,
-  /* 256 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariable_O,
-  /* 257 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariable_O,
-  /* 258 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
-  /* 259 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Tag_O,
-  /* 260 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionType_O,
-  /* 261 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Macro_O,
-  /* 262 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableType_O,
-  /* 263 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableIgnore_O,
-  /* 264 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Optimize_O,
-  /* 265 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_double_O,
-  /* 266 */ &&obj_finalize_KIND_LISPALLOC_core__WeakKeyMapping_O,
-  /* 267 */ &&obj_finalize_KIND_LISPALLOC_core__Cache_O,
-  /* 268 */ &&obj_finalize_KIND_LISPALLOC_core__LambdaListHandler_O,
-  /* 269 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InsertPoint_O,
-  /* 270 */ &&obj_finalize_KIND_LISPALLOC_core__SourceFileInfo_O,
-  /* 271 */ &&obj_finalize_KIND_LISPALLOC_core__SNode_O,
-  /* 272 */ &&obj_finalize_KIND_LISPALLOC_core__LeafSNode_O,
-  /* 273 */ &&obj_finalize_KIND_LISPALLOC_core__BranchSNode_O,
-  /* 274 */ &&obj_finalize_KIND_LISPALLOC_core__Path_O,
-  /* 275 */ &&obj_finalize_KIND_LISPALLOC_asttooling__AstVisitor_O,
-  /* 276 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AttributeSet_O,
-  /* 277 */ &&obj_finalize_KIND_LISPALLOC_core__StructureObject_O,
-  /* 278 */ &&obj_finalize_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
-  /* 279 */ &&obj_finalize_KIND_LISPALLOC_core__Package_O,
-  /* 280 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryEntry_O,
-  /* 281 */ &&obj_finalize_KIND_LISPALLOC_core__Character_dummy_O,
-  /* 282 */ &&obj_finalize_KIND_LISPALLOC_core__Function_O,
-  /* 283 */ &&obj_finalize_KIND_LISPALLOC_core__NamedFunction_O,
-  /* 284 */ &&obj_finalize_KIND_LISPALLOC_core__SpecialForm_O,
-  /* 285 */ &&obj_finalize_KIND_LISPALLOC_core__Closure_O,
-  /* 286 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O,
-  /* 287 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionClosure_O,
-  /* 288 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithSlots_O,
-  /* 289 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
-  /* 290 */ &&obj_finalize_KIND_LISPALLOC_core__TranslationFunctor,
-  /* 291 */ &&obj_finalize_KIND_LISPALLOC_core__MacroClosure_O,
-  /* 292 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
-  /* 293 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithFrame_O,
-  /* 294 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledClosure_O,
-  /* 295 */ &&obj_finalize_KIND_LISPALLOC_core__InterpretedClosure_O,
-  /* 296 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
-  /* 297 */ &&obj_finalize_KIND_LISPALLOC_core__CxxMethodFunction_O,
-  /* 298 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
-  /* 299 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
-  /* 300 */ &&obj_finalize_KIND_LISPALLOC_core__Instance_O,
-  /* 301 */ &&obj_finalize_KIND_LISPALLOC_core__Pointer_O,
-  /* 302 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRegistry_O,
-  /* 303 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMultimap_O,
-  /* 304 */ &&obj_finalize_KIND_LISPALLOC_core__Pathname_O,
-  /* 305 */ &&obj_finalize_KIND_LISPALLOC_core__LogicalPathname_O,
-  /* 306 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTime_O,
-  /* 307 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMap_O,
-  /* 308 */ &&obj_finalize_KIND_ROOTCLASSALLOC_core__Lisp_O,
-  /* 309 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_,
-  /* 310 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 311 */ &&obj_finalize_KIND_GCSTRING_gctools__GCString_moveable_char_,
-  /* 312 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 313 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 314 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_float_,
-  /* 315 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 316 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
-  /* 317 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 318 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 319 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
-  /* 320 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_int_,
-  /* 321 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 322 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
-  /* 323 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 324 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 325 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
-  /* 326 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 327 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
-  /* 328 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
-  /* 329 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
-  /* 330 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 331 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
-  /* 332 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
-  /* 333 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 334 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
-  /* 335 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 336 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 337 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
-  /* 338 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 71 */ &&obj_finalize_KIND_LISPALLOC_core__WeakPointer_O,
+  /* 72 */ &&obj_finalize_KIND_BOOTSTRAP_core__StandardObject_O,
+  /* 73 */ &&obj_finalize_KIND_BOOTSTRAP_core__Metaobject_O,
+  /* 74 */ &&obj_finalize_KIND_BOOTSTRAP_core__Specializer_O,
+  /* 75 */ &&obj_finalize_KIND_BOOTSTRAP_core__Class_O,
+  /* 76 */ &&obj_finalize_KIND_BOOTSTRAP_core__StdClass_O,
+  /* 77 */ &&obj_finalize_KIND_BOOTSTRAP_core__StandardClass_O,
+  /* 78 */ &&obj_finalize_KIND_LISPALLOC_core__FuncallableStandardClass_O,
+  /* 79 */ &&obj_finalize_KIND_BOOTSTRAP_core__StructureClass_O,
+  /* 80 */ &&obj_finalize_KIND_LISPALLOC_core__ForwardReferencedClass_O,
+  /* 81 */ &&obj_finalize_KIND_LISPALLOC_core__CxxClass_O,
+  /* 82 */ &&obj_finalize_KIND_BOOTSTRAP_core__BuiltInClass_O,
+  /* 83 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRep_O,
+  /* 84 */ &&obj_finalize_KIND_LISPALLOC_core__ExternalObject_O,
+  /* 85 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
+  /* 86 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Value_O,
+  /* 87 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Argument_O,
+  /* 88 */ &&obj_finalize_KIND_LISPALLOC_llvmo__User_O,
+  /* 89 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Instruction_O,
+  /* 90 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
+  /* 91 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LandingPadInst_O,
+  /* 92 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PHINode_O,
+  /* 93 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CallInst_O,
+  /* 94 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StoreInst_O,
+  /* 95 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
+  /* 96 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LoadInst_O,
+  /* 97 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AllocaInst_O,
+  /* 98 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VAArgInst_O,
+  /* 99 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
+  /* 100 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TerminatorInst_O,
+  /* 101 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UnreachableInst_O,
+  /* 102 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SwitchInst_O,
+  /* 103 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ReturnInst_O,
+  /* 104 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ResumeInst_O,
+  /* 105 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BranchInst_O,
+  /* 106 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InvokeInst_O,
+  /* 107 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
+  /* 108 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FenceInst_O,
+  /* 109 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Constant_O,
+  /* 110 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BlockAddress_O,
+  /* 111 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalValue_O,
+  /* 112 */ &&obj_finalize_KIND_LISPALLOC_llvmo__GlobalVariable_O,
+  /* 113 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Function_O,
+  /* 114 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantArray_O,
+  /* 115 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantInt_O,
+  /* 116 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
+  /* 117 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
+  /* 118 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantStruct_O,
+  /* 119 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantFP_O,
+  /* 120 */ &&obj_finalize_KIND_LISPALLOC_llvmo__UndefValue_O,
+  /* 121 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
+  /* 122 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ConstantExpr_O,
+  /* 123 */ &&obj_finalize_KIND_LISPALLOC_llvmo__BasicBlock_O,
+  /* 124 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
+  /* 125 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IRBuilder_O,
+  /* 126 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBuilder_O,
+  /* 127 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Metadata_O,
+  /* 128 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
+  /* 129 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDNode_O,
+  /* 130 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINode_O,
+  /* 131 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIScope_O,
+  /* 132 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompileUnit_O,
+  /* 133 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILocalScope_O,
+  /* 134 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubprogram_O,
+  /* 135 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
+  /* 136 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
+  /* 137 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIType_O,
+  /* 138 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIDerivedType_O,
+  /* 139 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIBasicType_O,
+  /* 140 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DISubroutineType_O,
+  /* 141 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DICompositeType_O,
+  /* 142 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DIFile_O,
+  /* 143 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MDString_O,
+  /* 144 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
+  /* 145 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APFloat_O,
+  /* 146 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
+  /* 147 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Triple_O,
+  /* 148 */ &&obj_finalize_KIND_LISPALLOC_llvmo__APInt_O,
+  /* 149 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManagerBase_O,
+  /* 150 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
+  /* 151 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PassManager_O,
+  /* 152 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetMachine_O,
+  /* 153 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
+  /* 154 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetOptions_O,
+  /* 155 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Type_O,
+  /* 156 */ &&obj_finalize_KIND_LISPALLOC_llvmo__IntegerType_O,
+  /* 157 */ &&obj_finalize_KIND_LISPALLOC_llvmo__CompositeType_O,
+  /* 158 */ &&obj_finalize_KIND_LISPALLOC_llvmo__SequentialType_O,
+  /* 159 */ &&obj_finalize_KIND_LISPALLOC_llvmo__VectorType_O,
+  /* 160 */ &&obj_finalize_KIND_LISPALLOC_llvmo__PointerType_O,
+  /* 161 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ArrayType_O,
+  /* 162 */ &&obj_finalize_KIND_LISPALLOC_llvmo__StructType_O,
+  /* 163 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionType_O,
+  /* 164 */ &&obj_finalize_KIND_LISPALLOC_llvmo__NamedMDNode_O,
+  /* 165 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Linker_O,
+  /* 166 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Pass_O,
+  /* 167 */ &&obj_finalize_KIND_LISPALLOC_llvmo__FunctionPass_O,
+  /* 168 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ModulePass_O,
+  /* 169 */ &&obj_finalize_KIND_LISPALLOC_llvmo__ImmutablePass_O,
+  /* 170 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 171 */ &&obj_finalize_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
+  /* 172 */ &&obj_finalize_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
+  /* 173 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Module_O,
+  /* 174 */ &&obj_finalize_KIND_LISPALLOC_llvmo__EngineBuilder_O,
+  /* 175 */ &&obj_finalize_KIND_LISPALLOC_llvmo__LLVMContext_O,
+  /* 176 */ &&obj_finalize_KIND_LISPALLOC_llvmo__Target_O,
+  /* 177 */ &&obj_finalize_KIND_LISPALLOC_core__LoadTimeValues_O,
+  /* 178 */ &&obj_finalize_KIND_LISPALLOC_core__Binder_O,
+  /* 179 */ &&obj_finalize_KIND_LISPALLOC_core__IntArray_O,
+  /* 180 */ &&obj_finalize_KIND_LISPALLOC_core__SourceManager_O,
+  /* 181 */ &&obj_finalize_KIND_LISPALLOC_core__Record_O,
+  /* 182 */ &&obj_finalize_KIND_LISPALLOC_core__LightUserData_O,
+  /* 183 */ &&obj_finalize_KIND_LISPALLOC_core__UserData_O,
+  /* 184 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DataLayout_O,
+  /* 185 */ &&obj_finalize_KIND_BOOTSTRAP_core__Symbol_O,
+  /* 186 */ &&obj_finalize_KIND_LISPALLOC_core__Null_O,
+  /* 187 */ &&obj_finalize_KIND_LISPALLOC_core__SourcePosInfo_O,
+  /* 188 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
+  /* 189 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryIterator_O,
+  /* 190 */ &&obj_finalize_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
+  /* 191 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTimeDuration_O,
+  /* 192 */ &&obj_finalize_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
+  /* 193 */ &&obj_finalize_KIND_LISPALLOC_core__CandoException_O,
+  /* 194 */ &&obj_finalize_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
+  /* 195 */ &&obj_finalize_KIND_LISPALLOC_core__Stream_O,
+  /* 196 */ &&obj_finalize_KIND_LISPALLOC_core__AnsiStream_O,
+  /* 197 */ &&obj_finalize_KIND_LISPALLOC_core__FileStream_O,
+  /* 198 */ &&obj_finalize_KIND_LISPALLOC_core__IOStreamStream_O,
+  /* 199 */ &&obj_finalize_KIND_LISPALLOC_core__IOFileStream_O,
+  /* 200 */ &&obj_finalize_KIND_LISPALLOC_core__ConcatenatedStream_O,
+  /* 201 */ &&obj_finalize_KIND_LISPALLOC_core__StringStream_O,
+  /* 202 */ &&obj_finalize_KIND_LISPALLOC_core__StringInputStream_O,
+  /* 203 */ &&obj_finalize_KIND_LISPALLOC_core__StringOutputStream_O,
+  /* 204 */ &&obj_finalize_KIND_LISPALLOC_core__SynonymStream_O,
+  /* 205 */ &&obj_finalize_KIND_LISPALLOC_core__EchoStream_O,
+  /* 206 */ &&obj_finalize_KIND_LISPALLOC_core__TwoWayStream_O,
+  /* 207 */ &&obj_finalize_KIND_LISPALLOC_core__BroadcastStream_O,
+  /* 208 */ &&obj_finalize_KIND_LISPALLOC_core__Reader_O,
+  /* 209 */ &&obj_finalize_KIND_LISPALLOC_core__SharpEqualWrapper_O,
+  /* 210 */ &&obj_finalize_KIND_LISPALLOC_core__Archive_O,
+  /* 211 */ &&obj_finalize_KIND_LISPALLOC_core__SaveArchive_O,
+  /* 212 */ &&obj_finalize_KIND_LISPALLOC_core__SexpSaveArchive_O,
+  /* 213 */ &&obj_finalize_KIND_LISPALLOC_core__LoadArchive_O,
+  /* 214 */ &&obj_finalize_KIND_LISPALLOC_core__SexpLoadArchive_O,
+  /* 215 */ &&obj_finalize_KIND_LISPALLOC_core__HashTable_O,
+  /* 216 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEq_O,
+  /* 217 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqualp_O,
+  /* 218 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEql_O,
+  /* 219 */ &&obj_finalize_KIND_LISPALLOC_core__HashTableEqual_O,
+  /* 220 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
+  /* 221 */ &&obj_finalize_KIND_LISPALLOC_clbind__DummyCreator_O,
+  /* 222 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
+  /* 223 */ &&obj_finalize_KIND_LISPALLOC_core__InstanceCreator_O,
+  /* 224 */ &&obj_finalize_KIND_LISPALLOC_core__CxxObject_O,
+  /* 225 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_float_O,
+  /* 226 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Info_O,
+  /* 227 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionInfo_O,
+  /* 228 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
+  /* 229 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
+  /* 230 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
+  /* 231 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
+  /* 232 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
+  /* 233 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
+  /* 234 */ &&obj_finalize_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
+  /* 235 */ &&obj_finalize_KIND_LISPALLOC_clcenv__BlockInfo_O,
+  /* 236 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableInfo_O,
+  /* 237 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
+  /* 238 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
+  /* 239 */ &&obj_finalize_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
+  /* 240 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
+  /* 241 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_int_O,
+  /* 242 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DINodeArray_O,
+  /* 243 */ &&obj_finalize_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
+  /* 244 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Entry_O,
+  /* 245 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Inline_O,
+  /* 246 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Closure_O,
+  /* 247 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
+  /* 248 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
+  /* 249 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SymbolMacro_O,
+  /* 250 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
+  /* 251 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Function_O,
+  /* 252 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LambdaName_O,
+  /* 253 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Block_O,
+  /* 254 */ &&obj_finalize_KIND_LISPALLOC_clcenv__SpecialVariable_O,
+  /* 255 */ &&obj_finalize_KIND_LISPALLOC_clcenv__LexicalVariable_O,
+  /* 256 */ &&obj_finalize_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
+  /* 257 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Tag_O,
+  /* 258 */ &&obj_finalize_KIND_LISPALLOC_clcenv__FunctionType_O,
+  /* 259 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Macro_O,
+  /* 260 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableType_O,
+  /* 261 */ &&obj_finalize_KIND_LISPALLOC_clcenv__VariableIgnore_O,
+  /* 262 */ &&obj_finalize_KIND_LISPALLOC_clcenv__Optimize_O,
+  /* 263 */ &&obj_finalize_KIND_LISPALLOC_core__NativeVector_double_O,
+  /* 264 */ &&obj_finalize_KIND_LISPALLOC_core__WeakKeyMapping_O,
+  /* 265 */ &&obj_finalize_KIND_LISPALLOC_core__Cache_O,
+  /* 266 */ &&obj_finalize_KIND_LISPALLOC_core__LambdaListHandler_O,
+  /* 267 */ &&obj_finalize_KIND_LISPALLOC_llvmo__InsertPoint_O,
+  /* 268 */ &&obj_finalize_KIND_LISPALLOC_core__SourceFileInfo_O,
+  /* 269 */ &&obj_finalize_KIND_LISPALLOC_core__SNode_O,
+  /* 270 */ &&obj_finalize_KIND_LISPALLOC_core__LeafSNode_O,
+  /* 271 */ &&obj_finalize_KIND_LISPALLOC_core__BranchSNode_O,
+  /* 272 */ &&obj_finalize_KIND_LISPALLOC_core__Path_O,
+  /* 273 */ &&obj_finalize_KIND_LISPALLOC_asttooling__AstVisitor_O,
+  /* 274 */ &&obj_finalize_KIND_LISPALLOC_llvmo__AttributeSet_O,
+  /* 275 */ &&obj_finalize_KIND_LISPALLOC_core__StructureObject_O,
+  /* 276 */ &&obj_finalize_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
+  /* 277 */ &&obj_finalize_KIND_LISPALLOC_core__Package_O,
+  /* 278 */ &&obj_finalize_KIND_LISPALLOC_core__DirectoryEntry_O,
+  /* 279 */ &&obj_finalize_KIND_LISPALLOC_core__Character_dummy_O,
+  /* 280 */ &&obj_finalize_KIND_LISPALLOC_core__Function_O,
+  /* 281 */ &&obj_finalize_KIND_LISPALLOC_core__NamedFunction_O,
+  /* 282 */ &&obj_finalize_KIND_LISPALLOC_core__SpecialForm_O,
+  /* 283 */ &&obj_finalize_KIND_LISPALLOC_core__Closure_O,
+  /* 284 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledFunction_O,
+  /* 285 */ &&obj_finalize_KIND_LISPALLOC_core__FunctionClosure_O,
+  /* 286 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithSlots_O,
+  /* 287 */ &&obj_finalize_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
+  /* 288 */ &&obj_finalize_KIND_LISPALLOC_core__TranslationFunctor,
+  /* 289 */ &&obj_finalize_KIND_LISPALLOC_core__MacroClosure_O,
+  /* 290 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
+  /* 291 */ &&obj_finalize_KIND_LISPALLOC_core__ClosureWithFrame_O,
+  /* 292 */ &&obj_finalize_KIND_LISPALLOC_core__CompiledClosure_O,
+  /* 293 */ &&obj_finalize_KIND_LISPALLOC_core__InterpretedClosure_O,
+  /* 294 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
+  /* 295 */ &&obj_finalize_KIND_LISPALLOC_core__CxxMethodFunction_O,
+  /* 296 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
+  /* 297 */ &&obj_finalize_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
+  /* 298 */ &&obj_finalize_KIND_LISPALLOC_core__Instance_O,
+  /* 299 */ &&obj_finalize_KIND_LISPALLOC_core__Pointer_O,
+  /* 300 */ &&obj_finalize_KIND_LISPALLOC_clbind__ClassRegistry_O,
+  /* 301 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMultimap_O,
+  /* 302 */ &&obj_finalize_KIND_LISPALLOC_core__Pathname_O,
+  /* 303 */ &&obj_finalize_KIND_LISPALLOC_core__LogicalPathname_O,
+  /* 304 */ &&obj_finalize_KIND_LISPALLOC_core__PosixTime_O,
+  /* 305 */ &&obj_finalize_KIND_LISPALLOC_core__SmallMap_O,
+  /* 306 */ &&obj_finalize_KIND_ROOTCLASSALLOC_core__Lisp_O,
+  /* 307 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 308 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 309 */ &&obj_finalize_KIND_GCSTRING_gctools__GCString_moveable_char_,
+  /* 310 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 311 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 312 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_float_,
+  /* 313 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 314 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 315 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 316 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 317 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
+  /* 318 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_int_,
+  /* 319 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 320 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 321 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 322 */ &&obj_finalize_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 323 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 324 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 325 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
+  /* 326 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
+  /* 327 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
+  /* 328 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 329 */ &&obj_finalize_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
+  /* 330 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 331 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 332 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
+  /* 333 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 334 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 335 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 336 */ &&obj_finalize_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
    NULL
 };
 #endif // defined(GC_OBJ_FINALIZE_TABLE)
@@ -8602,12 +8556,6 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Attribute_O:
 {
     llvmo::Attribute_O* obj_gc_safe = reinterpret_cast<llvmo::Attribute_O*>(client);
     GC<llvmo::Attribute_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RegexMatch_O:
-{
-    core::RegexMatch_O* obj_gc_safe = reinterpret_cast<core::RegexMatch_O*>(client);
-    GC<core::RegexMatch_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakPointer_O:
@@ -9327,12 +9275,6 @@ obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RecursiveDirectoryIterato
 {
     core::RecursiveDirectoryIterator_O* obj_gc_safe = reinterpret_cast<core::RecursiveDirectoryIterator_O*>(client);
     GC<core::RecursiveDirectoryIterator_O>::deallocate_unmanaged_instance(obj_gc_safe);
-    return;
-}
-obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Regex_O:
-{
-    core::Regex_O* obj_gc_safe = reinterpret_cast<core::Regex_O*>(client);
-    GC<core::Regex_O>::deallocate_unmanaged_instance(obj_gc_safe);
     return;
 }
 obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTimeDuration_O:
@@ -10202,274 +10144,272 @@ static void* OBJ_DEALLOCATOR_table[] = {
   /* 68 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__VectorStepper_O,
   /* 69 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DebugLoc_O,
   /* 70 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Attribute_O,
-  /* 71 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RegexMatch_O,
-  /* 72 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakPointer_O,
-  /* 73 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardObject_O,
-  /* 74 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Metaobject_O,
-  /* 75 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Specializer_O,
-  /* 76 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Class_O,
-  /* 77 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StdClass_O,
-  /* 78 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardClass_O,
-  /* 79 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FuncallableStandardClass_O,
-  /* 80 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StructureClass_O,
-  /* 81 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ForwardReferencedClass_O,
-  /* 82 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxClass_O,
-  /* 83 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__BuiltInClass_O,
-  /* 84 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRep_O,
-  /* 85 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ExternalObject_O,
-  /* 86 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
-  /* 87 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Value_O,
-  /* 88 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Argument_O,
-  /* 89 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__User_O,
-  /* 90 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Instruction_O,
-  /* 91 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
-  /* 92 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LandingPadInst_O,
-  /* 93 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PHINode_O,
-  /* 94 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CallInst_O,
-  /* 95 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StoreInst_O,
-  /* 96 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
-  /* 97 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LoadInst_O,
-  /* 98 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AllocaInst_O,
-  /* 99 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VAArgInst_O,
-  /* 100 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
-  /* 101 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TerminatorInst_O,
-  /* 102 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnreachableInst_O,
-  /* 103 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SwitchInst_O,
-  /* 104 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ReturnInst_O,
-  /* 105 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ResumeInst_O,
-  /* 106 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BranchInst_O,
-  /* 107 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InvokeInst_O,
-  /* 108 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
-  /* 109 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FenceInst_O,
-  /* 110 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Constant_O,
-  /* 111 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BlockAddress_O,
-  /* 112 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalValue_O,
-  /* 113 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalVariable_O,
-  /* 114 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Function_O,
-  /* 115 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantArray_O,
-  /* 116 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantInt_O,
-  /* 117 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
-  /* 118 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
-  /* 119 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantStruct_O,
-  /* 120 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantFP_O,
-  /* 121 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UndefValue_O,
-  /* 122 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
-  /* 123 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantExpr_O,
-  /* 124 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BasicBlock_O,
-  /* 125 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
-  /* 126 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilder_O,
-  /* 127 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBuilder_O,
-  /* 128 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Metadata_O,
-  /* 129 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
-  /* 130 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDNode_O,
-  /* 131 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINode_O,
-  /* 132 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIScope_O,
-  /* 133 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompileUnit_O,
-  /* 134 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILocalScope_O,
-  /* 135 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubprogram_O,
-  /* 136 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
-  /* 137 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
-  /* 138 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIType_O,
-  /* 139 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIDerivedType_O,
-  /* 140 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBasicType_O,
-  /* 141 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubroutineType_O,
-  /* 142 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompositeType_O,
-  /* 143 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIFile_O,
-  /* 144 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDString_O,
-  /* 145 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
-  /* 146 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APFloat_O,
-  /* 147 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
-  /* 148 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Triple_O,
-  /* 149 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APInt_O,
-  /* 150 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBase_O,
-  /* 151 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
-  /* 152 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManager_O,
-  /* 153 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetMachine_O,
-  /* 154 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
-  /* 155 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetOptions_O,
-  /* 156 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Type_O,
-  /* 157 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IntegerType_O,
-  /* 158 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CompositeType_O,
-  /* 159 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SequentialType_O,
-  /* 160 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VectorType_O,
-  /* 161 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PointerType_O,
-  /* 162 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ArrayType_O,
-  /* 163 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StructType_O,
-  /* 164 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionType_O,
-  /* 165 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__NamedMDNode_O,
-  /* 166 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Linker_O,
-  /* 167 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Pass_O,
-  /* 168 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPass_O,
-  /* 169 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ModulePass_O,
-  /* 170 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ImmutablePass_O,
-  /* 171 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
-  /* 172 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
-  /* 173 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
-  /* 174 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Module_O,
-  /* 175 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__EngineBuilder_O,
-  /* 176 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMContext_O,
-  /* 177 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Target_O,
-  /* 178 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadTimeValues_O,
-  /* 179 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Binder_O,
-  /* 180 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IntArray_O,
-  /* 181 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceManager_O,
-  /* 182 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O,
-  /* 183 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LightUserData_O,
-  /* 184 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UserData_O,
-  /* 185 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayout_O,
-  /* 186 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Symbol_O,
-  /* 187 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Null_O,
-  /* 188 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourcePosInfo_O,
-  /* 189 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
-  /* 190 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryIterator_O,
-  /* 191 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
-  /* 192 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Regex_O,
-  /* 193 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTimeDuration_O,
-  /* 194 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
-  /* 195 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CandoException_O,
-  /* 196 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
-  /* 197 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Stream_O,
-  /* 198 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AnsiStream_O,
-  /* 199 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStream_O,
-  /* 200 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOStreamStream_O,
-  /* 201 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOFileStream_O,
-  /* 202 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConcatenatedStream_O,
-  /* 203 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringStream_O,
-  /* 204 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringInputStream_O,
-  /* 205 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringOutputStream_O,
-  /* 206 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SynonymStream_O,
-  /* 207 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__EchoStream_O,
-  /* 208 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TwoWayStream_O,
-  /* 209 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BroadcastStream_O,
-  /* 210 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Reader_O,
-  /* 211 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SharpEqualWrapper_O,
-  /* 212 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Archive_O,
-  /* 213 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SaveArchive_O,
-  /* 214 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpSaveArchive_O,
-  /* 215 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadArchive_O,
-  /* 216 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpLoadArchive_O,
-  /* 217 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTable_O,
-  /* 218 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEq_O,
-  /* 219 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqualp_O,
-  /* 220 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEql_O,
-  /* 221 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqual_O,
-  /* 222 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
-  /* 223 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__DummyCreator_O,
-  /* 224 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
-  /* 225 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InstanceCreator_O,
-  /* 226 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxObject_O,
-  /* 227 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_float_O,
-  /* 228 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Info_O,
-  /* 229 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionInfo_O,
-  /* 230 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
-  /* 231 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
-  /* 232 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
-  /* 233 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
-  /* 234 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
-  /* 235 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
-  /* 236 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
-  /* 237 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__BlockInfo_O,
-  /* 238 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableInfo_O,
-  /* 239 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
-  /* 240 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
-  /* 241 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
-  /* 242 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
-  /* 243 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_int_O,
-  /* 244 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINodeArray_O,
-  /* 245 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
-  /* 246 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Entry_O,
-  /* 247 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Inline_O,
-  /* 248 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Closure_O,
-  /* 249 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
-  /* 250 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
-  /* 251 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacro_O,
-  /* 252 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
-  /* 253 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Function_O,
-  /* 254 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaName_O,
-  /* 255 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Block_O,
-  /* 256 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariable_O,
-  /* 257 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariable_O,
-  /* 258 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
-  /* 259 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Tag_O,
-  /* 260 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionType_O,
-  /* 261 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Macro_O,
-  /* 262 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableType_O,
-  /* 263 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableIgnore_O,
-  /* 264 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Optimize_O,
-  /* 265 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_double_O,
-  /* 266 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyMapping_O,
-  /* 267 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Cache_O,
-  /* 268 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LambdaListHandler_O,
-  /* 269 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InsertPoint_O,
-  /* 270 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceFileInfo_O,
-  /* 271 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SNode_O,
-  /* 272 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LeafSNode_O,
-  /* 273 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BranchSNode_O,
-  /* 274 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Path_O,
-  /* 275 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__AstVisitor_O,
-  /* 276 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AttributeSet_O,
-  /* 277 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureObject_O,
-  /* 278 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
-  /* 279 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Package_O,
-  /* 280 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryEntry_O,
-  /* 281 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O,
-  /* 282 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O,
-  /* 283 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NamedFunction_O,
-  /* 284 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SpecialForm_O,
-  /* 285 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Closure_O,
-  /* 286 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O,
-  /* 287 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionClosure_O,
-  /* 288 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithSlots_O,
-  /* 289 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
-  /* 290 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TranslationFunctor,
-  /* 291 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroClosure_O,
-  /* 292 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
-  /* 293 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithFrame_O,
-  /* 294 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledClosure_O,
-  /* 295 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InterpretedClosure_O,
-  /* 296 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
-  /* 297 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxMethodFunction_O,
-  /* 298 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
-  /* 299 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
-  /* 300 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Instance_O,
-  /* 301 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pointer_O,
-  /* 302 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRegistry_O,
-  /* 303 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMultimap_O,
-  /* 304 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pathname_O,
-  /* 305 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LogicalPathname_O,
-  /* 306 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTime_O,
-  /* 307 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMap_O,
-  /* 308 */ &&obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_core__Lisp_O,
-  /* 309 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_,
-  /* 310 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
-  /* 311 */ &&obj_deallocate_unmanaged_instance_KIND_GCSTRING_gctools__GCString_moveable_char_,
-  /* 312 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
-  /* 313 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
-  /* 314 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_float_,
-  /* 315 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
-  /* 316 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
-  /* 317 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
-  /* 318 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
-  /* 319 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
-  /* 320 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_int_,
-  /* 321 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
-  /* 322 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
-  /* 323 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
-  /* 324 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
-  /* 325 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
-  /* 326 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
-  /* 327 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
-  /* 328 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
-  /* 329 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
-  /* 330 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
-  /* 331 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
-  /* 332 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
-  /* 333 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
-  /* 334 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
-  /* 335 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
-  /* 336 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
-  /* 337 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
-  /* 338 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
+  /* 71 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakPointer_O,
+  /* 72 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardObject_O,
+  /* 73 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Metaobject_O,
+  /* 74 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Specializer_O,
+  /* 75 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Class_O,
+  /* 76 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StdClass_O,
+  /* 77 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StandardClass_O,
+  /* 78 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FuncallableStandardClass_O,
+  /* 79 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__StructureClass_O,
+  /* 80 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ForwardReferencedClass_O,
+  /* 81 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxClass_O,
+  /* 82 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__BuiltInClass_O,
+  /* 83 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRep_O,
+  /* 84 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ExternalObject_O,
+  /* 85 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignData_O,
+  /* 86 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Value_O,
+  /* 87 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Argument_O,
+  /* 88 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__User_O,
+  /* 89 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Instruction_O,
+  /* 90 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicRMWInst_O,
+  /* 91 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LandingPadInst_O,
+  /* 92 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PHINode_O,
+  /* 93 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CallInst_O,
+  /* 94 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StoreInst_O,
+  /* 95 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnaryInstruction_O,
+  /* 96 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LoadInst_O,
+  /* 97 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AllocaInst_O,
+  /* 98 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VAArgInst_O,
+  /* 99 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AtomicCmpXchgInst_O,
+  /* 100 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TerminatorInst_O,
+  /* 101 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UnreachableInst_O,
+  /* 102 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SwitchInst_O,
+  /* 103 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ReturnInst_O,
+  /* 104 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ResumeInst_O,
+  /* 105 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BranchInst_O,
+  /* 106 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InvokeInst_O,
+  /* 107 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IndirectBrInst_O,
+  /* 108 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FenceInst_O,
+  /* 109 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Constant_O,
+  /* 110 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BlockAddress_O,
+  /* 111 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalValue_O,
+  /* 112 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__GlobalVariable_O,
+  /* 113 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Function_O,
+  /* 114 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantArray_O,
+  /* 115 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantInt_O,
+  /* 116 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataSequential_O,
+  /* 117 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantDataArray_O,
+  /* 118 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantStruct_O,
+  /* 119 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantFP_O,
+  /* 120 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__UndefValue_O,
+  /* 121 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantPointerNull_O,
+  /* 122 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ConstantExpr_O,
+  /* 123 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__BasicBlock_O,
+  /* 124 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilderBase_O,
+  /* 125 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IRBuilder_O,
+  /* 126 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBuilder_O,
+  /* 127 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Metadata_O,
+  /* 128 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ValueAsMetadata_O,
+  /* 129 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDNode_O,
+  /* 130 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINode_O,
+  /* 131 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIScope_O,
+  /* 132 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompileUnit_O,
+  /* 133 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILocalScope_O,
+  /* 134 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubprogram_O,
+  /* 135 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlockBase_O,
+  /* 136 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DILexicalBlock_O,
+  /* 137 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIType_O,
+  /* 138 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIDerivedType_O,
+  /* 139 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIBasicType_O,
+  /* 140 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DISubroutineType_O,
+  /* 141 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DICompositeType_O,
+  /* 142 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DIFile_O,
+  /* 143 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MDString_O,
+  /* 144 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ExecutionEngine_O,
+  /* 145 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APFloat_O,
+  /* 146 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBuilder_O,
+  /* 147 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Triple_O,
+  /* 148 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__APInt_O,
+  /* 149 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManagerBase_O,
+  /* 150 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPassManager_O,
+  /* 151 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PassManager_O,
+  /* 152 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetMachine_O,
+  /* 153 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMTargetMachine_O,
+  /* 154 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetOptions_O,
+  /* 155 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Type_O,
+  /* 156 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__IntegerType_O,
+  /* 157 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__CompositeType_O,
+  /* 158 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__SequentialType_O,
+  /* 159 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__VectorType_O,
+  /* 160 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__PointerType_O,
+  /* 161 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ArrayType_O,
+  /* 162 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__StructType_O,
+  /* 163 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionType_O,
+  /* 164 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__NamedMDNode_O,
+  /* 165 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Linker_O,
+  /* 166 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Pass_O,
+  /* 167 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__FunctionPass_O,
+  /* 168 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ModulePass_O,
+  /* 169 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__ImmutablePass_O,
+  /* 170 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetLibraryInfoWrapperPass_O,
+  /* 171 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__MCSubtargetInfo_O,
+  /* 172 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__TargetSubtargetInfo_O,
+  /* 173 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Module_O,
+  /* 174 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__EngineBuilder_O,
+  /* 175 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__LLVMContext_O,
+  /* 176 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__Target_O,
+  /* 177 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadTimeValues_O,
+  /* 178 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Binder_O,
+  /* 179 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IntArray_O,
+  /* 180 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceManager_O,
+  /* 181 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Record_O,
+  /* 182 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LightUserData_O,
+  /* 183 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__UserData_O,
+  /* 184 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DataLayout_O,
+  /* 185 */ &&obj_deallocate_unmanaged_instance_KIND_BOOTSTRAP_core__Symbol_O,
+  /* 186 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Null_O,
+  /* 187 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourcePosInfo_O,
+  /* 188 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Iterator_O,
+  /* 189 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryIterator_O,
+  /* 190 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__RecursiveDirectoryIterator_O,
+  /* 191 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTimeDuration_O,
+  /* 192 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SymbolToEnumConverter_O,
+  /* 193 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CandoException_O,
+  /* 194 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clasp_ffi__ForeignTypeSpec_O,
+  /* 195 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Stream_O,
+  /* 196 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__AnsiStream_O,
+  /* 197 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FileStream_O,
+  /* 198 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOStreamStream_O,
+  /* 199 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__IOFileStream_O,
+  /* 200 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ConcatenatedStream_O,
+  /* 201 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringStream_O,
+  /* 202 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringInputStream_O,
+  /* 203 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StringOutputStream_O,
+  /* 204 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SynonymStream_O,
+  /* 205 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__EchoStream_O,
+  /* 206 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TwoWayStream_O,
+  /* 207 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BroadcastStream_O,
+  /* 208 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Reader_O,
+  /* 209 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SharpEqualWrapper_O,
+  /* 210 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Archive_O,
+  /* 211 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SaveArchive_O,
+  /* 212 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpSaveArchive_O,
+  /* 213 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LoadArchive_O,
+  /* 214 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SexpLoadArchive_O,
+  /* 215 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTable_O,
+  /* 216 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEq_O,
+  /* 217 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqualp_O,
+  /* 218 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEql_O,
+  /* 219 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__HashTableEqual_O,
+  /* 220 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__Creator_O,
+  /* 221 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__DummyCreator_O,
+  /* 222 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_clbind__ConstructorCreator_O,
+  /* 223 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InstanceCreator_O,
+  /* 224 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxObject_O,
+  /* 225 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_float_O,
+  /* 226 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Info_O,
+  /* 227 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionInfo_O,
+  /* 228 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalFunctionInfo_O,
+  /* 229 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalFunctionInfo_O,
+  /* 230 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaNameInfo_O,
+  /* 231 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialOperatorInfo_O,
+  /* 232 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalMacroInfo_O,
+  /* 233 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LocalMacroInfo_O,
+  /* 234 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__OptimizeInfo_O,
+  /* 235 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__BlockInfo_O,
+  /* 236 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableInfo_O,
+  /* 237 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariableInfo_O,
+  /* 238 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacroInfo_O,
+  /* 239 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__ConstantVariableInfo_O,
+  /* 240 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariableInfo_O,
+  /* 241 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_int_O,
+  /* 242 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DINodeArray_O,
+  /* 243 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__DITypeRefArray_O,
+  /* 244 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Entry_O,
+  /* 245 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Inline_O,
+  /* 246 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Closure_O,
+  /* 247 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionDynamicExtent_O,
+  /* 248 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableDynamicExtent_O,
+  /* 249 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SymbolMacro_O,
+  /* 250 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionIgnore_O,
+  /* 251 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Function_O,
+  /* 252 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LambdaName_O,
+  /* 253 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Block_O,
+  /* 254 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__SpecialVariable_O,
+  /* 255 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__LexicalVariable_O,
+  /* 256 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__GlobalEnvironment_O,
+  /* 257 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Tag_O,
+  /* 258 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__FunctionType_O,
+  /* 259 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Macro_O,
+  /* 260 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableType_O,
+  /* 261 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__VariableIgnore_O,
+  /* 262 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clcenv__Optimize_O,
+  /* 263 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NativeVector_double_O,
+  /* 264 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__WeakKeyMapping_O,
+  /* 265 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Cache_O,
+  /* 266 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LambdaListHandler_O,
+  /* 267 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__InsertPoint_O,
+  /* 268 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SourceFileInfo_O,
+  /* 269 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SNode_O,
+  /* 270 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LeafSNode_O,
+  /* 271 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__BranchSNode_O,
+  /* 272 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Path_O,
+  /* 273 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__AstVisitor_O,
+  /* 274 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_llvmo__AttributeSet_O,
+  /* 275 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__StructureObject_O,
+  /* 276 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InvocationHistoryFrameIterator_O,
+  /* 277 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Package_O,
+  /* 278 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__DirectoryEntry_O,
+  /* 279 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Character_dummy_O,
+  /* 280 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Function_O,
+  /* 281 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__NamedFunction_O,
+  /* 282 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SpecialForm_O,
+  /* 283 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Closure_O,
+  /* 284 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledFunction_O,
+  /* 285 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__FunctionClosure_O,
+  /* 286 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithSlots_O,
+  /* 287 */ &&obj_deallocate_unmanaged_instance_KIND_TEMPLATED_LISPALLOC_core__BuiltinClosure_O,
+  /* 288 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__TranslationFunctor,
+  /* 289 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__MacroClosure_O,
+  /* 290 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchCxxEffectiveMethodFunction_O,
+  /* 291 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__ClosureWithFrame_O,
+  /* 292 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CompiledClosure_O,
+  /* 293 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__InterpretedClosure_O,
+  /* 294 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchMethodFunction_O,
+  /* 295 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__CxxMethodFunction_O,
+  /* 296 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchEffectiveMethodFunction_O,
+  /* 297 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SingleDispatchGenericFunctionClosure_O,
+  /* 298 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Instance_O,
+  /* 299 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pointer_O,
+  /* 300 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_clbind__ClassRegistry_O,
+  /* 301 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMultimap_O,
+  /* 302 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__Pathname_O,
+  /* 303 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__LogicalPathname_O,
+  /* 304 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__PosixTime_O,
+  /* 305 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_core__SmallMap_O,
+  /* 306 */ &&obj_deallocate_unmanaged_instance_KIND_ROOTCLASSALLOC_core__Lisp_O,
+  /* 307 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__KeywordArgument_,
+  /* 308 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__List_V__,
+  /* 309 */ &&obj_deallocate_unmanaged_instance_KIND_GCSTRING_gctools__GCString_moveable_char_,
+  /* 310 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__RequiredArgument_,
+  /* 311 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SourceFileInfo_O__,
+  /* 312 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_float_,
+  /* 313 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolStorage_,
+  /* 314 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__T_O_P_,
+  /* 315 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__T_O__gctools__smart_ptr_core__T_O___,
+  /* 316 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__AuxArgument_,
+  /* 317 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_double_,
+  /* 318 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_int_,
+  /* 319 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Symbol_O__,
+  /* 320 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__SymbolClassPair_,
+  /* 321 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_std____1__pair_gctools__smart_ptr_core__Symbol_O__gctools__smart_ptr_core__T_O___,
+  /* 322 */ &&obj_deallocate_unmanaged_instance_KIND_GCARRAY_gctools__GCArray_moveable_gctools__smart_ptr_core__T_O__,
+  /* 323 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__CacheRecord_,
+  /* 324 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Cons_O__,
+  /* 325 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableFrontendActionFactory,
+  /* 326 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableMatchCallback,
+  /* 327 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableASTFrontendAction,
+  /* 328 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__T_O__,
+  /* 329 */ &&obj_deallocate_unmanaged_instance_KIND_LISPALLOC_asttooling__DerivableSyntaxOnlyAction,
+  /* 330 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SingleDispatchMethod_O__,
+  /* 331 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__OptionalArgument_,
+  /* 332 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__SequenceStepper_O__,
+  /* 333 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_core__Package_O__,
+  /* 334 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__ExceptionEntry_,
+  /* 335 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_core__DynamicBinding_,
+  /* 336 */ &&obj_deallocate_unmanaged_instance_KIND_GCVECTOR_gctools__GCVector_moveable_gctools__smart_ptr_clbind__ClassRep_O__,
    NULL
 };
 #endif // defined(GC_OBJ_DEALLOCATOR_TABLE)
@@ -10499,6 +10439,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::LambdaName_O::static_creator);
  SMART_PTR_FIX(core::Record_O::static_creator);
  SMART_PTR_FIX(llvmo::DILocalScope_O::static_class);
+ SMART_PTR_FIX(llvmo::global_arg2);
  SMART_PTR_FIX(clcenv::Entry_O::static_class);
  SMART_PTR_FIX(llvmo::LandingPadInst_O::static_class_symbol);
  SMART_PTR_FIX(core::GlueEnvironment_O::static_class);
@@ -10541,8 +10482,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::Type_O::static_class);
  SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_creator);
  SMART_PTR_FIX(llvmo::VAArgInst_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::ConstantArray_O::static_class);
  SMART_PTR_FIX(core::SymbolMacroletEnvironment_O::static_creator);
+ SMART_PTR_FIX(llvmo::ConstantArray_O::static_class);
  SMART_PTR_FIX(core::SingleDispatchGenericFunctionClosure_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::Function_O::static_creator);
  SMART_PTR_FIX(core::FunctionValueEnvironment_O::static_class);
@@ -10559,8 +10500,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::ReadTable_O::static_creator);
  SMART_PTR_FIX(core::SourceManager_O::static_class);
  SMART_PTR_FIX(core::SmallMultimap_O::static_class);
- SMART_PTR_FIX(core::ForwardReferencedClass_O::static_creator);
  SMART_PTR_FIX(core::AnsiStream_O::static_creator);
+ SMART_PTR_FIX(core::ForwardReferencedClass_O::static_creator);
  SMART_PTR_FIX(llvmo::DIFile_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::FunctionInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::HashTableEq_O::static_class);
@@ -10591,11 +10532,10 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::Triple_O::static_class);
  SMART_PTR_FIX(llvmo::PassManagerBuilder_O::static_class);
  SMART_PTR_FIX(clcenv::VariableInfo_O::static_class);
- SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
  SMART_PTR_FIX(core::StrWithFillPtr_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::AttributeSet_O::static_class);
  SMART_PTR_FIX(llvmo::DIScope_O::static_creator);
  SMART_PTR_FIX(llvmo::User_O::static_creator);
- SMART_PTR_FIX(core::RegexMatch_O::static_class_symbol);
  SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_creator);
  SMART_PTR_FIX(core::CxxMethodFunction_O::static_creator);
  SMART_PTR_FIX(llvmo::UnreachableInst_O::static_creator);
@@ -10631,8 +10571,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::DIBasicType_O::static_creator);
  SMART_PTR_FIX(core::UserData_O::static_class);
  SMART_PTR_FIX(core::DoubleFloat_O::static_class);
- SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
  SMART_PTR_FIX(core::InstanceCreator_O::static_creator);
+ SMART_PTR_FIX(llvmo::EngineBuilder_O::static_class);
  SMART_PTR_FIX(core::FunctionFrame_O::static_class);
  SMART_PTR_FIX(core::BitVector_O::static_class);
  SMART_PTR_FIX(llvmo::InsertPoint_O::static_class);
@@ -10657,6 +10597,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::DirectoryEntry_O::static_creator);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_creator);
  SMART_PTR_FIX(clcenv::FunctionDynamicExtent_O::static_creator);
+ SIMPLE_POINTER_FIX(run_time_values_table);
  SMART_PTR_FIX(llvmo::MDNode_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ConstantStruct_O::static_creator);
  SMART_PTR_FIX(llvmo::ModulePass_O::static_class_symbol);
@@ -10666,7 +10607,6 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::Module_O::static_class);
  SMART_PTR_FIX(clcenv::Block_O::static_class);
  SMART_PTR_FIX(core::Function_O::static_creator);
- SMART_PTR_FIX(core::RegexMatch_O::static_class);
  SMART_PTR_FIX(core::BranchSNode_O::static_creator);
  SMART_PTR_FIX(llvmo::Function_O::static_class);
  SMART_PTR_FIX(llvmo::ImmutablePass_O::static_creator);
@@ -10737,14 +10677,15 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_creator);
  SMART_PTR_FIX(core::SingleFloat_dummy_O::static_class);
  SMART_PTR_FIX(core::Creator_O::static_class);
- SMART_PTR_FIX(core::HashTableEql_O::static_class);
  SMART_PTR_FIX(core::ConcatenatedStream_O::static_creator);
+ SMART_PTR_FIX(core::HashTableEql_O::static_class);
  SMART_PTR_FIX(core::Iterator_O::static_class_symbol);
  SMART_PTR_FIX(core::Iterator_O::static_class);
  SMART_PTR_FIX(core::Symbol_O::static_class);
  SMART_PTR_FIX(core::ActivationFrame_O::static_creator);
  SMART_PTR_FIX(clasp_ffi::ForeignTypeSpec_O::static_class);
  SMART_PTR_FIX(llvmo::BranchInst_O::static_class);
+ SMART_PTR_FIX(llvmo::global_arg0);
  SMART_PTR_FIX(clbind::ClassRegistry_O::static_creator);
  SMART_PTR_FIX(core::LoadTimeValues_O::static_class);
  SMART_PTR_FIX(core::RecursiveDirectoryIterator_O::static_creator);
@@ -10792,14 +10733,12 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::LambdaListHandler_O::static_creator);
  SMART_PTR_FIX(core::VaList_dummy_O::static_creator);
  SMART_PTR_FIX(core::Stream_O::static_class);
- SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
  SMART_PTR_FIX(core::BlockEnvironment_O::static_class);
+ SMART_PTR_FIX(llvmo::AtomicCmpXchgInst_O::static_class);
  SMART_PTR_FIX(core::SourceFileInfo_O::static_class);
- SMART_PTR_FIX(core::Regex_O::static_creator);
  SMART_PTR_FIX(core::String_O::static_class);
  SMART_PTR_FIX(core::LoadTimeValues_O::static_class_symbol);
  SMART_PTR_FIX(core::Instance_O::static_class_symbol);
-// SIMPLE_POINTER_FIX(globalTaggedRunTimeValues);
  SMART_PTR_FIX(core::LogicalPathname_O::static_class);
  SMART_PTR_FIX(llvmo::Linker_O::static_class_symbol);
  SMART_PTR_FIX(core::RuntimeVisibleEnvironment_O::static_class_symbol);
@@ -10886,7 +10825,6 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SymbolToEnumConverter_O::static_class);
  SMART_PTR_FIX(core::Class_O::static_creator);
  SMART_PTR_FIX(core::CoreExposer_O::static_creator);
- SMART_PTR_FIX(core::Regex_O::static_class_symbol);
  SMART_PTR_FIX(core::DoubleFloat_O::static_creator);
  SMART_PTR_FIX(core::Environment_O::static_class_symbol);
  SMART_PTR_FIX(core::StackValueEnvironment_O::static_creator);
@@ -10908,8 +10846,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::HashTable_O::static_class_symbol);
  SMART_PTR_FIX(core::CoreExposer_O::static_class);
- SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_creator);
  SMART_PTR_FIX(clcenv::LocalMacroInfo_O::static_creator);
+ SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_creator);
  SMART_PTR_FIX(llvmo::DIDerivedType_O::static_class);
  SMART_PTR_FIX(llvmo::PassManager_O::static_creator);
  SMART_PTR_FIX(clcenv::Block_O::static_class_symbol);
@@ -10948,6 +10886,7 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::ReadTable_O::static_class_symbol);
  SMART_PTR_FIX(core::BroadcastStream_O::static_class_symbol);
  SMART_PTR_FIX(core::RandomState_O::static_creator);
+ SMART_PTR_FIX(llvmo::global_arg1);
  SMART_PTR_FIX(llvmo::StoreInst_O::static_class);
  SMART_PTR_FIX(llvmo::DITypeRefArray_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::AllocaInst_O::static_creator);
@@ -11020,8 +10959,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::GlobalValue_O::static_creator);
  SMART_PTR_FIX(llvmo::FenceInst_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::VariableInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::IRBuilder_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::Triple_O::static_class_symbol);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_class_symbol);
  SMART_PTR_FIX(core::InterpretedClosure_O::static_class);
  SMART_PTR_FIX(core::BuiltInClass_O::static_creator);
  SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_creator);
@@ -11053,8 +10992,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::TagbodyEnvironment_O::static_creator);
  SMART_PTR_FIX(core::Real_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DIBuilder_O::static_class_symbol);
- SMART_PTR_FIX(core::SmallMap_O::static_creator);
  SMART_PTR_FIX(core::UnwindProtectEnvironment_O::static_class);
+ SMART_PTR_FIX(core::SmallMap_O::static_creator);
  SMART_PTR_FIX(llvmo::SequentialType_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::PHINode_O::static_creator);
  SMART_PTR_FIX(core::SingleDispatchCxxEffectiveMethodFunction_O::static_creator);
@@ -11095,8 +11034,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::BlockAddress_O::static_creator);
  SMART_PTR_FIX(asttooling::AsttoolingExposer_O::static_creator);
  SMART_PTR_FIX(clcenv::OptimizeInfo_O::static_creator);
- SMART_PTR_FIX(llvmo::APInt_O::static_class);
  SMART_PTR_FIX(core::Ratio_O::static_creator);
+ SMART_PTR_FIX(llvmo::APInt_O::static_class);
  SMART_PTR_FIX(core::ArrayObjects_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::NamedMDNode_O::static_creator);
  SMART_PTR_FIX(core::StringStream_O::static_class_symbol);
@@ -11128,8 +11067,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Class_O::static_class);
  SMART_PTR_FIX(core::UserData_O::static_creator);
  SMART_PTR_FIX(clcenv::SpecialOperatorInfo_O::static_class_symbol);
- SMART_PTR_FIX(core::SaveArchive_O::static_creator);
  SMART_PTR_FIX(core::NamedFunction_O::static_class_symbol);
+ SMART_PTR_FIX(core::SaveArchive_O::static_creator);
  SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_creator);
  SMART_PTR_FIX(llvmo::User_O::static_class_symbol);
  SMART_PTR_FIX(core::Stream_O::static_creator);
@@ -11146,8 +11085,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::VectorDisplaced_O::static_class);
  SMART_PTR_FIX(core::CoreExposer_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::DILexicalBlockBase_O::static_class_symbol);
- SMART_PTR_FIX(core::MultiStringBuffer_O::static_class_symbol);
  SMART_PTR_FIX(core::ShortFloat_O::static_creator);
+ SMART_PTR_FIX(core::MultiStringBuffer_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::Info_O::static_class);
  SMART_PTR_FIX(core::LightUserData_O::static_class);
  SMART_PTR_FIX(core::StdClass_O::static_class);
@@ -11171,7 +11110,6 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::LandingPadInst_O::static_creator);
  SMART_PTR_FIX(core::TwoWayStream_O::static_class_symbol);
  SMART_PTR_FIX(core::SmallMultimap_O::static_creator);
- SMART_PTR_FIX(core::RegexMatch_O::static_creator);
  SMART_PTR_FIX(core::SexpSaveArchive_O::static_class);
  SMART_PTR_FIX(core::LoadArchive_O::static_class_symbol);
  SMART_PTR_FIX(core::CompiledClosure_O::static_creator);
@@ -11210,9 +11148,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::WeakKeyMapping_O::static_class);
  SMART_PTR_FIX(core::NativeVector_int_O::static_class_symbol);
  SMART_PTR_FIX(core::Real_O::static_creator);
- SMART_PTR_FIX(llvmo::Linker_O::static_class);
  SMART_PTR_FIX(clcenv::Macro_O::static_creator);
- SMART_PTR_FIX(core::Regex_O::static_class);
+ SMART_PTR_FIX(llvmo::Linker_O::static_class);
  SMART_PTR_FIX(clcenv::Tag_O::static_class_symbol);
  SMART_PTR_FIX(core::IOFileStream_O::static_creator);
  SMART_PTR_FIX(core::SingleDispatchEffectiveMethodFunction_O::static_class_symbol);
@@ -11253,8 +11190,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::Stream_O::static_class_symbol);
  SMART_PTR_FIX(core::EchoStream_O::static_class_symbol);
  SMART_PTR_FIX(core::Ratio_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::IRBuilder_O::static_creator);
  SMART_PTR_FIX(core::Str_O::static_class);
+ SMART_PTR_FIX(llvmo::IRBuilder_O::static_creator);
  SMART_PTR_FIX(llvmo::TargetMachine_O::static_class);
  SMART_PTR_FIX(llvmo::TargetLibraryInfoWrapperPass_O::static_class_symbol);
  SMART_PTR_FIX(clcenv::LambdaNameInfo_O::static_creator);
@@ -11280,10 +11217,11 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::T_O::static_class);
  SMART_PTR_FIX(llvmo::ConstantExpr_O::static_class);
  SMART_PTR_FIX(llvmo::FunctionType_O::static_creator);
- SMART_PTR_FIX(core::VectorDisplaced_O::static_creator);
  SMART_PTR_FIX(core::BranchSNode_O::static_class);
+ SMART_PTR_FIX(core::VectorDisplaced_O::static_creator);
  SMART_PTR_FIX(core::WeakKeyMapping_O::static_class_symbol);
  SMART_PTR_FIX(core::Complex_O::static_creator);
+ SMART_PTR_FIX(core::global_str);
  SMART_PTR_FIX(llvmo::APFloat_O::static_creator);
  SMART_PTR_FIX(core::FunctionContainerEnvironment_O::static_creator);
  SMART_PTR_FIX(core::Creator_O::static_class_symbol);
@@ -11334,8 +11272,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(core::SingleDispatchMethodFunction_O::static_class);
  SMART_PTR_FIX(llvmo::DINode_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::Target_O::static_class_symbol);
- SMART_PTR_FIX(core::WeakPointer_O::static_creator);
  SMART_PTR_FIX(clcenv::Optimize_O::static_creator);
+ SMART_PTR_FIX(core::WeakPointer_O::static_creator);
  SMART_PTR_FIX(core::StdClass_O::static_class_symbol);
  SMART_PTR_FIX(core::Binder_O::static_class);
  SMART_PTR_FIX(core::LongFloat_O::static_class);
@@ -11343,8 +11281,8 @@ static void* OBJ_DEALLOCATOR_table[] = {
  SMART_PTR_FIX(llvmo::EngineBuilder_O::static_creator);
  SMART_PTR_FIX(llvmo::ConstantPointerNull_O::static_class_symbol);
  SMART_PTR_FIX(llvmo::ConstantStruct_O::static_class_symbol);
- SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::EchoStream_O::static_creator);
+ SMART_PTR_FIX(llvmo::TargetSubtargetInfo_O::static_class_symbol);
  SMART_PTR_FIX(core::PosixTimeDuration_O::static_creator);
  SMART_PTR_FIX(core::FileStream_O::static_creator);
  SMART_PTR_FIX(llvmo::Type_O::static_creator);
