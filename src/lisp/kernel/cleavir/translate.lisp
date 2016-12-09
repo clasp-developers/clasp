@@ -394,11 +394,19 @@ when this is t a lot of graphs will be generated.")
 (defmethod translate-simple-instruction
     ((instruction cleavir-ir:funcall-instruction) return-value inputs outputs (abi abi-x86-64))
   #+(or)(progn
-	  (format t "--------------- translate-simple-instruction funcall-instruction~%")
-	  (format t "    inputs: ~a~%" inputs)
-	  (format t "    outputs: ~a~%" outputs))
+          (format t "--------------- translate-simple-instruction funcall-instruction~%")
+          (format t "       funcall:~a~%" (clasp-cleavir:instruction-gid instruction))
+          (format t "         return value: ~a~%" return-value)
+          (format t "           arg inputs: ~a~%" inputs)
+          (format t "          arg outputs: ~a~%" outputs)
+          (format t "      instance inputs: ~a~%" (cleavir-ir:inputs instruction))
+          (format t "     instance outputs: ~a~%" (cleavir-ir:outputs instruction))
+          (format t "  instance successors: ~a~%" (cleavir-ir:successors instruction))
+          )
   (cmp:irc-low-level-trace :flow)
   (let ((call (closure-call :call "cc_call" (first inputs) return-value (cdr inputs) abi)))
+    #+(or)(progn
+            (format t "generated call --> ~a~%" call))
     (cc-dbg-when *debug-log*
 		 (format *debug-log* "    translate-simple-instruction funcall-instruction: ~a~%" (cc-mir:describe-mir instruction))
 		 (format *debug-log* "     instruction --> ~a~%" call))))
@@ -942,38 +950,37 @@ when this is t a lot of graphs will be generated.")
 
 (defun my-hir-transformations (init-instr implementation processor os)
   (cleavir-typed-transforms:thes->typeqs init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-thes-typeqs.dot"))
+  (quick-draw-hir init-instr "hir-after-thes-typeqs")
   (when *enable-type-inference*
     ;; Conditionally use type inference.
     (handler-case
         (let ((types (cleavir-type-inference:infer-types init-instr)))
           (when *debug-cleavir*
             (let ((cleavir-ir-graphviz::*types* types))
-              (draw-hir init-instr #P"/tmp/hir-before-prune-ti.dot")))
+              (quick-draw-hir init-instr "hir-before-prune-ti")))
           ;; prune paths with redundant typeqs
           (cleavir-typed-transforms:prune-typeqs init-instr types)
           (when *debug-cleavir*
             (let ((cleavir-ir-graphviz::*types* types))
-              (draw-hir init-instr #P"/tmp/hir-after-ti.dot"))))
+              (quick-draw-hir init-instr "hir-after-ti"))))
       (error (c)
         (warn "Cannot infer types in ~s: ~s"
               init-instr
               c))))
   ;; delete the-instruction and the-values-instruction
   (cleavir-typed-transforms:delete-the init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-delete-the.dot"))
+  (quick-draw-hir init-instr "hir-after-delete-the")
   ;; convert (typeq x fixnum) -> (fixnump x)
   ;;         (typeq x cons) -> (consp x)
   ;;         (typeq x YYY) -> (typep x 'YYY)
   (cleavir-hir-transformations:eliminate-typeq init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-eliminate-typeq.dot"))
+  (quick-draw-hir init-instr "hir-after-eliminate-typeq")
   (clasp-cleavir::eliminate-load-time-value-inputs init-instr *clasp-system*)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-eliminate-load-time-value-inputs.dot"))
+  (quick-draw-hir init-instr "hir-after-eliminate-load-time-value-inputs")
   ;; The following breaks code when inlining takes place
   ;;  (cleavir-hir-transformations:eliminate-superfluous-temporaries init-instr)
-  ;;  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-est.dot"))
   (cleavir-hir-transformations:process-captured-variables init-instr)
-  (when *debug-cleavir* (draw-hir init-instr #P"/tmp/hir-after-pcv.dot")))
+  (quick-draw-hir init-instr "hir-after-pcv"))
 
 (defun compile-form-to-mir (FORM &optional (ENV *clasp-env*))
   "Compile a form down to MIR and return it.
@@ -987,11 +994,12 @@ COMPILE-FILE will use the default *clasp-env*."
 	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
     (clasp-cleavir:convert-funcalls hir)
     (my-hir-transformations hir clasp-system nil nil)
-    (when *debug-cleavir* (draw-hir hir #P"/tmp/hir-pre-mir.dot")) ;; comment out
+    (quick-draw-hir hir "hir-pre-mir")
     (cleavir-ir:hir-to-mir hir clasp-system nil nil)
     (clasp-cleavir:optimize-stack-enclose hir)
     (cc-mir:assign-mir-instruction-datum-ids hir)
     (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
+    (quick-draw-hir hir "mir")
     hir))
 
 (defun compile-lambda-form-to-llvm-function (lambda-form)

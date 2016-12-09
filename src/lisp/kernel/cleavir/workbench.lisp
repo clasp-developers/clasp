@@ -27,6 +27,39 @@
 
 (clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp")
 
+clasp-cleavir::*pvi*
+(let ((clasp-cleavir:*debug-cleavir* t) (compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp"))
+(load "sys:tests;td.fasl")
+(foo 0)
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (priority) (declare (type (or fixnum cons) priority) (optimize (safety 2))) (identity priority)) :debug t)
+
+(clasp-cleavir:cleavir-compile
+ 'foo
+ '(lambda (priority)
+   (declare (type (or fixnum cons) priority) (optimize (safety 2)))
+   (core:debug-message "Hi there")
+   (identity priority)
+   (core:debug-message "me again"))
+ :debug t)
+
+
+
+(apropos "compile-file-debug-dump")
+(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp"))
+(load "sys:tests;td.fasl")
+
+(foo 123)
+
+(clasp-cleavir:cleavir-compile
+ 'foo '(lambda (&optional (priority 0))
+        (declare (type real priority)
+         (optimize (safety 2) (speed 1) (debug 1) (space 1)))
+        (unless (typep priority 'real)
+          (error "problem"))
+        (print priority))
+ :debug t)
 
 (in-package :core)
 (clasp-cleavir:cleavir-compile 'foo '(lambda (kind &optional stream)

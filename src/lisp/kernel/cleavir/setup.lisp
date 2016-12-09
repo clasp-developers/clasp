@@ -241,7 +241,12 @@
     (with-open-file (stream filename :direction :output)
       (cleavir-ir-graphviz:draw-flowchart hir stream))))
 
-
+(defun quick-draw-hir (hir &optional (file-name-modifier "hir"))
+  (when *debug-cleavir*
+    (let ((pn (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
+      (with-open-file (stream pn :direction :output)
+        (cleavir-ir-graphviz:draw-flowchart hir stream)))))
+    
 (defun draw-hir (&optional (hir *hir*) (filename #P"/tmp/hir.dot"))
   (setq filename (pathname filename))
   (with-open-file (stream filename :direction :output)
