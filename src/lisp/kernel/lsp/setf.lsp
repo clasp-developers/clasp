@@ -401,9 +401,9 @@ Does not check if the third gang is a single-element list."
 	     res))
 	  (t
 	   `(let* ,(mapcar #'list vars vals)
-	      (declare (:read-only ,@vars))
+	      #-clasp(declare (:read-only ,@vars))
 	      (multiple-value-bind ,stores ,newvalue
-		(declare (:read-only ,@stores))
+		#-clasp(declare (:read-only ,@stores))
 		,store-form))))))
 
 (defun setf-expand (l env)
@@ -651,7 +651,7 @@ Returns T if the property list had the specified property; NIL otherwise."
       (get-setf-expansion place env)
     (let ((s (gensym "s")))
       `(let* (,@(mapcar #'list vars vals) (,s ,indicator))
-         (declare (:read-only ,@vars)) ; Beppe
+         #-clasp(declare (:read-only ,@vars)) ; Beppe
          (multiple-value-bind (,(car stores) flag)
              (sys:rem-f ,access-form ,s)
            ,store-form
@@ -685,7 +685,7 @@ makes it the new value of PLACE.  Returns the new value of PLACE."
     `(let* ,(mapcar #'list
 		    (append vars stores)
 		    (append vals (list (list 'cons item access-form))))
-       (declare (:read-only ,@vars)) ; Beppe
+       #-clasp(declare (:read-only ,@vars)) ; Beppe
        ,store-form)))
 
 #+(or)(eval-when (:compile-toplevel)
@@ -712,7 +712,7 @@ to MEMBER."
 		    (append vars stores)
 		    (append vals
 			    (list (list* 'adjoin item access-form rest))))
-       (declare (:read-only ,@vars)) ; Beppe
+       #-clasp(declare (:read-only ,@vars)) ; Beppe
        ,store-form)))
 
 
@@ -726,7 +726,7 @@ Returns the car of the old value in PLACE."
     (let ((store-var (first stores))
 	  (store-expansion (mapcar #'list (append vars stores) (append vals (list access-form)))))
       `(let* ,store-expansion
-	 (declare (:read-only ,@vars)) ; Beppe
+	 #-clasp(declare (:read-only ,@vars)) ; Beppe
 	 (prog1 (car ,store-var)
 	   (setq ,store-var (cdr (truly-the list ,store-var)))
 	   ,store-form)))))
