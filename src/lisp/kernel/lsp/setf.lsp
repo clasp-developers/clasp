@@ -590,7 +590,7 @@ retrieved by (DOCUMENTATION 'SYMBOL 'FUNCTION)."
 	     (SUBST (LIST* (QUOTE ,function) GETTER (MAPCAR #'CAR ALL-VARS))
                     (CAR STORES)
                     `(LET* ,ALL-VARS
-		       (DECLARE (:READ-ONLY ,@(mapcar #'first all-vars)))
+		       #-clasp(DECLARE (:READ-ONLY ,@(mapcar #'first all-vars)))
 		       ,SETTER))
 	     (DO ((D VARS (CDR D))
 		  (V VALS (CDR V))
@@ -606,7 +606,7 @@ retrieved by (DOCUMENTATION 'SYMBOL 'FUNCTION)."
 			(LIST* (QUOTE ,function) GETTER (MAPCAR #'CAR ALL-VARS))))
 		   LET-LIST)
 		  `(LET* ,(NREVERSE LET-LIST)
-		     (DECLARE (:READ-ONLY ,@(mapcar #'first all-vars)
+		     #-clasp(DECLARE (:READ-ONLY ,@(mapcar #'first all-vars)
 					  ,@vars))
 		     ,SETTER)))))))))
 
