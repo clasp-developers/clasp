@@ -1011,6 +1011,11 @@ core::T_sp PERCENTmem_ref_char( core::Integer_sp address ) {
   return mk_char( v );
 }
 
+core::T_sp PERCENTmem_ref_unsigned_char( core::Integer_sp address ) {
+  unsigned char v = mem_ref< unsigned char>( core::clasp_to_cl_intptr_t( address ) );
+  return mk_char( v );
+}
+
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
 
@@ -1021,10 +1026,15 @@ core::T_sp PERCENTmem_ref_char( core::Integer_sp address ) {
 //   return v._v;
 // }
 
-// inline char clasp_to_char( core::T_sp sp_lisp_value ) {
-//   translate::from_object< char > v( sp_lisp_value );
-//   return v._v;
-// }
+inline char clasp_to_char( core::T_sp sp_lisp_value ) {
+  char value = untag_character( sp_lisp_value.raw_() );
+  return value;
+}
+
+inline unsigned char clasp_to_unsigned_char( core::T_sp sp_lisp_value ) {
+  translate::from_object< unsigned char > v( sp_lisp_value );
+  return v._v;
+}
 
 void * clasp_to_void_pointer( ForeignData_sp sp_lisp_value )
 {
@@ -1209,8 +1219,17 @@ core::T_sp PERCENTmem_set_ptrdiff( core::Integer_sp address, core::T_sp value ) 
 
 core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value ) {
   char tmp;
-  translate::from_object< char > v( value );
-  tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );
+  // translate::from_object< char > v( value );
+  // tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v._v );
+  char v = clasp_to_char( value );
+  tmp = mem_set< char >( core::clasp_to_cl_intptr_t( address ), v );
+  return mk_char( tmp );
+}
+
+core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp value ) {
+  unsigned char tmp;
+  translate::from_object< unsigned char > v( value );
+  tmp = mem_set< unsigned char >( core::clasp_to_cl_intptr_t( address ), v._v );
   return mk_char( tmp );
 }
 

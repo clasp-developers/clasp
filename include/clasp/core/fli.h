@@ -302,6 +302,8 @@ namespace clasp_ffi {
     CL_DEFUN core::T_sp PERCENTmem_ref_char( core::Integer_sp address );
     SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_char);
 
+    CL_DEFUN core::T_sp PERCENTmem_ref_unsigned_char( core::Integer_sp address );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_ref_unsigned_char);
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
     template <typename T>
@@ -310,6 +312,7 @@ namespace clasp_ffi {
   // HELPER FUNCTIONS FOR MAKING C++ VALUES FROM CLASP LISP OBJECTS
     ptrdiff_t clasp_to_ptrdiff( core::T_sp sp_lisp_value );
     char clasp_to_char( core::T_sp sp_lisp_value );
+    unsigned char clasp_to_unsigned_char( core::T_sp sp_lisp_value );
 
   // FOREIGN MEMORY DIRECT ACCESS - MEM SET
     template<typename T>
@@ -391,6 +394,9 @@ namespace clasp_ffi {
 
     CL_DEFUN core::T_sp PERCENTmem_set_char( core::Integer_sp address, core::T_sp value );
     SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_char);
+
+    CL_DEFUN core::T_sp PERCENTmem_set_unsigned_char( core::Integer_sp address, core::T_sp value );
+    SYMBOL_EXPORT_SC_(Clasp_ffi_pkg,PERCENTmem_set_unsigned_char);
 
     void * clasp_to_void_pointer( ForeignData_sp sp_lisp_value );
 

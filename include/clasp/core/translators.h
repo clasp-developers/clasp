@@ -213,14 +213,6 @@ namespace translate {
   from_object(T_P o) : _val(false), _v(&_val){};
   };
 
-  // Already defined in characterr.h
-  // template <>
-  //   struct from_object<char, std::true_type> {
-  //   typedef char DeclareType;
-  //   DeclareType _v;
-  //   from_object(T_P o) : _v( clasp_ffi::clasp_to_char( o )){};
-  // };
-
   template <>
     struct from_object<void *, std::true_type> {
     typedef void *DeclareType;
