@@ -131,7 +131,6 @@
 		 (possible-kw-block (cmp:irc-basic-block-create "possible-kw-block"))
 		 (advance-arg-idx-block (cmp:irc-basic-block-create "advance-arg-idx-block"))
 		 (bad-kw-block (cmp:irc-basic-block-create "bad-kw-block"))
-		 (use-kw-block (cmp:irc-basic-block-create "use-kw-block"))
 		 (good-kw-block (cmp:irc-basic-block-create "good-kw-block")))
 	    (cmp:irc-cond-br eq-aok-val-and-arg-val aok-block possible-kw-block)
 	    (cmp:irc-begin-block aok-block)
@@ -144,8 +143,8 @@
 		    (target (caddr cur-key-arg) (caddr cur-key-arg))
 		    (supplied (cadddr cur-key-arg) (cadddr cur-key-arg))
 		    (idx 0 (1+ idx))
-		    (next-kw-test-block (cmp:irc-basic-block-create "next-kw-block")
-					(cmp:irc-basic-block-create "next-kw-block")) )
+		    #+(or)(next-kw-block (cmp:irc-basic-block-create "next-kw-block")
+                                   (cmp:irc-basic-block-create "next-kw-block")) )
 		   ((endp cur-key-arg))
 		(cmp:irc-branch-to-and-begin-block (cmp:irc-basic-block-create (core:bformat nil "kw-%s-test" key)))
 		(cmp:irc-low-level-trace :arguments)
@@ -155,8 +154,9 @@
 		       (test-kw-and-arg (cmp:irc-create-call "cc_matchKeywordOnce" (list kw-val arg-val (cmp:irc-load supplied-ref))))
 		       (no-kw-match (cmp:irc-icmp-eq test-kw-and-arg (%size_t 0)))
 		       (matched-kw-block (cmp:irc-basic-block-create "matched-kw-block"))
-		       (not-seen-before-kw-block (cmp:irc-basic-block-create "not-seen-before-kw-block")))
-		  (cmp:irc-cond-br no-kw-match next-kw-test-block matched-kw-block)
+		       (not-seen-before-kw-block (cmp:irc-basic-block-create "not-seen-before-kw-block"))
+                       (next-kw-block (cmp:irc-basic-block-create "next-kw-block")))
+		  (cmp:irc-cond-br no-kw-match next-kw-block matched-kw-block)
 		  (cmp:irc-begin-block matched-kw-block)
 		  (let ((kw-seen-already (cmp:irc-icmp-eq test-kw-and-arg (%size_t 2))))
 		    (cmp:irc-cond-br kw-seen-already good-kw-block not-seen-before-kw-block)
@@ -165,7 +165,7 @@
                     ;; Set the boolean flag to indicate that we saw this key
                     (%store true-val supplied-ref)
                     (cmp:irc-br good-kw-block)
-                    (cmp:irc-begin-block next-kw-test-block))))
+                    (cmp:irc-begin-block next-kw-block))))
 	      ;; We fell through all the keyword tests - this might be a unparameterized keyword
 	      (cmp:irc-branch-to-and-begin-block bad-kw-block) ; fall through to here if no kw recognized
 	      (let ((loop-bad-kw-idx (cmp:irc-create-call "cc_trackFirstUnexpectedKeyword"

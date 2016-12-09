@@ -100,7 +100,8 @@
       (let ((store-fn (llvm-sys:get-name (instruction-llvm-function instr)))
 	    (target-fn (llvm-sys:get-name (instruction-llvm-function target))))
 	(unless (string= store-fn target-fn)
-	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))))
+	  (error "Mismatch in store function vs target function - you are attempting to store a value in a target where the store instruction is in a different LLVM function(~a) from the target value(~a)" store-fn target-fn))))
+    instr))
 
 (defun %bit-cast (val type &optional (label ""))
   (llvm-sys:create-bit-cast cmp:*irbuilder* val type label))

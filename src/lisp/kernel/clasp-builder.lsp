@@ -385,8 +385,9 @@ Compile the cclasp source code."
                        (select-source-files #P"src/lisp/kernel/cleavir/auto-compile"
                                             #P"src/lisp/kernel/tag/cclasp"
                                             :system system))))
+    (format t "files: ~a~%" files)
     (setf core:*defun-inline-hook* nil)
-    (compile-system files)
+    (compile-system files :reload nil)
     (let ((all-bitcode (bitcode-pathnames #P"src/lisp/kernel/tag/start" #P"src/lisp/kernel/tag/cclasp" :system system)))
       (if (out-of-date-target output-file all-bitcode)
           (cmp:link-bitcode-modules output-file all-bitcode)))))

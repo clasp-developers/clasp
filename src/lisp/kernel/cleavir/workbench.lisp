@@ -6,7 +6,6 @@
 ;;;  --- Testing defun-inline-hook
 
 (time (compile-file "sys:modules;asdf;build;asdf.lisp"))
-(print "Hello")
 (progn ;; Set up everything for building cclasp from bclasp with auto-compile
   (format t "Loading ASDF system~%")
   (finish-output)
@@ -19,6 +18,77 @@
   (finish-output)
   (time (asdf:load-system "clasp-cleavir"))
   (format t "Done  pid = ~a~%"  (core:getpid)))
+
+(apropos "dump-module")
+
+(let ((compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp"))
+
+(clasp-cleavir:cleavir-compile-file "sys:kernel;lsp;pprint.lsp")
+
+(clasp-cleavir:cleavir-compile-file "sys:tests;tc.lsp")
+
+clasp-cleavir::*pvi*
+(let ((clasp-cleavir:*debug-cleavir* t) (compiler:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp"))
+(load "sys:tests;td.fasl")
+(foo 0)
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (priority) (declare (type (or fixnum cons) priority) (optimize (safety 2))) (identity priority)) :debug t)
+
+(clasp-cleavir:cleavir-compile
+ 'foo
+ '(lambda (priority)
+   (declare (type (or fixnum cons) priority) (optimize (safety 2)))
+   (core:debug-message "Hi there")
+   (identity priority)
+   (core:debug-message "me again"))
+ :debug t)
+
+
+
+(apropos "compile-file-debug-dump")
+(let ((cmp:*compile-file-debug-dump-module* t)) (clasp-cleavir:cleavir-compile-file "sys:tests;td.lsp"))
+(load "sys:tests;td.fasl")
+
+(foo 123)
+
+(clasp-cleavir:cleavir-compile
+ 'foo '(lambda (&optional (priority 0))
+        (declare (type real priority)
+         (optimize (safety 2) (speed 1) (debug 1) (space 1)))
+        (unless (typep priority 'real)
+          (error "problem"))
+        (print priority))
+ :debug t)
+
+(in-package :core)
+(clasp-cleavir:cleavir-compile 'foo '(lambda (kind &optional stream)
+                                      (declare (type (member :linear :miser :fill :mandatory) kind)
+                                       (type (or stream (member t nil)) stream)
+                                       (values null)
+                                       (ext:check-arguments-type)
+                                       #.+ecl-safe-declarations+)
+                                      (let ((stream (case stream
+                                                      ((t) *terminal-io*)
+                                                      ((nil) *standard-output*)
+                                                      (t stream))))
+                                        (when (and (pretty-stream-p stream) *print-pretty*)
+                                          (enqueue-newline stream kind)))
+                                      nil)
+                               :debug t)
+
+
+
+
+
+
+
+
+(clasp-cleavir:cleavir-compile 'foo '(lambda (x) (declare (optimize (safety 1) (speed 0))) (car (the cons x))) :debug t)
+
+(clasp-cleavir:cleavir-compile nil '(lambda (x) (declare (optimize (safety 0) (speed 1))) (car (the cons x))) :debug t)
+
+(foo :x)
 
 (time (asdf:load-system "clasp-cleavir"))
 

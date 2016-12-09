@@ -1002,40 +1002,53 @@ It has appending linkage.")
 
 
 (defparameter *quick-module-index* 0)
+(defun compile-file-quick-module-pathname (file-name-modifier)
+  (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
+         (output-path (make-pathname
+                       :name (concatenate
+                              'string
+                              (pathname-name *compile-file-output-pathname*)
+                              "-" name-suffix)
+                       :type "ll"
+                       :defaults *compile-file-output-pathname*)))
+    (ensure-directories-exist output-path)
+    output-path))
 (defun compile-file-quick-module-dump (module file-name-modifier)
   "Dump the module as a .ll file"
   (if *compile-file-debug-dump-module*
-      (let* ((name-suffix (bformat nil "%05d-%s" (incf *quick-module-index*) file-name-modifier))
-             (output-path (make-pathname
-                           :name (concatenate
-                                  'string
-                                  (pathname-name *compile-file-output-pathname*)
-                                  "-" name-suffix)
-                           :type "ll"
-                           :defaults *compile-file-output-pathname*)))
-        (ensure-directories-exist output-path)
+      (let* ((output-path (compile-file-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
                (fout (open output-name :direction :output)))
           (unwind-protect
                (llvm-sys:dump-module module fout)
             (close fout))))))
 
+(defun compile-quick-module-pathname (file-name-modifier)
+  (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
+         (output-path (make-pathname
+                       :name name-suffix
+                       :directory '(:absolute "tmp")
+                       :type "ll")))
+    (ensure-directories-exist output-path)
+    output-path))
 
 (defun compile-quick-module-dump (module file-name-modifier)
   "Dump the module as a .ll file"
   (if *compile-debug-dump-module*
-      (let* ((name-suffix (bformat nil "module-%05d-%s" (incf *quick-module-index*) file-name-modifier))
-             (output-path (make-pathname
-                           :name name-suffix
-                           :directory '(:absolute "tmp")
-                           :type "ll")))
-        (ensure-directories-exist output-path)
+      (let* ((output-path (compile-quick-module-pathname file-name-modifier)))
         (let* ((output-name (namestring output-path))
                (fout (open output-name :direction :output)))
           (unwind-protect
                (llvm-sys:dump-module module fout)
             (close fout))))))
 
+(defun quick-module-pathname (name-modifier)
+  "If called under COMPILE-FILE the modules are dumped into the
+same directory as the COMPILE-FILE output.  If called under COMPILE
+they are dumped into /tmp"
+  (if *compile-file-output-pathname*
+      (compile-file-quick-module-pathname name-modifier)
+      (compile-quick-module-pathname name-modifier)))
 
 (defun quick-module-dump (module name-modifier)
   "If called under COMPILE-FILE the modules are dumped into the

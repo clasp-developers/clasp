@@ -158,12 +158,25 @@
 (defmethod cleavir-env:variable-info ((environment core:value-environment) symbol)
   (cleavir-env:variable-info (core:get-parent-environment environment) symbol))
 
+(defvar *global-optimize*
+  ;; initial value, changed by de/proclaim
+  '((compilation-speed 1)
+    (debug 1)
+    (space 1)
+    (speed 1)
+    (safety 1)))
+
+(defvar *global-policy*
+  (cleavir-policy:compute-policy *global-optimize* *clasp-env*))
+
+
 (defmethod cleavir-env:optimize-info ((environment clasp-global-environment))
   ;; The default values are all 3.
-  (make-instance 'cleavir-env:optimize-info))
+  (make-instance 'cleavir-env:optimize-info
+                 :optimize *global-optimize*
+                 :policy *global-policy*))
 
 (defmethod cleavir-env:optimize-info ((environment NULL))
-  ;; The default values are all 3.
   (cleavir-env:optimize-info *clasp-env*))
 
 
@@ -228,7 +241,12 @@
     (with-open-file (stream filename :direction :output)
       (cleavir-ir-graphviz:draw-flowchart hir stream))))
 
-
+(defun quick-draw-hir (hir &optional (file-name-modifier "hir"))
+  (when *debug-cleavir*
+    (let ((pn (make-pathname :type "dot" :defaults (cmp::quick-module-pathname file-name-modifier))))
+      (with-open-file (stream pn :direction :output)
+        (cleavir-ir-graphviz:draw-flowchart hir stream)))))
+    
 (defun draw-hir (&optional (hir *hir*) (filename #P"/tmp/hir.dot"))
   (setq filename (pathname filename))
   (with-open-file (stream filename :direction :output)
@@ -300,8 +318,8 @@
     (draw-hir hir)
     hir))
 
+#+(or)
 (defun my-hir-transformations (initial-instruction implementation processor os)
-  (cleavir-hir-transformations:type-inference initial-instruction)
   (cleavir-hir-transformations:eliminate-typeq initial-instruction)
   (cleavir-hir-transformations:eliminate-superfluous-temporaries initial-instruction)
   (cleavir-hir-transformations:process-captured-variables initial-instruction))

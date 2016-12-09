@@ -5,6 +5,14 @@
     (cond
       ((eq head 'cl:ftype)
        #+verbose-compiler(warn "*** Do something with proclaim ftype ~s~%" decl))
+      ((eq head 'cl:optimize)
+       (setf *global-optimize*
+             (cleavir-policy:normalize-optimize
+              (append (rest decl) *global-optimize*)
+              *clasp-env*)
+             *global-policy*
+             (cleavir-policy:compute-policy *global-optimize*
+                                            *clasp-env*)))
       ;; Add other clauses here
       (t (warn "Add support for proclaim ~s~%" decl)))))
 

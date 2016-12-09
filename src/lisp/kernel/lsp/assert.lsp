@@ -50,7 +50,7 @@ of the specified type.  STRING-FORM, if given, is evaluated only once and the
 value is used to indicate the expected type in the error message."
   (let ((aux (gensym)))
     `(let ((,aux ,place))
-       (declare (:read-only ,aux))
+       #-clasp(declare (:read-only ,aux))
        (unless (typep ,aux ',type)
 	 (setf ,place (do-check-type ,aux ',type ',type-string ',place)))
        nil)))

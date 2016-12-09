@@ -1140,6 +1140,7 @@ Write T_O* pointers into the current multiple-values array starting at the (offs
 
 
 (defun irc-create-call (function-name args &optional (label ""))
+  (throw-if-mismatched-arguments function-name args)
   (let* ((func (get-function-or-error *the-module* function-name (car args))))
     (let ((code (llvm-sys:create-call-array-ref *irbuilder* func args label nil)))
       (unless code (error "irc-create-call returning nil"))
@@ -1219,6 +1220,7 @@ Otherwise just create a function call"
                 (break "Error when trying to verify-function")
                 (error "Failed function verify")))
           (cmp-log "--------------  Function verified OK!!!!!!!\n")))))
+
 
 
 (defun get-function-or-error (module name &optional first-argument)
