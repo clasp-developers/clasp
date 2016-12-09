@@ -128,7 +128,7 @@ the value is put into *default-load-time-value-vector* and its index is returned
 (defun ltv/ratio (ratio index read-only-p)
   (add-creator "ltvc_make_ratio" index
             (load-time-reference-literal (numerator ratio) read-only-p)
-            (load-time-reference-literal (denomenator ratio) read-only-p)))
+            (load-time-reference-literal (denominator ratio) read-only-p)))
 
 (defun ltv/cons (cons index read-only-p)
   (if (core:proper-list-p cons)
