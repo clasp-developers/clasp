@@ -67,7 +67,6 @@ def build(bld):
             'profile',
             'specializer',
             'write_ugly',
-            'regex',
             'userData',
             'wrappedPointer',
             'serialize',
