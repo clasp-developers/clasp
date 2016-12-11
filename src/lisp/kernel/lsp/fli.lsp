@@ -375,19 +375,13 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun mangled-callback-name (name)
-    (format nil "Callback_~a" name)))
-
-;;; This is what defcallback needs to do to generate a callback function
-;;;
-;;; TODO: Implement and/or correct the following issues:
-;;; 1. Symbols *the-module*, *current-function*,irc-basic-block-create,
-;;;    *llvm-context*, *irbuilder*, null-t-ptr, compile-lambda-function, ...
-;;; need to be exported properly from cackage cmp
-;;;
+    (format nil "clasp_ffi_cb_~a" name)))
 
 (defun %expand-callback-definition (name-and-options return-type-kw argument-symbols argument-type-kws body)
-  ;;(format *debug-io* "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
-  ;;     name-and-options return-type-kw argument-symbols argument-type-kws body )
+
+  (format *debug-io* "%expand-callback-definition: name-and-options = ~S, return-tyoe-kw = ~S, argument-symbols = ~S, argument-type-kws = ~S, body = ~S~&"
+          name-and-options return-type-kw argument-symbols argument-type-kws body )
+
   (multiple-value-bind (function-name convention)
       (if (consp name-and-options)
           (destructuring-bind (name &key convention)
@@ -396,7 +390,9 @@
           (values name-and-options :cdecl))
     ;; Convert type keywords into llvm types ie: :int -> +i32+
     (let* ((body-form `(lambda ,argument-symbols ,@body))
-           (argument-names (mapcar (lambda (s) (format *debug-io* "s = ~a~%" s) (string s)) argument-symbols))
+           (argument-names (mapcar (lambda (s)
+                                     (format *debug-io* "s = ~a~%" s) (string s))
+                                   argument-symbols))
            (mangled-function-name (mangled-callback-name function-name))
            (return-type (safe-translator-type return-type-kw ))
            (argument-types (mapcar (lambda (type-kw)
@@ -414,6 +410,7 @@
            ;; Create an IRBuilder - a helper for adding instructions to func
            (irbuilder-cur (llvm-sys:make-irbuilder cmp::*llvm-context*)))
       (format t "Created function ~a in ~a~%" new-func cmp:*the-module*)
+      (break)
       ;; Create the entry basic block in the current function
       (let ((bb (cmp::irc-basic-block-create "entry" cmp::*current-function*)))
         (llvm-sys:set-insert-point-basic-block irbuilder-cur bb)
@@ -460,21 +457,19 @@
                                     from-object-func
                                     (list (llvm-sys:create-extract-value cmp::*irbuilder* cl-result (list 0) "val0"))
                                     "cl-result" nil)))
-                    (llvm-sys:create-ret cmp::*irbuilder* c-result))))))))))
+                    (llvm-sys:create-ret cmp::*irbuilder* c-result))))))))
+    function-name))
 
 (defmacro %defcallback (name-and-options return-type-kw argument-symbols argument-type-kws &rest body)
-  (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body)
-  (let ((name nil))
-    (if (consp name-and-options)
-        (setq name (car name-and-options))
-        (setq name name-and-options))
-    `',name))
+  (%expand-callback-definition name-and-options return-type-kw argument-symbols argument-type-kws body))
 
 (defmacro %callback (sym)
-  `(%dlsym (mangled-callback-name ',sym)))
+  `(%get-callback ',sym))
 
 (defun %get-callback (sym-name)
-  (%dlsym (mangled-callback-name sym-name)))
+  (if sym-name
+      (%dlsym (mangled-callback-name sym-name))
+      nil))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
