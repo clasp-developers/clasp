@@ -1193,7 +1193,10 @@ core::T_sp PERCENTmem_set_time( core::Integer_sp address, core::T_sp value ) {
 }
 
 core::T_sp PERCENTmem_set_pointer( core::Integer_sp address, core::T_sp value ) {
-  IMPLEMENT_ME();
+  void * tmp;
+  translate::from_object< void * > v( value );
+  tmp = mem_set< void * >( core::clasp_to_cl_intptr_t( address ), v._v );
+  return mk_pointer( tmp );
 }
 
 core::T_sp PERCENTmem_set_size( core::Integer_sp address, core::T_sp value ) {
