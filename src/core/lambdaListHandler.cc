@@ -131,7 +131,7 @@ CL_DEFUN List_sp canonicalize_declarations(List_sp decls)
   List_sp canon = _Nil<T_O>();
   for ( auto decl : decls ) {
     Cons_sp d = gc::As<Cons_sp>(oCar(decl));
-    Symbol_sp head = gc::As<Symbol_sp>(oCar(d));
+    T_sp head = oCar(d);
     if (head == cl::_sym_dynamic_extent
         || head == cl::_sym_ignore
         || head == cl::_sym_inline

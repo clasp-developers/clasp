@@ -233,13 +233,18 @@ when this is t a lot of graphs will be generated.")
           (values fn lambda-name))))))
 
 (defvar *forms*)
-(defun translate (initial-instruction &optional (abi *abi-x86-64*))
+(defvar *map-enter-to-landing-pad* nil)
+
+(defun translate (initial-instruction map-enter-to-landing-pad &optional (abi *abi-x86-64*))
   (let* (#+use-ownerships(ownerships
 			  (cleavir-hir-transformations:compute-ownerships initial-instruction)))
-    (let* (#+use-ownerships(*ownerships* ownerships)
-                           (*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
-                           (*tags* (make-hash-table :test #'eq))
-                           (*vars* (make-hash-table :test #'eq)))
+    (let* (#+use-ownerships
+           (*ownerships* ownerships)
+           (*basic-blocks* (cleavir-basic-blocks:basic-blocks initial-instruction))
+           (*tags* (make-hash-table :test #'eq))
+           (*vars* (make-hash-table :test #'eq))
+           (*map-enter-to-landing-pad* map-enter-to-landing-pad)
+           )
       #+use-ownerships(setf *debug-ownerships* *ownerships*)
       (setf *debug-basic-blocks* *basic-blocks*
 	    *debug-tags* *tags*
@@ -268,6 +273,22 @@ when this is t a lot of graphs will be generated.")
 
 (defmethod translate-simple-instruction
     ((instr cleavir-ir:enter-instruction) return-value inputs outputs (abi abi-x86-64))
+  (let ((landing-pad (gethash instr *map-enter-to-landing-pad*)))
+    (when landing-pad
+      (let ((exn.slot (alloca-i8* "exn.slot"))
+	    (ehselector.slot (alloca-i32 "ehselector.slot")))
+	(setf (basic-block landing-pad)
+	      (clasp-cleavir:create-landing-pad exn.slot
+                                                ehselector.slot
+                                                instr
+                                                return-value
+                                                landing-pad
+                                                *tags*
+                                                abi)))
+      (cmp:with-irbuilder (*entry-irbuilder*)
+        (cmp:irc-low-level-trace :cclasp-eh)
+	(let ((result (cmp:irc-create-call "cc_pushLandingPadFrame" nil)))
+	  (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr)))))))
   (let* ((fn-args (llvm-sys:get-argument-list cmp:*current-function*))
          (closed-env-dest (first outputs)))
     (multiple-value-bind (closed-env-arg calling-convention)
@@ -284,22 +305,6 @@ when this is t a lot of graphs will be generated.")
                 (format t "translated outputs: ~s~%" (mapcar (lambda (x) (translate-datum x)) args))
                 (format t "lambda-list: ~a~%" lambda-list))
         (compile-lambda-list-code lambda-list args calling-convention)))))
-
-
-(defmethod translate-simple-instruction
-    ((instr clasp-cleavir-hir:landing-pad-named-enter-instruction) return-value inputs outputs (abi abi-x86-64))
-  (let ((landing-pad (clasp-cleavir-hir:landing-pad instr)))
-    (when landing-pad
-      (let ((exn.slot (alloca-i8* "exn.slot"))
-	    (ehselector.slot (alloca-i32 "ehselector.slot")))
-	(setf (basic-block landing-pad)
-	      (clasp-cleavir:create-landing-pad exn.slot ehselector.slot instr return-value landing-pad *tags* abi)))
-      (cmp:with-irbuilder (*entry-irbuilder*)
-        (cmp:irc-low-level-trace :cclasp-eh)
-	(let ((result (cmp:irc-create-call "cc_pushLandingPadFrame" nil)))
-	  (cmp:irc-store result (translate-datum (clasp-cleavir-hir:frame-holder instr)))))))
-  (call-next-method))
-
 
 
 
@@ -992,30 +997,31 @@ COMPILE-FILE will use the default *clasp-env*."
 		a))
 	 (hoisted-ast (clasp-cleavir-ast:hoist-load-time-value ast))
 	 (hir (cleavir-ast-to-hir:compile-toplevel hoisted-ast)))
-    (clasp-cleavir:convert-funcalls hir)
-    (my-hir-transformations hir clasp-system nil nil)
-    (quick-draw-hir hir "hir-pre-mir")
-    (cleavir-ir:hir-to-mir hir clasp-system nil nil)
-    (clasp-cleavir:optimize-stack-enclose hir)
-    (cc-mir:assign-mir-instruction-datum-ids hir)
-    (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir)
-    (quick-draw-hir hir "mir")
-    hir))
+    (let ((map-enter-to-landing-pad (clasp-cleavir:convert-funcalls hir)))
+      (my-hir-transformations hir clasp-system nil nil)
+      (quick-draw-hir hir "hir-pre-mir")
+      (cleavir-ir:hir-to-mir hir clasp-system nil nil)
+      (clasp-cleavir:optimize-stack-enclose hir)
+      (cc-mir:assign-mir-instruction-datum-ids hir)
+      (clasp-cleavir:finalize-unwind-and-landing-pad-instructions hir map-enter-to-landing-pad)
+      (quick-draw-hir hir "mir")
+      (values hir map-enter-to-landing-pad))))
 
 (defun compile-lambda-form-to-llvm-function (lambda-form)
   "Compile a lambda-form into an llvm-function and return
 that llvm function. This works like compile-lambda-function in bclasp."
-  (let* ((mir (compile-form-to-mir lambda-form))
-         (function-enter-instruction
-          (block first-function
-            (cleavir-ir:map-instructions-with-owner
-             (lambda (instruction owner)
-               (when (and (eq mir owner)
-                          (typep instruction 'cleavir-ir:enclose-instruction))
-                 (return-from first-function (cleavir-ir:code instruction))))
-             mir))))
-    (or function-enter-instruction (error "Could not find enter-instruction for enclosed function in ~a" lambda-form))
-    (translate function-enter-instruction)))
+  (multiple-value-bind (mir map-enter-to-landing-pad)
+      (compile-form-to-mir lambda-form)
+    (let ((function-enter-instruction
+           (block first-function
+             (cleavir-ir:map-instructions-with-owner
+              (lambda (instruction owner)
+                (when (and (eq mir owner)
+                           (typep instruction 'cleavir-ir:enclose-instruction))
+                  (return-from first-function (cleavir-ir:code instruction))))
+              mir))))
+      (or function-enter-instruction (error "Could not find enter-instruction for enclosed function in ~a" lambda-form))
+      (translate function-enter-instruction map-enter-to-landing-pad))))
 
 (defun find-first-enclosed-enter-instruction (mir)
   (block first-function
@@ -1034,9 +1040,10 @@ that llvm function. This works like compile-lambda-function in bclasp."
     (let (function lambda-name)
       (multiple-value-bind (ordered-raw-constants-list constants-table)
           (literal:with-rtv
-              (let ((mir (compile-form-to-mir form env)))
+              (multiple-value-bind (mir map-enter-to-landing-pad)
+                  (compile-form-to-mir form env)
                 (multiple-value-setq (function lambda-name)
-                  (translate mir *abi-x86-64*))))
+                  (translate mir map-enter-to-landing-pad *abi-x86-64*))))
         (values function lambda-name ordered-raw-constants-list constants-table)))))
 
 
@@ -1117,8 +1124,9 @@ that llvm function. This works like compile-lambda-function in bclasp."
           #+verbose-compiler(warn "Condition: ~a" condition)
           (invoke-restart 'cleavir-generate-ast::consider-global))))
     (when *compile-print* (describe-form form))
-    (let ((mir (compile-form-to-mir form *clasp-env*)))
-      (translate mir *abi-x86-64*))))
+    (multiple-value-bind (mir map-enter-to-landing-pad)
+        (compile-form-to-mir form *clasp-env*)
+      (translate mir map-enter-to-landing-pad *abi-x86-64*))))
 
 (defun cleavir-compile-file-form (form)
   (let ((cleavir-generate-ast:*compiler* 'cl:compile-file)

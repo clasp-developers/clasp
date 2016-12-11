@@ -79,7 +79,6 @@
   (:export 
    #:precalc-reference-instruction
    #:named-enter-instruction
-   #:landing-pad-named-enter-instruction
    #:frame-holder
    #:indexed-unwind-instruction
    #:landing-pad-instruction

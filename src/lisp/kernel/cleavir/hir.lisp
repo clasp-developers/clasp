@@ -116,41 +116,6 @@
     (format s "named-enter(~a)" (lambda-name instr))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Instruction LANDING-PAD-NAMED-ENTER-INSTRUCTION
-;;;
-;;; This instruction is an ENTER-INSTRUCTION that keeps
-;;; track of the lambda-name
-
-
-(defclass landing-pad-named-enter-instruction (clasp-cleavir-hir:named-enter-instruction)
-  ((%landing-pad :initarg :landing-pad :accessor landing-pad)))
-
-(defun make-landing-pad-named-enter-instruction
-    (lambda-list lambda-name landing-pad &optional (successor nil successor-p))
-  (let ((oe (if successor-p
-		(cleavir-ir:make-enter-instruction lambda-list successor)
-		(cleavir-ir:make-enter-instruction lambda-list))))
-    (change-class oe 'landing-pad-named-enter-instruction :lambda-name lambda-name
-		  :landing-pad landing-pad)))
-
-
-(defmethod cleavir-ir-graphviz:label ((instr landing-pad-named-enter-instruction))
-  (with-output-to-string (s)
-    (format s "landing-pad-named-enter(~a)" (lambda-name instr))))
-
-
-
-(defun frame-holder (enter)
-  (or (typep enter 'landing-pad-named-enter-instruction) (error "~a does not have a frame holder"))
-  ;; The frame holder is the last output
-  (car (last (cleavir-ir:outputs enter))))
-
-(defun (setf frame-holder) (frame-holder enter)
-  (or (typep enter 'landing-pad-named-enter-instruction) (error "~a does not have a frame holder"))
-  (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -158,6 +123,7 @@
 ;;;
 ;;; This instruction is an RETURN-INSTRUCTION that keeps
 ;;; track of the landing-pad
+
 
 
 (defclass landing-pad-return-instruction (cleavir-ir:return-instruction)
@@ -168,6 +134,14 @@
   (with-output-to-string (s)
     (format s "landing-pad-return")))
 
+
+
+(defun frame-holder (enter)
+  ;; The frame holder is the last output
+  (car (last (cleavir-ir:outputs enter))))
+
+(defun (setf frame-holder) (frame-holder enter)
+  (setf (cleavir-ir:outputs enter) (append (cleavir-ir:outputs enter) (list frame-holder))))
 
 
 
