@@ -983,10 +983,6 @@ CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, 
     if ( lambda_list_p.notnilp() ) {
       functionObject->setf_lambda_list(lambda_list);
     }
-    if (comp::_sym_STARall_functions_for_one_compileSTAR->boundP()
-        && functionObject->compiledP()) {
-      functionObject->setAssociatedFunctions(comp::_sym_STARall_functions_for_one_compileSTAR->symbolValue());
-    }
   }
   if (cl__symbolp(functionName)) {
     Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
