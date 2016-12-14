@@ -299,7 +299,7 @@ CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING("allRegisteredClassNames");
 CL_DEFUN Vector_sp core__all_registered_class_names() {
-  VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
+  VectorObjects_sp vo = VectorObjects_O::make(_Nil<T_O>(), _lisp->classSymbolsHolder().size(), false, cl::_sym_T_O);
   for (int i(0), iEnd(_lisp->classSymbolsHolder().size()); i < iEnd; ++i) {
     vo->setf_elt(i, _lisp->classSymbolsHolder()[i]);
   }
@@ -1276,7 +1276,7 @@ CL_DECLARE();
 CL_DOCSTRING("See CLHS mapc");
 CL_DEFUN T_sp cl__mapc(T_sp top, List_sp lists) {
   Function_sp op = coerce::functionDesignator(top);
-  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
+  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 8, 0, true, cl::_sym_T_O));
   // Copy the arguments into argumentLists
   for (auto carg : lists) {
     argumentLists->vectorPushExtend(oCar(carg), 8);
@@ -1307,7 +1307,7 @@ CL_DOCSTRING("See CLHS maplist");
 CL_DEFUN T_sp cl__maplist(T_sp func_desig, List_sp lists) {
   //        printf("%s:%d maplist func_desig=%s   lists=%s\n", __FILE__, __LINE__, _rep_(func_desig).c_str(), _rep_(lists).c_str() );
   Function_sp op = coerce::functionDesignator(func_desig);
-  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
+  VectorObjectsWithFillPtr_sp argumentLists(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
   //	vector<List_sp> argumentLists;
   // Copy the arguments into argumentLists
   for (auto carg : lists) {

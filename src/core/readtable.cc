@@ -481,7 +481,8 @@ CL_DEFUN T_mv core__sharp_left_parenthesis(T_sp sin, Character_sp ch, /*Fixnum_s
         list = cl__nreverse(reversed);
       }
     }
-    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(), list, cl__length(list), false, cl::_sym_T_O);
+    VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(), cl__length(list), false, cl::_sym_T_O);
+    vec->fillInitialContents(list);
     return (Values(vec));
   }
   return (Values(_Nil<T_O>()));

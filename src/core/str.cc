@@ -137,11 +137,9 @@ CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
   return Str_O::create(ss.str());
 };
 
-Str_sp Str_O::create(char initial_element, int dimension, T_sp seq) {
+Str_sp Str_O::create(char initial_element, int dimension) {
   GC_ALLOCATE(Str_O, str);
   str->_Contents = string(dimension, initial_element);
-  if (seq.notnilp())
-    str->fillInitialContents(seq);
   return str;
 }
 

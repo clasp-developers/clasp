@@ -49,7 +49,7 @@ T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
 
 Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {
   if (stage == initializing) {
-    this->_Seen = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 16, 0, true, cl::_sym_T_O);
+    this->_Seen = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 16, 0, true, cl::_sym_T_O);
   }
 }
 

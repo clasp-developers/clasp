@@ -63,12 +63,12 @@ public:
 
 public:
   static VectorObjects_sp create(T_sp initial_element, int dimension, T_sp elementType);
-  static VectorObjects_sp make(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable, T_sp elementType);
+  static VectorObjects_sp make(T_sp initial_element, int dimension, bool adjustable, T_sp elementType);
   static VectorObjects_sp create(const gctools::Vec0<T_sp> &objs);
 
 public:
-  void setup(T_sp initial_element, T_sp initialContents, int dimension, bool adjustable, T_sp elementType);
-  void adjust(T_sp initial_element, T_sp initialContents, int dimension);
+  void setup(T_sp initial_element, int dimension, bool adjustable, T_sp elementType);
+  void adjust(T_sp initial_element, int dimension);
 
   void setElementType(T_sp elementType) { this->_ElementType = elementType; };
   T_sp elementType() const { return this->_ElementType; };

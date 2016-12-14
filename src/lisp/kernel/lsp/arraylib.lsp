@@ -59,13 +59,59 @@ contiguous block."
            x))))
 
 #+clasp
-(defun make-array (dimensions &key (element-type t)
-                                (initial-element nil initial-element-supplied-p)
-                                (initial-contents nil initial-contents-supplied-p)
-                                adjustable
-                                fill-pointer
-                                displaced-to
-                                (displaced-index-offset 0))
+(defun make-array (dimensions
+                   &key (element-type t)
+                     (initial-element nil initial-element-supplied-p)
+                     (initial-contents nil initial-contents-supplied-p)
+                     adjustable fill-pointer
+                     displaced-to (displaced-index-offset 0))
+  "Args: (dimensions &key (element-type t) initial-element (initial-contents nil)
+		    (adjustable nil) (fill-pointer nil) (displaced-to nil)
+		    (displaced-index-offset 0) (static nil))
+Creates an array of the specified DIMENSIONS.  DIMENSIONS is a list of
+non-negative integers each representing the length of the corresponding
+dimension.  It may be an integer for vectors, i.e., one-dimensional arrays.
+ELEMENT-TYPE specifies the type of array elements.  INITIAL-ELEMENT specifies
+the initial value for all elements.  Its default value depends on ELEMENT-
+TYPE.  INITIAL-CONTENTS specifies each element in terms of sequences.
+ADJUSTABLE specifies whether or not the array is adjustable (see ADJUST-
+ARRAY).  FILL-POINTER is meaningful only for vectors.  It specifies whether
+the vector has fill-pointer or not, and if it has, the initial value of the
+fill-pointer.  Possible values are NIL (no fill-pointer), T (the length of the
+vector), or an integer.  See VECTOR-PUSH and VECTOR-POP.  DISPLACED-TO, if
+non-NIL, must be an array and specifies that the new array is displaced to the
+given array.  DISPLACED-INDEX-OFFSET is meaningful only when DISPLACED-TO is
+non-NIL and specifies that the reference to the I-th element of the new array
+in raw-major indexing is actually the reference to the (I + DISPLACED-INDEX-
+OFFSET)th element of the given array.If the STATIC argument is supplied
+with a non-nil value, then the body of the array is allocated as a
+contiguous block."
+  (let ((x (make-array-with-initial-element dimensions
+                                            element-type
+                                            initial-element
+                                            initial-element-supplied-p
+                                            adjustable
+                                            fill-pointer
+                                            displaced-to
+                                            displaced-index-offset)))
+    (declare (array x))
+    (cond (initial-element-supplied-p
+           (when initial-contents-supplied-p
+             (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
+           #| initial element was filled on construction|#)
+          (initial-contents-supplied-p
+           (fill-array-with-seq x initial-contents)))
+    x))
+
+#+clasp
+(defun make-array-with-initial-element (dimensions
+                                        element-type
+                                        initial-element
+                                        initial-element-supplied-p
+                                        adjustable
+                                        fill-pointer
+                                        displaced-to
+                                        displaced-index-offset)
   ;;  (when element-type (inform "Add support for element-type in make-array\n"))
   (if (and (consp element-type)
 	   (null initial-element)
@@ -85,24 +131,28 @@ contiguous block."
              (if (let ((array-element-type (array-element-type displaced-to)))
                    (and (subtypep array-element-type element-type)
                         (subtypep element-type array-element-type)))
-                 (make-vector-displaced dimensions element-type displaced-to displaced-index-offset)
+                 (let ((x (make-vector-displaced dimensions element-type displaced-to displaced-index-offset)))
+                   (when initial-element-supplied-p
+                     (fill-array-with-elt x initial-element 0 nil))
+                   x)
                  (error "Cannot displace the array, because the element types don't match")))
-           (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-contents))))
+           (if initial-element-supplied-p
+               (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element)
+               (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset)))))
     ((consp dimensions)
-     (when (and initial-element-supplied-p initial-contents-supplied-p)
-       (error "MAKE-ARRAY: Cannot supply both :INITIAL-ELEMENT and :INITIAL-CONTENTS"))
      (if displaced-to
          (if (let ((array-element-type (array-element-type displaced-to)))
                (and (subtypep array-element-type element-type)
                     (subtypep element-type array-element-type)))
-             (make-array-displaced dimensions element-type displaced-to displaced-index-offset)
+             (let ((x (make-array-displaced dimensions element-type displaced-to displaced-index-offset)))
+               (when initial-element-supplied-p
+                 (fill-array-with-elt x initial-element 0 nil))
+               x)
              (error "Cannot displace the array, because the element types don't match"))
          (let ((x (make-array-objects dimensions
                                       (upgraded-array-element-type element-type)
                                       initial-element
                                       adjustable)))
-           (when initial-contents-supplied-p
-             (fill-array-with-seq x initial-contents))
            x)))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 

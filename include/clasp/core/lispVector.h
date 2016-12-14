@@ -78,13 +78,7 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
 
   virtual cl_index fillPointer() const { SUBIMP(); };
 
-  CL_NAME("FILL-POINTER-SET");
-  CL_DEFMETHOD virtual void setFillPointer(size_t idx) { ERROR(cl::_sym_simpleTypeError,
-                                                               core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not an array with a fill pointer."),
-                                                                                     kw::_sym_formatArguments, core::lisp_createList(this->asSmartPtr()),
-                                                                                     kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
-                                                                                     kw::_sym_datum, this->asSmartPtr())); }
-
+  virtual void setFillPointer(size_t idx);
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
   virtual T_sp aref(VaList_sp indices) const;
@@ -115,12 +109,12 @@ namespace core {
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
 Vector_sp core__make_vector(T_sp element_type,
-                           int dimension,
-                           bool adjustable = false,
-                           T_sp fill_pointer = cl::_sym_T_O,
-                           T_sp displaced_to = _Nil<T_O>(),
-                           T_sp displaced_index_offset = _Nil<T_O>(),
-                           T_sp initial_element = _Nil<T_O>(),
-                           T_sp initial_contents = _Nil<T_O>());
+                            int dimension,
+                            bool adjustable = false,
+                            T_sp fill_pointer = cl::_sym_T_O,
+                            T_sp displaced_to = _Nil<T_O>(),
+                            T_sp displaced_index_offset = _Nil<T_O>(),
+                            T_sp initial_element = _Nil<T_O>(),
+                            T_sp initial_element_supplied_p = _Nil<T_O>());
 };
 #endif /* _core_Vector_H */

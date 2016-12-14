@@ -42,7 +42,7 @@ void MultipleValues::initialize(){};
 
 void multipleValuesSaveToVector(T_mv values, VectorObjects_sp save) {
   core::MultipleValues &mv = core::lisp_multipleValues();
-  save->adjust(_Nil<T_O>(), _Nil<T_O>(), values.number_of_values());
+  save->adjust(_Nil<T_O>(), values.number_of_values());
   if (values.number_of_values() > 0) {
     save->operator[](0) = values;
   }

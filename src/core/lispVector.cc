@@ -47,22 +47,23 @@ CL_LAMBDA(&rest args);
 CL_DECLARE();
 CL_DOCSTRING("vector");
 CL_DEFUN Vector_sp cl__vector(List_sp args) {
-  Vector_sp vec = VectorObjects_O::make(_Nil<T_O>(), args, cl__length(args), false, cl::_sym_T_O);
+  VectorObjects_sp vec = VectorObjects_O::make(_Nil<T_O>(), cl__length(args), false, cl::_sym_T_O);
+  vec->fillInitialContents(args);
   return vec;
 };
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
-CL_LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-contents);
+CL_LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset (initial-element nil initial-element-supplied-p));
 CL_DECLARE();
 CL_DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
-                           int dimension,
-                           bool adjustable,
-                           T_sp fill_pointer,
-                           T_sp displaced_to,
-                           T_sp displaced_index_offset,
-                           T_sp initial_element,
-                           T_sp initialContents) {
+                                     int dimension,
+                                     bool adjustable,
+                                     T_sp fill_pointer,
+                                     T_sp displaced_to,
+                                     T_sp displaced_index_offset,
+                                     T_sp initial_element,
+                                     T_sp initial_element_supplied_p) {
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (element_type == cl::_sym_bit) {
@@ -82,8 +83,12 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
     // Currently any kind of Character vector is a Str or subclass
     // TODO: Maybe use other types of strings - unicode?
     char c = ' ';
-    if (Character_sp cc = initial_element.asOrNull<Character_O>()) {
-      c = clasp_as_char(cc);
+    if (initial_element_supplied_p.notnilp()) {
+      if (Character_sp cc = initial_element.asOrNull<Character_O>()) {
+        c = clasp_as_char(cc);
+      } else {
+        TYPE_ERROR(initial_element,cl::_sym_character);
+      }
     }
     if (fill_pointer.notnilp()) {
       int ifp = 0;
@@ -91,9 +96,9 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
         ifp = dimension;
       else
         ifp = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
-      return StrWithFillPtr_O::create(c, dimension, ifp, adjustable, initialContents);
+      return StrWithFillPtr_O::create(c, dimension, ifp, adjustable);
     }
-    return (Str_O::create(' ', dimension, initialContents));
+    return (Str_O::create(c, dimension));
   } else {
     if ((element_type).consp()) {
       // For type = '(unsigned-byte XXX) set initial_element if it hasn't been set
@@ -108,20 +113,20 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
         ifp = dimension;
       else
         ifp = unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer));
-      return VectorObjectsWithFillPtr_O::make(initial_element, initialContents, dimension, ifp, adjustable, element_type);
+      return VectorObjectsWithFillPtr_O::make(initial_element, dimension, ifp, adjustable, element_type);
     } else {
-      return VectorObjects_O::make(initial_element, initialContents, dimension, adjustable, element_type);
+      return VectorObjects_O::make(initial_element, dimension, adjustable, element_type);
     }
   }
   SIMPLE_ERROR(BF("Handle make-vector :element-type %s") % _rep_(element_type));
 };
 
-CL_LAMBDA(array dimensions initial-element initial-contents);
+CL_LAMBDA(array dimensions initial-element); //initial-contents);
 CL_DECLARE();
 CL_DOCSTRING("adjustVector");
-CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initial_element, List_sp initial_contents) {
+CL_DEFUN T_sp core__adjust_vector(T_sp array, int new_dimensions, T_sp initial_element /*, List_sp initial_contents*/) {
   if (VectorObjects_sp vo = array.asOrNull<VectorObjects_O>()) {
-    vo->adjust(initial_element, initial_contents, new_dimensions);
+    vo->adjust(initial_element,/*initial_contents,*/ new_dimensions);
     return vo;
   }
   IMPLEMENT_MEF(BF("Implement adjustVector for: %s") % _rep_(array));
@@ -171,6 +176,15 @@ bool Vector_O::equalp(T_sp o) const {
     return true;
   }
   return false;
+}
+CL_NAME("FILL-POINTER-SET");
+CL_DEFMETHOD void Vector_O::setFillPointer(size_t idx)
+{
+  ERROR(cl::_sym_simpleTypeError,
+        core::lisp_createList(kw::_sym_formatControl, core::lisp_createStr("~S is not an array with a fill pointer."),
+                              kw::_sym_formatArguments, core::lisp_createList(this->asSmartPtr()),
+                              kw::_sym_expectedType, core::lisp_createList(cl::_sym_and,cl::_sym_vector,core::lisp_createList(cl::_sym_satisfies,cl::_sym_array_has_fill_pointer_p)),
+                              kw::_sym_datum, this->asSmartPtr()));
 }
 
 T_sp Vector_O::aref(VaList_sp args) const {
