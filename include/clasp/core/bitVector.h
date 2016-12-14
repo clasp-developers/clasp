@@ -125,6 +125,8 @@ private:
 public:
   virtual gc::Fixnum dimension() const { return this->_length; };
   virtual T_sp subseq(int start, T_sp end) const;
+  INHERIT_SEQUENCE virtual T_sp elt(int index) const { return this->svref(index); };
+  INHERIT_SEQUENCE virtual T_sp setf_elt(int index, T_sp value) { return this->setf_svref(index,value); };
   T_sp deepCopy() const;
   explicit SimpleBitVector_O(size_t sz) : BitVector_O(sz), _length(sz){};
   explicit SimpleBitVector_O() : BitVector_O(){};

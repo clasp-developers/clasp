@@ -258,7 +258,7 @@ Return the same things that generate-llvm-function-from-code returns"
                          funcs 
                          (irc-renv env)
                          lambda-list)
-          (values *all-functions-for-one-compile* compiled-fn lambda-name)))))
+          (values compiled-fn lambda-name)))))
 
 (defun codegen-global-function-lookup (result sym env)
   (irc-intrinsic "symbolFunctionRead" result (irc-global-symbol sym env)))
@@ -1505,6 +1505,7 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
               (when bind-to-name
                 (let ((lambda-list (cadr definition)))
                   (core:fset bind-to-name compiled-function nil t lambda-list)))
+              (core:set-associated-functions compiled-function *all-functions-for-one-compile*)
               (values compiled-function warnp failp))))))))
 
 
@@ -1594,8 +1595,9 @@ We could do more fancy things here - like if cleavir-clasp fails, use the clasp 
 	    (format t "This is a interpreted function - compile it first~%"))
 	   (t (error "Unknown target for disassemble: ~a" fn)))))
       ((and (consp desig) (or (eq (car desig) 'lambda) (eq (car desig) 'ext::lambda-block)))
-       (let ((funcs (codegen-closure nil desig nil)))
-	 (dolist (i funcs)
+       (let* ((*all-functions-for-one-compile* nil)
+              (funcs (codegen-closure nil desig nil)))
+	 (dolist (i *all-functions-for-one-compile*)
 	   (llvm-sys:dump i))))
       (t (error "Cannot disassemble")))))
 

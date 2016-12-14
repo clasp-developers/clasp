@@ -246,8 +246,7 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<R
                                                         clasp_make_fixnum(0) /* fill pointer */,
                                                         _Nil<T_O>() /* displacement */,
                                                         _Nil<T_O>() /* displ. offset */,
-                                                        _Nil<T_O>() /* initial_element */,
-                                                        _Nil<T_O>() /* initial_contents */));
+                                                        _Nil<T_O>() /* initial_element */));
   } else {
     digits = gc::As<StrWithFillPtr_sp>(tdigits);
   }

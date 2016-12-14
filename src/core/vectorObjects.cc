@@ -39,9 +39,9 @@ namespace core {
 
 
 
-VectorObjects_sp VectorObjects_O::make(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType) {
+VectorObjects_sp VectorObjects_O::make(T_sp initialElement, int dimension, bool adjustable, T_sp elementType) {
   GC_ALLOCATE(VectorObjects_O, vo);
-  vo->setup(initialElement, initialContents, dimension, adjustable, cl::_sym_T_O);
+  vo->setup(initialElement, dimension, adjustable, cl::_sym_T_O);
   vo->_ElementType = elementType;
   return vo;
 }
@@ -67,24 +67,18 @@ VectorObjects_sp VectorObjects_O::create(const gctools::Vec0<T_sp> &data) {
   return result;
 }
 
-void VectorObjects_O::setup(T_sp initialElement, T_sp initialContents, int dimension, bool adjustable, T_sp elementType) {
+void VectorObjects_O::setup(T_sp initialElement, int dimension, bool adjustable, T_sp elementType) {
   this->_Adjustable = adjustable;
   this->_ElementType = elementType;
-  if (initialElement.notnilp() && initialContents.notnilp()) {
-    SIMPLE_ERROR(BF("You can only specify one of initial-element or initialContents"));
-  }
-  if (initialContents.notnilp()) {
-    this->_Values.resize(dimension);
-    this->fillInitialContents(initialContents);
-  } else {
-    this->_Values.resize(dimension, initialElement);
-  }
+  this->_Values.resize(dimension, initialElement);
 }
 
 void VectorObjects_O::fillInitialContents(T_sp ic) {
   if (cl__length(ic) != this->dimension())
     SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl__length(ic) % this->dimension());
-  if (Cons_sp ccInitialContents = ic.asOrNull<Cons_O>()) {
+  if (ic.nilp()) {
+    // do nothing
+  } else if (Cons_sp ccInitialContents = ic.asOrNull<Cons_O>()) {
     List_sp cInitialContents = ccInitialContents;
     size_t i = 0;
     for (auto cur : cInitialContents) {
@@ -102,16 +96,8 @@ void VectorObjects_O::fillInitialContents(T_sp ic) {
   }
 }
 
-void VectorObjects_O::adjust(T_sp initialElement, T_sp initialContents, int dimension) {
-  if (initialElement.notnilp() && initialContents.notnilp()) {
-    SIMPLE_ERROR(BF("You can only specify one of initial-element or initialContents"));
-  }
-  if (initialContents.notnilp()) {
-    this->_Values.resize(dimension, _Nil<T_O>());
-    this->fillInitialContents(initialContents);
-  } else {
-    this->_Values.resize(dimension, initialElement);
-  }
+void VectorObjects_O::adjust(T_sp initialElement, int dimension) {
+  this->_Values.resize(dimension, initialElement);
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, elementType);

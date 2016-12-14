@@ -1329,7 +1329,8 @@ CL_DEFMETHOD List_sp LambdaListHandler_O::namesOfLexicalVariables() const {
 
 void LambdaListHandler_O::calculateNamesOfLexicalVariablesForDebugging() {
   List_sp names = this->namesOfLexicalVariables();
-  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), names, cl__length(names), false, cl::_sym_T_O);
+  this->_LexicalVariableNamesForDebugging = VectorObjects_O::make(_Nil<T_O>(), cl__length(names), false, cl::_sym_T_O);
+  gc::As<VectorObjects_sp>(this->_LexicalVariableNamesForDebugging)->fillInitialContents(names);
 }
 
 CL_LISPIFY_NAME("namesOfLexicalVariablesForDebugging");

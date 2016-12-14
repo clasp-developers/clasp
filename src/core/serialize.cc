@@ -121,7 +121,7 @@ T_sp BranchSNode_O::object() const {
 void BranchSNode_O::pushVectorSNode(SNode_sp snode) {
   SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
   if (this->_VectorSNodes.nilp()) {
-    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 0, 0, true, cl::_sym_T_O));
+    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 0, 0, true, cl::_sym_T_O));
   }
   this->_VectorSNodes->vectorPushExtend(snode);
 }
@@ -131,7 +131,7 @@ void BranchSNode_O::pushVector(T_sp obj) {
   SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
   SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(obj);
   if (this->_VectorSNodes.unboundp()) {
-    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 0, 0, true, cl::_sym_T_O));
+    this->_VectorSNodes = gc::As<Vector_sp>(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 0, 0, true, cl::_sym_T_O));
   }
   this->pushVectorSNode(snode);
 }
@@ -211,7 +211,7 @@ void BranchSNode_O::mapVector(std::function<void(T_sp)> const &fn) {
 
 void BranchSNode_O::saveVector(gctools::Vec0<T_sp> const &vec) {
   SaveArchive_sp saveArchive = Archive_O::currentSaveArchive();
-  this->_VectorSNodes = gc::As<Vector_sp>(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), _Nil<T_O>(), 0, 0, true, cl::_sym_T_O));
+  this->_VectorSNodes = gc::As<Vector_sp>(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 0, 0, true, cl::_sym_T_O));
   for (auto it = vec.begin(); it != vec.end(); it++) {
     SNode_sp snode = saveArchive->getOrCreateSNodeForObjectIncRefCount(*it);
     this->_VectorSNodes->vectorPushExtend(snode);

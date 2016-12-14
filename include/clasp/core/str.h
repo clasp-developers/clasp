@@ -53,7 +53,7 @@ class Str_O : public String_O {
   static Str_sp create(const char *nm);
   static Str_sp create(int numChars);
   static Str_sp create(const char *nm, int numChars);
-  static Str_sp create(claspChar initial_element, int dimension, T_sp initialContents);
+  static Str_sp create(claspChar initial_element, int dimension);
   static Str_sp create(Str_sp orig);
 public:
   static Bignum stringToBignum(const char *str);

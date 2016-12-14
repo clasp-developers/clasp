@@ -46,14 +46,14 @@ CL_DEFUN int cl__fill_pointer(Vector_sp vec) {
 
 
 
-VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, T_sp initialContents, int dimension, Fixnum fillPtr, bool adjustable, T_sp elementType) {
+VectorObjectsWithFillPtr_sp VectorObjectsWithFillPtr_O::make(T_sp initialElement, int dimension, Fixnum fillPtr, bool adjustable, T_sp elementType) {
   GC_ALLOCATE(VectorObjectsWithFillPtr_O, vo);
   if (fillPtr < 0)
     fillPtr = 0;
   if (fillPtr > dimension)
     fillPtr = dimension;
   vo->_FillPtr = fillPtr;
-  vo->setup(initialElement, initialContents, dimension, adjustable, elementType);
+  vo->setup(initialElement, dimension, adjustable, elementType);
   return vo;
 }
 
