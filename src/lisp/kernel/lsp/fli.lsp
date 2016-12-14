@@ -409,8 +409,7 @@
            (cmp::*current-function-name* mangled-function-name)
            ;; Create an IRBuilder - a helper for adding instructions to func
            (irbuilder-cur (llvm-sys:make-irbuilder cmp::*llvm-context*)))
-      (format t "Created function ~a in ~a~%" new-func cmp:*the-module*)
-      (break)
+      ;;(format t "Created function ~a in ~a~%" (llvm-sys:get-name new-func) cmp:*the-module*)
       ;; Create the entry basic block in the current function
       (let ((bb (cmp::irc-basic-block-create "entry" cmp::*current-function*)))
         (llvm-sys:set-insert-point-basic-block irbuilder-cur bb)
@@ -468,7 +467,7 @@
 
 (defun %get-callback (sym-name)
   (if sym-name
-      (%dlsym (mangled-callback-name sym-name))
+      (dlsym% (mangled-callback-name sym-name))
       nil))
 
 ;;;----------------------------------------------------------------------------
