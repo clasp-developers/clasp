@@ -70,7 +70,6 @@ THE SOFTWARE.
 //#i n c l u d e "setfExpander.h"
 #include <clasp/core/environment.h>
 #include <clasp/core/primitives.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/conditions.h>
 
 #ifdef darwin
@@ -271,7 +270,7 @@ NOINLINE void dbg_hook(const char *error) {
 namespace core {
 
 void lisp_vectorPushExtend(T_sp vec, T_sp obj) {
-  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(vec);
+  VectorObjects_sp vvec = gc::As<VectorObjects_sp>(vec);
   vvec->vectorPushExtend(obj);
 }
 };

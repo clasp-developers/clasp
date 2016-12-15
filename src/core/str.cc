@@ -101,7 +101,7 @@ Str_sp Str_O::create(const char *nm, int numChars) {
   return v;
 };
 
-Str_sp Str_O::create(int numChars) {
+Str_sp Str_O::create(size_t numChars) {
   GC_ALLOCATE(Str_O, v);
   //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
   v->setFromSize(numChars);
@@ -179,7 +179,7 @@ CL_DEFMETHOD DoubleFloat_sp Str_O::asReal() const {
   return n;
 }
 
-T_sp Str_O::elt(int index) const {
+T_sp Str_O::elt(cl_index index) const {
   _OF();
   ASSERTF(index >= 0 && index < this->size(), BF("Index %d out of range for elt of string size: %d") % index % this->size());
   char c = this->_Contents[index];
@@ -187,7 +187,7 @@ T_sp Str_O::elt(int index) const {
   return ch;
 }
 
-T_sp Str_O::setf_elt(int index, T_sp val) {
+T_sp Str_O::setf_elt(cl_index index, T_sp val) {
   _OF();
   ASSERTF(index >= 0 && index < this->size(), BF("Index out of range for string: %d") % index);
   char ch = clasp_as_char(val);
@@ -195,7 +195,7 @@ T_sp Str_O::setf_elt(int index, T_sp val) {
   return val;
 }
 
-T_sp Str_O::aset_unsafe(size_t index, T_sp val) {
+T_sp Str_O::aset_unsafe(cl_index index, T_sp val) {
   _OF();
   char ch = clasp_as_char(gc::As<Character_sp>(val));
   this->_Contents[index] = ch;
@@ -206,7 +206,7 @@ T_sp Str_O::aref(VaList_sp indices) const {
   ASSERT(indices->remaining_nargs() == 1);
   core::T_sp arg0 = indices->next_arg();
   ASSERT(arg0.fixnump());
-  size_t index = arg0.unsafe_fixnum();
+  cl_index index = arg0.unsafe_fixnum();
   if (index >= this->size()) {
     SIMPLE_ERROR(BF("Index %d out of bounds - must be [0,%d)") % index % this->size());
   }
@@ -246,7 +246,7 @@ CL_DEFMETHOD string Str_O::right(gc::Fixnum num) const {
 
 CL_LISPIFY_NAME("core:string-find");
 CL_DEFMETHOD T_sp Str_O::find(const string &substring, gc::Fixnum start) {
-  size_t res = this->get().find(substring, start);
+  cl_index res = this->get().find(substring, start);
   if (res != string::npos)
     return Integer_O::create((gc::Fixnum)res);
   return _Nil<T_O>();
@@ -321,7 +321,7 @@ void Str_O::sxhash_(HashGenerator &hg) const {
   if (hg.isFilling()) {
     Fixnum hash = 5381;
     Fixnum c;
-    for (size_t i(0), iEnd(cl__length(this->asSmartPtr())); i < iEnd; ++i) {
+    for (cl_index i(0), iEnd(cl__length(this->asSmartPtr())); i < iEnd; ++i) {
       c = this->operator[](i);
       hash = ((hash << 5) + hash) + c;
     }
@@ -737,11 +737,11 @@ RETURN_TRUE:
 
 
 
-T_sp Str_O::subseq(int start, T_sp end) const {
+T_sp Str_O::subseq(cl_index start, T_sp end) const {
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
-  int iend;
+  cl_index iend;
   if (end.nilp()) {
     iend = this->size();
   } else {
@@ -750,17 +750,17 @@ T_sp Str_O::subseq(int start, T_sp end) const {
   if (iend < start) {
     SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
   }
-  int ilen = iend - start;
+  cl_index ilen = iend - start;
   Str_sp news = Str_O::create(this->get().substr(start, ilen));
   return news;
 }
 
-T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq) {
+T_sp Str_O::setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
   Str_sp sfrom = gc::As<Str_sp>(new_subseq);
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
-  int iend;
+  cl_index iend;
   if (end.nilp()) {
     iend = this->get().size();
   } else {
@@ -769,25 +769,25 @@ T_sp Str_O::setf_subseq(int start, T_sp end, T_sp new_subseq) {
   if (iend <= start) {
     SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
   }
-  int ileft = iend - start;
+  cl_index ileft = iend - start;
   if (ileft > sfrom->size()) {
     ileft = sfrom->size();
   }
-  int ifrom(0);
+  cl_index ifrom(0);
   for (int i(start); ileft != 0; ++i, --ileft) {
     this->_Contents[i] = sfrom->_Contents[ifrom];
   }
   return new_subseq;
 }
 
-claspChar Str_O::schar(gc::Fixnum index) const {
+claspChar Str_O::schar(cl_index index) const {
   if (index >= 0 && index < this->size()) {
     return this->_Contents[index];
   }
   SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
 }
 
-claspChar Str_O::scharSet(gc::Fixnum index, claspChar c) {
+claspChar Str_O::scharSet(cl_index index, claspChar c) {
   if (index >= 0 && index < this->size()) {
     this->_Contents[index] = c;
     return c;
@@ -797,15 +797,15 @@ claspChar Str_O::scharSet(gc::Fixnum index, claspChar c) {
 
 void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
   char celement = clasp_as_char(gc::As<Character_sp>(element));
-  uint istart = unbox_fixnum(start);
-  uint last = this->size();
-  uint iend = last;
+  cl_index istart = unbox_fixnum(start);
+  cl_index last = this->size();
+  cl_index iend = last;
   if (end.notnilp())
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   ASSERTF(iend >= istart, BF("Illegal fill range istart=%d iend=%d") % istart % iend);
   ASSERTF(iend <= last, BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last);
   ASSERTF(istart >= 0 <= iend, BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend);
-  for (uint i = istart; i < iend; i++) {
+  for (cl_index i = istart; i < iend; i++) {
     this->_Contents[i] = celement;
   }
 }
@@ -819,7 +819,7 @@ void Str_O::fillInitialContents(T_sp seq) {
     List_sp ls = cls;
     if (cl__length(seq) != this->size())
       goto ERROR;
-    size_t i = 0;
+    cl_index i = 0;
     for (auto cur : ls) {
       this->_Contents[i] = clasp_as_char(gc::As<Character_sp>(oCar(cur)));
       ++i;
@@ -827,13 +827,13 @@ void Str_O::fillInitialContents(T_sp seq) {
   } else if (Str_sp ss = seq.asOrNull<Str_O>()) {
     if (ss->length() != this->size())
       goto ERROR;
-    for (size_t i = 0; i < this->size(); ++i) {
+    for (cl_index i = 0; i < this->size(); ++i) {
       this->_Contents[i] = (*ss)[i];
     }
   } else if (Vector_sp vs = seq.asOrNull<Vector_O>()) {
     if (vs->length() != this->size())
       goto ERROR;
-    for (size_t i = 0; i < this->size(); ++i) {
+    for (cl_index i = 0; i < this->size(); ++i) {
       this->_Contents[i] = clasp_as_char(gc::As<Character_sp>(vs));
     }
   } else {

@@ -41,7 +41,6 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.fwd.h>
 #include <clasp/core/numbers.fwd.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
 #include <clasp/core/specializer.h>
 #include <clasp/core/holder.h>
 
@@ -117,7 +116,7 @@ public: // The hard-coded indexes above are defined below to be used by Class
   static const int REF_NUMBER_OF_SLOTS_IN_CLASSES = 22;
 
 private:
-  void accumulateSuperClasses(HashTableEq_sp supers, VectorObjectsWithFillPtr_sp arrayedSupers, Class_sp mc);
+  void accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc);
 
 public:
   /*! NumberOfClassSlots has to match the number of entries in

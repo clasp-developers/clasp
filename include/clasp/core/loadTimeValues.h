@@ -29,12 +29,11 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 
 namespace core {
 class LoadTimeValues_O : public General_O {
-  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, size_t index));
+//  friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, size_t index));
   LISP_CLASS(core, CorePkg, LoadTimeValues_O, "LoadTimeValues",General_O);
 
 public: // Simple default ctor/dtor

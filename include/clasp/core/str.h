@@ -51,7 +51,7 @@ class Str_O : public String_O {
   static Str_sp create(const boost::format &fmt);
   static Str_sp create(const string &nm);
   static Str_sp create(const char *nm);
-  static Str_sp create(int numChars);
+  static Str_sp create(size_t numChars);
   static Str_sp create(const char *nm, int numChars);
   static Str_sp create(claspChar initial_element, int dimension);
   static Str_sp create(Str_sp orig);
@@ -70,7 +70,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
     this->_Contents[i2] = this->_Contents[i1];
     this->_Contents[i1] = t;
   }
-  virtual T_sp aset_unsafe(size_t j, T_sp val);
+  virtual T_sp aset_unsafe(cl_index j, T_sp val);
   virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]); };
   virtual T_sp elementType() const;
   /*! Return the value at the indices */
@@ -80,14 +80,14 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
 
   virtual void __write__(T_sp strm) const;
 
-  virtual T_sp elt(int index) const;
-  virtual T_sp setf_elt(int index, T_sp value);
+  virtual T_sp elt(cl_index index) const;
+  virtual T_sp setf_elt(cl_index index, T_sp value);
 
-  virtual T_sp svref(int index) const { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
-  virtual T_sp setf_svref(int index, T_sp value) { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
+  virtual T_sp svref(cl_index index) const { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
+  virtual T_sp setf_svref(cl_index index, T_sp value) { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
 
-  virtual T_sp subseq(int start, T_sp end) const;
-  virtual T_sp setf_subseq(int start, T_sp end, T_sp new_subseq);
+  virtual T_sp subseq(cl_index start, T_sp end) const;
+  virtual T_sp setf_subseq(cl_index start, T_sp end, T_sp new_subseq);
 
   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end);
 
@@ -98,8 +98,8 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
 
   virtual void sxhash_(HashGenerator &hg) const;
 
-  inline char &operator[](int i) { return this->_Contents[i]; };
-  inline const char &operator[](int i) const { return this->_Contents[i]; };
+  inline char &operator[](cl_index i) { return this->_Contents[i]; };
+  inline const char &operator[](cl_index i) const { return this->_Contents[i]; };
 
 
 
@@ -115,7 +115,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
     str_type temp(v);
     this->_Contents.swap(temp);
   };
-  void setFromSize(int num) {
+  void setFromSize(size_t num) {
     str_type temp(num);
     this->_Contents.swap(temp);
   };
@@ -163,7 +163,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
   T_sp find(const string &substring, gc::Fixnum start);
 
 public:
-  gc::Fixnum length() const { return this->size(); };
+  cl_index length() const { return this->size(); };
   
 #ifndef USE_TEMPLATE_STRING_MATCHER
   virtual T_sp string_EQ_(Str_sp string2, int start1, int end1, int start2, int end2) const;
@@ -205,6 +205,10 @@ inline T_sp base_string_concatenate(LCC_ARGS_ELLIPSIS) {
   LCC_SPILL_REGISTER_ARGUMENTS_TO_VA_LIST(lcc_arglist_s);
   VaList_sp valist_sp(&lcc_arglist_s);
   return core__base_string_concatenate(valist_sp);
+  T_sp replace_array(T_sp other) {
+    *this = *gc::As<Str_sp>(other);
+    return this->asSmartPtr();
+  }
 };
 #endif
 

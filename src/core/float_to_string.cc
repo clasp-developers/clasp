@@ -47,7 +47,8 @@ _clasp_string_push_c_string(StrWithFillPtr_sp s, const char *c) {
 
 static void
 insert_char(StrWithFillPtr_sp buffer, cl_index where, gc::Fixnum c) {
-  gc::Fixnum end = buffer->fillPointer();
+        ASSERT(buffer->fillPointer().fixnump());
+        gc::Fixnum end = buffer->fillPointer().unsafe_fixnum();
   buffer->pushCharExtend('.');
   memmove(&(*buffer)[where + 1], &(*buffer)[where], end - where);
   //clasp_copy_subarray(buffer, where+1, buffer, where, end - where);
@@ -56,7 +57,8 @@ insert_char(StrWithFillPtr_sp buffer, cl_index where, gc::Fixnum c) {
 
 static T_sp
 push_base_string(T_sp buffer, StrWithFillPtr_sp s) {
-  buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
+        ASSERT(s->fillPointer().fixnump())
+        buffer = _clasp_ensure_buffer(buffer, s->fillPointer().unsafe_fixnum());
   gc::As<StrWithFillPtr_sp>(buffer)->pushStringCharStar(s->c_str());
   return buffer;
 }
@@ -123,7 +125,7 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
     insert_char(buffer, base + 1, '.');
     print_float_exponent(buffer, number, e - 1);
   } else if (e > 0) {
-    gc::Fixnum l = gc::As<StrWithFillPtr_sp>(buffer)->fillPointer() - base;
+          gc::Fixnum l = gc::As<StrWithFillPtr_sp>(buffer)->fillPointer().unsafe_fixnum() - base;
     while (l++ <= e) {
       buffer->pushCharExtend('0');
     }

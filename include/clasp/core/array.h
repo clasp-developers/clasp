@@ -58,12 +58,13 @@ public:
 
 public: // Functions here
   virtual bool equalp(T_sp other) const { SUBIMP(); };
-  virtual T_sp aset_unsafe(size_t j, T_sp val) { SUBIMP(); };
+  virtual T_sp aset_unsafe(cl_index j, T_sp val) { SUBIMP(); };
 CL_LISPIFY_NAME("cl:arrayHasFillPointerP");
 CL_DEFMETHOD   virtual bool arrayHasFillPointerP() const { return false; };
   virtual gc::Fixnum arrayTotalSize() const;
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
-  /*! For write_array */
+  /*! Return the total capacity of the array */
+  virtual gc::Fixnum dimension() const {SUBIMP();};
   virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
 CL_LISPIFY_NAME("core:rowMajorAset");
 CL_DEFMETHOD   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); };
@@ -71,7 +72,7 @@ CL_DEFMETHOD   virtual void rowMajorAset(cl_index idx, T_sp value) { SUBIMP(); }
 CL_LISPIFY_NAME("cl:rowMajorAref");
 CL_DEFMETHOD   virtual T_sp rowMajorAref(cl_index idx) const { SUBIMP(); };
  
-  virtual gc::Fixnum arrayRowMajorIndex(VaList_sp indices) const;
+  virtual cl_index arrayRowMajorIndex(VaList_sp indices) const;
 
   //! Don't support adjustable arrays yet
   bool adjustable_array_p() const { return false; };
@@ -138,9 +139,9 @@ CL_DEFMETHOD   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const { 
   virtual T_sp setf_aref(List_sp indices_val);
 
 CL_LISPIFY_NAME("cl:svref");
-CL_DEFMETHOD   virtual T_sp svref(int idx) const { SUBIMP(); };
+CL_DEFMETHOD   virtual T_sp svref(cl_index idx) const { SUBIMP(); };
 CL_LISPIFY_NAME("core:setf-svref");
-CL_DEFMETHOD   virtual T_sp setf_svref(int idx, T_sp val) { SUBIMP(); };
+CL_DEFMETHOD   virtual T_sp setf_svref(cl_index idx, T_sp val) { SUBIMP(); };
 
   /*! Return the value at the indices */
 CL_LISPIFY_NAME("core:array-fill");
@@ -154,6 +155,11 @@ CL_DEFMETHOD   virtual void arrayFill(T_sp val) {
 CL_LISPIFY_NAME("core:fill-array-with-elt");
 CL_DEFMETHOD   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
     _OF();
+    SUBCLASS_MUST_IMPLEMENT();
+  };
+
+CL_LISPIFY_NAME("core:replace-array");
+CL_DEFMETHOD   virtual T_sp replace_array(T_sp other) {
     SUBCLASS_MUST_IMPLEMENT();
   };
 

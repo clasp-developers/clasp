@@ -43,21 +43,21 @@ class ArrayObjects_O : public Array_O {
   DECLARE_SERIALIZE();
 #endif // defined(OLD_SERIALIZE)
 public:
-  explicit ArrayObjects_O() : Base(){};
+  explicit ArrayObjects_O() : Base(), _ElementType(cl::_sym_T_O), _DisplacedIndexOffset(0) {};
   virtual ~ArrayObjects_O(){};
   friend void write_array_inner(bool, T_sp, T_sp);
-
-public:
-  void initialize();
-
 private: // instance variables here
-  vector<cl_index> _Dimensions;
-  T_sp _ElementType;
+  size_t              _Dimension;
+  vector<Fixnum>      _Dimensions;
+  T_sp                _ElementType;
+  /*! Normal array */
   gctools::Vec0<T_sp> _Values;
+  /*! Displaced array stuff */
+  T_sp                _DisplacedTo;
+  gc::Fixnum          _DisplacedIndexOffset;
 
 public: // Functions here
-  static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp adjustable);
-
+  static ArrayObjects_sp make(T_sp dim, T_sp elementType, T_sp initialElement, T_sp initialElementSuppliedP, T_sp displacedTo, Fixnum displacedIndexOffset );
 public:
   virtual bool equalp(T_sp other) const;
   virtual T_sp aset_unsafe(size_t j, T_sp val);
@@ -69,11 +69,12 @@ public:
   virtual gc::Fixnum rank() const { return this->_Dimensions.size(); };
 
   /* Copy the dimensions for printing */
+  virtual gc::Fixnum dimension() const { return this->_Dimension; }; // Values.capacity();};
   virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };
 
-  LongLongInt setDimensions(List_sp dims, T_sp initialElement);
+  LongLongInt setDimensions(List_sp dims, T_sp initialElement, T_sp displacedTo );
 
   void setElementType(T_sp et) { this->_ElementType = et; };
   /*! Return the value at the indices */
@@ -87,6 +88,7 @@ public:
 
   /*! Return the value at the indices */
   virtual void arrayFill(T_sp val);
+  T_sp replace_array(T_sp other);
 
   /*! Return a deepCopy of the ArrayObjects */
 //  virtual T_sp deepCopy() const;

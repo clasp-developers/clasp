@@ -65,18 +65,18 @@ T_sp BitVector_O::rowMajorAref(cl_index idx) const {
   return (val != 0) ? clasp_make_fixnum(1) : clasp_make_fixnum(0);
 }
 
-void BitVector_O::do_subseq(BitVector_sp result, int start, int iend) const {
-  int idest = 0;
-  for (int i(start); i < iend; ++i) {
+void BitVector_O::do_subseq(BitVector_sp result, cl_index start, cl_index iend) const {
+  cl_index idest = 0;
+  for (cl_index i(start); i < iend; ++i) {
     result->setBit(idest++, this->testBit(i));
   }
 }
 
-T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
+T_sp SimpleBitVector_O::subseq(cl_index start, T_sp end) const {
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
-  int iend;
+  cl_index iend;
   if (end.nilp()) {
     iend = this->dimension();
   } else {
@@ -88,17 +88,17 @@ T_sp SimpleBitVector_O::subseq(int start, T_sp end) const {
   if (iend > this->dimension()) {
     iend = this->dimension();
   }
-  int ilen = iend - start;
+  cl_index ilen = iend - start;
   SimpleBitVector_sp result = SimpleBitVector_O::make(ilen);
   this->do_subseq(result, start, iend);
   return result;
 }
 
-T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
+T_sp BitVectorWithFillPtr_O::subseq(cl_index start, T_sp end) const {
   if (start < 0) {
     SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
   }
-  int iend;
+  cl_index iend;
   if (end.nilp()) {
     iend = this->dimension();
   } else {
@@ -110,7 +110,7 @@ T_sp BitVectorWithFillPtr_O::subseq(int start, T_sp end) const {
   if (iend > this->dimension()) {
     iend = this->dimension();
   }
-  int ilen = iend - start;
+  cl_index ilen = iend - start;
   BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::make(ilen, ilen, this->_adjustable);
   this->do_subseq(result, start, iend);
   return result;
@@ -149,10 +149,10 @@ void BitVector_O::erase() {
 }
 
 CL_LISPIFY_NAME("core:setBit");
-CL_DEFMETHOD void BitVector_O::setBit(uint i, uint v) {
+CL_DEFMETHOD void BitVector_O::setBit(cl_index i, uint v) {
   _OF();
-  uint block;
-  uint offset;
+  cl_index block;
+  cl_index offset;
   BitBlockType packedVal;
   BitBlockType mask;
   BitBlockType omask;
@@ -168,15 +168,13 @@ CL_DEFMETHOD void BitVector_O::setBit(uint i, uint v) {
 }
 
 CL_LISPIFY_NAME("core:testBit");
-CL_DEFMETHOD uint BitVector_O::testBit(uint i) const {
-  _OF();
-  uint block;
-  uint offset;
+CL_DEFMETHOD uint BitVector_O::testBit(cl_index i) const {
+  cl_index block;
+  cl_index offset;
   BitBlockType mask;
   block = i / BitWidth;
   offset = i % BitWidth;
   mask = (1 << offset);
-
   LOG(BF("testBit i=%u BitWidth=%d block=%d offset=%d") % (i) % BitWidth % (block) % (offset));
   LOG(BF("      mask = |%lx|") % mask);
   LOG(BF("bits[%04d] = |%lx|") % block % this->bits[block]);
@@ -311,8 +309,8 @@ void BitVector_O::sxhash_(HashGenerator &hg) const {
 }
 
 CL_LISPIFY_NAME("core:lowestIndex");
-CL_DEFMETHOD uint BitVector_O::lowestIndex() {
-  uint i;
+CL_DEFMETHOD cl_index BitVector_O::lowestIndex() {
+  cl_index i;
   for (i = 0; i < this->vector_length(); i++) {
     if (this->testBit(i)) {
       return ((i));
@@ -368,7 +366,7 @@ void BitVectorWithFillPtr_O::setFillPointer(size_t fp)
   TYPE_ERROR_INDEX(this->asSmartPtr(),fp);
 }
 
-Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extension) {
+Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   if (!this->_adjustable) {
     SIMPLE_ERROR(BF("This bit-vector is not extensible"));
   }

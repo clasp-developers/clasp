@@ -67,7 +67,6 @@ THE SOFTWARE.
 #include <clasp/core/pointer.h>
 #include <clasp/core/str.h>
 #include <clasp/core/translators.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/llvmo/debugLoc.h>

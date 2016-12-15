@@ -1130,6 +1130,7 @@ class scrape_with_preproc_scan(Task.Task):
             "--load", os.path.join(env.BUILD_ROOT, "src/scraper/scraper.lisp"),
             "--eval", "(cscrape:generate-one-sif \"%s\" #P\"%s\")" % (preproc_args, self.outputs[0].abspath()),
             "--eval", "(quit)"]
+        #print("scrape = %s" % cmd)
         return self.exec_command(cmd, shell = False)
 
     def scan(self):

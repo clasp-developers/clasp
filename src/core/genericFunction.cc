@@ -32,10 +32,10 @@ THE SOFTWARE.
 #include <clasp/core/instance.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/str.h>
 #include <clasp/core/predicates.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/cache.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/genericFunction.h>

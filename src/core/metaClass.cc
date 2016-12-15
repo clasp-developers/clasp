@@ -45,11 +45,11 @@ THE SOFTWARE.
 #include <clasp/core/lambdaListHandler.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/str.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/hashTable.h>
 #include <clasp/core/builtInClass.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/standardClass.h>
 #include <clasp/core/funcallableStandardClass.h>
@@ -267,14 +267,14 @@ string Class_O::getPackagedName() const {
   return this->name()->formattedName(false);
 }
 
-void Class_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjectsWithFillPtr_sp arrayedSupers, Class_sp mc) {
+void Class_O::accumulateSuperClasses(HashTableEq_sp supers, VectorObjects_sp arrayedSupers, Class_sp mc) {
   if (IS_SYMBOL_UNDEFINED(mc->className()))
     return;
   //	printf("%s:%d accumulateSuperClasses of: %s\n", __FILE__, __LINE__, _rep_(mc->className()).c_str() );
   if (supers->contains(mc))
     return;
-  Fixnum_sp arraySuperLength = make_fixnum(arrayedSupers->length());
-  supers->setf_gethash(mc, arraySuperLength);
+  Fixnum arraySuperLength = arrayedSupers->length();
+  supers->setf_gethash(mc, clasp_make_fixnum(arraySuperLength));
   arrayedSupers->vectorPushExtend(mc);
   List_sp directSuperclasses = mc->directSuperclasses();
   //	printf("%s:%d accumulateSuperClasses arraySuperLength = %d\n", __FILE__, __LINE__, arraySuperLength->get());
@@ -305,7 +305,7 @@ namespace core {
 void Class_O::lowLevel_calculateClassPrecedenceList() {
   using namespace boost;
   HashTableEq_sp supers = HashTableEq_O::create_default();
-  VectorObjectsWithFillPtr_sp arrayedSupers(VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 16, 0, true, cl::_sym_T_O));
+  VectorObjects_sp arrayedSupers(VectorObjects_O::make(_Nil<T_O>(), 16, cl::_sym_T_O, clasp_make_fixnum(0)));
   this->accumulateSuperClasses(supers, arrayedSupers, this->sharedThis<Class_O>());
   vector<list<int>> graph(cl__length(arrayedSupers));
 

@@ -39,7 +39,7 @@ namespace core {
 
 
 CL_LISPIFY_NAME(make-array-objects);
-CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp adjustable) {
+CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, T_sp initialElement, T_sp initialElementSuppliedP, T_sp displacedTo, Fixnum displacedIndexOffset ) {
   GC_ALLOCATE(ArrayObjects_O, array);
   array->_ElementType = elementType;
   List_sp dim;
@@ -51,45 +51,21 @@ CL_DEFUN ArrayObjects_sp ArrayObjects_O::make(T_sp dim_desig, T_sp elementType, 
   } else {
     dim = dim_desig;
   }
-  /* LongLongInt elements = */ array->setDimensions(dim, initialElement);
-  return ((array));
-}
-
-
-
-
-#if defined(XML_ARCHIVE)
-void ArrayObjects_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  IMPLEMENT_ME();
-#if 0
-	node->attribute("elementType",this->_ElementType);
-	node->archiveVector0<T_O>("contents",this->_Values);
-#endif
-  // Archive other instance variables here
-}
-#endif // defined(XML_ARCHIVE)
-#if defined(OLD_SERIALIZE)
-void ArrayObjects_O::serialize(serialize::SNode node) {
-  this->Base::serialize(node);
-  node->namedObject("elementType", this->_ElementType);
-  node->namedVector0<T_O>("contents", this->_Values);
-}
-#endif
-
-void ArrayObjects_O::initialize() {
-  _OF();
-  this->Base::initialize();
-  this->_ElementType = cl::_sym_T_O;
+  /* LongLongInt elements = */ array->setDimensions(dim, initialElement, displacedTo );
+  if (displacedTo.notnilp()) {
+    array->_DisplacedIndexOffset = displacedIndexOffset;
+  } else {
+    array->_DisplacedIndexOffset = 0;
+  }
+  return array;
 }
 
 void ArrayObjects_O::rowMajorAset(cl_index idx, T_sp value) {
-  ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
-  this->_Values[idx] = value;
+  this->_Values[this->_DisplacedIndexOffset+idx] = value;
 }
 
 T_sp ArrayObjects_O::aset_unsafe(size_t idx, T_sp value) {
-  this->_Values[idx] = value;
+  this->_Values[this->_DisplacedIndexOffset+idx] = value;
   return value;
 }
 
@@ -128,106 +104,87 @@ bool ArrayObjects_O::equalp(T_sp o) const {
 }
 
 T_sp ArrayObjects_O::rowMajorAref(cl_index idx) const {
-  ASSERTF(idx < this->_Values.size(), BF("Illegal row-major-aref index %d - must be less than %d") % idx % this->_Values.size());
-  return ((this->_Values[idx]));
+  return ((this->_Values[this->_DisplacedIndexOffset+idx]));
 };
 
 T_sp ArrayObjects_O::aref(VaList_sp indices) const {
   LOG(BF("indices[%s]") % _rep_(indices));
   Fixnum index = this->index_(indices);
-  return ((this->_Values[index]));
+  return ((this->_Values[this->_DisplacedIndexOffset+index]));
 }
 
 T_sp ArrayObjects_O::setf_aref(List_sp indices_val) {
   T_sp val;
   LongLongInt index = this->index_val_(indices_val, true, val);
-  this->_Values[index] = val;
+  this->_Values[this->_DisplacedIndexOffset+index] = val;
   return val;
 }
 
 T_sp ArrayObjects_O::shallowCopy() const {
   GC_ALLOCATE(ArrayObjects_O, array);
-  array->_Dimensions = this->_Dimensions;
-  array->_ElementType = this->_ElementType;
-  array->_Values = this->_Values;
-  return ((array));
+  *array = *this;
+  return array;
 }
 
 void ArrayObjects_O::arrayFill(T_sp val) {
-  _OF();
   for (int i = 0; i < (int)this->_Values.size(); i++) {
-    this->_Values[i] = val;
+    this->_Values[this->_DisplacedIndexOffset+i] = val;
   }
 }
-
-#if 0
-T_sp ArrayObjects_O::deepCopy() const {
-  _OF();
-  GC_ALLOCATE(ArrayObjects_O, narray);
-  narray->_Dimensions = this->_Dimensions;
-  narray->_ElementType = this->_ElementType; // Don't copy ElementType - it's an immutable Symbol representing a Class
-  narray->_Values.resize(this->_Values.size());
-  for (uint i = 0; i < this->_Values.size(); i++) {
-    narray->_Values[i] = this->_Values[i]->deepCopy();
-  }
-  return ((narray));
-}
-#endif
-
 
 T_sp ArrayObjects_O::svref(int index) const {
-  if (this->_Dimensions.size() == 1) {
-    ASSERT(index >= 0 && index < this->_Dimensions[0]);
-    return ((this->_Values[index]));
+  if (this->rank() == 1) {
+    return ((this->_Values[this->_DisplacedIndexOffset+index]));
   }
   SIMPLE_ERROR(BF("ArrayObjects has more than one dimension - cannot use svref"));
 }
 
 T_sp ArrayObjects_O::setf_svref(int index, T_sp value) {
-  if (this->_Dimensions.size() == 1) {
-    ASSERT(index >= 0 && index < this->_Dimensions[0]);
-    this->_Values[index] = value;
-    return ((value));
+  if (this->rank() == 1) {
+    this->_Values[this->_DisplacedIndexOffset+index] = value;
+    return value;
   }
   SIMPLE_ERROR(BF("ArrayObjects has more than one dimension - cannot use setf-svref"));
 }
 
-LongLongInt ArrayObjects_O::setDimensions(List_sp dim, T_sp initialElement) {
-  _OF();
-  LongLongInt elements = 1;
-  int newRank = cl__length(dim);
+LongLongInt ArrayObjects_O::setDimensions(List_sp ldim, T_sp initialElement, T_sp displacedTo) {
+  int newRank = cl__length(ldim);
   if (newRank > CLASP_ARRAY_RANK_LIMIT) {
     SIMPLE_ERROR(BF("Maximum rank is %d") % CLASP_ARRAY_RANK_LIMIT);
   }
   this->_Dimensions.resize(newRank);
-  int idx = 0;
-  for (; dim.notnilp(); dim = oCdr(dim)) {
-    int oneDim = clasp_to_int(gc::As<Rational_sp>(oCar(dim)));
+  Fixnum elements = 1;
+  Fixnum idx = 0;
+  for ( auto dim : ldim ) {
+    Fixnum oneDim = clasp_to_int(gc::As<Rational_sp>(oCar(dim)));
     this->_Dimensions[idx] = oneDim;
     elements *= oneDim;
     idx++;
   }
-  this->_Values.resize(elements, initialElement);
-  return ((elements));
+  this->_Dimension = elements;
+  if (displacedTo.nilp()) {
+    gc::Vec0<T_sp> values;
+    this->_Values = values;
+    this->_DisplacedTo = _Nil<core::T_O>();
+    this->_Values.resize(elements, initialElement);
+  } else {
+    this->_DisplacedTo = displacedTo;
+    this->_Values = gc::As<ArrayObjects_sp>(displacedTo)->_Values;
+  }
+  return elements;
+}
+
+T_sp ArrayObjects_O::replace_array(T_sp other) {
+  ArrayObjects_sp aother = gctools::As<ArrayObjects_sp>(other);
+  if (this->rank()!=aother->rank()) {
+    SIMPLE_ERROR(BF("Cannot replace-array with mismatched rank this -> %d other -> %d") % this->rank() % aother->rank());
+  }
+  *this = *aother;
+  return this->asSmartPtr();
 }
 
 gc::Fixnum ArrayObjects_O::arrayDimension(gc::Fixnum axisNumber) const {
-  ASSERTF(axisNumber >= 0, BF("Axis number must be >= 0"));
-  ASSERTF(axisNumber < this->_Dimensions.size(), BF("There is no axis with number %d - must be less than %d") % axisNumber % this->_Dimensions.size());
-  return ((this->_Dimensions[axisNumber]));
+  return this->_Dimensions[axisNumber];
 }
-
-#if defined(XML_ARCHIVE)
-void ArrayObjects_O::archiveBase(::core::ArchiveP node) {
-  this->Base::archiveBase(node);
-  node->archiveVectorInt("dims", this->_Dimensions);
-  // Archive other instance variables here
-}
-#endif // defined(XML_ARCHIVE)
-#if defined(OLD_SERIALIZE)
-void ArrayObjects_O::serialize(serialize::SNode node) {
-  node->namedPOD("dims", this->_Dimensions);
-}
-#endif
 
 }; /* core */

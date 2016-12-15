@@ -107,7 +107,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/core/activationFrame.h>
-#include <clasp/core/arrayDisplaced.h>
 #include <clasp/core/arrayObjects.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
@@ -125,11 +124,9 @@ THE SOFTWARE.
 #include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/specializer.h>
 #include <clasp/core/lispString.h>
-#include <clasp/core/vectorDisplaced.h>
 #include <clasp/core/newVectorObjects.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/str.h>
-#include <clasp/core/newVectorObjectsWithFillPtr.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/builtInClass.h>
 #include <clasp/core/cxxClass.h>
@@ -687,6 +684,7 @@ SYMBOL_SC_(CorePkg, element_type);
 SYMBOL_SC_(CorePkg, initial_element);
 SYMBOL_SC_(CorePkg, adjustable);
 
+SYMBOL_EXPORT_SC_(ClPkg, adjust_array);
 SYMBOL_EXPORT_SC_(ClPkg, gethash);
 SYMBOL_SC_(CorePkg, object);
 SYMBOL_EXPORT_SC_(ClPkg, eq);

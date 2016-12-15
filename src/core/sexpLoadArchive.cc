@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/write_object.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/str.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/wrappers.h>
@@ -87,7 +88,7 @@ SNode_sp parseNode(HashTable_sp objToNode, T_sp obj) {
       VectorObjects_sp vresult(_Nil<VectorObjects_O>());
       if (oCddr(consObj).notnilp()) {
         Vector_sp vdata = gc::As<Vector_sp>(oThird(consObj));
-        vresult = VectorObjects_O::make(_Nil<T_O>(), vdata->length(), true, cl::_sym_T_O);
+        vresult = VectorObjects_O::make(_Nil<T_O>(), vdata->length(),cl::_sym_T_O);
         for (int i = 0, iEnd(vdata->length()); i < iEnd; ++i) {
           SNode_sp data = parseNode(objToNode, vdata->elt(i));
           vresult->setf_elt(i, data);

@@ -56,21 +56,21 @@ public:
 
   bool equal(T_sp bv) const;
 
-  void setBit(uint i, uint v);
-  uint testBit(uint i) const;
+  void setBit(cl_index i, uint v);
+  uint testBit(cl_index i) const;
   void erase();
 
-  T_sp bit_vector_aset_unsafe(size_t j, T_sp val) { this->setBit(j,clasp_to_fixnum(val)); return val; };
+  T_sp bit_vector_aset_unsafe(cl_index j, T_sp val) { this->setBit(j,clasp_to_fixnum(val)); return val; };
   T_sp bit_vector_aref_unsafe(cl_index index) const { return clasp_make_fixnum(this->testBit(index)); };
 
-  virtual T_sp aset_unsafe(size_t j, T_sp val) { return this->bit_vector_aset_unsafe(j,val); };
+  virtual T_sp aset_unsafe(cl_index j, T_sp val) { return this->bit_vector_aset_unsafe(j,val); };
   virtual T_sp aref_unsafe(cl_index index) const { return this->bit_vector_aref_unsafe(index); };
   
-  virtual T_sp svref(int index) const { return this->bit_vector_aref_unsafe(index); };
-  virtual T_sp setf_svref(int index, T_sp value) {return this->bit_vector_aset_unsafe(index,value);};
+  virtual T_sp svref(cl_index index) const { return this->bit_vector_aref_unsafe(index); };
+  virtual T_sp setf_svref(cl_index index, T_sp value) {return this->bit_vector_aset_unsafe(index,value);};
 
   void sxhash_(HashGenerator &hg) const;
-  uint lowestIndex();
+  cl_index lowestIndex();
 
   //! Calculate the "or" of bv with this BitVector
   void inPlaceOr(BitVector_sp bv);
@@ -92,7 +92,7 @@ public:
 CL_LISPIFY_NAME("core:isZero");
 CL_DEFMETHOD   bool isZero() { return (this->countSet() == 0); };
 
-  void do_subseq(BitVector_sp result, int start, int iend) const;
+  void do_subseq(BitVector_sp result, cl_index start, cl_index iend) const;
 
   string asString();
 
@@ -107,7 +107,7 @@ CL_DEFMETHOD   bool isZero() { return (this->countSet() == 0); };
 
 public:
   bool bitVectorP() const { return true; };
-  virtual int offset() const { return 0; }; // displaced arrays?  used in bits.cc
+  virtual cl_index offset() const { return 0; }; // displaced arrays?  used in bits.cc
   virtual void __write__(T_sp strm) const;
 
   explicit BitVector_O(size_t sz,int value);
@@ -128,9 +128,9 @@ private:
 
 public:
   virtual gc::Fixnum dimension() const { return this->_length; };
-  virtual T_sp subseq(int start, T_sp end) const;
-  INHERIT_SEQUENCE virtual T_sp elt(int index) const { return this->bit_vector_aref_unsafe(index); };
-  INHERIT_SEQUENCE virtual T_sp setf_elt(int index, T_sp value) { return this->bit_vector_aset_unsafe(index,value); };
+  virtual T_sp subseq(cl_index start, T_sp end) const;
+  INHERIT_SEQUENCE virtual T_sp elt(cl_index index) const { return this->bit_vector_aref_unsafe(index); };
+  INHERIT_SEQUENCE virtual T_sp setf_elt(cl_index index, T_sp value) { return this->bit_vector_aset_unsafe(index,value); };
   T_sp deepCopy() const;
   explicit SimpleBitVector_O(size_t sz, int value) : BitVector_O(sz,value), _length(sz){};
 //  explicit SimpleBitVector_O() : BitVector_O(){};
@@ -152,9 +152,13 @@ public:
   virtual gc::Fixnum dimension() const { return this->_fill_ptr; };
 
   virtual T_sp vectorPush(T_sp newElement);
-  virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 8);
-  virtual T_sp subseq(int start, T_sp end) const;
+  virtual Fixnum_sp vectorPushExtend(T_sp newElement, cl_index extension = 8);
+  virtual T_sp subseq(cl_index start, T_sp end) const;
   void setFillPointer(size_t fp);
+  T_sp replace_array(T_sp other) {
+    *this = *gc::As<BitVectorWithFillPtr_sp>(other);
+    return this->asSmartPtr();
+  }
   T_sp deepCopy() const;
   explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust, int value) : BitVector_O(sz,value), _fill_ptr(fill_ptr), _adjustable(adjust){};
 //  explicit BitVectorWithFillPtr_O() : BitVector_O(){};

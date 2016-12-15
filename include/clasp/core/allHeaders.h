@@ -226,7 +226,5 @@ THE SOFTWARE.
 #include <clasp/core/translators.h>
 #include <clasp/core/vectorObjects.fwd.h>
 #include <clasp/core/vectorObjects.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <core/weakReference.h>
 #include <clasp/core/wrappers.h>

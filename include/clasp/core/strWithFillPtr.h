@@ -87,7 +87,7 @@ public:
   }
   virtual string get() const { return std::string(this->_Contents.data(), this->_FillPointer); };
   virtual gc::Fixnum size() const { return this->_FillPointer; };
-  virtual cl_index fillPointer() const { return this->_FillPointer; };
+  virtual T_sp fillPointer() const { return clasp_make_fixnum(this->_FillPointer); };
 
   bool hasFillPointerP() const { return true; };
   void incrementFillPointer(int offset);
@@ -120,6 +120,10 @@ public:
 
   string __repr__() const;
 
+  T_sp replace_array(T_sp other) {
+    *this = *gc::As<StrWithFillPtr_sp>(other);
+    return this->asSmartPtr();
+  }
 public:
   explicit StrWithFillPtr_O() : Base(), _FillPointer(0), _Adjustable(false){};
   virtual ~StrWithFillPtr_O(){};

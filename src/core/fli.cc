@@ -164,7 +164,7 @@ CL_INITIALIZER void clasp_fli_initialization(void) {
 
   // STEP 1 : REGISTER FOREIGN TYPES
 
-  core::VectorObjects_sp sp_tst = core::VectorObjects_O::make(_Nil<core::T_O>(), 64, true, cl::_sym_T_O);
+  core::VectorObjects_sp sp_tst = core::VectorObjects_O::make(_Nil<core::T_O>(), 64, cl::_sym_T_O);
 
   //  - 1.1 : CREATE FOREIGN TYPE SPECS
 
