@@ -7,3 +7,11 @@ If they don't then any code that uses them won't work properly.
 Check clasp/include/clasp/core/instance.h header file for the 
 Instance_O specialization of TaggedCast")
 
+(test (equal (make-array 3 :element-type 'bit :initial-contents '(1 1 1)) #*111))
+(test (equalp (make-array 3 :element-type '(unsigned-byte 8) :initial-contents '(1 1 1)) #(1 1 1)))
+(test (string= (make-array 3 :element-type 'character :initial-element #\a) "aaa"))
+(test (string= (make-array 3 :element-type 'character :initial-contents '(#\a #\b #\c)) "abc"))
+(defparameter *bitvec* (make-array 10 :element-type 'bit :initial-element 1))
+(test (equalp *bitvec* #*1111111111))
+(setf (sbit *bitvec* 5) 0)
+(test (equalp *bitvec* #*1111101111))

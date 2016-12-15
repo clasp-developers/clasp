@@ -36,8 +36,9 @@ namespace core {
 //
 // Constructor
 //
-BitVector_O::BitVector_O(size_t sz) {
-  this->bits.resize(((sz - 1) / CHAR_BIT) + 1, 0);
+BitVector_O::BitVector_O(size_t sz, int val) {
+  if (val) val = ~0;
+  this->bits.resize(((sz - 1) / BitWidth) + 1, val);
 }
 
 BitVector_O::BitVector_O(const BitVector_O &bv) {
@@ -158,8 +159,8 @@ CL_DEFMETHOD void BitVector_O::setBit(uint i, uint v) {
   if (i >= this->vector_length()) {
     SIMPLE_ERROR(BF("BitVector index overflow"));
   }
-  block = i / CHAR_BIT;
-  offset = i % CHAR_BIT;
+  block = i / BitWidth;
+  offset = i % BitWidth;
   omask = ~0;
   mask = (1 << offset) ^ omask;
   packedVal = v << offset;
@@ -172,11 +173,11 @@ CL_DEFMETHOD uint BitVector_O::testBit(uint i) const {
   uint block;
   uint offset;
   BitBlockType mask;
-  block = i / CHAR_BIT;
-  offset = i % CHAR_BIT;
+  block = i / BitWidth;
+  offset = i % BitWidth;
   mask = (1 << offset);
 
-  LOG(BF("testBit i=%u CHAR_BIT=%d block=%d offset=%d") % (i) % (CHAR_BIT) % (block) % (offset));
+  LOG(BF("testBit i=%u BitWidth=%d block=%d offset=%d") % (i) % BitWidth % (block) % (offset));
   LOG(BF("      mask = |%lx|") % mask);
   LOG(BF("bits[%04d] = |%lx|") % block % this->bits[block]);
   BitBlockType result = (this->bits[block] & mask);
@@ -325,8 +326,8 @@ CL_DEFMETHOD uint BitVector_O::lowestIndex() {
 
 
 CL_PKG_NAME(CorePkg,make-simple-bit-vector);
-CL_DEFUN SimpleBitVector_sp SimpleBitVector_O::make(size_t size) {
-  GC_ALLOCATE_VARIADIC(SimpleBitVector_O, sbv, size);
+CL_DEFUN SimpleBitVector_sp SimpleBitVector_O::make(size_t size,int init_bit) {
+  GC_ALLOCATE_VARIADIC(SimpleBitVector_O, sbv, size,init_bit);
   return sbv;
 }
 
@@ -335,8 +336,8 @@ CL_DEFUN SimpleBitVector_sp SimpleBitVector_O::make(size_t size) {
 
 
 CL_PKG_NAME(CorePkg,make-bit-vector-with-fill-ptr);
-CL_DEFUN BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::make(size_t size, size_t fill_ptr, bool adjust) {
-  GC_ALLOCATE_VARIADIC(BitVectorWithFillPtr_O, sbv, size, fill_ptr, adjust);
+CL_DEFUN BitVectorWithFillPtr_sp BitVectorWithFillPtr_O::make(size_t size, size_t fill_ptr, bool adjust,int init_bit) {
+  GC_ALLOCATE_VARIADIC(BitVectorWithFillPtr_O, sbv, size, fill_ptr, adjust, init_bit);
   return sbv;
 }
 
@@ -381,7 +382,7 @@ Fixnum_sp BitVectorWithFillPtr_O::vectorPushExtend(T_sp newElement, int extensio
   this->setBit(this->_fill_ptr, b);
   ++this->_fill_ptr;
   if (this->_fill_ptr > this->BitVector_O::dimension()) {
-    this->bits.resize((this->_fill_ptr - 1 + extension) / CHAR_BIT + 1, 0);
+    this->bits.resize((this->_fill_ptr - 1 + extension) / BitWidth + 1, 0);
   }
   return clasp_make_fixnum(this->_fill_ptr - 1);
 }

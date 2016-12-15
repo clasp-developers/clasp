@@ -6,7 +6,7 @@
 
 (defmacro test (foo &key description )
   `(if ,foo
-       (format t "Passed ~a~%" ,description)
+       (format t "Passed ~a~%" (if ,description ,description "test"))
        (progn
          (format t "The test ~a failed~%" ,foo)
          (when ,description (format t "~a~%" ,description))

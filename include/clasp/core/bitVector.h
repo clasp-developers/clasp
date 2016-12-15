@@ -37,18 +37,19 @@ THE SOFTWARE.
 
 namespace core {
 
-typedef unsigned char BitBlockType;
 
 SMART(BitVector);
 class BitVector_O : public Vector_O {
   friend T_sp core__bit_array_op(T_sp o, T_sp x, T_sp y, T_sp r);
   LISP_CLASS(core, ClPkg, BitVector_O, "bit-vector",Vector_O);
 protected:
-  vector<unsigned char> bits;
+  typedef uintptr_t BitBlockType;
+  static const int BitWidth = sizeof(BitBlockType)*8;
+  vector<BitBlockType> bits;
 public:
   virtual T_sp deepCopy() const {SUBIMP();}
-  virtual gc::Fixnum dimension() const { return this->bits.size() * CHAR_BIT; };
-  unsigned char *bytes() const { return const_cast<unsigned char *>(this->bits.data()); };
+  virtual gc::Fixnum dimension() const { return this->bits.size() * BitWidth; };
+  unsigned char *bytes() const { return reinterpret_cast<unsigned char *>(const_cast<BitBlockType*>(this->bits.data())); };
 
   void getOnIndices(vector<uint> &vals);
   void setOnIndices(const vector<uint> &indices);
@@ -59,11 +60,14 @@ public:
   uint testBit(uint i) const;
   void erase();
 
-  virtual T_sp svref(int index) const { return clasp_make_fixnum(this->testBit(index)); };
-  virtual T_sp setf_svref(int index, T_sp value) {
-    this->setBit(index, clasp_to_fixnum(value));
-    return value;
-  };
+  T_sp bit_vector_aset_unsafe(size_t j, T_sp val) { this->setBit(j,clasp_to_fixnum(val)); return val; };
+  T_sp bit_vector_aref_unsafe(cl_index index) const { return clasp_make_fixnum(this->testBit(index)); };
+
+  virtual T_sp aset_unsafe(size_t j, T_sp val) { return this->bit_vector_aset_unsafe(j,val); };
+  virtual T_sp aref_unsafe(cl_index index) const { return this->bit_vector_aref_unsafe(index); };
+  
+  virtual T_sp svref(int index) const { return this->bit_vector_aref_unsafe(index); };
+  virtual T_sp setf_svref(int index, T_sp value) {return this->bit_vector_aset_unsafe(index,value);};
 
   void sxhash_(HashGenerator &hg) const;
   uint lowestIndex();
@@ -106,9 +110,9 @@ public:
   virtual int offset() const { return 0; }; // displaced arrays?  used in bits.cc
   virtual void __write__(T_sp strm) const;
 
-  explicit BitVector_O(size_t sz);
+  explicit BitVector_O(size_t sz,int value);
   BitVector_O(const BitVector_O &bv);
-  explicit BitVector_O() : Vector_O(){};
+//  explicit BitVector_O() : Vector_O(){};
   virtual ~BitVector_O(){};
 };
 
@@ -117,7 +121,7 @@ class SimpleBitVector_O : public BitVector_O {
   LISP_CLASS(core, ClPkg, SimpleBitVector_O, "simple-bit-vector",BitVector_O);
 
 public:
-  static SimpleBitVector_sp make(size_t size);
+  static SimpleBitVector_sp make(size_t size,int init_bit=0);
 
 private:
   size_t _length;
@@ -125,11 +129,11 @@ private:
 public:
   virtual gc::Fixnum dimension() const { return this->_length; };
   virtual T_sp subseq(int start, T_sp end) const;
-  INHERIT_SEQUENCE virtual T_sp elt(int index) const { return this->svref(index); };
-  INHERIT_SEQUENCE virtual T_sp setf_elt(int index, T_sp value) { return this->setf_svref(index,value); };
+  INHERIT_SEQUENCE virtual T_sp elt(int index) const { return this->bit_vector_aref_unsafe(index); };
+  INHERIT_SEQUENCE virtual T_sp setf_elt(int index, T_sp value) { return this->bit_vector_aset_unsafe(index,value); };
   T_sp deepCopy() const;
-  explicit SimpleBitVector_O(size_t sz) : BitVector_O(sz), _length(sz){};
-  explicit SimpleBitVector_O() : BitVector_O(){};
+  explicit SimpleBitVector_O(size_t sz, int value) : BitVector_O(sz,value), _length(sz){};
+//  explicit SimpleBitVector_O() : BitVector_O(){};
   virtual ~SimpleBitVector_O(){};
 };
 
@@ -138,7 +142,7 @@ class BitVectorWithFillPtr_O : public BitVector_O {
   LISP_CLASS(core, ClPkg, BitVectorWithFillPtr_O, "bit-vector-with-fill-ptr",BitVector_O);
 
 public:
-  static BitVectorWithFillPtr_sp make(size_t size, size_t fill_ptr, bool adjustable);
+  static BitVectorWithFillPtr_sp make(size_t size, size_t fill_ptr, bool adjustable,int init_bit=0);
 
 private:
   size_t _fill_ptr;
@@ -152,8 +156,8 @@ public:
   virtual T_sp subseq(int start, T_sp end) const;
   void setFillPointer(size_t fp);
   T_sp deepCopy() const;
-  explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust) : BitVector_O(sz), _fill_ptr(fill_ptr), _adjustable(adjust){};
-  explicit BitVectorWithFillPtr_O() : BitVector_O(){};
+  explicit BitVectorWithFillPtr_O(size_t sz, size_t fill_ptr, bool adjust, int value) : BitVector_O(sz,value), _fill_ptr(fill_ptr), _adjustable(adjust){};
+//  explicit BitVectorWithFillPtr_O() : BitVector_O(){};
   virtual ~BitVectorWithFillPtr_O(){};
 };
 };

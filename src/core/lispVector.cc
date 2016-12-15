@@ -67,15 +67,23 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (element_type == cl::_sym_bit) {
+    int init_bit = 0;
+    if (initial_element_supplied_p.notnilp()) {
+      if (initial_element.fixnump()) {
+        init_bit = initial_element.unsafe_fixnum()&0x1;
+      } else {
+        TYPE_ERROR(initial_element,cl::_sym_bit);
+      }
+    }
     if (adjustable || fill_pointer.notnilp()) {
       size_t s_fill_ptr = dimension;
       if (fill_pointer.notnilp()) {
         if (fill_pointer != cl::_sym_T_O)
           s_fill_ptr = MIN(dimension, std::abs(unbox_fixnum(gc::As<Fixnum_sp>(fill_pointer))));
       }
-      return BitVectorWithFillPtr_O::make(dimension, s_fill_ptr, adjustable);
+      return BitVectorWithFillPtr_O::make(dimension, s_fill_ptr, adjustable,init_bit);
     }
-    return SimpleBitVector_O::make(dimension);
+    return SimpleBitVector_O::make(dimension,init_bit);
   } else if (element_type == cl::_sym_base_char
              || element_type == cl::_sym_character
              || element_type == cl::_sym_standard_char
