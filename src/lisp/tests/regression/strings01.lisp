@@ -1,3 +1,5 @@
 
 
-(test (let ((s "abcdef")) (string= (nreverse s) "fedcba")))
+(test (let ((s "abc")) (string= (nreverse s) "cba")))
+(test (let ((s "abc")) (string= (reverse s) "cba")))
+
