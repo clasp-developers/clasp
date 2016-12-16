@@ -16,3 +16,4 @@
 ;;; Run tests
 (load "sys:tests;regression;tests01.lisp")
 (load "sys:tests;regression;finalizers.lisp")
+(load "sys:tests;regression;strings01.lisp")

@@ -53,7 +53,7 @@ CL_DEFUN Vector_sp cl__vector(List_sp args) {
 SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
 
-CL_LAMBDA(element-type dimension adjustable fill-pointer displaced-to displaced-index-offset &optional initial-element initial-element-supplied-p);
+CL_LAMBDA(element-type dimension &optional adjustable (fill-pointer t) displaced-to displaced-index-offset initial-element initial-element-supplied-p);
 CL_DECLARE();
 CL_DOCSTRING("make_vector See si_make_vector in ecl>>array.d");
 CL_DEFUN Vector_sp core__make_vector(T_sp element_type,

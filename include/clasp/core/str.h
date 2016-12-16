@@ -66,7 +66,7 @@ public:
   //! size is subclassed by StrWithFillPtr_O and uses the fill-pointer
 CL_LISPIFY_NAME("core:size");
 CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); };
-  virtual void swapElements(uint i1, uint i2) {
+  virtual void swapElements(cl_index i1, cl_index i2) {
     char t = this->_Contents[i2];
     this->_Contents[i2] = this->_Contents[i1];
     this->_Contents[i1] = t;
