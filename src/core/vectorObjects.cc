@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/vectorObjects.h>
+#include <clasp/core/designators.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/serialize.h>
 #include <clasp/core/wrappers.h>
@@ -156,13 +157,11 @@ void VectorObjects_O::swap(VectorObjects_sp other) {
 
 
 T_sp VectorObjects_O::subseq(cl_index istart, T_sp end) const {
-  cl_index iend = (end.nilp()) ? this->length() : unbox_fixnum(gc::As<Fixnum_sp>(end));
-  if ( iend > this->length()) {
-    SIMPLE_ERROR(BF("out of bounds for subseq"));
-  }
-  int isize = iend - istart;
+  coerce::inBoundsOrError(istart,0,this->length());
+  cl_index iend = coerce::coerceToEndInRangeOrError(end,istart,this->length());
+  cl_index isize = iend - istart;
   VectorObjects_sp result = VectorObjects_O::make(_Nil<core::T_O>(),isize,this->_ElementType,_Nil<core::T_O>());
-  for (int i = 0; i < isize; ++i) {
+  for (cl_index i = 0; i < isize; ++i) {
       result->setf_elt(i,this->_Values[this->_DisplacedIndexOffset+istart]);
       ++istart;
   }

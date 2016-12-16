@@ -392,9 +392,14 @@ DebugStream &DebugStream::writeText(const string &data) {
   if (this->_SuppressMessages)
     return *this;
   this->open();
-  for (const char *cp = data.c_str(); *cp; cp++) {
+  const char *cp;
+  for (cl_index i=0; i<data.size(); ++i ) {
+    cp = &data[i];
     if (this->DebugLogAsXml) {
       switch (*cp) {
+      case '\0':
+          this->_OutStream << "&NUL;";
+          break;
       case '<':
         this->_OutStream << "&lt;";
         break;

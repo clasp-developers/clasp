@@ -168,6 +168,8 @@ CL_DEFMETHOD   virtual T_sp replace_array(T_sp other) {
   virtual string __repr__() const;
 };
 
+
+ 
 }; /* core */
 
 
