@@ -43,7 +43,7 @@ THE SOFTWARE.
 
 namespace core {
 
-StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, int dimension, int fill_ptr, bool adjustable, T_sp initialContents) {
+StrWithFillPtr_sp StrWithFillPtr_O::create(char initial_element, size_t dimension, size_t fill_ptr, bool adjustable, T_sp initialContents) {
   GC_ALLOCATE(StrWithFillPtr_O, str);
   str->_Contents = string(dimension, initial_element);
   str->_FillPointer = fill_ptr;
@@ -82,11 +82,11 @@ void StrWithFillPtr_O::setFillPointer(size_t fp) {
   SIMPLE_ERROR(BF("Illegal fill-pointer %d - must be less than %d") % fp % this->_Contents.size());
 }
 
-void StrWithFillPtr_O::adjustSize(int extension) {
+void StrWithFillPtr_O::adjustSize(cl_index extension) {
   this->setSize(this->_Contents.size() + extension);
 }
 
-void StrWithFillPtr_O::setSize(int newSize) {
+void StrWithFillPtr_O::setSize(cl_index newSize) {
   if (this->_Adjustable) {
     if (newSize < 0) {
       SIMPLE_ERROR(BF("You can only set size to >= 0 - not %d") % newSize);
@@ -107,7 +107,7 @@ void StrWithFillPtr_O::setSize(int newSize) {
   SIMPLE_ERROR(BF("The array is not adjustable"));
 }
 
-int StrWithFillPtr_O::pushCharExtend(claspChar c, int extension) {
+cl_index StrWithFillPtr_O::pushCharExtend(claspChar c, cl_index extension) {
   if (this->_FillPointer >= this->_Contents.size()) {
     if (extension == 0)
       extension = this->_Contents.size();
@@ -119,7 +119,7 @@ int StrWithFillPtr_O::pushCharExtend(claspChar c, int extension) {
   return newIndex;
 }
 
-Fixnum_sp StrWithFillPtr_O::vectorPushExtend(T_sp newElement, int extension) {
+Fixnum_sp StrWithFillPtr_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   if (newElement.notnilp()) {
     if (Character_sp ch = newElement.asOrNull<Character_O>()) {
       return make_fixnum(this->pushCharExtend(clasp_as_char(ch), extension));
@@ -149,7 +149,7 @@ string StrWithFillPtr_O::__repr__() const {
   return ss.str();
 }
 
-void StrWithFillPtr_O::pushSubString(T_sp tstr, size_t start, size_t end) {
+void StrWithFillPtr_O::pushSubString(T_sp tstr, cl_index start, cl_index end) {
   Str_sp str = cl__string(tstr);
   while (start < end) {
     this->vectorPushExtend(clasp_make_character(cl__char(str, start)));
@@ -173,11 +173,11 @@ char *StrWithFillPtr_O::addressOfFillPtr() {
   return static_cast<char *>(this->addressOfBuffer()) + this->_FillPointer;
 }
 
-void StrWithFillPtr_O::incrementFillPointer(int off) {
+void StrWithFillPtr_O::incrementFillPointer(cl_index off) {
   this->_FillPointer += off;
 }
 
-void StrWithFillPtr_O::ensureSpaceAfterFillPointer(size_t size) {
+void StrWithFillPtr_O::ensureSpaceAfterFillPointer(cl_index size) {
   int left = this->_Contents.size() - this->_FillPointer;
   if (left < size) {
     this->adjustSize(size - left);

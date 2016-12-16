@@ -41,7 +41,8 @@ namespace core {
 FORWARD(Str);
 class Str_O : public String_O {
   LISP_CLASS(core, ClPkg, Str_O, "base-string",String_O);
- protected:
+ public:
+  typedef char element_type;
   typedef gctools::gcstring str_type;
   str_type _Contents;
  public:

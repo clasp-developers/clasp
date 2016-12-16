@@ -58,14 +58,19 @@ CL_LAMBDA(str1 start1 end1 str2 start2 end2);
 CL_DECLARE();
 CL_DOCSTRING("searchString");
 CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
-  string s1 = str1->get().substr(unbox_fixnum(start1), end1.nilp() ? str1->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end1)));
-  string s2 = str2->get().substr(unbox_fixnum(start2), end2.nilp() ? str2->get().size() : unbox_fixnum(gc::As<Fixnum_sp>(end2)));
-  //        printf("%s:%d Searching for \"%s\" in \"%s\"\n", __FILE__, __LINE__, s1.c_str(), s2.c_str());
-  size_t pos = s2.find(s1);
-  if (pos == string::npos) {
-    return _Nil<T_O>();
+  ASSERT(start1.fixnump());
+  ASSERT(start2.fixnump());
+  Str_sp s1 = str1->subseq(start1.unsafe_fixnum(), end1);
+  Str_sp s2 = str2->subseq(start2.unsafe_fixnum(), end2);
+  Str_O::element_type* first = &((*s2)[0]);
+  Str_O::element_type* last = &((*s2)[s2->length()]);
+  Str_O::element_type* s_first = &((*s1)[0]);
+  Str_O::element_type* s_last = &((*s1)[s1->length()]);
+  Str_O::element_type* found = std::search(first,last,s_first,s_last);
+  if (found == last) {
+    return _Nil<core::T_O>();
   }
-  return make_fixnum(static_cast<int>(pos + unbox_fixnum(start2)));
+  return clasp_make_fixnum(found-first);
 };
 
 Str_sp Str_O::create(Str_sp val) {
@@ -231,7 +236,6 @@ CL_DEFMETHOD uint Str_O::countOccurances(const string &chars) {
   }
   return c;
 }
-
 CL_LISPIFY_NAME("core:left");
 CL_DEFMETHOD string Str_O::left(gc::Fixnum num) const {
   string res = this->get().substr(0, num);
@@ -743,15 +747,21 @@ T_sp Str_O::subseq(cl_index start, T_sp end) const {
   }
   cl_index iend;
   if (end.nilp()) {
-    iend = this->size();
+    iend = this->length();
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
   if (iend < start) {
-    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->length());
   }
-  cl_index ilen = iend - start;
-  Str_sp news = Str_O::create(this->get().substr(start, ilen));
+  size_t ilen = iend - start;
+  Str_sp news = Str_O::create(ilen);
+  memcpy(&((*news)[0]),&((*this)[start]),ilen*sizeof(element_type));
+#if 0
+  for ( cl_index is(start), id(0); is<iend; ++is, ++id ) {
+    (*news)[id] = (*this)[is];
+  }
+#endif
   return news;
 }
 
@@ -762,20 +772,19 @@ T_sp Str_O::setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
   }
   cl_index iend;
   if (end.nilp()) {
-    iend = this->get().size();
+    iend = this->length();//get().size();
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
   if (iend <= start) {
-    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->get().size());
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->length());
   }
   cl_index ileft = iend - start;
-  if (ileft > sfrom->size()) {
-    ileft = sfrom->size();
+  if (ileft > sfrom->length()) {
+    iend = start+ileft;
   }
-  cl_index ifrom(0);
-  for (int i(start); ileft != 0; ++i, --ileft) {
-    this->_Contents[i] = sfrom->_Contents[ifrom];
+  for (cl_index idest(start),ifrom(0); idest<iend; ++idest, ++ifrom) {
+    (*this)[idest] = (*sfrom)[ifrom];
   }
   return new_subseq;
 }
