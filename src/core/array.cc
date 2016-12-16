@@ -60,36 +60,36 @@ CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type) {
   return (Values(T_O::static_class));
 };
 
-CL_LAMBDA(out outStart in inStart len);
+CL_LAMBDA(dest destStart orig origStart len);
 CL_DECLARE();
 CL_DOCSTRING("copy_subarray");
-CL_DEFUN void core__copy_subarray(Array_sp out, Fixnum_sp outStart, Array_sp in, Fixnum_sp inStart, Fixnum_sp len) {
+CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
-  int iLen = unbox_fixnum(len);
+  intptr_t iLen = unbox_fixnum(len);
   if (iLen == 0)
     return;
-  ASSERTF(out->rank() == 1, BF("out array must be rank 1 - instead it is %d") % out->rank());
-  ASSERTF(in->rank() == 1, BF("in array must be rank 1 - instead it is %d") % in->rank());
-  int iOutStart = unbox_fixnum(outStart);
-  int iInStart = unbox_fixnum(inStart);
-  if ((iLen + iOutStart) >= out->arrayDimension(0))
-    iLen = out->arrayDimension(0) - iOutStart;
-  if ((iLen + iInStart) >= in->arrayDimension(0))
-    iLen = in->arrayDimension(0) - iInStart;
-  if (iOutStart < iInStart) {
-    for (int i = 0; i < iLen; ++i) {
-      out->aset_unsafe(iOutStart, in->aref_unsafe(iInStart));
-      ++iOutStart;
-      ++iInStart;
+  ASSERTF(dest->rank() == 1, BF("dest array must be rank 1 - instead it is %d") % dest->rank());
+  ASSERTF(orig->rank() == 1, BF("orig array must be rank 1 - instead it is %d") % orig->rank());
+  intptr_t iDestStart = unbox_fixnum(destStart);
+  intptr_t iOrigStart = unbox_fixnum(origStart);
+  if ((iLen + iDestStart) >= dest->dimension())
+    iLen = dest->dimension() - iDestStart;
+  if ((iLen + iOrigStart) >= orig->dimension())
+    iLen = orig->dimension() - iOrigStart;
+  if (iDestStart < iOrigStart) {
+    for (intptr_t i = 0; i < iLen; ++i) {
+      dest->aset_unsafe(iDestStart, orig->aref_unsafe(iOrigStart));
+      ++iDestStart;
+      ++iOrigStart;
     }
   } else {
-    iOutStart += iLen;
-    iInStart += iLen;
-    for (int i = 0; i < iLen; ++i) {
-      --iOutStart;
-      --iInStart;
-      out->aset_unsafe(iOutStart, in->aref_unsafe(iInStart));
+    iDestStart += iLen;
+    iOrigStart += iLen;
+    for (intptr_t i = 0; i < iLen; ++i) {
+      --iDestStart;
+      --iOrigStart;
+      dest->aset_unsafe(iDestStart, orig->aref_unsafe(iOrigStart));
     }
   }
 }
@@ -241,7 +241,7 @@ CL_DEFUN gc::Fixnum core__index(Array_sp array, VaList_sp indices) {
 
 CL_LAMBDA((core::self array) &va-rest core::indices);
 CL_LISPIFY_NAME("cl:arrayRowMajorIndex");
-CL_DEFMETHOD gc::Fixnum Array_O::arrayRowMajorIndex(VaList_sp indices) const {
+CL_DEFMETHOD cl_index Array_O::arrayRowMajorIndex(VaList_sp indices) const {
   return this->index_(indices);
 }
 

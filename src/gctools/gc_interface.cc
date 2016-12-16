@@ -131,7 +131,6 @@ typedef bool _Bool;
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>
 #include <clasp/core/arrayObjects.h>
-#include <clasp/core/arrayDisplaced.h>
 #include <clasp/core/intArray.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/primitives.h>

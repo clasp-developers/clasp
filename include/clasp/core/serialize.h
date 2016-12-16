@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/str.fwd.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/serialize.fwd.h>
@@ -103,7 +102,7 @@ CL_DEFMETHOD   virtual SNode_sp childWithUniqueId(Symbol_sp uid) const { return 
 CL_LISPIFY_NAME("core:getVectorSNodes");
 CL_DEFMETHOD   virtual Vector_sp getVectorSNodes() const { SUBIMP(); };
   virtual SNode_sp &operator[](size_t i) { SUBIMP(); };
-  int vectorSize() const { return this->getVectorSNodes()->length(); }
+  cl_index vectorSize() const { return this->getVectorSNodes()->length(); }
   virtual void loadVector(gctools::Vec0<T_sp> &vec) { SUBIMP(); };
 
   virtual void mapVectorSNodes(std::function<void(SNode_sp)> const &fn) { SUBIMP(); };

@@ -61,7 +61,7 @@ public:
     v->setFromChars(nm);
     return v;
   };
-  static StrWithFillPtr_sp create(char initial_element, int dimension, int fill_ptr, bool adjustable, T_sp initialContents = _Nil<T_O>());
+  static StrWithFillPtr_sp create(char initial_element, size_t dimension, size_t fill_ptr, bool adjustable, T_sp initialContents = _Nil<T_O>());
   /*! Create a buffer BUFFER_STRING_LEN size, fill_ptr=0, adjustable=true */
   static StrWithFillPtr_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
     return StrWithFillPtr_O::create(' ', bufferSize, 0, true, _Nil<T_O>());
@@ -87,30 +87,30 @@ public:
   }
   virtual string get() const { return std::string(this->_Contents.data(), this->_FillPointer); };
   virtual gc::Fixnum size() const { return this->_FillPointer; };
-  virtual cl_index fillPointer() const { return this->_FillPointer; };
+  virtual T_sp fillPointer() const { return clasp_make_fixnum(this->_FillPointer); };
 
   bool hasFillPointerP() const { return true; };
-  void incrementFillPointer(int offset);
+  void incrementFillPointer(cl_index offset);
   void setFillPointer(size_t fp);
   bool arrayHasFillPointerP() const { return true; };
 
-  void adjustSize(int adjustment);
-  void setSize(int sz);
+  void adjustSize(cl_index adjustment);
+  void setSize(cl_index sz);
 
   /*! Make sure there is enough space from the fill-pointer out */
-  void ensureSpaceAfterFillPointer(size_t size);
+  void ensureSpaceAfterFillPointer(cl_index size);
   /*! Return the address of where the fill_ptr points to */
   char *addressOfFillPtr();
   /*! Adjust the fill pointer */
-  void incrementFillPtr(size_t size);
+  void incrementFillPtr(cl_index size);
 
   virtual T_sp vectorPush(T_sp newElement);
-  virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 0);
+  virtual Fixnum_sp vectorPushExtend(T_sp newElement, cl_index extension = 0);
 
-  int pushCharExtend(claspChar c, int extension = 0);
+  cl_index pushCharExtend(claspChar c, cl_index extension = 0);
 
   /*! Push the contents of string designator (str) from (start) to (end) */
-  void pushSubString(T_sp str, size_t start, size_t end);
+  void pushSubString(T_sp str, cl_index start, cl_index end);
 
   /*! Push the entire contents of the string in (str) */
   void pushString(T_sp str);
@@ -120,6 +120,10 @@ public:
 
   string __repr__() const;
 
+  T_sp replace_array(T_sp other) {
+    *this = *gc::As<StrWithFillPtr_sp>(other);
+    return this->asSmartPtr();
+  }
 public:
   explicit StrWithFillPtr_O() : Base(), _FillPointer(0), _Adjustable(false){};
   virtual ~StrWithFillPtr_O(){};

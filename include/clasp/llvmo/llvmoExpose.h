@@ -70,7 +70,6 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/llvmo/insertPoint.fwd.h>
 #include <clasp/llvmo/debugLoc.fwd.h>

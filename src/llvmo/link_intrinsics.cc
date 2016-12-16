@@ -56,7 +56,6 @@ extern "C" {
 #include <clasp/core/posixTime.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/activationFrame.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -196,7 +195,7 @@ gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
   {
     val = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);
   } else {
-    val = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true());
+    val = core::ArrayObjects_O::make(dimensions,element_type,_Nil<core::T_O>(),_lisp->_true(),_Nil<core::T_O>(), 0 );
   }
   return holder->set(index,val.tagged_());
 }
@@ -1265,7 +1264,7 @@ inline core::T_sp proto_copyLoadTimeValue(core::LoadTimeValues_O **ltvPP, size_t
   return ltv.data_element(index);
 }
 extern "C" {
-void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, size_t index) {
+void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, cl_index index) {
   ASSERT(resultP != NULL);
   ASSERT(ltvPP != NULL);
   ASSERT((*ltvPP) != NULL);

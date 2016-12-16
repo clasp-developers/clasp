@@ -71,7 +71,7 @@ public:
 #endif
 public:  // Functions here
   virtual int pushCharExtend(claspChar c, int extension = 0) { SUBIMP(); };
-  virtual cl_index fillPointer() const { SUBIMP(); };
+  virtual T_sp fillPointer() const { SUBIMP(); };
 };
 
  

@@ -13,7 +13,7 @@ struct from_object<const vector<int> &> {
       return;
     } else if (core::Vector_sp vo = o.asOrNull<core::Vector_O>()) {
       _v.resize(vo->length());
-      for (int i(0), iEnd(vo->length()); i < iEnd; ++i) {
+      for (cl_index i(0), iEnd(vo->length()); i < iEnd; ++i) {
         core::Integer_sp io = vo->elt(i).as<core::Integer_O>();
         _v[i] = io->as_int();
       }

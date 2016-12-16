@@ -117,43 +117,32 @@ contiguous block."
 	   (null initial-element)
 	   (eq (car element-type) 'cl:unsigned-byte))
       (setq initial-element 0))
+  (when displaced-to
+    (if (let ((array-element-type (array-element-type displaced-to)))
+          (not (and (subtypep array-element-type element-type)
+                    (subtypep element-type array-element-type))))
+        (error "Cannot displace the array, because the element types don't match")))
   (cond
     ((null dimensions)
-     (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element adjustable))
+     (make-array-objects dimensions (upgraded-array-element-type element-type) initial-element initial-element-supplied-p displaced-to displaced-index-offset))
     ((or (fixnump dimensions) (and (consp dimensions) (eql 1 (length dimensions))))
      (let ((dim (if (fixnump dimensions)
 		    dimensions
 		    (car dimensions))))
-       (if displaced-to
-           (progn
-             (and adjustable (error "Displaced arrays don't support adjustable"))
-             (and fill-pointer (error "Displaced arrays don't support fill-pointer yet"))
-             (if (let ((array-element-type (array-element-type displaced-to)))
-                   (and (subtypep array-element-type element-type)
-                        (subtypep element-type array-element-type)))
-                 (let ((x (make-vector-displaced dimensions element-type displaced-to displaced-index-offset)))
-                   (when initial-element-supplied-p
-                     (fill-array-with-elt x initial-element 0 nil))
-                   x)
-                 (error "Cannot displace the array, because the element types don't match")))
-           (if initial-element-supplied-p
-               (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element)
-               (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset)))))
-    ((consp dimensions)
-     (if displaced-to
-         (if (let ((array-element-type (array-element-type displaced-to)))
-               (and (subtypep array-element-type element-type)
-                    (subtypep element-type array-element-type)))
-             (let ((x (make-array-displaced dimensions element-type displaced-to displaced-index-offset)))
-               (when initial-element-supplied-p
-                 (fill-array-with-elt x initial-element 0 nil))
-               x)
-             (error "Cannot displace the array, because the element types don't match"))
-         (let ((x (make-array-objects dimensions
-                                      (upgraded-array-element-type element-type)
-                                      initial-element
-                                      adjustable)))
-           x)))
+       (let ((x (make-vector (upgraded-array-element-type element-type) dim adjustable fill-pointer displaced-to displaced-index-offset initial-element initial-element-supplied-p)))
+         (when (and displaced-to initial-element-supplied-p)
+           (fill-array-with-elt x initial-element 0 nil))
+         x)))
+    ((listp dimensions)
+     (let ((x (make-array-objects dimensions
+                                  (upgraded-array-element-type element-type)
+                                  initial-element
+                                  initial-element-supplied-p
+                                  displaced-to
+                                  displaced-index-offset)))
+       (when (and displaced-to initial-element-supplied-p)
+         (fill-array-with-elt x initial-element 0 nil))
+       x))
     (t (error "Illegal dimensions ~a for make-array" dimensions ))))
 
 (defun fill-array-with-seq (array initial-contents)
@@ -421,7 +410,6 @@ pointer is 0 already."
 	               (or (array-dimensions orig) '(1))
 		       0 0)))
 
-#-clasp
 (defun adjust-array (array new-dimensions
                      &rest r
 		     &key (element-type (array-element-type array))
@@ -457,21 +445,6 @@ adjustable array."
     (sys:replace-array array x)
     ))
 
-#+clasp
-(defun adjust-array (array dimensions &key element-type initial-element initial-contents fill-pointer displaced-to displaced-index-offset)
-  (and fill-pointer (error "Add support for fill-pointers in arrays"))
-  ;;  (when element-type (inform "Add support for element-type in make-array\n"))
-  (cond
-    ((vectorp array)
-     (let ((dim (cond
-		  ((fixnump dimensions) dimensions)
-		  ((and (consp dimensions) (eql 1 (length dimensions))) (car dimensions))
-		  (t (error "illegal dimensions for adjust-array: ~A" dimensions)))))
-       (adjust-vector array dim initial-element initial-contents)))
-    ((consp dimensions)
-     (and initial-contents (error "Handle initial-contents to adjust-array"))
-     (adjust-array-objects array dimensions element-type initial-element))
-    (t (error "Illegal dimensions ~a for adjust-array" dimensions ))))
 
 ;;; Copied from cmuci-compat.lisp of CLSQL by Kevin M. Rosenberg (LLGPL-licensed)
 (defun shrink-vector (vec len)

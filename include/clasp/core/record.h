@@ -4,7 +4,6 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/lispVector.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
 
 namespace core {
 #if 0

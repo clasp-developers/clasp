@@ -49,7 +49,7 @@ private: // instance variables here
   int _FillPtr;
 
 public:
-  static VectorObjectsWithFillPtr_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable);
+  static VectorObjects_sp make(T_sp initial_element, T_sp initial_values, int dimension, int fillPtr, bool adjustable);
 
 public: // Functions here
   uint length() const { return this->_FillPtr; };

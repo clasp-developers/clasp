@@ -55,10 +55,10 @@ public:  // Functions here
   bool equalp(T_sp o) const;
 CL_LISPIFY_NAME("adjustableArrayP");
 CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
-  gc::Fixnum vector_length() const { return this->dimension(); };
+  cl_index vector_length() const { return this->dimension(); };
   virtual gc::Fixnum dimension() const { SUBIMP(); };
 
-  virtual void swapElements(uint idx1, uint idx2) { SUBIMP(); };
+  virtual void swapElements(cl_index idx1, cl_index idx2) { SUBIMP(); };
 
   /*! For write_array */
   virtual std::vector<cl_index> dimensions() const { SUBIMP(); };
@@ -68,17 +68,17 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
   virtual gc::Fixnum rank() const { return 1; };
   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
   virtual List_sp arrayDimensions() const;
-  virtual gc::Fixnum arrayTotalSize() const { return this->length(); };
+  virtual cl_index arrayTotalSize() const { return this->length(); };
 
   virtual T_sp vectorPush(T_sp newElement) { SUBIMP(); };
-  virtual Fixnum_sp vectorPushExtend(T_sp newElement, int extension = 1) { SUBIMP(); };
+  virtual Fixnum_sp vectorPushExtend(T_sp newElement, cl_index extension = 1) { SUBIMP(); };
 
-  virtual T_sp aset_unsafe(size_t j, T_sp val) { SUBIMP(); };
+  virtual T_sp aset_unsafe(cl_index j, T_sp val) { SUBIMP(); };
   virtual T_sp aref_unsafe(cl_index index) const { SUBIMP(); };
 
-  virtual cl_index fillPointer() const { SUBIMP(); };
+  virtual T_sp fillPointer() const { SUBIMP(); };
 
-  virtual void setFillPointer(size_t idx);
+  virtual void setFillPointer(T_sp idx);
   virtual void *addressOfBuffer() const { SUBIMP(); };
 
   virtual T_sp aref(VaList_sp indices) const;
@@ -89,13 +89,13 @@ CL_DEFMETHOD   bool adjustableArrayP() const { return false; };
 
   virtual void __write__(T_sp strm) const;
 
-  INHERIT_SEQUENCE virtual gc::Fixnum length() const { return this->dimension(); };
+  INHERIT_SEQUENCE virtual cl_index length() const { return this->dimension(); };
   INHERIT_SEQUENCE virtual T_sp reverse();
   INHERIT_SEQUENCE virtual T_sp nreverse();
-  INHERIT_SEQUENCE virtual T_sp elt(int index) const { SUBIMP(); };
-  INHERIT_SEQUENCE virtual T_sp setf_elt(int index, T_sp value) { SUBIMP(); };
-  INHERIT_SEQUENCE virtual T_sp subseq(int start, T_sp end) const { SUBIMP(); };
-  INHERIT_SEQUENCE virtual T_sp setf_subseq(int start, T_sp end, T_sp newSubseq) { SUBIMP(); };
+  INHERIT_SEQUENCE virtual T_sp elt(cl_index index) const { SUBIMP(); };
+  INHERIT_SEQUENCE virtual T_sp setf_elt(cl_index index, T_sp value) { SUBIMP(); };
+  INHERIT_SEQUENCE virtual T_sp subseq(cl_index start, T_sp end) const { SUBIMP(); };
+  INHERIT_SEQUENCE virtual T_sp setf_subseq(cl_index start, T_sp end, T_sp newSubseq) { SUBIMP(); };
 
 }; /* core */
 };
@@ -109,7 +109,7 @@ namespace core {
 T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp end);
 
 Vector_sp core__make_vector(T_sp element_type,
-                            int dimension,
+                            size_t dimension,
                             bool adjustable = false,
                             T_sp fill_pointer = cl::_sym_T_O,
                             T_sp displaced_to = _Nil<T_O>(),

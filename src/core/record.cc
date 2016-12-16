@@ -33,8 +33,8 @@ THE SOFTWARE.
 #include <clasp/core/arguments.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/vectorObjectsWithFillPtr.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/vectorObjects.h>
 #include <clasp/core/record.h>
 
 #include <clasp/core/wrappers.h>
@@ -49,17 +49,17 @@ T_sp record_circle_subst(T_sp replacement_table, T_sp tree) {
 
 Record_O::Record_O(RecordStage stage, bool dummy, List_sp data) : _stage(stage), _alist(data), _Seen(_Nil<T_O>()) {
   if (stage == initializing) {
-    this->_Seen = VectorObjectsWithFillPtr_O::make(_Nil<T_O>(), 16, 0, true, cl::_sym_T_O);
+    this->_Seen = VectorObjects_O::make(_Nil<T_O>(), 16, cl::_sym_T_O, clasp_make_fixnum(0));
   }
 }
 
 void Record_O::flagSeen(Cons_sp pair) {
-  VectorObjectsWithFillPtr_sp vvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  VectorObjects_sp vvec = gc::As<VectorObjects_sp>(this->_Seen);
   vvec->vectorPushExtend(pair);
 }
 
 void Record_O::errorIfInvalidArguments() {
-  VectorObjectsWithFillPtr_sp seenvec = gc::As<VectorObjectsWithFillPtr_sp>(this->_Seen);
+  VectorObjects_sp seenvec = gc::As<VectorObjects_sp>(this->_Seen);
   //  printf("%s:%d arguments seen: %s\n", __FILE__, __LINE__, _rep_(seenvec).c_str());
   //  printf("       arguments passed: %s\n", _rep_(this->_alist).c_str());
   List_sp badArgs(_Nil<T_O>());

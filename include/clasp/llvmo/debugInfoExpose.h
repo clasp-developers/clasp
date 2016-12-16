@@ -62,7 +62,6 @@ THE SOFTWARE.
 #include <clasp/core/lispVector.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
-#include <clasp/core/vectorObjectsWithFillPtr.fwd.h>
 #include <clasp/llvmo/insertPoint.fwd.h>
 #include <clasp/llvmo/debugLoc.fwd.h>
 #include <clasp/llvmo/llvmoPackage.h>

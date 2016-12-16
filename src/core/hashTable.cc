@@ -472,9 +472,8 @@ void HashTable_O::fields(Record_sp node) {
 }
 
 uint HashTable_O::resizeEmptyTable(uint sz) {
-  if (sz < 4)
-    sz = 4;
-  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), sz, false, cl::_sym_T_O);
+  if (sz < 16) sz = 16;
+  this->_HashTable = VectorObjects_O::make(_Nil<T_O>(), sz, cl::_sym_T_O);
 #ifdef USE_MPS
   mps_ld_reset(const_cast<mps_ld_t>(&(this->_LocationDependency)), global_arena);
 #endif
@@ -508,7 +507,10 @@ gc::Fixnum HashTable_O::sxhashKey(T_sp obj, gc::Fixnum bound, bool willAddKey) c
 }
 
 List_sp HashTable_O::findAssoc(gc::Fixnum index, T_sp key) const {
-  List_sp rib = coerce_to_list((*this->_HashTable)[index]);
+  VectorObjects_O* spine = &*(this->_HashTable);
+//  printf("%s:%d:%s  spine->dimension() = %ld  index = %ld\n", __FILE__, __LINE__, __FUNCTION__, spine->dimension(), index );
+  T_sp trib = (*spine)[index];
+  List_sp rib = coerce_to_list(trib);
   for (auto cur : rib) {
     List_sp pair = oCar(cur);
     if (this->keyTest(oCar(pair), key)) {
@@ -529,7 +531,9 @@ CL_DEFUN T_mv cl__gethash(T_sp key, T_sp hashTable, T_sp default_value) {
 
 List_sp HashTable_O::bucketsFind(T_sp key) const {
   ASSERT(this->_HashTable);
-  gc::Fixnum index = this->safe_sxhashKey(key, cl__length(this->_HashTable), false);
+  cl_index length = cl__length(this->_HashTable);
+//  printf("%s:%d:%s  _HashTable length = %ld\n", __FILE__, __LINE__, __FUNCTION__, length );
+  cl_index index = this->safe_sxhashKey(key, length, false);
   List_sp keyValueCons = this->findAssoc(index, key);
   return keyValueCons;
 }

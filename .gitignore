@@ -1,3 +1,6 @@
+GPATH
+GRTAGS
+GTAGS
 .waf*/
 .svn/
 .git/
