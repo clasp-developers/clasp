@@ -164,7 +164,7 @@ Return files."
 	  (let ((cmp::*module-startup-prefix* "kernel"))
             #+dbg-print(bformat t "DBG-PRINT  source-path = %s\n" source-path)
             (apply #'compile-file (probe-file source-path) :output-file bitcode-path
-                   :print t :verbose nil :output-type :bitcode :type :kernel (entry-compile-file-options entry))
+                   #+(or):print #+(or)t :verbose nil :output-type :bitcode :type :kernel (entry-compile-file-options entry))
 	    (if reload
 		(progn
 		  (bformat t "    Loading newly compiled file: %s\n" bitcode-path)
