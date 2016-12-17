@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 /* -^- */
-//#define DEBUG_LEVEL_FULL
+#define DEBUG_LEVEL_FULL
 
 #include <clasp/core/common.h>
 #include <clasp/core/environment.h>
@@ -58,20 +58,20 @@ static bool member_charbag(claspChar c, SEQUENCE_sp char_bag) {
 }
 
 static Str_sp string_trim0(bool left_trim, bool right_trim, T_sp char_bag, T_sp tstrng) {
-  int i, j;
+  cl_index i, j;
   Str_sp strng = coerce::stringDesignator(tstrng);
   i = 0;
   j = cl__length(strng);
   if (left_trim) {
     for (; i < j; i++) {
-      int c = strng->schar(i);
+      cl_index c = strng->schar(i);
       if (!member_charbag(c, char_bag))
         break;
     }
   }
   if (right_trim) {
     for (; j > i; j--) {
-      int c = strng->schar(j - 1);
+      cl_index c = strng->schar(j - 1);
       if (!member_charbag(c, char_bag)) {
         break;
       }
@@ -116,7 +116,7 @@ CL_DEFUN Str_sp cl__string_upcase(T_sp arg) {
 CL_LAMBDA(str idx);
 CL_DECLARE();
 CL_DOCSTRING("char");
-CL_DEFUN claspChar cl__char(T_sp ostr, int idx) {
+CL_DEFUN claspChar cl__char(T_sp ostr, cl_index idx) {
 /* Return the character at idx - ignore fill pointers */
 #ifdef UNICODE
   IMPLEMENT_MEF(BF("Handle UNICODE"));
@@ -216,11 +216,11 @@ void String_O::initialize() {
 template <typename T>
 struct StringCharPointer {
   T _str;
-  int _pos;
-  int _start;
+  cl_index _pos;
+  cl_index _start;
   typedef char* CharacterType;
-  StringCharPointer(Str_sp str, int start) : _str(str), _start(start), _pos(start) {};
-  inline int offset() { return this->_pos - this->_start;};
+  StringCharPointer(Str_sp str, cl_index start) : _str(str), _start(start), _pos(start) {};
+  inline cl_index offset() { return this->_pos - this->_start;};
   claspCharacter operator*() { return (claspCharacter)((*this->_str)[this->_pos]);};
   StringCharPointer& operator++() {
     ++this->_pos;
@@ -230,12 +230,12 @@ struct StringCharPointer {
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1,typename T2>
-T_sp template_string_EQ_(T1 string1, T2 string2, int start1, int end1, int start2, int end2)
+T_sp template_string_EQ_(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2)
 {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -261,12 +261,12 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_NE_(T1 string1, T2 string2, int start1, int end1, int start2, int end2)
+T_sp template_string_NE_(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2)
 {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -292,11 +292,11 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_LT_(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_LT_(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -324,11 +324,11 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_GT_(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_GT_(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -354,11 +354,11 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_LE_(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_LE_(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -387,11 +387,11 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_GE_(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_GE_(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -420,11 +420,11 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_equal(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_equal(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -450,11 +450,11 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_not_equal(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_not_equal(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -480,11 +480,11 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_lessp(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_lessp(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -514,11 +514,11 @@ RETURN_FALSE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_greaterp(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_greaterp(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -546,11 +546,11 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_not_greaterp(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_not_greaterp(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -581,11 +581,11 @@ RETURN_TRUE:
 
 /*! bounding index designator range from 0 to the end of each string */
 template <typename T1, typename T2>
-T_sp template_string_not_lessp(T1 string1, T2 string2, int start1, int end1, int start2, int end2) {
+T_sp template_string_not_lessp(T1 string1, T2 string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) {
   StringCharPointer<T1> cp1(string1,start1);
   StringCharPointer<T2> cp2(string2,start2);
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -621,7 +621,7 @@ inline void setup_string_op_arguments(T_sp string1_desig, T_sp string2_desig,
                                       String_sp &string1, String_sp &string2,
                                       Fixnum_sp start1, T_sp end1,
                                       Fixnum_sp start2, T_sp end2,
-                                      int &istart1, int &iend1, int &istart2, int &iend2) {
+                                      cl_index &istart1, cl_index &iend1, cl_index &istart2, cl_index &iend2) {
   string1 = coerce::stringDesignator(string1_desig);
   string2 = coerce::stringDesignator(string2_desig);
   istart1 = MAX(unbox_fixnum(start1), 0);
@@ -650,7 +650,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_EQ_");
 CL_DEFUN T_sp cl__string_EQ_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -661,7 +661,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_NE_");
 CL_DEFUN T_mv cl__string_NE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -672,7 +672,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_LT_");
 CL_DEFUN T_mv cl__string_LT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -683,7 +683,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_GT_");
 CL_DEFUN T_mv cl__string_GT_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -694,7 +694,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_LE_");
 CL_DEFUN T_mv cl__string_LE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -705,7 +705,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_GE_");
 CL_DEFUN T_mv cl__string_GE_(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -716,7 +716,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_equal");
 CL_DEFUN T_sp cl__string_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -727,7 +727,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_not_equal");
 CL_DEFUN T_mv cl__string_not_equal(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -737,7 +737,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_lessp");
 CL_DEFUN T_mv cl__string_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -747,7 +747,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_greaterp");
 CL_DEFUN T_mv cl__string_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -757,7 +757,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_not_greaterp");
 CL_DEFUN T_mv cl__string_not_greaterp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -767,7 +767,7 @@ CL_LAMBDA(strdes1 strdes2 &key (start1 0) end1 (start2 0) end2);
 CL_DECLARE();
 CL_DOCSTRING("string_not_lessp");
 CL_DEFUN T_mv cl__string_not_lessp(T_sp strdes1, T_sp strdes2, Fixnum_sp start1, T_sp end1, Fixnum_sp start2, T_sp end2) {
-  int istart1, iend1, istart2, iend2;
+  cl_index istart1, iend1, istart2, iend2;
   String_sp string1;
   String_sp string2;
   setup_string_op_arguments(strdes1, strdes2, string1, string2, start1, end1, start2, end2, istart1, iend1, istart2, iend2);
@@ -803,8 +803,8 @@ CL_DEFUN T_mv cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
   char ch(' ');
   if (initial_element.notnilp())
     ch = unbox_character(gc::As<Character_sp>(initial_element));
-  int isize = unbox_fixnum(size);
-  for (int i = 0; i < isize; i++)
+  cl_index isize = unbox_fixnum(size);
+  for (cl_index i = 0; i < isize; i++)
     ss << ch;
   Str_sp ns = Str_O::create(ss.str());
   return (Values(ns));
@@ -815,7 +815,7 @@ CL_DEFUN T_mv cl__make_string(Fixnum_sp size, T_sp initial_element, T_sp element
 CL_LAMBDA(str index);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
-CL_DEFUN claspChar cl__schar(Str_sp str, int idx) {
+CL_DEFUN claspChar cl__schar(Str_sp str, cl_index idx) {
   if (idx >= 0 && idx < str->length()) {
     return str->schar(idx);
   }
@@ -825,7 +825,7 @@ CL_DEFUN claspChar cl__schar(Str_sp str, int idx) {
 CL_LAMBDA(str index c);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
-CL_DEFUN claspChar core__char_set(Str_sp str, int idx, claspChar c) {
+CL_DEFUN claspChar core__char_set(Str_sp str, cl_index idx, claspChar c) {
   if (idx >= 0 && idx < str->length()) {
     str->scharSet(idx, c);
     return c;
@@ -836,7 +836,7 @@ CL_DEFUN claspChar core__char_set(Str_sp str, int idx, claspChar c) {
 CL_LAMBDA(str index c);
 CL_DECLARE();
 CL_DOCSTRING("CLHS schar");
-CL_DEFUN claspChar core__schar_set(Str_sp str, int idx, claspChar c) {
+CL_DEFUN claspChar core__schar_set(Str_sp str, cl_index idx, claspChar c) {
   if (idx >= 0 && idx < str->length()) {
     str->scharSet(idx, c);
     return c;
@@ -854,8 +854,8 @@ typedef enum { iinit,
 /*! Digits are 0-9 or a-z/A-Z.
       If digit >= radix then return -1.
      */
-int fsmIntegerDigit(char c, int radix) {
-  int idigit = -1;
+cl_index fsmIntegerDigit(char c, cl_index radix) {
+  cl_index idigit = -1;
   if (isdigit(c)) {
     idigit = c - '0';
   } else if (isalpha(c)) {
@@ -872,15 +872,17 @@ int fsmIntegerDigit(char c, int radix) {
   return idigit;
 }
 
-int fsmInteger(mpz_class &result, int &numDigits, bool &sawJunk, const string &str, int istart, int iend, bool junkAllowed, int radix) {
+cl_index fsmInteger(mpz_class &result, cl_index &numDigits, bool &sawJunk, const string &str, cl_index istart, cl_index iend, bool junkAllowed, cl_index radix) {
   IntegerFSMState state = iinit;
-  int sign = 1;
+  cl_index sign = 1;
   result = 0;
   numDigits = 0;
-  int cur = istart;
+  cl_index cur = istart;
   while (1) {
     char c = str[cur];
+    LOG(BF("fsmInteger str[%ld] -> c = [%d/%c]") % cur  % c % c );
     switch (state) {
+      LOG(BF("  top state = %d") % state);
     case iinit:
     case iwhite: {
       if (isspace(c)) {
@@ -894,8 +896,9 @@ int fsmInteger(mpz_class &result, int &numDigits, bool &sawJunk, const string &s
         state = inum;
         break;
       } else if (isalnum(c)) {
-        int idigit = fsmIntegerDigit(c, radix);
+        cl_index idigit = fsmIntegerDigit(c, radix);
         if (idigit < 0 || idigit >= radix) {
+          LOG(BF("Hit junk at %ld\n") % cur);
           state = ijunk;
           break;
         }
@@ -910,13 +913,13 @@ int fsmInteger(mpz_class &result, int &numDigits, bool &sawJunk, const string &s
     case inum: {
       if (isspace(c)) {
         if (junkAllowed) {
-          state = itrailspace;
+          state = ijunk; // itrailspace;
           break;
         }
         state = idone;
         break;
       } else if (isalnum(c)) {
-        int idigit = fsmIntegerDigit(c, radix);
+        cl_index idigit = fsmIntegerDigit(c, radix);
         if (idigit < 0 || idigit >= radix) {
           state = ijunk;
           break;
@@ -939,6 +942,7 @@ int fsmInteger(mpz_class &result, int &numDigits, bool &sawJunk, const string &s
     case idone:
       break;
     }
+    LOG(BF("  bottom state = %d") % state);
     if (state == idone)
       break;
     if (state == ijunk)
@@ -953,6 +957,7 @@ int fsmInteger(mpz_class &result, int &numDigits, bool &sawJunk, const string &s
     mpz_neg(nresult.get_mpz_t(), result.get_mpz_t());
     mpz_swap(nresult.get_mpz_t(), result.get_mpz_t());
   }
+  LOG(BF("Returning with cur=%ld") % cur);
   return cur;
 };
 
@@ -968,12 +973,14 @@ CL_DEFUN T_mv cl__parse_integer(Str_sp str, Fixnum start, T_sp end, uint radix, 
   }
   mpz_class result;
   bool sawJunk = false;
-  int numDigits = 0;
-  int cur = fsmInteger(result, numDigits, sawJunk, str->get(), istart, iend, junkAllowed.isTrue(), radix);
+  cl_index numDigits = 0;
+  cl_index cur = fsmInteger(result, numDigits, sawJunk, str->get(), istart, iend, junkAllowed.isTrue(), radix);
   if (junkAllowed.notnilp() || (cur >= iend) || !sawJunk) {
     // normal exit
     if (numDigits > 0) {
-      return (Values(Integer_O::create(result), make_fixnum(cur)));
+      Integer_sp iresult = Integer_O::create(result);
+      LOG(BF("Returning parse-integer with result = %s  cur = %ld") % _rep_(iresult) % cur );
+      return (Values(iresult, make_fixnum(cur)));
     } else {
       return (Values(_Nil<T_O>(), make_fixnum(cur)));
     }

@@ -212,6 +212,49 @@ T_sp outputStreamDesignator(T_sp obj) {
   SIMPLE_ERROR(BF("Cannot convert object[%s] into a Stream") % _rep_(obj));
 }
 
-}; /* desig */
+
+void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end ) {
+  unlikely_if ( index < start ) {
+    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %lu") % index % start % end );
+  }
+  unlikely_if ( index >= end ) {
+    SIMPLE_ERROR(BF("Out of bounds index %ld must be a value from %lu and less than %lu") % index % start % end );
+  }
+  return;
+}
+
+void inBoundsOrError(cl_index index, cl_index start, cl_index end ) {
+  unlikely_if ( index < start ) {
+    SIMPLE_ERROR(BF("The index %ld must be greator or equal to %ld and less than %lu") % index % start % end );
+  }
+  unlikely_if ( index > end ) {
+    SIMPLE_ERROR(BF("Out of bounds index %ld must be less than or equal to %lu") % index % end );
+  }
+  return;
+}
+
+
+/*! if end is a fixnum then check that its in [start,iend) and if
+    not signal an error.   Otherwise return it.
+    if end is NIL then return iend, otherwise error.
+*/
+cl_index coerceToEndInRangeOrError(T_sp end, cl_index start, cl_index iend )
+{
+  if (end.fixnump()) {
+    cl_index rend = end.unsafe_fixnum();
+    inBoundsOrError(rend,start,iend);
+    return rend;
+  }
+  if (end.nilp()) return iend;
+  SIMPLE_ERROR(BF("%s is an illegal designator for the end") % _rep_(end));
+}
+
+
+}; /* coerce */
+
+
+
+
+
 
 }; /* core */

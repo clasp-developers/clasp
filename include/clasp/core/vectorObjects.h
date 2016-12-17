@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <clasp/core/corePackage.fwd.h>
 
 extern "C" {
-extern void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, core::cl_index index);
+extern void sp_copyLoadTimeValue(core::T_sp *resultP, core::LoadTimeValues_O **ltvPP, cl_index index);
 };
 
 template <>

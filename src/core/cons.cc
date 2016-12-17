@@ -404,16 +404,11 @@ List_sp Cons_O::assoc(T_sp item, T_sp key, T_sp test, T_sp testNot) const {
   return coerce_to_list(_Nil<T_O>());
 }
 
-List_sp Cons_O::subseq(int start, T_sp end) const {
+List_sp Cons_O::subseq(cl_index start, T_sp end) const {
+  cl_index length = this->length();
+  coerce::inBoundsOrError(start,0,length);
+  cl_index iend = coerce::coerceToEndInRangeOrError(end,start,length);
   ql::list l(_lisp);
-  int iend;
-  if (end.nilp()) {
-    iend = this->length();
-  } else if (core__fixnump(end)) {
-    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
-  } else {
-    SIMPLE_ERROR(BF("Illegal end for subseq[%s]") % _rep_(end));
-  }
   List_sp cur = this->onthcdr(start);
   for (; start < iend; start++) {
     l << oCar(cur);
@@ -422,73 +417,6 @@ List_sp Cons_O::subseq(int start, T_sp end) const {
   return ((l.cons()));
 }
 
-#if 0
-/*!
- * Convert command line arguments into a Cons
- * keyed Arguments that start with "---" treat the words that follow them until
- *     another argument is hit as a list and assemble a Cons
- * keyed arguments that start with "--" treat the single word that follow them
- *     as a single argument
- * numbers are converted to integers (no reals right now)
- * everything else is treated as a string
- * eg: --file xxx.yyy ---entries 1 2 3 4 5 -- -to hello
- * 	-> file: "xxx.yyy" entries: (: 1 2 3 4 5) to: "hello"
- */
-    Vector_sp	Cons_O::createFromVectorStringsCommandLineArguments(const vector<string>& strings )
-    {
-	vector<string>::const_iterator it;
-	Cons_sp first = Cons_O::create(_Nil<T_O>(),_Nil<T_O>());
-	Cons_sp args = first;
-	it = strings.begin();
-	while ( it != strings.end() )
-	{
-	    T_sp obj;
-	    // Arguments that start with "---" parse their arguments as a list
-	    //
-	    if ( (*it).substr(0,3)=="---" )
-	    {
-		LOG(BF( "Hit keyed list argument(%s)") % (*it).c_str() );
-		string keyStr = (*it).substr(3,999999);
-		obj = lisp->internKeyword(keyStr);
-		Cons_sp entry = Cons_O::create(obj,_Nil<T_O>());
-		args->setCdr(entry);
-		args = entry;
-		Cons_sp afirst = Cons_O::create(_Nil<T_O>());
-		Cons_sp acur = afirst;
-		while (1)
-		{
-		    LOG( BF("Trying accumulating list argument"));
-		    it++;
-		    if (it==strings.end() || (*it).substr(0,2) == "--" ) break;
-		    T_sp o = stringToObject(lisp,*it);
-		    Cons_sp aone = Cons_O::create(o);
-		    LOG(BF( "Accumulating object(%s) into list for argument") % _rep_(aone) );
-		    acur->setCdr(aone);
-		    acur = aone;
-		}
-		obj = cCdr(afirst);
-	    } else if ( (*it).substr(0,2)=="--" )
-	    {
-		LOG(BF( "Hit keyed single argument(%s)") % (*it) );
-		string keyStr = (*it).substr(2,999999);
-		obj = lisp->internKeyword(keyStr);
-		it++;
-	    } else
-	    {
-		LOG(BF( "Hit regular argument |%s|") % (*it) );
-		T_sp o = stringToObject(lisp,*(it));
-		obj = o;
-		it++;
-	    }
-	    LOG( BF("Accumulating entry(%s) in main argument list") %_rep_( obj) );
-	    Cons_sp entry = Cons_O::create(obj,_Nil<T_O>());
-	    args->setCdr(entry);
-	    args = entry;
-	}
-	LOG(BF( "After parse|%s|") % _rep_(oCdr(first)));
-	return((cCdr(first)));
-    }
-#endif
 
 //
 // Constructor
@@ -660,19 +588,19 @@ List_sp Cons_O::nreconc(T_sp tail) {
   return ((reversed));
 }
 
-T_sp Cons_O::setf_nth(int index, T_sp val) {
+T_sp Cons_O::setf_nth(cl_index index, T_sp val) {
   _OF();
   if (index >= (int)this->length()) {
     SIMPLE_ERROR(BF("Index[%d] is beyond the length[%d] of the cons") % index % this->length());
   }
   List_sp cur = this->asSmartPtr();
-  for (int i = 0; i < index; i++)
+  for (cl_index i = 0; i < index; i++)
     cur = oCdr(cur);
   cur.asCons()->setCar(val);
   return ((val));
 }
 
-T_sp Cons_O::elt(int index) const {
+T_sp Cons_O::elt(cl_index index) const {
   _OF();
   if (index < 0 || index >= this->length()) {
     SIMPLE_ERROR(BF("Illegal index %d for Cons containing %d elements") % index % this->length());
@@ -680,7 +608,7 @@ T_sp Cons_O::elt(int index) const {
   return ((this->onth(index)));
 }
 
-T_sp Cons_O::setf_elt(int index, T_sp value) {
+T_sp Cons_O::setf_elt(cl_index index, T_sp value) {
   _OF();
   if (index < 0 || index >= this->length()) {
     SIMPLE_ERROR(BF("Illegal index %d for Cons containing %d elements") % index % this->length());
@@ -713,18 +641,18 @@ CL_DEFMETHOD List_sp Cons_O::filterOutNil() {
     }
 #endif
 
-T_sp Cons_O::onth(int idx) const {
+T_sp Cons_O::onth(cl_index idx) const {
   _OF();
   List_sp cur = this->asSmartPtr();
-  for (int i = 0; i < idx; i++) {
+  for (cl_index i = 0; i < idx; i++) {
     cur = oCdr(cur);
   }
   return ((oCar(cur)));
 }
 
-List_sp Cons_O::onthcdr(int idx) const {
+List_sp Cons_O::onthcdr(cl_index idx) const {
   List_sp cur = this->asSmartPtr();
-  for (int i = 0; i < idx; i++) {
+  for (cl_index i = 0; i < idx; i++) {
     cur = oCdr(cur);
   }
   return ((cur));
@@ -733,7 +661,7 @@ List_sp Cons_O::onthcdr(int idx) const {
 /*! This algorithm works by first stepping through (n) CONS elements with (r)
 and then stepping to the end with (l) and (r).  Once (r) hits the end
 (l) will point to the (n)th from the end CONS cell */
-List_sp Cons_O::last(int n) const {
+List_sp Cons_O::last(cl_index n) const {
   ASSERT(n >= 0);
   List_sp l = this->asSmartPtr();
   T_sp r = l;
@@ -824,7 +752,7 @@ List_sp Cons_O::copyTreeCar() const {
 }
 
 uint Cons_O::length() const {
-  int sz = 1;
+  cl_index sz = 1;
 #pragma GCC diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
   for (auto p : coerce_to_list(this->_Cdr))
@@ -833,8 +761,8 @@ uint Cons_O::length() const {
   return ((sz));
 };
 
-T_sp Cons_O::olistref(int idx) {
-  int i = 0;
+T_sp Cons_O::olistref(cl_index idx) {
+  cl_index i = 0;
   List_sp p;
   LOG(BF("Evaluating the length of list: %s") % this->__repr__());
   p = this->asSmartPtr();
@@ -853,8 +781,8 @@ T_sp Cons_O::olistref(int idx) {
   return ((oCar(p)));
 };
 
-T_sp Cons_O::olistrefArgument(int idx) {
-  int i = 0;
+T_sp Cons_O::olistrefArgument(cl_index idx) {
+  cl_index i = 0;
   List_sp p;
   p = this->asSmartPtr();
   while (p.notnilp()) {

@@ -55,22 +55,22 @@ public:
   virtual bool equalp(T_sp obj) const;
   
 #ifndef USE_TEMPLATE_STRING_MATCHER
-  virtual T_sp string_EQ_(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_NE_(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_LT_(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_GT_(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_LE_(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_GE_(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
+  virtual T_sp string_EQ_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_NE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_LT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_GT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_LE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_GE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
 
-  virtual T_sp string_equal(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_not_equal(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_greaterp(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_not_greaterp(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
-  virtual T_sp string_not_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const{SUBIMP();};
+  virtual T_sp string_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_not_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_not_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
+  virtual T_sp string_not_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const{SUBIMP();};
 #endif
 public:  // Functions here
-  virtual int pushCharExtend(claspChar c, int extension = 0) { SUBIMP(); };
+  virtual cl_index pushCharExtend(claspChar c, cl_index extension = 0) { SUBIMP(); };
   virtual T_sp fillPointer() const { SUBIMP(); };
 };
 
@@ -85,7 +85,7 @@ Str_sp cl__string(T_sp str);
 Str_sp cl__string_upcase(T_sp arg);
 Str_sp cl__string_downcase(T_sp arg);
 
-claspChar cl__char(T_sp str, int idx);
+claspChar cl__char(T_sp str, cl_index idx);
 
 bool clasp_memberChar(claspChar c, T_sp charBag);
 

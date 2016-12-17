@@ -76,6 +76,10 @@ T_sp inputStreamDesignator(T_sp obj);
 /*! Convert an Object output stream designator (as described by CLHS) into a Stream */
 T_sp outputStreamDesignator(T_sp obj);
 
+ cl_index coerceToEndInRangeOrError(T_sp tend, cl_index start, cl_index end);
+
+ void inBoundsOrError(cl_index index, cl_index start, cl_index end);
+ void inBoundsBelowEndOrError(cl_index index, cl_index start, cl_index end);
 }; /* designators */
 
 }; /* core */

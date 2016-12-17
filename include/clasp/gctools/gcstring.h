@@ -106,6 +106,7 @@ private:
 #endif
 
 public:
+// \0 terminated string
   GCString(const char *chars) : _Contents() {
     size_t sz = strlen(chars);
     this->reserve(sz + GCStringPad);
@@ -115,14 +116,14 @@ public:
     THROW_IF_ILLEGAL_CHARACTERS(this);
   };
   /*! Construct and don't initialize contents */
-  GCString(int sz) : _Contents() {
+  GCString(size_t sz) : _Contents() {
     this->reserve(sz + GCStringPad);
     this->_Contents->_End = sz;
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
   };
   GCString(const char *chars, int sz) : _Contents() {
     this->reserve(sz + GCStringPad);
-    strncpy(this->_Contents->data(), chars, sz);
+    memcpy(this->_Contents->data(), chars, sz);
     this->_Contents->_End = sz;
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
     THROW_IF_ILLEGAL_CHARACTERS(this);
@@ -130,7 +131,7 @@ public:
 
   GCString(const string &str) : _Contents() {
     this->reserve(str.size() + GCStringPad);
-    strncpy(this->data(), str.data(), str.size());
+    memcpy(this->data(), str.data(), str.size());
     this->_Contents->_End = str.size();
     GCTOOLS_ASSERT(this->_Contents->_End <= this->_Contents->_Capacity);
     THROW_IF_ILLEGAL_CHARACTERS(this);

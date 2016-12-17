@@ -53,8 +53,8 @@ class Str_O : public String_O {
   static Str_sp create(const string &nm);
   static Str_sp create(const char *nm);
   static Str_sp create(size_t numChars);
-  static Str_sp create(const char *nm, int numChars);
-  static Str_sp create(claspChar initial_element, int dimension);
+  static Str_sp create(const char *nm, cl_index numChars);
+  static Str_sp create(claspChar initial_element, cl_index dimension);
   static Str_sp create(Str_sp orig);
 public:
   static Bignum stringToBignum(const char *str);
@@ -120,7 +120,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
     str_type temp(num);
     this->_Contents.swap(temp);
   };
-  void setFromChars(const char *v, int num) {
+  void setFromChars(const char *v, cl_index num) {
     str_type temp(v, num);
     this->_Contents.swap(temp);
   };
@@ -167,19 +167,19 @@ public:
   cl_index length() const { return this->size(); };
   
 #ifndef USE_TEMPLATE_STRING_MATCHER
-  virtual T_sp string_EQ_(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_NE_(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_LT_(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_GT_(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_LE_(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_GE_(Str_sp string2, int start1, int end1, int start2, int end2) const;
+  virtual T_sp string_EQ_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_NE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_LT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_GT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_LE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_GE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
 
-  virtual T_sp string_equal(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_not_equal(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_greaterp(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_not_greaterp(Str_sp string2, int start1, int end1, int start2, int end2) const;
-  virtual T_sp string_not_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const;
+  virtual T_sp string_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_not_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_not_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
+  virtual T_sp string_not_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
 #endif
   
 public:

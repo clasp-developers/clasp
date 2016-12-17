@@ -99,7 +99,7 @@ Str_sp Str_O::create(const char *nm) {
   return v;
 };
 
-Str_sp Str_O::create(const char *nm, int numChars) {
+Str_sp Str_O::create(const char *nm, cl_index numChars) {
   GC_ALLOCATE(Str_O, v);
   //	printf("%s:%d Str_O::create(const char* nm) @ %p nm = %s\n", __FILE__, __LINE__, v.raw_(), nm );
   v->setFromChars(nm, numChars);
@@ -142,7 +142,7 @@ CL_DEFUN T_sp core__base_string_concatenate(T_sp args) {
   return Str_O::create(ss.str());
 };
 
-Str_sp Str_O::create(char initial_element, int dimension) {
+Str_sp Str_O::create(char initial_element, cl_index dimension) {
   GC_ALLOCATE(Str_O, str);
   str->_Contents = string(dimension, initial_element);
   return str;
@@ -220,7 +220,7 @@ T_sp Str_O::aref(VaList_sp indices) const {
 
 T_sp Str_O::setf_aref(List_sp indices_val) {
   ASSERTF(cl__length(indices_val) == 2, BF("Illegal index/val for setf_aref of string: %s") % _rep_(indices_val));
-  int index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices_val)));
+  cl_index index = unbox_fixnum(gc::As<Fixnum_sp>(oCar(indices_val)));
   return this->setf_elt(index, oCadr(indices_val));
 }
 
@@ -354,12 +354,12 @@ string Str_O::__repr__() const {
 
 #ifndef USE_TEMPLATE_STRING_MATCHER
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_EQ_(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_EQ_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -384,12 +384,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_NE_(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_NE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -415,12 +415,12 @@ RETURN_FALSE:
 
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_LT_(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_LT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -447,12 +447,12 @@ RETURN_FALSE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_GT_(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_GT_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -477,12 +477,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_LE_(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_LE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -510,12 +510,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_GE_(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_GE_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -543,12 +543,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_equal(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -573,12 +573,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_not_equal(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_not_equal(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -603,12 +603,12 @@ RETURN_FALSE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -637,12 +637,12 @@ RETURN_FALSE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_greaterp(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -669,12 +669,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_not_greaterp(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_not_greaterp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -704,12 +704,12 @@ RETURN_TRUE:
 }
 
 /*! bounding index designator range from 0 to the end of each string */
-T_sp Str_O::string_not_lessp(Str_sp string2, int start1, int end1, int start2, int end2) const {
+T_sp Str_O::string_not_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const {
   _OF();
   const char *cp1 = this->_Contents.c_str() + start1;
   const char *cp2 = string2->_Contents.c_str() + start2;
-  int num1 = end1 - start1;
-  int num2 = end2 - start2;
+  cl_index num1 = end1 - start1;
+  cl_index num2 = end2 - start2;
   while (1) {
     if (num1 == 0)
       goto END_STRING1;
@@ -742,47 +742,19 @@ RETURN_TRUE:
 
 
 T_sp Str_O::subseq(cl_index start, T_sp end) const {
-  if (start < 0) {
-    SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
-  }
-  cl_index iend;
-  if (end.nilp()) {
-    iend = this->length();
-  } else {
-    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
-  }
-  if (iend < start) {
-    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->length());
-  }
+  coerce::inBoundsOrError(start,0,this->length());
+  cl_index iend = coerce::coerceToEndInRangeOrError(end,start,this->length());
   size_t ilen = iend - start;
   Str_sp news = Str_O::create(ilen);
   memcpy(&((*news)[0]),&((*this)[start]),ilen*sizeof(element_type));
-#if 0
-  for ( cl_index is(start), id(0); is<iend; ++is, ++id ) {
-    (*news)[id] = (*this)[is];
-  }
-#endif
   return news;
 }
 
 T_sp Str_O::setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
+  coerce::inBoundsOrError(start,0,this->length());
+  cl_index iend = coerce::coerceToEndInRangeOrError(end,start,this->length());
   Str_sp sfrom = gc::As<Str_sp>(new_subseq);
-  if (start < 0) {
-    SIMPLE_ERROR(BF("Illegal start %d for subseq") % start);
-  }
-  cl_index iend;
-  if (end.nilp()) {
-    iend = this->length();//get().size();
-  } else {
-    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
-  }
-  if (iend <= start) {
-    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->length());
-  }
   cl_index ileft = iend - start;
-  if (ileft > sfrom->length()) {
-    iend = start+ileft;
-  }
   for (cl_index idest(start),ifrom(0); idest<iend; ++idest, ++ifrom) {
     (*this)[idest] = (*sfrom)[ifrom];
   }
@@ -790,18 +762,14 @@ T_sp Str_O::setf_subseq(cl_index start, T_sp end, T_sp new_subseq) {
 }
 
 claspChar Str_O::schar(cl_index index) const {
-  if (index >= 0 && index < this->size()) {
-    return this->_Contents[index];
-  }
-  SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
+  coerce::inBoundsBelowEndOrError(index,0,this->length());
+  return this->_Contents[index];
 }
 
 claspChar Str_O::scharSet(cl_index index, claspChar c) {
-  if (index >= 0 && index < this->size()) {
-    this->_Contents[index] = c;
-    return c;
-  }
-  SIMPLE_ERROR(BF("Illegal index for schar %d must be in (integer 0 %d)") % index % this->size());
+  coerce::inBoundsBelowEndOrError(index,0,this->length());
+  this->_Contents[index] = c;
+  return c;
 }
 
 void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
@@ -809,11 +777,16 @@ void Str_O::fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end) {
   cl_index istart = unbox_fixnum(start);
   cl_index last = this->size();
   cl_index iend = last;
-  if (end.notnilp())
-    iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
-  ASSERTF(iend >= istart, BF("Illegal fill range istart=%d iend=%d") % istart % iend);
-  ASSERTF(iend <= last, BF("Illegal value for end[%d] - must be between istart[%d] and less than %d") % iend % istart % last);
-  ASSERTF(istart >= 0 <= iend, BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend);
+  if (end.notnilp()) iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
+  unlikely_if (iend <istart) {
+    SIMPLE_ERROR(BF("Illegal fill range start is %lu and end is %lu") % istart % iend);
+  }
+  unlikely_if (iend > last) {
+    iend = last;
+  }
+  unlikely_if (istart < 0) {
+    SIMPLE_ERROR(BF("Illegal value for start[%d] - must be between 0 and %d") % istart % iend);
+  }
   for (cl_index i = istart; i < iend; i++) {
     this->_Contents[i] = celement;
   }
@@ -854,7 +827,7 @@ ERROR:
 }
 
 void Str_O::__write__(T_sp stream) const {
-  int ndx;
+  cl_index ndx;
   if (!clasp_print_escape() && !clasp_print_readably()) {
     for (ndx = 0; ndx < this->size(); ndx++) {
       clasp_write_char(this->_Contents[ndx], stream);

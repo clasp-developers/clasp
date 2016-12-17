@@ -245,7 +245,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
   int flags = (oob ? MSG_OOB : 0) |
               (peek ? MSG_PEEK : 0) |
               (waitall ? MSG_WAITALL : 0);
-  core::cl_index len;
+  cl_index len;
   clasp_disable_interrupts();
   len = recvfrom(fd, REINTERPRET_CAST(char *, safe_buffer_pointer(buffer, length)), length, flags, NULL, NULL);
   clasp_enable_interrupts();

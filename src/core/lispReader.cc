@@ -25,7 +25,7 @@ THE SOFTWARE.
 */
 /* -^- */
 #define DEBUG_LEVEL_NONE
-
+#include <clasp/core/foundation.h>
 #pragma clang diagnostic push
 //#pragma clang diagnostic ignored "-Wunused-local-typedef"
 #include <boost/algorithm/string.hpp>
@@ -413,8 +413,11 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
         return _Nil<T_O>();
       string symbolName = tokenStr(token, name_marker - token.data());
+      LOG(BF("Interpreting symbol tokenStr=|%s|") % symbolName );
       Str_sp sym_name = Str_O::create(symbolName);
+      LOG(BF("sym_name = |%s|") % sym_name->get());
       Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
+      LOG(BF("sym->symbolNameAsString() = |%s|") % sym->symbolNameAsString());
       return sym;
     }
     break;
@@ -564,7 +567,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, const vector<uint> &token) 
       SIMPLE_ERROR(BF("Shouldn't get here - unhandled exponent type"));
     }
   }
-  LOG(BF("Bad token[%s]") % tok);
+  LOG(BF("Bad state %d") % state);
   SIMPLE_ERROR(BF("create<ReaderError_O>(sin));"));
 }
 
@@ -649,9 +652,9 @@ List_sp read_list(T_sp sin, char end_char, bool allow_consing_dot) {
         lisp_registerSourcePosInfo(one, info);
 #endif
         LOG(BF("One = %s\n") % _rep_(one));
-        LOG(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
-        LOG(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());
-        LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core__source_file_info(one)->fileName().c_str());
+//        LOG(BF("one->sourceFileInfo()=%s") % _rep_(core__source_file_info(one)));
+//        LOG(BF("one->sourceFileInfo()->fileName()=%s") % core__source_file_info(one)->fileName());
+//        LOG(BF("one->sourceFileInfo()->fileName().c_str() = %s") % core__source_file_info(one)->fileName().c_str());
         TRAP_BAD_CONS(one);
         cur.asCons()->setCdr(one);
         cur = one;
@@ -737,7 +740,7 @@ step1:
     return Values(eofValue);
   }
   x = gc::As<Character_sp>(tx);
-  LOG(BF("Reading character x[%s]") % clasp_as_char(x));
+  LOG(BF("Read character x[%d/%s]") % (int)clasp_as_char(x) % clasp_as_char(x));
   Symbol_sp x1_syntax_type = readTable->syntax_type(x);
   //    step2:
   if (x1_syntax_type == kw::_sym_invalid_character) {
@@ -772,7 +775,7 @@ step1:
     y = gc::As<Character_sp>(ty);
     token.clear();
     token.push_back(constituentChar(y, TRAIT_ALPHABETIC));
-    LOG(BF("Read y[%s]") % clasp_as_char(y));
+    LOG(BF("Read y[%d/%s]") % (int)clasp_as_char(y) % clasp_as_char(y));
     goto step8;
   }
   //    step6:

@@ -1240,6 +1240,7 @@ void lisp_debugLogWrite(char const *fileName, const char *functionName, uint lin
     return;
   }
   _lisp->debugLog().beginNode(DEBUG_LOG, fileName, functionName, lineNumber, 0, fmt_str);
+  _lisp->debugLog().writeRaw("~~~");
   _lisp->debugLog().endNode(DEBUG_LOG);
 }
 
