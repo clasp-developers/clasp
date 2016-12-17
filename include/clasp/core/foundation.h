@@ -862,9 +862,9 @@ namespace gctools {
 #endif
 #endif
 
-namespace core {
-
 typedef gctools::Fixnum cl_index;
+
+namespace core {
 
 #define _NEW_(x) (new x)
 
