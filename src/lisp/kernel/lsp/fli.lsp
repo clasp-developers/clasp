@@ -335,22 +335,22 @@
 
 ;;; === F O R E I G N   L I B R A R Y   H A N D L I N G ===
 
+(declaim (inline %load-foreign-library))
 (defun %load-foreign-library (name path)
   "Load a foreign library to be found at path. (name is ignored)"
-  (declaim (inline %load-foreign-library))
   (declare (ignore name))
   (%dlopen path))
 
+(declaim (inline %close-foreign-library))
 (defun %close-foreign-library (ptr)
   "Close a foreign library."
-  (declaim (inline %close-foreign-library))
   (%dlclose ptr))
 
 ;;; === F O R E I G N   G L O B A L S ===
 
+(declaim (inline %foreign-symbol-pointer))
 (defun %foreign-symbol-pointer (name module)
   "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
-  (declare (inline %foreign-symbol-pointer))
   (declare (ignore module))
   (%dlsym name))
 
