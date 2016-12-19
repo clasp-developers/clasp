@@ -38,9 +38,9 @@ inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
 };
 
-Str_sp cl__char_name(Character_sp och);
+Str8_sp cl__char_name(Character_sp och);
 
-int clasp_string_case(Str_sp s);
+int clasp_string_case(AnyString_sp s);
 Fixnum clasp_digitp(int ch, int basis);
 
 bool cl__standard_char_p(Character_sp ch);
@@ -228,9 +228,13 @@ inline claspCharacter clasp_as_character(Character_sp c) {
   return c.unsafe_character();
 }
 
-inline Character_sp clasp_make_character(claspCharacter c) {
+ 
+// See character.fwd.h for the following
+#if 0
+ Character_sp clasp_make_character(claspCharacter c) {
   return gc::make_tagged_character(c);
 }
+#endif
 
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
   return gc::make_tagged_character(c);

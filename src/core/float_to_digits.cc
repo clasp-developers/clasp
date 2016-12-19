@@ -43,7 +43,7 @@ THE SOFTWARE.
 #include <clasp/core/num_co.h>
 #include <clasp/core/character.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/bignum.h>
 #include <clasp/core/wrappers.h>
 
@@ -155,8 +155,8 @@ static Fixnum scale(float_approx *approx) {
   return k;
 }
 
-static StrWithFillPtr_sp
-generate(StrWithFillPtr_sp digits, float_approx *approx) {
+static Str_sp
+generate(Str_sp digits, float_approx *approx) {
   Real_sp d, x;
   gctools::Fixnum digit;
   bool tc1, tc2;
@@ -172,7 +172,7 @@ generate(StrWithFillPtr_sp digits, float_approx *approx) {
     if (tc1 || tc2) {
       break;
     }
-    clasp_string_push_extend(digits, clasp_digit_char(clasp_fixnum(d), 10));
+    digits->vectorPushExtend(clasp_make_character(clasp_digit_char(clasp_fixnum(d),10)));
   } while (1);
   if (tc2 && !tc1) {
     digit = clasp_fixnum(d) + 1;
@@ -183,7 +183,7 @@ generate(StrWithFillPtr_sp digits, float_approx *approx) {
   } else {
     digit = clasp_fixnum(d) + 1;
   }
-  clasp_string_push_extend(digits, clasp_digit_char(digit, 10));
+  digits->vectorPushExtend(clasp_make_character(clasp_digit_char(digit, 10)));
   return digits;
 }
 
@@ -238,14 +238,14 @@ CL_DEFUN T_mv core__float_to_digits(T_sp tdigits, Float_sp number, gc::Nilable<R
   setup(number, approx);
   change_precision(approx, position, relativep);
   k = scale(approx);
-  StrWithFillPtr_sp digits;
+  Str_sp digits;
   if (tdigits.nilp()) {
-    digits = gc::As<StrWithFillPtr_sp>(core__make_vector(cl::_sym_base_char,
-                                                        10,
-                                                        true /* adjustable */,
-                                                         clasp_make_fixnum(0) /* fill pointer */));
+    digits = gc::As<Str_sp>(core__make_vector(cl::_sym_base_char,
+                                              10,
+                                              true /* adjustable */,
+                                              clasp_make_fixnum(0) /* fill pointer */));
   } else {
-    digits = gc::As<StrWithFillPtr_sp>(tdigits);
+    digits = gc::As<Str_sp>(tdigits);
   }
   generate(digits, approx);
   return Values(clasp_make_fixnum(k), digits);

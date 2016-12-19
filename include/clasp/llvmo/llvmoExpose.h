@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/hashTableEqual.h>
-#include <clasp/core/str.h>
+#include <clasp/core/lispVector.h>
 #include <clasp/core/ql.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>

@@ -205,7 +205,7 @@ struct ThreadInfo {
 #endif
 
 class Lisp_O {
-  friend T_mv core__source_file_info(T_sp sourceFile, Str_sp truename, size_t offset, bool useLineno);
+  friend T_mv core__source_file_info(T_sp sourceFile, AnyString_sp truename, size_t offset, bool useLineno);
   friend gctools::Layout_code* gctools::get_kind_layout_codes();
   struct GCRoots //: public gctools::HeapRoot
       {
@@ -460,8 +460,8 @@ public:
   int mpiSize() { return this->_MpiSize; }
 
 public:
-  StrWithFillPtr_sp get_buffer_string();
-  void put_buffer_string(StrWithFillPtr_sp str);
+  Str8Ns_sp get_buffer_string();
+  void put_buffer_string(Str8Ns_sp str);
 
 public:
   IntegerOrdering const &integer_ordering() const { return this->_IntegerOrdering; };
@@ -990,7 +990,7 @@ public:
  /*! Use RAII to safely allocate a buffer */
  
 struct SafeBuffer {
-  StrWithFillPtr_sp _Buffer;
+  Str8Ns_sp _Buffer;
   SafeBuffer() {
     this->_Buffer = _lisp->get_buffer_string();
   };

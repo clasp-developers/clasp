@@ -123,9 +123,7 @@ private:
   };
 
 public:
-  GCArray() : _Contents(){};
-  ~GCArray() {}
-
+ GCArray() : _Contents() {};
   void clear() { this->_Contents = NULL; };
 
   template <typename... ARGS>
@@ -148,7 +146,7 @@ public:
   bool alivep() const { return true; };
 
   T &operator[](size_t n) { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
-  const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
+   const T &operator[](size_t n) const { return this->_Contents ? (*this->_Contents)[n] : this->errorEmpty(); };
 
   pointer_type data() const { return this->_Contents ? this->_Contents->data() : NULL; };
 
@@ -157,6 +155,13 @@ public:
 
   const_iterator begin() const { return this->_Contents ? &(*this->_Contents)[0] : NULL; }
   const_iterator end() const { return this->_Contents ? &(*this->_Contents)[this->_Contents->_Capacity] : NULL; }
+
+
+    /*! Resize the vector so that it contains AT LEAST n elements */
+  void resize(size_t n, const value_type &x = value_type()) {
+    printf("%s:%d How do I resize an array\n", __FILE__, __LINE__ );
+  }
+
 };
 
 template <typename Array>
@@ -169,6 +174,10 @@ void Array0_dump(const Array &v, const char *head = "") {
   }
   printf("\n");
 }
+
+
+ typedef gctools::GCArray<uintptr_t, gctools::GCContainerAllocator<gctools::GCArray_moveable<uintptr_t> > > gcbitvector;
+
 
 } // namespace gctools
 

@@ -307,8 +307,8 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
         str_obj->sxhash_(hg);
       return;
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
-      (void)bv_obj;
-      IMPLEMENT_MEF(BF("Hash bit-vectors"));
+      (void)bv_obj->sxhash_(hg);
+      return;
     } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
       if (hg.isFilling())
         HashTable_O::sxhash_equal(hg, pobj->_Host, ld);
@@ -397,7 +397,7 @@ void HashTable_O::sxhash_equalp(HashGenerator &hg, T_sp obj, LocationDependencyP
             HashTable_O::sxhash_equalp(hg, iobj->_Slots[i], ld);
         }
         return;
-      } else if (BitVector_sp bv_obj = gobj.asOrNull<Array_O>()) {
+      } else if (BitVector_sp bv_obj = gobj.asOrNull<BitVector_O>()) {
         (void)bv_obj; // silence warning
         IMPLEMENT_MEF(BF("Handle HashTable_O::sxhash_equalp for BitVector"));
       } else if (Array_sp aobj = gobj.asOrNull<Array_O>()) {

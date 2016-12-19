@@ -28,11 +28,11 @@ THE SOFTWARE.
 #define core_numberToString_H
 
 #include <clasp/core/foundation.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 namespace core {
 
-StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Integer_sp integer,
-                                       Fixnum_sp base, bool radix, bool decimalp);
+StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
+                                 Fixnum_sp base, bool radix, bool decimalp);
 
 };
 #endif

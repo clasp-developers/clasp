@@ -40,7 +40,7 @@ THE SOFTWARE.
 #include <float.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/bignum.h>
@@ -52,7 +52,7 @@ namespace core {
 CL_LAMBDA(buffer x base);
 CL_DECLARE();
 CL_DOCSTRING("bignumToString");
-CL_DEFUN StrWithFillPtr_sp core__bignum_to_string(StrWithFillPtr_sp buffer, const Bignum &bn, Fixnum_sp base) {
+CL_DEFUN StrNs_sp core__bignum_to_string(StrNs_sp buffer, const Bignum &bn, Fixnum_sp base) {
   if (unbox_fixnum(base) < 2 || unbox_fixnum(base) > 36) {
     QERROR_WRONG_TYPE_NTH_ARG(3, base, Cons_O::createList(cl::_sym_integer, make_fixnum(2), make_fixnum(36)));
   }
@@ -61,7 +61,7 @@ CL_DEFUN StrWithFillPtr_sp core__bignum_to_string(StrWithFillPtr_sp buffer, cons
   if (bn < 0)
     str_size++;
   buffer->ensureSpaceAfterFillPointer(str_size + 1);
-  char *bufferStart = static_cast<char *>(buffer->addressOfFillPtr());
+  char *bufferStart = static_cast<char *>(buffer->addressOfFillPointer());
   mpz_get_str(bufferStart, -unbox_fixnum(base), bn.get_mpz_t());
   //	printf("%s:%d str_size = %zu\n    bufferStart[str_size-1] = %d  bufferStart[str_size] = %d bufferStart=[%s]\n", __FILE__, __LINE__, str_size, bufferStart[str_size-1], bufferStart[str_size], bufferStart);
   if (bufferStart[str_size - 1] == '\0') {
@@ -72,7 +72,7 @@ CL_DEFUN StrWithFillPtr_sp core__bignum_to_string(StrWithFillPtr_sp buffer, cons
   return buffer;
 }
 
-static void write_base_prefix(StrWithFillPtr_sp buffer, int base) {
+static void write_base_prefix(StrNs_sp buffer, int base) {
   if (base == 2) {
     buffer->pushStringCharStar("#b");
   } else if (base == 8) {
@@ -94,7 +94,7 @@ static void write_base_prefix(StrWithFillPtr_sp buffer, int base) {
 CL_LAMBDA(buffer integer base radix decimalp);
 CL_DECLARE();
 CL_DOCSTRING("integerToString");
-CL_DEFUN StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Integer_sp integer,
+CL_DEFUN StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
                                        Fixnum_sp base, bool radix, bool decimalp) {
   if (radix) {
     if (!decimalp || unbox_fixnum(base) != 10) {
@@ -103,7 +103,7 @@ CL_DEFUN StrWithFillPtr_sp core__integer_to_string(StrWithFillPtr_sp buffer, Int
     }
     buffer = core__integer_to_string(buffer, integer, base, false, false);
     if (decimalp && unbox_fixnum(base) == 10) {
-      buffer->pushCharExtend('.');
+      buffer->vectorPushExtend(clasp_make_character('.'));
     }
     return buffer;
   }

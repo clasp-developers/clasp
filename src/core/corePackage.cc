@@ -132,7 +132,6 @@ THE SOFTWARE.
 #include <clasp/core/cxxClass.h>
 #include <clasp/core/forwardReferencedClass.h>
 #include <clasp/core/stdClass.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/structureClass.h>
 #include <clasp/clbind/class_rep.h>
 #include <clasp/core/funcallableStandardClass.h>

@@ -93,7 +93,7 @@ public:
   void initialize(); 
 public:
   virtual int tableSize() const;
-  int size() const { return this->tableSize(); };
+  cl_index size() const { return this->tableSize(); };
 
   void setf_gethash(T_sp key, T_sp value);
 

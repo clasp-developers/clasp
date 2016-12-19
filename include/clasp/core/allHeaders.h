@@ -196,9 +196,6 @@ THE SOFTWARE.
 #include <clasp/core/stdClass.fwd.h>
 #include <clasp/core/stdClass.h>
 #include <clasp/core/str.fwd.h>
-#include <clasp/core/str.h>
-#include <clasp/core/strWithFillPtr.fwd.h>
-#include <clasp/core/strWithFillPtr.h>
 #include <clasp/core/stringList.fwd.h>
 #include <clasp/core/stringList.h>
 #include <clasp/core/stringSet.fwd.h>

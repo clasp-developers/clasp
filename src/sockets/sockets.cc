@@ -251,7 +251,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
   clasp_enable_interrupts();
   if (len >= 0) {
     if (core::Vector_sp vec = gc::As<core::Vector_sp>(buffer)) {
-      vec->setFillPointer(core::clasp_make_fixnum(len));
+      vec->fillPointerSet(core::clasp_make_fixnum(len));
     } else {
       SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));
     }

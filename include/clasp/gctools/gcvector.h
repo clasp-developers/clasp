@@ -138,14 +138,6 @@ public:
 };
 };
 
-#if 0
-namespace std {
-  template <typename T>
-    struct iterator_traits {
-      typedef typename T::value_type value_type;
-  };
-};
-#endif
 namespace gctools {
 
 template <class T, typename Allocator>

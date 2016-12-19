@@ -14,7 +14,7 @@
 #include <float.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/numerics.h>
@@ -26,7 +26,7 @@ namespace core {
 T_sp
 _clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
   if (buffer.nilp()) {
-    buffer = StrWithFillPtr_O::create(' ', length, 0, true);
+    buffer = Str_O::create_with_fill_pointer(' ', length, 0, true);
 #if 0
 	    buffer = core__make_vector(cl::_sym_base_char, clasp_make_fixnum(length),
 				      _lisp->_true() /* adjustable */,
@@ -39,27 +39,27 @@ _clasp_ensure_buffer(T_sp buffer, gc::Fixnum length) {
 }
 
 void
-_clasp_string_push_c_string(StrWithFillPtr_sp s, const char *c) {
+_clasp_string_push_c_string(Str_sp s, const char *c) {
   for (; *c; c++) {
-    s->pushCharExtend(*c);
+          s->vectorPushExtend(clasp_make_character(*c));
   }
 }
 
 static void
-insert_char(StrWithFillPtr_sp buffer, cl_index where, gc::Fixnum c) {
+insert_char(Str_sp buffer, cl_index where, gc::Fixnum c) {
         ASSERT(buffer->fillPointer().fixnump());
         gc::Fixnum end = buffer->fillPointer().unsafe_fixnum();
-  buffer->pushCharExtend('.');
+        buffer->vectorPushExtend(clasp_make_character('.'));
   memmove(&(*buffer)[where + 1], &(*buffer)[where], end - where);
   //clasp_copy_subarray(buffer, where+1, buffer, where, end - where);
   (*buffer)[where] = c; // clasp_char_set(buffer, where, c);
 }
 
 static T_sp
-push_base_string(T_sp buffer, StrWithFillPtr_sp s) {
+push_base_string(T_sp buffer, Str_sp s) {
         ASSERT(s->fillPointer().fixnump())
         buffer = _clasp_ensure_buffer(buffer, s->fillPointer().unsafe_fixnum());
-  gc::As<StrWithFillPtr_sp>(buffer)->pushStringCharStar(s->c_str());
+  gc::As<Str_sp>(buffer)->pushStringCharStar(s->c_str());
   return buffer;
 }
 
@@ -94,8 +94,8 @@ print_float_exponent(T_sp buffer, T_sp number, gc::Fixnum exp) {
     SIMPLE_ERROR(BF("Handle additional enumeration values value=%s t_of=%d") % _rep_(number).c_str() % clasp_t_of(number));
   }
   if (e != 'e' || exp != 0) {
-    StrWithFillPtr_sp sbuffer = gc::As<StrWithFillPtr_sp>(buffer);
-    sbuffer->pushCharExtend(e);
+    Str_sp sbuffer = gc::As<Str_sp>(buffer);
+    sbuffer->vectorPushExtend(clasp_make_character(e));
     core__integer_to_string(sbuffer, clasp_make_fixnum(exp), clasp_make_fixnum(10),
                          false, false);
   }
@@ -115,7 +115,7 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
   base = cl__length(buffer_or_nil);
   T_mv mv_exp = core__float_to_digits(buffer_or_nil, number, _Nil<T_O>(), _Nil<T_O>());
   T_sp exp = mv_exp;
-  StrWithFillPtr_sp buffer = gc::As<StrWithFillPtr_sp>(mv_exp.second());
+  Str_sp buffer = gc::As<Str_sp>(mv_exp.second());
   e = clasp_to_fixnum(exp);
   if (clasp_signbit(number)) {
     insert_char(buffer, base++, '-');
@@ -125,9 +125,9 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
     insert_char(buffer, base + 1, '.');
     print_float_exponent(buffer, number, e - 1);
   } else if (e > 0) {
-          gc::Fixnum l = gc::As<StrWithFillPtr_sp>(buffer)->fillPointer().unsafe_fixnum() - base;
+          gc::Fixnum l = gc::As<Str_sp>(buffer)->fillPointer().unsafe_fixnum() - base;
     while (l++ <= e) {
-      buffer->pushCharExtend('0');
+            buffer->vectorPushExtend(clasp_make_character('0'));
     }
     insert_char(buffer, base + e, '.');
     print_float_exponent(buffer, number, 0);

@@ -751,10 +751,8 @@ class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class NamedFunction_O;
 typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
-class Str_O;
-typedef gctools::smart_ptr<Str_O> Str_sp;
-class StrWithFillPtr_O;
-typedef gctools::smart_ptr<StrWithFillPtr_O> StrWithFillPtr_sp;
+class Str8_O;
+typedef gctools::smart_ptr<Str8_O> Str8_sp;
 #ifdef USE_HEAP_FIXNUM
 class Fixnum_O;
 typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
@@ -862,7 +860,6 @@ namespace gctools {
 #endif
 #endif
 
-typedef gctools::Fixnum cl_index;
 
 namespace core {
 

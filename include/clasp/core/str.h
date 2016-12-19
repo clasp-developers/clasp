@@ -36,21 +36,49 @@ namespace cl {
   extern core::Symbol_sp& _sym_simple_vector;
 };
 
+template <>
+struct gctools::GCInfo<core::Str_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 
 FORWARD(Str);
 class Str_O : public String_O {
   LISP_CLASS(core, ClPkg, Str_O, "base-string",String_O);
+public:
+  explicit Str_O(cl_index dim, T_sp fillPointer, T_sp displacedTo, cl_index displacedIndexOffset) : Base(), _Dimension(dim), _FillPointer(fillPointer), _String(), _DisplacedIndexOffset(displacedIndexOffset) {
+    // Wipe out the contents
+    if (Str_sp ds = displacedTo.asOrNull<Str_O>() ) {
+      this->_DisplacedTo = ds;
+    } else if ( displacedTo.nilp() ) {
+      Str_sp dummy;
+      this->_DisplacedTo = dummy;
+    } else {
+      SIMPLE_ERROR(BF("Displaced-to %s is not a valid initializer") % _rep_(displacedTo));
+    };
+  }
  public:
-  typedef char element_type;
   typedef gctools::gcstring str_type;
-  str_type _Contents;
+  typedef gctools::gcstring::value_type element_type;
+  typedef char* iterator;
+  typedef const char* const_iterator;
  public:
-  typedef str_type::iterator iterator;
-  typedef str_type::const_iterator const_iterator;
+  size_t   _Dimension;
+  T_sp     _FillPointer;
+  str_type _String;
+  Str_sp   _DisplacedTo;
+  cl_index _DisplacedIndexOffset;
  public:
-  static Str_sp create(const boost::format &fmt);
+  static Str_sp create_with_fill_pointer(char initial_element, size_t dimension, cl_index fill_pointer, bool adjustable);
+  static Str_sp createBufferString(size_t bufferSize = BUFFER_STRING_SIZE) {
+    return Str_O::create_with_fill_pointer(' ', bufferSize, 0, true);
+  };
+  static Str_sp create(cl_index dim, Str_sp displacedTo, cl_index displacedIndexOffset );
   static Str_sp create(const string &nm);
+  static Str_sp create(const boost::format &nm);
   static Str_sp create(const char *nm);
   static Str_sp create(size_t numChars);
   static Str_sp create(const char *nm, cl_index numChars);
@@ -59,21 +87,42 @@ class Str_O : public String_O {
 public:
   static Bignum stringToBignum(const char *str);
 public:
-  virtual bool adjustableArrayP() const { return false; }
+  virtual bool adjustableArrayP() const { return true; }
 public:
   //! dimension() ignores the fill pointer
-  virtual gc::Fixnum dimension() const { return this->_Contents.size(); };
-  //! size is subclassed by StrWithFillPtr_O and uses the fill-pointer
-CL_LISPIFY_NAME("core:size");
-CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); };
-  virtual void swapElements(cl_index i1, cl_index i2) {
-    char t = this->_Contents[i2];
-    this->_Contents[i2] = this->_Contents[i1];
-    this->_Contents[i1] = t;
+  virtual cl_index dimension() const { return this->_Dimension; };
+  virtual T_sp displaced_to() const {
+    if (this->_DisplacedTo) return this->_DisplacedTo;
+    return _Nil<T_O>();
   }
-  virtual T_sp aset_unsafe(cl_index j, T_sp val);
-  virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character(this->_Contents[index]); };
-  virtual T_sp elementType() const;
+  virtual cl_index displaced_index_offset() const {
+    return this->_DisplacedIndexOffset;
+  }
+  //! size is subclassed by Str_O and uses the fill-pointer
+  CL_LISPIFY_NAME("core:size");
+  CL_DEFMETHOD   virtual cl_index size() const { return this->_Dimension; };
+  virtual bool arrayHasFillPointerP() const { return this->_FillPointer.fixnump(); };
+  virtual void fillPointerSet(T_sp idx);
+  T_sp fillPointer() const { return this->_FillPointer; };
+  void unsafe_setf_fill_pointer(T_sp fp) { this->_FillPointer = fp; };
+  
+  void setSize(cl_index size);
+  void ensureSpaceAfterFillPointer(cl_index size);
+  char *addressOfFillPointer();
+  void incrementFillPointer(cl_index size);
+
+  char &operator[](cl_index i);
+  const char &operator[](cl_index i) const;
+ 
+  virtual void swapElements(cl_index i1, cl_index i2) {
+    element_type t = (*this)[i2];
+    (*this)[i2] = (*this)[i1];
+    (*this)[i1] = t;
+  }
+  virtual T_sp aset_unsafe(cl_index j, T_sp val) {(*this)[j] = val.unsafe_character(); return val; };
+  virtual T_sp aref_unsafe(cl_index index) const { return clasp_make_character((*this)[index]); };
+
+  virtual T_sp elementType() const { return cl::_sym_base_char; };
   /*! Return the value at the indices */
   virtual T_sp aref(VaList_sp indices) const;
   /*! Return the value at the indices */
@@ -81,7 +130,7 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
 
   virtual void __write__(T_sp strm) const;
 
-  virtual T_sp elt(cl_index index) const;
+  virtual T_sp elt(cl_index index) const { return clasp_make_character((*this)[index]);};
   virtual T_sp setf_elt(cl_index index, T_sp value);
 
   virtual T_sp svref(cl_index index) const { TYPE_ERROR(this->asSmartPtr(), cl::_sym_simple_vector); };
@@ -99,33 +148,13 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
 
   virtual void sxhash_(HashGenerator &hg) const;
 
-  inline char &operator[](cl_index i) { return this->_Contents[i]; };
-  inline const char &operator[](cl_index i) const { return this->_Contents[i]; };
 
 
 
-
-  const char *c_str() const { return this->_Contents.c_str(); };
-  string __str__() { return this->_Contents.asStdString(); };
-  virtual string get() const { return this->_Contents.asStdString(); };
-  virtual void set(const string &v) {
-    str_type temp(v);
-    this->_Contents.swap(temp);
-  };
-  virtual void setFromChars(const char *v) {
-    str_type temp(v);
-    this->_Contents.swap(temp);
-  };
-  void setFromSize(size_t num) {
-    str_type temp(num);
-    this->_Contents.swap(temp);
-  };
-  void setFromChars(const char *v, cl_index num) {
-    str_type temp(v, num);
-    this->_Contents.swap(temp);
-  };
-
-  gctools::gcstring &contents() { return this->_Contents; };
+//  string __str__() { return this->_Contents.asStdString(); };
+  virtual string get() const { string s(this->begin(),this->end()); return s; };
+  const char *c_str() const { return this->get().c_str(); };
+//  gctools::gcstring &contents() { return this->_Contents; };
   string __repr__() const;
   uint countOccurances(const string &chars);
   List_sp splitAtWhiteSpace();
@@ -133,38 +162,52 @@ CL_DEFMETHOD   virtual gc::Fixnum size() const { return this->_Contents.size(); 
 //  Fixnum_sp asInt() const;
   Rational_sp parseInteger();
   DoubleFloat_sp asReal() const;
-  Symbol_sp asSymbol() const;
-  Symbol_sp asKeywordSymbol() const;
-  string left(gc::Fixnum num) const;
-  string right(gc::Fixnum num) const;
-  string substr(gc::Fixnum start, gc::Fixnum num) const;
+  Str_sp left(cl_index num) const;
+  Str_sp right(cl_index num) const;
 
+#if 0
   Str_O &operator+=(const string &s) {
     this->_Contents += s;
     return *this;
   }
-
   Str_sp operator+(const string &s) {
     string result(this->_Contents.data(), this->_Contents.size());
     result += s;
     return Str_O::create(result);
   }
+#endif
 
-  iterator begin() { return this->_Contents.data(); }
-  iterator end() { return this->_Contents.data() + this->size(); };
-  const_iterator begin() const { return this->_Contents.data(); }
-  const_iterator end() const { return this->_Contents.data() + this->size(); };
-
-  claspChar schar(gc::Fixnum index) const;
-  claspChar scharSet(gc::Fixnum index, claspChar c);
+  iterator begin() { return &(*this)[0]; };
+  iterator end() { return &(*this)[this->length()];};
+  const_iterator begin() const { return &(*this)[0]; };
+  const_iterator end() const { return &(*this)[this->length()];};
+  
+  claspChar schar(cl_index index) const;
+  claspChar scharSet(cl_index index, claspChar c);
 
   /*! Return the index of where substring is found 
 	  or nil
 	*/
-  T_sp find(const string &substring, gc::Fixnum start);
+  T_sp find(const string &substring, cl_index start);
+
+  virtual T_sp vectorPush(T_sp newElement);
+  virtual Fixnum_sp vectorPushExtend(T_sp newElement, cl_index extension = 0);
+
+  /*! Push the contents of string designator (str) from (start) to (end) */
+  void pushSubString(T_sp str, cl_index start, cl_index end);
+
+  /*! Push the entire contents of the string in (str) */
+  void pushString(T_sp str);
+
+  /*! Push the entire contents of the string in (str) */
+  void pushStringCharStar(const char *str);
+
 
 public:
-  cl_index length() const { return this->size(); };
+  cl_index length() const {
+    if (this->_FillPointer.fixnump())
+      return this->_FillPointer.unsafe_fixnum();
+    else return this->_Dimension; };
   
 #ifndef USE_TEMPLATE_STRING_MATCHER
   virtual T_sp string_EQ_(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
@@ -182,16 +225,7 @@ public:
   virtual T_sp string_not_lessp(Str_sp string2, cl_index start1, cl_index end1, cl_index start2, cl_index end2) const;
 #endif
   
-public:
-  explicit Str_O() : Base(){};
-  virtual ~Str_O(){};
 };
-};
-template <>
-struct gctools::GCInfo<core::Str_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
 };
 
 

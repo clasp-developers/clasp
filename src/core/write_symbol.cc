@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include <clasp/core/symbol.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/character.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/package.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/readtable.h>
@@ -63,7 +63,7 @@ potential_number_p(Str_sp s, int base) {
   /* A potential number must contain at least one digit */
   bool some_digit = false;
 
-  l = s->length(); // .as<StrWithFillPtr_O>()->fillPointer();
+  l = s->length(); // .as<Str_O>()->fillPointer();
   if (l == 0)
     return false;
   c = clasp_char(s, 0);

@@ -532,7 +532,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
   }
   string bitPattern = pattern.str();
   char last = bitPattern.size() > 0 ? bitPattern[bitPattern.size() - 1] : '0';
-  SimpleBitVector_sp x = SimpleBitVector_O::make(dim);
+  BitVector_sp x = make_bit_vector(0,dim);
   for (int i = 0; i < dim; i++) {
     char elt = (i < dimcount) ? bitPattern[i] : last;
     if (elt == '0')

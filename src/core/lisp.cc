@@ -576,27 +576,27 @@ void Lisp_O::startupLispEnvironment(Bundle *bundle) {
 }
 
 /*! Get a buffer string from the BufferStringPool */
-StrWithFillPtr_sp Lisp_O::get_buffer_string() {
+Str_sp Lisp_O::get_buffer_string() {
   /* BufferStringPool must be thread local */
   if (!my_thread->_BufferStringPool) {
     // Lazy initialize
     my_thread->_BufferStringPool = _Nil<T_O>();
-    StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true);
+    Str_sp one = Str_O::create_with_fill_pointer(' ', 256, 0, true);
     my_thread->_BufferStringPool = Cons_O::create(one, my_thread->_BufferStringPool);
   } else if (my_thread->_BufferStringPool.nilp()) {
     // If list is empty, link in a buffer
-    StrWithFillPtr_sp one = StrWithFillPtr_O::create(' ', 256, 0, true);
+    Str_sp one = Str_O::create_with_fill_pointer(' ', 256, 0, true);
     my_thread->_BufferStringPool = Cons_O::create(one, my_thread->_BufferStringPool);
   }
-  StrWithFillPtr_sp ret = gc::As<StrWithFillPtr_sp>(oCar(my_thread->_BufferStringPool));
+  Str_sp ret = gc::As<Str_sp>(oCar(my_thread->_BufferStringPool));
   my_thread->_BufferStringPool = oCdr(my_thread->_BufferStringPool);
-  ret->setFillPointer(0);
+  ret->fillPointerSet(clasp_make_fixnum(0));
   return ret;
 }
 
 /*! Return a buffer string to the BufferStringPool
 */
-void Lisp_O::put_buffer_string(StrWithFillPtr_sp str) {
+void Lisp_O::put_buffer_string(Str_sp str) {
   my_thread->_BufferStringPool = Cons_O::create(str, my_thread->_BufferStringPool);
 }
 

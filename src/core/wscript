@@ -82,15 +82,12 @@ def build(bld):
             'testing',
             'predicates',
             'write_list',
-            'str',
             'package',
             'commonLispPackage',
             'allClSymbols',
             'keywordPackage',
             'extensionPackage',
-            'vectorObjects',
             'array',
-            'strWithFillPtr',
             'lispMath',
             'grayPackage',
             'closPackage',
@@ -123,7 +120,6 @@ def build(bld):
             'null',
             'forwardReferencedClass',
             'character',
-            'lispString',
             'designators',
             'sequence',
             'lispVector',
@@ -136,7 +132,11 @@ def build(bld):
             'bitVector',
             'posixTime',
             'clasp_ffi_package',
-            'fli' ]:
+            'fli',
+#            'str',
+#            'vectorObjects',
+#            'lispString'
+    ]:
         full_name = name+'.cc'
         node = bld.path.find_node(full_name)
         assert node != None, "Could not find %s/%s" % ( bld.path.abspath(), full_name )

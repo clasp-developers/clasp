@@ -69,7 +69,7 @@ public:
   virtual gc::Fixnum rank() const { return this->_Dimensions.size(); };
 
   /* Copy the dimensions for printing */
-  virtual gc::Fixnum dimension() const { return this->_Dimension; }; // Values.capacity();};
+  virtual cl_index dimension() const { return this->_Dimension; }; // Values.capacity();};
   virtual std::vector<cl_index> dimensions() const { return this->_Dimensions; };
   virtual gc::Fixnum arrayDimension(gc::Fixnum axisNumber) const;
   virtual T_sp aref_unsafe(cl_index index) const { return this->_Values[index]; };

@@ -296,9 +296,8 @@ CL_LAMBDA(arg);
 CL_DECLARE();
 CL_DOCSTRING("simple_bit_vector_p");
 CL_DEFUN bool cl__simple_bit_vector_p(T_sp o) {
-  if (SimpleBitVector_sp sbv = o.asOrNull<SimpleBitVector_O>()) {
-    (void)sbv;
-    return true;
+  if (BitVector_sp sbv = o.asOrNull<BitVector_O>()) {
+    return sbv->adjustableArrayP();
   }
   return false;
 };

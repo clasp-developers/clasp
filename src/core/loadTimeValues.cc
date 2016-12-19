@@ -255,22 +255,6 @@ CL_DEFMETHOD size_t LoadTimeValues_O::data_vectorPushExtend(T_sp val, size_t ext
 }
 
 
-#if 0
-void LoadTimeValues_O::symbols_setFillPointer(uint i) {
-  ASSERT(i == 0);
-  this->_Symbols.resize(i);
-}
-#endif
-
-
-#if 0
-CL_LISPIFY_NAME("symbols_vectorPushExtend");
-CL_DEFMETHOD int LoadTimeValues_O::symbols_vectorPushExtend(Symbol_sp val, int extension) {
-  int i = this->_Symbols.size();
-  this->_Symbols.push_back(val);
-  return i;
-}
-#endif
 
 
 }; /* core */

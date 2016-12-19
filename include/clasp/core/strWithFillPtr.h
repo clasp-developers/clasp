@@ -86,12 +86,12 @@ public:
     this->_FillPointer = this->_Contents.size();
   }
   virtual string get() const { return std::string(this->_Contents.data(), this->_FillPointer); };
-  virtual gc::Fixnum size() const { return this->_FillPointer; };
+  virtual cl_index size() const { return this->_FillPointer; };
   virtual T_sp fillPointer() const { return clasp_make_fixnum(this->_FillPointer); };
 
   bool hasFillPointerP() const { return true; };
   void incrementFillPointer(cl_index offset);
-  void setFillPointer(size_t fp);
+  void fillPointerSet(T_sp fp);
   bool arrayHasFillPointerP() const { return true; };
 
   void adjustSize(cl_index adjustment);

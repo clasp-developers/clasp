@@ -83,7 +83,7 @@ typedef int mode_t;
 #include <clasp/core/pathname.h>
 #include <clasp/core/str.h>
 #include <clasp/core/fileSystem.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/numbers.h>
@@ -232,7 +232,7 @@ CL_DOCSTRING("Return the unix current working directory");
 CL_DEFUN core::Str_sp ext__getcwd() {
   const char *ok;
   size_t size = 128;
-  core::StrWithFillPtr_sp output(core::StrWithFillPtr_O::create(' ', 1, 0, true));
+  core::Str_sp output(core::Str_O::create_with_fill_pointer(' ', 32, 0, true));
   do {
     output->setSize(size);
     clasp_disable_interrupts();
@@ -243,7 +243,7 @@ CL_DEFUN core::Str_sp ext__getcwd() {
   size = strlen((char *)output->addressOfBuffer());
   if ((size + 1 /* / */ + 1 /* 0 */) >= output->size()) {
     /* Too large to host the trailing '/' */
-    output->adjustSize(2);
+    output->setSize(output->length()+2);
   }
 #ifdef _MSC_VER
   for (c = output->base_string.self; *c; c++)
@@ -251,10 +251,9 @@ CL_DEFUN core::Str_sp ext__getcwd() {
       *c = '/';
 #endif
   if ((*output)[size - 1] != DIR_SEPARATOR_CHAR) {
-    (*output)[size++] = DIR_SEPARATOR_CHAR;
-    (*output)[size] = 0;
+    output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
+    size++;
   }
-  output->setFillPointer(size);
   return output;
 }
 };
@@ -350,10 +349,10 @@ CL_DEFUN T_sp core__readlink(Str_sp filename) {
   /* Given a filename which is a symlink, this routine returns
 	 * the value of this link in the form of a pathname. */
   size_t size = 128, written;
-  StrWithFillPtr_sp output;
+  Str_sp output;
   Symbol_sp kind;
   do {
-    output = StrWithFillPtr_O::create(' ', size, 0, true);
+    output = Str_O::create_with_fill_pointer(' ', size, 0, true);
     clasp_disable_interrupts();
     written = readlink((char *)filename->c_str(),
                        (char *)output->c_str(), size);
@@ -366,7 +365,7 @@ CL_DEFUN T_sp core__readlink(Str_sp filename) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
   }
-  output->setFillPointer(written);
+  output->fillPointerSet(clasp_make_fixnum(written));
   return output;
 }
 #endif /* HAVE_LSTAT */
@@ -404,7 +403,7 @@ enter_directory(Pathname_sp base_dir, T_sp subdir, bool ignore_if_failure) {
                                              kw::_sym_directory, ldir,
                                              kw::_sym_defaults, base_dir));
   aux = clasp_namestring(output, CLASP_NAMESTRING_FORCE_BASE_STRING);
-  aux = Str_O::create(aux->substr(0, aux->length() - 1));
+  aux = Str_O::create(aux->subseq(0, clasp_make_fixnum(aux->length() - 1)));
   //    aux->_contents()[aux->base_string.fillp-1] = 0;
   kind = file_kind((char *)aux->c_str(), false);
   if (kind.nilp()) {
@@ -519,7 +518,8 @@ file_truename(T_sp pathname, T_sp filename, int flags) {
 	   separator and re-parsing again the namestring */
     if (gc::As<Pathname_sp>(pathname)->_Name.notnilp() ||
         gc::As<Pathname_sp>(pathname)->_Type.notnilp()) {
-      Str_sp spathname = (*(gc::As<Str_sp>(filename))) + DIR_SEPARATOR;
+      Str_sp spathname = gc::As<Str_sp>(filename);
+      spathname->vectorPushExtend(clasp_make_character(DIR_SEPARATOR_CHAR));
       pathname = cl__truename(spathname);
     }
   }

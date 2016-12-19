@@ -61,7 +61,7 @@ THE SOFTWARE.
 #include <clasp/core/multipleValues.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/lispList.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/designators.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/reader.h>
@@ -174,13 +174,20 @@ int &StreamOutputColumn(T_sp strm) {
   return stream->_OutputColumn;
 }
 
-StrWithFillPtr_sp &StringOutputStreamOutputString(T_sp strm) {
+Str_sp &StringOutputStreamOutputString(T_sp strm) {
   StringOutputStream_sp sout = gc::As<StringOutputStream_sp>(strm);
   return sout->_Contents;
 }
 
-Fixnum &StringFillp(StrWithFillPtr_sp s) {
-  return s->_FillPointer;
+Fixnum StringFillp(Str_sp s) {
+  if (!s->fillPointer().fixnump()) {
+    SIMPLE_ERROR(BF("Could not get fill pointer - it is not a fixnum"));
+  }
+  return s->fillPointer().unsafe_fixnum();
+}
+
+void SetStringFillp(Str_sp s, Fixnum fp) {
+  s->unsafe_setf_fill_pointer(clasp_make_fixnum(fp));
 }
 
 gctools::Fixnum &StringInputStreamInputPosition(T_sp strm) {
@@ -1543,7 +1550,7 @@ str_out_write_char(T_sp strm, claspCharacter c) {
     StreamOutputColumn(strm) = (column & ~(cl_index)7) + 8;
   else
     StreamOutputColumn(strm)++;
-  StringOutputStreamOutputString(strm)->pushCharExtend(c);
+  StringOutputStreamOutputString(strm)->vectorPushExtend(clasp_make_character(c));
   return c;
 }
 
@@ -1555,9 +1562,9 @@ str_out_element_type(T_sp strm) {
   return cl::_sym_character;
 }
 
-StrWithFillPtr_sp global_str;
+Str_sp global_str;
 T_sp str_out_get_position(T_sp strm) {
-  StrWithFillPtr_sp str = StringOutputStreamOutputString(strm);
+  Str_sp str = StringOutputStreamOutputString(strm);
   global_str = str;
   return Integer_O::create((gc::Fixnum)(StringFillp(str)));
 }
@@ -1572,7 +1579,7 @@ str_out_set_position(T_sp strm, T_sp pos) {
     disp = clasp_toSize(pos);
   }
   if (disp < StringFillp(string)) {
-    StringFillp(string) = disp;
+    SetStringFillp(string,disp);
   } else {
     disp -= StringFillp(string);
     while (disp-- > 0)
@@ -1654,7 +1661,7 @@ T_sp clasp_make_string_output_stream(cl_index line_length, bool extended) {
 #ifdef ECL_UNICODE
   T_sp s = extended ? clasp_alloc_adjustable_extended_string(line_length) : clasp_alloc_adjustable_base_string(line_length);
 #else
-  T_sp s = StrWithFillPtr_O::createBufferString(line_length); // clasp_alloc_adjustable_base_string(line_length);
+  T_sp s = Str_O::createBufferString(line_length); // clasp_alloc_adjustable_base_string(line_length);
 #endif
   return core__make_string_output_stream_from_string(s);
 }
@@ -1690,10 +1697,10 @@ CL_DEFUN T_sp cl__get_output_stream_string(T_sp strm) {
   T_sp strng;
   unlikely_if(!AnsiStreamTypeP(strm, clasp_smm_string_output))
       af_wrongTypeOnlyArg(__FILE__, __LINE__, cl::_sym_getOutputStreamString, strm, cl::_sym_StringStream_O);
-  StrWithFillPtr_sp buffer = StringOutputStreamOutputString(strm);
+  Str_sp buffer = StringOutputStreamOutputString(strm);
   //        printf("%s:%d StringOutputStreamOutputString = %s\n", __FILE__, __LINE__, buffer->get().c_str());
   strng = cl__copy_seq(buffer);
-  StringFillp(buffer) = 0;
+  SetStringFillp(buffer,0);
   return strng;
 }
 
@@ -5849,9 +5856,9 @@ void StringOutputStream_O::fill(const string &data) {
 }
 
 /*! Get the contents and reset them */
-StrWithFillPtr_sp StringOutputStream_O::getAndReset() {
-  StrWithFillPtr_sp contents = this->_Contents;
-  StringOutputStreamOutputString(this->asSmartPtr()) = StrWithFillPtr_O::createBufferString(128);
+Str_sp StringOutputStream_O::getAndReset() {
+  Str_sp contents = this->_Contents;
+  StringOutputStreamOutputString(this->asSmartPtr()) = Str_O::createBufferString(128);
   StreamOutputColumn(this->asSmartPtr()) = 0;
   return contents;
 };

@@ -42,12 +42,12 @@ namespace core {
 
 int clasp_string_case(Str_sp s) {
   int upcase = 0;
-  for (Str_O::iterator it = s->begin(); it != s->end(); ++it) {
-    if (isupper(*it)) {
+  for (cl_index i(0),iEnd(s->length()); i<iEnd; ++i ) {
+    if (isupper((*s)[i])) {
       if (upcase < 0)
         return 0;
       upcase = +1;
-    } else if (islower(*it)) {
+    } else if (islower((*s)[i])) {
       if (upcase > 0)
         return 0;
       upcase = -1;

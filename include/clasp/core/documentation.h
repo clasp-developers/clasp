@@ -32,7 +32,7 @@ THE SOFTWARE.
 
 namespace core {
 
-  T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, Str_sp value);
+  T_mv ext__annotate(T_sp object, T_sp key, T_sp sub_key, AnyString_sp value);
 
   void initialize_documentation_primitives(Lisp_sp lisp);
 };

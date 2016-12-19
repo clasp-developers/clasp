@@ -61,7 +61,7 @@ extern List_sp listOfPackageDesignators(T_sp obj);
 
 /*! Return a String object by interpreting the object
 	  as a string designator */
-extern Str_sp stringDesignator(T_sp obj);
+extern AnyString_sp stringDesignator(T_sp obj);
 
 /*! Return a List of strings by interpreting the
 	  object as a list of string designators */

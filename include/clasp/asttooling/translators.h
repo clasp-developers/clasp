@@ -111,14 +111,14 @@ struct from_object<const vector<string> &> {
     } else if (core::VectorObjects_sp vo = o.asOrNull<core::VectorObjects_O>()) {
       _v.resize(vo->length());
       for (int i(0), iEnd(vo->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<core::Str_sp>(vo->elt(i))->get();
+        _v[i] = gc::As<core::Array_sp>(vo->elt(i))->get_str8();
       }
       return;
     } else if (core::Cons_sp co = o.asOrNull<core::Cons_O>()) {
       _v.resize(co->length());
       int i = 0;
       for (auto cur : (core::List_sp)co) {
-        _v[i] = gc::As<core::Str_sp>(oCar(cur))->get();
+        _v[i] = gc::As<core::Array_sp>(oCar(cur))->get_str8();
         ++i;
       }
       return;

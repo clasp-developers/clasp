@@ -1515,7 +1515,7 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
     else if (Vector_sp vx = gx.asOrNull<Vector_O>())
       return (Values(cl::_sym_Vector_O));
     else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
-      return (Values(cl::_sym_BitVector_O));
+      return Values(bvx->type_symbol());
     else if (Array_sp ax = gx.asOrNull<Array_O>())
       return (Values(cl::_sym_Array_O));
     else if (Str_sp strx = gx.asOrNull<Str_O>())

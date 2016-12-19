@@ -58,7 +58,7 @@ THE SOFTWARE.
 #include <clasp/core/pathname.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/strWithFillPtr.h>
+#include <clasp/core/str.h>
 #include <clasp/core/structureObject.h>
 #include <clasp/core/sysprop.h>
 #include <clasp/core/numberToString.h>
@@ -446,7 +446,7 @@ void write_single_float(T_sp strm, SingleFloat_sp i) {
 
 void
 write_float(T_sp f, T_sp stream) {
-  StrWithFillPtr_sp s = _lisp->get_buffer_string();
+  Str_sp s = _lisp->get_buffer_string();
   s = core_float_to_string_free(s, f, clasp_make_fixnum(-3), clasp_make_fixnum(8));
   cl__write_sequence(s, stream, clasp_make_fixnum(0), _Nil<T_O>());
   _lisp->put_buffer_string(s);

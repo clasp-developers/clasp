@@ -49,7 +49,7 @@ class VectorObjects_O : public Vector_O {
   friend void(::sp_copyLoadTimeValue(T_sp *resultP, LoadTimeValues_O **ltvPP, cl_index index));
   LISP_CLASS(core, CorePkg, VectorObjects_O, "VectorObjects",Vector_O);
 public:
- VectorObjects_O() : Base(), _Dimension(0), _FillPointer(_Nil<core::T_O>()), _ElementType(cl::_sym_T_O), _DisplacedTo(_Nil<core::T_O>()), _DisplacedIndexOffset(0) {};
+ VectorObjects_O() : Base(), _Dimension(0), _FillPointer(_Nil<core::T_O>()), _ElementType(cl::_sym_T_O), _DisplacedTo(VectorObjects_sp()), _DisplacedIndexOffset(0) {};
 public:
   typedef gctools::Vec0<T_sp> vector_type;
   typedef gctools::Vec0<T_sp>::iterator iterator;
@@ -63,17 +63,17 @@ public: // instance variables here -- REMEMBER to update swap(...) if you add/re
   VectorObjects_sp _DisplacedTo;
   gc::Fixnum       _DisplacedIndexOffset;
   
+ public: // Creators
+  static VectorObjects_sp make(T_sp initial_element, size_t dimension, T_sp elementType, T_sp fillPointer= _Nil<core::T_O>(), T_sp displacedTo=_Nil<core::T_O>(), Fixnum displacedIndexOffset=0 );
+  static VectorObjects_sp create(T_sp initial_element, size_t dimension, T_sp elementType);
+  static VectorObjects_sp create(const gctools::Vec0<T_sp> &objs);
+public: // Functions here
 public:
   void fillInitialContents(T_sp ic);
 public:
   iterator begin() { return this->_Values.begin()+this->_DisplacedIndexOffset; };
-  iterator end() { return this->_Values.begin() + this->length(); };
-  
-public:
-  static VectorObjects_sp make(T_sp initial_element, size_t dimension, T_sp elementType, T_sp fillPointer= _Nil<core::T_O>(), T_sp displacedTo=_Nil<core::T_O>(), Fixnum displacedIndexOffset=0 );
-  static VectorObjects_sp create(T_sp initial_element, size_t dimension, T_sp elementType);
-  static VectorObjects_sp create(const gctools::Vec0<T_sp> &objs);
-
+  iterator end() { return this->begin() + this->length(); };
+  bool adjustableArrayP() const { return true; };
 public:
   void setup(T_sp initial_element, size_t dimension, T_sp elementType, T_sp fillPointer, T_sp displacedTo, Fixnum displacedIndexOffset );
   void adjust(T_sp initial_element, size_t dimension);
@@ -81,13 +81,11 @@ public:
   void setElementType(T_sp elementType) { this->_ElementType = elementType; };
   T_sp elementType() const { return this->_ElementType; };
 
-public: // Functions here
-  bool adjustableArrayP() const { return true; };
-
   void clear() { if ( this->_FillPointer.fixnump()) this->_FillPointer = clasp_make_fixnum(0); };
   virtual bool arrayHasFillPointerP() const { return this->_FillPointer.fixnump(); };
   T_sp fillPointer() const { return this->_FillPointer; };
   void unsafe_setf_fill_pointer(T_sp fp) { this->_FillPointer = fp; };
+  void fillPointerSet(T_sp fp);
   
   virtual T_sp aset_unsafe(cl_index j, T_sp val) { (*this)[j] = val; return val; };
   virtual T_sp aref_unsafe(cl_index index) const { return (*this)[index]; };
@@ -97,16 +95,23 @@ public: // Functions here
     dims.push_back(this->length());
     return dims;
   };
-  virtual gc::Fixnum dimension() const { return this->_Dimension; };
+  virtual cl_index dimension() const { return this->_Dimension; };
+  virtual T_sp displaced_to() const {
+    if (this->_DisplacedTo) return this->_DisplacedTo;
+    return _Nil<T_O>();
+  }
+  virtual cl_index displaced_index_offset() const {
+    return this->_DisplacedIndexOffset;
+  }
 
   T_sp replace_array(T_sp other) {
     *this = *gc::As<VectorObjects_sp>(other);
     return this->asSmartPtr();
   }
   virtual void swapElements(cl_index i1, cl_index i2) {
-    T_sp t = this->_Values[this->_DisplacedIndexOffset+i2];
-    this->_Values[this->_DisplacedIndexOffset+i2] = this->_Values[this->_DisplacedIndexOffset+i1];
-    this->_Values[this->_DisplacedIndexOffset+i1] = t;
+    T_sp t = (*this)[i2];
+    (*this)[i2] = (*this)[i1];
+    (*this)[i1] = t;
   }
 
   /*! Swap the contents of the VectorObjects */
@@ -129,7 +134,7 @@ public: // Functions here
   virtual T_sp setf_svref(cl_index index, T_sp value) { return (*this)[index] = value; return value; };
 
   virtual void fillArrayWithElt(T_sp element, Fixnum_sp start, T_sp end);
-  virtual cl_index length() const { return (this->_FillPointer.fixnump()) ? this->_FillPointer.unsafe_fixnum() : this->_Dimension; };
+  virtual cl_index length() const { return (this->_FillPointer.fixnump()) ? this->_FillPointer.unsafe_fixnum() : this->dimension(); };
   string __repr__() const;
 
   T_sp vectorPush(T_sp newElement);
@@ -141,6 +146,16 @@ public: // Functions here
     IMPLEMENT_ME();
   };
 };
+
+ Vector_sp make_vector_objects(T_sp element_type,
+                               size_t dimension,
+                               T_sp initial_element,
+                               bool initial_element_supplied_p,
+                               bool adjustable,
+                               T_sp fill_pointer,
+                               T_sp displaced_to,
+                               cl_index displaced_index_offset);
+
 
 }; /* core */
 
