@@ -207,6 +207,10 @@ Integer_sp _clasp_big_gcd(Bignum_sp x, Bignum_sp y);
 #define CLASP_BIGNUM_SIZE(x) ((x)->_mp_size)
 #define CLASP_BIGNUM_ABS_SIZE(x) \
   (CLASP_BIGNUM_SIZE(x) < 0 ? -CLASP_BIGNUM_SIZE(x) : CLASP_BIGNUM_SIZE(x))
+
+  /*! Parse a cstring to a Bignum */
+  Bignum CStrToBignum(const char* c);
+
 };
 
 #endif /* _bignum_H_ */

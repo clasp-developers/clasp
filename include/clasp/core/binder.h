@@ -34,7 +34,7 @@ THE SOFTWARE.
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/holder.h>
 //#include "stringSet.fwd.h"
 #include <clasp/core/environment.fwd.h>
@@ -64,7 +64,7 @@ GCPRIVATE:
 public:
   uint size() { return this->_Values->length(); };
 
-  T_sp indexed_value(int idx) const { return this->_Values->operator[](idx); };
+  T_sp indexed_value(int idx) const { return this->_Values->elt(idx); };
   void erase();
   T_sp extend(Symbol_sp sym, T_sp val);
   //	void		update(Symbol_sp sym, T_sp val);

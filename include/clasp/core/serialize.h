@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <set>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/str.fwd.h>
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/serialize.fwd.h>
 

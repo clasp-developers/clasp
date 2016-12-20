@@ -158,10 +158,6 @@ void Array_O::__write__(T_sp stream) const {
   }
 }
 
-void Vector_O::__write__(T_sp stream) const {
-  write_array_inner(1, this->asSmartPtr(), stream);
-}
-
 #ifdef CLASP_UNICODE
 void _clasp_write_string(T_sp x, T_sp stream) {
   cl_index ndx;
@@ -189,7 +185,7 @@ void BitVector_O::__write__(T_sp stream) const {
   } else {
     cl_index ndx;
     writestr_stream("#*", stream);
-    for (ndx = 0; ndx < this->dimension(); ndx++)
+    for (ndx = 0; ndx < this->length(); ndx++)
       //      if (x->vector.self.bit[(ndx /*+ x->vector.offset*/) / 8] & (0200 >> (ndx /*+ x->vector.offset*/) % 8))
       if (this->testBit(ndx))
         clasp_write_char('1', stream);

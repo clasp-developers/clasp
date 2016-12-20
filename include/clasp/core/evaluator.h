@@ -198,9 +198,9 @@ inline LCC_RETURN funcall(T_sp fn, ARG0 arg0, ARG1 arg1, ARG2 arg2, ARGS &&... a
 };
 
  namespace eval {
- void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<AnyString_sp> &documentation, List_sp &code, List_sp &specials);
+ void extract_declares_docstring_code_specials(List_sp inputBody, List_sp &declares, bool expectDocString, gc::Nilable<Str_sp> &documentation, List_sp &code, List_sp &specials);
  
- void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<AnyString_sp> &docstring, List_sp &code);
+ void parse_lambda_body(List_sp body, List_sp &declares, gc::Nilable<Str_sp> &docstring, List_sp &code);
  };
 
 };

@@ -672,14 +672,16 @@ LoadTimeValues_sp Lisp_O::findLoadTimeValues(const string &name) {
     return _Nil<LoadTimeValues_O>();
   return gc::As<LoadTimeValues_sp>(it);
 }
-LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &name, int &count) {
+LoadTimeValues_sp Lisp_O::findLoadTimeValuesWithNameContaining(const string &sname, int &count) {
+  DEPRECIATED(); // We should get rid of LoadTimeValues
   LoadTimeValues_sp result = _Nil<LoadTimeValues_O>();
   count = 0;
+  Str_sp name = Str_O::create(name);
   this->_Roots._LoadTimeValueArrays->mapHash([&count, &result, &name](T_sp key, T_sp val) -> void {
-                if ( gc::As<Str_sp>(key)->find(name,0).notnilp() ) {
-                    result = gc::As<LoadTimeValues_sp>(val);
-		    ++count;
-                }
+      if ( StrFind(gc::As<Str_sp>(key),name,0).notnilp() ) {
+        result = gc::As<LoadTimeValues_sp>(val);
+        ++count;
+      }
   });
   return result;
 }

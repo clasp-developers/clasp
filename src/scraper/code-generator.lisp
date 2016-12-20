@@ -206,6 +206,27 @@ Convert colons to underscores"
             (get-output-stream-string c-code-info)
             (get-output-stream-string cl-code-info))))
 
+(define-condition broken-inheritance (error)
+    ((class-with-missing-parent :initarg :class-with-missing-parent :accessor class-with-missing-parent)
+     (starting-possible-child-class :initarg :starting-possible-child-class :accessor starting-possible-child-class)
+     (possible-ancestor-class :initarg :possible-ancestor-class :accessor possible-ancestor-class))
+  (:report (lambda (condition stream)
+             (format stream "While testing if the ancestor of ~a is ~a ~%   the chain of inheritance was broken when no parent could be found for ~a~%"
+                     (starting-possible-child-class condition)
+                     (possible-ancestor-class condition)
+                     (class-with-missing-parent condition)))))
+
+(define-condition possible-recursive-inheritance (error)
+    ((class-with-missing-parent :initarg :class-with-missing-parent :accessor class-with-missing-parent)
+     (starting-possible-child-class :initarg :starting-possible-child-class :accessor starting-possible-child-class)
+     (possible-ancestor-class :initarg :possible-ancestor-class :accessor possible-ancestor-class))
+  (:report (lambda (condition stream)
+             (format stream "While testing if the ancestor of ~a is ~a ~%   the chain of inheritance was broken when no parent could be found for ~a~%"
+                     (starting-possible-child-class condition)
+                     (possible-ancestor-class condition)
+                     (class-with-missing-parent condition)))))
+
+      
 (defun inherits-from* (x-name y-name inheritance)
   (let ((depth 0)
         ancestor
@@ -217,12 +238,15 @@ Convert colons to underscores"
        (when (string= ancestor +root-dummy-class+)
          (return-from inherits-from* nil))
        (unless ancestor
-         (error "Could not find ancestor of ~a - could not find a parent of ~a"  entry-x-name prev-ancestor))
+         (error 'broken-inheritance
+                :class-with-missing-parent x-name
+                :starting-possible-child-class entry-x-name
+                :possible-ancestor-class y-name))
        (if (string= ancestor y-name)
            (return-from inherits-from* t))
        (incf depth)
        (when (> depth 20)
-         (error "inherits-from* depth ~a exceeds max with ~a and ~a" depth x-name y-name))
+         (error "While testing if ~a inherits from ~a the maximum depth test was hit - current class is ~a - check for recursive class definition of ~a" entry-x-name y-name x-name entry-x-name))
        (setf x-name ancestor))))
 
 (defun inherits-from (x y inheritance)
@@ -244,8 +268,16 @@ Convert colons to underscores"
              exposed-classes)
     (setf *classes* classes)
     (setf *inheritance* inheritance)
-    (sort classes (lambda (x y)
-                    (not (inherits-from x y inheritance))))))
+    (handler-case
+        (sort classes (lambda (x y)
+                        (not (inherits-from x y inheritance))))
+      (broken-inheritance (e)
+        (print-object e t)
+        (let ((x (starting-possible-child-class e)))
+          (error "~a~%    The info for ~a is ~a"
+                 (with-output-to-string (sout) (print-object e sout))
+                 x
+                 (gethash x exposed-classes)))))))
 
 (defun generate-code-for-init-classes-class-symbols (exposed-classes sout)
   (declare (optimize (speed 3)))

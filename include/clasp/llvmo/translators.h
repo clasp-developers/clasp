@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/DIBuilder.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/llvmo/llvmoExpose.fwd.h>
 
 namespace translate {

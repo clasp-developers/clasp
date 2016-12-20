@@ -99,12 +99,12 @@ CL_LAMBDA(seq);
 CL_DECLARE();
 CL_DOCSTRING("reverse");
 CL_DEFUN T_sp cl__reverse(T_sp seq) {
-  if (seq.nilp()) {
+  if (Cons_sp slist = seq.asOrNull<Cons_O>()) {
+    return ListReverse(slist);
+  } else if (seq.nilp()) {
     return _Nil<T_O>();
   } else if (Vector_sp svec = seq.asOrNull<Vector_O>()) {
-    return svec->reverse();
-  } else if (Cons_sp slist = seq.asOrNull<Cons_O>()) {
-    return slist->reverse();
+    return VectorReverse(svec);
   }
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
@@ -116,9 +116,9 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   if (seq.nilp()) {
     return _Nil<T_O>();
   } else if (Vector_sp svec = seq.asOrNull<Vector_O>()) {
-    return svec->nreverse();
+    return VectorNReverse(svec);
   } else if (Cons_sp slist = seq.asOrNull<Cons_O>()) {
-    return slist->nreverse();
+    return ListNReverse(slist);
   }
   TYPE_ERROR(seq, cl::_sym_sequence);
 };
@@ -206,37 +206,35 @@ CL_DEFUN T_sp core__setf_subseq(T_sp sequence, int start, Fixnum_sp end, T_sp su
 
 /*! From ecl_sequence_start_end */
 
-size_t_pair sequenceStartEnd(const char *file, uint line, const char *functionName,
-                             const string &packageName,
-                             T_sp sequence, Fixnum_sp start, T_sp end) {
+size_t_pair sequenceStartEnd(Symbol_sp fn_name, T_sp sequence, Fixnum_sp start, T_sp end) {
   size_t_pair p;
   size_t l;
   p.length = l = cl__length(sequence);
   unlikely_if(!core__fixnump(start) || clasp_minusp(start)) {
-    af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
-                       kw::_sym_start, start, cl::_sym_UnsignedByte);
+    ERROR_WRONG_TYPE_KEY_ARG(fn_name,
+                             kw::_sym_start, start, cl::_sym_UnsignedByte);
   }
   p.start = unbox_fixnum(start);
   if (end.nilp()) {
     p.end = l;
   } else {
     unlikely_if(!core__fixnump(end) || clasp_minusp(gc::As<Fixnum_sp>(end))) {
-      af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
-                         kw::_sym_end, end,
-                         Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
+      ERROR_WRONG_TYPE_KEY_ARG(fn_name,
+                               kw::_sym_end, end,
+                               Cons_O::createList(cl::_sym_or, cl::_sym_null, cl::_sym_UnsignedByte));
     }
     p.end = unbox_fixnum(gc::As<Fixnum_sp>(end));
     unlikely_if(p.end > l) {
       //      T_sp fillp = make_fixnum(static_cast<uint>(l));
-      af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
-                         kw::_sym_end, end,
-                         Integer_O::makeIntegerType(unbox_fixnum(start), static_cast<int>(l)));
+      ERROR_WRONG_TYPE_KEY_ARG( fn_name,
+                                kw::_sym_end, end,
+                                Integer_O::makeIntegerType(unbox_fixnum(start), static_cast<int>(l)));
     }
   }
   unlikely_if(p.end < p.start) {
-    af_wrongTypeKeyArg(file, line, _lisp->internWithPackageName(functionName, packageName.c_str()),
-                       kw::_sym_start, start,
-                       Integer_O::makeIntegerType(0, static_cast<uint>(p.end)));
+    ERROR_WRONG_TYPE_KEY_ARG(fn_name,
+                             kw::_sym_start, start,
+                             Integer_O::makeIntegerType(0, static_cast<uint>(p.end)));
   }
   return p;
 }

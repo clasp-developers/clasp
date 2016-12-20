@@ -83,7 +83,7 @@ struct _TRACE {
     THROW_NEVER_REACH();                                                                  \
   }
 #define SIMPLE_WARN(_boost_fmt_) \
-  core::eval::funcall(cl::_sym_warn, core::Str8_O::create((_boost_fmt_).str()));
+  core::eval::funcall(cl::_sym_warn, core::Str_O::create((_boost_fmt_).str()));
 #define ERROR(_type_, _initializers_)                                               \
   {                                                                                 \
     lisp_error( _type_, _initializers_); \
@@ -725,7 +725,7 @@ void af_wrongTypeOnlyArg(const string &sourceFile, int lineno, Symbol_sp functio
 void core__wrong_index(const string &sourceFile, int lineno, Symbol_sp function, T_sp array, int which, T_sp index, int noninc_index);
 
 void cl__reader_error(const string &sourceFile, uint lineno, Symbol_sp function,
-                    Str8_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
+                    Str_sp fmt, List_sp fmtargs, T_sp stream = _Nil<T_O>());
 
 void assert_type_integer(T_sp p, int idx);
 

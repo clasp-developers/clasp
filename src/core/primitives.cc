@@ -365,7 +365,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
   size_t idx = 0;
   for (auto cur : call_and_arguments) {
     Str_sp sarg = gc::As<Str_sp>(oCar(cur));
-    size_t sarg_size = sarg->size();
+    size_t sarg_size = sarg->length();
 //    printf("%s:%d sarg = %s sarg->size() = %ld  strlen(sarg->c_str()) = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size(), strlen(sarg->c_str()));
     char *arg = (char *)malloc(sarg_size + 1);
     std::strncpy(arg, sarg->c_str(),sarg_size);
@@ -441,7 +441,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
   size_t idx = 0;
   for (auto cur : call_and_arguments) {
     Str_sp sarg = gc::As<Str_sp>(oCar(cur));
-    size_t sarg_size = sarg->size();
+    size_t sarg_size = sarg->length();
 //    printf("%s:%d sarg = %s sarg->size() = %ld\n", __FILE__, __LINE__, sarg->c_str(), sarg->size());
     char *arg = (char *)malloc(sarg_size + 1);
     std::strncpy(arg, sarg->c_str(),sarg_size);
@@ -1512,14 +1512,23 @@ CL_DEFUN Symbol_mv core__type_to_symbol(T_sp x) {
       return (Values(cl::_sym_Package_O));
     else if (HashTable_sp htx = gx.asOrNull<HashTable_O>())
       return (Values(cl::_sym_HashTable_O));
-    else if (Vector_sp vx = gx.asOrNull<Vector_O>())
-      return (Values(cl::_sym_Vector_O));
+#if 1
+    else if (Array_sp ax = gx.asOrNull<Array_O>())
+      // Handle all of the array subclasses using type_as_symbol()
+      return Values(ax->type_as_symbol());
+#else
+    return (Values(cl::_sym_Array_O));
+    else if (SimpleVector_sp vx = gx.asOrNull<SimpleVector_O>())
+      return (Values(cl::_sym_simple_vector));
+    else if (VectorNs_sp vx = gx.asOrNull<VectorNs_O>())
+      return (Values(cl::_sym_vector));
     else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
       return Values(bvx->type_symbol());
-    else if (Array_sp ax = gx.asOrNull<Array_O>())
-      return (Values(cl::_sym_Array_O));
+    else if (BitVector_sp bvx = gx.asOrNull<BitVector_O>())
+      return Values(bvx->type_symbol());
     else if (Str_sp strx = gx.asOrNull<Str_O>())
       return (Values(cl::_sym_String_O));
+#endif
   //    else if ( x.isA<BaseString_O>() ) return(Values(_sym_BaseString_O));
     else if (Stream_sp streamx = gx.asOrNull<Stream_O>())
       return (Values(cl::_sym_Stream_O));

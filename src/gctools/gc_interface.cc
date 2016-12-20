@@ -130,7 +130,6 @@ typedef bool _Bool;
 #include <clasp/core/standardClass.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/nativeVector.h>
-#include <clasp/core/arrayObjects.h>
 #include <clasp/core/intArray.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispVector.h>

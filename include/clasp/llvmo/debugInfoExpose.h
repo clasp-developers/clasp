@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/common.h>
 #include <clasp/core/symbolToEnumConverter.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 #include <clasp/core/ql.h>
 //#include "llvm/DataLayout.h"
 
@@ -59,7 +59,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 #include <clasp/core/externalObject.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/llvmo/insertPoint.fwd.h>

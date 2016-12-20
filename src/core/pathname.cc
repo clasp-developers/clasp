@@ -1295,7 +1295,7 @@ CL_DEFUN T_mv cl__parse_namestring(T_sp thing, T_sp host, T_sp tdefaults, Fixnum
 #ifdef CLASP_UNICODE
     thing = si_coerce_to_base_string(thing);
 #endif
-    p = sequenceStartEnd(__FILE__, __LINE__, __FUNCTION__, CurrentPkg,
+    p = sequenceStartEnd(cl::_sym_parse_namestring,
                          gc::As<Str_sp>(thing), start, end);
     output = clasp_parseNamestring(thing, p.start, p.end, &ee, default_host);
     start = make_fixnum(static_cast<uint>(ee));
@@ -1815,6 +1815,7 @@ find_list_wilds(T_sp a, T_sp mask) {
 
 static T_sp
 copy_wildcards(T_sp *wilds_list, T_sp pattern) {
+  // TESTME
   size_t i, l, j;
   bool new_string;
   T_sp wilds = *wilds_list;
@@ -1841,19 +1842,19 @@ copy_wildcards(T_sp *wilds_list, T_sp pattern) {
       continue;
     }
     if (i != j) {
-      token._Buffer->pushSubString(pattern, j, i);
+      StringPushSubString(token._Buffer,gc::As<String_sp>(pattern), j, i);
     }
     new_string = true;
     if (cl__endp(wilds)) {
       return kw::_sym_error;
     }
-    token._Buffer->pushString(CAR(wilds));
+    StringPushString(token._Buffer,CAR(wilds));
     wilds = CDR(wilds);
     j = i++;
   }
   /* Only create a new string when needed */
   if (new_string) {
-    pattern = Str_O::create(token._Buffer->c_str(), token._Buffer->size());
+    pattern = Str_O::create(token._Buffer->get_std_string());
   }
   //	si_put_buffer_string(token);
   *wilds_list = wilds;

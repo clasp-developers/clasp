@@ -405,8 +405,6 @@ typedef T_O FIXNUM;
 class Cons_O;
 class General_O;
 class Pointer_O;
-class Vector_O;
-class VectorObjects_O;
 class Number_O;
 class Integer_O;
 class LoadTimeValues_O;
@@ -566,13 +564,51 @@ typedef gctools::smart_ptr<T_O> T_sp;
 typedef T_sp SEQUENCE_sp;
 typedef T_sp LIST_sp;
 typedef gctools::smart_ptr<Cons_O> Cons_sp;
-typedef gctools::smart_ptr<Vector_O> Vector_sp;
-typedef gctools::smart_ptr<VectorObjects_O> VectorObjects_sp;
 typedef gctools::smart_ptr<Stream_O> Stream_sp;
 typedef gctools::smart_ptr<SourcePosInfo_O> SourcePosInfo_sp;
 typedef gctools::smart_ptr<SourceFileInfo_O> SourceFileInfo_sp;
 typedef gctools::smart_ptr<Closure_O> Closure_sp;
 typedef gctools::smart_ptr<BuiltinClosure_O> BuiltinClosure_sp;
+};
+
+namespace core {
+  class VectorNs_O;
+  class VectorTNs_O;
+  class Array_O;
+  class MDArray_O;
+  class ArrayTNs_O;
+  class Str8Ns_O;
+  class SimpleBaseString_O;
+  class SimpleVector_O;
+  class BitVectorNs_O;
+  class SimpleBitVector_O;
+  // The common root class of Vector_O, String_O and BitVector_O is Array_O
+  typedef Array_O Vector_O;
+  typedef Array_O String_O;
+  typedef VectorTNs_O VectorObjects_O;
+  typedef ArrayTNs_O ArrayObjects_O;
+  typedef MDArray_O StringNs_O;
+  typedef BitVectorNs_O BitVector_O;
+  typedef Str8Ns_O Str_O;
+  typedef gc::smart_ptr<Array_O> Array_sp;
+  typedef gc::smart_ptr<VectorNs_O> VectorNs_sp;
+  typedef gc::smart_ptr<MDArray_O> MDArray_sp;
+  typedef gc::smart_ptr<SimpleBaseString_O> SimpleBaseString_sp;
+  typedef gc::smart_ptr<SimpleBitVector_O> SimpleBitVector_sp;
+  typedef gc::smart_ptr<SimpleVector_O> SimpleVector_sp;
+  typedef gc::smart_ptr<BitVectorNs_O> BitVectorNs_sp;
+  typedef gc::smart_ptr<Str8Ns_O> Str8Ns_sp;
+  typedef gc::smart_ptr<VectorTNs_O> VectorTNs_sp;
+  typedef gc::smart_ptr<ArrayTNs_O> ArrayTNs_sp;
+  // Use typedef to assign new smart_ptr to old types
+  // FIXME: Remove all of the old smart_ptr names and use the new ones everywhere
+  typedef Array_sp String_sp;
+  typedef MDArray_sp StringNs_sp;
+  typedef VectorTNs_sp VectorObjects_sp;
+  typedef ArrayTNs_sp ArrayObjects_sp;
+  typedef BitVectorNs_sp BitVector_sp;
+  typedef Str8Ns_sp Str_sp;
+  typedef Array_sp Vector_sp;
 };
 
 #include <clasp/gctools/containers.h>
@@ -623,9 +659,6 @@ typedef gctools::smart_ptr<Class_O> Class_sp;
 
 class Number_O;
 typedef gctools::smart_ptr<Number_O> Number_sp;
-
-class VectorObjects_O;
-typedef gctools::smart_ptr<VectorObjects_O> VectorObjects_sp;
 
 class Symbol_O;
 typedef gctools::smart_ptr<Symbol_O> Symbol_sp;
@@ -751,8 +784,6 @@ class Lisp_O;
 typedef gctools::tagged_pointer<Lisp_O> Lisp_sp;
 class NamedFunction_O;
 typedef gctools::smart_ptr<NamedFunction_O> NamedFunction_sp;
-class Str8_O;
-typedef gctools::smart_ptr<Str8_O> Str8_sp;
 #ifdef USE_HEAP_FIXNUM
 class Fixnum_O;
 typedef gctools::smart_ptr<Fixnum_O> Fixnum_sp;
@@ -1032,8 +1063,6 @@ Symbol_sp lisp_internKeyword(const string &name);
 Symbol_sp lisp_intern(const string &name);
 Symbol_sp lisp_intern(const string &symbolName, const string &packageName);
 T_sp lisp_VectorObjectsFromMultipleValues(T_mv values);
-/*! Search the sequence SEQ for the object OBJ and return its index and true if found - otherwise false and IDX is undef */
-bool lisp_search(T_sp seq, T_sp obj, int &idx);
 string symbol_fullName(Symbol_sp s);
 void lisp_logException(const char *file, const char *fn, int line, const char *structure, T_sp condition);
 //    bool lisp_isGlobalInitializationAllowed(Lisp_sp lisp);

@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/str.h>
+#include <clasp/core/symbolTable.h>
 #include <clasp/core/sourceFileInfo.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.h>
@@ -180,14 +181,14 @@ Str_sp &StringOutputStreamOutputString(T_sp strm) {
 }
 
 Fixnum StringFillp(Str_sp s) {
-  if (!s->fillPointer().fixnump()) {
-    SIMPLE_ERROR(BF("Could not get fill pointer - it is not a fixnum"));
+  if (!s->arrayHasFillPointerP()) {
+    SIMPLE_ERROR(BF("The vector does not have a fill pointer"));
   }
-  return s->fillPointer().unsafe_fixnum();
+  return s->fillPointer();
 }
 
 void SetStringFillp(Str_sp s, Fixnum fp) {
-  s->unsafe_setf_fill_pointer(clasp_make_fixnum(fp));
+  s->fillPointerSet(fp);
 }
 
 gctools::Fixnum &StringInputStreamInputPosition(T_sp strm) {
@@ -1574,7 +1575,7 @@ str_out_set_position(T_sp strm, T_sp pos) {
   String_sp string = StringOutputStreamOutputString(strm);
   Fixnum disp;
   if (pos.nilp()) {
-    disp = StringOutputStreamOutputString(strm)->size();
+    disp = StringOutputStreamOutputString(strm)->arrayTotalSize();
   } else {
     disp = clasp_toSize(pos);
   }
@@ -1715,7 +1716,7 @@ str_in_read_char(T_sp strm) {
   if (curr_pos >= StringInputStreamInputLimit(strm)) {
     c = EOF;
   } else {
-    c = clasp_char(StringInputStreamInputString(strm), curr_pos);
+    c = StringInputStreamInputString(strm)->schar(curr_pos);
     StringInputStreamInputPosition(strm) = curr_pos + 1;
   }
   return c;
@@ -1736,7 +1737,7 @@ str_in_peek_char(T_sp strm) {
   if (pos >= StringInputStreamInputLimit(strm)) {
     return EOF;
   } else {
-    return clasp_char(StringInputStreamInputString(strm), pos);
+    return StringInputStreamInputString(strm)->schar(pos);
   }
 }
 
@@ -1837,10 +1838,9 @@ T_sp clasp_make_string_input_stream(T_sp strng, cl_index istart, cl_index iend) 
 CL_LAMBDA(strng &optional (istart 0) iend);
 CL_DECLARE();
 CL_DOCSTRING("make_string_input_stream");
-CL_DEFUN T_sp cl__make_string_input_stream(Str_sp strng, Fixnum_sp istart, T_sp iend) {
-  size_t_pair p = sequenceStartEnd(__FILE__, __LINE__, "make-string-input-stream",
-                                   "CL", strng, istart, iend);
-
+CL_DEFUN T_sp cl__make_string_input_stream(String_sp strng, Fixnum_sp istart, T_sp iend) {
+  size_t_pair p = sequenceStartEnd(cl::_sym_make_string_input_stream,
+                                   strng, istart, iend);
   return clasp_make_string_input_stream(strng, p.start, p.end);
 }
 

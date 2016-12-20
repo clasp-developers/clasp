@@ -43,11 +43,11 @@ namespace core {
 int clasp_string_case(Str_sp s) {
   int upcase = 0;
   for (cl_index i(0),iEnd(s->length()); i<iEnd; ++i ) {
-    if (isupper((*s)[i])) {
+    if (clasp_isupper((*s)[i])) {
       if (upcase < 0)
         return 0;
       upcase = +1;
-    } else if (islower((*s)[i])) {
+    } else if (clasp_islower((*s)[i])) {
       if (upcase > 0)
         return 0;
       upcase = -1;
@@ -93,7 +93,7 @@ CL_DECLARE();
 CL_DOCSTRING("lower_case_p");
 CL_DEFUN bool cl__lower_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
-  return islower(x);
+  return clasp_islower(x);
 };
 
 CL_LAMBDA(arg);
@@ -101,7 +101,7 @@ CL_DECLARE();
 CL_DOCSTRING("upper_case_p");
 CL_DEFUN bool cl__upper_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
-  return isupper(x);
+  return clasp_isupper(x);
 };
 
 CL_LAMBDA(arg);
@@ -109,7 +109,7 @@ CL_DECLARE();
 CL_DOCSTRING("both_case_p");
 CL_DEFUN bool cl__both_case_p(Character_sp c) {
   claspCharacter x = clasp_char_code(c);
-  return isupper(x) || islower(x);
+  return clasp_isupper(x) || clasp_islower(x);
 };
 
 CL_LAMBDA(char);

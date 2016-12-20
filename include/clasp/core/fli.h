@@ -65,7 +65,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/clasp_ffi_package.fwd.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/core/externalObject.h>
 
 #if defined(__cplusplus)
@@ -201,7 +201,7 @@ namespace clasp_ffi {
   // DYNAMIC LIBRARY HANDLING
   CL_DEFUN core::T_sp PERCENTdlopen( core::T_sp path_designator);
   CL_DEFUN core::T_sp PERCENTdlclose( ForeignData_sp handle );
-  CL_DEFUN core::T_sp PERCENTdlsym( core::Str8_sp name );
+  CL_DEFUN core::T_sp PERCENTdlsym( core::Str_sp name );
 
 }; // namespace clasp_ffi
 
@@ -240,24 +240,24 @@ namespace clasp_ffi {
     // MAKE AND CREATE - LISP EXPOSED FUNCTIONS
 
     static ForeignTypeSpec_sp create( core::Symbol_sp   lisp_symbol,
-                                      core::Str8_sp      lisp_name,
+                                      core::Str_sp      lisp_name,
                                       core::Integer_sp  size,
                                       core::Fixnum_sp   alignment,
-                                      core::Str8_sp      cxx_name );
+                                      core::Str_sp      cxx_name );
 
     // SLOT ACCESS
     CL_DEFMETHOD core::Symbol_sp   PERCENTlisp_symbol() { return m_lisp_symbol; };
-    CL_DEFMETHOD core::Str8_sp      PERCENTlisp_name() { return m_lisp_name; };
+    CL_DEFMETHOD core::Str_sp      PERCENTlisp_name() { return m_lisp_name; };
     CL_DEFMETHOD core::Integer_sp  PERCENTsize() { return m_size; };
     CL_DEFMETHOD core::Fixnum_sp   PERCENTalignment() { return m_alignment; };
-    CL_DEFMETHOD core::Str8_sp      PERCENTcxx_name() { return m_cxx_name; };
+    CL_DEFMETHOD core::Str_sp      PERCENTcxx_name() { return m_cxx_name; };
 
     // SLOTS
     core::Symbol_sp   m_lisp_symbol;
-    core::Str8_sp     m_lisp_name;
+    core::Str_sp     m_lisp_name;
     core::Integer_sp  m_size;
     core::Fixnum_sp   m_alignment;
-    core::Str8_sp     m_cxx_name;
+    core::Str_sp     m_cxx_name;
 
   }; // ForeignTypeSpec_O
 

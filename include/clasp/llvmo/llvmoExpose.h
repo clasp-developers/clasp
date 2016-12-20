@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/common.h>
 #include <clasp/core/symbolToEnumConverter.h>
 #include <clasp/core/hashTableEqual.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/ql.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
@@ -65,7 +65,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/metaClass.fwd.h>
 #include <clasp/core/externalObject.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/llvmo/llvmoExpose.fwd.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/llvmo/debugInfoExpose.fwd.h>

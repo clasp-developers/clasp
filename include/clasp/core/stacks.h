@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <clasp/core/exceptions.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/stacks.fwd.h>
-#include <clasp/core/lispVector.fwd.h>
+#include <clasp/core/array.fwd.h>
 
 namespace core {
 

@@ -307,7 +307,7 @@ void HashTable_O::sxhash_equal(HashGenerator &hg, T_sp obj, LocationDependencyPt
         str_obj->sxhash_(hg);
       return;
     } else if (BitVector_sp bv_obj = obj.asOrNull<BitVector_O>()) {
-      (void)bv_obj->sxhash_(hg);
+      if (hg.isFilling()) bv_obj->sxhash_(hg);
       return;
     } else if (Pathname_sp pobj = obj.asOrNull<Pathname_O>()) {
       if (hg.isFilling())

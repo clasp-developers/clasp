@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/character.fwd.h>
 #include <clasp/core/wrappers.h>
 

@@ -28,10 +28,10 @@ THE SOFTWARE.
 #define core_numberToString_H
 
 #include <clasp/core/foundation.h>
-#include <clasp/core/str.h>
+#include <clasp/core/array.h>
 namespace core {
 
-StrNs_sp core__integer_to_string(StrNs_sp buffer, Integer_sp integer,
+Str8Ns_sp core__integer_to_string(Str8Ns_sp buffer, Integer_sp integer,
                                  Fixnum_sp base, bool radix, bool decimalp);
 
 };

@@ -58,10 +58,11 @@ T_sp str_create(const char *str) { return Str_O::create(str); };
 
 CL_LAMBDA(str1 start1 end1 str2 start2 end2);
 CL_DECLARE();
-CL_DOCSTRING("searchString");
+CL_DOCSTRING("search for the first occurance of str1 in str2");
 CL_DEFUN T_sp core__search_string(Str_sp str1, Fixnum_sp start1, T_sp end1, Str_sp str2, Fixnum_sp start2, T_sp end2) {
   ASSERT(start1.fixnump());
   ASSERT(start2.fixnump());
+  // This needs to be generalized to String_sp
   Str_sp s1 = str1->subseq(start1.unsafe_fixnum(), end1);
   Str_sp s2 = str2->subseq(start2.unsafe_fixnum(), end2);
   Str_O::element_type* first = &(*s2)[0];
@@ -84,7 +85,7 @@ Str_sp Str_O::create_with_fill_pointer(char initial_element, size_t dimension, c
 
 
 Str_sp Str_O::create(Str_sp val) {
-  GC_ALLOCATE_VARIADIC(Str_O, v, val->length() ,val->fillPointer(),_Nil<T_O>(),0);
+  GC_ALLOCATE_VARIADIC(Str_O, v, val->length() ,clasp_make_fixnum(val->fillPointer()),_Nil<T_O>(),0);
   str_type temp((char*)&((*val)[0]),val->length());
   v->_String.swap(temp);
   return v;

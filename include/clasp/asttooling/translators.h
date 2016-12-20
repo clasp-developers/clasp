@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/symbolTable.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <clasp/clbind/clbind.h>
 
 #include <clang/Tooling/JSONCompilationDatabase.h>
@@ -111,14 +111,14 @@ struct from_object<const vector<string> &> {
     } else if (core::VectorObjects_sp vo = o.asOrNull<core::VectorObjects_O>()) {
       _v.resize(vo->length());
       for (int i(0), iEnd(vo->length()); i < iEnd; ++i) {
-        _v[i] = gc::As<core::Array_sp>(vo->elt(i))->get_str8();
+        _v[i] = gc::As<core::Str_sp>(vo->elt(i))->get_std_string();
       }
       return;
     } else if (core::Cons_sp co = o.asOrNull<core::Cons_O>()) {
       _v.resize(co->length());
       int i = 0;
       for (auto cur : (core::List_sp)co) {
-        _v[i] = gc::As<core::Array_sp>(oCar(cur))->get_str8();
+        _v[i] = gc::As<core::Str_sp>(oCar(cur))->get_std_string();
         ++i;
       }
       return;

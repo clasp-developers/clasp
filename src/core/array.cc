@@ -32,9 +32,18 @@ THE SOFTWARE.
 #include <clasp/core/environment.h>
 #include <clasp/core/vectorObjects.h>
 #include <clasp/core/array.h>
-#include <clasp/core/arrayObjects.h>
 #include <clasp/core/wrappers.h>
+
+
 namespace core {
+
+// -----------------------------------------------------------
+//
+// Utility functions
+//
+void noFillPointerError() {
+  SIMPLE_ERROR(BF("This vector does not have a fill pointer"));
+}
 
 
 // ------------------------------------------------------------
@@ -44,18 +53,18 @@ namespace core {
 //
 
 // Constructor
-MDArray_O(size_t rank,
-          List_sp dimensions,
-          T_sp elementType,
-          T_sp fillPointer,
-          Array_sp displacedTo,
-          size_t displacedIndexOffset,
-          T_sp initial_element,
-          bool initial_element_supplied_p )
+MDArray_O::MDArray_O(size_t rank,
+                     List_sp dimensions,
+                     T_sp elementType,
+                     T_sp fillPointer,
+                     Array_sp displacedTo,
+                     size_t displacedIndexOffset,
+                     T_sp initial_element,
+                     bool initial_element_supplied_p )
    : _DisplacedIndexOffset(displacedIndexOffset),
      _FillPointerP(false),
     _Dimensions(rank,0) {
-   size_t totalArraySize = 1;
+   size_t arrayTotalSize = 1;
    size_t irank = 0;
    for ( auto cur : dimensions ) {
      T_sp tdim = oCar(cur);
@@ -63,7 +72,7 @@ MDArray_O(size_t rank,
        TYPE_ERROR(tdim,cl::_sym_integer);
      }
      size_t dim = tdim.unsafe_fixnum();
-     totalArraySize *= dim;
+     arrayTotalSize *= dim;
      unlikely_if (irank >= rank) {
        SIMPLE_ERROR(BF("Too many dimensions %s for array of rank %d") % _rep_(dimensions) % rank);
      }
@@ -77,18 +86,18 @@ MDArray_O(size_t rank,
        this->_FillPointerP = true;
      } else {
        // Length
-       this->_FillPointerOrLengthOrDummy = totalArraySize;
+       this->_FillPointerOrLengthOrDummy = arrayTotalSize;
      }
    } else {
      // Dummy for MDArray
      this->_FillPointerOrLengthOrDummy =  0xDEADBEEF01234567;
    }
-   this->_TotalArraySize = totalArraySize;
+   this->_ArrayTotalSize = arrayTotalSize;
    if ( displacedTo.notnilp() ) {
      this->_Data = gc::As<Array_sp>(displacedTo);
      this->_DisplacedToP = true;
    } else {
-     this->_Vec = core__make_vector(element_type, totalArraySize,false,_Nil<T_O>(),_Nil<T_O>(),0,initial_element,true);
+     this->_Vec = core__make_vector(element_type, arrayTotalSize,false,_Nil<T_O>(),_Nil<T_O>(),0,initial_element,true);
      this->_DisplacedIndexOffset = 0;
      this->_DisplacedToP = false;
    }
@@ -103,19 +112,16 @@ MDArray_O(size_t rank,
 CL_LAMBDA(core::array);
 CL_DECLARE();
 CL_DOCSTRING("arrayDisplacement");
-CL_DEFUN T_mv cl__array_displacement(T_sp array) {
-  if (Array_sp arr = array.asOrNull<Array_O>()) {
-    (void)arr;
-    return Values(arr->displaced_to(),clasp_make_fixnum(arr->displaced_index_offset()));
-  }
-  TYPE_ERROR(array, cl::_sym_array);
+CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
+  return Values(arr->displaced_to(),clasp_make_fixnum(arr->displaced_index_offset()));
 }
 
 CL_LAMBDA(core::type &optional core::env);
 CL_DECLARE();
 CL_DOCSTRING("upgradedArrayElementType");
-CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type) {
-  return (Values(T_O::static_class));
+CL_DEFUN T_mv cl__upgraded_array_element_type(T_sp type, T_sp env) {
+  IMPLEMENT_MEF(BF("Handle new types"));
+  return Values(T_O::static_class);
 };
 
 CL_LAMBDA(dest destStart orig origStart len);
@@ -131,12 +137,10 @@ CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp o
   ASSERTF(orig->rank() == 1, BF("orig array must be rank 1 - instead it is %d") % orig->rank());
   intptr_t iDestStart = unbox_fixnum(destStart);
   intptr_t iOrigStart = unbox_fixnum(origStart);
-  if ((iLen + iDestStart) >= dest->dimension())
-    iLen = dest->dimension() - iDestStart;
-  if ((iLen + iOrigStart) >= orig->dimension())
-    iLen = orig->dimension() - iOrigStart;
+  if ((iLen + iDestStart) >= dest->dimension()) iLen = dest->arrayTotalSize()-iDestStart;
+  if ((iLen + iOrigStart) >= orig->dimension()) iLen = orig->arrayTotalSize()-iOrigStart;
   if (iDestStart < iOrigStart) {
-    for (intptr_t i = 0; i < iLen; ++i) {
+    for (cl_index i = 0; i < iLen; ++i) {
       dest->aset_unsafe(iDestStart, orig->aref_unsafe(iOrigStart));
       ++iDestStart;
       ++iOrigStart;
@@ -144,7 +148,7 @@ CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp o
   } else {
     iDestStart += iLen;
     iOrigStart += iLen;
-    for (intptr_t i = 0; i < iLen; ++i) {
+    for (cl_index i = 0; i < iLen; ++i) {
       --iDestStart;
       --iOrigStart;
       dest->aset_unsafe(iDestStart, orig->aref_unsafe(iOrigStart));
@@ -152,62 +156,41 @@ CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp o
   }
 }
 
+
+List_sp listOfObjects(VaList_sp vargs) {
+  core::List_sp list = _Nil<core::T_O>();
+  va_list cargs;
+  va_copy(cargs, (*vargs)._Args);
+  size_t nargs = vargs->remaining_nargs();//LCC_VA_LIST_NUMBER_OF_ARGUMENTS(vargs);
+  core::Cons_sp *cur = reinterpret_cast<core::Cons_sp *>(&list);
+  for (int p = 0; p < nargs; ++p) {
+    core::T_sp obj = T_sp((gc::Tagged)va_arg(cargs, T_O *));
+    *cur = core::Cons_O::create(obj, _Nil<core::T_O>());
+    cur = reinterpret_cast<core::Cons_sp *>(&(*cur)->_Cdr);
+  }
+  //  va_end(cargs);
+  return list;
+}
+
+
+
 CL_LAMBDA(array &rest indices-value);
 CL_DECLARE();
 CL_DOCSTRING("aset");
-CL_DEFUN T_sp core__aset(Array_sp array, List_sp indices_value) {
-  int r = cl__length(indices_value) - 1;
-  int j;
-  if (Vector_sp vec = array.asOrNull<Vector_O>()) {
-    if (r != 1) {
-      SIMPLE_ERROR(BF("Wrong number of indices"));
-    }
-    T_sp ind0 = oCar(indices_value);
-    indices_value = oCdr(indices_value);
-    j = Array_O::checkedIndex(__FILE__, __LINE__, __FUNCTION__, array, 0, ind0, cl__length(vec));
-    return vec->aset_unsafe(j, oCar(indices_value));
-  } else {
-    if (r != array->rank()) {
-      SIMPLE_ERROR(BF("Wrong number of indices."));
-    }
-    int i;
-    for (i = j = 0; i < r; i++) {
-      T_sp index = oCar(indices_value);
-      indices_value = oCdr(indices_value);
-      int s = Array_O::checkedIndex(__FILE__, __LINE__, __FUNCTION__, array, i, index, array->arrayDimension(i));
-      j = j * (array->arrayDimension(i)) + s;
-    }
-    return array->aset_unsafe(j, oCar(indices_value));
-  }
-  IMPLEMENT_MEF(BF("Implement aset"));
+CL_DEFUN T_sp core__aset(Array_sp array, VaList_sp vargs) {
+  T_sp last_val;
+  cl_index rowMajorIndex = this->index_val_(vargs,true,last_val);
+  array->rowMajorAset(rowMajorIndex,last_val);
+  return last_val;
 };
 
-
-
-int Array_O::checkedIndex(const string &filename, int lineno, const string &function, Array_sp array, int which, T_sp index, int nonincl_index) {
-  if (index.fixnump()) {
-    int ifn = unbox_fixnum(gc::As<Fixnum_sp>(index));
-    if (ifn < 0 || ifn >= nonincl_index) {
-      core__wrong_index(filename, lineno, lisp_intern(function, CurrentPkg), array, which, index, nonincl_index);
-    }
-    return ifn;
-  }
-  core__wrong_index(filename, lineno, lisp_intern(function, CurrentPkg), array, which, index, nonincl_index);
-  UNREACHABLE();
+CL_LISPIFY_NAME("cl:aref");
+CL_LAMBDA((core::self cl:array) &va-rest core::indices);
+CL_DEFMETHOD T_sp Array_O::aref(VaList_sp indices) const {
+  cl_index rowMajorIndex = arrayRowMajorIndex(vargs);
+  return array->rowMajorAref(rowMajorIndex,last_val);
 }
 
-CL_LISPIFY_NAME("cl:arrayTotalSize");
-CL_DEFMETHOD gc::Fixnum Array_O::arrayTotalSize() const {
-  gc::Fixnum sz = 1;
-  for (int i = 0; i < this->rank(); i++) {
-    sz *= this->arrayDimension(i);
-  }
-  return sz;
-}
-
-void Array_O::initialize() {
-  this->Base::initialize();
-}
 
 Symbol_sp Array_O::element_type_as_symbol() const {
   // If this fails we need a different way of doing this
@@ -223,11 +206,6 @@ Symbol_sp Array_O::element_type_as_symbol() const {
   SIMPLE_ERROR(BF("Handle more array types - the current array type is: %s") % _rep_(this->elementType()));
 }
 
-CL_LISPIFY_NAME("cl:aref");
-CL_LAMBDA((core::self cl:array) &va-rest core::indices);
-CL_DEFMETHOD T_sp Array_O::aref(VaList_sp indices) const {
-  SUBCLASS_MUST_IMPLEMENT();
-}
 
 cl_index Array_O::index_vector_int(const vector<int> &indices) const {
   cl_index offset = 0;
@@ -364,19 +342,6 @@ string Array_O::__repr__() const {
 
 SYMBOL_SC_(CorePkg, copy_subarray);
 SYMBOL_SC_(CorePkg, aset);
-
-
-#if 0
-  virtual T_sp elt(cl_index index) const; { return this->_Data->elt(index+this->_DisplacedIndexOffset); }
-  virtual T_sp setf_elt(cl_index index, T_sp value) { return this->_Data->setf_elt(index+this->_DisplacedIndexOffset,value); }
-
-
-
-#endif
-    
-  
-
-
 
 }; /* core */
 
@@ -1376,16 +1341,16 @@ String_sp make_string(T_sp element_type,
 namespace core {
 void VectorNs_O::ensureSpaceAfterFillPointer(cl_index size) {
   if (!this->_FillPointerP) noFillPointerError();
-  cl_index left = this->totalArraySize() - this->fillPointer();
+  cl_index left = this->arrayTotalSize() - this->fillPointer();
   if (left < size) {
-    this->setSize((size-left)+this->_TotalArraySize);
+    this->setSize((size-left)+this->_ArrayTotalSize);
   }
 }
 
 T_sp VectorNs_O::vectorPush(T_sp newElement) {
   unlikely_if (!this->_FillPointerp) noFillPointerError();
   cl_index idx = this->_FillPointerOrLengthOrDummy;
-  likely_if (idx < this->_TotalArraySize) {
+  likely_if (idx < this->_ArrayTotalSize) {
     this->_Vec->setf_elt(idx+this->_DisplacedIndexOffset,newElement);
     ++this->_FillPointerOrLengthOrDummy;
     return clasp_make_fixnum(idx);
@@ -1396,10 +1361,10 @@ T_sp VectorNs_O::vectorPush(T_sp newElement) {
 Fixnum_sp VectorNs_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   unlikely_if (!this->_FillPointerP) noFillPointerError();
   cl_index idx = this->_FillPointerOrLengthOrDummy;
-  unlikely_if (idx >= this->_TotalArraySize) {
+  unlikely_if (idx >= this->_ArrayTotalSize) {
     if (extension <= 0) extension = 32;
   }
-  cl_index new_size = this->_TotalArraySize+extension;
+  cl_index new_size = this->_ArrayTotalSize+extension;
   unlikely_if (!cl::_sym_adjust_array->boundP()) {
     this->setSize(new_size);
   } else {
@@ -1410,5 +1375,12 @@ Fixnum_sp VectorNs_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   return make_fixnum(idx);
 }
 
+
+size_t StrFind(Str_sp outer, Str_sp inner, size_t start)
+{
+  DEPRECIATED(); // I think only called by Lisp_O::findLoadTimeValuesWithNameContaining
+  return clasp_search_string(substr,clasp_make_fixnum(0),_Nil<T_O>(),outer,clasp_make_fixnum(start),_Nil<T_O>());
+}
+  
 };
 

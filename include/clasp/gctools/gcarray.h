@@ -40,7 +40,7 @@ class GCArray_moveable : public GCContainer {
  typedef T *iterator;
  typedef T const *const_iterator;
  size_t _Capacity; // Index one beyond the total number of elements allocated
- T _Data[];      // Store _Capacity numbers of T structs/classes starting here
+ T _Data[0];      // Store _Capacity numbers of T structs/classes starting here
  template <typename... ARGS>
    GCArray_moveable(const T& initial_element, size_t capacity, ARGS &&... args) : _Capacity(capacity)/*, _Data{args...}*/ {
    GCTOOLS_ASSERT(sizeof...(ARGS)<=capacity);

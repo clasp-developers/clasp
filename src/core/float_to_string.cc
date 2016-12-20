@@ -14,6 +14,7 @@
 #include <float.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/character.h>
 #include <clasp/core/str.h>
 #include <clasp/core/numbers.h>
 #include <clasp/core/symbolTable.h>
@@ -47,20 +48,24 @@ _clasp_string_push_c_string(Str_sp s, const char *c) {
 
 static void
 insert_char(Str_sp buffer, cl_index where, gc::Fixnum c) {
-        ASSERT(buffer->fillPointer().fixnump());
-        gc::Fixnum end = buffer->fillPointer().unsafe_fixnum();
-        buffer->vectorPushExtend(clasp_make_character('.'));
-  memmove(&(*buffer)[where + 1], &(*buffer)[where], end - where);
-  //clasp_copy_subarray(buffer, where+1, buffer, where, end - where);
-  (*buffer)[where] = c; // clasp_char_set(buffer, where, c);
+    ASSERT(buffer->arrayHasFillPointer());
+    gc::Fixnum end = buffer->fillPointer();
+    buffer->vectorPushExtend(clasp_make_character('.'));
+    memmove(&(*buffer)[where + 1], &(*buffer)[where], end - where);
+    //clasp_copy_subarray(buffer, where+1, buffer, where, end - where);
+    buffer->setf_elt(where,clasp_make_character(c)); // clasp_char_set(buffer, where, c);
 }
 
 static T_sp
 push_base_string(T_sp buffer, Str_sp s) {
-        ASSERT(s->fillPointer().fixnump())
-        buffer = _clasp_ensure_buffer(buffer, s->fillPointer().unsafe_fixnum());
-  gc::As<Str_sp>(buffer)->pushStringCharStar(s->c_str());
-  return buffer;
+    ASSERT(s->arrayHasFillPointer());
+    buffer = _clasp_ensure_buffer(buffer, s->fillPointer());
+    Str_sp sbuffer = gc::As<Str_sp>(buffer);
+    std::string ss = s->get_std_string();
+    for ( char c : ss ) {
+	sbuffer->vectorPush(clasp_make_character(c));
+    }
+    return buffer;
 }
 
 /**********************************************************************
@@ -125,7 +130,7 @@ core_float_to_string_free(T_sp buffer_or_nil, Float_sp number,
     insert_char(buffer, base + 1, '.');
     print_float_exponent(buffer, number, e - 1);
   } else if (e > 0) {
-          gc::Fixnum l = gc::As<Str_sp>(buffer)->fillPointer().unsafe_fixnum() - base;
+          gc::Fixnum l = gc::As<Str_sp>(buffer)->fillPointer() - base;
     while (l++ <= e) {
             buffer->vectorPushExtend(clasp_make_character('0'));
     }

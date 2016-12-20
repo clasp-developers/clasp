@@ -543,6 +543,20 @@ List_sp Cons_O::reverse() {
   return ((reversed));
 }
 
+List_sp Cons_O::nreverse() {
+  _OF();
+  List_sp reversed = _Nil<T_O>();
+  List_sp cur = this->asSmartPtr();
+  List_sp hold = _Nil<T_O>();
+  while (cur.consp()) {
+    hold = oCdr(cur);
+    cur.asCons()->setCdr(reversed);
+    reversed = cur;
+    cur = hold;
+  }
+  return ((reversed));
+}
+
 List_sp Cons_O::revappend(T_sp tail) {
   List_sp reversed = _Nil<T_O>();
   List_sp cur = this->asSmartPtr();
@@ -558,19 +572,6 @@ List_sp Cons_O::revappend(T_sp tail) {
   return ((reversed));
 }
 
-List_sp Cons_O::nreverse() {
-  _OF();
-  List_sp reversed = _Nil<T_O>();
-  List_sp cur = this->asSmartPtr();
-  List_sp hold = _Nil<T_O>();
-  while (cur.consp()) {
-    hold = oCdr(cur);
-    cur.asCons()->setCdr(reversed);
-    reversed = cur;
-    cur = hold;
-  }
-  return ((reversed));
-}
 
 List_sp Cons_O::nreconc(T_sp tail) {
   _OF();

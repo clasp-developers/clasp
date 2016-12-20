@@ -305,21 +305,6 @@ Symbol_sp lisp_symbolNil() {
   return _Nil<Symbol_O>();
 }
 
-bool lisp_search(T_sp seq, T_sp obj, int &index) {
-  if (seq.nilp()) {
-    return false;
-  } else if (Vector_sp vec = seq.asOrNull<Vector_O>()) {
-    for (int i(0), iEnd(vec->dimension()); i < iEnd; ++i) {
-      if (vec->elt(i) == obj) {
-        index = i;
-        return true;
-      }
-    }
-    return false;
-  }
-  SIMPLE_ERROR(BF("Add support for lisp_search to search %s") % _rep_(seq));
-}
-
 #if 0
     extern "C"
     {

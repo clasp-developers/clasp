@@ -122,7 +122,7 @@ THE SOFTWARE.
 #include <clasp/core/lispStream.h>
 #include <clasp/core/lispString.fwd.h>
 #include <clasp/core/lispString.h>
-#include <clasp/core/lispVector.h>
+#include <clasp/core/array.h>
 #include <clasp/core/loadTimeValues.fwd.h>
 #include <clasp/core/loadTimeValues.h>
 #include <clasp/core/mathDispatch.h>
@@ -222,6 +222,6 @@ THE SOFTWARE.
 #include <clasp/core/tnc.h>
 #include <clasp/core/translators.h>
 #include <clasp/core/vectorObjects.fwd.h>
-#include <clasp/core/vectorObjects.h>
+#include <clasp/core/array.h>
 #include <core/weakReference.h>
 #include <clasp/core/wrappers.h>

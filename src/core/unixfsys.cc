@@ -83,6 +83,7 @@ typedef int mode_t;
 #include <clasp/core/pathname.h>
 #include <clasp/core/str.h>
 #include <clasp/core/fileSystem.h>
+#include <clasp/core/character.h>
 #include <clasp/core/str.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/designators.h>
@@ -230,26 +231,28 @@ namespace ext {
 
 CL_DOCSTRING("Return the unix current working directory");
 CL_DEFUN core::Str_sp ext__getcwd() {
+  // TESTME :   Test this function with the new code
   const char *ok;
   size_t size = 128;
   core::Str_sp output(core::Str_O::create_with_fill_pointer(' ', 32, 0, true));
   do {
-    output->setSize(size);
+    output->adjust(core::clasp_make_character(' '),size);
     clasp_disable_interrupts();
     ok = ::getcwd((char *)output->addressOfBuffer(), size - 1);
     clasp_enable_interrupts();
     size += 256;
   } while (ok == NULL);
   size = strlen((char *)output->addressOfBuffer());
-  if ((size + 1 /* / */ + 1 /* 0 */) >= output->size()) {
+  if ((size + 1 /* / */ + 1 /* 0 */) >= output->arrayTotalSize()) {
     /* Too large to host the trailing '/' */
-    output->setSize(output->length()+2);
+    output->adjust(core::clasp_make_character(' '),output->arrayTotalSize()+2);
   }
 #ifdef _MSC_VER
   for (c = output->base_string.self; *c; c++)
     if (*c == '\\')
       *c = '/';
 #endif
+  output->fillPointerSet(size-1);
   if ((*output)[size - 1] != DIR_SEPARATOR_CHAR) {
     output->vectorPushExtend(core::clasp_make_character(DIR_SEPARATOR_CHAR));
     size++;
@@ -365,7 +368,7 @@ CL_DEFUN T_sp core__readlink(Str_sp filename) {
     (*output)[written++] = DIR_SEPARATOR_CHAR;
     (*output)[written] = '\0';
   }
-  output->fillPointerSet(clasp_make_fixnum(written));
+  output->fillPointerSet(written);
   return output;
 }
 #endif /* HAVE_LSTAT */

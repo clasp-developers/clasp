@@ -37,7 +37,7 @@ THE SOFTWARE.
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/glue.h>
 #include <clasp/core/pointer.h>
-#include <clasp/core/str.fwd.h>
+#include <clasp/core/array.fwd.h>
 
 namespace translate {
 #if 0

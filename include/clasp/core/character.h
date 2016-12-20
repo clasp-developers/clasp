@@ -29,18 +29,23 @@ THE SOFTWARE.
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-#include <clasp/core/str.fwd.h>
+#include <clasp/core/array.fwd.h>
 #include <clasp/core/character.fwd.h>
 namespace core {
+
+  // Utility
+  void notCharacterError();
+  void handleWideCharactersError(claspCharacter cc);
+  
 claspChar clasp_as_char(Character_sp c);
 Character_sp clasp_make_standard_character(claspCharacter c);
 inline claspCharacter unbox_character(Character_sp c) {
   return c.unsafe_character();
 };
 
-Str8_sp cl__char_name(Character_sp och);
+Str_sp cl__char_name(Character_sp och);
 
-int clasp_string_case(AnyString_sp s);
+int clasp_string_case(String_sp s);
 Fixnum clasp_digitp(int ch, int basis);
 
 bool cl__standard_char_p(Character_sp ch);
@@ -236,6 +241,19 @@ inline claspCharacter clasp_as_character(Character_sp c) {
 }
 #endif
 
+ inline bool clasp_isupper(claspCharacter cc) {
+   // FIXME : handle unicode
+    unlikely_if (cc>255) handleWideCharactersError(cc);
+    return isupper(cc);
+ }
+
+  inline bool clasp_islower(claspCharacter cc) {
+   // FIXME : handle unicode
+    unlikely_if (cc>255) handleWideCharactersError(cc);
+    return islower(cc);
+ }
+
+   
 inline Character_sp clasp_make_standard_character(claspCharacter c) {
   return gc::make_tagged_character(c);
 }

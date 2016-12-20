@@ -66,7 +66,7 @@ potential_number_p(Str_sp s, int base) {
   l = s->length(); // .as<Str_O>()->fillPointer();
   if (l == 0)
     return false;
-  c = clasp_char(s, 0);
+  c = s->schar(0);
 
   /* A potential number must begin with a digit, sign or
            extension character (^ _) */
@@ -76,12 +76,12 @@ potential_number_p(Str_sp s, int base) {
     return false;
 
   /* A potential number cannot end with a sign */
-  c = clasp_char(s, l - 1);
+  c = s->schar(l - 1);
   if (c == '+' || c == '-')
     return false;
 
   for (i = 1; i < l; i++) {
-    c = clasp_char(s, i);
+    c = s->schar(i);
     /* It can only contain digits, signs, ratio markers,
              * extension characters and number markers. Number
              * markers are letters, but two adjacent letters fail
@@ -92,7 +92,7 @@ potential_number_p(Str_sp s, int base) {
                c == '/' || c == '.' || c == '^' || c == '_') {
       continue;
     } else if (isalpha(c) &&
-               (((i + 1) >= l) || !isalpha(clasp_char(s, i + 1)))) {
+               (((i + 1) >= l) || !isalpha(s->schar(i + 1)))) {
       continue;
     } else {
       return false;
@@ -106,7 +106,7 @@ potential_number_p(Str_sp s, int base) {
 static bool
 all_dots(Str_sp s) {
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; ++i)
-    if (clasp_char(s, i) != '.')
+    if (s->schar(i) != '.')
       return 0;
   return 1;
 }
@@ -123,7 +123,7 @@ needs_to_be_escaped(Str_sp s, T_sp readtable, T_sp print_case) {
 	 * string has to be escaped according to readtable case and the rules
 	 * of 22.1.3.3.2. */
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
-    int c = clasp_char(s, i);
+    int c = s->schar(i);
     Character_sp cc = clasp_make_character(c);
     //            int syntax = clasp_readtable_get(readtable, c, 0);
     Symbol_sp syntax = gc::As<ReadTable_sp>(readtable)->syntax_type(cc);
@@ -159,7 +159,7 @@ write_symbol_string(Str_sp s, int action, T_sp print_case,
     clasp_write_char('|', stream);
   capitalize = 1;
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
-    int c = clasp_char(s, i);
+    int c = s->schar(i);
     if (escape) {
       if (c == '|' || c == '\\') {
         clasp_write_char('\\', stream);

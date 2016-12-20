@@ -191,6 +191,9 @@ gctools::Tagged ltvc_make_array(gctools::ConstantsTable* holder, size_t index,
   core::T_sp element_type(telement_type);
   core::List_sp dimensions(tdimensions);
   core::T_sp val;
+    if (element_type != cl::_sym_T_O) {
+      SIMPLE_WARN(BF("Call make-array to make the array/vector rather than defaulting to an VectorObjects/ArrayObjects"));
+    }
   if (core::cl__length(dimensions) == 1) // vector
   {
     val = core::VectorObjects_O::create(_Nil<core::T_O>(), oCar(dimensions).unsafe_fixnum(),element_type);

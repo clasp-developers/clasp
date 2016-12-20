@@ -190,7 +190,7 @@ Path_O &Path_O::operator/=(string const &pp) {
 void Path_O::sxhash_(HashGenerator &hg) const {
   _OF();
   string ts = this->_Path.string();
-  Bignum bn = Str_O::stringToBignum(ts.c_str());
+  Bignum bn = CStrToBignum(ts.c_str());
   hg.addPart(bn);
 }
 

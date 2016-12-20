@@ -107,7 +107,6 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugLoc.h>
 #include <clasp/llvmo/insertPoint.h>
 #include <clasp/core/activationFrame.h>
-#include <clasp/core/arrayObjects.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/hashTableEql.h>
 #include <clasp/core/hashTableEqual.h>
@@ -124,7 +123,6 @@ THE SOFTWARE.
 #include <clasp/core/sexpSaveArchive.h>
 #include <clasp/core/specializer.h>
 #include <clasp/core/lispString.h>
-#include <clasp/core/newVectorObjects.h>
 #include <clasp/core/metaClass.h>
 #include <clasp/core/str.h>
 #include <clasp/core/bignum.h>
@@ -178,6 +176,7 @@ SYMBOL_EXPORT_SC_(CorePkg,function_boundary);
 SYMBOL_EXPORT_SC_(CorePkg,type_assertions);
 SYMBOL_EXPORT_SC_(ExtPkg,assume_no_errors);
 
+SYMBOL_EXPORT_SC_(ClPkg, parse_namestring);
 SYMBOL_EXPORT_SC_(ClPkg, make_instance);
 SYMBOL_EXPORT_SC_(ClPkg, class);
 SYMBOL_EXPORT_SC_(ClPkg, printNotReadableObject);
@@ -234,6 +233,7 @@ SYMBOL_EXPORT_SC_(ClPkg, fixnum);
 SYMBOL_EXPORT_SC_(ClPkg, bit);
 SYMBOL_EXPORT_SC_(ClPkg, documentation);
 SYMBOL_EXPORT_SC_(ClPkg, substitute);
+SYMBOL_EXPORT_SC_(ClPkg, subtypep);
 
 SYMBOL_EXPORT_SC_(CorePkg,STARextension_startup_loadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, multiple_value_foreign_call);
