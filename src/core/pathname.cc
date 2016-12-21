@@ -61,7 +61,6 @@ THE SOFTWARE.
 #include <clasp/core/str.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/sequence.h>
-#include <clasp/core/str.h>
 #include <clasp/core/primitives.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/arguments.h>

@@ -100,7 +100,7 @@ CL_DECLARE();
 CL_DOCSTRING("reverse");
 CL_DEFUN T_sp cl__reverse(T_sp seq) {
   if (Cons_sp slist = seq.asOrNull<Cons_O>()) {
-    return ListReverse(slist);
+    return slist->reverse();
   } else if (seq.nilp()) {
     return _Nil<T_O>();
   } else if (Vector_sp svec = seq.asOrNull<Vector_O>()) {
@@ -118,7 +118,7 @@ CL_DEFUN T_sp cl__nreverse(T_sp seq) {
   } else if (Vector_sp svec = seq.asOrNull<Vector_O>()) {
     return VectorNReverse(svec);
   } else if (Cons_sp slist = seq.asOrNull<Cons_O>()) {
-    return ListNReverse(slist);
+    return slist->nreverse();
   }
   TYPE_ERROR(seq, cl::_sym_sequence);
 };

@@ -77,8 +77,8 @@ void VectorObjects_O::setup(T_sp initialElement, size_t dimension, T_sp elementT
 }
 
 void VectorObjects_O::fillInitialContents(T_sp ic) {
-  if (cl__length(ic) != this->dimension())
-    SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl__length(ic) % this->dimension());
+  if (cl__length(ic) != this->arrayTotalSize())
+    SIMPLE_ERROR(BF("The number of elements %d in :INITIAL-CONTENTS does not match the size of the vector %d") % cl__length(ic) % this->arrayTotalSize());
   if (ic.nilp()) {
     // do nothing
   } else if (Cons_sp ccInitialContents = ic.asOrNull<Cons_O>()) {
@@ -183,10 +183,10 @@ T_sp VectorObjects_O::vectorPush(T_sp newElement) {
 Fixnum_sp VectorObjects_O::vectorPushExtend(T_sp newElement, cl_index extension) {
   unlikely_if (!this->_FillPointer.fixnump()) noFillPointerError();
   cl_index idx = this->_FillPointer.unsafe_fixnum();
-  unlikely_if (idx >= this->dimension()) {
+  unlikely_if (idx >= this->arrayTotalSize()) {
     if (extension <= 0) extension = 256;
   }
-  cl_index new_size = this->dimension()+extension;
+  cl_index new_size = this->arrayTotalSize()+extension;
   unlikely_if (!cl::_sym_adjust_array->boundP()) {
     this->adjust(_Nil<core::T_O>(),new_size);
   } else {
@@ -201,7 +201,7 @@ Fixnum_sp VectorObjects_O::vectorPushExtend(T_sp newElement, cl_index extension)
 void VectorObjects_O::fillPointerSet(T_sp fp) {
   if (fp.fixnump()) {
     cl_index ifp = fp.unsafe_fixnum();
-    if (ifp >= 0 && ifp <= this->dimension()) {
+    if (ifp >= 0 && ifp <= this->arrayTotalSize()) {
       this->_FillPointer = fp;
       return;
     }

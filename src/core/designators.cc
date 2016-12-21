@@ -105,7 +105,7 @@ core::Package_sp packageDesignator(core::T_sp obj) {
     packageName = Str_O::create(ss.str());
     goto PACKAGE_NAME;
   }
-  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_String_O, cl::_sym_Symbol_O, cl::_sym_character));
+  TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_string, cl::_sym_Symbol_O, cl::_sym_character));
  PACKAGE_NAME:
   Package_sp pkg = gc::As<Package_sp>(_lisp->findPackage(packageName->get(), true));
   return pkg;

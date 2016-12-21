@@ -100,7 +100,7 @@ CL_DEFMETHOD void BitVector_O::setBit(cl_index i, uint v) {
   BitBlockType packedVal;
   BitBlockType mask;
   BitBlockType omask;
-  if (i >= this->dimension()) {
+  if (i >= this->arrayTotalSize()) {
     SIMPLE_ERROR(BF("BitVector index overflow"));
   }
   cl_index idx = this->_DisplacedIndexOffset + i;
@@ -229,7 +229,7 @@ T_sp BitVector_O::deepCopy() const {
   IMPLEMENT_MEF(BF("Make sure BitVector_O::deepCopy makes a copy of the bits if its not displaced!!!"));
   GC_COPY(BitVector_O, n, *this);
   if (!n->_DisplacedTo) {
-    cl_index capacity = BitVectorWords(n->dimension());
+    cl_index capacity = BitVectorWords(n->arrayTotalSize());
     BitBlockType init_bits = 0;
     n->_Bits.allocate(init_bits,capacity);
     memcpy(&n->_Bits[0],&this->_Bits[0],capacity*sizeof(BitBlockType));
@@ -287,7 +287,7 @@ void BitVector_O::fillPointerSet(T_sp fp)
 {
   if (fp.fixnump()) {
     cl_index ifp = fp.unsafe_fixnum();
-    if (ifp >= 0 && ifp <= this->dimension()) {
+    if (ifp >= 0 && ifp <= this->arrayTotalSize()) {
       this->_FillPointer =fp;
       return;
     }
@@ -439,15 +439,15 @@ T_sp SimpleBitVector_O::subseq(cl_index start, T_sp end) const {
   }
   cl_index iend;
   if (end.nilp()) {
-    iend = this->dimension();
+    iend = this->arrayTotalSize();
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
   if (iend < start) {
-    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->arrayTotalSize());
   }
-  if (iend > this->dimension()) {
-    iend = this->dimension();
+  if (iend > this->arrayTotalSize()) {
+    iend = this->arrayTotalSize();
   }
   cl_index ilen = iend - start;
   SimpleBitVector_sp result = SimpleBitVector_O::make(ilen);
@@ -461,15 +461,15 @@ T_sp BitVectorWithFillPtr_O::subseq(cl_index start, T_sp end) const {
   }
   cl_index iend;
   if (end.nilp()) {
-    iend = this->dimension();
+    iend = this->arrayTotalSize();
   } else {
     iend = unbox_fixnum(gc::As<Fixnum_sp>(end));
   }
   if (iend < start) {
-    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->dimension());
+    SIMPLE_ERROR(BF("The limits %d and %d are bad for a string of %d characters") % start % iend % this->arrayTotalSize());
   }
-  if (iend > this->dimension()) {
-    iend = this->dimension();
+  if (iend > this->arrayTotalSize()) {
+    iend = this->arrayTotalSize();
   }
   cl_index ilen = iend - start;
   BitVectorWithFillPtr_sp result = BitVectorWithFillPtr_O::make(ilen, ilen, this->_adjustable);

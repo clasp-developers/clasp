@@ -46,8 +46,7 @@ namespace core {
   T_sp cl__copy_seq(T_sp seq);
 
 /* Return a valid start/end/length of a sequence or throw an error if invalid values are provided */
-  size_t_pair sequenceStartEnd(const char *sourcefile, uint lineno, const char *functionName,
-                               const string &packageName,
+  size_t_pair sequenceStartEnd(Symbol_sp function_name,
                                T_sp seq, Fixnum_sp start, T_sp end);
 
 };

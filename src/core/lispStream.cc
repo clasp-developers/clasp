@@ -6132,9 +6132,9 @@ CL_DEFUN T_sp cl__write_string(T_sp tstr, T_sp tstream, int start, T_sp end) {
     if ( clasp_is_character_type(vstr->elementType()) ) {
       size_t send;
       if (end.nilp()) {
-        send = vstr->dimension();
+        send = vstr->arrayTotalSize();
       } else if (end.fixnump()) {
-        send = MIN(end.unsafe_fixnum(),vstr->dimension());
+        send = MIN(end.unsafe_fixnum(),vstr->arrayTotalSize());
       } else {
         TYPE_ERROR(end,cl::_sym_integer);
       }

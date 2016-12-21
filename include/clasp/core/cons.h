@@ -628,8 +628,5 @@ void fillVec0(core::List_sp c, gctools::Vec0<T> &vec) {
   }
 }
 
- List_sp ListReverse(List_sp val);
- List_sp ListNReverse(List_sp val);
- 
 };
 #endif //]

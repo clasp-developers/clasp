@@ -325,10 +325,10 @@ CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
   BaseBitVector_sp x = tx.asOrNull<BaseBitVector_O>();
   BaseBitVector_sp y = ty.asOrNull<BaseBitVector_O>();
   BaseBitVector_sp r;
-  d = x->dimension();
+  d = x->arrayTotalSize();
   xp = x->bytes();
   xo = x->offset();
-  if (d != y->dimension())
+  if (d != y->arrayTotalSize())
     goto ERROR;
   yp = y->bytes();
   yo = x->offset();
@@ -339,7 +339,7 @@ CL_DEFUN T_sp core__bit_array_op(T_sp o, T_sp tx, T_sp ty, T_sp tr) {
     if (!r) {
       ERROR_WRONG_TYPE_NTH_ARG(core::_sym_bitArrayOp, 4, tr, cl::_sym_BaseBitVector_O);
     }
-    if (r->dimension() != d)
+    if (r->arrayTotalSize() != d)
       goto ERROR;
     i = (r->bytes() - xp) * 8 + (r->offset() - xo);
     if ((i > 0 && i < d) || (i < 0 && -i < d)) {

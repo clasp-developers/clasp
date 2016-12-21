@@ -70,11 +70,11 @@ safe_buffer_pointer(core::T_sp x, uint size) {
   if (core::Str_sp str = x.asOrNull<core::Str_O>()) {
     ok = (size <= str->arrayTotalSize());
     address = str->addressOfBuffer();
-  } else if (core::Vector_sp vec = x.asOrNull<core::Vector_O>()) {
+  } else if (core::VectorObjects_sp vec = x.asOrNull<core::VectorObjects_O>()) {
     int divisor = vec->elementSizeInBytes();
     size = (size + divisor - 1) / divisor;
     ok = (size <= vec->arrayTotalSize());
-    address = &vec[0];
+    address = &(*vec)[0];
   }
   if (!ok) {
     SIMPLE_ERROR(BF("Lisp object does not have enough space to be a valid socket buffer: %s") % _rep_(x));
@@ -250,7 +250,7 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketReceive(int fd,       // #0
   len = recvfrom(fd, REINTERPRET_CAST(char *, safe_buffer_pointer(buffer, length)), length, flags, NULL, NULL);
   clasp_enable_interrupts();
   if (len >= 0) {
-    if (core::VectorObjects_sp vec = gc::As<core::VectorObjects_sp>(buffer)) {
+    if (core::Str_sp vec = gc::As<core::Str_sp>(buffer)) {
       vec->fillPointerSet(len);
     } else {
       SIMPLE_ERROR(BF("Vector must have fill pointer to be socket buffer: %s") % _rep_(vec));

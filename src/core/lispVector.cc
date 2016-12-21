@@ -68,6 +68,8 @@ CL_DEFUN Vector_sp core__make_vector(T_sp element_type,
                                      cl_index displaced_index_offset,
                                      T_sp initial_element,
                                      bool initial_element_supplied_p) {
+  // FIXME: make compatible with the new code.
+  IMPLEMENT_ME(BF("This has to be brought up to speed with the new code"));
   ASSERTF(displaced_to.nilp(), BF("Add support for make-vector :displaced-to"));
   ASSERTF(displaced_index_offset.nilp() || unbox_fixnum(gc::As<Fixnum_sp>(displaced_index_offset)) == 0, BF("Add support for make-vector non-zero :displaced-index-offset "));
   if (fill_pointer == cl::_sym_T_O) fill_pointer = clasp_make_fixnum(dimension);
@@ -186,11 +188,11 @@ Fixnum_sp NonSimpleVector_O::vectorPushExtend(T_sp newElement, cl_index extensio
 
 gc::Fixnum Vector_O::arrayDimension(gc::Fixnum axisNumber) const {
   ASSERTF(axisNumber == 0, BF("Illegal axis number %d for Vector") % axisNumber);
-  return this->dimension();
+  return this->arrayTotalSize();
 }
 
 List_sp Vector_O::arrayDimensions() const {
-  return Cons_O::create(make_fixnum(this->dimension()), _Nil<T_O>());
+  return Cons_O::create(make_fixnum(this->arrayTotalSize()), _Nil<T_O>());
 }
 
 bool Vector_O::equalp(T_sp o) const {

@@ -577,9 +577,9 @@ namespace core {
     typedef gctools::smart_ptr<my_type> smart_ptr_type;
     typedef T_sp value_type;
   public:
-  static VectorObjects_sp make(T_sp initial_element, size_t dimension, T_sp elementType, T_sp fillPointer= _Nil<core::T_O>(), T_sp displacedTo=_Nil<core::T_O>(), Fixnum displacedIndexOffset=0 );
-  static VectorTNs_sp create(T_sp initial_element, size_t dimension, T_sp elementType);
-  static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
+    static VectorObjects_sp make(T_sp initial_element, size_t dimension, T_sp elementType, T_sp fillPointer= _Nil<core::T_O>(), T_sp displacedTo=_Nil<core::T_O>(), Fixnum displacedIndexOffset=0 );
+    static VectorTNs_sp create(T_sp initial_element, size_t dimension, T_sp elementType);
+    static VectorTNs_sp create(const gctools::Vec0<T_sp> &objs);
   public:
     virtual void* addressOfElement(size_t index) const {
       unlikely_if (gc::IsA<smart_ptr_type>(this->_Data)) {
@@ -603,6 +603,11 @@ namespace core {
       void* address = this->addressOfElement(index);
       return *reinterpret_cast<value_type*>(address);
     }
+  public:
+    value_type* begin() { return &(*this)[0]; };
+    value_type* end() { return &(*this)[this->length()]; };
+    const value_type* begin() const { return &(*this)[0]; };
+    const value_type* end() const { return &(*this)[this->length()]; };
   };
 };
 
@@ -672,7 +677,7 @@ namespace core {
   /*! Push a c-style string worth of characters into the buffer */
   void StringPushStringCharStar(String_sp buffer, const char* cp);
   // Was Str_O::pushStringSubstring
-  void StringPushSubstring(String_sp buffer, String_sp other, cl_index start, cl_index end);
+  void StringPushSubString(String_sp buffer, String_sp other, cl_index start, cl_index end);
   // Was Str_O::pushString
   void StringPushString(String_sp buffer, String_sp other);
   /*! Search outer for the first occurrence of inner starting at start of outer

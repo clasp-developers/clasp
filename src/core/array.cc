@@ -97,7 +97,7 @@ MDArray_O::MDArray_O(size_t rank,
      this->_Data = gc::As<Array_sp>(displacedTo);
      this->_DisplacedToP = true;
    } else {
-     this->_Vec = core__make_vector(element_type, arrayTotalSize,false,_Nil<T_O>(),_Nil<T_O>(),0,initial_element,true);
+     this->_Data = core__make_vector(elementType, arrayTotalSize,false,_Nil<T_O>(),_Nil<T_O>(),0,initial_element,true);
      this->_DisplacedIndexOffset = 0;
      this->_DisplacedToP = false;
    }
@@ -113,7 +113,7 @@ CL_LAMBDA(core::array);
 CL_DECLARE();
 CL_DOCSTRING("arrayDisplacement");
 CL_DEFUN T_mv cl__array_displacement(Array_sp array) {
-  return Values(arr->displaced_to(),clasp_make_fixnum(arr->displaced_index_offset()));
+  return Values(array->displaced_to(),clasp_make_fixnum(array->displaced_index_offset()));
 }
 
 CL_LAMBDA(core::type &optional core::env);
@@ -137,8 +137,8 @@ CL_DEFUN void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp o
   ASSERTF(orig->rank() == 1, BF("orig array must be rank 1 - instead it is %d") % orig->rank());
   intptr_t iDestStart = unbox_fixnum(destStart);
   intptr_t iOrigStart = unbox_fixnum(origStart);
-  if ((iLen + iDestStart) >= dest->dimension()) iLen = dest->arrayTotalSize()-iDestStart;
-  if ((iLen + iOrigStart) >= orig->dimension()) iLen = orig->arrayTotalSize()-iOrigStart;
+  if ((iLen + iDestStart) >= dest->arrayTotalSize()) iLen = dest->arrayTotalSize()-iDestStart;
+  if ((iLen + iOrigStart) >= orig->arrayTotalSize()) iLen = orig->arrayTotalSize()-iOrigStart;
   if (iDestStart < iOrigStart) {
     for (cl_index i = 0; i < iLen; ++i) {
       dest->aset_unsafe(iDestStart, orig->aref_unsafe(iOrigStart));

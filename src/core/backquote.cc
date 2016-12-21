@@ -315,7 +315,7 @@ CL_DECLARE();
 CL_DOCSTRING("backquote_simplify_args");
 CL_DEFUN T_sp core__backquote_simplify_args(T_sp x) {
   List_sp cx = x;
-  List_sp args = ListReverse(gc::As<Cons_sp>(oCdr(cx)));
+  List_sp args = gc::As<Cons_sp>(oCdr(cx))->reverse();
   T_sp result = _Nil<T_O>();
   while (args.notnilp()) {
     // Advance args

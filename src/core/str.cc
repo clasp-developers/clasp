@@ -772,7 +772,7 @@ void *Str_O::addressOfBuffer() const {
 void Str_O::fillPointerSet(T_sp fp) {
   if (fp.fixnump()) {
     cl_index ifp = fp.unsafe_fixnum();
-    if (ifp >= 0 && ifp <= this->dimension()) {
+    if (ifp >= 0 && ifp <= this->arrayTotalSize()) {
       this->_FillPointer = fp;
       return;
     }
@@ -864,9 +864,9 @@ void Str_O::setSize(cl_index newSize) {
 void Str_O::ensureSpaceAfterFillPointer(cl_index size) {
   ASSERT(!this->_DisplacedTo);
   if (!this->_FillPointer.fixnump()) noFillPointerError();
-  cl_index left = this->dimension() - this->_FillPointer.unsafe_fixnum();
+  cl_index left = this->arrayTotalSize() - this->_FillPointer.unsafe_fixnum();
   if (left < size) {
-    this->setSize((size-left)+this->dimension());
+    this->setSize((size-left)+this->arrayTotalSize());
   }
 }
 
@@ -888,10 +888,10 @@ Fixnum_sp Str_O::vectorPushExtend(T_sp newElement, cl_index extension) {
     SIMPLE_ERROR(BF("This string does not have a fill pointer"));
   }
   cl_index idx = this->_FillPointer.unsafe_fixnum();
-  unlikely_if (idx >= this->dimension() ) {
+  unlikely_if (idx >= this->arrayTotalSize() ) {
     if (extension <= 0) extension = 32;
   }
-  cl_index new_size = this->dimension()+extension;
+  cl_index new_size = this->arrayTotalSize()+extension;
   unlikely_if (!cl::_sym_adjust_array->boundP()) {
     this->setSize(new_size);
   } else {
